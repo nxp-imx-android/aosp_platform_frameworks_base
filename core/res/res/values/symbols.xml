@@ -4331,6 +4331,8 @@
 
   <java-symbol type="bool" name="config_handleVolumeKeysInWindowManager" />
   <java-symbol type="bool" name="config_handleVolumeAliasesUsingVolumeGroups" />
+  <java-symbol type="integer" name="config_tvLongPressVolumeKeysPerAdjustment" />
+  <java-symbol type="dimen" name="config_tvLongPressVolumeAdjustmentScaleFactor" />
   <java-symbol type="dimen" name="config_inCallNotificationVolume" />
   <java-symbol type="string" name="config_inCallNotificationSound" />
   <java-symbol type="string" name="config_cameraShutterSound" />
