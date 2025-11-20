@@ -530,7 +530,11 @@ constructor(
                             // Gone or remain in the current scene. If transition is a scene change,
                             // take the destination scene.
                             val targetScene = renderedScenes.last()
-                            if (targetScene == Scenes.Lockscreen || targetScene == Scenes.Communal || !leaveShadeOpen) {
+                            if (
+                                targetScene == Scenes.Lockscreen ||
+                                    targetScene == Scenes.Communal ||
+                                    !leaveShadeOpen
+                            ) {
                                 val loggingReason = buildString {
                                     append(
                                         "device was unlocked while the primary bouncer was showing"
@@ -539,25 +543,47 @@ constructor(
                                         append(" and shade needed to be left open")
                                     } else {
                                         append(" and shade didn't need to be left open")
+
+                                        if (willAnimateDismissAction) {
+                                            append(" and will animate dismiss action")
+                                        } else {
+                                            append(" and will not animate dismiss action")
+                                        }
                                     }
                                 }
-                                SwitchSceneCommand.SwitchToScene(
-                                    targetSceneKey = Scenes.Gone,
-                                    hideOverlays =
-                                        if (leaveShadeOpen) {
+                                if (leaveShadeOpen) {
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        hideOverlays =
                                             // Only hide the bouncer overlay, leaving any other
                                             // overlay (right now the only other overlays are
                                             // shades) visible.
-                                            HideSome(Overlays.Bouncer)
-                                        } else {
-                                            HideOverlayCommand.HideAll
-                                        },
-                                    loggingReason = loggingReason,
-                                    // Only snap instantly if we're staying on shade. Otherwise, we
-                                    // want to run the unlock animation, which is tied to the
-                                    // transition.
-                                    instantlySnapScenes = leaveShadeOpen,
-                                )
+                                            HideSome(Overlays.Bouncer),
+                                        loggingReason = loggingReason,
+                                        instantlySnapScenes = true,
+                                    )
+                                } else if (willAnimateDismissAction) {
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        hideOverlays = HideOverlayCommand.HideAll,
+                                        loggingReason = loggingReason,
+                                        // Do not snap to scene here or this will break the
+                                        // notification animation
+                                        instantlySnapScenes = false,
+                                    )
+                                } else {
+                                    // Snap to scene to avoid any flicker of the current scene
+                                    // This is intentionally not using [SwitchToScene] as the
+                                    // scene transition needs to happen before the overlay is
+                                    // hidden.
+                                    sceneInteractor.snapToScene(
+                                        toScene = Scenes.Gone,
+                                        loggingReason = loggingReason,
+                                        hideAllOverlays = false,
+                                    )
+                                    sceneInteractor.hideOverlay(Overlays.Bouncer, loggingReason)
+                                    SwitchSceneCommand.NoOp
+                                }
                             } else if (targetScene == Scenes.Shade && willAnimateDismissAction) {
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = Scenes.Gone,
