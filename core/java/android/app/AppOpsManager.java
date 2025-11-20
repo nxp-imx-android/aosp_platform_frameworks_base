@@ -536,7 +536,7 @@ public class AppOpsManager {
      * This uid state is a counterpart to PROCESS_STATE_FOREGROUND_SERVICE_LOCATION which has been
      * deprecated.
      * @hide
-     * @deprecated
+     * @deprecated Unusable as PROCESS_STATE_FOREGROUND_SERVICE_LOCATION has been removed.
      */
     @SystemApi
     @Deprecated

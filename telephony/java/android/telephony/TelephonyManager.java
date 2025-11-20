@@ -18655,7 +18655,7 @@ public class TelephonyManager {
      * identity. If the device goes out of service the previous cell identity is cached and
      * will be returned. If the cache age of the Cell identity is more than 24 hours
      * it will be cleared and null will be returned.
-     * @return last known cell identity {@CellIdentity}.
+     * @return last known cell identity {@link CellIdentity}.
      * @hide
      */
     @SystemApi
