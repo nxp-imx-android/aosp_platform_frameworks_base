@@ -12514,23 +12514,24 @@ public class CarrierConfigManager {
     /**
      * Overrides the carrier config of the provided subscription ID with the provided values.
      *
-     * Any further queries to carrier config from any process will return the overridden values
+     * <p>Any further queries to carrier config from any process will return the overridden values
      * after this method returns. The overrides are effective for the lifetime of the phone process
      * until the user passes in {@code null} for {@code overrideValues}. This removes all previous
      * overrides and sets the carrier config back to production values.
      *
-     * May throw an {@link IllegalArgumentException} if {@code overrideValues} contains invalid
+     * <p>May throw an {@link IllegalArgumentException} if {@code overrideValues} contains invalid
      * values for the specified config keys.
      *
-     * NOTE: This API is meant for testing purposes only.
+     * <p>NOTE: This API is meant for testing purposes only.
      *
      * @param subscriptionId The subscription ID for which the override should be done.
      * @param overrideValues Key-value pairs of the values that are to be overridden. If set to
-     *                       {@code null}, this will remove all previous overrides and set the
-     *                       carrier configuration back to production values.
+     *        {@code null}, this will remove all previous overrides and set the
+     *        carrier configuration back to production values.
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * @throws IllegalArgumentException if {@code subscriptionId} is invalid.
      * @hide
      */
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
@@ -12542,23 +12543,24 @@ public class CarrierConfigManager {
     /**
      * Overrides the carrier config of the provided subscription ID with the provided values.
      *
-     * Any further queries to carrier config from any process will return the overridden values
+     * <p>Any further queries to carrier config from any process will return the overridden values
      * after this method returns. The overrides are effective until the user passes in {@code null}
      * for {@code overrideValues}. This removes all previous overrides and sets the carrier config
      * back to production values.
      *
      * The overrides is stored persistently and will survive a reboot if {@code persistent} is true.
      *
-     * May throw an {@link IllegalArgumentException} if {@code overrideValues} contains invalid
+     * <p>May throw an {@link IllegalArgumentException} if {@code overrideValues} contains invalid
      * values for the specified config keys.
      *
-     * NOTE: This API is meant for testing purposes only.
+     * <p>NOTE: This API is meant for testing purposes only.
      *
      * @param subscriptionId The subscription ID for which the override should be done.
      * @param overrideValues Key-value pairs of the values that are to be overridden. If set to
      *                       {@code null}, this will remove all previous overrides and set the
      *                       carrier configuration back to production values.
      * @param persistent     Determines whether the override should be persistent.
+     * @throws IllegalArgumentException if {@code subscriptionId} is invalid.
      * @hide
      */
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
@@ -12682,7 +12684,8 @@ public class CarrierConfigManager {
      * android.service.carrier.CarrierService#onLoadConfig} will be called from an arbitrary thread.
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * @throws IllegalArgumentException if {@code subId} is invalid.
      */
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
