@@ -355,6 +355,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             subtitle = artist.toString(),
             colorScheme = mediaModel.colorScheme,
             notificationActions = actions,
+            notificationActionsCompressed = mutableListOf(),
             playbackStateActions = semanticActions,
             outputDevice = device,
             clickIntent = clickIntent,

@@ -973,6 +973,11 @@ class LegacyMediaDataManagerImplTest : SysuiTestCase() {
                 setPkg(PACKAGE_NAME)
                 modifyNotification(context).also {
                     it.setSmallIcon(android.R.drawable.ic_media_pause)
+                    it.addAction(android.R.drawable.ic_media_rew, "rewind", null)
+                    it.addAction(android.R.drawable.ic_media_previous, "prev", null)
+                    it.addAction(android.R.drawable.ic_media_play, "play", null)
+                    it.addAction(android.R.drawable.ic_media_next, "next", null)
+                    it.addAction(android.R.drawable.ic_media_ff, "ff", null)
                     it.setStyle(
                         MediaStyle().apply {
                             setMediaSession(session.sessionToken)
