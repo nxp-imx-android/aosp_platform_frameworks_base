@@ -4098,6 +4098,10 @@ public class InputManagerService extends IInputManager.Stub
                 payload.put(BACKUP_CATEGORY_INPUT_GESTURES,
                         mKeyGestureController.getInputGestureBackupPayload(userId));
             }
+            if (com.android.hardware.input.Flags.controllerRemapping()) {
+                payload.put(BACKUP_CATEGORY_INPUT_DEVICE_REMAPPING,
+                        mInputDeviceRemapper.getInputDeviceRemappingBackupPayload(userId));
+            }
             return payload;
         }
 
@@ -4108,6 +4112,10 @@ public class InputManagerService extends IInputManager.Stub
                     BACKUP_CATEGORY_INPUT_GESTURES)) {
                 mKeyGestureController.applyInputGesturesBackupPayload(
                         payload.get(BACKUP_CATEGORY_INPUT_GESTURES), userId);
+            }
+            if (payload.containsKey(BACKUP_CATEGORY_INPUT_DEVICE_REMAPPING)) {
+                mInputDeviceRemapper.applyInputDeviceRemappingBackupPayload(
+                        payload.get(BACKUP_CATEGORY_INPUT_DEVICE_REMAPPING), userId);
             }
         }
 

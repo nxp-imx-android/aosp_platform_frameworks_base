@@ -41,6 +41,11 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.input.data.InputDataStore;
 import com.android.server.input.data.InputDeviceRemappingData;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -264,6 +269,38 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
             }
             return data.axisRemappingMap();
         }
+    }
+
+    byte[] getInputDeviceRemappingBackupPayload(int userId) throws IOException {
+        final List<InputDeviceRemappingData> userRemappingList;
+        synchronized (mLock) {
+            userRemappingList = new ArrayList<>(mRemappingData.get(userId).values());
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        synchronized (mInputDataStore) {
+            mInputDataStore.writeData(byteArrayOutputStream, true, userRemappingList,
+                    InputDeviceRemappingData.class);
+        }
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    void applyInputDeviceRemappingBackupPayload(byte[] payload, int userId)
+            throws XmlPullParserException, IOException {
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
+        List<InputDeviceRemappingData> userRemappingList;
+        synchronized (mInputDataStore) {
+            userRemappingList = mInputDataStore.readData(byteArrayInputStream, true,
+                    InputDeviceRemappingData.class);
+        }
+        synchronized (mLock) {
+            for (final InputDeviceRemappingData backupData : userRemappingList) {
+                InputDeviceRemappingData storedData = getOrCreateRemappingDataLocked(userId,
+                        backupData.deviceIdentifier());
+                storedData.buttonRemappingMap().putAll(backupData.buttonRemappingMap());
+                storedData.axisRemappingMap().putAll(backupData.axisRemappingMap());
+            }
+        }
+        mIoHandler.obtainMessage(MSG_PERSIST_REMAPPINGS, userId).sendToTarget();
     }
 
     private boolean handleMessage(Message msg) {
