@@ -16,14 +16,14 @@
 
 package android.content.theming;
 
-import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.NonNull;
+import com.android.internal.annotations.VisibleForTesting;
 
 /**
  * Represents the core information of a user's theme, including the seed color,
@@ -34,48 +34,55 @@ import androidx.annotation.NonNull;
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public final class ThemeInfo implements Parcelable {
     @Nullable
-    @ColorInt
-    public final Integer seedColor;
+    public final Color seedColor;
     @Nullable
     @ThemeStyle.Type
     public final Integer style;
     @Nullable
     public final Float contrast;
+    @Nullable
+    public final String specVersion;
+    @Nullable
+    public final String platform;
 
-    private ThemeInfo(@Nullable @ColorInt Integer seedColor,
-            @Nullable @ThemeStyle.Type Integer style,
+    private ThemeInfo(@Nullable Color seedColor, @Nullable Integer style,
             @Nullable Float contrast) {
         this.seedColor = seedColor;
         this.style = style;
         this.contrast = contrast;
-    }
-
-    private ThemeInfo(Parcel in) {
-        seedColor = (Integer) in.readValue(Integer.class.getClassLoader());
-        style = (Integer) in.readValue(Integer.class.getClassLoader());
-        contrast = (Float) in.readValue(Float.class.getClassLoader());
+        this.specVersion = null;
+        this.platform = null;
     }
 
     /**
-     * A builder for creating {@link ThemeInfo} instances. Any parameter can be {@code null}
-     * to indicate that the current system value for that attribute should be used.
-     *
-     * @param seedColor The primary color to generate the theme's color palette, or {@code null}.
-     * @param style     The theme style (e.g., tonal, vibrant), or {@code null}.
-     * @param contrast  The contrast level of the theme, or {@code null}.
-     * @return A new {@link ThemeInfo} instance.
+     * @hide
      */
-    public static ThemeInfo build(@Nullable Color seedColor,
-            @Nullable @ThemeStyle.Type Integer style, @Nullable Float contrast) {
-        return new ThemeInfo(seedColor == null ? null : seedColor.toArgb(), style, contrast);
+    @VisibleForTesting
+    public ThemeInfo(@NonNull Color seedColor, @NonNull Integer style, @NonNull Float contrast,
+            @NonNull String specVersion, @NonNull String platform) {
+        this.seedColor = seedColor;
+        this.style = style;
+        this.contrast = contrast;
+        this.specVersion = specVersion;
+        this.platform = platform;
+    }
+
+    private ThemeInfo(Parcel in) {
+        Integer seedArgb = (Integer) in.readValue(Integer.class.getClassLoader());
+        this.seedColor = (seedArgb == null) ? null : Color.valueOf(seedArgb);
+        this.style = (Integer) in.readValue(Integer.class.getClassLoader());
+        this.contrast = (Float) in.readValue(Float.class.getClassLoader());
+        this.specVersion = in.readString8();
+        this.platform = in.readString8();
     }
 
     @Override
-    @SuppressWarnings("AndroidFrameworkEfficientParcelable")
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeValue(seedColor);
+        dest.writeValue(seedColor != null ? seedColor.toArgb() : null);
         dest.writeValue(style);
         dest.writeValue(contrast);
+        dest.writeString8(specVersion);
+        dest.writeString8(platform);
     }
 
     @Override
@@ -83,15 +90,60 @@ public final class ThemeInfo implements Parcelable {
         return 0;
     }
 
-    public static final Creator<ThemeInfo> CREATOR = new Creator<ThemeInfo>() {
-        @Override
-        public ThemeInfo createFromParcel(Parcel in) {
-            return new ThemeInfo(in);
+    public static final @NonNull Parcelable.Creator<ThemeInfo> CREATOR =
+            new Parcelable.Creator<ThemeInfo>() {
+                @Override
+                public ThemeInfo createFromParcel(Parcel in) {
+                    return new ThemeInfo(in);
+                }
+
+                @Override
+                public ThemeInfo[] newArray(int size) {
+                    return new ThemeInfo[size];
+                }
+            };
+
+    /**
+     * A builder for creating {@link ThemeInfo} instances.  Any missing parameter indicates that
+     * the current system value for that attribute should be used.
+     */
+    public static class Builder {
+        private Color mSeedColor;
+        private Integer mStyle;
+        private Float mContrast;
+
+        public Builder() {
         }
 
-        @Override
-        public ThemeInfo[] newArray(int size) {
-            return new ThemeInfo[size];
+        /**
+         * Sets the seed color for the theme.
+         */
+        public Builder setSeedColor(@Nullable Color seedColor) {
+            mSeedColor = seedColor;
+            return this;
         }
-    };
+
+        /**
+         * Sets the theme style.
+         */
+        public Builder setStyle(@Nullable Integer style) {
+            mStyle = style;
+            return this;
+        }
+
+        /**
+         * Sets the theme contrast.
+         */
+        public Builder setContrast(@Nullable Float contrast) {
+            mContrast = contrast;
+            return this;
+        }
+
+        /**
+         * Builds the {@link ThemeInfo} instance.
+         */
+        public ThemeInfo build() {
+            return new ThemeInfo(mSeedColor, mStyle, mContrast);
+        }
+    }
 }
