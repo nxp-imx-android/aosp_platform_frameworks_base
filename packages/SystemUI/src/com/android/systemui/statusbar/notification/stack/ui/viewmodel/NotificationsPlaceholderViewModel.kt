@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrol
 import com.android.systemui.util.kotlin.ActivatableFlowDumper
 import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.function.Consumer
@@ -61,6 +62,7 @@ import kotlinx.coroutines.flow.map
 class NotificationsPlaceholderViewModel
 @AssistedInject
 constructor(
+    @param:Assisted private val contentKey: ContentKey,
     private val interactor: NotificationStackAppearanceInteractor,
     private val sceneInteractor: SceneInteractor,
     shadeInteractor: ShadeInteractor,
@@ -228,7 +230,7 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): NotificationsPlaceholderViewModel
+        fun create(contentKey: ContentKey): NotificationsPlaceholderViewModel
     }
 }
 

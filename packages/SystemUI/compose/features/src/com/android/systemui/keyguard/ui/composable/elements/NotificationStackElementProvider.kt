@@ -32,6 +32,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -98,7 +99,8 @@ constructor(
             // placeholders should be used during a Shared Element transition. This approach works,
             // because the Nested STL doesn't do Shared element transitions on this element.
             sceneContainerLayoutState = sceneContainerLayoutState,
-            viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
+            viewModel =
+                rememberViewModel("Notifications") { viewModelFactory.create(Scenes.Lockscreen) },
             modifier = modifier.fillMaxSize(),
         )
     }
