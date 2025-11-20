@@ -9702,6 +9702,15 @@ public final class ViewRootImpl implements ViewParent,
         return mAccessibilityInteractionController;
     }
 
+    @Nullable
+    private SurfaceControl getSurfaceControlForRelayout(int viewVisibility) {
+        if (mWindowLayout.isLocallyManaged()) {
+            return mSurfaceControl;
+        }
+        // WindowManagerService only attaches visible surface of regular window to WindowState.
+        return viewVisibility == View.VISIBLE && mSurfaceControl.isValid() ? mSurfaceControl : null;
+    }
+
     @NonNull
     private SurfaceControl createSurfaceControl() {
         // The surface is visible by default (replace default HIDDEN flag).
@@ -9739,7 +9748,7 @@ public final class ViewRootImpl implements ViewParent,
     private int relayoutWindow(WindowManager.LayoutParams params, int viewVisibility,
             boolean insetsPending) throws RemoteException {
         int relayoutResult = 0;
-        if (WindowManager.useClientSurface()) {
+        if (WindowManager.useClientSurface() && !mWindowLayout.isLocallyManaged()) {
             relayoutResult = updateSurfaceControl(viewVisibility);
         }
 
@@ -9828,8 +9837,7 @@ public final class ViewRootImpl implements ViewParent,
         final int seqId = NoPreloadHolder.sAlwaysSeqId ? mSeqId : mLastSyncSeqId;
         if (relayoutAsync) {
             if (WindowManager.useClientSurface()) {
-                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
-                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                final SurfaceControl surfaceControl = getSurfaceControlForRelayout(viewVisibility);
                 mWindowSession.relayoutAsync2(mWindow, params,
                         requestedWidth, requestedHeight, viewVisibility,
                         insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
@@ -9845,8 +9853,7 @@ public final class ViewRootImpl implements ViewParent,
             }
         } else {
             if (WindowManager.useClientSurface()) {
-                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
-                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                final SurfaceControl surfaceControl = getSurfaceControlForRelayout(viewVisibility);
                 relayoutResult |= mWindowSession.relayout2(mWindow, params,
                         requestedWidth, requestedHeight, viewVisibility,
                         insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
