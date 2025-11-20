@@ -62,8 +62,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING(
             Flags::enableDesktopWindowingImmersiveHandleHiding, true),
     ENABLE_DESKTOP_WINDOWING_MODE(Flags::enableDesktopWindowingMode, true),
-    ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES(
-            Flags::enableDesktopWindowingMultiInstanceFeatures, true),
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, true),
     ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),

@@ -528,8 +528,8 @@ class AppHeaderController(
         val supportsMultiInstance =
             multiInstanceHelper.supportsMultiInstanceSplit(
                 taskInfo.baseActivity,
-                taskInfo.userId,
-            ) && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES.isTrue
+                taskInfo.userId
+            )
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
         val shouldShowRestartButton = shouldShowRestartButton(taskInfo)

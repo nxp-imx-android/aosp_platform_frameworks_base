@@ -683,13 +683,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_multi_instance_features"
-    namespace: "lse_desktop_experience"
-    description: "Whether to enable multi-instance support in desktop windowing."
-    bug: "336289597"
-}
-
-flag {
     name: "enable_desktop_windowing_persistence"
     namespace: "lse_desktop_experience"
     description: "Persists the desktop windowing session across reboots."
