@@ -884,11 +884,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 organizerState.mOrganizer.mTaskOrganizer, PendingTaskEvent.EVENT_VANISHED));
     }
 
-    @Nullable
     @Override
-    public WindowContainerToken createRootTask(int displayId, int windowingMode,
-            @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name) {
+    public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
+            boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
+            @Nullable String name) {
         enforceTaskPermission("createRootTask()");
         final long origId = Binder.clearCallingIdentity();
         try {
@@ -897,12 +896,11 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 if (display == null) {
                     ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
                             "createRootTask unknown displayId=%d", displayId);
-                    return null;
+                    return;
                 }
 
-                final Task task = createRootTask(display, windowingMode, launchCookie,
-                        removeWithTaskOrganizer, reparentOnDisplayRemoval, name);
-                return task.mRemoteToken.toWindowContainerToken();
+                createRootTask(display, windowingMode, launchCookie, removeWithTaskOrganizer,
+                        reparentOnDisplayRemoval, name);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);

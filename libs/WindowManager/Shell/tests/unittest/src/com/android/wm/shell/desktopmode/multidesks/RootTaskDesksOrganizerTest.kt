@@ -1170,12 +1170,10 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
-                freeformRootTask.token
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
-                minimizationRootTask.token
             }
         val deskId = organizer.createDeskSuspending(displayId, userId)
         val deskRoot = assertNotNull(organizer.deskRootsByDeskId.get(deskId))
@@ -1199,12 +1197,10 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
-                freeformRootTask.token
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
-                minimizationRootTask.token
             }
         organizer.warmUpDefaultDesk(displayId, userId)
     }

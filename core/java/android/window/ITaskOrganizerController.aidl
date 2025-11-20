@@ -45,11 +45,9 @@ interface ITaskOrganizerController {
     *
     * It may be removed using {@link #deleteRootTask} or through
     * {@link WindowContainerTransaction#removeRootTask}.
-    *
-    * @return the WindowContainerToken of the newly created root task.
     */
-    @nullable WindowContainerToken createRootTask(int displayId, int windowingMode,
-            IBinder launchCookie, boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
+    void createRootTask(int displayId, int windowingMode, IBinder launchCookie,
+            boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
             in @nullable String name);
 
     /** Deletes a persistent root task in WM */
