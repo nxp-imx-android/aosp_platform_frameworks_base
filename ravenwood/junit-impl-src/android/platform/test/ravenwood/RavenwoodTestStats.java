@@ -236,7 +236,16 @@ public class RavenwoodTestStats {
     }
 
     private void addResult(String className, String methodName, Outcome outcome) {
-        mStats.computeIfAbsent(className, k -> new TreeMap<>()).putIfAbsent(methodName, outcome);
+        var outcomeMap = mStats.computeIfAbsent(className, k -> new TreeMap<>());
+
+        Outcome v = outcomeMap.get(methodName);
+        if (v == null) {
+            v = outcomeMap.put(methodName, outcome);
+
+            // We may call addResult multiple times for the same method, but we always use
+            // the first one.
+            dumpSingleTest(className, methodName, outcome);
+        }
     }
 
     /**
@@ -349,25 +358,7 @@ public class RavenwoodTestStats {
                 failed += outcome.failedCount();
                 totalDuration = totalDuration.plus(outcome.duration);
 
-                var rawMethodName = extractMethodName(method);
-
                 testClass = outcome.testDescription.getTestClass();
-
-                var loc = outcome.failureSourceLocation();
-
-                mOutputWriter.printf(FORMAT,
-                        "m", // Type: method
-                        // Method label: "P"assed, "F"ailed, "S"kipped, "D"isabled
-                        buildMethodLabel(outcome),
-                        mTestModuleName, className,
-                        escape(method), escape(rawMethodName),
-                        escape(buildAtestTarget(testClass, method)),
-                        escape(outcome.reason()),
-                        escape(getAnnotations(outcome.testDescription)),
-                        escape(loc.filename()),
-                        loc.line(),
-                        outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
-                        outcome.duration.toMillis() / 1000f);
             }
             mOutputWriter.printf(FORMAT,
                     "c", // Type: class
@@ -387,6 +378,27 @@ public class RavenwoodTestStats {
         Log.i(TAG, "Added result to stats file: file://" + mOutputSymlinkFile);
 
         copyToArtifactsDir();
+    }
+
+    private void dumpSingleTest(String className, String method, Outcome outcome) {
+        var rawMethodName = extractMethodName(method);
+        var testClass = outcome.testDescription.getTestClass();
+        var loc = outcome.failureSourceLocation();
+
+        mOutputWriter.printf(FORMAT,
+                "m", // Type: method
+                // Method label: "P"assed, "F"ailed, "S"kipped, "D"isabled
+                buildMethodLabel(outcome),
+                mTestModuleName, className,
+                escape(method), escape(rawMethodName),
+                escape(buildAtestTarget(testClass, method)),
+                escape(outcome.reason()),
+                escape(getAnnotations(outcome.testDescription)),
+                escape(loc.filename()),
+                loc.line(),
+                outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
+                outcome.duration.toMillis() / 1000f);
+        mOutputWriter.flush();
     }
 
     /** Generate a label for a method row. */
