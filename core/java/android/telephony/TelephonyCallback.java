@@ -32,6 +32,7 @@ import android.telephony.ims.MediaQualityStatus;
 import android.telephony.ims.MediaThreshold;
 import android.telephony.satellite.NtnSignalStrength;
 import android.util.Log;
+import android.util.ArraySet;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.WeaklyReferencedCallback;
@@ -739,6 +740,17 @@ public class TelephonyCallback {
     public static final int EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED = 47;
 
     /**
+     * Event for updates to network security events.
+     * See {@link NetworkSecurityEventListener#onNetworkSecurityEvents}
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_NETWORK_SECURITY_EVENT_INDICATIONS)
+    @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @SystemApi
+    public static final int EVENT_NETWORK_SECURITY_EVENTS = 48;
+
+    /**
      * @hide
      */
     @IntDef(prefix = {"EVENT_"}, value = {
@@ -788,7 +800,8 @@ public class TelephonyCallback {
             EVENT_CARRIER_ROAMING_NTN_AVAILABLE_SERVICES_CHANGED,
             EVENT_CARRIER_ROAMING_NTN_SIGNAL_STRENGTH_CHANGED,
             EVENT_SECURITY_ALGORITHMS_CHANGED,
-            EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED
+            EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED,
+            EVENT_NETWORK_SECURITY_EVENTS
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface TelephonyEvent {
@@ -1893,6 +1906,22 @@ public class TelephonyCallback {
         void onSecurityAlgorithmsChanged(@NonNull SecurityAlgorithmUpdate securityAlgorithmUpdate);
     }
 
+
+    /**
+     * Interface for NetworkSecurityEventsListener
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_NETWORK_SECURITY_EVENT_INDICATIONS)
+    public interface NetworkSecurityEventsListener {
+        /**
+         * Callback invoked when network security events are received.
+         *
+         * @param events details of the network security events
+         * See {@link NetworkSecurityEvent} for more details
+         */
+        void onNetworkSecurityEvents(@NonNull Set<NetworkSecurityEvent>  events);
+    }
     /**
      * The callback methods need to be called on the handler thread where
      * this object was created.  If the binder did that for us it'd be nice.
@@ -2374,6 +2403,16 @@ public class TelephonyCallback {
 
             Binder.withCleanCallingIdentity(() -> mExecutor.execute(
                     () -> listener.onCellularIdentifierDisclosedChanged(disclosure)));
+        }
+
+        public void onNetworkSecurityEvents(List<NetworkSecurityEvent> events) {
+            if (!Flags.networkSecurityEventIndications()) return;
+            NetworkSecurityEventsListener listener =
+                    (NetworkSecurityEventsListener) mTelephonyCallbackWeakRef.get();
+            if (listener == null) return;
+
+            Binder.withCleanCallingIdentity(() -> mExecutor.execute(
+                    () -> listener.onNetworkSecurityEvents(new ArraySet<>(events))));
         }
     }
 }
