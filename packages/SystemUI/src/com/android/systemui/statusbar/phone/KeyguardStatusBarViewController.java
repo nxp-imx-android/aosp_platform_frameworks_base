@@ -95,8 +95,6 @@ import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsL
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoController;
-import com.android.systemui.statusbar.ui.binder.KeyguardStatusBarViewBinder;
-import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel;
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.settings.SecureSettings;
@@ -147,7 +145,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final KeyguardStateController mKeyguardStateController;
     private final KeyguardBypassController mKeyguardBypassController;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
-    private final KeyguardStatusBarViewModel mKeyguardStatusBarViewModel;
     private final BiometricUnlockController mBiometricUnlockController;
     private final SysuiStatusBarStateController mStatusBarStateController;
     private final PerDisplayRepository<SystemUIDisplaySubcomponent> mPerDisplaySubcomponentRepo;
@@ -369,7 +366,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             KeyguardStateController keyguardStateController,
             KeyguardBypassController bypassController,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
-            KeyguardStatusBarViewModel keyguardStatusBarViewModel,
             BiometricUnlockController biometricUnlockController,
             SysuiStatusBarStateController statusBarStateController,
             PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepo,
@@ -410,7 +406,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mKeyguardStateController = keyguardStateController;
         mKeyguardBypassController = bypassController;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
-        mKeyguardStatusBarViewModel = keyguardStatusBarViewModel;
         mBiometricUnlockController = biometricUnlockController;
         mStatusBarStateController = statusBarStateController;
         mPerDisplaySubcomponentRepo = perDisplaySubcomponentRepo;
@@ -470,9 +465,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     protected void onInit() {
         super.onInit();
         mCarrierTextController.init();
-        if (isMigrationEnabled()) {
-            KeyguardStatusBarViewBinder.bind(mView, mKeyguardStatusBarViewModel);
-        }
     }
 
     @Override

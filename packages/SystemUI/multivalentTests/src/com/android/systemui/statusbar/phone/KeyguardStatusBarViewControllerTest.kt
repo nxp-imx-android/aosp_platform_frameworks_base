@@ -72,7 +72,6 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryWithP
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.UserInfoController
-import com.android.systemui.statusbar.ui.viewmodel.keyguardStatusBarViewModel
 import com.android.systemui.statusbar.ui.viewmodel.statusBarUserChipViewModel
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -205,7 +204,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             keyguardStateController,
             keyguardBypassController,
             keyguardUpdateMonitor,
-            kosmos.keyguardStatusBarViewModel,
             biometricUnlockController,
             kosmos.statusBarStateController,
             kosmos.displaySubcomponentPerDisplayRepository,

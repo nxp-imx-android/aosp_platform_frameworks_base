@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
+import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import dagger.Lazy
@@ -119,6 +120,13 @@ constructor(
         } else {
             defaultDisableFlagsInteractorLazy.get().disableFlags
         }
+
+    val systemStatusEventAnimationInteractor: Flow<SystemStatusEventAnimationInteractor> =
+        shadeDisplayId
+            .map { displayId ->
+                perDisplaySubcomponentRepository[displayId]?.systemStatusEventAnimationInteractor
+            }
+            .filterNotNull()
 
     private companion object {
         const val TAG = "ShadeStatusBarComponentsInteractor"
