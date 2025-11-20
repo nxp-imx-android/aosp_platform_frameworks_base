@@ -136,8 +136,8 @@ public final class TaskContinuityManagerService extends SystemService {
 
         @Override
         @EnforcePermission(MODIFY_HANDOFF_SETTINGS)
-        public void enableHandoffForDevice(int userId, boolean enabled) {
-            enableHandoffForDevice_enforcePermission();
+        public void setHandoffForDeviceEnabled(int userId, boolean enabled) {
+            setHandoffForDeviceEnabled_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
             final long ident = Binder.clearCallingIdentity();

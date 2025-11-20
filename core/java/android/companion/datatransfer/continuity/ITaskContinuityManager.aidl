@@ -37,7 +37,7 @@ interface ITaskContinuityManager {
             in IHandoffRequestCallback callback);
 
     @EnforcePermission("MODIFY_HANDOFF_SETTINGS")
-    void enableHandoffForDevice(in int userId, in boolean enabled);
+    void setHandoffForDeviceEnabled(in int userId, in boolean enabled);
 
     @EnforcePermission("READ_HANDOFF_SETTINGS")
     void registerHandoffFeatureStateListener(in int userId, IHandoffFeatureStateListener listener);
