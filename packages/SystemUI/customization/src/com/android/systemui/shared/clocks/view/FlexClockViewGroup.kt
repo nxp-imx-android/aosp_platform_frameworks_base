@@ -91,10 +91,11 @@ class FlexClockViewGroup(clockCtx: FlexClockContext) :
             }
 
         val childSize = child.measuredSize
+        // Center the digit based on the actual size of the digit.
+        val midY = (maxChildSize.y - childSize.y) / 2f
 
-        // Horizontal offset to center each view in the available space
         val midX = if (children.count() < 4) measuredWidth / 2f else measuredWidth / 4f
-        offset += VPointF(midX - childSize.x / 2f, 0f)
+        offset += VPointF(midX - childSize.x / 2f, midY)
 
         return VRectF.fromTopLeft(offset, childSize)
     }
