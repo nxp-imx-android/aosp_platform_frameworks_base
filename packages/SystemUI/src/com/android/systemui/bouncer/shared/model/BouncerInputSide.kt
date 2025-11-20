@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.systemui.authentication.shared.model
+package com.android.systemui.bouncer.shared.model
 
 import android.provider.Settings.Global.ONE_HANDED_KEYGUARD_SIDE_LEFT
 import android.provider.Settings.Global.ONE_HANDED_KEYGUARD_SIDE_RIGHT
-import com.android.systemui.authentication.shared.model.BouncerInputSide.LEFT
-import com.android.systemui.authentication.shared.model.BouncerInputSide.RIGHT
 
 /** Denotes which side of the bouncer the input area appears, applicable to large screen devices. */
 enum class BouncerInputSide(val settingValue: Int) {
@@ -30,8 +28,8 @@ enum class BouncerInputSide(val settingValue: Int) {
 /** Map the setting value to [BouncerInputSide] enum. */
 fun Int.toBouncerInputSide(): BouncerInputSide? {
     return when (this) {
-        ONE_HANDED_KEYGUARD_SIDE_LEFT -> LEFT
-        ONE_HANDED_KEYGUARD_SIDE_RIGHT -> RIGHT
+        ONE_HANDED_KEYGUARD_SIDE_LEFT -> BouncerInputSide.LEFT
+        ONE_HANDED_KEYGUARD_SIDE_RIGHT -> BouncerInputSide.RIGHT
         else -> null
     }
 }

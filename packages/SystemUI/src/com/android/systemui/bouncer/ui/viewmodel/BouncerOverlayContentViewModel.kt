@@ -34,10 +34,10 @@ import com.android.systemui.Flags
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel
-import com.android.systemui.authentication.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.domain.interactor.BouncerActionButtonInteractor
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
+import com.android.systemui.bouncer.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.ui.BouncerColors.surfaceColor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.common.shared.model.Icon

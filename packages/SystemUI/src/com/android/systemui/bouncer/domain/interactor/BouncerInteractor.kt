@@ -28,9 +28,9 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Sim
-import com.android.systemui.authentication.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.data.repository.BouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
+import com.android.systemui.bouncer.shared.model.BouncerInputSide
 import com.android.systemui.classifier.FalsingClassifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
