@@ -1117,6 +1117,11 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 testScope = testScope,
                 fillInSteps = true,
             )
+            transitionState.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
             assertThat(alpha).isEqualTo(0f)
         }
 
@@ -1175,6 +1180,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 fillInSteps = true,
             )
             progress.value = 1f
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
             assertThat(alpha).isEqualTo(1f)
         }
 
@@ -1233,6 +1239,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 fillInSteps = true,
             )
             progress.value = 1f
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
             assertThat(alpha).isEqualTo(1f)
         }
 
