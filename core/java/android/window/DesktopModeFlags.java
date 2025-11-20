@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 
 import com.android.window.flags.Flags;
@@ -38,6 +39,7 @@ import java.util.function.BooleanSupplier;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
