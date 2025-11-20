@@ -31,7 +31,6 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.service.notification.StatusBarNotification;
 import android.util.DebugUtils;
-import android.util.IntArray;
 
 import com.android.internal.annotations.Keep;
 
@@ -500,9 +499,6 @@ public abstract class UserManagerInternal {
      * {@link UserManager#isUserVisible()} in the given display.
      */
     public abstract boolean isUserVisible(@UserIdInt int userId, int displayId);
-
-    /** Returns the userIds of all users that are visible in the given display. */
-    public abstract IntArray getVisibleUsers(int displayId);
 
     /**
      * Checks if the given user is a visible background full user, which is a full background user

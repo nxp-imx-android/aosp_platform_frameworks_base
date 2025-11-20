@@ -9262,11 +9262,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public IntArray getVisibleUsers(int displayId) {
-            return mUserVisibilityMediator.getVisibleUsers(displayId);
-        }
-
-        @Override
         public boolean isVisibleBackgroundFullUser(@UserIdInt int userId) {
             if (!UserManager.isVisibleBackgroundUsersEnabled()) {
                 return false;

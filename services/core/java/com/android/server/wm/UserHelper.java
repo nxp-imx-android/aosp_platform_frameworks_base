@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.ActivityManager.getCurrentUser;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_SUCCESS;
 import static android.app.ActivityManager.START_NOT_ALLOWED_FOR_USER;
@@ -33,7 +32,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.UserHandle;
-import android.util.IntArray;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.pm.UserManagerInternal;
@@ -89,7 +87,8 @@ final class UserHelper {
             if (DEBUG_USER_VISIBILITY) {
                 Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
                         + "its marked as 'showForAllUsers' (currentUserId=%d)",
-                        intent.getComponent().flattenToShortString(), userId, getCurrentUser());
+                        intent.getComponent().flattenToShortString(), userId,
+                        ActivityManager.getCurrentUser());
             }
             return START_SUCCESS;
         }
@@ -98,33 +97,42 @@ final class UserHelper {
         // example, in a login screen that's displayed when user 0 is the current user), but
         // there might be cases where the activity is being launched on a different user, which is
         // not visible (for example, when the current user is user 10 and this activity is being
-        // launched by the SystemUI on user 0). Hence, what really matters is whether the activity
-        // is allowed for at least one of the visible users, regardless of the activity's user.
-        IntArray visibleUserIds = mUmi.getVisibleUsers(displayId);
-        for (int i = 0; i < visibleUserIds.size(); i++) {
-            int visibleUserId = visibleUserIds.get(i);
-            var allowlist = mUmi.getActivitiesAllowlist(visibleUserId);
-            if (allowlist == null || allowlist.isAllowed(compName)) {
-                if (DEBUG_USER_VISIBILITY) {
-                    Slogf.d(TAG, "Activity %s can be launched on user %d because it's allowlist for"
-                            + "at least one user (id %d) that's visible in the display (id %d) it "
-                            + "will be launched (currentUserId=%d, visibleUserIds=%s)",
-                            compName.flattenToShortString(), userId, visibleUserId, displayId,
-                            ActivityManager.getCurrentUser(), visibleUserIds);
-                }
-                return START_SUCCESS;
+        // launched by the SystemUI on user 0). Hence, this mechanism should be ignored when the
+        // user is not visible (in the target display)
+        // TODO(b/456300837): rather than checking if the user is visible, we should instead get all
+        // users visible in the display and check that the activity is allowlisted on all of them.
+        // But that will be done in a future CL, for 2 reasons:
+        // - There is no UMI.getVisibleUsers(displayId) yet
+        // - Such logic is more complicated and will require more unit tests
+        if (mUmi.isUserVisible(userId, displayId)) {
+            if (DEBUG_USER_VISIBILITY) {
+                Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
+                        + "it's visible on display %d (currentUserId=%d)",
+                        intent.getComponent().flattenToShortString(), userId, displayId,
+                        ActivityManager.getCurrentUser());
             }
+            return START_SUCCESS;
         }
-        Slogf.w(TAG, "Activity %s (from user %d) is not allowlisted for any user visible "
-                + "in the display (id %d) it would be launched (currentUser=%d)",
-                compName.flattenToShortString(), userId, displayId, getCurrentUser());
-        // TODO(b/414326600): consolidate with the logActivityStarted() on
-        // handleResult and/or log for all users (once the final API for logging is
-        // defined)
-        if (mIsHeadlessSystemUserMode && userId == USER_SYSTEM) {
-            mUmi.logBlockedHsuActivity(compName);
+
+        var allowlist = mUmi.getActivitiesAllowlist(userId);
+        if (allowlist != null && !allowlist.isAllowed(compName)) {
+            Slogf.w(TAG, "Activity %s is not allowlisted for user %d",
+                    compName.flattenToShortString(), userId);
+            // TODO(b/414326600): consolidate with the logActivityStarted() on
+            // handleResult and/or log for all users (once the final API for logging is
+            // defined)
+            if (mIsHeadlessSystemUserMode && userId == USER_SYSTEM) {
+                mUmi.logBlockedHsuActivity(compName);
+            }
+            return START_NOT_ALLOWED_FOR_USER;
         }
-        return START_NOT_ALLOWED_FOR_USER;
+
+        if (DEBUG_USER_VISIBILITY) {
+            Slogf.d(TAG, "Activity %s is allowlisted for user %d (currentUser=%d)",
+                    compName.flattenToShortString(), userId, ActivityManager.getCurrentUser());
+        }
+
+        return START_SUCCESS;
     }
 
     /**
