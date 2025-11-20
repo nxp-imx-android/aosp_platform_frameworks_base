@@ -17,7 +17,16 @@
 package com.android.compose.animation.scene
 
 import android.util.Log
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.compose.runtime.InternalComposeApi
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
@@ -477,5 +486,40 @@ class SceneTransitionLayoutStateTest {
         assertThat(cujWhenStarting[bToA]).isEqualTo(1)
         assertThat(cujWhenStarting[aToC]).isEqualTo(2)
         assertThat(cujWhenStarting[cToA]).isEqualTo(3)
+    }
+
+    @OptIn(InternalComposeApi::class)
+    @Test
+    // Regression test for b/462237692.
+    fun composingStlStateOnDetachedViewDoesNotThrow() {
+        lateinit var composeView: ComposeView
+        var composeStlState by mutableStateOf(false)
+        rule.setContent {
+            AndroidView(
+                factory = { context ->
+                    FrameLayout(context).apply {
+                        addView(
+                            ComposeView(context).apply {
+                                composeView = this
+                                setViewCompositionStrategy(
+                                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                                )
+                                setContent {
+                                    if (composeStlState) {
+                                        rememberMutableSceneTransitionLayoutState(SceneA)
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            )
+        }
+
+        rule.runOnUiThread {
+            (composeView.parent as ViewGroup).removeView(composeView)
+            composeStlState = true
+        }
+        rule.waitForIdle()
     }
 }
