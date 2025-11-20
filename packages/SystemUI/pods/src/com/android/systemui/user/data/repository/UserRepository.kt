@@ -85,6 +85,9 @@ public interface UserRepository {
      */
     public val isUserManagerLogoutEnabled: StateFlow<Boolean>
 
+    /** Whether the current user is the headless system user. */
+    public val isCurrentUserHeadlessSystemUser: StateFlow<Boolean>
+
     /** Asynchronously refresh the list of users. This will cause [userInfos] to be updated. */
     public fun refreshUsers()
 

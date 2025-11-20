@@ -315,7 +315,7 @@ private fun ToolbarTextFeedback(
             enter = fadeIn(tween(durationMillis = 200)),
             exit = fadeOut(tween(durationMillis = 200)),
         ) {
-            TextFeedback(model = viewModel.textFeedback)
+            TextFeedback(viewModel = viewModel.textFeedback)
         }
     }
 }
