@@ -20,6 +20,8 @@ import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.os.UserHandle;
 
+import java.util.Objects;
+
 /**
  * Caller identity containing the caller's UID, package name and component name.
  * All parameters are verified on object creation unless the component name is null and the
@@ -86,5 +88,19 @@ public final class CallerIdentity {
             builder.append(", cmp=").append(mComponentName.flattenToShortString());
         }
         return builder.append("]").toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof CallerIdentity that)) return false;
+        return mPid == that.mPid
+                && mUid == that.mUid
+                && Objects.equals(mPackageName, that.mPackageName)
+                && Objects.equals(mComponentName, that.mComponentName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mPid, mUid, mPackageName, mComponentName);
     }
 }
