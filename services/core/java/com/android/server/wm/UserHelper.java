@@ -71,7 +71,7 @@ final class UserHelper {
     UserHelper(UserManagerInternal umi) {
         mIsHeadlessSystemUserMode = umi.isHeadlessSystemUserMode();
         mUmi = umi;
-        //TODO(b/455582152): integrate with allowlist mode to support other 2 statuses
+        // TODO(b/455582152): integrate with allowlist mode to support other 2 statuses
         mActivityLaunchIntegrationStatus = mIsHeadlessSystemUserMode
                 ? ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
                 : ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM;
@@ -82,7 +82,7 @@ final class UserHelper {
      *
      * @return {@code START_SUCCESS} is valid, or specific error code if it isn't.
      */
-    public int checkRequest(Request request, int displayId) {
+    public int checkRequest(Request request) {
         if (mActivityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED) {
             if (DEBUG_USER_VISIBILITY) {
                 Slogf.d(TAG, "checkRequest(%s): skipping because status is %s", request,
@@ -90,6 +90,24 @@ final class UserHelper {
             }
             return START_SUCCESS;
         }
+
+        // Currently, the goal of the allowlist is to avoid activities being shown when the current
+        // user is the HSU, so it's explicitly checking for these conditions, i.e.:
+        // - Device is HSUM
+        // - Current user is the HSU (regardless of userId in the request)
+        // - Allowlist for HSU is enabled
+        //
+        // In the future, if we want to extend this mechanism to all users, we should check if the
+        // activity is allowed to any user visible in the display insteads.
+        int currentUserId = getCurrentUserId();
+        if (currentUserId != USER_SYSTEM) {
+            if (DEBUG_USER_VISIBILITY) {
+                Slogf.d(TAG, "checkRequest(%s): skipping because current user (id=%d) is not the "
+                        + "Headless System User", request, currentUserId);
+            }
+            return START_SUCCESS;
+        }
+
         ActivityInfo aInfo = request.activityInfo;
         if (aInfo == null) {
             // The caller should have checked before, but it doesn't hurt to double check...
@@ -107,7 +125,7 @@ final class UserHelper {
             return START_SUCCESS;
         }
 
-        // TODO(b/412177078): remove this use case once it's checking if the current user is HSU
+        // TODO(b/412177078): remove this use case after it's checking if the current user is HSU
         int userId = getUserId(aInfo);
         boolean showForAllUsers = (aInfo.flags & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
         if (showForAllUsers) {
@@ -120,51 +138,32 @@ final class UserHelper {
             return START_SUCCESS;
         }
 
-        // TODO(b/456300837): check if the current user is the HSU instead (and remove displayId
-        // from the method signature) and update comment
-        // The goal of the allowlist is to avoid activities being shown when they shouldn't (for
-        // example, in a login screen that's displayed when user 0 is the current user), but
-        // there might be cases where the activity is being launched on a different user, which is
-        // not visible (for example, when the current user is user 10 and this activity is being
-        // launched by the SystemUI on user 0). Hence, this mechanism should be ignored when the
-        // user is not visible (in the target display)
-        // TODO(b/456300837): rather than checking if the user is visible, we should instead get all
-        // users visible in the display and check that the activity is allowlisted on all of them.
-        // But that will be done in a future CL, for 2 reasons:
-        // - There is no UMI.getVisibleUsers(displayId) yet
-        // - Such logic is more complicated and will require more unit tests
-        if (mUmi.isUserVisible(userId, displayId)) {
-            if (DEBUG_USER_VISIBILITY) {
-                Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
-                        + "it's visible on display %d (currentUserId=%d)",
-                        intent.getComponent().flattenToShortString(), userId, displayId,
-                        getCurrentUserId());
-            }
-            return START_SUCCESS;
-        }
-
-        var allowlist = mUmi.getActivitiesAllowlist(userId);
+        var allowlist = mUmi.getActivitiesAllowlist(USER_SYSTEM);
         if (allowlist != null && !allowlist.isAllowed(compName)) {
-            Slogf.w(TAG, "Activity %s is not allowlisted for user %d",
-                    compName.flattenToShortString(), userId);
+            if (userId == USER_SYSTEM) {
+                Slogf.w(TAG, "Activity %s not allowed for system user",
+                        compName.flattenToShortString());
+            } else {
+                Slogf.w(TAG, "Activity %s is intended for user %d, but it's not allowlisted for "
+                        + "USER_SYSTEM (which is the current user)",
+                        compName.flattenToShortString(), userId);
+            }
             // TODO(b/414326600): consolidate with the logActivityStarted() on
             // handleResult and/or log for all users (once the final API for logging is
             // defined)
-            if (mIsHeadlessSystemUserMode && userId == USER_SYSTEM) {
-                mUmi.logBlockedHsuActivity(compName);
-            }
+            mUmi.logBlockedHsuActivity(compName);
             return START_NOT_ALLOWED_FOR_USER;
         }
 
         if (DEBUG_USER_VISIBILITY) {
-            Slogf.d(TAG, "Activity %s is allowlisted for user %d (currentUser=%d)",
-                    compName.flattenToShortString(), userId, getCurrentUserId());
+            Slogf.d(TAG, "Activity %s (intended for user %d) is allowlisted for USER_SYSTEM (which "
+                    + "is the current user)", compName.flattenToShortString(), userId);
         }
 
         return START_SUCCESS;
     }
 
-    // TODO(b/456300837): use callback to set it locally (when user switches) and inline it instead
+    // TODO(b/412177078): use callback to set it locally (when user switches) and inline it instead
     private @UserIdInt int getCurrentUserId() {
         return ActivityManager.getCurrentUser();
     }

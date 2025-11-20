@@ -78,7 +78,7 @@ public final class ActivityStarterUserHelperIntegrationTests extends ActivitySta
     }
 
     private void mockCheckRequest(int result) {
-        doReturn(result).when(mMockUserHelper).checkRequest(any(), anyInt());
+        doReturn(result).when(mMockUserHelper).checkRequest(any());
     }
 
     private void verifyUserHelperNotifiedActivityStarted() {
