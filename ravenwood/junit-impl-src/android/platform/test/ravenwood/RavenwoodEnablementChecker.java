@@ -33,6 +33,7 @@ import com.android.ravenwood.common.SneakyThrow;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
+import org.junit.runner.manipulation.Filter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -261,6 +262,25 @@ public abstract class RavenwoodEnablementChecker {
      * @return if disabled tests would run.
      */
     public abstract boolean wouldRunDisabledTests();
+
+    /** @return as a Junit filter */
+    public Filter asJunitFilter() {
+        return new Filter() {
+            @Override
+            public boolean shouldRun(Description description) {
+                if (description.isTest()) {
+                    return shouldRunMethodOnRavenwood(description);
+                } else {
+                    return shouldRunClassOnRavenwood(description.getTestClass());
+                }
+            }
+
+            @Override
+            public String describe() {
+                return "Filtered by @DisabledOnRavenwood";
+            }
+        };
+    }
 
     /**
      * Actual logic. This combines the annotation policy with the text policy.

@@ -26,6 +26,13 @@ shopt -s nullglob # if a glob matches no file, expands to an empty string.
 cd "${0%/*}"
 my_command="${0##*/}"
 
+# Show a command and then execute it.
+run() {
+    echo "Running: ${@}"
+    "${@}"
+}
+
+
 # Find the enablement files. This may be an empty list if there's no match.
 default_enablement_policy=(../texts/enablement-policy-*.txt)
 
@@ -58,7 +65,7 @@ EOF
 }
 
 disable_tf_rolling_log() {
-    export ROLLING_TF_SUBPROCESS_OUTPUT=0
+    run export ROLLING_TF_SUBPROCESS_OUTPUT=0
 }
 
 smoke=0
@@ -72,7 +79,7 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rDRhX" opt; do
+while getopts "sx:f:dtbLa:rDRhXc" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -89,7 +96,7 @@ case "$opt" in
         dry_run="echo"
         ;;
     t) # Redirect log to terminal
-        export RAVENWOOD_LOG_OUT=-
+        run export RAVENWOOD_LOG_OUT=-
         disable_tf_rolling_log
         ;;
     a) # atest options (e.g. "-t")
@@ -106,11 +113,18 @@ case "$opt" in
         with_tools_tests=0
         ;;
     R) # Run disabled tests too
-        export RAVENWOOD_RUN_DISABLED_TESTS=1
+        run export RAVENWOOD_RUN_DISABLED_TESTS=1
+
+        # When we're running all tests, we usually want to see skipped tests
+        # in the result too, so clear this.
+        run export RAVENWOOD_HIDE_DISABLED_TESTS=0
         ;;
     X) # Run only disabled tests
-        export RAVENWOOD_RUN_DISABLED_TESTS=2
+        run export RAVENWOOD_RUN_DISABLED_TESTS=2
         ;;
+    c) # Clean output -- don't show disabled tests in atest output
+        run export RAVENWOOD_HIDE_DISABLED_TESTS=1
+	;;
     h) # Show help
         show_help
         exit 0
@@ -152,7 +166,11 @@ all_tests+=( "${all_raven_tests[@]}" )
 # ROLLING_TF_SUBPROCESS_OUTPUT is often quite behind for large tests.
 # let's disable it by default.
 : ${ROLLING_TF_SUBPROCESS_OUTPUT:=0}
-export ROLLING_TF_SUBPROCESS_OUTPUT
+run export ROLLING_TF_SUBPROCESS_OUTPUT
+
+# The tests that'd break if executed with RAVENWOOD_HIDE_DISABLED_TESTS=1
+run export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
+run export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
 
 # Cat all the files in the argument with all the "#" comments removed.
 remove_comments() {
@@ -242,13 +260,9 @@ done
 
 echo "RAVENWOOD_RUN_DISABLED_TESTS=$RAVENWOOD_RUN_DISABLED_TESTS"
 echo "RAVENWOOD_FORCE_FILTER_REGEX=$RAVENWOOD_FORCE_FILTER_REGEX"
+echo "RAVENWOOD_HIDE_DISABLED_TESTS=$RAVENWOOD_HIDE_DISABLED_TESTS"
 
 # =========================================================
-
-run() {
-    echo "Running: ${@}"
-    "${@}"
-}
 
 extra_args=()
 
