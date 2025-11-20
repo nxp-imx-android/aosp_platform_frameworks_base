@@ -206,6 +206,7 @@ interface INotificationManager
     void setNotificationAssistantAccessGranted(in ComponentName assistant, boolean enabled);
     void setNotificationListenerAccessGrantedForUser(in ComponentName listener, int userId, boolean enabled, boolean userSet);
     void setNotificationAssistantAccessGrantedForUser(in ComponentName assistant, int userId, boolean enabled);
+    List<String> getEnabledZenPackages();
     List<String> getEnabledNotificationListenerPackages();
     List<ComponentName> getEnabledNotificationListeners(int userId);
     ComponentName getAllowedNotificationAssistantForUser(int userId);
