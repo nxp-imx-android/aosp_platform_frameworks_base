@@ -246,7 +246,7 @@ public final class ChooserSession {
      */
     @FlaggedApi(Flags.FLAG_INTERACTIVE_CHOOSER_DEFAULT_BOUNDS)
     @Nullable
-    public Rect getDefaultLaunchBounds() {
+    public Rect getInitialRestingBounds() {
         BoundsInfo boundsInfo = mChooserSession.mBoundsInfo.get();
         return boundsInfo == null ? null : boundsInfo.getDefaultBounds();
     }
