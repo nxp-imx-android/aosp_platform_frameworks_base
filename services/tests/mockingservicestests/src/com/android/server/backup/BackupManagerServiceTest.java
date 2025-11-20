@@ -342,6 +342,15 @@ public class BackupManagerServiceTest {
     }
 
     @Test
+    public void isBackupServiceActive_nullUserInfo_returnsFalse() {
+        createBackupManagerServiceAndUnlockSystemUser();
+        when(mUserManagerInternalMock.getUserInfo(NON_SYSTEM_USER)).thenReturn(null);
+        setMockMainUserAndCreateBackupManagerService(NON_SYSTEM_USER);
+
+        assertFalse(mService.isBackupServiceActive(NON_SYSTEM_USER));
+    }
+
+    @Test
     public void setBackupServiceActive_forPrivateProfile_throws() {
         createBackupManagerServiceAndUnlockSystemUser();
         simulateUserUnlocked(NON_SYSTEM_USER);
