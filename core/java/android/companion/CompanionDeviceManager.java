@@ -2320,6 +2320,7 @@ public final class CompanionDeviceManager {
      * @hide
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.MANAGE_COMPANION_DEVICES)
     public void setLocalMetadata(@UserIdInt int userId, @NonNull @FeatureName String feature,
             @Nullable PersistableBundle value) {
         if (mService == null) {
