@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -117,12 +118,15 @@ fun SceneContainer(
         rememberViewModel(traceName = "SceneContainer.animateQsTilesViewModel") {
             viewModel.animateQsTilesViewModelFactory.create()
         }
+
+    val resources = LocalResources.current
     val sceneTransitions =
-        remember(hapticFeedback, shadeExpansionMotion, animateQsTilesViewModel) {
+        remember(hapticFeedback, shadeExpansionMotion, animateQsTilesViewModel, resources) {
             transitionsBuilder.build(
                 shadeExpansionMotion,
                 viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback),
                 animateQsTilesViewModel,
+                resources,
             )
         }
 
