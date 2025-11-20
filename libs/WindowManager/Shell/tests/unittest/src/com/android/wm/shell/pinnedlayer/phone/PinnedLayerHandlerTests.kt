@@ -57,6 +57,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -668,6 +669,51 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             .isTrue()
     }
 
+    @Test
+    fun requestedLocation_whenTaskIsPinned_updatesBoundsUsingPresentationController() {
+        // Given a pinned task
+        val pinTransition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val pinRequestInfo = setupWindowingLayerTransition(WINDOWING_LAYER_PINNED, callback)
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerController.onTransitionReady(
+            pinTransition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        // When a location change is requested
+        val newBounds = Rect(300, 300, 400, 400)
+        val moveTransition = mock<IBinder>()
+        val triggerTask = pinRequestInfo.triggerTask!!
+        val moveRequestInfo =
+            createTransitionRequestInfo(
+                TRANSIT_CHANGE,
+                triggerTask,
+                TransitionRequestInfo.RequestedLocation(
+                    /* displayId= */ 0,
+                    Rect(100, 100, 200, 200),
+                ),
+            )
+        whenever(presentationController.calculateNewTaskBounds(any(), any())).thenReturn(newBounds)
+        val wct =
+            pinnedLayerHandler.handleRequest(moveTransition, moveRequestInfo)
+                ?: fail("Expected a non-null WCT")
+
+        // Then wct should contain the new bounds from the presentation controller
+        assertThat(wct.changes).hasSize(1)
+        assertThat(
+                wct.changes
+                    .get(triggerTask.token.asBinder())!!
+                    .configuration
+                    .windowConfiguration
+                    .bounds
+            )
+            .isEqualTo(newBounds)
+    }
+
     private fun verifyCallbackResult(callback: IRemoteCallback, expected: Int) {
         val bundleCaptor = ArgumentCaptor.forClass(Bundle::class.java)
         verify(callback).sendResult(bundleCaptor.capture())
@@ -717,6 +763,25 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             0,
         )
     }
+
+    private fun createTransitionRequestInfo(
+        @TransitionType type: Int,
+        triggerTask: RunningTaskInfo,
+        requestedLocation: TransitionRequestInfo.RequestedLocation,
+    ) =
+        TransitionRequestInfo(
+            type,
+            triggerTask,
+            null,
+            null,
+            null,
+            requestedLocation,
+            null,
+            null,
+            null,
+            0,
+            0,
+        )
 
     private fun buildChange(
         @TransitionType mode: Int,
