@@ -2770,7 +2770,7 @@ public class CachedAppOptimizer {
 
         final long now = SystemClock.uptimeMillis();
         if (now < mFreezerBinderCallbackLast + mFreezerBinderCallbackThrottle) {
-            Slog.d(TAG_AM, "Too many transaction errors, throttling freezer binder callback.");
+            Slog.d(TAG_AM, "Too many transaction errors, throttling transaction error callback.");
             return;
         }
         mFreezerBinderCallbackLast = now;
