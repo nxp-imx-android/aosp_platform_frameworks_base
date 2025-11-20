@@ -17,7 +17,6 @@
 package com.android.systemui.deviceentry.data.repository
 
 import android.app.StatusBarManager
-import android.content.Context
 import android.hardware.face.FaceManager
 import android.os.CancellationSignal
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -148,7 +147,6 @@ private data class AuthenticationRequest(
 class DeviceEntryFaceAuthRepositoryImpl
 @Inject
 constructor(
-    context: Context,
     private val faceManager: FaceManager? = null,
     private val userRepository: UserRepository,
     private val keyguardBypassController: KeyguardBypassController? = null,
