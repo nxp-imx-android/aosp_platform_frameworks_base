@@ -21,28 +21,31 @@ import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 import android.annotation.FlaggedApi;
 import android.annotation.SystemApi;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
-import android.view.AttachedSurfaceControl;
-import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.SurfaceView;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
- * A client object that wraps a {@link SurfaceView} on order to negotiate an insight surface to be
- * installed in that {@link SurfaceView}. Apps that need to receive insight surfaces from the
- * personal context engine must instantiate this class and pass in the {@link SurfaceView} that
- * will receive the insight surfaces.
+ * A client object that registers with the personal context engine in order to receive a
+ * {@link SurfaceControlViewHost.SurfacePackage} that can be installed in a surface view. Apps that
+ * need to receive insight surfaces from the personal context engine must instantiate this class and
+ * call {@link #register}. If and when a surface is ready, the
+ * {@link ClientCallback#onSurfaceCreated} method will be called with a
+ * {@link SurfaceControlViewHost.SurfacePackage}. Call {@link #unregister} to unregister the client.
+ * The {@link ClientCallback#onSurfaceReleased} method will be called if/when the surface has been
+ * released by the personal context engine.
  * <p>
  * The client can also send extra information back to the personal context engine to assist in
  * refining the insight surfaces it receives. This is accomplished by adding {@link ContextHint}s to
@@ -52,7 +55,7 @@ import java.util.List;
  * final BundleHint hint = new BundleHint.Builder().build();
  * hint.getDataBundle().putString("field-to-fill", "confirmation-number");
  * final InsightSurfaceClient client =
- *          new InsightSurfaceClient.Builder(context, surfaceView).addHint(hint).build();
+ *          new InsightSurfaceClient.Builder(context, callbacks).addHint(hint).build();
  * }</pre>
  * This is an example. In practice, a specific {@link ContextHint} would be defined for this
  * purpose.
@@ -61,7 +64,7 @@ import java.util.List;
  */
 @SystemApi(client = PRIVILEGED_APPS)
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public class InsightSurfaceClient {
+public class InsightSurfaceClient implements AutoCloseable {
     private static final String TAG = "InsightSurfaceClient";
 
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
@@ -77,30 +80,56 @@ public class InsightSurfaceClient {
         boolean onReceive(@NonNull ContextInsight insight);
     }
 
+    /**
+     * Callbacks that are to be implemented by the owner of the client to be notified when
+     * certain events have occurred.
+     */
+    public interface ClientCallback {
+        /**
+         * A {@link SurfaceControlViewHost.SurfacePackage} has been created for the
+         * client to embed in a SurfaceView. This callback will only be called after the client
+         * has been registered with the personal context engine by calling the {@link #register}
+         * method.
+         */
+        void onSurfaceCreated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
+
+        /**
+         * The {@link SurfaceControlViewHost.SurfacePackage} returned by onSurfaceCreated has been
+         * released. This is an opportunity for the client owner to release any resources
+         * associated with the surface.
+         */
+        void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
+    }
+
     private InsightSurfaceClientInfo mClientInfo;
 
     private final Context mContext;
-
-    private final SurfaceView mSurfaceView;
-
     @NonNull
-    private final List<InsightReceiver> mReceivers;
-
+    private final List<InsightReceiver> mInsightReceivers;
+    @NonNull
+    private final ClientCallback mCallbacks;
+    @NonNull
+    private final Executor mCallbacksExecutor;
     @NonNull
     private final List<ContextHint> mHints;
 
-    private final IEmbeddedInsightSurfaceCallback mCallback =
+    private final IEmbeddedInsightSurfaceCallback mInsightSurfaceCallback =
             new IEmbeddedInsightSurfaceCallback.Stub() {
                 @Override
                 public void onSurfaceCreated(SurfaceControlViewHost.SurfacePackage surfacePackage) {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceCreated [" + surfacePackage + "]");
                     }
-                    mSurfaceView.post(() -> {
-                        mSurfaceView.setChildSurfacePackage(surfacePackage);
-                        mSurfaceView.setZOrderOnTop(true);
-                        mSurfaceView.postInvalidate();
-                    });
+                    mCallbacksExecutor.execute(() -> mCallbacks.onSurfaceCreated(surfacePackage));
+                }
+
+                @Override
+                public void onSurfaceReleased(
+                        SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onSurfaceReleased [" + surfacePackage + "]");
+                    }
+                    mCallbacksExecutor.execute(() -> mCallbacks.onSurfaceReleased(surfacePackage));
                 }
 
                 @Override
@@ -109,35 +138,23 @@ public class InsightSurfaceClient {
                     if (DEBUG) {
                         Log.d(TAG, "onInsightReceived [" + insight + "]");
                     }
-                    mSurfaceView.post(() -> {
-                        mReceivers.forEach((receiver) -> {
-                            receiver.onReceive(insight);
-                        });
-                    });
+                    mCallbacksExecutor.execute(() ->
+                            mInsightReceivers.forEach((receiver) -> receiver.onReceive(insight)));
                 }
             };
 
     private InsightSurfaceClient(
             Context context,
-            @NonNull SurfaceView surfaceView,
+            @NonNull ClientCallback callbacks,
+            @NonNull Executor callbacksExecutor,
             @NonNull List<ContextHint> hints,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
-        mSurfaceView = surfaceView;
         mHints = List.copyOf(hints);
-        mReceivers = List.copyOf(receivers);
 
-        mSurfaceView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(@NonNull View v) {
-                InsightSurfaceClient.this.onViewAttachedToWindow();
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(@NonNull View v) {
-                InsightSurfaceClient.this.onViewDetachedFromWindow();
-            }
-        });
+        mCallbacks = callbacks;
+        mCallbacksExecutor = callbacksExecutor;
+        mInsightReceivers = List.copyOf(receivers);
     }
 
     /**
@@ -153,22 +170,24 @@ public class InsightSurfaceClient {
     /**
      * Return the insight receivers for this client.
      *
-     * @return a list of {@link ContextInsight} receivers.
+     * @return a list of {@link ContextInsight} receivers
      */
     @NonNull
     public List<InsightReceiver> getReceivers() {
-        return mReceivers;
+        return mInsightReceivers;
     }
 
-    private void onViewAttachedToWindow() {
-        mSurfaceView.post(this::registerClient);
-    }
-
-    private void onViewDetachedFromWindow() {
-        unregisterClient();
-    }
-
-    private void registerClient() {
+    /**
+     * Register with the personal context engine. Once registered, the client can receive a
+     * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
+     *
+     * @param widthMeasureSpec a width measure spec indicating the desired width of the embedded
+     *                         surface; the personal context engine will attempt to honor the spec
+     * @param heightMeasureSpec a height measure spec indicating the desired height of the
+     *                          embedded surface; the personal context engine will attempt to honor
+     *                          the spec
+     */
+    public void register(int widthMeasureSpec, int heightMeasureSpec) {
         if (DEBUG) {
             Log.d(TAG, "registering client...");
         }
@@ -179,34 +198,24 @@ public class InsightSurfaceClient {
             return;
         }
 
-        final AttachedSurfaceControl rootSurfaceControl =
-                mSurfaceView.getRootView().getRootSurfaceControl();
-        if (rootSurfaceControl == null) {
-            Log.w(TAG, "rootSurfaceControl is null");
-            return;
-        }
-
-        final Display display = mSurfaceView.getDisplay();
-        if (display == null) {
-            Log.w(TAG, "display is null");
-            return;
-        }
+        final int displayId = mContext.getDisplay().getDisplayId();
+        final Configuration configuration = mContext.getResources().getConfiguration();
 
         mClientInfo = new InsightSurfaceClientInfo.Builder(
-                display.getDisplayId(),
-                View.MeasureSpec.makeMeasureSpec(mSurfaceView.getWidth(), View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(
-                        mSurfaceView.getHeight(), View.MeasureSpec.EXACTLY),
-                mSurfaceView.getResources().getConfiguration(),
-                mCallback)
-                .setInputTransferToken(rootSurfaceControl.getInputTransferToken())
-                .build();
+                displayId,
+                widthMeasureSpec,
+                heightMeasureSpec,
+                configuration,
+                mInsightSurfaceCallback).build();
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
     };
 
-    private void unregisterClient() {
+    /**
+     * Unregister from the personal context engine.
+     */
+    public void unregister() {
         if (DEBUG) {
             Log.d(TAG, "unregistering client...");
         }
@@ -223,22 +232,67 @@ public class InsightSurfaceClient {
         mClientInfo = null;
     }
 
+    @Override
+    public void close() {
+        if (mClientInfo != null) {
+            unregister();
+        }
+    }
+
     /** Builder used to build a new {@link InsightSurfaceClient}. */
     public static final class Builder {
         private final Context mContext;
-        private final SurfaceView mSurfaceView;
+        private final ClientCallback mCallbacks;
+        private final Executor mCallbacksExecutor;
         private final List<InsightReceiver> mReceivers = new ArrayList<>();
         private final List<ContextHint> mHints = new ArrayList<>();
 
         /**
-         * Constructor a new builder.
+         * Construct a new builder.
+         *
+         * @param context a {@link Context} used to fetch system services
+         * @param callbacks {@link ClientCallback} to be notified of connection events
+         */
+        public Builder(@NonNull Context context, @NonNull ClientCallback callbacks) {
+            this(context, context.getMainExecutor(), callbacks);
+        }
+
+        /**
+         * Construct a new builder.
+         *
+         * @param context a {@link Context} used to fetch system services
+         * @param callbacks {@link ClientCallback} to be notified of connection events
+         * @param callbacksExecutor an {@link Executor} with which to execute callback methods
+         */
+        public Builder(
+                @NonNull Context context,
+                @NonNull Executor callbacksExecutor,
+                @NonNull ClientCallback callbacks) {
+            mContext = context;
+            mCallbacksExecutor = callbacksExecutor;
+            mCallbacks = callbacks;
+        }
+
+        /**
+         * Construct a new builder.
          *
          * @param context a {@link Context} used to fetch system services
          * @param surfaceView the {@link SurfaceView} that this client wraps
+         * @deprecated Use {@link #Builder(Context, ClientCallback)} instead.
          */
+        @Deprecated
         public Builder(@NonNull Context context, @NonNull SurfaceView surfaceView) {
-            mContext = context;
-            mSurfaceView = surfaceView;
+            this(context, new ClientCallback() {
+                @Override
+                public void onSurfaceCreated(
+                        @NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                }
+
+                @Override
+                public void onSurfaceReleased(
+                        @NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                }
+            });
         }
 
         /**
@@ -254,8 +308,7 @@ public class InsightSurfaceClient {
         }
 
         /**
-         * Add a context hint to be sent to the context engine from the app embedding the
-         * {@link SurfaceView}.
+         * Add a context hint to be sent to the context engine from the client app.
          *
          * @param hint the {@link ContextHint} to add
          * @return the {@link Builder}
@@ -274,7 +327,10 @@ public class InsightSurfaceClient {
         @NonNull
         public InsightSurfaceClient build() {
             return new InsightSurfaceClient(
-                    mContext, mSurfaceView, mHints, mReceivers);
+                    mContext,
+                    mCallbacks,
+                    mCallbacksExecutor,
+                    mHints, mReceivers);
         }
     }
 }
