@@ -74,8 +74,7 @@ class BubbleBarExpandedViewDragController(
             MagnetizedObject.MagneticTarget(dismissView.circle, dismissView.circle.width)
         magnetizedExpandedView.addTarget(magnetizedDismissTarget)
 
-        draggedBubbleElevation = context.resources.getDimension(
-            R.dimen.dragged_bubble_elevation)
+        draggedBubbleElevation = context.resources.getDimension(R.dimen.dragged_bubble_elevation)
         val dragMotionEventHandler = HandleDragListener()
 
         expandedView.handleView.setOnTouchListener { view, event ->
@@ -105,16 +104,17 @@ class BubbleBarExpandedViewDragController(
             // While animating, don't allow new touch events
             if (expandedView.isAnimating) return false
             expandedView.z = draggedBubbleElevation
-            val draggedObject = DraggedObject.ExpandedView(
-                if (bubblePositioner.isBubbleBarOnLeft) {
-                    BubbleBarLocation.LEFT
-                } else {
-                    BubbleBarLocation.RIGHT
-                }
-            )
+            val draggedObject =
+                DraggedObject.ExpandedView(
+                    if (bubblePositioner.isBubbleBarOnLeft) {
+                        BubbleBarLocation.LEFT
+                    } else {
+                        BubbleBarLocation.RIGHT
+                    }
+                )
             dropTargetManager.onDragStarted(
                 draggedObject,
-                dragZoneFactory.createSortedDragZones(draggedObject)
+                dragZoneFactory.createSortedDragZones(draggedObject),
             )
             isDragged = true
             return true

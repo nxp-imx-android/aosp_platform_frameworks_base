@@ -25,22 +25,22 @@ import javax.inject.Inject
 
 /** An implementation of [BubbleUserResolver] that uses [UserManager]. */
 @WMSingleton
-class UserManagerBubbleUserResolver @Inject constructor(
-    private val userManager: UserManager
-) : BubbleUserResolver {
+class UserManagerBubbleUserResolver @Inject constructor(private val userManager: UserManager) :
+    BubbleUserResolver {
 
     override fun resolve(userId: Int): BubbleUserInfo {
         val userInfo = userManager.getUserInfo(userId)
-        val userType = when {
-            userInfo == null -> {
-                BubbleLog.e("UserManagerUserResolver could not resolve user with id %d", userId)
-                UserType.MAIN
+        val userType =
+            when {
+                userInfo == null -> {
+                    BubbleLog.e("UserManagerUserResolver could not resolve user with id %d", userId)
+                    UserType.MAIN
+                }
+                userInfo.isCloneProfile -> UserType.CLONED
+                userInfo.isManagedProfile -> UserType.WORK
+                userInfo.isPrivateProfile -> UserType.PRIVATE
+                else -> UserType.MAIN
             }
-            userInfo.isCloneProfile -> UserType.CLONED
-            userInfo.isManagedProfile -> UserType.WORK
-            userInfo.isPrivateProfile -> UserType.PRIVATE
-            else -> UserType.MAIN
-        }
         return BubbleUserInfo(userId, userType)
     }
 }

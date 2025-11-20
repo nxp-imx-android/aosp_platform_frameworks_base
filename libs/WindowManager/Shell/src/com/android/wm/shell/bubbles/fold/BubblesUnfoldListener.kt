@@ -27,17 +27,18 @@ import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 class BubblesUnfoldListener(
     private val bubbleData: BubbleData,
     private val foldLockSettingsObserver: BubblesFoldLockSettingsObserver,
-    private val onStartBarToFloatingOrFullscreenTransition: (Bubble, Boolean) -> Unit
+    private val onStartBarToFloatingOrFullscreenTransition: (Bubble, Boolean) -> Unit,
 ) : ShellUnfoldProgressProvider.UnfoldListener {
 
     override fun onFoldStateChanged(isFolded: Boolean) {
         val selectedBubble = bubbleData.selectedBubble
         // if we're folding with an expanded bubble and the device is configured to stay awake on
         // fold, notify that we should start transitioning from bar to floating
-        if (isFolded
-            && bubbleData.isExpanded
-            && selectedBubble is Bubble
-            && foldLockSettingsObserver.isStayAwakeOnFold()
+        if (
+            isFolded &&
+                bubbleData.isExpanded &&
+                selectedBubble is Bubble &&
+                foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
             val moveToFullscreen: Boolean = selectedBubble.isTaskValidToBubble
             onStartBarToFloatingOrFullscreenTransition(selectedBubble, moveToFullscreen)
