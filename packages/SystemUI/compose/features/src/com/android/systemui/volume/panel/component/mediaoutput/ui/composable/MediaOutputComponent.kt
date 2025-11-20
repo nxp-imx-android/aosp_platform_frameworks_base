@@ -100,7 +100,9 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                         }
                     },
             color =
-                if (Flags.volumeRedesign()) {
+                if (Flags.blurOnMoreSurfaces()) {
+                    androidx.compose.ui.graphics.Color.Transparent
+                } else if (Flags.volumeRedesign()) {
                     MaterialTheme.colorScheme.surface
                 } else {
                     if (enabled) {
