@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.android.server.backup.restore;
+package com.android.server.backup.adb;
 
 import static com.android.server.backup.BackupManagerService.DEBUG;
 import static com.android.server.backup.BackupManagerService.TAG;
@@ -112,10 +112,9 @@ public class PerformAdbRestoreTask implements Runnable {
                     mBackupManagerService.getUserId(),
                     mBackupManagerService.getContext(),
                     BackupDestination.ADB_BACKUP);
-            FullRestoreEngine mEngine = new FullRestoreEngine(mBackupManagerService,
-                    mOperationStorage, null, mObserver, null, null,
-                    true, 0 /*unused*/, true, eligibilityRules);
-            FullRestoreEngineThread mEngineThread = new FullRestoreEngineThread(mEngine,
+            FullAdbRestoreEngine mEngine = new FullAdbRestoreEngine(mBackupManagerService,
+                    mOperationStorage, mObserver, eligibilityRules);
+            FullAdbRestoreEngineThread mEngineThread = new FullAdbRestoreEngineThread(mEngine,
                     tarInputStream);
             mEngineThread.run();
 
