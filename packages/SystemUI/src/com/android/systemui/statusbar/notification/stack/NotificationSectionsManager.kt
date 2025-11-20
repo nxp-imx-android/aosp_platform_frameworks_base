@@ -25,17 +25,14 @@ import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
+import com.android.systemui.statusbar.notification.SourceType.Companion.from
 import com.android.systemui.statusbar.notification.collection.render.MediaContainerController
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader
 import com.android.systemui.statusbar.notification.dagger.HighlightsHeader
 import com.android.systemui.statusbar.notification.dagger.IncomingHeader
-import com.android.systemui.statusbar.notification.dagger.NewsHeader
 import com.android.systemui.statusbar.notification.dagger.PeopleHeader
-import com.android.systemui.statusbar.notification.dagger.PromoHeader
-import com.android.systemui.statusbar.notification.dagger.RecsHeader
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
-import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
@@ -264,17 +261,37 @@ internal constructor(
         }
 
         if (android.app.Flags.richOngoingImprovements() || NmContextualDisplay.isEnabled) {
-            for (child in children) {
-                if (android.app.Flags.richOngoingImprovements()) {
-                    if (isGroupingDisabled(child)) {
-                        child.requestRoundness(1f, 1f, GROUPING_DISABLED_SECTION)
-                    } else {
-                        child.requestRoundness(0f, 0f, GROUPING_DISABLED_SECTION)
+            for ((index, child) in children.withIndex()) {
+                if (child is ExpandableNotificationRow) {
+                    if (android.app.Flags.richOngoingImprovements()) {
+                        if (isGroupingDisabled(child)) {
+                            child.requestRoundness(1f, 1f, GROUPING_DISABLED_SECTION)
+                        } else {
+                            child.requestRoundness(0f, 0f, GROUPING_DISABLED_SECTION)
+                        }
                     }
-                }
-                if (NmContextualDisplay.isEnabled) {
-                    if (child is ExpandableNotificationRow && child.entryAdapter.isBundle) {
-                        child.requestRoundness(1f, 1f, BUNDLE)
+                    if (NmContextualDisplay.isEnabled) {
+                        if (child.entryAdapter.isBundle) {
+                            child.requestRoundness(1f, 1f, BUNDLE)
+                        }
+                    }
+
+                    val previousIndex = index - 1
+                    val nextIndex = index + 1
+
+                    if (previousIndex >= 0) {
+                        if (hasIntrinsicTopRoundness(child)) {
+                            children[previousIndex].requestBottomRoundness(1f, FOLLOWING)
+                        } else {
+                            children[previousIndex].requestBottomRoundness(0f, FOLLOWING)
+                        }
+                    }
+                    if (nextIndex < children.size) {
+                        if (hasIntrinsicBottomRoundness(child)) {
+                            children[nextIndex].requestTopRoundness(1f, PREVIOUS)
+                        } else {
+                            children[nextIndex].requestTopRoundness(0f, PREVIOUS)
+                        }
                     }
                 }
             }
@@ -284,6 +301,26 @@ internal constructor(
             logSections(sections)
         }
         return changed
+    }
+
+    /**
+     * Whether the top of the view is rounded due to state internal to the view rather than being
+     * rounded just because a neighbor is rounded
+     */
+    @VisibleForTesting
+     fun hasIntrinsicTopRoundness(view : ExpandableView): Boolean {
+        return view.getTopRoundnessSources().contains(BUNDLE)
+                || view.getTopRoundnessSources().contains(GROUPING_DISABLED_SECTION)
+    }
+
+    /**
+     * Whether the bottom of the view is rounded due to state internal to the view rather than being
+     * rounded just because a neighbor is rounded
+     */
+    @VisibleForTesting
+    fun hasIntrinsicBottomRoundness(view : ExpandableView): Boolean {
+        return view.getBottomRoundnessSources().contains(BUNDLE)
+                || view.getBottomRoundnessSources().contains(GROUPING_DISABLED_SECTION)
     }
 
     private fun logSections(sections: List<NotificationSection>) {
@@ -337,8 +374,10 @@ internal constructor(
     companion object {
         private const val TAG = "NotifSectionsManager"
         private const val DEBUG = false
-        private val SECTION = SourceType.from("Section")
-        private val GROUPING_DISABLED_SECTION = SourceType.from("Grouping Disabled Section")
-        private val BUNDLE = SourceType.from("Bundle")
+        val SECTION = SourceType.from("Section")
+        val GROUPING_DISABLED_SECTION = SourceType.from("Grouping Disabled Section")
+        val BUNDLE = SourceType.from("Bundle")
+        val PREVIOUS: SourceType = from("Previous view bottom rounded")
+        val FOLLOWING: SourceType = from("Following view top rounded")
     }
 }
