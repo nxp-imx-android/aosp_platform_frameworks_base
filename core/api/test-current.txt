@@ -1910,7 +1910,7 @@ package android.hardware.display {
     method @RequiresPermission(android.Manifest.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS) public boolean isSaturationActivated();
   }
 
-  @FlaggedApi("com.android.graphics.surfaceflinger.flags.parse_edid_version_and_input_type") public static final class DeviceProductInfo.EdidStructureMetadata implements android.os.Parcelable {
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.parse_edid_version_and_input_type_v2") public static final class DeviceProductInfo.EdidStructureMetadata implements android.os.Parcelable {
     ctor public DeviceProductInfo.EdidStructureMetadata(@IntRange(from=0) int, @IntRange(from=0) int);
   }
 
