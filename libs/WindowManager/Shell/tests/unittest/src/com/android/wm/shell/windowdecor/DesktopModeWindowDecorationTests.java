@@ -117,6 +117,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
 import com.android.wm.shell.windowdecor.caption.OccludingElement;
@@ -270,6 +271,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private Transitions mTransitions;
     @Mock
     private LockTaskChangeListener mLockTaskChangeListener;
+    @Mock
+    private FocusTransitionObserver mFocusTransitionObserver;
     private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
     @Captor
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
@@ -328,7 +331,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(),
+                        any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(), any()))
@@ -1946,7 +1950,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mMockWindowDecorViewHostSupplier, maximizeMenuFactory, mMockHandleMenuFactory,
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
-                mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener);
+                mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener,
+                mFocusTransitionObserver);
         windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);

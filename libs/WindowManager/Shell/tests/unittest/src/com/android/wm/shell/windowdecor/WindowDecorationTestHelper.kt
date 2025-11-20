@@ -173,6 +173,7 @@ object WindowDecorationTestHelper {
                 surfaceControlTransactionSupplier = { StubTransaction() },
                 appHeaderViewHolderFactory = appHeaderViewHolderFactory,
                 pinnedLayerController = pinnedLayerController,
+                focusTransitionObserver = mock<FocusTransitionObserver>(),
             )
         val wrapped = decoration.wrapped()
         val positioner =
@@ -363,6 +364,7 @@ object WindowDecorationTestHelper {
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: AppHeaderDimensions,
+            focusTransitionObserver: FocusTransitionObserver,
         ): AppHeaderViewHolder {
             return AppHeaderViewHolder(
                 rootView,
@@ -375,6 +377,7 @@ object WindowDecorationTestHelper {
                 onMaximizeHoverAnimationFinishedListener,
                 desktopModeUiEventLogger,
                 overrideDimensions,
+                focusTransitionObserver,
             )
         }
     }

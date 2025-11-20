@@ -60,6 +60,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DefaultMaximizeMenuFactory
 import com.android.wm.shell.windowdecor.DesktopHeaderManageWindowsMenu
@@ -125,6 +126,7 @@ class AppHeaderController(
     private val onLongClickListener: OnLongClickListener,
     private val onCaptionGenericMotionListener: View.OnGenericMotionListener,
     private val appToWebRepository: AppToWebRepository,
+    private val focusTransitionObserver: FocusTransitionObserver,
     private val maximizeMenuFactory: MaximizeMenuFactory = DefaultMaximizeMenuFactory,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
@@ -208,10 +210,20 @@ class AppHeaderController(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "AppHeaderController#relayout",
         ) {
+            var isTaskFocused: Boolean
+            if (
+                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
+            ) {
+                isTaskFocused = focusTransitionObserver.isFocusedOnDisplay(taskInfo)
+            } else {
+                isTaskFocused = taskInfo.isFocused
+            }
+
             // If we get a relayout call while hovering over maximize button in the app header but
             // the task has lost focus, explicitly cancel the hover (since we don't get a HOVER_EXIT
             // signal in this case).
-            if (!taskInfo.isFocused && isAppHeaderMaximizeButtonHovered) {
+            if (!isTaskFocused && isAppHeaderMaximizeButtonHovered) {
                 setAppHeaderMaximizeButtonHovered(hovered = false)
                 onMaximizeButtonHoverExit()
             }
@@ -665,6 +677,7 @@ class AppHeaderController(
                 onMaximizeHoverAnimationFinishedListener = { createMaximizeMenu() },
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
                 dimensions = dimensions,
+                focusTransitionObserver = focusTransitionObserver,
             )
 
         loadAppInfoJob =

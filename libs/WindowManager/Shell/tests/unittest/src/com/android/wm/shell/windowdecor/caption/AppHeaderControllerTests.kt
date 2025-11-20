@@ -236,6 +236,7 @@ class AppHeaderControllerTests : ShellTestCase() {
             onLongClickListener = mock(),
             onCaptionGenericMotionListener = mock(),
             syncQueue = mock(),
+            focusTransitionObserver = mock(),
         )
 
     private fun AppHeaderController.relayout(taskInfo: RunningTaskInfo) {
