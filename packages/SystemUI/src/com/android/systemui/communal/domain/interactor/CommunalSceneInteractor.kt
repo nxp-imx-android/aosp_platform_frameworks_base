@@ -17,6 +17,7 @@
 package com.android.systemui.communal.domain.interactor
 
 import android.content.res.Configuration
+import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
@@ -72,6 +73,7 @@ constructor(
     val isLaunchingWidget: StateFlow<Boolean> = _isLaunchingWidget.asStateFlow()
 
     fun setIsLaunchingWidget(launching: Boolean) {
+        Log.e("lusilva", "setIsLaunchingWidget $launching", Throwable())
         _isLaunchingWidget.value = launching
     }
 
@@ -165,6 +167,8 @@ constructor(
         keyguardState: KeyguardState? = null,
     ) {
         applicationScope.launch("$TAG#snapToScene", mainImmediateDispatcher) {
+            delay(delayMillis)
+
             if (SceneContainerFlag.isEnabled) {
                 sceneInteractor.snapToScene(
                     toScene = newScene.toSceneContainerSceneKey(),
@@ -173,7 +177,6 @@ constructor(
                 return@launch
             }
 
-            delay(delayMillis)
             if (currentScene.value == newScene) return@launch
             logger.logSceneChangeRequested(
                 from = currentScene.value,
