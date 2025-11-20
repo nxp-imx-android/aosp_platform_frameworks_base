@@ -4890,7 +4890,7 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.ActivityManager.MemoryInfo> CREATOR;
     field public long advertisedMem;
     field public long availMem;
-    field @FlaggedApi("android.app.get_free_memory") public long freeMem;
+    field @FlaggedApi("android.app.get_free_memory_v2") public long freeMem;
     field public boolean lowMemory;
     field public long threshold;
     field public long totalMem;
