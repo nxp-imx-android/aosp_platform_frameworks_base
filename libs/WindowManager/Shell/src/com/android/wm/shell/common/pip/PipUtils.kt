@@ -101,6 +101,7 @@ object PipUtils {
 
     /**
      * Checks whether title, description and intent match.
+     *
      * Comparing icons would be good, but using equals causes false negatives
      */
     @JvmStatic
@@ -196,9 +197,11 @@ object PipUtils {
      * activity transform in sync with its new configuration upon finish.
      *
      * Usage example:
-     *     calcEndTransform(pipActivity, pipTask, scale, pos);
-     *     t.setScale(pipActivity.getLeash(), scale.x, scale.y);
-     *     t.setPosition(pipActivity.getLeash(), pos.x, pos.y);
+     * ```
+     * calcEndTransform(pipActivity, pipTask, scale, pos);
+     * t.setScale(pipActivity.getLeash(), scale.x, scale.y);
+     * t.setPosition(pipActivity.getLeash(), pos.x, pos.y);
+     * ```
      *
      * @see calcStartTransform
      */
@@ -252,10 +255,12 @@ object PipUtils {
      * Intended to be used in tandem with [calcEndTransform].
      *
      * Usage example:
-     *     calcStartTransform(pipTask, scale, pos, crop);
-     *     t.setScale(pipTask.getLeash(), scale.x, scale.y);
-     *     t.setPosition(pipTask.getLeash(), pos.x, pos.y);
-     *     t.setCrop(pipTask.getLeash(), crop);
+     * ```
+     * calcStartTransform(pipTask, scale, pos, crop);
+     * t.setScale(pipTask.getLeash(), scale.x, scale.y);
+     * t.setPosition(pipTask.getLeash(), pos.x, pos.y);
+     * t.setCrop(pipTask.getLeash(), crop);
+     * ```
      *
      * @see calcEndTransform
      */

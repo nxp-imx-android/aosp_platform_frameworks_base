@@ -38,11 +38,11 @@ class PhoneSizeSpecSource(
     /**
      * Default percentages for the PIP size logic.
      * 1. Determine max widths
-     * Subtract width of system UI and default padding from the shortest edge of the device.
-     * This is the max width.
+     *     - Subtract width of system UI and default padding from the shortest edge of the device.
+     *       This is the max width.
      * 2. Calculate Default and Mins
-     * Default is mSystemPreferredDefaultSizePercent of max-width/height.
-     * Min is mSystemPreferredMinimumSizePercent of it.
+     *     - Default is mSystemPreferredDefaultSizePercent of max-width/height.
+     *     - Min is mSystemPreferredMinimumSizePercent of it.
      *
      * NOTE: Do not use this directly, use the mPreferredDefaultSizePercent getter instead.
      */
@@ -57,11 +57,11 @@ class PhoneSizeSpecSource(
      * This is used instead when the display is square-ish, like fold-ables when unfolded,
      * to make sure that default PiP does not cover the hinge (halfway of the display).
      * 1. Determine max widths
-     * Subtract width of system UI and default padding from the shortest edge of the device.
-     * This is the max width.
+     *     - Subtract width of system UI and default padding from the shortest edge of the device.
+     *       This is the max width.
      * 2. Calculate Default and Mins
-     * Default is mSystemPreferredDefaultSizePercent of max-width/height.
-     * Min is mSystemPreferredMinimumSizePercent of it.
+     *     - Default is mSystemPreferredDefaultSizePercent of max-width/height.
+     *     - Min is mSystemPreferredMinimumSizePercent of it.
      *
      * NOTE: Do not use this directly, use the mPreferredDefaultSizePercent getter instead.
      */

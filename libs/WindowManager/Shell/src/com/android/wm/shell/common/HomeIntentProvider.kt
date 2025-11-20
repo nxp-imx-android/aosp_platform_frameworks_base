@@ -30,7 +30,7 @@ import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 
-/** Creates home intent **/
+/** Creates home intent */
 class HomeIntentProvider(
     private val context: Context,
 ) {
