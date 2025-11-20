@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.domain.interactor
 import android.animation.ValueAnimator
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -226,14 +225,9 @@ constructor(
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
                     if (editModeState != null) {
-                        if (Flags.hubEditModeTransition()) {
-                            // If transitioning to edit mode, do nothing here. Scene change is
-                            // handled by the edit mode activity.
-                            return@collect
-                        }
-
-                        // Don't change scenes here as that is handled by the edit activity.
-                        startTransitionTo(KeyguardState.GONE)
+                        // If transitioning to edit mode, do nothing here. Scene change is
+                        // handled by the edit mode activity.
+                        return@collect
                     } else {
                         communalSceneInteractor.changeScene(
                             newScene = CommunalScenes.Blank,
