@@ -39,6 +39,7 @@ class GlobalCoroutinesModule {
     fun applicationScope(@Main dispatcherContext: CoroutineContext): CoroutineScope =
         CoroutineScope(dispatcherContext + newTracingContext("ApplicationScope"))
 
+    @OptIn(ExperimentalStdlibApi::class)
     @Provides
     @Singleton
     @Main
@@ -47,10 +48,14 @@ class GlobalCoroutinesModule {
         ReplaceWith("mainCoroutineContext()", "kotlin.coroutines.CoroutineContext"),
     )
     fun mainDispatcher(): CoroutineDispatcher =
-        if (Flags.doNotUseImmediateCoroutineDispatcher()) {
-            Dispatchers.Main
+        if (Flags.useAndroidUiDispatcher()) {
+            AndroidUiDispatcher.Main[CoroutineDispatcher.Key]!!
         } else {
-            Dispatchers.Main.immediate
+            if (Flags.doNotUseImmediateCoroutineDispatcher()) {
+                Dispatchers.Main
+            } else {
+                Dispatchers.Main.immediate
+            }
         }
 
     @Provides
