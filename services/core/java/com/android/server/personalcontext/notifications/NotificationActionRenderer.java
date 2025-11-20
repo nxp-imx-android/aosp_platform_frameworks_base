@@ -36,6 +36,7 @@ import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueu
 import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.InsightCollection;
 import android.service.personalcontext.insight.InsightDisplayDetails;
 import android.util.Log;
 import android.util.Slog;
@@ -44,7 +45,11 @@ import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -53,12 +58,18 @@ import java.util.UUID;
  *
  * <p>This renderer inspects the provided {@link ContextInsight} to identify the target notification
  * and the type of action to be added. It then constructs the appropriate action and applies it to
- * the notification using an {@link Adjustment}.
+ * the notification using an {@link Adjustment}. This renderer can handle a single {@link
+ * ActionableInsight} or an {@link InsightCollection} of them. When processing an {@link
+ * InsightCollection}, it groups insights by notification and creates a single {@link Adjustment}
+ * per notification.
  *
  * @hide
  */
 public class NotificationActionRenderer implements Renderer {
     private static final String TAG = "NotifActionRenderer";
+
+    static final int MAX_NOTIFICATION_ACTIONS = 4;
+    static final int MAX_RECURSION_DEPTH = 10;
 
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
@@ -91,43 +102,153 @@ public class NotificationActionRenderer implements Renderer {
 
     @Override
     public void render(@NonNull ContextInsight insight, boolean alreadyRendered) {
-        if (!(insight instanceof ActionableInsight actionableInsight)) {
-            if (DEBUG) {
-                Slog.d(TAG, "Insight is not an ActionableInsight");
-            }
-            return;
-        }
-
         if (mNotificationManagerInternal == null) {
             Slog.e(TAG, "NotificationManagerInternal not found.");
             return;
         }
 
-        final StatusBarNotification sbn = getSbnFromInsight(actionableInsight);
-        if (sbn == null) {
-            Slog.w(TAG, "Could not find SBN for insight: " + actionableInsight);
+        List<ActionableInsight> actionableInsights = getActionableInsights(insight);
+
+        if (actionableInsights.isEmpty()) {
+            if (DEBUG) {
+                Slog.d(TAG, "No ActionableInsights to render from: " + insight);
+            }
             return;
         }
 
-        final UserHandle user = sbn.getUser();
-        final Notification.Action notificationAction =
-                createNotificationAction(actionableInsight, user);
-        if (notificationAction == null) {
-            Slog.w(
-                    TAG,
-                    "Could not create notification action for insight: "
-                            + actionableInsight
-                            + " for user: "
-                            + user);
+        Map<String, InsightGroup> insightsByNotificationKey =
+                groupInsightsByNotificationKey(actionableInsights);
+
+        if (insightsByNotificationKey.isEmpty()) {
+            Slog.w(TAG, "Could not find SBN for any of the insights.");
             return;
         }
-        final Adjustment adjustment = createAdjustment(sbn, notificationAction);
-        if (DEBUG) {
-            Slog.d(
-                    TAG,
-                    "Creating adjustment: " + adjustment + " for insight: " + actionableInsight);
+
+        List<Adjustment> adjustments = createAdjustments(insightsByNotificationKey);
+
+        if (!adjustments.isEmpty()) {
+            if (DEBUG) {
+                Slog.d(TAG, "Creating adjustments: " + adjustments);
+            }
+            mNotificationManagerInternal.requestSystemAdjustments(adjustments);
         }
-        mNotificationManagerInternal.requestSystemAdjustments(List.of(adjustment));
+    }
+
+    /**
+     * Groups a list of {@link ActionableInsight}s by their corresponding notification key.
+     *
+     * @param actionableInsights The list of insights to group.
+     * @return A map where keys are notification keys and values are lists of insights for that
+     *     notification.
+     */
+    @NonNull
+    private Map<String, InsightGroup> groupInsightsByNotificationKey(
+            @NonNull List<ActionableInsight> actionableInsights) {
+        Map<String, InsightGroup> insightsByNotificationKey = new HashMap<>();
+        for (final ActionableInsight insight : actionableInsights) {
+            StatusBarNotification sbn = getSbnFromInsight(insight);
+            if (sbn != null) {
+                insightsByNotificationKey
+                        .computeIfAbsent(sbn.getKey(), k -> new InsightGroup(sbn))
+                        .mInsights
+                        .add(insight);
+            } else if (DEBUG) {
+                Slog.d(TAG, "Skipping insight, SBN not found: " + insight);
+            }
+        }
+        return insightsByNotificationKey;
+    }
+
+    /**
+     * Creates a list of {@link Adjustment}s from a map of grouped insights.
+     *
+     * @param insightsByNotificationKey A map of insights grouped by notification key.
+     * @return A list of {@link Adjustment}s to be applied.
+     */
+    @NonNull
+    private List<Adjustment> createAdjustments(
+            @NonNull Map<String, InsightGroup> insightsByNotificationKey) {
+        final List<Adjustment> adjustments = new ArrayList<>();
+        for (final InsightGroup insightGroup : insightsByNotificationKey.values()) {
+            final Adjustment adjustment = createAdjustmentForInsightGroup(insightGroup);
+            if (adjustment != null) {
+                adjustments.add(adjustment);
+            }
+        }
+        return adjustments;
+    }
+
+    /**
+     * Extracts a list of {@link ActionableInsight}s from a given {@link ContextInsight}.
+     *
+     * <p>If the insight is an {@link ActionableInsight}, it returns a list containing just that
+     * insight. If it's an {@link InsightCollection}, it filters and returns all the {@link
+     * ActionableInsight}s within it. Otherwise, it returns an empty list.
+     *
+     * @param insight The {@link ContextInsight} to process.
+     * @return A list of {@link ActionableInsight}s.
+     */
+    @NonNull
+    private List<ActionableInsight> getActionableInsights(@NonNull ContextInsight insight) {
+        final List<ActionableInsight> result = new ArrayList<>();
+        collectActionableInsights(insight, result, 0);
+        return result;
+    }
+
+    private void collectActionableInsights(
+            @NonNull ContextInsight insight,
+            @NonNull List<ActionableInsight> destination,
+            int depth) {
+        if (depth >= MAX_RECURSION_DEPTH) {
+            Slog.w(TAG, "Max recursion depth reached. Skipping insight: " + insight);
+            return;
+        }
+        if (insight instanceof ActionableInsight) {
+            destination.add((ActionableInsight) insight);
+        } else if (insight instanceof InsightCollection) {
+            final InsightCollection collection = (InsightCollection) insight;
+            for (final ContextInsight i : collection) {
+                collectActionableInsights(i, destination, depth + 1);
+            }
+        }
+    }
+
+    /**
+     * Creates an {@link Adjustment} for a group of {@link ActionableInsight}s that belong to the
+     * same notification.
+     *
+     * @param insightGroup A list of {@link ActionableInsight}s for a single notification.
+     * @return An {@link Adjustment} containing all the generated actions, or {@code null} if no
+     *     actions could be created.
+     */
+    @Nullable
+    private Adjustment createAdjustmentForInsightGroup(@NonNull InsightGroup insightGroup) {
+        if (insightGroup.mInsights.isEmpty()) {
+            return null;
+        }
+
+        final StatusBarNotification sbn = insightGroup.mSbn;
+        final UserHandle user = sbn.getUser();
+        final List<Notification.Action> notificationActions = new ArrayList<>();
+        for (final ActionableInsight actionableInsight : insightGroup.mInsights) {
+            if (notificationActions.size() >= MAX_NOTIFICATION_ACTIONS) {
+                Slog.w(
+                        TAG,
+                        "Max number of actions reached. Skipping insight: " + actionableInsight);
+                break;
+            }
+            Notification.Action action = createNotificationAction(actionableInsight, user);
+            if (action != null) {
+                notificationActions.add(action);
+            }
+        }
+
+        if (notificationActions.isEmpty()) {
+            Slog.w(TAG, "Could not create any notification actions for sbn: " + sbn.getKey());
+            return null;
+        }
+
+        return createAdjustment(sbn, notificationActions);
     }
 
     /**
@@ -201,6 +322,10 @@ public class NotificationActionRenderer implements Renderer {
 
     @Nullable
     private ActivityInfo getActivityInfo(Intent actionIntent, UserHandle user) {
+        if (actionIntent == null) {
+            Slog.w(TAG, "Action intent is null for user: " + user);
+            return null;
+        }
         final List<ResolveInfo> resolveInfos =
                 mPackageManager.queryIntentActivitiesAsUser(
                         actionIntent, PackageManager.MATCH_ALL, user.getIdentifier());
@@ -224,11 +349,10 @@ public class NotificationActionRenderer implements Renderer {
         return Icon.createWithResource(activityInfo.packageName, activityInfo.getIconResource());
     }
 
-    private Adjustment createAdjustment(StatusBarNotification sbn, Notification.Action action) {
+    private Adjustment createAdjustment(
+            StatusBarNotification sbn, List<Notification.Action> actions) {
         final Bundle signals = new Bundle();
-        final ArrayList<Notification.Action> actions = new ArrayList<>();
-        actions.add(action);
-        signals.putParcelableArrayList(Adjustment.KEY_CONTEXTUAL_ACTIONS, actions);
+        signals.putParcelableArrayList(Adjustment.KEY_CONTEXTUAL_ACTIONS, new ArrayList<>(actions));
 
         return new Adjustment(
                 sbn.getPackageName(), sbn.getKey(), signals, NO_EXPLANATION, sbn.getUser());
@@ -244,5 +368,14 @@ public class NotificationActionRenderer implements Renderer {
         // Notifications should be rendered due to a RenderToken, which bypasses this filter.
         // We don't want any other random insights.
         return false;
+    }
+
+    private static class InsightGroup {
+        final StatusBarNotification mSbn;
+        final List<ActionableInsight> mInsights = new ArrayList<>();
+
+        InsightGroup(StatusBarNotification sbn) {
+            mSbn = sbn;
+        }
     }
 }
