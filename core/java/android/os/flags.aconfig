@@ -136,6 +136,14 @@ flag {
 }
 
 flag {
+    name: "battery_charging_info_api"
+    is_exported: true
+    namespace: "system_sw_battery"
+    description: "Feature flag for adding Health Hal v5 APIs."
+    bug: "446695799"
+}
+
+flag {
     name: "battery_part_status_api"
     is_exported: true
     namespace: "phoenix"
