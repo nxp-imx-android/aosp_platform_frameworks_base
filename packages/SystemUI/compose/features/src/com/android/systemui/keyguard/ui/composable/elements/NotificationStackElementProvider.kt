@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementContentScope
+import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
@@ -63,7 +64,7 @@ constructor(
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
-            contentScope.NotificationStack()
+            contentScope.NotificationStack(sceneContainerLayoutState)
         }
     }
 
@@ -86,9 +87,17 @@ constructor(
     }
 
     @Composable
-    private fun ContentScope.NotificationStack(modifier: Modifier = Modifier) {
+    private fun ContentScope.NotificationStack(
+        sceneContainerLayoutState: SceneTransitionLayoutState,
+        modifier: Modifier = Modifier,
+    ) {
         ConstrainedNotificationStack(
             stackScrollView = stackScrollView.get(),
+            // Notifications need the layout state of the parent STL, and not the Nested STL to
+            // query Scene and Overlay transition states, to figure out which instance of the
+            // placeholders should be used during a Shared Element transition. This approach works,
+            // because the Nested STL doesn't do Shared element transitions on this element.
+            sceneContainerLayoutState = sceneContainerLayoutState,
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
             modifier = modifier.fillMaxSize(),
         )
