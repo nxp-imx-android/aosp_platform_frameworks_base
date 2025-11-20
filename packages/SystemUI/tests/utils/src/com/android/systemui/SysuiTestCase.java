@@ -92,6 +92,7 @@ public abstract class SysuiTestCase {
     public static final SetFlagsRule.ClassRule mSetFlagsClassRule =
             new SetFlagsRule.ClassRule(
                     android.app.Flags.class,
+                    android.app.admin.flags.Flags.class,
                     android.hardware.biometrics.Flags.class,
                     android.multiuser.Flags.class,
                     android.net.platform.flags.Flags.class,
