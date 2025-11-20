@@ -597,6 +597,7 @@ public class WallpaperManager {
             forgetLoadedWallpaper();
         }
 
+        @Override
         public void onWallpaperChanged() {
             /* The wallpaper has changed but we shouldn't eagerly load the
              * wallpaper as that would be inefficient. Reset the cached wallpaper

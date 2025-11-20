@@ -3743,6 +3743,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         final int n = wallpaper.callbacks.beginBroadcast();
         for (int i = 0; i < n; i++) {
             try {
+                // WallpaperManager registers this callback for each process who queried and cached
+                // data from a static wallpaper. When a new wallpaper is set and persisted, use
+                // this callback to clear the caches.
                 wallpaper.callbacks.getBroadcastItem(i).onWallpaperChanged();
             } catch (RemoteException e) {
 
