@@ -29,6 +29,7 @@ import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutScope
+import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneTransitionsBuilder
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions as buildTransitions
@@ -37,6 +38,10 @@ import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 @Immutable
 /** Combined context for lockscreen elements. Contains relevant rendering parameters. */
 interface LockscreenScope<out TScope : BaseContentScope> {
+
+    /** Layout state of the SceneContainer STL */
+    val sceneContainerLayoutState: SceneTransitionLayoutState
+
     /** Inner STL Content Scope */
     val contentScope: TScope
 
