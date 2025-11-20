@@ -1140,8 +1140,18 @@ android_app {
     dxflags: ["--multi-dex"],
     optimize: {
         proguard_flags_files: ["proguard.flags"],
+        included_proguard_flags_files: [
+            "proguard_common.flags",
+            "proguard_kotlin.flags",
+        ],
     },
     required: [
         "privapp_whitelist_com.android.systemui",
     ],
+}
+
+filegroup {
+    name: "sysui_proguard_kotlin",
+    srcs: ["proguard_kotlin.flags"],
+    visibility: ["//frameworks/base/packages/SystemUI:__subpackages__"],
 }
