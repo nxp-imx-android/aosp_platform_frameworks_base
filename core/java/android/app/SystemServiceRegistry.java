@@ -2557,12 +2557,29 @@ public final class SystemServiceRegistry {
         @Override
         @SuppressWarnings("unchecked")
         public final T getService(ContextImpl ctx) {
+            // These arrays should only be touched within synchronized (cache).
             final Object[] cache = ctx.mServiceCache;
-            final int[] gates = ctx.mServiceInitializationStateArray;
+            final byte[] gates = ctx.mServiceInitializationStateArray;
             boolean interrupted = false;
 
             T ret = null;
 
+            // If the service is cached, we return it.
+            // Otherwise, we create it with createService().
+            //
+            // We used to run the whole logic within a per-ContextImpl
+            // lock and the logic was a lot simpler.
+            //
+            // However, unfortunately, some of the services are
+            // very slow to create, so we need to release the lock
+            // before calling createService(). We use a per-service,
+            // per-contgext "gate" to ensure only one thread calls
+            // into createService() for each service at a time
+            // (for each context), while allowing other threads to
+            // call createService() for other services
+            // (or the same service on different contexts)
+            //
+            // See b/457769621 for more information about this code.
             for (;;) {
                 boolean doInitialize = false;
                 synchronized (cache) {
@@ -2598,7 +2615,7 @@ public final class SystemServiceRegistry {
                     // Only the first thread gets here.
 
                     T service = null;
-                    @ServiceInitializationState int newState = ContextImpl.STATE_NOT_FOUND;
+                    @ServiceInitializationState byte newState = ContextImpl.STATE_NOT_FOUND;
                     try {
                         // This thread is the first one to get here. Instantiate the service
                         // *without* the cache lock held.
