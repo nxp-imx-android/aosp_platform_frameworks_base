@@ -911,7 +911,10 @@ public final class DisplayInfo implements Parcelable {
         outMetrics.densityDpi = outMetrics.noncompatDensityDpi = logicalDensityDpi;
         outMetrics.density = outMetrics.noncompatDensity =
                 logicalDensityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-        outMetrics.scaledDensity = outMetrics.noncompatScaledDensity = outMetrics.density;
+        final float fontScale = (configuration != null && configuration.fontScale != 0)
+                ? configuration.fontScale : 1.0f;
+        outMetrics.scaledDensity = outMetrics.noncompatScaledDensity =
+                outMetrics.density * fontScale;
         outMetrics.xdpi = outMetrics.noncompatXdpi = physicalXDpi;
         outMetrics.ydpi = outMetrics.noncompatYdpi = physicalYDpi;
 
