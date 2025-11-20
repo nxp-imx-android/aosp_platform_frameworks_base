@@ -27,6 +27,7 @@ android_test {
         "androidx.test.ext.truth",
         "androidx.test.rules",
         "androidx.test.runner",
+        "com.android.window.flags.window-aconfig-java",
         "coretests-aidl",
         "cts-wm-util",
         "flag-junit",
