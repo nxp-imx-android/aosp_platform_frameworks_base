@@ -26,8 +26,6 @@ import com.android.systemui.keyguard.ui.composable.LockscreenContent
 import com.android.systemui.keyguard.ui.composable.LockscreenScene
 import com.android.systemui.keyguard.ui.composable.elements.ElementProviderModule
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
-import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
@@ -57,8 +55,6 @@ interface LockscreenSceneModule {
             lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
             lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
             lockscreenElements: LockscreenElements,
-            keyguardClockViewModel: KeyguardClockViewModel,
-            aodBurnInViewModel: AodBurnInViewModel,
             clockInteractor: KeyguardClockInteractor,
             interactionJankMonitor: InteractionJankMonitor,
         ): LockscreenContent {
@@ -67,8 +63,6 @@ interface LockscreenSceneModule {
                 lockscreenFrontScrimViewModelFactory,
                 lockscreenBehindScrimViewModelFactory,
                 lockscreenElements,
-                keyguardClockViewModel,
-                aodBurnInViewModel,
                 clockInteractor,
                 interactionJankMonitor,
             )

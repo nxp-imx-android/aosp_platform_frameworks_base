@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.layout
+package com.android.systemui.keyguard.ui.composable.elements
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -27,13 +28,93 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
 import com.android.compose.animation.scene.BaseContentScope
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.thenIf
-import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
+import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.composable.rememberBurnIn
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenRootViewModel
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.AmbientIndicationArea
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.LockIcon
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Region
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SettingsMenu
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.StatusBar
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.LockscreenElement
+import com.android.systemui.shade.ShadeDisplayAware
+import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
+
+@SysUISingleton
+/** Provides an element representing all lockscreen ui */
+class LockscreenRootElementProvider
+@Inject
+constructor(
+    @ShadeDisplayAware private val context: Context,
+    private val viewModelFactory: LockscreenRootViewModel.Factory,
+    private val aodBurnInViewModel: AodBurnInViewModel,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(RootElement()) }
+
+    private inner class RootElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Root
+        override val context = this@LockscreenRootElementProvider.context
+        override val source = ElementSource.STANDARD
+
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            val viewModel =
+                rememberViewModel("LockscreenContent-viewModel") { viewModelFactory.create() }
+
+            val burnIn = rememberBurnIn(keyguardClockViewModel)
+            LockscreenTouchHandling(viewModel.touchHandlingFactory) { onSettingsMenuPlaced ->
+                val innerContext =
+                    context.copy(
+                        burnInModifier =
+                            Modifier.burnInAware(
+                                viewModel = aodBurnInViewModel,
+                                params = burnIn.parameters,
+                            ),
+                        onElementPositioned = { key, rect ->
+                            when (key) {
+                                Clock.Small -> {
+                                    burnIn.onSmallClockTopChanged(rect.top)
+                                    viewModel.setSmallClockBottom(rect.bottom)
+                                }
+                                Smartspace.Cards -> {
+                                    burnIn.onSmartspaceTopChanged(rect.top)
+                                    viewModel.setSmartspaceCardBottom(rect.bottom)
+                                }
+                                MediaCarousel -> viewModel.setMediaPlayerBottom(rect.bottom)
+                                Shortcuts.Start -> viewModel.setShortcutTop(rect.top)
+                                Shortcuts.End -> viewModel.setShortcutTop(rect.top)
+                                SettingsMenu -> onSettingsMenuPlaced(rect)
+                                else -> {}
+                            }
+                        },
+                    )
+
+                with(scopeFactory.create(contentScope, innerContext)) {
+                    LockscreenSceneLayout(viewModel.isUdfpsSupported)
+                }
+            }
+        }
+    }
+}
 
 @Immutable
 interface UnfoldTranslations {
@@ -109,18 +190,18 @@ object LockIconAlignmentLines {
  *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
  */
 @Composable
-fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
-    viewModel: LockscreenContentViewModel,
+private fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
+    isUdfpsSupported: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Layout(
         content = {
-            LockscreenElement(LockscreenElementKeys.StatusBar)
-            LockscreenElement(LockscreenElementKeys.Region.Upper)
-            LockscreenElement(LockscreenElementKeys.LockIcon)
-            LockscreenElement(LockscreenElementKeys.AmbientIndicationArea)
-            LockscreenElement(LockscreenElementKeys.Region.Lower)
-            LockscreenElement(LockscreenElementKeys.SettingsMenu)
+            LockscreenElement(StatusBar)
+            LockscreenElement(Region.Upper)
+            LockscreenElement(LockIcon)
+            LockscreenElement(AmbientIndicationArea)
+            LockscreenElement(Region.Lower)
+            LockscreenElement(SettingsMenu)
         },
         // Hide the lock screen elements when an overlay is shown above.
         modifier =
@@ -160,7 +241,7 @@ fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
         var upperRegionMaxHeight = lockIconBounds.top - statusBarPlaceable.measuredHeight
         var lowerRegionMaxHeight = constraints.maxHeight - lockIconBounds.bottom
 
-        if (!viewModel.isUdfpsSupported) {
+        if (!isUdfpsSupported) {
             upperRegionMaxHeight -= ambientIndicationPlaceable.measuredHeight
         } else {
             lowerRegionMaxHeight -= ambientIndicationPlaceable.measuredHeight

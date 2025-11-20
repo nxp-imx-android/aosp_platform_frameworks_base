@@ -17,7 +17,7 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
-import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
+import com.android.systemui.keyguard.ui.composable.elements.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor

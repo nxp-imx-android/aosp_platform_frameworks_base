@@ -105,6 +105,12 @@ interface LockscreenScope<out TScope : BaseContentScope> {
     interface LockscreenScopeFactory {
         /** Creates a copy of this LockscreenScope with the specified inner scope */
         fun <T : BaseContentScope> create(scope: T): LockscreenScope<T>
+
+        /** Creates a copy of this LockscreenScope with the specified inner scope & context */
+        fun <T : BaseContentScope> create(
+            scope: T,
+            context: LockscreenElementContext,
+        ): LockscreenScope<T>
     }
 
     companion object {
