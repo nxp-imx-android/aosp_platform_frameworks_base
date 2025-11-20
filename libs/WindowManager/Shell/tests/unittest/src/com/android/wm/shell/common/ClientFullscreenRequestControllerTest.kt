@@ -22,6 +22,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.FullscreenRequestHandler
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.graphics.Rect
 import android.os.Binder
 import android.os.Bundle
 import android.os.IBinder
@@ -166,7 +167,10 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun exitFullscreen_afterApprovedEnter_providesRestorableState() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(123)
+        val restorableState = EnterResult.Approved.RestorableState.Desktop(
+            originalDeskId = 123,
+            bounds = Rect(200, 200, 800, 800)
+        )
         val handler = TestHandler(
             enterResult = EnterResult.Approved(wct, mock(), restorableState),
             exitResult = ExitResult.Approved(wct, mock())
@@ -190,7 +194,10 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun exitFullscreen_stateIsClearedAfterUse() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(123)
+        val restorableState = EnterResult.Approved.RestorableState.Desktop(
+            originalDeskId = 123,
+            bounds = Rect(200, 200, 800, 800)
+        )
         val handler = TestHandler(
             enterResult = EnterResult.Approved(wct, mock(), restorableState),
             exitResult = ExitResult.Approved(wct, mock())
@@ -313,7 +320,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
             /** A [TestHandler] that accepts all requests. */
             fun acceptsRequest(): TestHandler {
                 val wct = WindowContainerTransaction()
-                val restorableState = EnterResult.Approved.RestorableState.Desktop(0)
+                val restorableState = EnterResult.Approved.RestorableState.Desktop(0, Rect())
                 return TestHandler(
                     enterResult = EnterResult.Approved(wct, mock(), restorableState),
                     exitResult = ExitResult.Approved(wct, mock()),
