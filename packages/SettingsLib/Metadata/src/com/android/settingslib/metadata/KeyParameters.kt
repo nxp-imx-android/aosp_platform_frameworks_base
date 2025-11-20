@@ -315,14 +315,6 @@ class KeyParametersSchema private constructor(
 
     companion object {
         /**
-         * An empty [KeyParametersSchema] instance.
-         *
-         * TODO (b/457182494): This should be removed once all the parameterized screen have been migrated.
-         */
-        @JvmStatic
-        val EMPTY = KeyParametersSchema { }
-
-        /**
          * Creates a [KeyParametersSchema] from a string representation.
          *
          * The expected format is a JSON string like `{"key1":{"description":"...","required":true},...}`.
