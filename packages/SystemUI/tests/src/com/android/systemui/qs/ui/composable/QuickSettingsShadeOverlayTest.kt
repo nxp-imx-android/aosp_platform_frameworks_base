@@ -141,6 +141,24 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
     @Test
     @WithDesktopTest
+    fun testToolbar() =
+        kosmos.runTest {
+            composeTestRule.setQSShadeOverlay()
+            composeTestRule.waitForIdle()
+
+            // Verify the toolbar's height.
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("quick_settings_toolbar"))
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 36.dp else 48.dp)
+
+            // Verify the toolbar button's height.
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("settings_button_container"))
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 36.dp else 40.dp)
+        }
+
+    @Test
+    @WithDesktopTest
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW, FLAG_EXPANDED_AUDIO_DETAILED_VIEW)
     fun testVolumeSlider() =
         kosmos.runTest {

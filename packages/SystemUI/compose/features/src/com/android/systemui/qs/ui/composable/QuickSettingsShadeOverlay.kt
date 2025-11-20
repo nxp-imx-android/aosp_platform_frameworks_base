@@ -362,7 +362,9 @@ private fun ContentScope.QuickSettingsLayout(
 
         Toolbar(
             modifier =
-                Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
+                Modifier.fillMaxWidth()
+                    .requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight)
+                    .sysuiResTag("quick_settings_toolbar"),
             viewModel = toolbarViewModel,
             isFullyVisible = { layoutState.isIdle(contentKey) },
         )
