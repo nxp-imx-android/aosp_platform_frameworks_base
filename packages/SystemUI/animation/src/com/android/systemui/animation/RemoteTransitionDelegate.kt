@@ -22,6 +22,7 @@ import android.window.IRemoteTransition
 import android.window.IRemoteTransitionFinishedCallback
 import android.window.TransitionInfo
 import android.window.WindowAnimationState
+import android.window.WindowContainerTransaction
 
 /**
  * Delegates transition handling to the remote transition returned by [remoteTransitionPicker].
@@ -41,7 +42,18 @@ class RemoteTransitionDelegate(
         finishCallback: IRemoteTransitionFinishedCallback,
     ) {
         currentRemoteTransition = remoteTransitionPicker.invoke(info)
-        currentRemoteTransition?.startAnimation(token, info, t, finishCallback)
+
+        val delegatingCallback =
+            object : IRemoteTransitionFinishedCallback.Stub() {
+                override fun onTransitionFinished(
+                    wct: WindowContainerTransaction?,
+                    sct: SurfaceControl.Transaction?
+                ) {
+                    currentRemoteTransition = null
+                    finishCallback.onTransitionFinished(wct, sct)
+                }
+            }
+        currentRemoteTransition?.startAnimation(token, info, t, delegatingCallback)
     }
 
     override fun mergeAnimation(
