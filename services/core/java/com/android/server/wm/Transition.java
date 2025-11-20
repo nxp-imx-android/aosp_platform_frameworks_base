@@ -75,6 +75,7 @@ import static android.window.TransitionInfo.FLAG_WILL_IME_SHOWN;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT;
 
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
+import static com.android.server.wm.ActivityClientController.reportMultiwindowFullscreenRequestFallbackResult;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_RECENTS_ANIM;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_SNAPSHOT;
@@ -282,6 +283,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     private static final Duration TRANSACTION_PRESENTED_TIMEOUT = Duration.ofSeconds(1);
 
+    private ObservedRemoteCallback mPendingFullscreenRequest;
     private ArrayList<Runnable> mTransactionPresentedListeners = null;
 
     private ArrayList<Runnable> mTransitionEndedListeners = null;
@@ -819,6 +821,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         mLogger.mStartTimeNs = SystemClock.elapsedRealtimeNanos();
 
         mController.updateAnimatingState();
+        reportFullscreenRequestFallbackResult();
     }
 
     /**
@@ -1746,6 +1749,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         invokeTransitionEndedListeners();
     }
 
+    private void reportFullscreenRequestFallbackResult() {
+        if (mPendingFullscreenRequest == null) {
+            return;
+        }
+        reportMultiwindowFullscreenRequestFallbackResult(mPendingFullscreenRequest);
+
+    }
+
     private void invokeTransitionEndedListeners() {
         if (mTransitionEndedListeners == null) {
             return;
@@ -2301,6 +2312,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 asyncRotationController.onTransactionCommitTimeout(mCleanupTransaction);
             }
         }
+    }
+
+    /**
+     * Adds a pending client requested fullscreen requested callback that should be invoked when
+     * the transition starts with a fallback result in case Shell did not send a result.
+     */
+    void addPendingFullscreenRequest(ObservedRemoteCallback callback) {
+        mPendingFullscreenRequest = callback;
     }
 
     /**
