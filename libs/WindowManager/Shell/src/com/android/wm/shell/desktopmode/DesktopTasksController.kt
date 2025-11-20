@@ -131,7 +131,7 @@ import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
-import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -241,7 +241,7 @@ class DesktopTasksController(
     private val toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler,
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
-    private val clientFullscreenRequestTransitionHandler: ClientFullscreenRequestTransitionHandler,
+    private val desktopFullscreenRequestHandler: DesktopFullscreenRequestHandler,
     private val userRepositories: DesktopUserRepositories,
     desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val recentsTransitionHandler: RecentsTransitionHandler,
@@ -400,7 +400,7 @@ class DesktopTasksController(
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
         transitions.addHandler(this)
-        clientFullscreenRequestTransitionHandler.desktopTasksController = this
+        desktopFullscreenRequestHandler.desktopTasksController = this
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
             object : RecentsTransitionStateListener {
@@ -429,7 +429,7 @@ class DesktopTasksController(
         enterDesktopTaskTransitionHandler.setOnTaskResizeAnimationListener(listener)
         dragToDesktopTransitionHandler.onTaskResizeAnimationListener = listener
         desktopImmersiveController.onTaskResizeAnimationListener = listener
-        clientFullscreenRequestTransitionHandler.onTaskResizeAnimationListener = listener
+        desktopFullscreenRequestHandler.onTaskResizeAnimationListener = listener
     }
 
     fun setOnTaskRepositionAnimationListener(listener: OnTaskRepositionAnimationListener) {
@@ -3797,7 +3797,7 @@ class DesktopTasksController(
                 // Handle task moving requests
                 request.requestedLocation != null -> true
                 // Handle client requests to enter/exit fullscreen mode.
-                clientFullscreenRequestTransitionHandler.shouldHandleRequest(request) -> true
+                desktopFullscreenRequestHandler.shouldHandleRequest(request) -> true
                 // Only handle open or to front transitions
                 request.type != TRANSIT_OPEN &&
                     request.type != TRANSIT_TO_FRONT &&
@@ -3852,8 +3852,8 @@ class DesktopTasksController(
                 isIncompatibleTask(triggerTask) ->
                     handleIncompatibleTaskLaunch(triggerTask, transition)
                 // Check if a desktop task was requested to enter/exit fullscreen from the client.
-                clientFullscreenRequestTransitionHandler.shouldHandleRequest(request) ->
-                    clientFullscreenRequestTransitionHandler.handleRequest(transition, request)
+                desktopFullscreenRequestHandler.shouldHandleRequest(request) ->
+                    desktopFullscreenRequestHandler.handleRequest(transition, request)
                 // Check if fullscreen task should be updated
                 triggerTask.isFullscreen ->
                     handleFullscreenTaskLaunch(triggerTask, transition, request.type)

@@ -15,6 +15,8 @@
  */
 package com.android.wm.shell.desktopmode.clientfullscreenrequest
 
+import android.app.ActivityManager
+import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED
 import android.app.WindowConfiguration
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.content.Context
@@ -27,6 +29,11 @@ import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
+import com.android.wm.shell.common.ClientFullscreenRequestController
+import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler
+import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult
+import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult.Approved.RestorableState
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -38,10 +45,12 @@ import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpape
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
+import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 import com.android.wm.shell.windowdecor.extension.isFullscreen
+import java.util.Optional
 
 /**
  * Handles client-started fullscreen requests when the requester task was a desktop task. See
@@ -51,26 +60,33 @@ import com.android.wm.shell.windowdecor.extension.isFullscreen
  * not support restoring to a different or new desk if the original desk was removed during the
  * transient fullscreen state.
  */
-open class ClientFullscreenRequestTransitionHandler(
+open class DesktopFullscreenRequestHandler(
+    shellInit: ShellInit,
     private val context: Context,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desksOrganizer: DesksOrganizer,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val displayController: DisplayController,
+    private val clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
     private val transactionSupplier: () -> SurfaceControl.Transaction,
-) {
+) : FullscreenRequestHandler {
+
     constructor(
+        shellInit: ShellInit,
         context: Context,
         desktopUserRepositories: DesktopUserRepositories,
         desksOrganizer: DesksOrganizer,
         desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
         displayController: DisplayController,
+        clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
     ) : this(
+        shellInit = shellInit,
         context = context,
         desktopUserRepositories = desktopUserRepositories,
         desksOrganizer = desksOrganizer,
         desktopWallpaperActivityTokenProvider = desktopWallpaperActivityTokenProvider,
         displayController = displayController,
+        clientFullscreenRequestController = clientFullscreenRequestController,
         transactionSupplier = { SurfaceControl.Transaction() },
     )
 
@@ -79,8 +95,120 @@ open class ClientFullscreenRequestTransitionHandler(
     /** A listener to invoke on animation changes during entry/exit. */
     var onTaskResizeAnimationListener: OnTaskResizeAnimationListener? = null
 
+    init {
+        shellInit.addInitCallback(this::onInit, this)
+    }
+
+    private fun onInit() {
+        clientFullscreenRequestController.ifPresent { c -> c.addHandler(this) }
+    }
+
+    override val name: String = TAG
+
+    override fun handleEnterFullscreen(
+        transition: IBinder,
+        task: ActivityManager.RunningTaskInfo,
+    ): EnterResult? {
+        val repository = desktopUserRepositories.getProfile(task.userId)
+        val activeDesk = repository.getActiveDeskId(task.displayId)
+        val isActiveTaskInDesk =
+            activeDesk?.let { deskId ->
+                repository.isActiveTaskInDesk(taskId = task.taskId, deskId = deskId)
+            } ?: false
+        val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
+        logV(
+            "handleEnterFullscreen taskId=%d displayId=%d winMode=%d activeDesk=%d " +
+                "isActiveTaskInDesk=%b deskIdFromTaskInfo=%d",
+            task.taskId,
+            task.displayId,
+            WindowConfiguration.windowingModeToString(task.windowingMode),
+            activeDesk,
+            isActiveTaskInDesk,
+            deskIdFromTaskInfo,
+        )
+
+        if (!isActiveTaskInDesk || activeDesk != deskIdFromTaskInfo) {
+            logI("handleEnterFullscreen task must be in active desk but wasn't, ignoring")
+            return null
+        }
+        // The task requesting fullscreen is a desktop task in the active desk, accept the request.
+        val wct = WindowContainerTransaction()
+        desktopTasksController
+            .addMoveToFullscreenChanges(
+                wct = wct,
+                taskInfo = task,
+                willExitDesktop = true,
+                exitReason = ExitReason.CLIENT_REQUEST_ENTER_FULLSCREEN,
+            )
+            ?.invoke(transition)
+        return EnterResult.Approved(
+            wct = wct,
+            handler = this,
+            restorableState = RestorableState.Desktop(requireNotNull(activeDesk)),
+        )
+    }
+
+    override fun handleExitFullscreen(
+        transition: IBinder,
+        task: ActivityManager.RunningTaskInfo,
+        restorableState: RestorableState?,
+    ): FullscreenRequestHandler.ExitResult? {
+        val repository = desktopUserRepositories.getProfile(task.userId)
+        val activeDesk = repository.getActiveDeskId(task.displayId)
+        val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
+        logV(
+            "handleExitFullscreen taskId=%d displayId=%d winMode=%d activeDesk=%d " +
+                "deskIdFromTaskInfo=%d restorableState=%s",
+            task.taskId,
+            task.displayId,
+            WindowConfiguration.windowingModeToString(task.windowingMode),
+            activeDesk,
+            deskIdFromTaskInfo,
+            restorableState,
+        )
+        if (restorableState == null) {
+            logI("handleExitFullscreen with null restorable state, ignoring")
+            return null
+        }
+        if (restorableState !is RestorableState.Desktop) {
+            logI("handleExitFullscreen for non-desktop state, ignoring")
+            return null
+        }
+
+        val originalDeskId = restorableState.originalDeskId
+        val targetDeskId =
+            if (repository.getAllDeskIds().contains(originalDeskId)) {
+                originalDeskId
+            } else {
+                // The original desk does not exist, use the default one if available.
+                repository.getDefaultDeskId(task.displayId)
+            }
+        if (targetDeskId == null) {
+            logI("handleExitFullscreen but could not find a target desk, rejecting")
+            return FullscreenRequestHandler.ExitResult.Failed(RESULT_FAILED_NOT_SUPPORTED, this)
+        }
+        val targetDisplayId = repository.getDisplayForDesk(targetDeskId)
+
+        val wct =
+            desktopTasksController.handleFreeformTaskPlacement(
+                task = task,
+                transition = transition,
+                targetDisplayId = targetDisplayId,
+                suggestedTargetDeskId = targetDeskId,
+                requestedTaskBounds = null,
+                requestType = TRANSIT_CHANGE,
+                enterReason = EnterReason.CLIENT_REQUEST_EXIT_FULLSCREEN,
+            )
+        if (wct == null) {
+            logI("handleExitFullscreen but placement failed, rejecting")
+            return FullscreenRequestHandler.ExitResult.Failed(RESULT_FAILED_NOT_SUPPORTED, this)
+        }
+        return FullscreenRequestHandler.ExitResult.Approved(wct, this)
+    }
+
     /** Whether the given [request] should be handled by this handler. */
     fun shouldHandleRequest(request: TransitionRequestInfo): Boolean {
+        if (Flags.delegateRequestFullscreenHandlingToShell()) return false
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return false
         val type = request.type
         if (type != TRANSIT_CHANGE)
@@ -355,6 +483,10 @@ open class ClientFullscreenRequestTransitionHandler(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logI(msg: String, vararg arguments: Any?) {
+        ProtoLog.i(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     private fun logW(msg: String, vararg arguments: Any?) {

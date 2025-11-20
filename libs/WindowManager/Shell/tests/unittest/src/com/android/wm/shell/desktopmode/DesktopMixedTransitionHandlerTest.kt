@@ -48,12 +48,13 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
+import com.android.wm.shell.common.ClientFullscreenRequestController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler.PendingMixedTransition
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
-import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -113,8 +114,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     @Mock lateinit var desksTransitionObserver: DesksTransitionObserver
     @Mock private lateinit var desktopRepository: DesktopRepository
 
-    private lateinit var clientFullscreenRequestTransitionHandler:
-        TestClientFullscreenRequestTransitionHandler
+    private lateinit var desktopFullscreenRequestHandler: TestDesktopFullscreenRequestHandler
     private lateinit var mixedHandler: DesktopMixedTransitionHandler
 
     @Before
@@ -131,13 +131,15 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 )
             )
             .thenReturn(true)
-        clientFullscreenRequestTransitionHandler =
-            TestClientFullscreenRequestTransitionHandler(
+        desktopFullscreenRequestHandler =
+            TestDesktopFullscreenRequestHandler(
+                shellInit = shellInit,
                 context = context,
                 desktopUserRepositories = userRepositories,
                 desksOrganizer = mock(),
                 desktopWallpaperActivityTokenProvider = mock(),
                 displayController = mock(),
+                clientFullscreenRequestController = Optional.empty(),
             )
         mixedHandler =
             DesktopMixedTransitionHandler(
@@ -147,7 +149,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 freeformTaskTransitionHandler,
                 closeDesktopTaskTransitionHandler,
                 desktopImmersiveController,
-                clientFullscreenRequestTransitionHandler,
+                desktopFullscreenRequestHandler,
                 desktopMinimizationTransitionHandler,
                 desktopModeDragAndDropTransitionHandler,
                 Optional.of(systemModalsTransitionHandler),
@@ -1010,8 +1012,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
             )
 
         assertTrue("Should start animation", started)
-        assertThat(clientFullscreenRequestTransitionHandler.lastTransitionHandled)
-            .isEqualTo(transition)
+        assertThat(desktopFullscreenRequestHandler.lastTransitionHandled).isEqualTo(transition)
         verify(finishCallback).onTransitionFinished(null)
     }
 
@@ -1044,8 +1045,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
             )
 
         assertTrue("Should start animation", started)
-        assertThat(clientFullscreenRequestTransitionHandler.lastTransitionHandled)
-            .isEqualTo(transition)
+        assertThat(desktopFullscreenRequestHandler.lastTransitionHandled).isEqualTo(transition)
         verify(finishCallback).onTransitionFinished(null)
     }
 
@@ -1104,19 +1104,23 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         }
 
     /** A test handler that immediately finishes the animation. */
-    private class TestClientFullscreenRequestTransitionHandler(
+    private class TestDesktopFullscreenRequestHandler(
+        shellInit: ShellInit,
         context: Context,
         desktopUserRepositories: DesktopUserRepositories,
         desksOrganizer: DesksOrganizer,
         desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
         displayController: DisplayController,
+        clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
     ) :
-        ClientFullscreenRequestTransitionHandler(
+        DesktopFullscreenRequestHandler(
+            shellInit,
             context,
             desktopUserRepositories,
             desksOrganizer,
             desktopWallpaperActivityTokenProvider,
             displayController,
+            clientFullscreenRequestController,
         ) {
         var lastTransitionHandled: IBinder? = null
             private set

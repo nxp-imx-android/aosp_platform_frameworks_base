@@ -85,6 +85,7 @@ import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
 import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
+import com.android.wm.shell.common.ClientFullscreenRequestController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -151,7 +152,7 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
-import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler;
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
@@ -1006,7 +1007,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
-            ClientFullscreenRequestTransitionHandler clientFullscreenRequestTransitionHandler,
+            DesktopFullscreenRequestHandler desktopFullscreenRequestHandler,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
             RecentsTransitionHandler recentsTransitionHandler,
@@ -1062,7 +1063,7 @@ public abstract class WMShellModule {
                 toggleResizeDesktopTaskTransitionHandler,
                 dragToDesktopTransitionHandler,
                 desktopImmersiveController.get(),
-                clientFullscreenRequestTransitionHandler,
+                desktopFullscreenRequestHandler,
                 desktopUserRepositories,
                 desktopRepositoryInitializer,
                 recentsTransitionHandler,
@@ -1707,15 +1708,18 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static ClientFullscreenRequestTransitionHandler provideClientFullscreenRequestTransitionHandler(
+    static DesktopFullscreenRequestHandler provideDesktopFullscreenRequestHandler(
+            ShellInit shellInit,
             Context context,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesksOrganizer desksOrganizer,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
-            DisplayController displayController
+            DisplayController displayController,
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController
     ) {
-        return new ClientFullscreenRequestTransitionHandler(context, desktopUserRepositories,
-                desksOrganizer, desktopWallpaperActivityTokenProvider, displayController);
+        return new DesktopFullscreenRequestHandler(shellInit, context,
+                desktopUserRepositories, desksOrganizer, desktopWallpaperActivityTokenProvider,
+                displayController, clientFullscreenRequestController);
     }
 
     @WMSingleton
@@ -1726,7 +1730,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             FreeformTaskTransitionHandler freeformTaskTransitionHandler,
             CloseDesktopTaskTransitionHandler closeDesktopTaskTransitionHandler,
-            ClientFullscreenRequestTransitionHandler clientFullscreenRequestTransitionHandler,
+            DesktopFullscreenRequestHandler desktopFullscreenRequestHandler,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopMinimizationTransitionHandler desktopMinimizationTransitionHandler,
             DesktopModeDragAndDropTransitionHandler desktopModeDragAndDropTransitionHandler,
@@ -1751,7 +1755,7 @@ public abstract class WMShellModule {
                         freeformTaskTransitionHandler,
                         closeDesktopTaskTransitionHandler,
                         desktopImmersiveController.get(),
-                        clientFullscreenRequestTransitionHandler,
+                        desktopFullscreenRequestHandler,
                         desktopMinimizationTransitionHandler,
                         desktopModeDragAndDropTransitionHandler,
                         systemModalsTransitionHandler,
@@ -2096,6 +2100,17 @@ public abstract class WMShellModule {
         return Optional.empty();
     }
 
+    @WMSingleton
+    @Provides
+    static Optional<ClientFullscreenRequestController> provideClientFullscreenRequestController(
+            ShellInit shellInit,
+            Transitions transitions) {
+        if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
+            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+        }
+        return Optional.empty();
+    }
+
     //
     // App zoom out
     //
@@ -2180,6 +2195,7 @@ public abstract class WMShellModule {
             @NonNull LetterboxTaskListenerAdapter letterboxTaskListenerAdapter,
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
             @NonNull Optional<CompatUISharedRepositoryCleanUp> compatUISharedStateManager,
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
