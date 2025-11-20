@@ -1445,6 +1445,16 @@ flag {
 }
 
 flag {
+    name: "make_filling_bounds_change_effect_lifecycle"
+    namespace: "lse_desktop_experience"
+    description: "Flags bounds changes to/from filling as EFFECTS_LIFECYCLE"
+    bug: "452347446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
