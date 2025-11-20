@@ -83,10 +83,8 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Couldn\'t save screenshot"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Save to"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Select folder"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"Saved to %1$s folder"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"Something went wrong. Can\'t save to \"%1$s\" folder."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"External Display"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Device must be unlocked before screenshot can be saved"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Try taking screenshot again"</string>
@@ -1263,6 +1261,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"location"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"microphone"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"screen recording"</string>
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"Privacy"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"No title"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"Standby"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"Font Size"</string>
@@ -1410,6 +1409,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Available devices for audio output."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Connected speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers &amp; Displays"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggested"</string>

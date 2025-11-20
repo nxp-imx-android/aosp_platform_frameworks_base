@@ -1263,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"অৱস্থান"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"মাইক্ৰ\'ফ\'ন"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"স্ক্ৰীন ৰেকৰ্ডিং"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"কোনো শিৰোনাম নাই"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"ষ্টেণ্ডবাই"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ফণ্টৰ আকাৰ"</string>
@@ -1410,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"অডিঅ\' আউটপুটৰ বাবে উপলব্ধ ডিভাইচ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ভলিউম"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"সংযুক্ত স্পীকাৰ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"স্পীকাৰ আৰু ডিছপ্লে’"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"পৰামৰ্শিত"</string>
