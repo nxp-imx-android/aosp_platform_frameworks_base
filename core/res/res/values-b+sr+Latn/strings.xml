@@ -825,10 +825,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Omogućava aplikaciji da čita video fajlove iz deljenog memorijskog prostora."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"čitanje fajlova slika iz deljenog memorijskog prostora"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Omogućava aplikaciji da čita fajlove slika iz deljenog memorijskog prostora."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"čitanje fajlova dokumenata iz deljenog memorijskog prostora"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Omogućava aplikaciji da čita fajlove dokumenata iz deljenog memorijskog prostora."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"čitanje fajlova slika i videa koje korisnik bira iz deljenog memorijskog prostora"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Omogućava aplikaciji da čita fajlove slika i videa koje izaberete iz deljenog memorijskog prostora."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"menjanje ili brisanje sadržaja deljenog memorijskog prostora"</string>

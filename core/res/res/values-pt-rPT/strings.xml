@@ -825,10 +825,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permite que a app leia ficheiros de vídeo do armazenamento partilhado."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ler ficheiros de imagem do armazenamento partilhado"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permite que a app leia ficheiros de imagem do armazenamento partilhado."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"ler ficheiros de documentos do armazenamento partilhado"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Permite que a app leia ficheiros de documentos do armazenamento partilhado."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ler ficheiros de imagem e vídeo do armazenamento partilhado selecionados pelo utilizador"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permite que a app leia ficheiros de imagem e vídeo que selecionar no seu armazenamento partilhado."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"modif./elim. os conteúdos do armazenam. partilhado"</string>
@@ -1440,7 +1438,7 @@
     <string name="sms_short_code_confirm_never_allow" msgid="2688828813521652079">"Nunca Permitir"</string>
     <string name="sim_removed_title" msgid="1349026474932481037">"SIM removido"</string>
     <string name="sim_removed_message" msgid="8469588437451533845">"A rede móvel vai estar indisponível até que reinicie o dispositivo com um SIM válido."</string>
-    <string name="sim_done_button" msgid="6464250841528410598">"Concluído"</string>
+    <string name="sim_done_button" msgid="6464250841528410598">"Concluir"</string>
     <string name="sim_added_title" msgid="2976783426741012468">"SIM adicionado"</string>
     <string name="sim_added_message" msgid="6602906609509958680">"Reinicie o aparelho para aceder à rede de telemóvel."</string>
     <string name="sim_restart_button" msgid="8481803851341190038">"Reiniciar"</string>
@@ -1622,7 +1620,7 @@
     <string name="no_matches" msgid="6472699895759164599">"Sem correspondências"</string>
     <string name="find_on_page" msgid="5400537367077438198">"Localizar na página"</string>
     <string name="matches_found" msgid="2296462299979507689">"{count,plural, =1{# correspondência}many{# de {total}}other{# de {total}}}"</string>
-    <string name="action_mode_done" msgid="2536182504764803222">"Concluído"</string>
+    <string name="action_mode_done" msgid="2536182504764803222">"Concluir"</string>
     <string name="progress_erasing" msgid="6891435992721028004">"A apagar o armazenamento partilhado…"</string>
     <string name="share" msgid="4157615043345227321">"Partilhar"</string>
     <string name="find" msgid="5015737188624767706">"Localizar"</string>
@@ -1696,7 +1694,7 @@
     <string name="data_usage_mobile_limit_snoozed_title" msgid="101888478915677895">"Acima do limite de dados móveis"</string>
     <string name="data_usage_wifi_limit_snoozed_title" msgid="1622359254521960508">"Acima do limite de dados Wi-Fi"</string>
     <string name="data_usage_limit_snoozed_body" msgid="545146591766765678">"Ultrapassou em <xliff:g id="SIZE">%s</xliff:g> o limite definido."</string>
-    <string name="data_usage_restricted_title" msgid="126711424380051268">"Dados em seg. plano restringidos"</string>
+    <string name="data_usage_restricted_title" msgid="126711424380051268">"Dados de seg. plano restringidos"</string>
     <string name="data_usage_restricted_body" msgid="5338694433686077733">"Toque para remover a restrição."</string>
     <string name="data_usage_rapid_title" msgid="2950192123248740375">"Utilização elevada de dados móveis"</string>
     <string name="data_usage_rapid_body" msgid="3886676853263693432">"As suas aplicações utilizaram mais dados do que o habitual."</string>

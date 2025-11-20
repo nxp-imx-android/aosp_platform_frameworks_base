@@ -824,10 +824,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"อนุญาตให้แอปอ่านไฟล์วิดีโอจากพื้นที่เก็บข้อมูลที่แชร์"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"อ่านไฟล์ภาพจากพื้นที่เก็บข้อมูลที่แชร์"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"อนุญาตให้แอปอ่านไฟล์ภาพจากพื้นที่เก็บข้อมูลที่แชร์"</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"อ่านไฟล์เอกสารจากพื้นที่เก็บข้อมูลที่ใช้ร่วมกัน"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"อนุญาตให้แอปอ่านไฟล์เอกสารจากพื้นที่เก็บข้อมูลที่ใช้ร่วมกัน"</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"อ่านไฟล์รูปภาพและวิดีโอที่ผู้ใช้เลือกจากพื้นที่เก็บข้อมูลที่ใช้ร่วมกัน"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"อนุญาตให้แอปอ่านไฟล์รูปภาพและวิดีโอที่คุณเลือกจากพื้นที่เก็บข้อมูลที่ใช้ร่วมกัน"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"แก้ไขหรือลบเนื้อหาในพื้นที่จัดเก็บข้อมูลที่ใช้ร่วมกัน"</string>
