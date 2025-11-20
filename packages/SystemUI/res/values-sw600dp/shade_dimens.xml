@@ -24,7 +24,10 @@
         name="common_tile_default_icon_size"
         android:featureFlag="com.android.systemui.desktop_sizing">20dp</dimen>
     <dimen
-        name="common_tile_default_inactive_corner_radius"
+        name="common_tile_default_inactive_icon_corner_radius"
+        android:featureFlag="com.android.systemui.desktop_sizing">22dp</dimen>
+    <dimen
+        name="common_tile_default_inactive_tile_corner_radius"
         android:featureFlag="com.android.systemui.desktop_sizing">28dp</dimen>
     <dimen
         name="common_tile_default_large_tile_icon_size"
