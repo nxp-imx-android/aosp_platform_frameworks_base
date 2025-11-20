@@ -346,7 +346,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IAutoFillManager_ravenwood";
 
         public static final IAutoFillManager sIBinder =
-                newExperimentalProxy(IAutoFillManager.class, sNotImplementedHandler);
+                newExperimentalProxy(IAutoFillManager.class, sDefaultHandler);
     }
 
     /**
