@@ -107,13 +107,17 @@ class EnumPolicyHandlerTest {
     ) = PolicyHandler<Int>(key, metadata, definition, delegate)
 
     @Test
-    fun setPolicy_shouldAcceptValidValues() {
+    fun setPolicyUnchecked_shouldAcceptValidValues() {
         val enumValues = setOf(123, 456, 789)
         val metadata = copyOf(Policy.metadata, allowedValues = enumValues)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
         for (enumValue in enumValues) {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
+            handler.setPolicyUnchecked(
+                anyCaller,
+                anyScope,
+                PolicyValueTransport.integerField(enumValue),
+            )
 
             val expectedValue = IntegerPolicyValue(enumValue)
             verify(mockDelegate, times(1)).storePolicy(any(), any(), any(), eq(expectedValue))
@@ -123,17 +127,17 @@ class EnumPolicyHandlerTest {
     }
 
     @Test
-    fun setPolicy_shouldAcceptNull() {
+    fun setPolicyUnchecked_shouldAcceptNull() {
         val handler = createHandler(delegate = mockDelegate)
 
-        handler.setPolicy(anyCaller, anyScope, null)
+        handler.setPolicyUnchecked(anyCaller, anyScope, null)
 
         verify(mockDelegate).clearPolicy<Int>(any(), any(), any())
         verify(mockDelegate, never()).storePolicy<Int>(any(), any(), any(), any())
     }
 
     @Test
-    fun setPolicy_shouldRejectValuesOutOfRange() {
+    fun setPolicyUnchecked_shouldRejectValuesOutOfRange() {
         val validEnumValues = setOf(555, 666)
         val metadata = copyOf(Policy.metadata, allowedValues = validEnumValues)
         val handler = createHandler(metadata = metadata)
@@ -142,18 +146,26 @@ class EnumPolicyHandlerTest {
 
         for (enumValue in invalidEnumValues) {
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.integerField(enumValue),
+                )
             }
         }
     }
 
     @Test
-    fun setPolicy_shouldRejectValueOfWrongType() {
+    fun setPolicyUnchecked_shouldRejectValueOfWrongType() {
         val handler = createHandler()
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.booleanField(true),
+                )
             }
 
         assertThat(exception.message).contains("is not an integer")

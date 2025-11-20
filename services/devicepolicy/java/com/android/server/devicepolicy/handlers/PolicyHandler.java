@@ -40,7 +40,6 @@ import com.android.server.devicepolicy.PolicyDefinition;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -216,8 +215,13 @@ public class PolicyHandler<T> {
      * The methods below can be overwritten to change the behavior of your policy.
      *****************************************************************************************/
 
-    /** Performs every step required to set the policy. */
-    public void setPolicy(
+    /**
+     * Performs every step required to set the policy, except for permission checks.
+     *
+     * <p>The caller is responsible for calling {@link #checkPermissions(CallerIdentity, int)}
+     * before calling this method.
+     */
+    public void setPolicyUnchecked(
             @NonNull CallerIdentity caller,
             @PolicyScope int scope,
             @Nullable PolicyValueTransport transportValue) {
@@ -225,18 +229,20 @@ public class PolicyHandler<T> {
 
         T value = convertValue(transportValue);
 
-        checkPermissions(caller, scope);
         validateValue(caller, value);
 
         storePolicyValue(caller, scope, value);
     }
 
-    /** Performs every step required to retrieve the policy. */
-    public @Nullable PolicyValueTransport getPolicy(
+    /**
+     * Performs every step required to retrieve the policy, except for permission checks.
+     *
+     * <p>The caller is responsible for calling {@link #checkPermissions(CallerIdentity, int)}
+     * before calling this method.
+     */
+    public @Nullable PolicyValueTransport getPolicyUnchecked(
             @NonNull CallerIdentity caller, @PolicyScope int scope) {
         validateScope(scope);
-
-        checkPermissions(caller, scope);
 
         T value = getPolicyValue(caller, scope);
 
@@ -292,7 +298,7 @@ public class PolicyHandler<T> {
      *
      * @throws SecurityException when the caller does not have the required permissions.
      */
-    protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
+    public void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
         var permissionChecker = getPermissionChecker();
 
         // Check for the permission here to catch any issues early.
