@@ -435,6 +435,16 @@ public class TelephonyManager {
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long ENABLE_FEATURE_MAPPING = 297989574L;
 
+    /**
+     * Enable READ_PHONE_STATE protection on APIs querying and notifying call state, such as
+     * {@code TelecomManager#getCallState}, {@link TelephonyManager#getCallStateForSubscription()},
+     * and {@link android.telephony.TelephonyCallback.CallStateListener}.
+     * @hide
+     */
+    // this magic number is a bug ID
+    // if removing this ChangeId, remove this constant in TelecomManager as well
+    public static final long ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION = 157233955L;
+
     private final Context mContext;
     private final int mSubId;
     @UnsupportedAppUsage
