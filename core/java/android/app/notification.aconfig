@@ -304,6 +304,7 @@ flag {
 flag {
   name: "nm_summarization_all"
   namespace: "notifications"
+  is_exported: true
   description: "Allows the NAS to summarize notifications of any type"
   bug: "430487852"
 }
@@ -325,6 +326,7 @@ flag {
 flag {
   name: "nm_contextual_display"
   namespace: "notifications"
+  is_exported: true
   description: "Changes notification appearance based on user created rules"
   bug: "438704204"
 }
