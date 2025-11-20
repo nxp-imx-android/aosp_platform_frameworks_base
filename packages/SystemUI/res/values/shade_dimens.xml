@@ -64,6 +64,7 @@
     </dimen>
 
     <!-- QS shade overlay toolbar -->
+    <dimen name="toolbar_bottom_padding">8dp</dimen>
     <dimen name="toolbar_button_colored_background_size">36dp</dimen>
     <dimen name="toolbar_button_icon_size">24dp</dimen>
     <dimen name="toolbar_button_size">48dp</dimen>
