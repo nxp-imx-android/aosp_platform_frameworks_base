@@ -16,19 +16,39 @@
 
 package com.android.systemui.statusbar.featurepods.ime.domain.interactor
 
+import android.view.Display
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.inputmethod.data.repository.InputMethodRepository
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /** Interactor for managing the state of the IME indicator chip in the status bar. */
 @SysUISingleton
-class ImeIndicatorChipInteractor @Inject constructor() {
+class ImeIndicatorChipInteractor
+@Inject
+constructor(
+    @param:Background private val scope: CoroutineScope,
+    private val inputMethodRepository: InputMethodRepository,
+) {
     private val isFeatureEnabled: Boolean
         get() = Flags.statusBarImeChip()
 
     // TODO(b/458558606): Add logic to show / hide chip depending on enabled IME subtypes.
     val isChipVisible: StateFlow<Boolean> = MutableStateFlow(isFeatureEnabled).asStateFlow()
+
+    fun showInputMethodPicker() {
+        // TODO(b/458557860): Show on the display containing the chip.
+        scope.launch {
+            inputMethodRepository.showInputMethodPicker(
+                displayId = Display.DEFAULT_DISPLAY,
+                showAuxiliarySubtypes = true,
+            )
+        }
+    }
 }

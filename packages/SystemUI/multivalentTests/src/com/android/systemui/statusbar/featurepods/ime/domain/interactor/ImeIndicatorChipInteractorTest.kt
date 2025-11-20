@@ -18,25 +18,32 @@ package com.android.systemui.statusbar.featurepods.ime.domain.interactor
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(JUnit4::class)
 class ImeIndicatorChipInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
+    private val fakeInputMethodRepository = kosmos.fakeInputMethodRepository
     private val Kosmos.underTest by Kosmos.Fixture { kosmos.imeIndicatorChipInteractor }
 
     @Test
@@ -53,5 +60,17 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             backgroundScope.launch { underTest.isChipVisible.collect {} }
             assertThat(underTest.isChipVisible.value).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
+    fun showInputMethodPicker_showsPicker() =
+        kosmos.runTest {
+            underTest.showInputMethodPicker()
+            testScope.runCurrent()
+
+            // TODO(b/458557860): Should be shown on the display containing the chip.
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
+                .isEqualTo(Display.DEFAULT_DISPLAY)
         }
 }

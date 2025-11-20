@@ -76,7 +76,7 @@ constructor(
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingPopupChipBundle
 
-            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen, bundle.ime)
+            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
                 .filterIsInstance<PopupChipModel.Shown>()
                 .map { chip ->
                     chip.copy(
@@ -84,7 +84,8 @@ constructor(
                         showPopup = { currentShownPopupChipId = chip.chipId },
                         hidePopup = { currentShownPopupChipId = null },
                     )
-                } + listOfNotNull(bundle.assistant).filterIsInstance<PopupChipModel.Shown>()
+                } +
+                listOfNotNull(bundle.assistant, bundle.ime).filterIsInstance<PopupChipModel.Shown>()
         } else {
             emptyList()
         }
@@ -106,12 +107,7 @@ constructor(
                     .distinctUntilChanged()
                     .collect { bundle ->
                         if (
-                            listOfNotNull(
-                                    bundle.media,
-                                    bundle.privacy,
-                                    bundle.shareScreen,
-                                    bundle.ime,
-                                )
+                            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
                                 .filterIsInstance<PopupChipModel.Shown>()
                                 .none { it.chipId == currentShownPopupChipId }
                         ) {

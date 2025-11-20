@@ -29,7 +29,9 @@ import kotlinx.coroutines.flow.map
 /** View model for the IME indicator chip in the status bar. */
 class ImeIndicatorChipViewModel
 @AssistedInject
-constructor(imeIndicatorChipInteractor: ImeIndicatorChipInteractor) :
+constructor(
+    private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
+) :
     StatusBarPopupChipViewModel, HydratedActivatable() {
 
     override val chip: PopupChipModel by
@@ -47,6 +49,7 @@ constructor(imeIndicatorChipInteractor: ImeIndicatorChipInteractor) :
                 // TODO(b/458557858): Replace placeholder text with IME subtype short label or icon.
                 icons = emptyList(),
                 chipText = "IME",
+                showPopup = { imeIndicatorChipInteractor.showInputMethodPicker() },
             )
         } else {
             PopupChipModel.Hidden(PopupChipId.ImeIndicator)
