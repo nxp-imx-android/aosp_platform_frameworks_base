@@ -675,11 +675,14 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         }
 
         // Update the preview controller.
-        mPrintPreviewController.onContentUpdated(contentUpdated,
+        mPrintPreviewController.onContentUpdated(
+                contentUpdated,
                 getAdjustedPageCount(documentInfo.info),
                 mPrintedDocument.getDocumentInfo().pagesWrittenToFile,
-                mSelectedPages, mPrintJob.getAttributes().getMediaSize(),
-                mPrintJob.getAttributes().getMinMargins());
+                mSelectedPages,
+                mPrintJob.getAttributes().getMediaSize(),
+                mPrintJob.getAttributes().getMinMargins(),
+                mPrintJob.getAttributes().getColorMode());
     }
 
 
@@ -1867,6 +1870,10 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             }
         }
 
+        if (Flags.grayscalePreview()) {
+            mColorModeSpinner.setEnabled(mColorModeSpinnerAdapter.getCount() > 1);
+        }
+
         // Duplex mode.
         mDuplexModeSpinner.setEnabled(true);
         final int duplexModes = capabilities.getDuplexModes();
@@ -2764,8 +2771,14 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
             builder.addResolution(new Resolution("PDF resolution", "PDF resolution", 300, 300),
                     true);
-            builder.setColorModes(PrintAttributes.COLOR_MODE_COLOR
-                    | PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_COLOR);
+            if (Flags.grayscalePreview()) {
+                builder.setColorModes(
+                        PrintAttributes.COLOR_MODE_COLOR, PrintAttributes.COLOR_MODE_COLOR);
+            } else {
+                builder.setColorModes(
+                        PrintAttributes.COLOR_MODE_COLOR | PrintAttributes.COLOR_MODE_MONOCHROME,
+                        PrintAttributes.COLOR_MODE_COLOR);
+            }
 
             return new PrinterInfo.Builder(printerId, getString(R.string.save_as_pdf),
                     PrinterInfo.STATUS_IDLE).setCapabilities(builder.build()).build();
