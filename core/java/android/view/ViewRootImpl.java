@@ -140,7 +140,6 @@ import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
-import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -7873,27 +7872,14 @@ public final class ViewRootImpl implements ViewParent,
                             dispatcher.onBackCancelled(topCallback);
                         } else {
                             dispatcher.onBackInvoked(topCallback);
-                            if (predictiveBackStopKeycodeBackForwarding()) {
-                                return FINISH_HANDLED;
-                            }
+                            return FINISH_HANDLED;
                         }
                         break;
                 }
             } else {
-                if (predictiveBackStopKeycodeBackForwarding()) {
-                    return FORWARD;
-                }
-            }
-            if (predictiveBackStopKeycodeBackForwarding()) {
-                return FINISH_NOT_HANDLED;
-            } else {
-                // Do not cancel the keyEvent if no callback can handle the back event.
-                if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    // forward a cancelled event so that following stages cancel their back logic
-                    keyEvent.cancel();
-                }
                 return FORWARD;
             }
+            return FINISH_NOT_HANDLED;
         }
 
         @Override

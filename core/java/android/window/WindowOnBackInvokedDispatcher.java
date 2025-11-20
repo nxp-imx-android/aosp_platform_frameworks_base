@@ -19,7 +19,6 @@ package android.window;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
 import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
-import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -418,13 +417,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
      */
     public void onBackStarted(OnBackInvokedCallback callback, BackEvent backEvent,
             boolean observerOnly) {
-        if (predictiveBackStopKeycodeBackForwarding()) {
-            forEachObserverCallback((observerCallback) -> {
-                if (observerCallback instanceof ObserverOnBackAnimationCallback) {
-                    ((ObserverOnBackAnimationCallback) observerCallback).onBackStarted(backEvent);
-                }
-            });
-        }
+        forEachObserverCallback((observerCallback) -> {
+            if (observerCallback instanceof ObserverOnBackAnimationCallback) {
+                ((ObserverOnBackAnimationCallback) observerCallback).onBackStarted(backEvent);
+            }
+        });
         if (callback instanceof OnBackAnimationCallback && !observerOnly) {
             ((OnBackAnimationCallback) callback).onBackStarted(backEvent);
         }
@@ -438,13 +435,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
      * @param callback The callback to call {@link OnBackAnimationCallback#onBackCancelled} on.
      */
     public void onBackCancelled(OnBackInvokedCallback callback) {
-        if (predictiveBackStopKeycodeBackForwarding()) {
-            forEachObserverCallback((observerCallback) -> {
-                if (observerCallback instanceof ObserverOnBackAnimationCallback) {
-                    ((ObserverOnBackAnimationCallback) observerCallback).onBackCancelled();
-                }
-            });
-        }
+        forEachObserverCallback((observerCallback) -> {
+            if (observerCallback instanceof ObserverOnBackAnimationCallback) {
+                ((ObserverOnBackAnimationCallback) observerCallback).onBackCancelled();
+            }
+        });
         if (callback instanceof OnBackAnimationCallback) {
             ((OnBackAnimationCallback) callback).onBackCancelled();
         }
