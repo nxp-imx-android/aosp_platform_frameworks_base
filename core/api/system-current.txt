@@ -3411,6 +3411,7 @@ package android.app.wallpaper {
   }
 
   public static final class WallpaperDescription.Builder {
+    method @FlaggedApi("android.app.enable_wallpaper_description_set_component") @NonNull public android.app.wallpaper.WallpaperDescription.Builder setComponent(@Nullable android.content.ComponentName);
     method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setCropHints(@NonNull java.util.Map<android.graphics.Point,android.graphics.Rect>);
     method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setCropHints(@NonNull android.util.SparseArray<android.graphics.Rect>);
   }
