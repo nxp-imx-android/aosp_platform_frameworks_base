@@ -468,7 +468,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 mStartTransaction, mFinishTransaction, setTaskBoundsTransition, mFinishCallback);
 
         verify(mStartTransaction).setWindowCrop(eq(boundsChange.getLeash()),
-                eq(newBounds.width()), eq(newBounds.height()));
+                eq(BOUNDS.width()), eq(BOUNDS.height()));
         verify(mTransitions).dispatchTransition(eq(displayTransition), eq(displayChangeInfo),
                 eq(mStartTransaction), eq(mFinishTransaction),
                 eq(mFinishCallback), eq(mTaskViewTransitions));

@@ -1256,7 +1256,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             final TaskViewTaskController taskView = findTaskView(taskInfo);
             if (taskView == null) continue;
             final SurfaceControl leash = change.getLeash();
-            final Rect endBounds = change.getEndAbsBounds();
+            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
+            final Rect endBounds = state != null ? state.mBounds : change.getEndAbsBounds();
             updateSurface(leash, startT, finishT, taskView, endBounds.width(), endBounds.height());
             hasHandledTaskView = true;
         }
