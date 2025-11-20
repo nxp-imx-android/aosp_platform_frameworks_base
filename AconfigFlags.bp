@@ -114,6 +114,7 @@ aconfig_declarations_group {
         "com.android.media.flags.editing-aconfig-java",
         "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
+        "com.android.media.mediadrm.flags-aconfig-java",
         "com.android.nfc.module.flags-aconfig-exported-java",
         "com.android.net.http.flags-aconfig-exported-java",
         "com.android.net.thread.platform.flags-aconfig-java",
@@ -993,6 +994,20 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.media.flags.projection-aconfig-java",
     aconfig_declarations: "com.android.media.flags.projection-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// MediaDrm
+aconfig_declarations {
+    name: "com.android.media.mediadrm.flags-aconfig",
+    package: "com.android.media.mediadrm.flags",
+    container: "system",
+    srcs: ["media/java/android/media/flags/mediadrm.aconfig"],
+}
+
+java_aconfig_library {
+    name: "com.android.media.mediadrm.flags-aconfig-java",
+    aconfig_declarations: "com.android.media.mediadrm.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
