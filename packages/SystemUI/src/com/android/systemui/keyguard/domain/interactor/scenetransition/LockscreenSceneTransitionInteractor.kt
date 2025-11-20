@@ -21,10 +21,10 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.data.repository.LockscreenSceneTransitionRepository
-import com.android.systemui.keyguard.data.repository.LockscreenSceneTransitionRepository.Companion.DEFAULT_STATE
 import com.android.systemui.keyguard.domain.interactor.InternalKeyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.UNDEFINED
 import com.android.systemui.keyguard.shared.model.TransitionInfo
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
@@ -93,7 +93,8 @@ constructor(
                 .collect { (prevTransition, transition) ->
                     when (transition) {
                         is ObservableTransitionState.Idle -> handleIdle(prevTransition, transition)
-                        is ObservableTransitionState.Transition -> handleTransition(transition)
+                        is ObservableTransitionState.Transition ->
+                            handleTransition(prevTransition, transition)
                     }
                 }
         }
@@ -106,50 +107,168 @@ constructor(
         // We're idle, so this collection is no longer relevant.
         transitionCurrentSceneJob?.cancel()
 
-        if (currentTransitionId == null) return
-        if (prevTransition !is ObservableTransitionState.Transition) return
+        when (prevTransition) {
+            is ObservableTransitionState.Idle -> handleSnapFromIdleToIdle(prevTransition, idle)
+            is ObservableTransitionState.Transition -> {
+                // If the previous transition's fromContent is still in currentOverlays, we canceled
+                // a transition away from that overlay.
+                val canceledOverlayTransition =
+                    idle.currentOverlays.contains(prevTransition.fromContent)
 
-        // If the previous transition's fromContent is still in currentOverlays, we canceled a
-        // transition away from that overlay.
-        val canceledOverlayTransition = idle.currentOverlays.contains(prevTransition.fromContent)
+                // We're idle on the scene or overlay we were transitioning to.
+                val idleOnToContentAfterCompletedTransition =
+                    (idle.currentScene == prevTransition.toContent && !canceledOverlayTransition) ||
+                        idle.currentOverlays.contains(prevTransition.toContent)
 
-        val idleOnToContentAfterCompletedTransition =
-            idle.currentScene == prevTransition.toContent && !canceledOverlayTransition
-
-        // Finish the current transition if we've completed a scene transition to a new scene or a
-        // new overlay.
-        if (
-            idleOnToContentAfterCompletedTransition ||
-                idle.currentOverlays.contains(prevTransition.toContent)
-        ) {
-            finishCurrentTransition()
-        } else {
-            val targetState =
-                if (idle.currentScene == Scenes.Lockscreen) {
-                    repository.nextLockscreenTargetState.value
-                        ?: transitionInteractor.startedKeyguardTransitionStep.value.from
+                // If we started a KTF transition in handleTransition, and we're idle on the content
+                // we meant to transition to, simply finish the transition.
+                if (currentTransitionId != null && idleOnToContentAfterCompletedTransition) {
+                    finishCurrentTransition()
                 } else {
-                    UNDEFINED
+                    // Otherwise, we're snapping from a transition that didn't start a KTF
+                    // transition (for example, snapping to Idle on Lockscreen from a Gone -> Shade
+                    // transition). We'll need to start and finish a KTF transition to the
+                    // appropriate state here.
+                    val targetState =
+                        if (
+                            idle.currentScene == Scenes.Lockscreen && idle.currentOverlays.isEmpty()
+                        ) {
+                            repository.nextLockscreenTargetState.value
+                                ?: transitionInteractor.startedKeyguardTransitionStep.value.from
+                        } else {
+                            UNDEFINED
+                        }
+
+                    // ...assuming we're not already there.
+                    if (
+                        internalTransitionInteractor.currentTransitionInfoInternal().to !=
+                            targetState
+                    ) {
+                        startAndFinishTransitionTo(
+                            targetState,
+                            "Idle after non-KTF relevant transition",
+                        )
+                    }
                 }
-            finishReversedTransitionTo(targetState)
+            }
         }
     }
 
-    private suspend fun finishCurrentTransition() {
-        internalTransitionInteractor.updateTransition(currentTransitionId!!, 1f, FINISHED)
-        resetTransitionData()
+    /**
+     * Handles the case where we snap from being Idle in one scene to Idle in another, without
+     * previously being in Transition.
+     */
+    private suspend fun handleSnapFromIdleToIdle(
+        fromIdle: ObservableTransitionState.Idle,
+        toIdle: ObservableTransitionState.Idle,
+    ) {
+        if (
+            toIdle.currentScene == Scenes.Lockscreen &&
+                (fromIdle.currentScene != Scenes.Lockscreen ||
+                    (fromIdle.currentOverlays.isNotEmpty() && toIdle.currentOverlays.isEmpty()))
+        ) {
+            // We've snapped to Lockscreen either from a non-Lockscreen scene, or from showing
+            // an overlay over Lockscreen. In either case, we were in UNDEFINED and should now
+            // transition to the appropriate KTF state.
+            startAndFinishTransitionTo(
+                getNextLockscreenTargetState(),
+                "snap to Idle on LS" +
+                    if (toIdle.currentOverlays.isNotEmpty()) " Overlays: " + toIdle.currentOverlays
+                    else "",
+            )
+        } else if (
+            (toIdle.currentScene != Scenes.Lockscreen || toIdle.currentOverlays.isNotEmpty())
+        ) {
+            // We've snapped to non-Lockscreen content, either a scene or Lockscreen with an overlay
+            // showing. In either case, we should be UNDEFINED.
+            startAndFinishTransitionTo(
+                UNDEFINED,
+                "snap to Idle on ${toIdle.currentScene}" +
+                    if (toIdle.currentOverlays.isNotEmpty()) " Overlays: " + toIdle.currentOverlays
+                    else "",
+            )
+        }
     }
 
-    private suspend fun finishReversedTransitionTo(state: KeyguardState) {
-        val newTransition =
-            TransitionInfo(
-                ownerName = this::class.java.simpleName,
-                from = internalTransitionInteractor.currentTransitionInfoInternal().to,
-                to = state,
-                animator = null,
-                modeOnCanceled = TransitionModeOnCanceled.REVERSE,
+    private suspend fun handleTransition(
+        prevTransition: ObservableTransitionState,
+        transition: ObservableTransitionState.Transition,
+    ) {
+        transitionCurrentSceneJob?.cancel()
+
+        // Check whether this Transition follows another Transition (without going through Idle).
+        // Special setup may be needed.
+        maybeHandleSnapFromTransitionToTransition(prevTransition, transition)
+
+        // Collect the currentScene, which is the toScene, unless the transition is reversed, in
+        // which case it's the scene we're headed towards. For example, if Gone -> Lockscreen is
+        // reversed, toScene will remain Lockscreen and fromScene Gone as progress is reversed back
+        // to 0f, but currentScene will emit Gone immediately.
+        transitionCurrentSceneJob =
+            applicationScope.launch {
+                transition.currentScene().collect { currentScene ->
+                    if (transition.fromContent == Scenes.Lockscreen) {
+                        startTransitionToUndefined()
+                        collectProgress(transition)
+                    } else if (currentScene == Scenes.Lockscreen) {
+                        startTransitionFromUndefinedToLockscreenTargetState()
+                        collectProgress(transition)
+                    } else {
+                        transitionKtfToFinishedInState(
+                            UNDEFINED,
+                            "transition not from LS and currentScene != LS",
+                        )
+                    }
+                }
+            }
+    }
+
+    /**
+     * Handles relevant cases where we "snap" from one Transition to another, without going through
+     * Idle.
+     */
+    private suspend fun maybeHandleSnapFromTransitionToTransition(
+        prevTransition: ObservableTransitionState,
+        transition: ObservableTransitionState.Transition,
+    ) {
+        // Duplicate transition, likely the same one started for a different reason. This should
+        // not affect KTF.
+        if (
+            prevTransition is ObservableTransitionState.Transition &&
+                prevTransition.fromContent == transition.fromContent &&
+                prevTransition.toContent == transition.toContent
+        ) {
+            return
+        }
+
+        // We are now transitioning from Lockscreen again, and we were either:
+        // - Already running a KTF transition away from Lockscreen (to UNDEFINED),
+        // - Were in transition between two UNDEFINED scenes.
+        // This wouldn't be allowed in KTF, so we need a workaround here to ensure KTF listeners
+        // aren't left hanging. Return KTF to the state it came from, which will emit FINISHED.
+        // Then, the subsequent transition will be from that state to whatever new state we
+        // determine is required.
+        if (
+            transition.fromContent == Scenes.Lockscreen &&
+                internalTransitionInteractor.currentTransitionInfoInternal().to == UNDEFINED &&
+                (currentTransitionId != null ||
+                    (prevTransition is ObservableTransitionState.Transition &&
+                        prevTransition.fromContent != Scenes.Lockscreen &&
+                        prevTransition.toContent != Scenes.Lockscreen))
+        ) {
+            val prevFrom = transitionInteractor.startedKeyguardTransitionStep.value.from
+            transitionKtfToFinishedInState(
+                prevFrom,
+                "snap from Transition -> Transition, reset KTF",
             )
-        currentTransitionId = internalTransitionInteractor.startTransition(newTransition)
+        }
+    }
+
+    private fun getNextLockscreenTargetState(): KeyguardState {
+        return repository.nextLockscreenTargetState.value ?: LOCKSCREEN
+    }
+
+    private suspend fun finishCurrentTransition() {
         internalTransitionInteractor.updateTransition(currentTransitionId!!, 1f, FINISHED)
         resetTransitionData()
     }
@@ -160,42 +279,16 @@ constructor(
         currentTransitionId = null
     }
 
-    private fun handleTransition(transition: ObservableTransitionState.Transition) {
-        transitionCurrentSceneJob?.cancel()
-
-        // Collect the currentScene, which is the toScene, unless the transition is reversed, in
-        // which case it's the scene we're headed towards. For example, if Gone -> Lockscreen is
-        // reversed, toScene will remain Lockscreen and fromScene Gone as progress is reversed back
-        // to 0f, but currentScene will emit Gone immediately.
-        transitionCurrentSceneJob =
-            applicationScope.launch {
-                transition.currentScene().collect { currentScene ->
-                    if (transition.fromContent == Scenes.Lockscreen) {
-                        if (currentTransitionId != null) {
-                            val currentToState =
-                                internalTransitionInteractor.currentTransitionInfoInternal().to
-                            if (currentToState == UNDEFINED) {
-                                transitionKtfTo(
-                                    transitionInteractor.startedKeyguardTransitionStep.value.from
-                                )
-                            }
-                        }
-                        startTransitionFromLockscreen()
-                        collectProgress(transition)
-                    } else if (currentScene == Scenes.Lockscreen) {
-                        if (currentTransitionId != null) {
-                            transitionKtfTo(UNDEFINED)
-                        }
-                        startTransitionToLockscreen()
-                        collectProgress(transition)
-                    } else {
-                        transitionKtfTo(UNDEFINED)
-                    }
-                }
-            }
+    private fun collectProgress(transition: ObservableTransitionState.Transition) {
+        progressJob?.cancel()
+        progressJob = applicationScope.launch { transition.progress.collect { updateProgress(it) } }
     }
 
-    private suspend fun transitionKtfTo(state: KeyguardState) {
+    /**
+     * Do whatever is necessary to ensure KTF is in the provided state, either by finishing ongoing
+     * transitions or starting/finishing a new one.
+     */
+    private suspend fun transitionKtfToFinishedInState(state: KeyguardState, reason: String) {
         // TODO(b/330311871): This is based on a sharedFlow and thus might not be up-to-date and
         //  cause a race condition. (There is no known scenario that is currently affected.)
         val currentTransition = transitionInteractor.transitionState.value
@@ -205,21 +298,29 @@ constructor(
         } else if (currentTransition.isTransitioning(to = state)) {
             finishCurrentTransition()
         } else {
-            finishReversedTransitionTo(state)
+            startAndFinishTransitionTo(state, reason)
         }
     }
 
-    private fun collectProgress(transition: ObservableTransitionState.Transition) {
-        progressJob?.cancel()
-        progressJob = applicationScope.launch { transition.progress.collect { updateProgress(it) } }
-    }
+    /**
+     * Starts a KTF transition from UNDEFINED to LOCKSCREEN/AOD/etc, but does not finish it. The
+     * transition must be updated and finished manually.
+     */
+    private suspend fun startTransitionFromUndefinedToLockscreenTargetState() {
+        if (internalTransitionInteractor.currentTransitionInfoInternal().to != UNDEFINED) {
+            transitionKtfToFinishedInState(
+                UNDEFINED,
+                "startTransitionFromUndefined, but not UNDEFINED",
+            )
+        }
 
-    private suspend fun startTransitionToLockscreen() {
         val newTransition =
             TransitionInfo(
-                ownerName = this::class.java.simpleName,
+                ownerName =
+                    "${this::class.java.simpleName} " +
+                        "(startTransitionFromUndefinedToLockscreenTargetState)",
                 from = UNDEFINED,
-                to = repository.nextLockscreenTargetState.value ?: DEFAULT_STATE,
+                to = getNextLockscreenTargetState(),
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
@@ -227,11 +328,20 @@ constructor(
         startTransition(newTransition)
     }
 
-    private suspend fun startTransitionFromLockscreen() {
+    /**
+     * Starts a KTF transition to UNDEFINED, but does not finish it. The transition must be updated
+     * and finished manually.
+     */
+    private suspend fun startTransitionToUndefined() {
         val currentState = internalTransitionInteractor.currentTransitionInfoInternal().to
+
+        if (currentState == UNDEFINED) {
+            return
+        }
+
         val newTransition =
             TransitionInfo(
-                ownerName = this::class.java.simpleName,
+                ownerName = "${this::class.java.simpleName} (startTransitionToUndefined)",
                 from = currentState,
                 to = UNDEFINED,
                 animator = null,
@@ -239,6 +349,25 @@ constructor(
             )
         repository.nextLockscreenTargetState.value = null
         startTransition(newTransition)
+    }
+
+    /** Sends STARTED and FINISHED steps to the provided state, then clears the transition. */
+    private suspend fun startAndFinishTransitionTo(state: KeyguardState, reason: String) {
+        if (internalTransitionInteractor.currentTransitionInfoInternal().to == state) {
+            return
+        }
+
+        val newTransition =
+            TransitionInfo(
+                ownerName = "${this::class.java.simpleName} ($reason)",
+                from = internalTransitionInteractor.currentTransitionInfoInternal().to,
+                to = state,
+                animator = null,
+                modeOnCanceled = TransitionModeOnCanceled.REVERSE,
+            )
+        currentTransitionId = internalTransitionInteractor.startTransition(newTransition)
+        internalTransitionInteractor.updateTransition(currentTransitionId!!, 1f, FINISHED)
+        resetTransitionData()
     }
 
     private suspend fun startTransition(transitionInfo: TransitionInfo) {

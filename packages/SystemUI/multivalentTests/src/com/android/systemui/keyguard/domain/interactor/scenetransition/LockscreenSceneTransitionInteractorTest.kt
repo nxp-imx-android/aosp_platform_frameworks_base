@@ -37,6 +37,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -312,6 +313,13 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
     fun transition_overlay_to_ls_scene_end_in_ls() =
         testScope.runTest {
             val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Idle(
+                    Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.NotificationsShade),
+                )
+
             sceneTransitions.value =
                 ObservableTransitionState.Transition.ShowOrHideOverlay(
                     overlay = Overlays.NotificationsShade,
@@ -1197,6 +1205,66 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             )
         }
 
+    @Test
+    fun transitionToShade() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            val currentScene = MutableStateFlow(Scenes.Lockscreen)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Shade,
+                    currentScene = currentScene,
+                    progress,
+                    true,
+                    flowOf(false),
+                )
+            runCurrent()
+
+            progress.value = 0.4f
+
+            // When you lift your finger, the current scene updates to Shade prior to the Idle
+            // transition arriving.
+            currentScene.value = Scenes.Shade
+
+            sceneTransitions.value = ObservableTransitionState.Idle(currentScene = Scenes.Shade)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 4],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.STARTED,
+                progress = 0.0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1.0f,
+            )
+        }
+
     /**
      * STL: Ls -> Gone, then interrupted by Ls -> Bouncer. This happens when the next transition is
      * immediately started from Gone without settling in Idle. This specifically happens when
@@ -1300,8 +1368,8 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 step = allSteps[allSteps.size - 3],
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.UNDEFINED,
-                state = TransitionState.FINISHED,
-                progress = 1f,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
             )
 
             assertTransition(
@@ -1351,7 +1419,6 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                     false,
                     flowOf(false),
                 )
-            runCurrent()
 
             // Should finish going to UNDEFINED since Gone and Occluded are both UNDEFINED.
             assertTransition(
@@ -1451,10 +1518,8 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
             sceneTransitions.value = goneToLs
-            runCurrent()
 
             sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
-            runCurrent()
 
             sceneTransitions.value =
                 ObservableTransitionState.Transition.ShowOrHideOverlay(
@@ -1469,12 +1534,10 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                     previewProgress = flowOf(0f),
                     isInPreviewStage = flowOf(false),
                 )
-            runCurrent()
 
             // Idle on Lockscreen with Bouncer showing.
             sceneTransitions.value =
                 ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-            runCurrent()
 
             assertTransition(
                 step = currentStep!!,
@@ -1498,7 +1561,6 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                     previewProgress = flowOf(0f),
                     isInPreviewStage = flowOf(false),
                 )
-            runCurrent()
 
             assertTransition(
                 step = currentStep!!,
@@ -1511,7 +1573,6 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             // Go back to Bouncer.
             sceneTransitions.value =
                 ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-            runCurrent()
 
             assertTransition(
                 step = currentStep!!,
@@ -1520,6 +1581,694 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 state = TransitionState.FINISHED,
                 progress = 1f,
             )
+        }
+
+    @Test
+    fun snapFromUnrelatedTransition_toIdleOnLs() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Gone)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Gone,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            progress.value = 0.4f
+
+            // The most recent KTF step should be the FINISHED from Ls -> Gone. The 40% complete
+            // Gone -> Shade is not relevant to KTF and should not have started any transitions.
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            val stepCount = allSteps.size
+
+            // Snap to Lockscreen/AOD.
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.STARTED,
+                progress = 0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            // Make sure those are the only two steps emitted.
+            assertEquals(stepCount + 2, allSteps.size)
+        }
+
+    @Test
+    fun snapFromRelevantTransition_toIdleOnLs() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+            underTest.setNextLockscreenTargetState(KeyguardState.LOCKSCREEN)
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Gone,
+                    flowOf(Scenes.Gone),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            progress.value = 0.4f
+
+            // We're partway from Ls -> Gone.
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            // We snap to Lockscreen while the target state changes to AOD (sleeping while
+            // unlocking). Ensure current KTF transition is canceled and the new next state is
+            // respected.
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.STARTED,
+                progress = 0.6f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            // Make sure those are the only two steps emitted.
+            assertEquals(stepCount + 3, allSteps.size)
+        }
+
+    @Test
+    fun snapFromRelevantOverlayTransitionAwayFromLs_toIdleOnLs() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+            underTest.setNextLockscreenTargetState(KeyguardState.LOCKSCREEN)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Scenes.Lockscreen,
+                    toContent = Overlays.Bouncer,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+
+            progress.value = 0.4f
+
+            // We're partway from Ls -> Bouncer
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            // We snap to Lockscreen while the target state changes to AOD (sleeping while
+            // swiping up on bouncer because we are the worst kind of user). Ensure current KTF
+            // transition is canceled and the new next state is respected.
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.STARTED,
+                progress = 0.6f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            // Make sure those are the only two steps emitted.
+            assertEquals(stepCount + 3, allSteps.size)
+        }
+
+    /**
+     * Dragging from Lockscreen to Bouncer, then snapping to transition from Lockscreen to Dream
+     * without an Idle in between.
+     *
+     * This is the case where KTF is transitioning from LS -> UNDEFINED (from the bouncer
+     * transition), and now needs to transition from... LS -> UNDEFINED again (since Dream is also
+     * UNDEFINED). Given KTF's constraints, this requires us to go back to LS before starting the
+     * new transition to UNDEFINED.
+     *
+     * We don't want to use the existing LS -> UNDEFINED transition from LS -> Bouncer since then
+     * anyone listening to that won't be aware that we've canceled it.
+     */
+    @Test
+    fun snapLockscreenToOverlayTransition_lockscreenToDreamTransition() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Scenes.Lockscreen,
+                    toContent = Overlays.Bouncer,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            progress.value = 0.4f
+
+            // We're partway from Ls -> Bouncer
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Dream,
+                    flowOf(Scenes.Dream),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 5],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 4],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.STARTED,
+                progress = 0.6f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.STARTED,
+                progress = 0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            // Make sure those are the only five steps emitted.
+            assertEquals(stepCount + 5, allSteps.size)
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Dream)
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            assertEquals(stepCount + 6, allSteps.size)
+        }
+
+    /**
+     * Dragging from Lockscreen to Bouncer, then snapping to a transition between two scenes totally
+     * unrelated to Lockscreen. The transition to UNDEFINED should simply end - no canceling or
+     * reversing, since there are no KTF-relevant edges between either of the new Scenes.
+     */
+    @Test
+    fun snapLockscreenToOverlayTransition_toUnrelatedTransition() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Scenes.Lockscreen,
+                    toContent = Overlays.Bouncer,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            progress.value = 0.4f
+
+            // We're partway from Ls -> Bouncer
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Shade,
+                    Scenes.Dream,
+                    flowOf(Scenes.Dream),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            assertEquals(stepCount + 1, allSteps.size)
+        }
+
+    /**
+     * Dragging from Lockscreen to Bouncer, then snapping to a transition between two scenes totally
+     * unrelated to Lockscreen. The transition to UNDEFINED should simply end - no canceling or
+     * reversing, since there are no KTF-relevant edges between either of the new Scenes.
+     */
+    @Test
+    fun snapUnrelatedTransition_toLockscreenToOverlayTransition() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Shade,
+                    Scenes.Dream,
+                    flowOf(Scenes.Dream),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Dream,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            progress.value = 0.4f
+
+            // We were on unrelated scenes, in transition. Should be UNDEFINED and sitting there.
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            val stepCount = allSteps.size
+
+            // Snap to transitioning from Lockscreen to Bouncer. This should send KTF back to
+            // LOCKSCREEN so that it can then start LS -> UNDEFINED for Lockscreen -> Bouncer.
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Scenes.Lockscreen,
+                    toContent = Overlays.Bouncer,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 4],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.STARTED,
+                progress = 0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.STARTED,
+                progress = 0f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            assertEquals(stepCount + 4, allSteps.size)
+        }
+
+    @Test
+    fun snapTransitionToLockscreen_transitionBetweenUnrelatedScenes() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Overlays.Bouncer,
+                    toContent = Scenes.Lockscreen,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+
+            progress.value = 0.4f
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            // Snap to transitioning from Lockscreen to Bouncer. This should send KTF back to
+            // LOCKSCREEN so that it can then start LS -> UNDEFINED for Lockscreen -> Bouncer.
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Dream,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.STARTED,
+                progress = 0.6f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+
+            assertEquals(stepCount + 3, allSteps.size)
+        }
+
+    /**
+     * Lockscreen -> Bouncer, snapping to Shade -> Lockscreen. Since Bouncer and Shade are different
+     * content, we should replace LS -> UNDEFINED with UNDEFINED -> LS, starting at 0f, instead of
+     * reversing from 0.4f like we would if we transitioned from Bouncer -> Lockscreen.
+     */
+    @Test
+    fun snapLockscreenToOverlayTransition_toTransitionFromThirdSceneToLockscreen() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Scenes.Lockscreen,
+                    toContent = Overlays.Bouncer,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            progress.value = 0.4f
+
+            // We're partway from Ls -> Bouncer
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Shade,
+                    Scenes.Lockscreen,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.STARTED,
+                progress = 0f, // Progress resets because this is a totally different transition.
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            assertEquals(stepCount + 3, allSteps.size)
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+            assertEquals(stepCount + 4, allSteps.size)
+        }
+
+    @Test
+    fun snapOverlayToLockscreenTransition_toTransitionFromLockscreenToThirdScene() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            val allSteps by collectValues(kosmos.realKeyguardTransitionRepository.transitions)
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition.ShowOrHideOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromContent = Overlays.Bouncer,
+                    toContent = Scenes.Lockscreen,
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            progress.value = 0.4f
+
+            // We're partway from Bouncer -> LS
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val stepCount = allSteps.size
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 3],
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.CANCELED,
+                progress = 0.4f,
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 2],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.STARTED,
+                progress = 0f, // Progress resets because this is a totally different transition.
+            )
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            assertEquals(stepCount + 3, allSteps.size)
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Shade)
+
+            assertTransition(
+                step = allSteps[allSteps.size - 1],
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+            assertEquals(stepCount + 4, allSteps.size)
         }
 
     private fun assertTransition(
