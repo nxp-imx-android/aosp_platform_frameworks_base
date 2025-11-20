@@ -12223,6 +12223,15 @@ public final class Settings {
         public static final String ON_DEVICE_INTELLIGENCE_UNBIND_TIMEOUT_MS =
                 "on_device_intelligence_unbind_timeout_ms";
 
+        /**
+         * The Epoch Millisecond time of the first deployment of on-device models (via network
+         * download or copy from pre-installed model(s)).
+         * This value might be used to decide when to reclaim storage for pre-installed model(s).
+         *
+         * @hide
+         */
+        public static final String FIRST_ON_DEVICE_MODELS_DOWNLOADED_TIME =
+                "first_on_device_models_downloaded_time";
 
         /**
          * Timeout that represents maximum idle time before which a callback should be populated.
