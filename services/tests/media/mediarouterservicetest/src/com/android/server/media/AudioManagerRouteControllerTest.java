@@ -67,6 +67,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
@@ -82,6 +83,7 @@ import java.util.Set;
 @RunWith(JUnit4.class)
 public class AudioManagerRouteControllerTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public Timeout globalTimeout = Timeout.seconds(5);
 
     private static final String FAKE_ROUTE_NAME = "fake name";
     private static final String FAKE_BT_ROUTE_ADDRESS = "11:22:33:44:55:66";
@@ -245,12 +247,15 @@ public class AudioManagerRouteControllerTest {
     @Test
     public void onAudioDevicesAdded_clearsAudioRoutingPoliciesCorrectly() {
         setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
-        clearInvocations(mMockAudioManager);
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ null, // Selected device doesn't change.
-                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_BUILTIN_EARPIECE);
-        verifyNoMoreInteractions(mMockAudioManager);
-
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_BUILTIN_EARPIECE,
+                FAKE_AUDIO_DEVICE_LE_HEADSET_1);
+        MediaRoute2Info bleHeadsetRoute =
+                getAvailableRouteWithType(MediaRoute2Info.TYPE_BLE_HEADSET);
+        // Make a transfer so that a preferred device is set.
+        mControllerUnderTest.transferTo(/* requestId= */ 0L, bleHeadsetRoute.getId());
+        clearInvocations(mMockAudioManager);
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
@@ -264,7 +269,6 @@ public class AudioManagerRouteControllerTest {
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        mLooperManager.execute(mLooperManager.next());
         // Make a transfer so that a preferred device is set.
         MediaRoute2Info builtinSpeakerRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
@@ -295,7 +299,6 @@ public class AudioManagerRouteControllerTest {
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        mLooperManager.execute(mLooperManager.next());
 
         verify(mMockAudioManager, never()).removePreferredDeviceForStrategy(any());
     }
@@ -786,6 +789,12 @@ public class AudioManagerRouteControllerTest {
         }
         updateMockAudioManagerState();
         mAudioDeviceCallback.onAudioDevicesAdded(newAvailableDevices);
+        var message = mLooperManager.poll();
+        while (message != null) {
+            mLooperManager.execute(message);
+            mLooperManager.recycle(message);
+            message = mLooperManager.poll();
+        }
     }
 
     private void removeAvailableAudioDeviceInfos(
