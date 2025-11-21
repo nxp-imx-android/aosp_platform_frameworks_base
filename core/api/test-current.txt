@@ -3653,6 +3653,10 @@ package android.telephony {
     method public boolean isValid();
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") public final class NetworkSecurityEvent implements android.os.Parcelable {
+    ctor public NetworkSecurityEvent(int, int, @NonNull int[], int, int, int, @NonNull String, int, boolean);
+  }
+
   public class PhoneNumberUtils {
     method public static int getMinMatchForTest();
     method public static void setMinMatchForTest(int);

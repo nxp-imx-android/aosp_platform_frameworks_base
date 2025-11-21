@@ -46,6 +46,7 @@ import android.telephony.ICellInfoCallback;
 import android.telephony.ModemActivityInfo;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.NetworkScanRequest;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.PhoneCapability;
 import android.telephony.PhoneNumberRange;
 import android.telephony.RadioAccessFamily;
@@ -88,6 +89,7 @@ import com.android.internal.telephony.IccLogicalChannelRequest;
 import com.android.internal.telephony.IImsStateCallback;
 import com.android.internal.telephony.IIntegerConsumer;
 import com.android.internal.telephony.INumberVerificationCallback;
+
 import com.android.internal.telephony.OperatorInfo;
 
 import java.util.List;
@@ -3225,6 +3227,20 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
         + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
     boolean isNullCipherNotificationsEnabled();
+
+    /**
+     * Get supported network alert categories.
+     *
+     * <p>Requires permission: android.Manifest.READ_PRIVILEGED_PHONE_STATE</p>
+     *
+     * @throws IllegalStateException if the Telephony process is not currently available
+     * @throws SecurityException if the caller does not have the required privileges
+     * @throws UnsupportedOperationException if the modem does not support this feature.
+     * @hide
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+        + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
+    int[] getSupportedNetworkAlertCategories();
 
     /**
      * Get the aggregated satellite plmn list. This API collects plmn data from multiple sources,

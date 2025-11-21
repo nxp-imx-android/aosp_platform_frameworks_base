@@ -15723,6 +15723,68 @@ package android.telephony {
     method @NonNull public android.telephony.NetworkRegistrationInfo.Builder setTransportType(int);
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") public final class NetworkSecurityEvent implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAlertCategory();
+    method public int getAlertStatus();
+    method public int getArfcn();
+    method public int getCellId();
+    method public int getPhysCellId();
+    method @NonNull public String getPlmn();
+    method public int getRat();
+    method @NonNull public int[] getReasonCodes();
+    method public boolean isEmergency();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int ALERT_CATEGORY_ATTRACTIVE_CELL = 7; // 0x7
+    field public static final int ALERT_CATEGORY_AUTH_PASSED = 10; // 0xa
+    field public static final int ALERT_CATEGORY_DOS_NETWORK = 6; // 0x6
+    field public static final int ALERT_CATEGORY_DOWNGRADE = 1; // 0x1
+    field public static final int ALERT_CATEGORY_DOWNGRADE_2G = 2; // 0x2
+    field public static final int ALERT_CATEGORY_DOWNGRADE_3G = 3; // 0x3
+    field public static final int ALERT_CATEGORY_DOWNGRADE_4G = 4; // 0x4
+    field public static final int ALERT_CATEGORY_IMPRISONMENT = 5; // 0x5
+    field public static final int ALERT_CATEGORY_JAMMING = 8; // 0x8
+    field public static final int ALERT_CATEGORY_LOCATION_TRACKING = 9; // 0x9
+    field public static final int ALERT_CATEGORY_UNAUTH_EMERGENCY_MSG = 12; // 0xc
+    field public static final int ALERT_CATEGORY_UNAUTH_SMS = 11; // 0xb
+    field public static final int ALERT_CATEGORY_UNSPECIFIED = 0; // 0x0
+    field public static final int ALERT_STATUS_DETECTED = 2; // 0x2
+    field public static final int ALERT_STATUS_MITIGATED_CELL_BARRED = 3; // 0x3
+    field public static final int ALERT_STATUS_MITIGATED_CELL_DEPRIORITIZED = 4; // 0x4
+    field public static final int ALERT_STATUS_MITIGATED_UNSPECIFIED = 5; // 0x5
+    field public static final int ALERT_STATUS_NOT_DETECTED = 1; // 0x1
+    field public static final int ALERT_STATUS_UNSPECIFIED = 0; // 0x0
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.NetworkSecurityEvent> CREATOR;
+    field public static final int REASON_CODE_ATTRACTIVE_CELL_IMSI_CATCHER_PARAMETERS = 16; // 0x10
+    field public static final int REASON_CODE_ATTRACTIVE_CELL_MISSING_NEIGHBOR_INFO = 15; // 0xf
+    field public static final int REASON_CODE_ATTRACTIVE_CELL_UNEXPECTED_PLMN_ID = 14; // 0xe
+    field public static final int REASON_CODE_ATTRACTIVE_CELL_VERY_HIGH_RX_LEVEL = 13; // 0xd
+    field public static final int REASON_CODE_DOS_AUTHENTICATION_REQUEST_FLOOD = 11; // 0xb
+    field public static final int REASON_CODE_DOS_CONNECTION_SETUP_FAIL_LOOP = 10; // 0xa
+    field public static final int REASON_CODE_DOS_DETACH_ATTACH_CYCLE = 12; // 0xc
+    field public static final int REASON_CODE_DOS_EXCESSIVE_PAGING_RATE = 9; // 0x9
+    field public static final int REASON_CODE_DOWNGRADE_FORCED_HANDOVER = 4; // 0x4
+    field public static final int REASON_CODE_DOWNGRADE_HIGHER_RAT_REJECTED = 2; // 0x2
+    field public static final int REASON_CODE_DOWNGRADE_SIGNAL_STRENGTH_ANOMALY = 3; // 0x3
+    field public static final int REASON_CODE_DOWNGRADE_WEAK_CIPHER_SUITES_OFFERED = 1; // 0x1
+    field public static final int REASON_CODE_IMPRISONMENT_BARRING_OF_OTHER_CELLS = 7; // 0x7
+    field public static final int REASON_CODE_IMPRISONMENT_CELL_RESELECTION_FAILURE = 5; // 0x5
+    field public static final int REASON_CODE_IMPRISONMENT_NEIGHBOR_LIST_EMPTY_OR_INVALID = 6; // 0x6
+    field public static final int REASON_CODE_IMPRISONMENT_REJECTED_FROM_NEIGHBORS = 8; // 0x8
+    field public static final int REASON_CODE_JAMMING_NARROWBAND_INTERFERENCE = 18; // 0x12
+    field public static final int REASON_CODE_JAMMING_SNR_DEGRADATION = 19; // 0x13
+    field public static final int REASON_CODE_JAMMING_WIDEBAND_INTERFERENCE = 17; // 0x11
+    field public static final int REASON_CODE_LOCATION_FREQUENT_TRACKING_AREA_UPDATES = 20; // 0x14
+    field public static final int REASON_CODE_LOCATION_PAGING_WITHOUT_FOLLOWUP = 22; // 0x16
+    field public static final int REASON_CODE_LOCATION_SILENT_SMS_DETECTED = 21; // 0x15
+    field public static final int REASON_CODE_UNAUTH_EMERGENCY_SOURCE_CELL_NOT_AUTHENTICATED = 27; // 0x1b
+    field public static final int REASON_CODE_UNAUTH_SMS_INTEGRITY_CHECK_FAILED = 23; // 0x17
+    field public static final int REASON_CODE_UNAUTH_SMS_KNOWN_SPOOFING_METHOD = 26; // 0x1a
+    field public static final int REASON_CODE_UNAUTH_SMS_MISSING_SECURITY_HEADERS = 24; // 0x18
+    field public static final int REASON_CODE_UNAUTH_SMS_UNTRUSTED_SME = 25; // 0x19
+    field public static final int REASON_CODE_UNSPECIFIED = 0; // 0x0
+  }
+
   public abstract class NetworkService extends android.app.Service {
     ctor public NetworkService();
     method public android.os.IBinder onBind(android.content.Intent);
@@ -16283,6 +16345,7 @@ package android.telephony {
     field @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public static final int EVENT_LINK_CAPACITY_ESTIMATE_CHANGED = 37; // 0x25
     field @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public static final int EVENT_MEDIA_QUALITY_STATUS_CHANGED = 39; // 0x27
     field @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final int EVENT_MESSAGE_WAITING_INDICATOR_CHANGED = 3; // 0x3
+    field @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_NETWORK_SECURITY_EVENTS = 48; // 0x30
     field @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_OEM_HOOK_RAW = 15; // 0xf
     field @RequiresPermission(android.Manifest.permission.READ_ACTIVE_EMERGENCY_SESSION) public static final int EVENT_OUTGOING_EMERGENCY_CALL = 29; // 0x1d
     field @RequiresPermission(android.Manifest.permission.READ_ACTIVE_EMERGENCY_SESSION) public static final int EVENT_OUTGOING_EMERGENCY_SMS = 30; // 0x1e
@@ -16331,6 +16394,10 @@ package android.telephony {
 
   public static interface TelephonyCallback.MediaQualityStatusChangedListener {
     method @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public void onMediaQualityStatusChanged(@NonNull android.telephony.ims.MediaQualityStatus);
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") public static interface TelephonyCallback.NetworkSecurityEventsListener {
+    method public void onNetworkSecurityEvents(@NonNull java.util.Set<android.telephony.NetworkSecurityEvent>);
   }
 
   public static interface TelephonyCallback.OutgoingEmergencyCallListener {
@@ -16460,6 +16527,7 @@ package android.telephony {
     method @Nullable @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.Locale getSimLocale();
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public void getSimServiceTable(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<byte[],java.lang.Exception>);
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.Collection<android.telephony.UiccSlotMapping> getSimSlotMapping();
+    method @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int[] getSupportedNetworkAlertCategories();
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.List<android.telephony.RadioAccessSpecifier> getSystemSelectionChannels();
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public java.util.List<android.telephony.TelephonyHistogram> getTelephonyHistograms();
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public android.telephony.UiccSlotInfo[] getUiccSlotsInfo();

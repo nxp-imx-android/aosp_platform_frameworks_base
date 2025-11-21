@@ -101,6 +101,7 @@ import android.telephony.Annotation.TtyMode;
 import android.telephony.Annotation.UiccAppType;
 import android.telephony.Annotation.UiccAppTypeExt;
 import android.telephony.CallForwardingInfo.CallForwardingReason;
+import android.telephony.NetworkSecurityEvent.AlertCategory;
 import android.telephony.VisualVoicemailService.VisualVoicemailTask;
 import android.telephony.data.ApnSetting;
 import android.telephony.data.ApnSetting.MvnoType;
@@ -19162,6 +19163,34 @@ public class TelephonyManager {
         return false;
     }
 
+    /**
+     * Get the supported network alert categories for the modem.
+     *
+     * @throws IllegalStateException if the Telephony process is not currently available
+     * @throws SecurityException if the caller does not have the required privileges
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_NETWORK_SECURITY_EVENT_INDICATIONS)
+    @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @SystemApi
+    public @NonNull @AlertCategory int[] getSupportedNetworkAlertCategories() {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getSupportedNetworkAlertCategories();
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (UnsupportedOperationException ex) {
+            Rlog.e(TAG, "getSupportedNetworkAlertCategories UnsupportedOperationException", ex);
+            return new int[0];
+        }
+         catch (RemoteException ex) {
+            Rlog.e(TAG, "getSupportedNetworkAlertCategories RemoteException", ex);
+            ex.rethrowFromSystemServer();
+        }
+        return new int[0];
+    }
 
     /**
      * Get current cell broadcast message identifier ranges.
