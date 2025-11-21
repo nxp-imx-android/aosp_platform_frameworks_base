@@ -16,8 +16,14 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
+import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.data.repository.screenCaptureMarkupRepository
 
 val Kosmos.screenCaptureMarkupInteractor: ScreenCaptureMarkupInteractor by
-    Kosmos.Fixture { ScreenCaptureMarkupInteractor(screenCaptureMarkupRepository) }
+    Kosmos.Fixture {
+        ScreenCaptureMarkupInteractor(
+            resources = applicationContext.resources,
+            repository = screenCaptureMarkupRepository,
+        )
+    }

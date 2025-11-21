@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.ui.compose
+package com.android.systemui.content.res
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import android.content.res.TypedArray
 
-@Composable fun RecordDetailsMarkupColorSelector(modifier: Modifier = Modifier) {}
+/** Shortcut to map typed array to a list of certain resources. */
+fun <T> TypedArray.map(map: TypedArray.(index: Int) -> T): List<T> =
+    (0 until length()).map { index -> map(index) }

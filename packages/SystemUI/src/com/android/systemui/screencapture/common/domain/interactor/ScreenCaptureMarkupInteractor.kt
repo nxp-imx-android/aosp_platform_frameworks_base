@@ -16,19 +16,30 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
+import android.content.res.Resources
+import android.graphics.Color
+import androidx.core.content.res.use
+import com.android.systemui.content.res.map
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureMarkupRepository
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 @ScreenCaptureScope
 class ScreenCaptureMarkupInteractor
 @Inject
-constructor(private val repository: ScreenCaptureMarkupRepository) {
+constructor(@Main resources: Resources, private val repository: ScreenCaptureMarkupRepository) {
 
-    val color = repository.color
-    val enabled =
+    val availableColors: List<Int> =
+        resources.obtainTypedArray(R.array.screen_record_color_palette).use { array ->
+            array.map { index -> getColor(index, Color.TRANSPARENT) }
+        }
+    val color: Flow<Int> = repository.color.map { it ?: availableColors.first() }
+    val enabled: Flow<Boolean> =
         repository.enabled.map { enabled ->
             enabled && ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
         }
