@@ -2806,6 +2806,28 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             )
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun setRememberedBoundsRatio_clearRememberedBoundsRatio() = runTest {
+        val packageName = "com.test.app"
+        val bounds = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        repo.setRememberedBoundsRatio(packageName, bounds)
+        assertThat(repo.getRememberedBoundsRatio(packageName)).isEqualTo(bounds)
+
+        repo.clearRememberedBoundsRatio(packageName)
+        bgScope.testScheduler.advanceUntilIdle()
+
+        assertThat(repo.getRememberedBoundsRatio(packageName)).isNull()
+        verify(persistentRepository)
+            .addOrUpdateRepository(
+                userId = eq(DEFAULT_USER_ID),
+                desks = any(),
+                activeDeskId = any(),
+                preservedDisplays = any(),
+                rememberedBoundsRatioByPackageName = eq(ArrayMap()),
+            )
+    }
+
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
         var lastAddition: LastAddition? = null
             private set

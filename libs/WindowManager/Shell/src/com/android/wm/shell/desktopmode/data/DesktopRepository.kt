@@ -24,6 +24,7 @@ import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.Slog
 import android.util.SparseArray
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
@@ -1263,6 +1264,9 @@ class DesktopRepository(
             return
         }
         rememberedBoundsRatioByPackageName.remove(packageName)
+        // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
+        // needs to be updated.
+        updatePersistentRepository(DEFAULT_DISPLAY)
     }
 
     fun restoreRememberedBoundsRatioByPackageName(source: ArrayMap<String, RectF>) {
