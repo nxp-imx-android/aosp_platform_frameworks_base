@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -40,7 +41,8 @@ import java.util.concurrent.TimeoutException;
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
-    private final List<FakeScheduledFuture<?>> mFutures = new ArrayList<>();
+    private final List<FakeScheduledFuture<?>> mFutures =
+            Collections.synchronizedList(new ArrayList<>());
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -88,8 +90,11 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         // Make a copy of the futures for us to iterate over, and clear out the existing mFutures.
         // Otherwise if any tasks were to schedule new tasks you would end up modifying the list
         // of futures while we're iterating over it.
-        ImmutableList<FakeScheduledFuture<?>> futuresCopy = ImmutableList.copyOf(mFutures);
-        mFutures.clear();
+        ImmutableList<FakeScheduledFuture<?>> futuresCopy;
+        synchronized (mFutures) {
+            futuresCopy = ImmutableList.copyOf(mFutures);
+            mFutures.clear();
+        }
         int numTasksRun = 0;
         for (FakeScheduledFuture<?> future : futuresCopy) {
             if (future.getDelay(TimeUnit.MILLISECONDS) <= 0) {
