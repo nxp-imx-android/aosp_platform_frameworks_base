@@ -2244,6 +2244,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             boolean lockscreenExpandWantsIt = false;
             if (shouldLockscreenExpandHandleTouch()) {
                 lockscreenExpandWantsIt = getLockscreenExpandTouchHelper().onTouchEvent(ev);
+                if (lockscreenExpandWantsIt) {
+                    mView.startDraggingOnLockscreen();
+                }
             }
             boolean horizontalSwipeWantsIt = false;
             boolean scrollerWantsIt = false;
