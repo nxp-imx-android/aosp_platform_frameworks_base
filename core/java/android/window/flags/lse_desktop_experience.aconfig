@@ -1256,16 +1256,6 @@ flag {
 }
 
 flag {
-    name: "enable_taskbar_recent_tasks_throttle_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Throttle recent tasks reload operations for Taskbar."
-    bug: "415090968"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_taskbar_recents_layout_transition"
     namespace: "lse_desktop_experience"
     description: "Enable Taskbar LayoutTransition for Recent Apps"
