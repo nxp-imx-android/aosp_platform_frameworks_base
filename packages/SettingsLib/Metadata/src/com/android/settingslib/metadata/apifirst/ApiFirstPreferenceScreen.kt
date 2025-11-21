@@ -17,28 +17,95 @@
 package com.android.settingslib.metadata.apifirst
 
 import android.content.Context
+import androidx.fragment.app.Fragment
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
+import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
+import kotlin.collections.mutableListOf
+import kotlin.reflect.KClass
 
 /**
  * Container for all information and preferences on a Settings screen which is intended to be
  * exposed via API using 2026 "Lightweight" way.
  */
-abstract class ApiFirstPreferenceScreen() : PreferenceScreenMetadata {
-    override fun isFlagEnabled(context: Context): Boolean = true
+abstract class ApiFirstPreferenceScreen(
+    override val key: String,
+    val topLevelSettingsCategory: String,
+    val fragment: KClass<out Fragment>,
+    override val purpose: Int,
+    val alreadyPartiallyMigrated: KClass<*>? = null,
+) : PreferenceScreenMetadata {
+    override fun fragmentClass(): Class<out Fragment>? = fragment.java
 
     override fun getPreferenceHierarchy(
         context: Context,
         coroutineScope: CoroutineScope,
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
-            for (preference in preferences(context)) {
+            for (preference in preferencesList) {
                 +preference
             }
         }
 
-    /** List of the preferences contained on the Settings screen. */
-    abstract fun preferences(context: Context): List<ApiFirstPreference<*>>
+    var parametersSchema: KeyParametersSchema? = null
+    val preferencesPermissions = mutableListOf<String>()
+
+    // TODO: Wrap this in a single subtype
+    var preferencesPreconditionsDescription: String? = null
+    var preferencesPreconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
+
+    val preferencesList = mutableListOf<ApiFirstPreference<*>>()
+
+    /**
+     * TODO: Update comment example
+     *
+     * A factory function to create an instance of [ApiFirstPreference].
+     * This is a convenient way to instantiate a preference without creating a new concrete class.
+     *
+     * ```
+     * createPreference {
+     *     key = "PREFERENCE_KEY"
+     *
+     *     get {
+     *         execute { context ->
+     *             // Get the value
+     *             Foo(context)
+     *         }
+     *     }
+     *
+     *     set {
+     *         execute { context, value ->
+     *             // Set the value
+     *             Bar(context, value)
+     *         }
+     *     }
+     * }
+     * ```
+     */
+    protected inline fun <reified V : Any> preference(
+        lambda: ApiFirstPreferenceConfigBuilder<V>.() -> Unit
+    ) {
+        val builder = ApiFirstPreferenceConfigBuilder(V::class.java)
+        builder.lambda()
+        preferencesList.add(builder.build())
+    }
+
+    protected fun parameters(lambda: KeyParametersSchema.Builder.() -> Unit) {
+        parametersSchema = KeyParametersSchema(lambda)
+    }
+
+    protected fun permissions(permissions: List<String>) {
+        preferencesPermissions.addAll(permissions)
+    }
+
+    protected fun preconditions(
+        description: String,
+        lambda: (Context) -> ApiFirstPreconditions
+    ) {
+        preferencesPreconditionsDescription = description
+        preferencesPreconditionsFun = lambda
+    }
 }
