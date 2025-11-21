@@ -38,7 +38,6 @@ import android.util.SparseArray;
 import android.window.DesktopExperienceFlags;
 import android.window.TransitionInfo;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
 import com.android.wm.shell.shared.TransitionUtil.LeafTaskFilter;
@@ -318,12 +317,5 @@ public class FocusTransitionObserver {
                     mFocusedTaskOnDisplay.valueAt(i).taskId,
                     mFocusedTaskOnDisplay.valueAt(i).topActivity);
         }
-    }
-
-    /** Returns if all related flags are enabled related to migration from TaskInfo#isFocused to
-     * FocusTransitionObserver */
-    public boolean isDisplayLocalIsFocusedMigrationEnabled() {
-        return Flags.enableInteractivePictureInPicture()
-                && Flags.enableFocusTransitionObserverCleanup();
     }
 }

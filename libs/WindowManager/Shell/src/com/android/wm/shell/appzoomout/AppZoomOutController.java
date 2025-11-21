@@ -41,13 +41,15 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.sysui.ShellInit;
 
 /** Class that manages the app zoom out UI and states. */
 public class AppZoomOutController implements RemoteCallable<AppZoomOutController>,
-        ShellTaskOrganizer.FocusListener, DisplayChangeController.OnDisplayChangingListener {
+        ShellTaskOrganizer.FocusListener, DisplayChangeController.OnDisplayChangingListener,
+        FocusTransitionListener {
 
     private static final String TAG = "AppZoomOutController";
 
@@ -152,14 +154,33 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         }
     }
 
-    @Override
-    public void onFocusTaskChanged(ActivityManager.RunningTaskInfo taskInfo) {
+    private void updateIsHomeTaskFocusedIfNeeded(
+            @Nullable ActivityManager.RunningTaskInfo taskInfo, boolean isFocusedOnDisplay) {
         if (taskInfo == null) {
             return;
         }
         if (taskInfo.getActivityType() == WindowConfiguration.ACTIVITY_TYPE_HOME) {
-            mAppDisplayAreaOrganizer.setIsHomeTaskFocused(taskInfo.isFocused);
+            mAppDisplayAreaOrganizer.setIsHomeTaskFocused(isFocusedOnDisplay);
         }
+    }
+
+    // ShellTaskOrganizer.FocusListener override
+    @Override
+    public void onFocusTaskChanged(ActivityManager.RunningTaskInfo taskInfo) {
+        if (FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
+            return;
+        }
+        updateIsHomeTaskFocusedIfNeeded(taskInfo, taskInfo.isFocused);
+    }
+
+    // FocusTransitionListener override
+    @Override
+    public void onFocusedTaskChanged(ActivityManager.RunningTaskInfo taskInfo,
+            boolean isFocusedOnDisplay, boolean isFocusedGlobally) {
+        if (!FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
+            return;
+        }
+        updateIsHomeTaskFocusedIfNeeded(taskInfo, isFocusedOnDisplay);
     }
 
     @Override
