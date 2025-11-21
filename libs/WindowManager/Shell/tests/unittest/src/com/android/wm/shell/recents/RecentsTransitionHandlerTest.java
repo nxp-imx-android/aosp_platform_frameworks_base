@@ -55,6 +55,7 @@ import android.app.ActivityTaskManager;
 import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -593,6 +594,39 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
+    public void testMerge_cancelOnRecentsVisible() throws Exception {
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        final TransitionInfo info = createTransitionInfo();
+        final ActivityManager.RunningTaskInfo homeTask = info.getChanges().getFirst().getTaskInfo();
+        assertThat(homeTask.getActivityType()).isEqualTo(ACTIVITY_TYPE_HOME);
+
+        // Start a recents transition
+        mRecentsTransitionHandler.startAnimation(
+                transition, info, new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        // Merge a transition that results in the home opening again
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, new ComponentName("test_pkg", "test_activity_1"))
+                .addChange(TRANSIT_CLOSE, new ComponentName("test_pkg", "test_activity_2"))
+                .addChange(TRANSIT_OPEN, homeTask)
+                .build();
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mMainExecutor.flushAll();
+
+        // Verify that the runner was notified and that the cancel immediately took effect (and the
+        // transition is finished)
+        verify(animationRunner).onAnimationCanceled(any(), any());
+        assertThat(mRecentsTransitionHandler.findController(transition)).isNull();
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMergeAndFinish_openingTaskInDesk_setsPositionOfChild() {
         ActivityManager.RunningTaskInfo deskRootTask =
@@ -729,9 +763,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
     private TransitionInfo createTransitionInfo(SurfaceControl homeLeash) {
         final ActivityManager.RunningTaskInfo homeTask = new TestRunningTaskInfoBuilder()
+                .setActivityType(ACTIVITY_TYPE_HOME)
                 .setTopActivityType(ACTIVITY_TYPE_HOME)
                 .build();
         final ActivityManager.RunningTaskInfo appTask = new TestRunningTaskInfoBuilder()
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
                 .setTopActivityType(ACTIVITY_TYPE_STANDARD)
                 .build();
         final TransitionInfo.Change homeChange = new TransitionInfo.Change(
@@ -740,7 +776,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         homeChange.setTaskInfo(homeTask);
         final TransitionInfo.Change appChange = new TransitionInfo.Change(
                 appTask.token, new SurfaceControl());
-        appChange.setMode(TRANSIT_TO_FRONT);
+        appChange.setMode(TRANSIT_TO_BACK);
         appChange.setTaskInfo(appTask);
         return new TransitionInfoBuilder(TRANSIT_START_RECENTS_TRANSITION)
                 .addChange(homeChange)

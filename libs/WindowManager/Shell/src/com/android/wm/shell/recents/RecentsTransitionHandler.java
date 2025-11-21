@@ -1168,7 +1168,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "[%d]   %s recents", mInstanceId, chgTypeMsg);
                         recentsOpening = change;
                     } else if (isRootTask || isLeafTask) {
-                        String containerTypeMsg = "task";
+                        String containerTypeMsg = "task=" + taskInfo.taskId;
                         if (isLeafTask && taskInfo.topActivityType == ACTIVITY_TYPE_HOME) {
                             // This is usually a 3p launcher
                             mOpeningSeparateHome = true;
@@ -1193,7 +1193,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         foundRecentsClosing = true;
                     } else if (isRootTask || isLeafTask) {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "[%d]   Closing task", mInstanceId);
+                                "[%d]   Closing task=%d", mInstanceId, taskInfo.taskId);
                         if (closingTasks == null) {
                             closingTasks = new ArrayList<>();
                         }
@@ -1430,9 +1430,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mergeActivityOnly(info, startT);
             } else if (!didMergeThings) {
                 // Didn't recognize anything in incoming transition so don't merge it.
-                Slog.w(TAG, "Don't know how to merge this transition, foundRecentsClosing="
-                        + foundRecentsClosing + " recentsTaskId=" + mRecentsTaskId);
-                if (foundRecentsClosing || mRecentsTaskId < 0) {
+                final boolean recentsChanging = (recentsOpening != null) || foundRecentsClosing;
+                Slog.w(TAG, "Don't know how to merge this transition, recentsChanging="
+                        + recentsChanging + " recentsTaskId=" + mRecentsTaskId);
+                if (recentsChanging || mRecentsTaskId < 0) {
                     mWillFinishToHome = false;
                     cancel("didn't merge");
                 }
