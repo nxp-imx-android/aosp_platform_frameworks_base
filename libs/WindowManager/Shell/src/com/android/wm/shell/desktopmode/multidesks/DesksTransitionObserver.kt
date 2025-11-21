@@ -356,13 +356,16 @@ class DesksTransitionObserver(
                 logD("Not desk or wallpaper, skipping")
                 continue
             }
-            val changeUserId = taskInfo.userId
+            // The [change] userId can't be used here because the type of tasks being handled
+            // won't actually report the userId they're being used for right now (the current user)
+            // - DesktopWallpaperActivity is |showForAllUsers|, so its |userId| is that of the user
+            // that created it.
+            // - Desk root tasks are shared across users, so its |userId| is also that of the user
+            // that created it.
+            // Use the current user id instead.
+            val userId = shellController.currentUserId
             if (change in desktopWallpaperChanges) {
-                // The [changeUserId] can't be used here because the DesktopWallpaperActivity uses
-                // |showForAllUsers|, so the task's userId won't reflect the user seeing this
-                // change.
-                val userId = shellController.currentUserId
-                logD("Desktop wallpaper change, currentUserId=%d", userId)
+                logD("Desktop wallpaper change, userId=%d", userId)
                 if (hasSeenDesk) {
                     logD("Saw desk change before desktop wallpaper change, skipping")
                     continue
@@ -478,7 +481,12 @@ class DesksTransitionObserver(
                 continue
             }
             val displayId = change.endDisplayId
-            logD("Handle desk change for desk=%d in display=%d", deskId, displayId)
+            logD(
+                "Handle desk change for desk=%d in display=%d for userId=%d",
+                deskId,
+                displayId,
+                userId,
+            )
             when {
                 change.isToBack() -> {
                     if (
@@ -507,7 +515,6 @@ class DesksTransitionObserver(
                         logD("desk=%d moved to back but is scheduled to activate, skipping", deskId)
                         continue
                     }
-                    val userId = changeUserId
                     val repository = desktopUserRepositories.getProfile(userId)
                     logD(
                         "desk=%d of user=%d moved to back, will let the organizer deactivate and " +
@@ -537,12 +544,12 @@ class DesksTransitionObserver(
                         logD("Pending display change found; skipping.")
                         continue
                     }
-                    val repository = desktopUserRepositories.getProfile(changeUserId)
+                    val repository = desktopUserRepositories.getProfile(userId)
                     logD(
                         "desk=%d of user=%d moved to front, " +
                             "will let the organizer and repository activate",
                         deskId,
-                        changeUserId,
+                        userId,
                     )
                     desksOrganizer.activateDesk(wct, deskId, skipReorder = true)
                     repository.setActiveDesk(displayId, deskId)
