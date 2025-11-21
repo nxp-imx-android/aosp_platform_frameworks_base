@@ -27,5 +27,8 @@ java_test_host {
         "truth",
     ],
     test_suites: ["general-tests"],
+    test_options: {
+        unit_test: true,
+    },
     visibility: ["//visibility:private"],
 }
