@@ -18,11 +18,13 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.window.DesktopExperienceFlags
+import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
 import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import java.io.PrintWriter
 
@@ -30,6 +32,8 @@ import java.io.PrintWriter
 class DesktopModeShellCommandHandler(
     private val controller: DesktopTasksController,
     private val focusTransitionObserver: FocusTransitionObserver,
+    private val userRepositories: DesktopUserRepositories,
+    private val shellController: ShellController,
 ) : ShellCommandHandler.ShellCommandActionHandler {
 
     override fun onShellCommand(args: Array<String>, pw: PrintWriter): Boolean =
@@ -44,6 +48,7 @@ class DesktopModeShellCommandHandler(
             "moveTaskOutOfDesk" -> runMoveTaskOutOfDesk(args, pw)
             "canCreateDesk" -> runCanCreateDesk(args, pw)
             "getActiveDeskId" -> runGetActiveDeskId(args, pw)
+            "clearRememberedBounds" -> runClearRememberedBounds(args, pw)
             else -> {
                 pw.println("Invalid command: ${args[0]}")
                 false
@@ -278,6 +283,25 @@ class DesktopModeShellCommandHandler(
         return false
     }
 
+    private fun runClearRememberedBounds(args: Array<String>, pw: PrintWriter): Boolean {
+        if (!Flags.enableRememberedBounds()) {
+            pw.println("Not supported.")
+            return false
+        }
+        if (args.size < 2) {
+            pw.println("Error: package name should be provided as arguments")
+            return false
+        }
+        val packageName = args[1]
+        if (packageName.isEmpty()) {
+            pw.println("Error: package name cannot be empty")
+            return false
+        }
+        val repository = userRepositories.getProfile(shellController.currentUserId)
+        repository.clearRememberedBoundsRatio(packageName)
+        return true
+    }
+
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("$prefix moveTaskToDesk <taskId|0>")
@@ -312,5 +336,7 @@ class DesktopModeShellCommandHandler(
         pw.println("$prefix  Whether creating a new desk in the given display is allowed.")
         pw.println("$prefix getActivateDeskId <displayId>")
         pw.println("$prefix  Print the id of the active desk in the given display.")
+        pw.println("$prefix clearRememberedBounds <packageName>")
+        pw.println("$prefix  Clears the remembered bounds for the given package.")
     }
 }
