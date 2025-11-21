@@ -1276,7 +1276,14 @@ constructor(
             deviceUnlockedInteractor.deviceUnlockStatus
                 .map { it.isUnlocked }
                 .distinctUntilChanged()
-                .collect { _ -> lockscreenUserManager.updatePublicMode() }
+                .collect {
+                    // If the device has just become locked, notify Notifications
+                    // so they can make sure redaction is immediately applied: b/440335509
+                    // If the device has just become UNlocked, *don't* notify Notifications,
+                    // because doing so will cause notifications to briefly flash the
+                    // unredacted version during the unlock animation: b/454362854
+                    if (!it) {lockscreenUserManager.updatePublicMode() }
+                }
         }
     }
 
