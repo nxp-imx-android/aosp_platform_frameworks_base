@@ -58,6 +58,10 @@
         "BroadcastQueue\\.java"
       ],
       "name": "CtsBRSTestCases"
+    },
+    {
+      "file_patterns": ["AppStartInfo.*"],
+      "name": "FrameworksMockingServicesTests_android_server_am_app_start_info"
     }
   ],
   "postsubmit": [
