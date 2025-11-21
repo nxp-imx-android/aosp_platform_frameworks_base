@@ -242,6 +242,9 @@
     }
     // AUTO-GENERATED-END
   ],
+  // When adding high-priority tests here, consider adding it to the following file,
+  // which is included by frameworks/base/TEST_MAPPING.
+  // (But do not add low-priority tests.)
   // LINT.ThenChange(/ravenwood-framework-test-mapping/TEST_MAPPING)
   "ravenwood-postsubmit": [
     // We haven't maintained SystemUiRavenTests, and as a result, it's been demoted already.
