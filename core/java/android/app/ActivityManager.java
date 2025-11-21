@@ -6322,7 +6322,7 @@ public class ActivityManager {
      * </p>
      *
      * @param pids The list of the pids to be killed
-     * @pram reason The reason of the kill
+     * @param reason The reason of the kill
      *
      * @hide
      */
