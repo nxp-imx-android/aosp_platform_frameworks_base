@@ -250,11 +250,13 @@ public abstract class Pip2Module {
             PipTransitionState pipTransitionState,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipDesktopState pipDesktopState,
-            PipUiEventLogger pipUiEventLogger, PipDisplayLayoutState pipDisplayLayoutState) {
+            PipUiEventLogger pipUiEventLogger,
+            PipDisplayLayoutState pipDisplayLayoutState,
+            PipInteractionHandler pipInteractionHandler) {
         return new PipMotionHelper(context, pipBoundsState, menuController, pipSnapAlgorithm,
                 floatingContentCoordinator, pipScheduler, pipPerfHintControllerOptional,
                 pipTransitionState, pipSurfaceTransactionHelper, pipDesktopState, pipUiEventLogger,
-                pipDisplayLayoutState);
+                pipDisplayLayoutState, pipInteractionHandler);
     }
 
     @WMSingleton
