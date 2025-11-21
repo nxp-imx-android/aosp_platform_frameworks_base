@@ -243,6 +243,18 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(state.currentTimeText).isNull()
     }
 
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    fun initialText_adaptiveFormat() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Adaptive,
+                chronometer = Chronometer.Paused(Duration.ofMinutes(2).plusSeconds(30)),
+            )
+        assertThat(state.currentTimeText).isEqualTo("2m 30s")
+    }
+
     enum class RunningTimeTest {
         ELAPSED_REALTIME {
             override fun newEventTime(atMillis: Long) = EventTime.ElapsedRealtime(atMillis)
@@ -688,6 +700,40 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         // ... the chronometer has also jumped.
         assertThat(state.currentTimeText).isEqualTo("00:46")
+
+        job.cancelAndJoin()
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    fun textUpdates_adaptiveFormat() = runTest {
+        // Countdown to 4min 40sec
+        fakeTimeSource.setElapsedRealtime(0)
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Adaptive,
+                Chronometer.Running(
+                    EventTime.ElapsedRealtime(Duration.ofMinutes(4).plusSeconds(40).toMillis()),
+                    isCountdown = true,
+                ),
+            )
+        val job = startChronometer(state)
+
+        // 4min 40sec -> Truncated to 4 min
+        assertThat(state.currentTimeText).isEqualTo("4m")
+
+        // 39 seconds pass, 4m1s remaining -> No change
+        advanceClockAndTestByMillis(39_000)
+        assertThat(state.currentTimeText).isEqualTo("4m")
+
+        // 2 more seconds pass, 3m59s remaining -> Truncated to 3 min
+        advanceClockAndTestByMillis(2_000)
+        assertThat(state.currentTimeText).isEqualTo("3m")
+
+        // 1 more minute passes, 2m59s remaining -> Less than 3 minutes so seconds are shown
+        advanceClockAndTestByMillis(60_000)
+        assertThat(state.currentTimeText).isEqualTo("2m 59s")
 
         job.cancelAndJoin()
     }

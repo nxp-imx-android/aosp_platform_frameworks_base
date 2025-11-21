@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.chips.ui.viewmodel
 import android.annotation.ElapsedRealtimeLong
 import android.annotation.FlaggedApi
 import android.text.format.DateUtils
+import android.widget.ChronometerAdaptiveFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -167,6 +168,14 @@ sealed interface Formatter {
 
         override fun period(currentValue: Duration): Duration = Duration.ofSeconds(1)
     }
+
+    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    object Adaptive : Formatter {
+        override fun format(value: Duration): String = ChronometerAdaptiveFormat.format(value)
+
+        override fun period(currentValue: Duration): Duration =
+            ChronometerAdaptiveFormat.getTickPeriod(currentValue)
+    }
 }
 
 /** Actual data about the Chronometer state. */
@@ -214,15 +223,19 @@ sealed class EventTime {
 
 /** Remember and manage the ChronometerState */
 @Composable
-fun rememberChronometerState(chronometer: Chronometer, timeSource: SystemClock): ChronometerState {
+fun rememberChronometerState(
+    chronometer: Chronometer,
+    formatter: Formatter = Formatter.Chronometer,
+    timeSource: SystemClock,
+): ChronometerState {
     val state =
-        remember(timeSource, chronometer) {
-            ChronometerState(timeSource, Formatter.Chronometer, chronometer)
+        remember(timeSource, formatter, chronometer) {
+            ChronometerState(timeSource, formatter, chronometer)
         }
 
     if (chronometer is Chronometer.Running) {
         val lifecycleOwner = LocalLifecycleOwner.current
-        LaunchedEffect(lifecycleOwner, timeSource, chronometer) {
+        LaunchedEffect(lifecycleOwner, timeSource, formatter, chronometer) {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { state.run(chronometer) }
         }
     }

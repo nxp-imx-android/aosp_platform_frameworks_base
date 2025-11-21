@@ -16,7 +16,6 @@
 
 package android.widget;
 
-import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 import static android.text.format.DateUtils.SECOND_IN_MILLIS;
 
 import static java.util.Objects.requireNonNull;
@@ -72,13 +71,6 @@ import java.util.function.LongSupplier;
 @RemoteView
 public class Chronometer extends TextView {
     private static final String TAG = "Chronometer";
-
-    /**
-     * In adaptive format, when displaying an elapsed/remaining duration greater than or equal to
-     * this number of minutes, seconds will not be shown (which also means the chronometer will tick
-     * on the minute instead of on the second).
-     */
-    private static final int ADAPTIVE_MINUTES_WITHOUT_SECONDS = 3;
 
     /**
      * A callback that notifies when the chronometer has incremented on its own.
@@ -394,7 +386,7 @@ public class Chronometer extends TextView {
         }
         String text;
         if (mUseAdaptiveFormat) {
-            text = formatTextWithAdaptiveTimeFormat(Duration.ofSeconds(seconds));
+            text = ChronometerAdaptiveFormat.format(Duration.ofSeconds(seconds));
         } else {
             text = DateUtils.formatElapsedTime(mRecycle, seconds);
         }
@@ -423,39 +415,6 @@ public class Chronometer extends TextView {
         }
 
         setText(text);
-    }
-
-    private String formatTextWithAdaptiveTimeFormat(Duration duration) {
-        final Measure days = new Measure(duration.toDaysPart(), MeasureUnit.DAY);
-        final Measure hours = new Measure(duration.toHoursPart(), MeasureUnit.HOUR);
-        final Measure minutes = new Measure(duration.toMinutesPart(), MeasureUnit.MINUTE);
-        final Measure seconds = new Measure(duration.toSecondsPart(), MeasureUnit.SECOND);
-        final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
-                FormatWidth.NARROW);
-
-        final ArrayList<Measure> partsList = new ArrayList<>();
-        if (days.getNumber().intValue() != 0) {
-            partsList.add(days);
-            if (hours.getNumber().intValue() != 0) {
-                partsList.add(hours);
-            }
-        } else if (hours.getNumber().intValue() != 0) {
-            partsList.add(hours);
-            if (minutes.getNumber().intValue() != 0) {
-                partsList.add(minutes);
-            }
-        } else if (minutes.getNumber().intValue() != 0) {
-            partsList.add(minutes);
-            if (minutes.getNumber().intValue() < ADAPTIVE_MINUTES_WITHOUT_SECONDS) {
-              partsList.add(seconds);
-            }
-        }
-
-        if (partsList.isEmpty()) {
-            partsList.add(seconds);
-        }
-
-        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
     }
 
     private static final long SIGNIFICANT_DRIFT_MILLIS = 500;
@@ -506,9 +465,9 @@ public class Chronometer extends TextView {
         // or remaining is >= 3 minutes. Thus for time > 3 minutes the tick will be "on the minute"
         // and for lower than that it's "on the second".
         long periodInMillis = mUseAdaptiveFormat
-                && Math.abs(nowMillis - mBase) > ADAPTIVE_MINUTES_WITHOUT_SECONDS * MINUTE_IN_MILLIS
-                        ? MINUTE_IN_MILLIS
-                        : SECOND_IN_MILLIS;
+                ? ChronometerAdaptiveFormat.getTickPeriod(
+                        Duration.ofMillis(Math.abs(nowMillis - mBase))).toMillis()
+                : SECOND_IN_MILLIS;
 
         // LINT.IfChange
         long delayMillis;
