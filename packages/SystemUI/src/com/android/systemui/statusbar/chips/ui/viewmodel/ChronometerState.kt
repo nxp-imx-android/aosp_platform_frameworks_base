@@ -15,7 +15,6 @@
  */
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.annotation.ElapsedRealtimeLong
 import android.annotation.FlaggedApi
 import android.text.format.DateUtils
 import android.widget.ChronometerAdaptiveFormat
@@ -30,9 +29,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.Flags
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.util.time.SystemClock
 import java.time.Duration
-import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 import kotlinx.coroutines.delay
@@ -175,49 +174,6 @@ sealed interface Formatter {
 
         override fun period(currentValue: Duration): Duration =
             ChronometerAdaptiveFormat.getTickPeriod(currentValue)
-    }
-}
-
-/** Actual data about the Chronometer state. */
-sealed class Chronometer {
-    /**
-     * Running chronometer (either counting up or down to [eventTime]). Won't be displayed if the
-     * current value is negative (e.g. countdown timer past [eventTime] or stopwatch before
-     * [eventTime]).
-     */
-    data class Running(val eventTime: EventTime, val isCountdown: Boolean) : Chronometer()
-
-    /** Chronometer paused at a specific time. Won't be displayed if negative. */
-    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
-    data class Paused(val atDuration: Duration) : Chronometer()
-}
-
-/** Event, or "zero" time, of a chronometer. */
-sealed class EventTime {
-    @ElapsedRealtimeLong abstract fun asElapsedRealtime(timeSource: SystemClock): Long
-
-    /**
-     * Chronometer whose zero time is expressed in the base of [SystemClock.elapsedRealtime]
-     * (milliseconds since boot).
-     */
-    data class ElapsedRealtime(@ElapsedRealtimeLong val elapsedRealtime: Long) : EventTime() {
-        @ElapsedRealtimeLong
-        override fun asElapsedRealtime(timeSource: SystemClock): Long {
-            return elapsedRealtime
-        }
-    }
-
-    /**
-     * Chronometer whose zero time is expressed in the base of [SystemClock.currentTime] (i.e. UTC
-     * time). Can skip forwards or backwards if device clock changes (excluding timezone
-     * adjustments).
-     */
-    data class ClockTime(val instant: Instant) : EventTime() {
-        @ElapsedRealtimeLong
-        override fun asElapsedRealtime(timeSource: SystemClock): Long {
-            return (timeSource.elapsedRealtime() +
-                (instant.toEpochMilli() - timeSource.currentTimeMillis()))
-        }
     }
 }
 

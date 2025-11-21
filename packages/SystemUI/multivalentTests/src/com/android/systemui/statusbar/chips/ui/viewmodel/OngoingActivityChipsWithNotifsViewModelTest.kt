@@ -58,6 +58,8 @@ import com.android.systemui.statusbar.chips.notification.domain.interactor.statu
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModelTest.Companion.assertIsNotifChip
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
@@ -1164,11 +1166,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             runCurrent()
 
-            assertThat(
-                    (latest!!.active[0].content as OngoingActivityChipModel.Content.Timer)
-                        .startTimeMs
-                )
-                .isEqualTo(1234)
+            assertThat((latest!!.active[0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(Chronometer.Running(EventTime.ElapsedRealtime(1234)))
 
             // Stop subscribing to the chip flow
             job1.cancel()
@@ -1182,11 +1181,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             runCurrent()
 
             // THEN the old start time is still used
-            assertThat(
-                    (latest!!.active[0].content as OngoingActivityChipModel.Content.Timer)
-                        .startTimeMs
-                )
-                .isEqualTo(1234)
+            assertThat((latest.active[0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(Chronometer.Running(EventTime.ElapsedRealtime(1234)))
 
             job2.cancel()
         }

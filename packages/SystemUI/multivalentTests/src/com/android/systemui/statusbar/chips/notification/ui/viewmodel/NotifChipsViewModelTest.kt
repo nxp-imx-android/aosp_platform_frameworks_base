@@ -42,7 +42,9 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
@@ -1119,12 +1121,10 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
-                .isEqualTo(whenElapsed)
-            assertThat(
-                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(
+                    Chronometer.Running(EventTime.ElapsedRealtime(whenElapsed), isCountdown = false)
                 )
-                .isFalse()
         }
 
     @Test
@@ -1202,12 +1202,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
-                .isEqualTo(whenElapsed)
-            assertThat(
-                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(
+                    Chronometer.Running(EventTime.ElapsedRealtime(whenElapsed), isCountdown = true)
                 )
-                .isTrue()
         }
 
     @Test
@@ -1368,7 +1367,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(15.minutes.inWholeMilliseconds)
+            assertThat(timeDelta.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(15.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
@@ -1410,7 +1415,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(15.minutes.inWholeMilliseconds)
+            assertThat(timeDelta.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(15.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
@@ -1452,7 +1463,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(1.minutes.inWholeMilliseconds)
+            assertThat(timeDelta.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(1.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
@@ -1494,7 +1511,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(1.minutes.inWholeMilliseconds)
+            assertThat(timeDelta.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(1.minutes.inWholeMilliseconds),
+                        isCountdown = false,
+                    )
+                )
         }
 
     @Test
