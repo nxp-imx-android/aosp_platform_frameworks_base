@@ -43,7 +43,8 @@ oneway interface IAppContentProjectionCallback {
         * @return true if the request has been fulfilled, false otherwise.
         */
        @EnforcePermission(allOf = {"MANAGE_MEDIA_PROJECTION"})
-       void onLoopbackProjectionStarted(in IAppContentProjectionSession session, int contentId);
+       void onLoopbackProjectionStarted(in IAppContentProjectionSession session, int contentId,
+           boolean isAudioRequested);
 
       /**
        * Called when the sharing session has been ended by the user or the system. The shared
