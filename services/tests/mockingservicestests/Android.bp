@@ -422,3 +422,10 @@ test_module_config {
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHookTest"],
 }
+
+test_module_config {
+    name: "FrameworksMockingServicesTests_android_server_am_app_start_info",
+    base: "FrameworksMockingServicesTests",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.server.am.ApplicationStartInfoTest"],
+}
