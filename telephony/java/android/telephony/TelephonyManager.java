@@ -1904,6 +1904,14 @@ public class TelephonyManager {
             "android.telephony.extra.SIM_COMBINATION_NAMES";
 
     /**
+     * A string value for {@link TelecomManager#EXTRA_CALL_DISCONNECT_MESSAGE}, indicates the call
+     * was dropped by lower layers
+     * @hide
+     */
+    public static final String CALL_AUTO_DISCONNECT_MESSAGE_STRING =
+            "Call dropped by lower layers";
+
+    /**
      * Optional extra for incoming and outgoing calls containing a long which specifies the Epoch
      * time the call was created.
      * @hide
