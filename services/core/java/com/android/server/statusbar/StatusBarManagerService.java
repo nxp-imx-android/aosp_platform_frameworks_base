@@ -25,6 +25,8 @@ import static android.app.StatusBarManager.DISABLE2_NOTIFICATION_SHADE;
 import static android.app.StatusBarManager.NAV_BAR_MODE_DEFAULT;
 import static android.app.StatusBarManager.NAV_BAR_MODE_KIDS;
 import static android.app.StatusBarManager.NavBarMode;
+import static android.app.StatusBarManager.SHOW_POWER_MENU_RESULT_DISABLED;
+import static android.app.StatusBarManager.SHOW_POWER_MENU_RESULT_SHOWING;
 import static android.app.StatusBarManager.SessionFlags;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.inputmethodservice.InputMethodService.BACK_DISPOSITION_DEFAULT;
@@ -205,7 +207,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     private GlobalActionsProvider.GlobalActionsListener mGlobalActionListener;
 
     @GuardedBy("mShowPowerMenuCallbacks")
-    private final ArraySet<AndroidFuture<Boolean>> mShowPowerMenuCallbacks = new ArraySet<>();
+    private final ArraySet<AndroidFuture<Integer>> mShowPowerMenuCallbacks = new ArraySet<>();
     private volatile boolean mGlobalActionsShowing = false;
     private final IBinder mSysUiVisToken = new Binder();
 
@@ -2039,12 +2041,12 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     }
 
     private void notifyShowPowerMenuCallbacks() {
-        ArraySet<AndroidFuture<Boolean>> callbacks;
+        ArraySet<AndroidFuture<Integer>> callbacks;
         synchronized (mShowPowerMenuCallbacks) {
             callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
             mShowPowerMenuCallbacks.clear();
         }
-        callbacks.forEach(callback -> callback.complete(true));
+        callbacks.forEach(callback -> callback.complete(SHOW_POWER_MENU_RESULT_SHOWING));
     }
 
     /**
@@ -2067,20 +2069,23 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
      * @param future a {@link Boolean} future for the reply
      */
     @Override
-    @EnforcePermission(Manifest.permission.SHOW_POWER_MENU)
+    @EnforcePermission(anyOf = {
+            Manifest.permission.SHOW_POWER_MENU,
+            Manifest.permission.SHOW_POWER_MENU_PRIVILEGED
+    })
     public void showGlobalActionsFromApp(@NonNull AndroidFuture future) {
         showGlobalActionsFromApp_enforcePermission();
         Objects.requireNonNull(future);
 
 
-        @SuppressWarnings("unchecked") final AndroidFuture<Boolean> typedFuture = future;
+        @SuppressWarnings("unchecked") final AndroidFuture<Integer> typedFuture = future;
 
         if (!android.app.Flags.statusbarApiShowPowerMenu()) {
             typedFuture.completeExceptionally(new RuntimeException("Disabled flag"));
         }
 
         if (mGlobalActionsProvider.isGlobalActionsDisabled()) {
-            typedFuture.complete(false);
+            typedFuture.complete(SHOW_POWER_MENU_RESULT_DISABLED);
             return;
         }
 
@@ -2092,7 +2097,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
 
         if (mGlobalActionsShowing) {
             // We are already showing power menu. Return true immediately
-            typedFuture.complete(true);
+            typedFuture.complete(SHOW_POWER_MENU_RESULT_SHOWING);
         }
 
         synchronized (mShowPowerMenuCallbacks) {
@@ -2118,7 +2123,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
     }
 
-    private void removeGlobalActionFutureOnTimeoutOrError(AndroidFuture<Boolean> future) {
+    private void removeGlobalActionFutureOnTimeoutOrError(AndroidFuture<Integer> future) {
         synchronized (mShowPowerMenuCallbacks) {
             mShowPowerMenuCallbacks.remove(future);
         }
@@ -3126,7 +3131,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 pw.println("    " + requests.get(i) + ",");
             }
             pw.println("  ]");
-            ArraySet<AndroidFuture<Boolean>> callbacks;
+            ArraySet<AndroidFuture<Integer>> callbacks;
             synchronized (mShowPowerMenuCallbacks) {
                 callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
             }

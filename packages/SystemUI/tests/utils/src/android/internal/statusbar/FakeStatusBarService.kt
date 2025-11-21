@@ -442,7 +442,10 @@ class FakeStatusBarService : IStatusBarService.Stub() {
     override fun showRearDisplayDialog(currentBaseState: Int) {}
 
     /** Use with [android.os.test.FakePermissionEnforcer]. */
-    @EnforcePermission("android.permission.SHOW_POWER_MENU")
+    @EnforcePermission(
+        anyOf =
+            ["android.permission.SHOW_POWER_MENU", "android.permission.SHOW_POWER_MENU_PRIVILEGED"]
+    )
     override fun showGlobalActionsFromApp(future: AndroidFuture<*>) {
         showGlobalActionsFromApp_enforcePermission()
     }
