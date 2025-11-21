@@ -194,11 +194,7 @@ constructor(
     ): DialogBehaviorDelegate {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
-                if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
-                    MagnifyMagnificationDialogDelegate(interactor)
-                } else {
-                    DefaultDialogDelegate(interactor)
-                }
+                MagnifyMagnificationDialogDelegate(interactor)
 
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                 ScreenReaderDialogDelegate(dialogContext, interactor)
