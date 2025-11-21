@@ -1258,10 +1258,12 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            DesktopConfig desktopConfig) {
         return new SpringDragToDesktopTransitionHandler(
                 context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
-                desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState);
+                desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState,
+                desktopConfig);
     }
 
     @WMSingleton

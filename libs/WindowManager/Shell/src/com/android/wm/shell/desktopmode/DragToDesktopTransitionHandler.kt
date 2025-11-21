@@ -57,6 +57,7 @@ import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
@@ -93,6 +94,7 @@ sealed class DragToDesktopTransitionHandler(
     private val bubbleController: Optional<BubbleController>,
     protected val transactionSupplier: Supplier<SurfaceControl.Transaction>,
     private val desktopState: DesktopState,
+    private val desktopConfig: DesktopConfig,
 ) : TransitionHandler {
 
     protected val rectEvaluator = RectEvaluator(Rect())
@@ -364,7 +366,11 @@ sealed class DragToDesktopTransitionHandler(
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
             wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
         }
-        wct.setDensityDpi(taskInfo.token, context.resources.displayMetrics.densityDpi)
+        // The task's density may have been overridden in freeform; revert it here as we don't
+        // want it overridden in multi-window.
+        if (desktopConfig.useDesktopOverrideDensity) {
+            wct.setDensityDpi(taskInfo.token, context.resources.displayMetrics.densityDpi)
+        }
 
         val startRecents = !homeRunning
         val delegateWctToRecents = startRecents && !wct.isEmpty
@@ -1222,6 +1228,7 @@ constructor(
         SurfaceControl.Transaction()
     },
     desktopState: DesktopState,
+    desktopConfig: DesktopConfig,
 ) :
     DragToDesktopTransitionHandler(
         context,
@@ -1233,6 +1240,7 @@ constructor(
         bubbleController,
         transactionSupplier,
         desktopState,
+        desktopConfig,
     ) {
 
     private val positionSpringConfig =
