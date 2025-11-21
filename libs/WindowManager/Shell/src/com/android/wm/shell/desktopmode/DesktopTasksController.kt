@@ -178,6 +178,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE
+import com.android.wm.shell.sysui.OverviewVisibilityChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -366,6 +367,8 @@ class DesktopTasksController(
 
     private val toDesktopAnimationDurationMs =
         context.resources.getInteger(SharedR.integer.to_desktop_animation_duration_ms)
+    private val deskDeactivationFromOverviewScheduler =
+        DeskDeactivationFromOverviewScheduler(shellController, this)
 
     init {
         desktopMode = DesktopModeImpl()
@@ -678,24 +681,49 @@ class DesktopTasksController(
             // No desk was active or it is already inactive.
             return
         }
+
+        val displayId =
+            if (Flags.betterDeskDeactivationInRecentsTransition()) {
+                repository.getDisplayForDesk(activeDeskIdOnRecentsStart)
+            } else {
+                DEFAULT_DISPLAY
+            }
         // At this point the recents transition is either finishing to home, to another non-desktop
         // task or to a different desk than the one that was active when recents started. For all
         // of those the desk that was active needs to be deactivated.
-        val runOnTransitStart =
-            performDesktopExitCleanUp(
-                wct = finishWct,
+        if (
+            Flags.betterDeskDeactivationInRecentsTransition() &&
+                shellController.isOverviewVisible(displayId)
+        ) {
+            // Recents finishing doesn't necessarily mean overview was hidden or is being hidden
+            // yet, such as when it switches from live->screenshot. Schedule the deactivation for
+            // when overview actually hides.
+            deskDeactivationFromOverviewScheduler.schedule(
                 deskId = activeDeskIdOnRecentsStart,
-                displayId = DEFAULT_DISPLAY,
+                displayId = displayId,
                 userId = userId,
-                willExitDesktop = true,
-                removingLastTaskId = null,
-                // No need to clean up the wallpaper / home when coming from a recents transition.
-                skipWallpaperAndHomeOrdering = true,
-                // This is a recents-finish, so taskbar animation on transit start does not apply.
-                skipUpdatingExitDesktopListener = true,
-                exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
             )
-        runOnTransitStart?.invoke(transition)
+        } else {
+            // Otherwise this is probably a quick switch or swipe-to-home, in which case it's ok to
+            // deactivate immediately.
+            val runOnTransitStart =
+                performDesktopExitCleanUp(
+                    wct = finishWct,
+                    deskId = activeDeskIdOnRecentsStart,
+                    displayId = displayId,
+                    userId = userId,
+                    willExitDesktop = true,
+                    removingLastTaskId = null,
+                    // No need to clean up the wallpaper / home when coming from a recents
+                    // transition.
+                    skipWallpaperAndHomeOrdering = true,
+                    // This is a recents-finish, so taskbar animation on transit start does not
+                    // apply.
+                    skipUpdatingExitDesktopListener = true,
+                    exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
+                )
+            runOnTransitStart?.invoke(transition)
+        }
     }
 
     /** Returns whether a new desk can be created. */
@@ -5528,6 +5556,12 @@ class DesktopTasksController(
             }
         }
         prepareForDeskActivation(displayId, wct)
+        // Make sure to cancel any scheduled deactivations.
+        deskDeactivationFromOverviewScheduler.cancel(
+            deskId = deskId,
+            displayId = displayId,
+            userId = userId,
+        )
         desksOrganizer.activateDesk(wct, deskId)
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId = displayId, userId = userId),
@@ -5838,6 +5872,35 @@ class DesktopTasksController(
             }
         }
 
+    private fun deactivateDesk(
+        deskId: Int,
+        userId: Int,
+        skipWallpaperAndHomeOrdering: Boolean,
+        exitReason: ExitReason,
+    ) {
+        val repository = userRepositories.getProfile(userId)
+        if (deskId !in repository.getAllDeskIds()) {
+            logD("deactivateDesk deskId=%d not found, skipping", deskId)
+            return
+        }
+        val displayId = repository.getDisplayForDesk(deskId)
+        logD("deactivateDesk deskId=%d displayId=%d userId=%d", deskId, displayId, userId)
+        val wct = WindowContainerTransaction()
+        val runOnTransitStart =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = displayId,
+                userId = userId,
+                willExitDesktop = true,
+                removingLastTaskId = null,
+                skipWallpaperAndHomeOrdering = skipWallpaperAndHomeOrdering,
+                exitReason = exitReason,
+            )
+        val transition = transitions.startTransition(TRANSIT_TO_BACK, wct, /* handler= */ null)
+        runOnTransitStart?.invoke(transition)
+    }
+
     private fun addDeskRemovalChanges(
         wct: WindowContainerTransaction,
         deskId: Int?,
@@ -5901,6 +5964,12 @@ class DesktopTasksController(
     ): RunOnTransitStart? {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return null
         if (deskId == null) return null
+        // Make sure to cancel any scheduled deactivations.
+        deskDeactivationFromOverviewScheduler.cancel(
+            deskId = deskId,
+            displayId = displayId,
+            userId = userId,
+        )
         desksOrganizer.deactivateDesk(wct, deskId)
         return RunOnTransitStart { transition ->
             desksTransitionObserver.addPendingTransition(
@@ -7374,6 +7443,58 @@ class DesktopTasksController(
 
         /** [transitionDuration] time it takes to run exit desktop mode transition */
         fun onExitDesktopModeTransitionStarted(transitionDuration: Int, shouldEndUpAtHome: Boolean)
+    }
+
+    /**
+     * A utility to schedule a desk deactivation to be executed when Overview hides. Used when the
+     * recents transition ends but overview isn't hidden yet.
+     */
+    private class DeskDeactivationFromOverviewScheduler(
+        shellController: ShellController,
+        private val controller: DesktopTasksController,
+    ) {
+        private val displayIdToScheduledDeactivations = mutableMapOf<Int, MutableList<Request>>()
+
+        init {
+            if (Flags.betterDeskDeactivationInRecentsTransition()) {
+                shellController.addOverviewVisibilityChangeListener(
+                    object : OverviewVisibilityChangeListener {
+                        override fun onOverviewHidden(displayId: Int) {
+                            displayIdToScheduledDeactivations[displayId]?.forEach { request ->
+                                controller.deactivateDesk(
+                                    deskId = request.deskId,
+                                    userId = request.userId,
+                                    // No need to clean up the wallpaper / home when coming from
+                                    // Overview.
+                                    skipWallpaperAndHomeOrdering = true,
+                                    exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
+                                )
+                            }
+                            displayIdToScheduledDeactivations[displayId]?.clear()
+                        }
+                    }
+                )
+            }
+        }
+
+        /** Schedule a deactivation for [deskId]. */
+        fun schedule(deskId: Int, displayId: Int, userId: Int) {
+            if (!Flags.betterDeskDeactivationInRecentsTransition()) return
+            if (displayId !in displayIdToScheduledDeactivations) {
+                displayIdToScheduledDeactivations[displayId] = mutableListOf()
+            }
+            displayIdToScheduledDeactivations[displayId]?.add(Request(deskId, userId))
+        }
+
+        /** Cancel any scheduled deactivations for [deskId]. */
+        fun cancel(deskId: Int, displayId: Int, userId: Int) {
+            if (!Flags.betterDeskDeactivationInRecentsTransition()) return
+            displayIdToScheduledDeactivations[displayId]?.removeIf { request ->
+                request.deskId == deskId && request.userId == userId
+            }
+        }
+
+        private data class Request(val deskId: Int, val userId: Int)
     }
 
     /** The positions on a screen that a task can snap to. */

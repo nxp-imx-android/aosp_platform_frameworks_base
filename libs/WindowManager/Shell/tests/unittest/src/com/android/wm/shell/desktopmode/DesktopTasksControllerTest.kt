@@ -187,6 +187,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitMultiDisplayProvider
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.sysui.OverviewVisibilityChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -11489,8 +11490,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wallpaperReorderIndex).isEqualTo(-1)
     }
 
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -11510,6 +11513,37 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = true,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_BACK), any(), any())
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId), any())
+        verify(desksTransitionsObserver, never())
+            .addPendingTransition(argThat { t -> t is DeskTransition.DeactivateDesk })
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onRecentsInDesktopAnimationFinishing_returningToApp_snapEventHandlerNotified() {
         val deskId = 0
@@ -11529,7 +11563,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
 
@@ -11550,8 +11585,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setDeskInactive(deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_BACK), any(), any())
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId), any())
+        verify(desksTransitionsObserver, never())
+            .addPendingTransition(argThat { t -> t is DeskTransition.DeactivateDesk })
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -11579,8 +11645,47 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        val wct = getLatestWct(TRANSIT_TO_BACK)
+        verify(desksOrganizer).deactivateDesk(wct, deskId)
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat { t ->
+                    t is DeskTransition.DeactivateDesk &&
+                        t.userId == taskRepository.userId &&
+                        t.deskId == deskId &&
+                        t.displayId == DEFAULT_DISPLAY &&
+                        t.exitReason == ExitReason.RETURN_HOME_OR_OVERVIEW
+                }
+            )
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -11599,6 +11704,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 !hop.toTop
         }
         finishWct.assertWithoutHop { hop -> hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        val wct = getLatestWct(TRANSIT_TO_BACK)
+        wct.assertWithoutHop { hop ->
+            hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.container == wallpaperToken.asBinder() &&
+                !hop.toTop
+        }
+        wct.assertWithoutHop { hop -> hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT }
     }
 
     @Test
