@@ -462,3 +462,10 @@ flag {
     description: "Adds new api to query the frame rate / velocity mapping values"
     bug: "453060939"
 }
+
+flag {
+    name: "auto_brightness_mode_charging"
+    namespace: "wear_frameworks"
+    description: "Feature flag for loading and applying auto-brightness curve while the device is connected to the charger."
+    bug: "421103840"
+}
