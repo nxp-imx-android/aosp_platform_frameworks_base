@@ -47,13 +47,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 
 // Helper that can be used as a policy enforcer callback when creating a PolicyDefinition.
 class NoOpPolicyEnforcerCallback<T> :
@@ -101,11 +99,31 @@ open class PolicyHandlerTest {
             )
     }
 
-    val mockPermissionChecker: IPermissionChecker = mock<IPermissionChecker> {}
+    data class EnforceArguments(val permission: String, val caller: CallerIdentity)
+
+    private val permissionChecker = object : IPermissionChecker {
+        val enforceCalls = mutableListOf<EnforceArguments>()
+
+        override fun enforce(
+            permission: String,
+            caller: CallerIdentity
+        ) {
+            enforceCalls.add(EnforceArguments(permission, caller))
+        }
+
+        fun assertEnforcesPermissions(caller: CallerIdentity, vararg permission: String) {
+            assertThat(enforceCalls).isEqualTo(
+                permission.map {
+                    EnforceArguments(it, caller)
+                }
+            )
+        }
+    }
+
     val mockDelegate: PolicyHandler.Delegate =
         mock<PolicyHandler.Delegate> {
             on { getDpcType(any()) } doReturn NOT_A_DPC
-            on { getPermissionChecker() } doReturn mockPermissionChecker
+            on { getPermissionChecker() } doReturn permissionChecker
         }
 
     fun copyOf(
@@ -243,8 +261,7 @@ open class PolicyHandlerTest {
 
         handler.checkPermissions(theCaller, POLICY_SCOPE_USER)
 
-        verify(mockPermissionChecker).enforce("thePermission", theCaller)
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(theCaller, "thePermission")
     }
 
     @Test
@@ -261,9 +278,9 @@ open class PolicyHandlerTest {
 
         handler.checkPermissions(theCaller, POLICY_SCOPE_DEVICE)
 
-        verify(mockPermissionChecker).enforce("thePermission", theCaller)
-        verify(mockPermissionChecker).enforce("theCrossUserPermission", theCaller)
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(
+            theCaller, "thePermission", "theCrossUserPermission"
+        )
     }
 
     @Test
@@ -280,9 +297,9 @@ open class PolicyHandlerTest {
 
         handler.checkPermissions(theCaller, POLICY_SCOPE_PARENT_USER)
 
-        verify(mockPermissionChecker).enforce("permission", theCaller)
-        verify(mockPermissionChecker).enforce("crossUserPermission", theCaller)
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(
+            theCaller, "permission", "crossUserPermission"
+        )
     }
 
     @Test
@@ -299,8 +316,7 @@ open class PolicyHandlerTest {
 
         handler.checkPermissions(anyCaller, anyScope)
 
-        verify(mockPermissionChecker, never()).enforce(any(), any())
-        verifyNoMoreInteractions(mockPermissionChecker)
+        assertThat(permissionChecker.enforceCalls).isEmpty()
     }
 
     @Test
@@ -312,13 +328,15 @@ open class PolicyHandlerTest {
                 allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER),
             )
         val handler = createHandler(metadata = metadata)
+        val theCaller = anyCaller
 
         mockDelegate.stub { on { getDpcType(any()) } doReturn FINANCED_DEVICE_OWNER }
 
-        handler.checkPermissions(anyCaller, anyScope)
+        handler.checkPermissions(theCaller, anyScope)
 
-        verify(mockPermissionChecker).enforce(eq("thePermissionThatShallBeChecked"), any())
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(
+            theCaller, "thePermissionThatShallBeChecked"
+        )
     }
 
     @Test
@@ -332,15 +350,15 @@ open class PolicyHandlerTest {
                 allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER),
             )
         val handler = createHandler(metadata = metadata)
+        val theCaller = anyCaller
 
         mockDelegate.stub { on { getDpcType(any()) } doReturn DEFAULT_DEVICE_OWNER }
 
-        handler.checkPermissions(anyCaller, POLICY_SCOPE_DEVICE)
+        handler.checkPermissions(theCaller, POLICY_SCOPE_DEVICE)
 
-        verify(mockPermissionChecker, never())
-            .enforce(eq("thePermissionThatShallNotBeChecked"), any())
-        verify(mockPermissionChecker).enforce(eq("theCrossUserPermissionThatShallBeChecked"), any())
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(
+            theCaller, "theCrossUserPermissionThatShallBeChecked"
+        )
     }
 
     @Test
@@ -421,7 +439,7 @@ open class PolicyHandlerTest {
         }
 
         assertThat(error).hasMessageThat().contains("no requiredPermission")
-        verifyNoMoreInteractions(mockPermissionChecker)
+        assertThat(permissionChecker.enforceCalls).isEmpty()
     }
 
     @Test
@@ -442,8 +460,7 @@ open class PolicyHandlerTest {
 
         handler.checkPermissions(theCaller, POLICY_SCOPE_DEVICE)
 
-        verify(mockPermissionChecker).enforce("thePermission", theCaller)
-        verifyNoMoreInteractions(mockPermissionChecker)
+        permissionChecker.assertEnforcesPermissions(theCaller, "thePermission")
     }
 
     @Test
