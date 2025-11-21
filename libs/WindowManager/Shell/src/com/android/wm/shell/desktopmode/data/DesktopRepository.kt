@@ -1383,6 +1383,12 @@ class DesktopRepository(
         dumpDesktopTaskData(pw, innerPrefix)
         pw.println("${innerPrefix}activeTasksListeners=${activeTasksListeners.size}")
         pw.println("${innerPrefix}visibleTasksListeners=${visibleTasksListeners.size}")
+        if (Flags.enableRememberedBounds()) {
+            pw.println("${innerPrefix}rememberedBoundsRatioByPackageName:")
+            rememberedBoundsRatioByPackageName.forEach { (packageName, bounds) ->
+                pw.println("$innerPrefix  $packageName -> $bounds")
+            }
+        }
     }
 
     private fun dumpDesktopTaskData(pw: PrintWriter, prefix: String) {
