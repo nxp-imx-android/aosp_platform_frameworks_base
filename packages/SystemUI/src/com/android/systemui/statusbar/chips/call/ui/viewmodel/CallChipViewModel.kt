@@ -253,7 +253,10 @@ constructor(
                     val startTimeInElapsedRealtime =
                         newState.startTimeMs - systemClock.currentTimeMillis() +
                             systemClock.elapsedRealtime()
-                    OngoingActivityChipModel.Content.Timer(startTimeMs = startTimeInElapsedRealtime)
+                    OngoingActivityChipModel.Content.Timer(
+                        startTimeMs = startTimeInElapsedRealtime,
+                        timeSource = systemClock,
+                    )
                 }
             }
 

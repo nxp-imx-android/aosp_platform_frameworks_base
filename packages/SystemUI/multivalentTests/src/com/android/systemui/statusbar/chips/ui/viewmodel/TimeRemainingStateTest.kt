@@ -22,6 +22,8 @@ import com.android.internal.R.string.duration_hours_medium
 import com.android.internal.R.string.duration_minutes_medium
 import com.android.internal.R.string.now_string_shortest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.testKosmos
+import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -39,7 +41,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TimeRemainingStateTest : SysuiTestCase() {
 
-    private var fakeTimeSource: MutableTimeSource = MutableTimeSource()
+    private val fakeTimeSource = testKosmos().fakeSystemClock
+
     // We need a non-zero start time to advance to. This is needed to ensure `TimeRemainingState` is
     // updated at least once.
     private val startTime = 1.seconds.inWholeMilliseconds
@@ -49,7 +52,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime - 62.seconds.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData).isNull()
         job.cancelAndJoin()
@@ -60,7 +63,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 59.seconds.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(now_string_shortest)
         job.cancelAndJoin()
@@ -71,7 +74,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime - 59.seconds.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(now_string_shortest)
         job.cancelAndJoin()
@@ -82,7 +85,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 60.seconds.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_minutes_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
@@ -94,7 +97,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 59.minutes.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_minutes_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(59)
@@ -106,7 +109,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 60.minutes.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_hours_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
@@ -118,7 +121,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 119.minutes.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
 
         assertThat(state.timeRemainingData).isNotNull()
@@ -132,7 +135,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
         val state = TimeRemainingState(fakeTimeSource, startTime + 320.minutes.inWholeMilliseconds)
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_hours_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(5)
@@ -144,7 +147,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
             TimeRemainingState(fakeTimeSource, startTime + (25 * 60.minutes.inWholeMilliseconds))
         val job = launch { state.run() }
 
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData).isNull()
 
@@ -153,7 +156,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
 
     @Test
     fun timeRemainingState_updateFromMinuteToNow() = runTest {
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         val state = TimeRemainingState(fakeTimeSource, startTime + 119.seconds.inWholeMilliseconds)
         val job = launch { state.run() }
 
@@ -161,12 +164,12 @@ class TimeRemainingStateTest : SysuiTestCase() {
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_minutes_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
 
-        fakeTimeSource.time += 59.seconds.inWholeMilliseconds
+        fakeTimeSource.advanceTime(59.seconds.inWholeMilliseconds)
         advanceTimeBy(59.seconds.inWholeMilliseconds)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_minutes_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
 
-        fakeTimeSource.time += 1.seconds.inWholeMilliseconds
+        fakeTimeSource.advanceTime(1.seconds.inWholeMilliseconds)
         advanceTimeBy(1.seconds.inWholeMilliseconds)
         assertThat(state.timeRemainingData!!.first).isEqualTo(now_string_shortest)
 
@@ -174,14 +177,14 @@ class TimeRemainingStateTest : SysuiTestCase() {
     }
 
     fun timeRemainingState_updateFromNowToEmpty() = runTest {
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         val state = TimeRemainingState(fakeTimeSource, startTime)
         val job = launch { state.run() }
 
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData!!.first).isEqualTo(now_string_shortest)
 
-        fakeTimeSource.time += 62.seconds.inWholeMilliseconds
+        fakeTimeSource.advanceTime(62.seconds.inWholeMilliseconds)
         advanceTimeBy(62.seconds.inWholeMilliseconds)
         assertThat(state.timeRemainingData).isNull()
 
@@ -190,7 +193,7 @@ class TimeRemainingStateTest : SysuiTestCase() {
 
     @Test
     fun timeRemainingState_updateFromHourToMinutes() = runTest {
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         val state = TimeRemainingState(fakeTimeSource, startTime + 119.minutes.inWholeMilliseconds)
         val job = launch { state.run() }
 
@@ -198,12 +201,12 @@ class TimeRemainingStateTest : SysuiTestCase() {
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_hours_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
 
-        fakeTimeSource.time += 59.minutes.inWholeMilliseconds
+        fakeTimeSource.advanceTime(59.minutes.inWholeMilliseconds)
         advanceTimeBy(59.minutes.inWholeMilliseconds)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_hours_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(1)
 
-        fakeTimeSource.time += 1.seconds.inWholeMilliseconds
+        fakeTimeSource.advanceTime(1.seconds.inWholeMilliseconds)
         advanceTimeBy(1.seconds.inWholeMilliseconds)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_minutes_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(59)
@@ -213,25 +216,18 @@ class TimeRemainingStateTest : SysuiTestCase() {
 
     @Test
     fun timeRemainingState_showAfterLessThan24Hours() = runTest {
-        fakeTimeSource.time = startTime
+        fakeTimeSource.setCurrentTimeMillis(startTime)
         val state = TimeRemainingState(fakeTimeSource, startTime + 25.hours.inWholeMilliseconds)
         val job = launch { state.run() }
 
         advanceTimeBy(startTime)
         assertThat(state.timeRemainingData).isNull()
 
-        fakeTimeSource.time += 1.hours.inWholeMilliseconds + 1.seconds.inWholeMilliseconds
+        fakeTimeSource.advanceTime(1.hours.inWholeMilliseconds + 1.seconds.inWholeMilliseconds)
         advanceTimeBy(1.hours.inWholeMilliseconds + 1.seconds.inWholeMilliseconds)
         assertThat(state.timeRemainingData!!.first).isEqualTo(duration_hours_medium)
         assertThat(state.timeRemainingData!!.second).isEqualTo(23)
 
         job.cancelAndJoin()
-    }
-
-    /** A fake implementation of [TimeSource] that allows the caller to set the current time */
-    private class MutableTimeSource(var time: Long = 0L) : TimeSource {
-        override fun getCurrentTime(): Long {
-            return time
-        }
     }
 }

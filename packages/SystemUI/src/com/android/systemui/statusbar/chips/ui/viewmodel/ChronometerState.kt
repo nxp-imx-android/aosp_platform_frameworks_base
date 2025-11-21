@@ -16,7 +16,8 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.annotation.ElapsedRealtimeLong
-import android.text.format.DateUtils.formatElapsedTime
+import android.annotation.FlaggedApi
+import android.text.format.DateUtils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -28,120 +29,202 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.Flags
-import com.google.common.math.DoubleMath.roundToLong
+import com.android.systemui.util.time.SystemClock
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 import kotlinx.coroutines.delay
-
-/** Platform-optimized interface for getting current time */
-fun interface TimeSource {
-    fun getCurrentTime(): Long
-}
 
 /**
  * Holds and manages the state for a Chronometer, which shows a timer in a format like "MM:SS" or
  * "H:MM:SS".
  *
- * If [isEventInFuture] is false, then this Chronometer is counting up from an event that started in
- * the past, like a phone call that was answered. [eventTimeMillis] represents the time the event
- * started and the timer will tick up: 04:00, 04:01, ... No timer is shown if [eventTimeMillis] is
- * in the future and [isEventInFuture] is false.
- *
- * If [isEventInFuture] is true, then this Chronometer is counting down to an event that will occur
- * in the future, like a future meeting. [eventTimeMillis] represents the time the event will occur
- * and the timer will tick down: 04:00, 03:59, ... No timer is shown if [eventTimeMillis] is in the
- * past and [isEventInFuture] is true.
+ * If [chronometer] is [Chronometer.Running], then this represents a "running" chronometer, either a
+ * stopwatch or a countdown timer if [Chronometer.Running.isCountdown] is true.
+ * * If [Chronometer.Running.isCountdown] is false, then this Chronometer is counting up from an
+ *   event that started in the past, like a phone call that was answered.
+ *   [Chronometer.Running.eventTime] represents the time the event started and the timer will tick
+ *   up: 04:00, 04:01, ... No timer is shown if [Chronometer.Running.eventTime] is in the future and
+ *   [Chronometer.Running.isCountdown] is false.
+ * * If [Chronometer.Running.isCountdown] is true, then this Chronometer is counting down to an
+ *   event that will occur in the future, like a future meeting. [Chronometer.Running.eventTime]
+ *   represents the time the event will occur and the timer will tick down: 04:00, 03:59, ... No
+ *   timer is shown if [Chronometer.Running.eventTime] is in the past and
+ *   [Chronometer.Running.isCountdown] is true. If [chronometer] is [Chronometer.Paused], then this
+ *   represents a "paused" chronometer. The duration specified will be shown, unless it is negative.
  */
 class ChronometerState(
-    private val timeSource: TimeSource,
-    @ElapsedRealtimeLong private val eventTimeMillis: Long,
-    private val isEventInFuture: Boolean,
+    private val timeSource: SystemClock,
+    private val formatter: Formatter = Formatter.Chronometer,
+    val chronometer: Chronometer,
 ) {
     private val areChronometerFixesEnabled = Flags.statusBarChronometerFixes()
 
-    private var currentTimeMillis by mutableLongStateOf(timeSource.getCurrentTime())
-    private val elapsedTimeMillis: Long
-        get() =
-            if (isEventInFuture) {
-                eventTimeMillis - currentTimeMillis
-            } else {
-                currentTimeMillis - eventTimeMillis
-            }
+    /** "Current" value of [SystemClock.elapsedRealtime]. Updated by [run]. */
+    private var elapsedRealtimeMillis by mutableLongStateOf(timeSource.elapsedRealtime())
 
     /**
      * The current timer string in a format like "MM:SS" or "H:MM:SS", or null if we shouldn't show
      * the timer string.
      */
     val currentTimeText: String? by derivedStateOf {
-        if (elapsedTimeMillis < 0) {
+        when (chronometer) {
+            is Chronometer.Running -> formatRunningChronometer(chronometer)
+            is Chronometer.Paused -> formatPausedChronometer(chronometer)
+        }
+    }
+
+    private fun formatRunningChronometer(chronometer: Chronometer.Running): String? {
+        val elapsedTimeMillis = currentValue().toMillis()
+        return if (elapsedTimeMillis < 0) {
             null
         } else {
             // LINT.IfChange
             if (areChronometerFixesEnabled) {
                 // This should exactly match the implementation in the framework Chronometer.java.
                 val adjustedMillis =
-                    if (isEventInFuture) {
+                    if (chronometer.isCountdown) {
                         // Ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
                         elapsedTimeMillis - 499
                     } else {
                         elapsedTimeMillis
                     }
                 val seconds = (adjustedMillis / 1000f).roundToLong()
-                formatElapsedTime(seconds)
+                formatter.format(Duration.ofSeconds(seconds))
             } else {
-                formatElapsedTime(elapsedTimeMillis / 1000)
+                formatter.format(Duration.ofSeconds(elapsedTimeMillis / 1000))
             }
             // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
         }
     }
 
-    suspend fun run() {
+    private fun formatPausedChronometer(chronometer: Chronometer.Paused): String? {
+        return if (!chronometer.atDuration.isNegative) formatter.format(chronometer.atDuration)
+        else null
+    }
+
+    suspend fun run(chronometer: Chronometer.Running) {
         // LINT.IfChange
         while (true) {
-            currentTimeMillis = timeSource.getCurrentTime()
+            elapsedRealtimeMillis = timeSource.elapsedRealtime()
+            val currentValue = currentValue()
 
             if (areChronometerFixesEnabled) {
                 // This should exactly match the implementation in the framework Chronometer.java.
-                val periodInMillis = 1000L
+                val periodInMillis = formatter.period(currentValue).toMillis()
                 val delayMillis =
-                    if (isEventInFuture) {
-                        val delay = (eventTimeMillis - currentTimeMillis) % periodInMillis
+                    if (chronometer.isCountdown) {
+                        val delay = currentValue.toMillis() % periodInMillis
                         if (delay <= 0) {
                             delay + periodInMillis
                         } else {
                             delay
                         }
                     } else {
-                        periodInMillis -
-                            ((currentTimeMillis - eventTimeMillis).absoluteValue % periodInMillis)
+                        periodInMillis - (currentValue.toMillis().absoluteValue % periodInMillis)
                     }
 
                 // Aim for 3 milliseconds into the next second so we don't update exactly on the
                 // second.
                 delay(delayMillis + 3)
             } else {
-                val delaySkewMillis = (eventTimeMillis - currentTimeMillis).absoluteValue % 1000L
+                val delaySkewMillis = currentValue.toMillis().absoluteValue % 1000L
                 delay(1000L - delaySkewMillis)
             }
         }
         // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
     }
+
+    private fun currentValue(): Duration {
+        if (chronometer is Chronometer.Running) {
+            val currentTimeMillis = elapsedRealtimeMillis
+            val eventTimeMillis = chronometer.eventTime.asElapsedRealtime(timeSource)
+
+            return if (chronometer.isCountdown) {
+                Duration.ofMillis(eventTimeMillis - currentTimeMillis)
+            } else {
+                Duration.ofMillis(currentTimeMillis - eventTimeMillis)
+            }
+        } else {
+            throw IllegalStateException("Unknown Chronometer type: $chronometer")
+        }
+    }
+}
+
+sealed interface Formatter {
+    fun format(value: Duration): String
+
+    /**
+     * Period between ticks in the chronometer. Can depend on the current value, if the precision of
+     * the formatting is dynamic (e.g. "3h 12m" vs "3:12:03").
+     */
+    fun period(currentValue: Duration): Duration
+
+    /** "Standard" chronometer formater (e.g. H:MM:SS) with second precision. Ticks every second. */
+    object Chronometer : Formatter {
+        override fun format(value: Duration): String = DateUtils.formatElapsedTime(value.seconds)
+
+        override fun period(currentValue: Duration): Duration = Duration.ofSeconds(1)
+    }
+}
+
+/** Actual data about the Chronometer state. */
+sealed class Chronometer {
+    /**
+     * Running chronometer (either counting up or down to [eventTime]). Won't be displayed if the
+     * current value is negative (e.g. countdown timer past [eventTime] or stopwatch before
+     * [eventTime]).
+     */
+    data class Running(val eventTime: EventTime, val isCountdown: Boolean) : Chronometer()
+
+    /** Chronometer paused at a specific time. Won't be displayed if negative. */
+    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    data class Paused(val atDuration: Duration) : Chronometer()
+}
+
+/** Event, or "zero" time, of a chronometer. */
+sealed class EventTime {
+    @ElapsedRealtimeLong abstract fun asElapsedRealtime(timeSource: SystemClock): Long
+
+    /**
+     * Chronometer whose zero time is expressed in the base of [SystemClock.elapsedRealtime]
+     * (milliseconds since boot).
+     */
+    data class ElapsedRealtime(@ElapsedRealtimeLong val elapsedRealtime: Long) : EventTime() {
+        @ElapsedRealtimeLong
+        override fun asElapsedRealtime(timeSource: SystemClock): Long {
+            return elapsedRealtime
+        }
+    }
+
+    /**
+     * Chronometer whose zero time is expressed in the base of [SystemClock.currentTime] (i.e. UTC
+     * time). Can skip forwards or backwards if device clock changes (excluding timezone
+     * adjustments).
+     */
+    data class ClockTime(val instant: Instant) : EventTime() {
+        @ElapsedRealtimeLong
+        override fun asElapsedRealtime(timeSource: SystemClock): Long {
+            return (timeSource.elapsedRealtime() +
+                (instant.toEpochMilli() - timeSource.currentTimeMillis()))
+        }
+    }
 }
 
 /** Remember and manage the ChronometerState */
 @Composable
-fun rememberChronometerState(
-    eventTimeMillis: Long,
-    isCountDown: Boolean,
-    timeSource: TimeSource,
-): ChronometerState {
+fun rememberChronometerState(chronometer: Chronometer, timeSource: SystemClock): ChronometerState {
     val state =
-        remember(timeSource, eventTimeMillis, isCountDown) {
-            ChronometerState(timeSource, eventTimeMillis, isCountDown)
+        remember(timeSource, chronometer) {
+            ChronometerState(timeSource, Formatter.Chronometer, chronometer)
         }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycleOwner, timeSource, eventTimeMillis) {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { state.run() }
+
+    if (chronometer is Chronometer.Running) {
+        val lifecycleOwner = LocalLifecycleOwner.current
+        LaunchedEffect(lifecycleOwner, timeSource, chronometer) {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { state.run(chronometer) }
+        }
     }
 
     return state

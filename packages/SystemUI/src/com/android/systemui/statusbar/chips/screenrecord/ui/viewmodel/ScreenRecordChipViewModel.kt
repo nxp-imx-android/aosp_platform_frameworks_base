@@ -112,7 +112,8 @@ constructor(
                                 ),
                             content =
                                 OngoingActivityChipModel.Content.Timer(
-                                    startTimeMs = systemClock.elapsedRealtime()
+                                    startTimeMs = systemClock.elapsedRealtime(),
+                                    timeSource = systemClock,
                                 ),
                             colors = ColorsModel.Red,
                             clickBehavior =
