@@ -133,6 +133,9 @@ per-file *VoiceInteract* = file:/core/java/android/service/voice/OWNERS
 per-file *Wallpaper* = file:/core/java/android/service/wallpaper/OWNERS
 per-file wallpaper.aconfig = file:/core/java/android/service/wallpaper/OWNERS
 
+# ThemeManager
+per-file ThemeManager.java = file:/services/core/java/com/android/server/theming/OWNERS
+
 # WindowManager
 per-file *Activity* = file:/services/core/java/com/android/server/wm/OWNERS
 per-file ClientTransactionHandler.java = file:/services/core/java/com/android/server/wm/OWNERS
