@@ -5686,6 +5686,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun closeTask_desktop_minimizedTask_doesNothing() {
+        val task = setUpFreeformTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+        userRepositories.getProfile(task.userId).minimizeTask(task.displayId, task.taskId)
+
+        val result = controller.closeTask(task)
+
+        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOESD_MINIMIZED)
+        verifyWCTNotExecuted()
+    }
+
+    @Test
     fun closeTask_disabledDesktopEntry_doesNothing() {
         val task = setUpFullscreenTask()
         task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")

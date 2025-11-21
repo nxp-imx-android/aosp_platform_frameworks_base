@@ -2001,6 +2001,8 @@ class DesktopTasksController(
         // Did not close task because the task cannot enter desktop mode, implying the task cannot
         // be closed via the desktop mode decoration.
         NOT_CLOSED_DISABLED_DESKTOP_ENTRY,
+        // Did not close task because the task is minimized.
+        NOT_CLOESD_MINIMIZED,
         // Did not close task because the split screen divider is currently flinging, implying the
         // split screen is in the intermediate state.
         NOT_CLOSED_DIVIDER_FLINGING,
@@ -2082,6 +2084,11 @@ class DesktopTasksController(
             return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
         }
         if (isDesktopTask(task)) {
+            // TODO: b/445825181 - Remove this check once minimized tasks never get focused.
+            if (userRepositories.getProfile(task.userId).isMinimizedTask(task.taskId)) {
+                logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOESD_MINIMIZED)
+                return CloseTaskResult.NOT_CLOESD_MINIMIZED
+            }
             val wct = WindowContainerTransaction()
             val runOnTransitionStart = onDesktopWindowClose(wct, task.displayId, task)
             wct.removeTask(task.token)
