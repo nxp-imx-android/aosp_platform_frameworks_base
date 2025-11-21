@@ -89,7 +89,7 @@ class PreferenceHierarchyTest {
     fun addParameterizedScreenWithKeyParameters_addsScreen() {
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
-        val keyParameters = KeyParameters(KeyParametersSchema { }, mock())
+        val keyParameters = ValidatedKeyParameters(KeyParametersSchema { }, mock())
         whenever(preferenceScreenMetadataParameterizedFactory.createWithKeyParameters(context, keyParameters)).thenReturn(testScreenMetadata)
         val hierarchy = screen.preferenceHierarchy(context) {
             addParameterizedScreenWithKeyParameters(TEST_SCREEN_KEY, keyParameters)
@@ -105,7 +105,7 @@ class PreferenceHierarchyTest {
     fun withParameters_addsScreen() {
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
-        val keyParameters = KeyParameters(KeyParametersSchema { }, mock())
+        val keyParameters = ValidatedKeyParameters(KeyParametersSchema { }, mock())
         whenever(preferenceScreenMetadataParameterizedFactory.createWithKeyParameters(context, keyParameters)).thenReturn(testScreenMetadata)
         val hierarchy = screen.preferenceHierarchy(context) {
             +(TEST_SCREEN_KEY withParameters keyParameters)

@@ -32,7 +32,7 @@ interface PreferenceScreenBindingKeyProvider {
     /** Returns the parameters to build a parameterized preference screen.
      * This parameters must match the parameterized screen's parameters schema.
      */
-    fun getPreferenceScreenBindingKeyParameters(context: Context): KeyParameters?
+    fun getPreferenceScreenBindingKeyParameters(context: Context): ValidatedKeyParameters?
 }
 
 /** Extra key to provide the preference screen key for binding. */

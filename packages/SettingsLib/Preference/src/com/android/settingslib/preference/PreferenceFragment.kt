@@ -30,7 +30,7 @@ import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
-import com.android.settingslib.metadata.KeyParameters
+import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceHierarchyGenerator
 import com.android.settingslib.metadata.PreferenceScreenBindingKeyProvider
@@ -214,7 +214,7 @@ open class PreferenceFragment :
     override fun getPreferenceScreenBindingArgs(context: Context): Bundle? =
         arguments?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
 
-    override fun getPreferenceScreenBindingKeyParameters(context: Context): KeyParameters? {
+    override fun getPreferenceScreenBindingKeyParameters(context: Context): ValidatedKeyParameters? {
         val screenKey = getPreferenceScreenBindingKey(context) ?: return null
         val arguments = arguments?.getBundle(EXTRA_BINDING_SCREEN_ARGS) ?: return null
 

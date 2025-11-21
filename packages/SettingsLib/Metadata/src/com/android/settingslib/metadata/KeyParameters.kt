@@ -26,7 +26,7 @@ import org.json.JSONObject
  *
  * @property values The validated map of parameter names to their string values.
  */
-open class UnvalidatedKeyParameters(
+open class KeyParameters(
     open val values: Map<String, String>
 ) {
     /**
@@ -70,10 +70,10 @@ open class UnvalidatedKeyParameters(
  * @property values The validated map of parameter names to their string values.
  */
 @ConsistentCopyVisibility
-data class KeyParameters internal constructor(
+data class ValidatedKeyParameters internal constructor(
     private val schema: KeyParametersSchema,
     override val values: Map<String, String>
-) : UnvalidatedKeyParameters(values) {
+) : KeyParameters(values) {
 
     /**
      * Retrieves the value for a given parameter key.
@@ -119,7 +119,7 @@ data class KeyParameters internal constructor(
 
 /**
  * Defines the schema for a set of parameters, including their names, descriptions, and validation rules.
- * This class acts as a factory for creating validated [KeyParameters] instances.
+ * This class acts as a factory for creating validated [ValidatedKeyParameters] instances.
  *
  * Use the DSL function `KeyParametersSchema { ... }` to create an instance.
  *
@@ -133,7 +133,7 @@ class KeyParametersSchema private constructor(
      *
      * @property name The unique name of the parameter.
      * @property description A human-readable description of what the parameter is for.
-     * @property required If `true`, this parameter must be provided when creating [KeyParameters].
+     * @property required If `true`, this parameter must be provided when creating [ValidatedKeyParameters].
      */
     data class ParameterDefinition(
         val name: String,
@@ -184,16 +184,16 @@ class KeyParametersSchema private constructor(
     }
 
     /**
-     * Creates a validated [KeyParameters] instance from a map of provided values.
+     * Creates a validated [ValidatedKeyParameters] instance from a map of provided values.
      *
      * This method checks the provided values against the schema rules, ensuring that all required
      * parameters are present. Unknown parameters are ignored.
      *
      * @param providedValues A map of parameter names to their string values.
-     * @return A validated [KeyParameters] instance.
+     * @return A validated [ValidatedKeyParameters] instance.
      * @throws IllegalArgumentException if a required parameter is missing.
      */
-    fun prepare(providedValues: Map<String, String>): KeyParameters {
+    fun prepare(providedValues: Map<String, String>): ValidatedKeyParameters {
         val finalValues = mutableMapOf<String, String>()
 
         // Validate provided values and check for required parameters
@@ -205,22 +205,22 @@ class KeyParametersSchema private constructor(
                 throw IllegalArgumentException("Required parameter '$name' is missing.")
             }
         }
-        return KeyParameters(this, finalValues)
+        return ValidatedKeyParameters(this, finalValues)
     }
 
     /**
-     * A convenience method to create a validated [KeyParameters] instance from a `vararg` of [Pair]s.
+     * A convenience method to create a validated [ValidatedKeyParameters] instance from a `vararg` of [Pair]s.
      *
      * @see prepare(providedValues: Map<String, String>)
      */
-    fun prepare(vararg values: Pair<String, String>): KeyParameters = prepare(values.toMap())
+    fun prepare(vararg values: Pair<String, String>): ValidatedKeyParameters = prepare(values.toMap())
 
     /**
-     * A convenience method to create a validated [KeyParameters] instance from a [Bundle].
+     * A convenience method to create a validated [ValidatedKeyParameters] instance from a [Bundle].
      *
      * @see prepare(providedValues: Map<String, String>)
      */
-    fun prepare(bundle: Bundle): KeyParameters {
+    fun prepare(bundle: Bundle): ValidatedKeyParameters {
         val providedValues = bundle.keySet().mapNotNull { key ->
             bundle.getString(key)?.let { value -> key to value }
         }.toMap()
@@ -228,25 +228,25 @@ class KeyParametersSchema private constructor(
     }
 
     /**
-     * A convenience method to create a validated [KeyParameters] instance from an
-     * [UnvalidatedKeyParameters].
+     * A convenience method to create a validated [ValidatedKeyParameters] instance from an
+     * [KeyParameters].
      *
      * @see prepare(providedValues: Map<String, String>)
      */
-    fun prepare(keyParameters: UnvalidatedKeyParameters) = prepare(keyParameters.values)
+    fun prepare(keyParameters: KeyParameters) = prepare(keyParameters.values)
 
     /**
-     * Creates a new [KeyParameters] instance by updating an existing one with new values.
+     * Creates a new [ValidatedKeyParameters] instance by updating an existing one with new values.
      *
-     * This method takes an existing, valid [KeyParameters] object, merges it with the
+     * This method takes an existing, valid [ValidatedKeyParameters] object, merges it with the
      * new values, and then re-validates the entire set to produce a new, immutable object.
      *
-     * @param existing The original [KeyParameters] object.
+     * @param existing The original [ValidatedKeyParameters] object.
      * @param newValues A map of the new key-value pairs to apply.
-     * @return A new, validated [KeyParameters] instance.
+     * @return A new, validated [ValidatedKeyParameters] instance.
      * @throws IllegalArgumentException if validation fails.
      */
-    fun prepareWith(existing: KeyParameters?, newValues: Map<String, String>): KeyParameters {
+    fun prepareWith(existing: ValidatedKeyParameters?, newValues: Map<String, String>): ValidatedKeyParameters {
         val currentValues = existing?.values?.toMutableMap() ?: mutableMapOf()
         currentValues.putAll(newValues)
 
@@ -256,31 +256,31 @@ class KeyParametersSchema private constructor(
     /**
      * A convenience overload for updating with a single key-value pair.
      */
-    fun prepareWith(existing: KeyParameters?, vararg newValues: Pair<String, String>): KeyParameters {
+    fun prepareWith(existing: ValidatedKeyParameters?, vararg newValues: Pair<String, String>): ValidatedKeyParameters {
         return prepareWith(existing, newValues.toMap())
     }
 
     /**
-     * Creates a validated [KeyParameters] instance from a string representation.
+     * Creates a validated [ValidatedKeyParameters] instance from a string representation.
      *
      * The expected format is `[key1=value1,key2=value2,...]`. This method parses the string
      * and then validates the resulting key-value pairs against the schema.
      *
      * @param parametersString The string representation of the parameters.
-     * @return A validated [KeyParameters] instance.
+     * @return A validated [ValidatedKeyParameters] instance.
      * @throws IllegalArgumentException if the string is malformed or if validation against
      * the schema fails.
      */
-    fun prepare(parametersString: String): KeyParameters {
+    fun prepare(parametersString: String): ValidatedKeyParameters {
         return prepare(parametersString.deserializeToMap())
     }
 
     /**
-     * Creates an empty [KeyParameters] instance.
+     * Creates an empty [ValidatedKeyParameters] instance.
      *
      * This method is primarily used for backward compatibility when a preference screen
      * transitions from being non-parameterized to parameterized. In such migration scenarios,
-     * the parameterized screen is expected to gracefully accept and handle empty [KeyParameters]
+     * the parameterized screen is expected to gracefully accept and handle empty [ValidatedKeyParameters]
      * to ensure compatibility with older configurations or entry points.
      */
     fun prepareEmpty() = prepare(emptyMap())
@@ -373,12 +373,12 @@ fun KeyParametersSchema.Builder.withAppPackageName() {
  * @param packageName The package name value.
  * @return Validated KeyParameters.
  */
-fun KeyParametersSchema.prepareForApp(packageName: String): KeyParameters {
+fun KeyParametersSchema.prepareForApp(packageName: String): ValidatedKeyParameters {
     return prepare(KEY_PACKAGE_NAME to packageName)
 }
 
 /**
  * Convenience method to retrieve the package name from a KeyParameters.
  */
-val KeyParameters.packageName: String
+val ValidatedKeyParameters.packageName: String
     get() = getRequired(KEY_PACKAGE_NAME)

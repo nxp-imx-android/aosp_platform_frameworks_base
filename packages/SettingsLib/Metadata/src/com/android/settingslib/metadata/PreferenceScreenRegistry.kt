@@ -79,7 +79,7 @@ object PreferenceScreenRegistry {
         return (preferenceScreenMetadataFactories[screenKey] as? PreferenceScreenMetadataParameterizedFactory)?.parameters(context) ?: emptyFlow()
     }
 
-    fun getKeyParameters(context: Context, screenKey: String): Flow<KeyParameters> {
+    fun getKeyParameters(context: Context, screenKey: String): Flow<ValidatedKeyParameters> {
         return (preferenceScreenMetadataFactories[screenKey] as? PreferenceScreenMetadataParameterizedFactory)?.keyParameters(context) ?: emptyFlow()
     }
 
@@ -119,7 +119,7 @@ object PreferenceScreenRegistry {
     }
 
     /** Creates [PreferenceScreenMetadata] of particular screen key with given arguments. */
-    fun createWithKeyParameters(context: Context, screenKey: String?, keyParameters: KeyParameters?): PreferenceScreenMetadata? {
+    fun createWithKeyParameters(context: Context, screenKey: String?, keyParameters: ValidatedKeyParameters?): PreferenceScreenMetadata? {
         if (screenKey == null) return null
         val factory = preferenceScreenMetadataFactories[screenKey] ?: return null
         val appContext = context.applicationContext

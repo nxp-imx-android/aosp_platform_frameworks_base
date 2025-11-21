@@ -25,7 +25,7 @@ import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
 import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
-import com.android.settingslib.metadata.KeyParameters
+import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import kotlinx.coroutines.CoroutineScope
 
@@ -110,7 +110,7 @@ class PreferenceScreenFactory {
     fun createBindingScreenWithKeyParameters(
         context: Context,
         screenKey: String?,
-        keyParameters: KeyParameters?,
+        keyParameters: ValidatedKeyParameters?,
         coroutineScope: CoroutineScope,
     ): PreferenceScreen? {
         val metadata = PreferenceScreenRegistry.createWithKeyParameters(context, screenKey, keyParameters) ?: return null

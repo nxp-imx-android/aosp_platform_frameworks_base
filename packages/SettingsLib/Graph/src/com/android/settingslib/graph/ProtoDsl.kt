@@ -37,7 +37,7 @@ import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.PreferenceValueProto
 import com.android.settingslib.graph.proto.RangeValueProto
 import com.android.settingslib.graph.proto.TextProto
-import com.android.settingslib.metadata.UnvalidatedKeyParameters
+import com.android.settingslib.metadata.KeyParameters
 
 /** Returns root or null. */
 val PreferenceScreenProtoOrBuilder.rootOrNull
@@ -194,7 +194,7 @@ fun PreferenceGraphProto.Builder.mergeForLazyMode(
 fun PreferenceGraphProto.Builder.mergeForLazyMode(
     screen: PreferenceScreenProto,
     screenKey: String,
-    keyParameters: UnvalidatedKeyParameters?,
+    keyParameters: KeyParameters?,
 ) {
     val oldScreen = getScreensOrDefault(screenKey, null)
     if (oldScreen == null) {

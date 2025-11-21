@@ -27,7 +27,7 @@ import com.android.settingslib.graph.proto.BundleProto.BundleValue
 import com.android.settingslib.graph.proto.IntentProto
 import com.android.settingslib.graph.proto.KeyParametersProto
 import com.android.settingslib.graph.proto.TextProto
-import com.android.settingslib.metadata.KeyParameters
+import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.marshallParcel
 import com.android.settingslib.metadata.unmarshallBundle
@@ -119,10 +119,10 @@ fun BundleProto.toBundle(): Bundle {
     }
 }
 
-fun KeyParameters.toProto(): KeyParametersProto = keyParametersProto {
+fun ValidatedKeyParameters.toProto(): KeyParametersProto = keyParametersProto {
     putAllValues(this@toProto.values)
 }
 
-fun KeyParametersProto.toKeyParameters(schema: KeyParametersSchema): KeyParameters {
+fun KeyParametersProto.toKeyParameters(schema: KeyParametersSchema): ValidatedKeyParameters {
     return schema.prepare(valuesMap)
 }

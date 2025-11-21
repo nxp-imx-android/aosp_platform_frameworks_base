@@ -39,7 +39,7 @@ open class PreferenceCoordinate : PreferenceScreenCoordinate {
         this.key = key
     }
 
-    constructor(screenKey: String, keyParameters: UnvalidatedKeyParameters?, key: String) : super(screenKey, keyParameters) {
+    constructor(screenKey: String, keyParameters: KeyParameters?, key: String) : super(screenKey, keyParameters) {
         this.key = key
     }
 
@@ -77,7 +77,7 @@ open class PreferenceScreenCoordinate : Parcelable {
     val args: Bundle?
 
     /** Arguments to create parameterized preference screen. */
-    val keyParameters: UnvalidatedKeyParameters?
+    val keyParameters: KeyParameters?
 
     constructor(screenKey: String) {
         this.screenKey = screenKey
@@ -92,7 +92,7 @@ open class PreferenceScreenCoordinate : Parcelable {
         this.keyParameters = null
     }
 
-    constructor(screenKey: String, keyParameters: UnvalidatedKeyParameters?) {
+    constructor(screenKey: String, keyParameters: KeyParameters?) {
         this.screenKey = screenKey
         this.keyParameters = keyParameters
         this.args = null
@@ -102,7 +102,7 @@ open class PreferenceScreenCoordinate : Parcelable {
         screenKey = parcel.readString()!!
 
         if (CatalystFlags.catalystUseKeyParameters()) {
-            keyParameters = parcel.readString()?.let { UnvalidatedKeyParameters(it.deserializeToMap()) }
+            keyParameters = parcel.readString()?.let { KeyParameters(it.deserializeToMap()) }
             args = null
         } else {
             args = parcel.readBundle(javaClass.classLoader)

@@ -26,16 +26,16 @@ package com.android.settingslib.metadata
  *   [PreferenceScreenMetadata.arguments]
  * - (parameterized (Deprecated)) the primary constructor has a [android.content.Context] and a
  *   [android.os.Bundle] parameter to override [PreferenceScreenMetadata.arguments]
- * - (parameterized) the primary constructor has a single [KeyParameters] parameter to override
+ * - (parameterized) the primary constructor has a single [ValidatedKeyParameters] parameter to override
  *   [PreferenceScreenMetadata.keyParameters]
  * - (parameterized) the primary constructor has a [android.content.Context] and a
- *   [KeyParameters] parameter to override [PreferenceScreenMetadata.keyParameters]
+ *   [ValidatedKeyParameters] parameter to override [PreferenceScreenMetadata.keyParameters]
  *
  * @param value unique preference screen key
  * @param overlay if true, current annotated screen will overlay the screen that has identical key
  * @param parameterized if true, the screen relies on additional arguments to build its content
  * @param parameterizedMigration whether the parameterized screen was a normal screen, in which case
- *   `Bundle.EMPTY`/empty [KeyParameters] will be passed as arguments to take care of backward
+ *   `Bundle.EMPTY`/empty [ValidatedKeyParameters] will be passed as arguments to take care of backward
  *   compatibility
  * @see PreferenceScreenMetadata
  */

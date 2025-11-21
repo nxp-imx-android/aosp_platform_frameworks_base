@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.Flow
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
  * - override [arguments] in constructor (Deprecated: Will be removed once the catalyst framework
- *   stops passing the arguments as a bundle. Instead: override [KeyParameters])
+ *   stops passing the arguments as a bundle. Instead: override [ValidatedKeyParameters])
  * - override [bindingKey] to distinguish the preferences on the preference hierarchy
  * - add a companion object that inherits from [ParameterizedPreferenceScreenArgumentsFactory] and
  *   provide the parameter schema and implement the `fun parameters(context: Context): Flow<Bundle>`
@@ -51,7 +51,7 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     val arguments: Bundle?
         get() = null
 
-    val keyParameters: KeyParameters?
+    val keyParameters: ValidatedKeyParameters?
         get() = null
 
     /**
@@ -224,7 +224,7 @@ interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadat
      * @param context application context to create the PreferenceScreenMetadata
      * @param keyParameters parameters to create the screen metadata
      */
-    fun createWithKeyParameters(context: Context, keyParameters: KeyParameters): PreferenceScreenMetadata
+    fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata
 
     /**
      * Returns all possible key-parameters to create [PreferenceScreenMetadata].
@@ -240,7 +240,7 @@ interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadat
      * 2. In the [keyParameters] implementation, produce a parametersSchema.prepareEmpty() for the
      *    default case.
      */
-    fun keyParameters(context: Context): Flow<KeyParameters>
+    fun keyParameters(context: Context): Flow<ValidatedKeyParameters>
 
     /**
      * Defines the schema for the parameters in order to create an instance of the parameterized
@@ -259,5 +259,5 @@ interface ParameterizedPreferenceScreenArgumentsFactory {
     /**
      * Returns all possible parameters to create a [PreferenceScreenMetadata].
      */
-    fun keyParameters(context: Context): Flow<KeyParameters>
+    fun keyParameters(context: Context): Flow<ValidatedKeyParameters>
 }
