@@ -274,6 +274,7 @@ constructor(
     }
 
     fun dismissKeyguard() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch("$TAG#dismissKeyguard") {
             startTransitionTo(KeyguardState.GONE, ownerReason = "#dismissKeyguard()")
         }

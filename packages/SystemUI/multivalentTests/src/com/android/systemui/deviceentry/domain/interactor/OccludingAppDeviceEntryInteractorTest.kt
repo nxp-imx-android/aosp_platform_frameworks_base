@@ -25,10 +25,10 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
-import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -77,7 +77,6 @@ class OccludingAppDeviceEntryInteractorTest : SysuiTestCase() {
     private val bouncerRepository = kosmos.keyguardBouncerRepository
     private val powerRepository = kosmos.fakePowerRepository
     private val biometricSettingsRepository = kosmos.biometricSettingsRepository
-    private val communalSceneRepository = kosmos.communalSceneRepository
     private val mockedContext = kosmos.mockedContext
     private val mockedActivityStarter = kosmos.activityStarter
 
@@ -90,6 +89,7 @@ class OccludingAppDeviceEntryInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun fingerprintSuccess_goToHomeScreen() =
         testScope.runTest {
             underTest = kosmos.occludingAppDeviceEntryInteractor
@@ -154,6 +154,7 @@ class OccludingAppDeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun lockout_goToHomeScreenOnDismissAction() =
         testScope.runTest {
             underTest = kosmos.occludingAppDeviceEntryInteractor
@@ -221,6 +222,7 @@ class OccludingAppDeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun message_fpErrorHelpFailOnOccludingApp() =
         testScope.runTest {
             underTest = kosmos.occludingAppDeviceEntryInteractor

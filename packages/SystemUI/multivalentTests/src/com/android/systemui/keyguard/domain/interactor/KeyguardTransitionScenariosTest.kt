@@ -144,9 +144,9 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                FLAG_GLANCEABLE_HUB_V2,
-                FLAG_WAKEFULNESS_FOR_ANIMATIONS
-            )
+                    FLAG_GLANCEABLE_HUB_V2,
+                    FLAG_WAKEFULNESS_FOR_ANIMATIONS,
+                )
                 .andSceneContainer()
         }
     }
@@ -208,6 +208,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         }
 
     @Test
+    @BrokenWithSceneContainer(339465026)
     fun occludedToDozing() =
         testScope.runTest {
             // GIVEN a device with AOD not available
@@ -233,6 +234,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         }
 
     @Test
+    @BrokenWithSceneContainer(339465026)
     fun occludedToAod() =
         testScope.runTest {
             // GIVEN a device with AOD available
@@ -1070,6 +1072,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         }
 
     @Test
+    @BrokenWithSceneContainer(339465026)
     fun occludedToAlternateBouncer() =
         testScope.runTest {
             // GIVEN a prior transition has run to OCCLUDED
@@ -1256,6 +1259,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         }
 
     @Test
+    @BrokenWithSceneContainer(339465026)
     fun dreamingToAod() =
         testScope.runTest {
             // GIVEN a prior transition has run to DREAMING

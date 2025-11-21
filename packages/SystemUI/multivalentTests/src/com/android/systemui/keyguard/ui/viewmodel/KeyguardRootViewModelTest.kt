@@ -54,7 +54,6 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
-import com.android.systemui.shared.Flags
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -378,7 +377,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
                 testScope,
             )
 
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             shadeTestUtil.setShadeExpansion(0f)
             keyguardRepository.topClippingBounds.value = 5
             assertThat(topClippingBounds).isEqualTo(null)
@@ -1046,7 +1045,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
                 to = KeyguardState.GONE,
                 testScope = testScope,
             )
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             assertThat(alpha).isEqualTo(0f)
 
             if (!SceneContainerFlag.isEnabled) {

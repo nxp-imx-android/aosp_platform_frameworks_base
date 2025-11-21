@@ -200,6 +200,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionToOccluded() =
         testScope.runTest {
             kosmos.fakePowerRepository.updateWakefulness(
@@ -264,6 +265,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionToDreaming() =
         kosmos.runTest {
             // Advance past initial dreaming/doze delay

@@ -1676,7 +1676,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 ObservableTransitionState.Idle(
                     sceneInteractor.currentScene.value,
                     checkNotNull(currentOverlays),
-                )
+                ),
+                skipChangeScene = true,
             )
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
 
@@ -1711,7 +1712,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 ObservableTransitionState.Idle(
                     checkNotNull(currentScene),
                     checkNotNull(currentOverlays),
-                )
+                ),
+                skipChangeScene = true,
             )
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 

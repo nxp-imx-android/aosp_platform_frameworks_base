@@ -186,7 +186,7 @@ class LogContextInteractorImplTest : SysuiTestCase() {
             assertThat(isDeviceUnlocked).isTrue()
             kosmos.sceneInteractor.snapToScene(Scenes.Gone, "")
 
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.GONE)
+            keyguardTransitionRepository.startTransitionTo(KeyguardState.UNDEFINED)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_UNKNOWN)
 
             keyguardTransitionRepository.startTransitionTo(KeyguardState.UNDEFINED)

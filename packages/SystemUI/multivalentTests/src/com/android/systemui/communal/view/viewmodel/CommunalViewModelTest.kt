@@ -743,7 +743,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             // And transitioning to occluded
             kosmos.setTransition(
-                sceneTransition = Transition(from = Scenes.Communal, to = Scenes.Lockscreen),
+                sceneTransition = Transition(from = Scenes.Communal, to = Scenes.Occluded),
                 stateTransition =
                     TransitionStep(
                         from = KeyguardState.GLANCEABLE_HUB,

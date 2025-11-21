@@ -144,8 +144,10 @@ constructor(
                                 if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.GLANCEABLE_HUB
                             } else if (isOccluded && !isDreaming) {
+                                if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.OCCLUDED
                             } else if (isDreaming) {
+                                if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.DREAMING
                             } else if (hubV2 && isIdleOnCommunal) {
                                 if (SceneContainerFlag.isEnabled) return@collect
@@ -237,6 +239,7 @@ constructor(
     }
 
     fun dismissAlternateBouncer() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch { startTransitionTo(KeyguardState.GONE) }
     }
 

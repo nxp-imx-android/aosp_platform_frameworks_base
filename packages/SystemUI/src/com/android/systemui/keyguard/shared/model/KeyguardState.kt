@@ -15,7 +15,6 @@
  */
 package com.android.systemui.keyguard.shared.model
 
-import android.util.Log
 import com.android.compose.animation.scene.ContentKey
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -121,7 +120,9 @@ enum class KeyguardState {
         }
 
         if (!isStateValid) {
-            Log.e("KeyguardState", "$this is not a valid state when scene container is $isEnabled")
+            throw IllegalStateException(
+                "State $this is not a valid state when scene container is $isEnabled"
+            )
         }
     }
 

@@ -226,7 +226,7 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val values by collectValues(underTest.showWhenLockedActivityLaunchedFromPowerGesture)
             powerInteractor.setAwakeForTest()
-            setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone), skipChangeScene = true)
 
             powerInteractor.setAsleepForTest()
 
@@ -242,7 +242,7 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true)
             powerInteractor.setAwakeForTest()
 
-            setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone), skipChangeScene = true)
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,
                 to = KeyguardState.UNDEFINED,

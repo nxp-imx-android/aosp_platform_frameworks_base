@@ -20,7 +20,6 @@ import android.app.StatusBarManager
 import android.provider.DeviceConfig
 import android.view.WindowManagerPolicyConstants
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
@@ -40,6 +39,7 @@ import com.android.systemui.navigationbar.navigationModeController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessState
+import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -312,8 +312,7 @@ class StatusBarStartableTest : SysuiTestCase() {
 
     /** Sets up an idle state on the given [on] scene. */
     private fun whenIdle(on: SceneKey, overlays: Set<OverlayKey> = emptySet()) {
-        kosmos.setSceneTransition(ObservableTransitionState.Idle(on, overlays))
-        kosmos.sceneInteractor.changeScene(on, "")
+        kosmos.setSceneTransition(Idle(on, overlays))
         for (overlay in overlays) {
             kosmos.sceneInteractor.showOverlay(overlay, "")
         }
