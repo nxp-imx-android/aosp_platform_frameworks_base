@@ -2793,13 +2793,14 @@ public class ShortcutService extends IShortcutService.Stub {
     }
 
     @Override
-    public boolean isRequestPinItemSupported(int callingUserId, int requestType) {
+    public boolean isRequestPinItemSupported(
+        String callingPackageName, int callingUserId, int requestType) {
         verifyCallerUserId(callingUserId);
-
+        verifyCaller(callingPackageName, callingUserId);
         final long token = injectClearCallingIdentity();
         try {
             return mShortcutRequestPinProcessor
-                    .isRequestPinItemSupported(callingUserId, requestType);
+                    .isRequestPinItemSupported(callingPackageName, callingUserId, requestType);
         } finally {
             injectRestoreCallingIdentity(token);
         }
@@ -3615,8 +3616,10 @@ public class ShortcutService extends IShortcutService.Stub {
         }
 
         @Override
-        public boolean isRequestPinItemSupported(int callingUserId, int requestType) {
-            return ShortcutService.this.isRequestPinItemSupported(callingUserId, requestType);
+        public boolean isRequestPinItemSupported(
+            String packageName, int callingUserId, int requestType) {
+            return ShortcutService.this.isRequestPinItemSupported(
+                packageName, callingUserId, requestType);
         }
 
         @Override

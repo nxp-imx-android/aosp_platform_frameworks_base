@@ -1488,7 +1488,7 @@ public class AppWidgetManager {
      */
     public boolean isRequestPinAppWidgetSupported() {
         try {
-            return mService.isRequestPinAppWidgetSupported();
+            return mService.isRequestPinAppWidgetSupported(mPackageName);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

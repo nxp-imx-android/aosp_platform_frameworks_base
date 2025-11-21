@@ -2588,7 +2588,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
      * (typically means adding widgets into home screen).
      */
     @Override
-    public boolean isRequestPinAppWidgetSupported() {
+    public boolean isRequestPinAppWidgetSupported(String callingPackage) {
         synchronized (mLock) {
             if (mSecurityPolicy.isCallerInstantAppLocked()) {
                 Slog.w(TAG, "Instant uid " + Binder.getCallingUid()
@@ -2596,8 +2596,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 return false;
             }
         }
+        // Make sure the package runs under the caller uid.
+        mSecurityPolicy.enforceCallFromPackage(callingPackage);
+
         return LocalServices.getService(ShortcutServiceInternal.class)
-                .isRequestPinItemSupported(UserHandle.getCallingUserId(),
+                .isRequestPinItemSupported(callingPackage, UserHandle.getCallingUserId(),
                         LauncherApps.PinItemRequest.REQUEST_TYPE_APPWIDGET);
     }
 
