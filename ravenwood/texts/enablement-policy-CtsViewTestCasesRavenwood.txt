@@ -5,16 +5,19 @@
 # but the failing tests are often slow, so let's just ignore them until we
 # know they might pass.)
 
+# Packages that we don't think we support yet.
+# Some of the tests in them may pass, but we don't bother at this point yet.
 android.view.cts.input.** never
 android.view.animation.** never
+android.view.inspector.** never
 
+# Let's also skip slow and low priority tests.
 android.view.cts.Texture* never
 android.view.cts.Surface* never
 android.view.cts.Motion* never
 android.view.cts.*Animation* never
-
-# This one fails and is slow.
 android.view.cts.PointerCaptureTest never
+android.view.cts.*Handwriting* never
 
 
 # Default to disable. Use RAVENWOOD_RUN_DISABLED_TESTS=1 to run disabled tests.
@@ -32,11 +35,11 @@ android.view.cts.PointerCaptureTest never
 ################################################################################
 
 # Class-level stats:
-# Total=106 Ran=71 Passed=28 CannotInit=0 Skipped=35
-# Pass rate: 26.42%
+# Total=106 Ran=69 Passed=30 CannotInit=0 Skipped=37
+# Pass rate: 28.30%
 # Method-level stats:
-# Total=915 Passed=558 Failed=350 Skipped=7
-# Pass rate: 61.45%
+# Total=944 Passed=568 Failed=368 Skipped=8
+# Pass rate: 60.68%
 
 android.view.cts.AbsSavedStateTest#testConstructor disable
 android.view.cts.AbsSavedStateTest#testConstructorNullParcel enable
@@ -55,11 +58,6 @@ android.view.cts.ActionModeTest#testOnWindowFocusChanged enable
 android.view.cts.ActionModeTest#testSetAndGetTag enable
 android.view.cts.ActionModeTest#testSetAndGetTitleOptionalHint enable
 android.view.cts.ActionModeTest#testSetType enable
-android.view.cts.AutoHandwritingTest#autoHandwriting_setToFalse disable
-android.view.cts.AutoHandwritingTest#autoHandwriting_setToFalseInXml disable
-android.view.cts.AutoHandwritingTest#autoHandwriting_setToTrue disable
-android.view.cts.AutoHandwritingTest#autoHandwriting_setToTrueInXml disable
-android.view.cts.AutoHandwritingTest#autoHandwriting_textView_defaultValueIsTrue disable
 android.view.cts.ContentPaneFocusTest#testAccessActionBar disable
 android.view.cts.ContentPaneFocusTest#testNoFocusablesInContent disable
 android.view.cts.ContextThemeWrapperTest#testAccessTheme enable
@@ -95,11 +93,6 @@ android.view.cts.GravityTest#testConstructor enable
 android.view.cts.GravityTest#testGetAbsoluteGravity enable
 android.view.cts.GravityTest#testIsHorizontal enable
 android.view.cts.GravityTest#testIsVertical enable
-android.view.cts.HandwritingBoundsOffsetTest#handwritingBoundsOffset_editTextDefaultValue disable
-android.view.cts.HandwritingBoundsOffsetTest#handwritingBoundsOffset_setThoughXml disable
-android.view.cts.HandwritingBoundsOffsetTest#handwritingBoundsOffset_textViewDefaultValue disable
-android.view.cts.HandwritingBoundsOffsetTest#handwritingBoundsOffset_viewDefaultValue disable
-android.view.cts.HandwritingBoundsOffsetTest#setHandwritingBoundsOffsets disable
 android.view.cts.HoverTest#testHoverMove disable
 android.view.cts.HoverTest#testHoverMoveAndExit disable
 android.view.cts.HoverTest#testHoverMoveMultiple disable
@@ -192,12 +185,12 @@ android.view.cts.KeyboardShortcutInfoTest#testWriteToParcelAndReadCharacter enab
 android.view.cts.KeyboardShortcutInfoTest#testWriteToParcelAndReadKeycode enable
 android.view.cts.LayoutInflaterTest#testAccessLayoutInflaterProperties enable
 android.view.cts.LayoutInflaterTest#testCreateView enable
-android.view.cts.LayoutInflaterTest#testCreateViewWithContext disable
+android.view.cts.LayoutInflaterTest#testCreateViewWithContext enable
 android.view.cts.LayoutInflaterTest#testFrom enable
 android.view.cts.LayoutInflaterTest#testInclude enable
 android.view.cts.LayoutInflaterTest#testIncludeMissingAttr enable
-android.view.cts.LayoutInflaterTest#testInflate disable
-android.view.cts.LayoutInflaterTest#testInflateAttachToRoot disable
+android.view.cts.LayoutInflaterTest#testInflate enable
+android.view.cts.LayoutInflaterTest#testInflateAttachToRoot enable
 android.view.cts.LayoutInflaterTest#testInflateAttachToRootInvalidId enable
 android.view.cts.LayoutInflaterTest#testInflateInvalidId enable
 android.view.cts.LayoutInflaterTest#testInflateParser disable
@@ -282,9 +275,45 @@ android.view.cts.PixelCopyTest#testWindowProducerCropBottomHalf disable
 android.view.cts.PixelCopyTest#testWindowProducerCropCenter disable
 android.view.cts.PixelCopyTest#testWindowProducerCropTopLeft disable
 android.view.cts.PixelCopyTest#testWindowProducerScaling disable
-android.view.cts.ScaleGestureDetectorTest#testAccessStylusScaleEnabled enable
-android.view.cts.ScaleGestureDetectorTest#testConstructor enable
-android.view.cts.ScaleGestureDetectorTest#testGetScaleFactor_whenGestureCrossesBackInsideSlopRadius_returns1 disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_cancel_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_down_pointerDown_startsStream disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_interruptedByNonPinchEvent_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_interruptsNonPinchStream_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_multipleMoves_callsOnScale_setPrevAndCurrSpanTimeAndFocus disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_multipleMoves_onScaleReturnsFalse_doesNotUpdatePrevSpan disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_onScaleBeginReturnsFalse_doesNotStartStream disable
+android.view.cts.ScaleGestureDetectorTest#classifiedPinch_pointerUp_up_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#constructor_defaultValues disable
+android.view.cts.ScaleGestureDetectorTest#constructor_withHandler_defaultValues disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_inProgress_liftPointer_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_moveDown_thenMoveDown_setsPrevAndCurrSpanAndFocus_scaleFactorIsGreaterThanOne disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_moveDown_thenMoveUp_setPrevAndCurrSpanAndFocus_scaleFactorIsLessThanOne disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_moveUp_thenMoveDown_setsPrevAndCurrSpanAndFocus_scaleFactorIsGreaterThanOne disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_moveUp_thenMoveUp_setPreviousAndCurrentSpanAndFocus_scaleFactorIsLessThanOne disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_onScaleBeginReturnsFalse_doesNotCallOnScale_inProgressIsFalse disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_onScaleReturnsFalse_doesNotUpdatePreviousFocusAndSpan disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_prevSpanLessThanSpanSlop_scaleFactorIsOne disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_quickScaleDisabled_doesNotStartStream disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_scaleBecomesLessThanSpanSlop_doesNotEndStream disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_spanGreaterThanSpanSlop_startsStream disable
+android.view.cts.ScaleGestureDetectorTest#quickScale_spanLessThanSpanSlop_doesNotStartStream disable
+android.view.cts.ScaleGestureDetectorTest#stylusScale_buttonDown_startsStream disable
+android.view.cts.ScaleGestureDetectorTest#stylusScale_inProgress_buttonUp_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#stylusScale_stylusScaleDisabled_doesNotStartStream disable
+android.view.cts.ScaleGestureDetectorTest#threeFingers_calculatesFocusAndSpan disable
+android.view.cts.ScaleGestureDetectorTest#threeFingers_liftPointer_spanBecomesLessThanMinSpan_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#threeFingers_liftPointer_spanRemainsGreaterThanMinSpan_restartsStream disable
+android.view.cts.ScaleGestureDetectorTest#touchScreen_twoFingers_endToEnd disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_eventTime_and_timeDelta_areCorrect disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_inProgress_liftPointer_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_inProgress_spanBecomesLessThanMinSpan_endsStream disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_multipleMoves_updatesPreviousFocusAndSpan disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_onScaleBeginReturnsFalse_doesNotCallOnScale_inProgressIsFalse disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_onScaleReturnsFalse_doesNotUpdatePreviousFocusAndSpan disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_pinchIn_setsPreviousAndCurrentFocusAndSpan_scaleFactorIsLessThanOne disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_pinchOut_setsPreviousAndCurrentFocusAndSpan_scaleFactorIsGreaterThanOne disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_spanGreaterThanMinSpan_initialMoveGreaterThanSpanSlop_startsStream disable
+android.view.cts.ScaleGestureDetectorTest#twoFingers_spanLessThanMinSpan_doesNotStartStream disable
 android.view.cts.ScrollCaptureSessionTest#testConstructor_requiresNonNullBounds enable
 android.view.cts.ScrollCaptureSessionTest#testConstructor_requiresNonNullPosition enable
 android.view.cts.ScrollCaptureSessionTest#testConstructor_requiresNonNullSurface enable
@@ -376,7 +405,7 @@ android.view.cts.TooltipTest#testTouchscreenHoverWithJitter disable
 android.view.cts.TooltipTest#testUpdateOpenTooltip disable
 android.view.cts.TouchDelegateTest#testCancelEvent disable
 android.view.cts.TouchDelegateTest#testGetTouchDelegateInfo_withNullBounds_noException enable
-android.view.cts.TouchDelegateTest#testOnTouchExplorationHoverEvent_whenA11yEbtDisabled_receiveNoEvent disable
+android.view.cts.TouchDelegateTest#testOnTouchExplorationHoverEvent_whenA11yEbtDisabled_receiveNoEvent enable
 android.view.cts.TouchDelegateTest#testOnTouchExplorationHoverEvent_withNullBounds_noException enable
 android.view.cts.TouchDelegateTest#testParentClick disable
 android.view.cts.TouchDelegateTest#testTwoPointers disable
@@ -433,6 +462,7 @@ android.view.cts.ViewGroupTest#onResolvePointerIcon_horizontalCanScroll_pointerI
 android.view.cts.ViewGroupTest#onResolvePointerIcon_horizontalCantScroll_pointerIsProperty enable
 android.view.cts.ViewGroupTest#onResolvePointerIcon_verticalCanScroll_pointerIsArrow disable
 android.view.cts.ViewGroupTest#onResolvePointerIcon_verticalCantScroll_pointerIsProperty enable
+android.view.cts.ViewGroupTest#testAddExtraDataToAccessibilityNodeInfo_populatesExtraRenderingInfo enable
 android.view.cts.ViewGroupTest#testAddFocusables enable
 android.view.cts.ViewGroupTest#testAddKeyboardNavigationClusters enable
 android.view.cts.ViewGroupTest#testAddStatesFromChildren enable
@@ -645,6 +675,7 @@ android.view.cts.ViewTest#testAccessTag enable
 android.view.cts.ViewTest#testAccessTouchDelegate disable
 android.view.cts.ViewTest#testAccessWillNotCacheDrawing enable
 android.view.cts.ViewTest#testAccessWillNotDraw enable
+android.view.cts.ViewTest#testAddExtraDataToAccessibilityNodeInfo_populatesExtraRenderingInfo enable
 android.view.cts.ViewTest#testAddFocusables enable
 android.view.cts.ViewTest#testAddFocusablesInTouchMode enable
 android.view.cts.ViewTest#testAddFocusablesWithoutTouchMode enable
@@ -732,7 +763,7 @@ android.view.cts.ViewTest#testHapticFeedback_withValidCustomUsage disable
 android.view.cts.ViewTest#testHasWindowFocus enable
 android.view.cts.ViewTest#testInflate enable
 android.view.cts.ViewTest#testInitializeScrollbarsAndFadingEdge enable
-android.view.cts.ViewTest#testInputConnection disable
+android.view.cts.ViewTest#testInputConnection enable
 android.view.cts.ViewTest#testInvalidate1 disable
 android.view.cts.ViewTest#testInvalidate2 disable
 android.view.cts.ViewTest#testInvalidate3 disable
@@ -893,9 +924,9 @@ android.view.cts.View_BaseSavedStateTest#testConstructorNullParcelable enable
 android.view.cts.View_BaseSavedStateTest#testConstructors enable
 android.view.cts.View_BaseSavedStateTest#testCreator enable
 android.view.cts.View_BaseSavedStateTest#testWriteToParcel enable
-android.view.cts.View_DefaultFocusHighlightTest#testInflating disable
-android.view.cts.View_DefaultFocusHighlightTest#testIsDefaultFocusHighlightNeeded disable
-android.view.cts.View_DefaultFocusHighlightTest#testSettersAndGetters disable
+android.view.cts.View_DefaultFocusHighlightTest#testInflating enable
+android.view.cts.View_DefaultFocusHighlightTest#testIsDefaultFocusHighlightNeeded enable
+android.view.cts.View_DefaultFocusHighlightTest#testSettersAndGetters enable
 android.view.cts.View_DragShadowBuilderTest#testConstructor enable
 android.view.cts.View_DragShadowBuilderTest#testGetView enable
 android.view.cts.View_DragShadowBuilderTest#testOnDrawShadow enable
@@ -914,7 +945,7 @@ android.view.cts.View_ForceLayout#traversal_afterChildRequestLayout_onlyAncestor
 android.view.cts.View_ForceLayout#traversal_afterParentRequestLayout_onlyParentRemeasured enable
 android.view.cts.View_ForceLayout#traversal_differentMeasureSpecsWithoutRequestLayout_everythingRemeasured enable
 android.view.cts.View_ForceLayout#traversal_sameMeasureSpecsWithoutRequestLayout_nothingRemeasured enable
-android.view.cts.View_IdsTest#testIds disable
+android.view.cts.View_IdsTest#testIds enable
 android.view.cts.View_InitialFocusTest#testClearFocus disable
 android.view.cts.View_InitialFocusTest#testDefaultFocus disable
 android.view.cts.View_InitialFocusTest#testInitialFocus enable
@@ -927,7 +958,7 @@ android.view.cts.View_MeasureSpecTest#testMakeMeasureSpec enable
 android.view.cts.View_MeasureSpecTest#testToString enable
 android.view.cts.View_UsingViewsTest#testSetFocus disable
 android.view.cts.View_UsingViewsTest#testSetProperties disable
-android.view.cts.View_UsingViewsTest#testSetVisibility disable
+android.view.cts.View_UsingViewsTest#testSetVisibility enable
 android.view.cts.View_UsingViewsTest#testSetupListeners disable
 android.view.cts.WindowTest#testFrameRateBoostOnTouchEnabled enable
 android.view.cts.WindowTest#testFrameRatePowerSavingsBalanced enable
