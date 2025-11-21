@@ -22,7 +22,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -421,7 +423,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
             )
         }
 
-    val overScrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
+    val scrimOverscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
 
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -430,7 +432,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
             modifier
                 .element(Notifications.Elements.NotificationScrim)
                 .overscroll(verticalOverscrollEffect)
-                .overscroll(overscrollEffect.withoutEventHandling())
+                .overscroll(scrimOverscrollEffect.withoutEventHandling())
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
@@ -517,9 +519,14 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         connection = object : NestedScrollConnection {},
                                         dispatcher = nestedScrollDispatcher,
                                     )
-                                    .verticalScroll(
-                                        scrollState,
-                                        overscrollEffect = overScrollEffect,
+                                    // Adding these 3 modifiers is needed to enable overscroll
+                                    // when the list fits within its bounds: b/295810376
+                                    .overscroll(overscrollEffect)
+                                    .verticalScroll(scrollState)
+                                    .scrollable(
+                                        rememberScrollableState { 0f },
+                                        Orientation.Vertical,
+                                        overscrollEffect = overscrollEffect,
                                     )
                                     .fillMaxWidth()
                                     // Added extra bottom padding for keeping footerView inside
