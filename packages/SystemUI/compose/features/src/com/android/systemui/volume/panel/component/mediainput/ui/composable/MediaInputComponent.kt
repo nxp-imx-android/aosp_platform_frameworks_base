@@ -22,11 +22,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,6 +39,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Expandable
+import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
@@ -66,21 +66,32 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
 
         Expandable(
             modifier =
-                Modifier.fillMaxWidth().height(80.dp).semantics {
+                Modifier.fillMaxWidth().height(56.dp).semantics {
                     liveRegion = LiveRegionMode.Polite
                     this.onClick(label = clickLabel) {
                         viewModel.onBarClick(null)
                         true
                     }
                 },
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(28.dp),
+            color =
+                if (Flags.blurOnMoreSurfaces()) {
+                    androidx.compose.ui.graphics.Color.Transparent
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+            shape = RoundedCornerShape(12.dp),
             useModifierBasedImplementation = true,
             onClick = { viewModel.onBarClick(it) },
         ) { _ ->
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 viewModel.connectedDeviceName?.let {
-                    ConnectedDeviceText(checkNotNull(viewModel.connectedDeviceName))
+                    ConnectedDeviceText(
+                        checkNotNull(viewModel.connectedDeviceName),
+                        Modifier.weight(1f),
+                    )
                 }
 
                 ConnectedDeviceIcon(viewModel.connectedDeviceIcon)
@@ -89,13 +100,10 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
     }
 
     @Composable
-    private fun RowScope.ConnectedDeviceText(deviceName: String) {
+    private fun RowScope.ConnectedDeviceText(deviceName: String, modifier: Modifier = Modifier) {
         val currentDeviceLabel = stringResource(R.string.quick_settings_audio_current_input)
 
-        Column(
-            modifier = Modifier.weight(1f).padding(start = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.basicMarquee(),
                 text = currentDeviceLabel,
@@ -114,12 +122,12 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
     }
 
     @Composable
-    private fun ConnectedDeviceIcon(icon: Icon) {
-        Box(modifier = Modifier.aspectRatio(1f), contentAlignment = Alignment.Center) {
+    private fun ConnectedDeviceIcon(icon: Icon, modifier: Modifier = Modifier) {
+        Box(modifier = modifier.size(56.dp), contentAlignment = Alignment.Center) {
             Icon(
                 icon = icon,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(28.dp).fillMaxSize(),
+                modifier = Modifier.size(24.dp),
             )
         }
     }
