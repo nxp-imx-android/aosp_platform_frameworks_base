@@ -23,6 +23,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PropertyInvalidatedCache
+import android.app.StatsManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
@@ -70,9 +71,11 @@ import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
 import android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED
 import android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED
+import android.util.StatsEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.R
+import com.android.internal.util.FrameworkStatsLog
 import com.android.server.LocalServices
 import com.android.server.ServiceThread
 import com.android.server.SystemService.TargetUser
@@ -141,7 +144,7 @@ class SupervisionServiceTest {
     @Before
     fun setUp() {
 
-        PropertyInvalidatedCache.setTestMode(true);
+        PropertyInvalidatedCache.setTestMode(true)
         context =
             SupervisionContextWrapper(
                 InstrumentationRegistry.getInstrumentation().context,
@@ -1647,6 +1650,30 @@ class SupervisionServiceTest {
 
     private fun getPolicyData(policy: Policy): PolicyData? {
         return service.getUserDataLocked(USER_ID).policies[policy.policyKey]
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    fun onPullAtom_populatesData() {
+        // Mock user info
+        whenever(mockUserManagerInternal.getUserInfo(USER_ID))
+            .thenReturn(UserInfo(USER_ID, "user0", FLAG_FULL))
+        whenever(mockUserManagerInternal.getUserInfo(USER_ID_SECONDARY))
+            .thenReturn(UserInfo(USER_ID_SECONDARY, "user1", FLAG_FULL))
+
+        // Populate SupervisionSettings by enabling supervision
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        setSupervisionEnabledForUserInternal(USER_ID_SECONDARY, true)
+
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+
+        val data = mutableListOf<StatsEvent>()
+        val result = service.onPullAtom(FrameworkStatsLog.SUPERVISION_STATE, data)
+
+        assertThat(result).isEqualTo(StatsManager.PULL_SUCCESS)
+        assertThat(data).hasSize(2) // Expecting 2 atoms, one for each full user
     }
 
     private companion object {
