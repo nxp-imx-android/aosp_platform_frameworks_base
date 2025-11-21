@@ -16,7 +16,6 @@
 
 package android.service.personalcontext.hint;
 
-
 import static com.google.common.truth.Truth.assertThat;
 
 import android.view.textclassifier.TextClassification;
@@ -33,10 +32,12 @@ public class TextClassificationHintTest {
 
     @Test
     public void testToBundleImpl_parcelUnparcel() {
+        String inputSessionId = "session-id";
         String inputValue = "test-text";
         TextClassificationHint hint =
                 new TextClassificationHint.Builder(
-                                new TextClassification.Request.Builder(inputValue, 0, 4).build())
+                                new TextClassification.Request.Builder(inputValue, 0, 4).build(),
+                                inputSessionId)
                         .build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
@@ -47,5 +48,7 @@ public class TextClassificationHintTest {
                         .getText()
                         .toString();
         assertThat(outputValue).isEqualTo(inputValue);
+        String outputSessionId = ((TextClassificationHint) outputHint).getSessionId();
+        assertThat(outputSessionId).isEqualTo(inputSessionId);
     }
 }
