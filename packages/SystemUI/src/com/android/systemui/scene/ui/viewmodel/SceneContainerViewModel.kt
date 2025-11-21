@@ -106,6 +106,12 @@ constructor(
 
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
 
+    /**
+     * Whether to reject the transition to this ContentKey because the FalsingManager believes the
+     * transition is from a false touch. If null, do not reject the current transition.
+     */
+    private var falsingCheckRejectsTransitionToContent: ContentKey? = null
+
     private val dualShadeGestureSplitRatio =
         resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
@@ -207,6 +213,27 @@ constructor(
             event.actionMasked == MotionEvent.ACTION_UP ||
                 event.actionMasked == MotionEvent.ACTION_CANCEL
         ) {
+            // If there's a current transition driven by user input, check falsing.
+            val toContent = sceneInteractor.transitioningTo.value
+            if (sceneInteractor.isTransitionUserInputOngoing.value && toContent != null) {
+                val isAllowedByFalsing = isInteractionAllowedByFalsing(toContent)
+                // Store the falsing check to be used in the near future by
+                // canChangeScene or canShowOrReplaceOverlay.
+                falsingCheckRejectsTransitionToContent =
+                    if (isAllowedByFalsing) {
+                        null
+                    } else {
+                        toContent
+                    }
+                logger.falsingCheckForContentChange(
+                    from = currentScene.value,
+                    to = toContent,
+                    isAllowedByFalsing = isAllowedByFalsing,
+                )
+            } else {
+                falsingCheckRejectsTransitionToContent = null
+            }
+
             sceneInteractor.onUserInputFinished()
         }
     }
@@ -278,31 +305,21 @@ constructor(
                 originalChangeReason = null,
                 rejectionReason = "Device not unlocked",
             )
-
             return false
         }
 
-        if (!isInteractionAllowedByFalsing(toScene)) {
-            showDebuggingToast("${toScene.debugName} rejected: false touch")
-            logger.logContentChangeRejection(
+        val canChangeScene = isFalsingAllowingContentChange(from = currentScene.value, to = toScene)
+        if (canChangeScene) {
+            // A scene change is guaranteed; log it.
+            logger.logSceneChanged(
                 from = currentScene.value,
                 to = toScene,
-                originalChangeReason = null,
-                rejectionReason = "Falsing: false touch detected",
+                keyguardState = null,
+                reason = "user interaction",
+                isInstant = false,
             )
-
-            return false
         }
-
-        // A scene change is guaranteed; log it.
-        logger.logSceneChanged(
-            from = currentScene.value,
-            to = toScene,
-            keyguardState = null,
-            reason = "user interaction",
-            isInstant = false,
-        )
-        return true
+        return canChangeScene
     }
 
     /**
@@ -315,24 +332,16 @@ constructor(
         newlyShown: OverlayKey,
         beingReplaced: OverlayKey? = null,
     ): Boolean {
-        return if (isInteractionAllowedByFalsing(newlyShown)) {
+        val canShowOrReplaceOverlay = isFalsingAllowingContentChange(beingReplaced, newlyShown)
+        if (canShowOrReplaceOverlay) {
             // An overlay change is guaranteed; log it.
             logger.logOverlayChangeRequested(
                 from = beingReplaced,
                 to = newlyShown,
                 reason = "user interaction",
             )
-            true
-        } else {
-            showDebuggingToast("${newlyShown.debugName} rejected: false touch")
-            logger.logContentChangeRejection(
-                from = beingReplaced,
-                to = newlyShown,
-                originalChangeReason = null,
-                rejectionReason = "Falsing: false touch detected",
-            )
-            false
         }
+        return canShowOrReplaceOverlay
     }
 
     /**
@@ -398,6 +407,23 @@ constructor(
     /** Immediately changes the initial scene if necessary. */
     suspend fun onInitialComposition() {
         onBootTransitionInteractor.maybeChangeInitialScene()
+    }
+
+    private fun isFalsingAllowingContentChange(from: ContentKey?, to: ContentKey): Boolean {
+        // Only false if the falsing check was for this transition
+        if (falsingCheckRejectsTransitionToContent == to) {
+            showDebuggingToast("${to.debugName} rejected: false touch")
+            logger.logContentChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = null,
+                rejectionReason = "Falsing: false touch detected",
+            )
+            falsingCheckRejectsTransitionToContent = null
+            return false
+        }
+        falsingCheckRejectsTransitionToContent = null
+        return true
     }
 
     /**
