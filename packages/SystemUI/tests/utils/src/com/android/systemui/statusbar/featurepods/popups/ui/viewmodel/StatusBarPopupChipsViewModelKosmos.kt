@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.featurepods.popups.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.featurepods.assistant.ui.viewmodel.assistantIconViewModelFactory
 import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.avControlsChipViewModelFactory
+import com.android.systemui.statusbar.featurepods.ime.ui.viewmodel.imeIndicatorChipViewModelFactory
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.mediaControlChipViewModelFactory
 import com.android.systemui.statusbar.featurepods.sharescreen.ui.viewmodel.shareScreenPrivacyIndicatorViewModelFactory
 
@@ -29,6 +30,7 @@ private val Kosmos.statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel by
             avControlsChipFactory = avControlsChipViewModelFactory,
             shareScreenPrivacyIndicatorFactory = shareScreenPrivacyIndicatorViewModelFactory,
             assistantIconFactory = assistantIconViewModelFactory,
+            imeIndicatorChipFactory = imeIndicatorChipViewModelFactory,
         )
     }
 

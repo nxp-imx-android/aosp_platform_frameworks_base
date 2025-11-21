@@ -25,6 +25,7 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.statusbar.featurepods.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.featurepods.assistant.ui.viewmodel.AssistantIconViewModel
 import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
+import com.android.systemui.statusbar.featurepods.ime.ui.viewmodel.ImeIndicatorChipViewModel
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
@@ -49,12 +50,14 @@ constructor(
     avControlsChipFactory: AvControlsChipViewModel.Factory,
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
     assistantIconFactory: AssistantIconViewModel.Factory,
+    imeIndicatorChipFactory: ImeIndicatorChipViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
     private val avControlsChip by lazy { avControlsChipFactory.create() }
     private val shareScreenPrivacyIndicator by lazy { shareScreenPrivacyIndicatorFactory.create() }
     private val assistantIcon by lazy { assistantIconFactory.create() }
+    private val imeIndicatorChip by lazy { imeIndicatorChipFactory.create() }
 
     /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
     private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
@@ -65,6 +68,7 @@ constructor(
             privacy = avControlsChip.chip,
             shareScreen = shareScreenPrivacyIndicator.chip,
             assistant = assistantIcon.chip,
+            ime = imeIndicatorChip.chip,
         )
     }
 
@@ -72,7 +76,7 @@ constructor(
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingPopupChipBundle
 
-            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
+            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen, bundle.ime)
                 .filterIsInstance<PopupChipModel.Shown>()
                 .map { chip ->
                     chip.copy(
@@ -94,6 +98,7 @@ constructor(
             if (StatusBarAssistantIcon.isEnabled) {
                 launch { assistantIcon.activate() }
             }
+            launch { imeIndicatorChip.activate() }
             // TODO(b/452975516): Clean up this logic after the bundle is split into popup chips and
             // action chips.
             launch {
@@ -101,7 +106,12 @@ constructor(
                     .distinctUntilChanged()
                     .collect { bundle ->
                         if (
-                            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
+                            listOfNotNull(
+                                    bundle.media,
+                                    bundle.privacy,
+                                    bundle.shareScreen,
+                                    bundle.ime,
+                                )
                                 .filterIsInstance<PopupChipModel.Shown>()
                                 .none { it.chipId == currentShownPopupChipId }
                         ) {
@@ -120,6 +130,7 @@ constructor(
         val shareScreen: PopupChipModel =
             PopupChipModel.Hidden(chipId = PopupChipId.ShareScreenPrivacyIndicator),
         val assistant: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.AssistantIcon),
+        val ime: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.ImeIndicator),
     )
 
     @AssistedFactory
