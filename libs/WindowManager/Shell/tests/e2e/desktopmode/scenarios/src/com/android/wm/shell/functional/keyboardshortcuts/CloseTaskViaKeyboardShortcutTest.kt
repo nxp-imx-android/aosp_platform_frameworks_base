@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.functional.keyboardshortcuts
 
-import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import com.android.wm.shell.scenarios.CloseTaskViaKeyboardShortcut
 import org.junit.runner.RunWith
@@ -25,5 +25,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /* Functional test for [CloseTaskViaKeyboardShortcut]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
-@Presubmit
+@Postsubmit
 class CloseTaskViaKeyboardShortcutTest : CloseTaskViaKeyboardShortcut()
