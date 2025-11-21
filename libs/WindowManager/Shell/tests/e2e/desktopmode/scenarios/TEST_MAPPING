@@ -21,27 +21,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarOverflowTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
       "keywords": [
         "device",
@@ -176,6 +155,41 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-externaldisplay-SettingsUpdateRotationTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-ClickAndFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-CloseAndKeepFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-DragAndKeepFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-MoveToNextDisplayAndFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-OpenAndFocusTest",
       "keywords": [
         "device",
         "desktop"
@@ -354,35 +368,21 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromAllAppsTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseAndKeepFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-DragAndKeepFocusTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-MoveToNextDisplayAndFocusTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
       "keywords": [
         "device",
         "desktop"

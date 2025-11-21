@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals.focus
+package com.android.wm.shell.functional.externaldisplay.focus
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.DragAndKeepFocus
+import com.android.wm.shell.scenarios.ClickAndFocus
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [DragAndKeppFocus]. */
+/* Functional test for [ClickAndFocus]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class DragAndKeepFocusTest : DragAndKeepFocus()
+class ClickAndFocusTest : ClickAndFocus()

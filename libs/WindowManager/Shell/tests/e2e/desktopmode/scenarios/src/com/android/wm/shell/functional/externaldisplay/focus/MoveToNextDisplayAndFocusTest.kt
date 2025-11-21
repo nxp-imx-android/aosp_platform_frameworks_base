@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals.focus
+package com.android.wm.shell.functional.externaldisplay.focus
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
