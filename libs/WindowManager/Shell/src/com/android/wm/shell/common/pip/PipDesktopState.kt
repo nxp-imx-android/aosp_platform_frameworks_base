@@ -192,6 +192,9 @@ class PipDesktopState(
     /** Returns the DisplayLayout associated with the display where PiP window is in. */
     fun getCurrentDisplayLayout(): DisplayLayout = pipDisplayLayoutState.displayLayout
 
+    /** Returns the id associated with the display where PiP window is in. */
+    fun getCurrentDisplayId(): Int = pipDisplayLayoutState.displayId
+
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "%s: $msg", TAG, *arguments)
     }

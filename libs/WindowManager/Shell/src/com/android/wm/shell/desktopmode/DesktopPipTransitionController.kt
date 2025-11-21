@@ -191,7 +191,7 @@ class DesktopPipTransitionController(
         }
 
         val desktopRepository = desktopUserRepositories.getProfile(runningTaskInfo.userId)
-        val displayId = runningTaskInfo.displayId
+        val displayId = pipDesktopState.getCurrentDisplayId()
         val deskId = getDeskId(desktopRepository, displayId)
         if (deskId == INVALID_DESK_ID) return null
 
