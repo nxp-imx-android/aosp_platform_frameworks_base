@@ -110,6 +110,11 @@ public abstract class ContextUnderstanderService extends Service {
      * (e.g. new information is available that is relevant, but not in response to new hints). All
      * of these models are allowed.
      *
+     * <p>Note that while this method accepts a list of insights, this does not guarantee that the
+     * insights will be processed together by the framework. If the caller wants insights to be
+     * processed together downstream, they should be grouped together inside an
+     * {@link android.service.personalcontext.insight.InsightCollection}.
+     *
      * @throws IllegalStateException when called before the system service has started. The call
      * can be re-attempted in a few seconds, once system services have started.
      */
