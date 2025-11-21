@@ -61,6 +61,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
+import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
@@ -718,10 +719,7 @@ class AppHeaderViewHolder(
     }
 
     fun onMaximizeWindowHoverEnter() {
-        if (
-            DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled
-        ) {
+        if (FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
             if (!focusTransitionObserver.isFocusedOnDisplay(currentTaskInfo)) return
         } else {
             if (!currentTaskInfo.isFocused) return

@@ -56,6 +56,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.isTaskMaximized
+import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -211,10 +212,7 @@ class AppHeaderController(
             name = "AppHeaderController#relayout",
         ) {
             var isTaskFocused: Boolean
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
-            ) {
+            if (FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
                 isTaskFocused = focusTransitionObserver.isFocusedOnDisplay(taskInfo)
             } else {
                 isTaskFocused = taskInfo.isFocused
@@ -526,10 +524,7 @@ class AppHeaderController(
         minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
-            multiInstanceHelper.supportsMultiInstanceSplit(
-                taskInfo.baseActivity,
-                taskInfo.userId
-            )
+            multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
         val shouldShowRestartButton = shouldShowRestartButton(taskInfo)

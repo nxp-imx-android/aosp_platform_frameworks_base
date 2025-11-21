@@ -193,10 +193,7 @@ class DesktopTilingWindowDecoration(
         windowDecoration.addDragResizeListener(this)
         val callback: () -> Unit = {
             initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp)
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
-            ) {
+            if (FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
                 moveTiledPairToFront(
                     taskInfo.taskId,
                     focusTransitionObserver.isFocusedOnDisplay(taskInfo),
@@ -695,10 +692,7 @@ class DesktopTilingWindowDecoration(
     override fun onFocusTaskChanged(taskInfo: RunningTaskInfo?) {
         if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) return
         if (taskInfo != null) {
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
-            ) {
+            if (FocusTransitionListener.isDisplayLocalIsFocusedMigrationEnabled()) {
                 moveTiledPairToFront(
                     taskInfo.taskId,
                     focusTransitionObserver.isFocusedOnDisplay(taskInfo),
