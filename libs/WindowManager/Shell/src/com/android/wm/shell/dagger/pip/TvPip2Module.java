@@ -17,23 +17,40 @@
 package com.android.wm.shell.dagger.pip;
 
 import android.content.Context;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.WindowManagerShellWrapper;
+import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.common.TaskStackListenerImpl;
+import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.pip.PipParamsChangedForwarder;
 import com.android.wm.shell.pip.tv.TvPipBoundsAlgorithm;
+import com.android.wm.shell.pip.tv.TvPipBoundsController;
 import com.android.wm.shell.pip.tv.TvPipBoundsState;
 import com.android.wm.shell.pip.tv.TvPipMenuController;
+import com.android.wm.shell.pip.tv.TvPipNotificationController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.phone.PipTransitionState;
+import com.android.wm.shell.pip2.tv.TvPipController;
 import com.android.wm.shell.pip2.tv.TvPipTransition;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.pip.PipFlags;
+import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import dagger.Module;
 import dagger.Provides;
+
+import java.util.Optional;
 
 /**
  * Provides TV specific dependencies for Pip2.
@@ -53,17 +70,71 @@ public abstract class TvPip2Module {
             @NonNull Transitions transitions,
             TvPipBoundsState tvPipBoundsState,
             TvPipMenuController tvPipMenuController,
-            TvPipBoundsAlgorithm tvPipBoundsAlgorithm) {
+            TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            PipTransitionState pipTransitionState) {
         return new TvPipTransition(context, pipSurfaceTransactionHelper, shellInit,
                 shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
-                tvPipBoundsAlgorithm);
+                tvPipBoundsAlgorithm, pipTransitionState);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<TvPipController.TvPipImpl> providePip2(
+            Context context,
+            ShellInit shellInit,
+            ShellController shellController,
+            TvPipBoundsState tvPipBoundsState,
+            PipDisplayLayoutState pipDisplayLayoutState,
+            TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            TvPipBoundsController tvPipBoundsController,
+            PipTransitionState pipTransitionState,
+            PipAppOpsListener pipAppOpsListener,
+            TvPipMenuController tvPipMenuController,
+            PipMediaController pipMediaController,
+            TvPipNotificationController pipNotificationController,
+            TaskStackListenerImpl taskStackListener,
+            PipParamsChangedForwarder pipParamsChangedForwarder,
+            DisplayController displayController,
+            WindowManagerShellWrapper wmShell,
+            @ShellMainThread Handler mainHandler,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        if (!PipFlags.isPip2ExperimentEnabled()) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(
+                    TvPipController.create(
+                            context,
+                            shellInit,
+                            shellController,
+                            tvPipBoundsState,
+                            pipDisplayLayoutState,
+                            tvPipBoundsAlgorithm,
+                            tvPipBoundsController,
+                            pipTransitionState,
+                            pipAppOpsListener,
+                            tvPipMenuController,
+                            pipMediaController,
+                            pipNotificationController,
+                            taskStackListener,
+                            pipParamsChangedForwarder,
+                            displayController,
+                            wmShell,
+                            mainHandler,
+                            mainExecutor));
+        }
+    }
+
+    @WMSingleton
+    @Provides
+    static PipTransitionState providePipTransitionState(@ShellMainThread Handler handler) {
+        return new PipTransitionState(handler, /* pipDesktopState= */ null);
     }
 
     @WMSingleton
     @Provides
     static PipSurfaceTransactionHelper providePipSurfaceTransactionHelper(
             Context context,
-            @android.annotation.NonNull ShellInit shellInit,
+            @NonNull ShellInit shellInit,
             PipDisplayLayoutState pipDisplayLayoutState) {
         return new PipSurfaceTransactionHelper(context, shellInit, pipDisplayLayoutState);
     }
