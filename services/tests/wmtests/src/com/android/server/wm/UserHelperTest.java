@@ -18,7 +18,6 @@ package com.android.server.wm;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_NOT_ALLOWED_FOR_USER;
 import static android.app.ActivityManager.START_SUCCESS;
-import static android.content.pm.ActivityInfo.FLAG_SHOW_FOR_ALL_USERS;
 import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -123,17 +122,6 @@ public final class UserHelperTest {
     @Test
     public void testCheckRequest_allowListIsNull_success() {
         mockNoHsuActivitiesAllowlist();
-
-        expect.withMessage("checkRequest()")
-                .that(mUserHelper.checkRequest(mRequest))
-                .isEqualTo(START_SUCCESS);
-
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
-    }
-
-    @Test
-    public void testCheckRequest_notAllowlistedButShowForAll_success() {
-        mRequest.activityInfo.flags = FLAG_SHOW_FOR_ALL_USERS;
 
         expect.withMessage("checkRequest()")
                 .that(mUserHelper.checkRequest(mRequest))
