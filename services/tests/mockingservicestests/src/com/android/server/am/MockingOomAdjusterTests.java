@@ -3145,18 +3145,21 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME + "/.TestService");
         final ServiceRecord s1 = bindService(app1, client1, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s1, "name", cn1);
+        setFieldValue(ServiceRecord.class, s1, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s1, true);
 
         final ComponentName cn2 = ComponentName.unflattenFromString(
                 MOCKAPP2_PACKAGENAME + "/.TestService");
         final ServiceRecord s2 = bindService(app2, client2, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s2, "name", cn2);
+        setFieldValue(ServiceRecord.class, s2, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s2, true);
 
         final ComponentName cn3 = ComponentName.unflattenFromString(
                 MOCKAPP5_PACKAGENAME + "/.TestService");
         final ServiceRecord s3 = bindService(app3, client1, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s3, "name", cn3);
+        setFieldValue(ServiceRecord.class, s3, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s3, true);
 
         final ComponentName cn4 = ComponentName.unflattenFromString(

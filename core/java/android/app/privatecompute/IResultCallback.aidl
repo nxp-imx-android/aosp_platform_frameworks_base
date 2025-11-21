@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.pcctestapp;
 
-interface IPccService {
+package android.app.privatecompute;
+
+import android.os.ParcelableException;
+
+/** @hide */
+oneway interface IResultCallback {
+    void onSuccess();
+
+    void onFailure(in ParcelableException e);
 }
