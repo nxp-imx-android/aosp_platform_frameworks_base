@@ -73,9 +73,6 @@ test_module_config {
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
-        "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
-        "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
-        "com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
@@ -96,6 +93,11 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest",
+        "com.android.wm.shell.functional.externaldisplay.focus.ClickAndFocusTest",
+        "com.android.wm.shell.functional.externaldisplay.focus.CloseAndKeepFocusTest",
+        "com.android.wm.shell.functional.externaldisplay.focus.DragAndKeepFocusTest",
+        "com.android.wm.shell.functional.externaldisplay.focus.MoveToNextDisplayAndFocusTest",
+        "com.android.wm.shell.functional.externaldisplay.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowMultiWindowAndPipTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowSingleWindowTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
@@ -121,11 +123,9 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.enter.EnterDesktopWithDragWindowsLimitTest",
         "com.android.wm.shell.functional.fundamentals.enter.EnterSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.enter.EnterSplitScreenWithDragTest",
-        "com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest",
-        "com.android.wm.shell.functional.fundamentals.focus.CloseAndKeepFocusTest",
-        "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
-        "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
-        "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromAllAppsTest",
+        "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest",
+        "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest",
         "com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ActionTabSwitchToDesktopAppTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest",
@@ -193,27 +193,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.FocusAppFromAllAppsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.FocusAppFromTaskbarTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-FocusAppFromTaskbarOverflowTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest"],
 }
 
 test_module_config {
@@ -354,6 +333,41 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-focus-ClickAndFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.focus.ClickAndFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-focus-CloseAndKeepFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.focus.CloseAndKeepFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-focus-DragAndKeepFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.focus.DragAndKeepFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-focus-MoveToNextDisplayAndFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.focus.MoveToNextDisplayAndFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-focus-OpenAndFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.focus.OpenAndFocusTest"],
 }
 
 test_module_config {
@@ -532,38 +546,24 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromAllAppsTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromAllAppsTest"],
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-CloseAndKeepFocusTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.CloseAndKeepFocusTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest"],
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-DragAndKeepFocusTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-MoveToNextDisplayAndFocusTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest"],
 }
 
 test_module_config {

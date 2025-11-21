@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.externaldisplay.focus
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.FocusAppFromAllApps
+import com.android.wm.shell.scenarios.OpenAndFocus
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [FocusAppFromAllApps]. */
+/* Functional test for [OpenAndFocus]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class FocusAppFromAllAppsTest : FocusAppFromAllApps()
+class OpenAndFocusTest : OpenAndFocus()
