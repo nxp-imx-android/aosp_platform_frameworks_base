@@ -709,3 +709,10 @@ flag {
     bug: "437416500"
 }
 
+flag {
+    name: "location_permission_new_radio_buttons_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "When the flag is turned on, show new location permission radio buttons"
+    bug: "436314824"
+}
