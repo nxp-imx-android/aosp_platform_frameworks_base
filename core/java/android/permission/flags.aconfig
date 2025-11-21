@@ -503,14 +503,6 @@ flag {
 }
 
 flag {
-    name: "app_ops_service_handler_fix"
-    is_fixed_read_only: true
-    namespace: "permissions"
-    description: "Use IoThread handler for AppOpsService background/IO work."
-    bug: "394380603"
-}
-
-flag {
     name: "grant_read_blocked_numbers_to_system_ui_intelligence"
     is_exported: true
     is_fixed_read_only: true
