@@ -1716,7 +1716,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             Action action = getItem(position);
-            View view = action.create(mContext, convertView, parent, LayoutInflater.from(mContext));
+            Context context = parent.getContext();
+            View view = action.create(context, convertView, parent, LayoutInflater.from(context));
             view.setOnClickListener(v -> onClickItem(position));
             if (action instanceof LongPressAction) {
                 view.setOnLongClickListener(v -> onLongClickItem(position));
