@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.fundamentals.enter
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
@@ -24,7 +24,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [EnterDesktopFromSplitScreenWithAppHandleMenu]. */
-
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit

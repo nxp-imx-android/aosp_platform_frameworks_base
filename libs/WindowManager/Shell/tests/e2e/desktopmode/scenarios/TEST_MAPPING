@@ -21,41 +21,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfLiveOverviewTaskTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfStaticOverviewTaskTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaStaticDesktopOverviewTaskTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragExistingWindowsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest",
       "keywords": [
         "device",
@@ -231,48 +196,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuExistingWindowsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithDragTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithDragTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest",
       "keywords": [
         "device",
@@ -371,6 +294,62 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithBackNavigationTest",
       "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopFromSplitScreenWithAppHandleMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuExistingWindowsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragExistingWindowsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragWindowsLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithAppHandleMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithDragTest",
+      "keywords": [
+        "device",
         "desktop"
       ]
     },
@@ -599,6 +578,27 @@
     {
       "name": "FunctionalTestsDesktopMode-overview-CloseAppsViaOverviewThumbnailTest",
       "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfLiveOverviewTaskTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfStaticOverviewTaskTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaStaticDesktopOverviewTaskTest",
+      "keywords": [
+        "device",
         "desktop"
       ]
     },
