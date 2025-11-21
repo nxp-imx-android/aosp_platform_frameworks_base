@@ -40,6 +40,7 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags.enableBackNavigationDesktopAppNoMinimize
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
@@ -160,17 +161,27 @@ class RootTaskDesksOrganizer(
     private fun createDeskRoot(displayId: Int, userId: Int?, callback: OnCreateCallback) {
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
-        shellTaskOrganizer.createRootTask(
-            TaskOrganizer.CreateRootTaskRequest()
-                .setName("Desk")
-                .setDisplayId(displayId)
-                .setWindowingMode(WINDOWING_MODE_FREEFORM)
-                .setRemoveWithTaskOrganizer(true)
-                .setReparentOnDisplayRemoval(
-                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
-                ),
-            this,
-        )
+        val token =
+            shellTaskOrganizer.createRootTask(
+                TaskOrganizer.CreateRootTaskRequest()
+                    .setName("Desk")
+                    .setDisplayId(displayId)
+                    .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                    .setRemoveWithTaskOrganizer(true)
+                    .setReparentOnDisplayRemoval(
+                        DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
+                    ),
+                this,
+            )
+        if (enableBackNavigationDesktopAppNoMinimize()) {
+            token?.let {
+                shellTaskOrganizer.applyTransaction(
+                    WindowContainerTransaction().apply {
+                        setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
+                    }
+                )
+            }
+        }
     }
 
     override fun removeDesk(wct: WindowContainerTransaction, deskId: Int, userId: Int) {
