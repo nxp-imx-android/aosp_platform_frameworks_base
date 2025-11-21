@@ -588,7 +588,26 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
         ipw.println("Configuration:");
         ipw.increaseIndent(); // level 2
-        ipw.println("isLocationEnabled=" + isLocationTimeZoneDetectionEnabled());
+        ipw.println("isLocationTimeZoneDetectionEnabled=" + isLocationTimeZoneDetectionEnabled());
+
+        ipw.increaseIndent(); // level 3
+        ipw.println(
+                "isLocationEnabledSetting="
+                        + mServiceConfigAccessor
+                                .getCurrentUserConfigurationInternal()
+                                .getLocationEnabledSetting());
+        ipw.println(
+                "isGeoDetectionSupported="
+                        + mServiceConfigAccessor
+                                .getCurrentUserConfigurationInternal()
+                                .isGeoDetectionSupported());
+        ipw.println(
+                "isGeoDetectionEnabledSetting="
+                        + mServiceConfigAccessor
+                                .getCurrentUserConfigurationInternal()
+                                .getGeoDetectionEnabledSetting());
+        ipw.decreaseIndent(); // level 3
+
         ipw.println("isTelephonySupported=" + isTelephonyTimeZoneDetectionSupported());
         ipw.println("mIsAirplaneModeOn=" + mIsAirplaneModeOn);
         ipw.println("mIsLocationOnlyTzDetection=" + mIsLocationOnlyTzDetection);
