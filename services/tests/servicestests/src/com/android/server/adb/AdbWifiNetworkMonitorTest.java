@@ -21,11 +21,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.ContentResolver;
@@ -36,6 +38,8 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Message;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,10 +74,16 @@ public final class AdbWifiNetworkMonitorTest {
     private Context mContext;
     @Mock
     private ContentResolver mContentResolver;
+    @Mock
+    private Handler mAdbDebuggingHandler;
+
     private AdbWifiNetworkMonitor mAdbWifiNetworkMonitor;
 
     @Captor
     private ArgumentCaptor<NetworkRequest> mNetworkRequestCaptor;
+
+    @Captor
+    private ArgumentCaptor<Message> mHandlerMessageCaptor;
 
     private int mAdbWifiEnabledSetting = -1;
 
@@ -86,7 +96,8 @@ public final class AdbWifiNetworkMonitorTest {
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
 
         mAdbWifiNetworkMonitor = Mockito.spy(new AdbWifiNetworkMonitor(mContext,
-                mIsTrustedNetworkChecker));
+                mIsTrustedNetworkChecker, mAdbDebuggingHandler
+        ));
 
         doAnswer(invocation -> {
             boolean enable = invocation.getArgument(0);
@@ -269,6 +280,10 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
+                mHandlerMessageCaptor.getValue().what);
         assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
     }
 
@@ -292,6 +307,7 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
+        verifyNoInteractions(mAdbDebuggingHandler);
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
     }
 
@@ -317,6 +333,10 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
+                mHandlerMessageCaptor.getValue().what);
         verify(mAdbWifiNetworkMonitor, times(1)).setAdbWifiState(anyBoolean(), anyString());
     }
 
@@ -352,6 +372,10 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
+                mHandlerMessageCaptor.getValue().what);
         verify(mAdbWifiNetworkMonitor, times(1)).setAdbWifiState(anyBoolean(), anyString());
     }
 
