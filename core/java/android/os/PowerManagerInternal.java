@@ -17,6 +17,7 @@
 package android.os;
 
 import android.annotation.Nullable;
+import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.UserActivityEvent;
 import android.os.PowerManager.UserActivityFlag;
 import android.os.PowerManager.WakeReason;
@@ -223,6 +224,17 @@ public abstract class PowerManagerInternal {
          *      otherwise.
          */
         boolean wakeUp(long eventTime, @WakeReason int reason, String details, int uid);
+
+        /**
+         * Invokes the sleep logic of the delegate.
+         *
+         * @param eventTime The time when the request to sleep request was issued, in the
+         *      {@link SystemClock#uptimeMillis()} time base.
+         * @param uid The UID that triggered this sleep request.
+         * @return {@code true} if the delegate successfully handles the sleep, {@code false}
+         *      otherwise.
+         */
+        boolean sleep(long eventTime, @GoToSleepReason int reason, int uid);
     }
 
     /**
