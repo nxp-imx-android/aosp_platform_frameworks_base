@@ -247,6 +247,8 @@ class DesktopRepository(
 
     /** Creates a new merged region representative of all exclusion regions in all desktop tasks. */
     private fun calculateDesktopExclusionRegion(): Region {
+        // TODO: b/457129297 - Remove log once bug is fixed
+        logD("calculateDesktopExclusionRegion: desktopExclusionRegions=%s", desktopExclusionRegions)
         val desktopExclusionRegion = Region()
         desktopExclusionRegions.valueIterator().forEach { taskExclusionRegion ->
             desktopExclusionRegion.op(taskExclusionRegion, Region.Op.UNION)
