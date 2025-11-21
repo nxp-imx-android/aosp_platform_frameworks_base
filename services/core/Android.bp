@@ -200,8 +200,8 @@ java_library_static {
         "android.hardware.tv.hdmi.cec-V1-java",
         "android.hardware.tv.hdmi.connection-V1-java",
         "android.hardware.tv.hdmi.earc-V1-java",
-        "android.hardware.weaver-V1.0-java",
-        "android.hardware.weaver-V2-java",
+        "android.hardware.weaver-V1.0-java", // HIDL
+        "android.hardware.weaver-V3-java", // AIDL
         "android.hardware.biometrics.face-V1.0-java",
         "android.hardware.biometrics.fingerprint-V2.3-java",
         "android.hardware.oemlock-V1.0-java",

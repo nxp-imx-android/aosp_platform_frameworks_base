@@ -78,13 +78,21 @@ public class MockWeaverService implements IWeaver {
     }
 
     @Override
+    public void warmUp() {}
+
+    @Override
+    public long getTimeout(int slotId) {
+        throw new UnsupportedOperationException("MockWeaverService does not support getTimeout");
+    }
+
+    @Override
     public String getInterfaceHash() {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public int getInterfaceVersion() {
-        return 2;
+        return 3;
     }
 
     @Override
