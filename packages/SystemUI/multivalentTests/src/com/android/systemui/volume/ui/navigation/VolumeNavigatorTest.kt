@@ -26,6 +26,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.testKosmos
+import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.domain.model.VolumePanelRoute
 import com.android.systemui.volume.panel.domain.interactor.volumePanelGlobalStateInteractor
 import com.android.systemui.volume.panel.ui.viewmodel.volumePanelViewModelFactory
@@ -60,6 +61,7 @@ class VolumeNavigatorTest : SysuiTestCase() {
                 },
                 uiEventLoggerFake,
                 volumePanelGlobalStateInteractor,
+                expandedAudioTileDetailsFeatureInteractor,
             )
         }
 
