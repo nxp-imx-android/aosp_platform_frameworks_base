@@ -20,6 +20,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAUL
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
+import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 
 import static com.android.server.wm.ActivityInterceptorCallback.VIRTUAL_DEVICE_SERVICE_ORDERED_ID;
 
@@ -260,7 +261,8 @@ public class VirtualDeviceManagerService extends SystemService {
     @Override
     @RequiresPermission(android.Manifest.permission.MANAGE_COMPANION_DEVICES)
     public void onStart() {
-        publishBinderService(Context.VIRTUAL_DEVICE_SERVICE, mImpl);
+        publishBinderService(Context.VIRTUAL_DEVICE_SERVICE, mImpl, /* allowIsolated= */ false,
+                DUMP_FLAG_PRIORITY_NORMAL);
         publishBinderService(VIRTUAL_DEVICE_NATIVE_SERVICE, mNativeImpl);
         publishLocalService(VirtualDeviceManagerInternal.class, mLocalService);
         mActivityTaskManagerInternal = getLocalService(ActivityTaskManagerInternal.class);
