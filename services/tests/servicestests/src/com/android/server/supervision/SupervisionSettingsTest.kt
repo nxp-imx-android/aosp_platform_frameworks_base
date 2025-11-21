@@ -23,7 +23,6 @@ import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
@@ -275,7 +274,7 @@ class SupervisionSettingsTest {
 
         // save user data, update with empty policies and load user data
         mSupervisionSettings.saveUserData()
-        mSupervisionSettings.removeUserData(1)
+        mSupervisionSettings.getUserData(1).changeUserData(false, null, false, null)
         mSupervisionSettings.loadUserData()
 
         // check if policy was loaded correctly
@@ -365,7 +364,7 @@ class SupervisionSettingsTest {
                     .isEqualTo(lockScreenOptions.toString())
             }
             assertThat(this.supervisionRoleHolders).containsExactlyElementsIn(roleHolders)
-            assertThat(this.policies.values).containsExactlyElementsIn(policies)
+            assertThat(this.policies.getPolicies()).containsExactlyElementsIn(policies)
         }
     }
 }
