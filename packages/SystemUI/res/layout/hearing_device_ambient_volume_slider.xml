@@ -46,7 +46,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/bluetooth_dialog_device_height"
             android:layout_weight="1"
-            android:theme="@style/Theme.MaterialComponents.DayNight"
+            android:theme="@style/Theme.Material3.DayNight"
             app:labelBehavior="gone" />
 
         <FrameLayout
