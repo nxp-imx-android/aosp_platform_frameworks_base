@@ -258,14 +258,14 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         }
 
         /**
-         * See {@link TelecomManager#ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION} for more
+         * See {@link TelephonyManager#ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION} for more
          * information.
          * @noinspection ConstantConditions
          */
         public boolean isCallStateReadPhoneStateEnforcedInPlatformCompat(String packageName,
                 UserHandle userHandle) {
             return Binder.withCleanCallingIdentity(() -> CompatChanges.isChangeEnabled(
-                    TelecomManager.ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION, packageName,
+                    TelephonyManager.ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION, packageName,
                     userHandle));
         }
 

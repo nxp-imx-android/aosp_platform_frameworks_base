@@ -1184,6 +1184,7 @@ public class TelecomManager {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.S)
     // this magic number is a bug ID
+    // if removing this ChangeId, remove this constant in TelephonyManager as well
     public static final long ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION = 157233955L;
 
     /**
