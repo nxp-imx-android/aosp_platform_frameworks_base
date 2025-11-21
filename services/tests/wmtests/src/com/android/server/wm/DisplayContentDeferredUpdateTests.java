@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -133,9 +134,11 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         SizeCompatTests.rotateDisplay(mDisplayContent, (mDisplayContent.getRotation() + 1) % 4);
         final Rect displayBounds = new Rect(mDisplayContent.getBounds());
         mLogicalDensityDpi += 100;
+        doCallRealMethod().when(mDisplayContent.mTransitionController)
+                .startCollectOrQueue(any(), any());
+        onUpdated = () -> mDisplayContent.mTransitionController.collect(mDisplayContent);
         mDisplayContent.requestDisplayUpdate(onUpdated);
-        captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ true);
-        verify(onUpdated).run();
+        assertThat(mDisplayContent.mTransitionController.isCollecting(mDisplayContent)).isTrue();
         final ArgumentCaptor<TransitionRequestInfo.DisplayChange> displayChangeCaptor =
                 ArgumentCaptor.forClass(TransitionRequestInfo.DisplayChange.class);
         verify(mDisplayContent.mTransitionController).requestStartTransition(

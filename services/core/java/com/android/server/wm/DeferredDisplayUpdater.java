@@ -282,7 +282,8 @@ class DeferredDisplayUpdater {
 
                 if (physicalDisplayUpdated) {
                     onDisplayUpdated(transition, fromRotation, startBounds);
-                } else {
+                } else if (!transition.mParticipants.isEmpty()
+                        || !Flags.displayinfoStateDeferrable()) {
                     final TransitionRequestInfo.DisplayChange displayChange =
                             getCurrentDisplayChange(fromRotation, startBounds);
                     // If the display has become unable to host tasks, identify a potential
@@ -299,6 +300,9 @@ class DeferredDisplayUpdater {
                             mDisplayContent.updateContentMode();
                         });
                     }
+                } else {
+                    // Display change didn't result in any WM changes that need to be animated.
+                    transition.abort();
                 }
             } finally {
                 // Run surface placement after requestStartTransition, so shell side can receive
