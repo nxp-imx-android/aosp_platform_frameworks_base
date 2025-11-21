@@ -25,6 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
@@ -289,7 +290,7 @@ class WMShellTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_COMMUNAL_HUB)
-    @DisableFlags(FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
+    @DisableFlags(FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND, FLAG_SCENE_CONTAINER)
     fun initRecentTasks_setRecentsBackgroundColorWhenCommunal() =
         kosmos.runTest {
             val black = Color.valueOf(Color.BLACK)
