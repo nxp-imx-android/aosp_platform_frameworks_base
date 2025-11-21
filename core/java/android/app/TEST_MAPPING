@@ -215,6 +215,10 @@
       "file_patterns": ["(/|^)ContextImpl.java"]
     },
     {
+      "name": "CtsWindowManagerDeviceDisplay_wm_cts",
+      "file_patterns": ["(/|^)ContextImpl.java"]
+    },
+    {
       "name": "CtsWindowManagerDeviceDragAndDrop_wm_cts",
       "file_patterns": ["(/|^)ContextImpl.java"]
     },
