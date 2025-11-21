@@ -2565,7 +2565,8 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * <p>Some camera devices support additional digital sensitivity boosting in the
      * camera processing pipeline after sensor RAW image is captured.
      * Such a boost will be applied to YUV/JPEG format output images but will not
-     * have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12 or RAW_OPAQUE.</p>
+     * have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12, RAW14
+     * or RAW_OPAQUE.</p>
      * <p>This key will be <code>null</code> for devices that do not support any RAW format
      * outputs. For devices that do support RAW format outputs, this key will always
      * present, and if a device does not support post RAW sensitivity boost, it will

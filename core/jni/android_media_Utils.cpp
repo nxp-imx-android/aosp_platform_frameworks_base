@@ -41,6 +41,7 @@ using AidlPixelFormat = aidl::android::hardware::graphics::common::PixelFormat;
 #else
 namespace AidlPixelFormat {
 const int32_t YCBCR_P210 = 60;
+const int32_t RAW14 = 44;
 }
 #endif
 
@@ -79,6 +80,7 @@ bool isPossiblyYUV(PixelFormat format) {
         case HAL_PIXEL_FORMAT_Y8:
         case HAL_PIXEL_FORMAT_Y16:
         case HAL_PIXEL_FORMAT_RAW16:
+        case static_cast<int>(AidlPixelFormat::RAW14):
         case HAL_PIXEL_FORMAT_RAW12:
         case HAL_PIXEL_FORMAT_RAW10:
         case HAL_PIXEL_FORMAT_RAW_OPAQUE:
@@ -106,6 +108,7 @@ bool isPossibly10BitYUV(PixelFormat format) {
         case HAL_PIXEL_FORMAT_Y8:
         case HAL_PIXEL_FORMAT_Y16:
         case HAL_PIXEL_FORMAT_RAW16:
+        case static_cast<int>(AidlPixelFormat::RAW14):
         case HAL_PIXEL_FORMAT_RAW12:
         case HAL_PIXEL_FORMAT_RAW10:
         case HAL_PIXEL_FORMAT_RAW_OPAQUE:
@@ -470,7 +473,7 @@ status_t getLockedImageInfo(LockedImage* buffer, int idx,
             rStride = buffer->stride;
             break;
         case HAL_PIXEL_FORMAT_RAW12:
-            // Single plane 10bpp bayer data.
+            // Single plane 12bpp bayer data.
             LOG_ALWAYS_FATAL_IF(idx != 0, "Wrong index: %d", idx);
             LOG_ALWAYS_FATAL_IF(buffer->width % 4,
                                 "Width is not multiple of 4 %d", buffer->width);
@@ -479,6 +482,21 @@ status_t getLockedImageInfo(LockedImage* buffer, int idx,
             LOG_ALWAYS_FATAL_IF(buffer->stride < (buffer->width * 12 / 8),
                                 "stride (%d) should be at least %d",
                                 buffer->stride, buffer->width * 12 / 8);
+            pData = buffer->data;
+            dataSize = buffer->stride * buffer->height;
+            pStride = 0;
+            rStride = buffer->stride;
+            break;
+        case static_cast<int>(AidlPixelFormat::RAW14):
+            // Single plane 14bpp bayer data.
+            LOG_ALWAYS_FATAL_IF(idx != 0, "Wrong index: %d", idx);
+            LOG_ALWAYS_FATAL_IF(buffer->width % 4,
+                                "Width is not multiple of 4 %d", buffer->width);
+            LOG_ALWAYS_FATAL_IF(buffer->height % 2,
+                                "Height is not even %d", buffer->height);
+            LOG_ALWAYS_FATAL_IF(buffer->stride < (buffer->width * 14 / 8),
+                                "stride (%d) should be at least %d",
+                                buffer->stride, buffer->width * 14 / 8);
             pData = buffer->data;
             dataSize = buffer->stride * buffer->height;
             pStride = 0;
