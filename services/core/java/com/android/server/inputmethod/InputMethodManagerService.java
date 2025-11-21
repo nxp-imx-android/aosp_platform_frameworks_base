@@ -326,8 +326,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     static boolean shouldEnableConcurrentMultiUserMode(@NonNull Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
                 && UserManager.isVisibleBackgroundUsersEnabled()
-                && context.getResources().getBoolean(android.R.bool.config_perDisplayFocusEnabled)
-                && Flags.concurrentInputMethods();
+                && context.getResources().getBoolean(android.R.bool.config_perDisplayFocusEnabled);
     }
 
     /**
