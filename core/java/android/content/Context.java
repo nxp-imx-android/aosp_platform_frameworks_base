@@ -4453,12 +4453,16 @@ public abstract class Context {
      * Only flags returned from {@link #getUpdateableFlags} may be added
      * or removed.
      *
-     * @param params The list of bindings to be updated.
+     * <p>This API behaves as if the {@link #rebindService(ServiceConnection, BindServiceFlags)} and
+     * {@link #unbindService(ServiceConnection)} API are called in the same order as the params are
+     * iterated.
+     *
+     * @param params The collection of bindings to be updated.
      * @throws IllegalArgumentException Any invalid additions or removals
      * will trigger an exception.
      */
     @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
-    public void updateServiceBindings(@NonNull java.util.List<UpdateBindingParams> params) {
+    public void updateServiceBindings(@NonNull Collection<UpdateBindingParams> params) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 

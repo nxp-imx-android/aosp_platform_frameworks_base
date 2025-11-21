@@ -11566,7 +11566,7 @@ package android.content {
     method public void unregisterComponentCallbacks(android.content.ComponentCallbacks);
     method public void unregisterDeviceIdChangeListener(@NonNull java.util.function.IntConsumer);
     method public abstract void unregisterReceiver(android.content.BroadcastReceiver);
-    method @FlaggedApi("android.content.flags.enable_update_service_bindings") public void updateServiceBindings(@NonNull java.util.List<android.content.Context.UpdateBindingParams>);
+    method @FlaggedApi("android.content.flags.enable_update_service_bindings") public void updateServiceBindings(@NonNull java.util.Collection<android.content.Context.UpdateBindingParams>);
     method public void updateServiceGroup(@NonNull android.content.ServiceConnection, int, int);
     field public static final String ACCESSIBILITY_SERVICE = "accessibility";
     field public static final String ACCOUNT_SERVICE = "account";
