@@ -316,6 +316,10 @@ constructor(
     override fun removeViews(constraintLayout: ConstraintLayout) {
         if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) return
 
+        // The viewTreeObserver listener need to be removed before the view is detached, because the
+        // viewTreeObserver is reset when the view is detached. See [View::getViewTreeObserver].
+        smartspaceView?.viewTreeObserver?.removeOnGlobalLayoutListener(smartspaceVisibilityListener)
+
         val list = listOf(smartspaceView, dateView, dateViewLargeClock)
         list.forEach {
             it?.let {
@@ -324,7 +328,6 @@ constructor(
                 }
             }
         }
-        smartspaceView?.viewTreeObserver?.removeOnGlobalLayoutListener(smartspaceVisibilityListener)
         keyguardUnlockAnimationController.lockscreenSmartspace = null
 
         disposableHandle?.dispose()
