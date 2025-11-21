@@ -78,7 +78,7 @@ public class TaskContinuityManager {
      * display tasks on remote devices when Handoff is available and enabled, and is only capable of
      * both receiving and sending Handoff requests when available and enabled.
      *
-     * @see #enableHandoffForDevice(boolean)
+     * @see #setHandoffForDeviceEnabled(boolean)
      */
     public static final int HANDOFF_AVAILABILITY_STATUS_AVAILABLE = 0;
 
@@ -173,7 +173,7 @@ public class TaskContinuityManager {
      * Listener to the feature state of Handoff on the current device. Feature state includes
      * whether Handoff is available on the current device, as well is if it is currently enabled.
      * Handoff may be unavailable on the device due to unsupported hardware or enterprise policy.
-     * See #enableHandoffForDevice(boolean) for more details.
+     * See #setHandoffForDeviceEnabled(boolean) for more details.
      */
     public interface HandoffFeatureStateListener {
         /**
@@ -298,15 +298,13 @@ public class TaskContinuityManager {
      * #registerHandoffFeatureStateListener} if the enablement status has changed.
      *
      * @param enabled Whether handoff should be enabled or disabled.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#MODIFY_HANDOFF_SETTINGS} permission.
      */
     @UserHandleAware
     @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS)
-    public void enableHandoffForDevice(boolean enabled) {
+    public void setHandoffForDeviceEnabled(boolean enabled) {
         try {
             int userId = mContext.getUserId();
-            mService.enableHandoffForDevice(userId, enabled);
+            mService.setHandoffForDeviceEnabled(userId, enabled);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
