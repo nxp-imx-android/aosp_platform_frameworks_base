@@ -56,6 +56,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.IActivityTaskManager;
 import android.app.IApplicationThread;
 import android.os.Handler;
@@ -118,6 +119,7 @@ import java.util.Optional;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class SplitTransitionTests extends ShellTestCase {
+    private static final int LAUNCHER_TASK_ID = 2;
     private static final int MAIN_TASK_ID = 3;
     private static final int SIDE_TASK_ID = 11;
 
@@ -148,12 +150,16 @@ public class SplitTransitionTests extends ShellTestCase {
     private StageTaskListener mSideStage;
     private StageCoordinator mStageCoordinator;
     private SplitScreenTransitions mSplitScreenTransitions;
-    private final DisplayAreaInfo mDisplayAreaInfo = new DisplayAreaInfo(new MockToken().token(),
-            DEFAULT_DISPLAY, 0);
+    private final DisplayAreaInfo mDisplayAreaInfo =
+            new DisplayAreaInfo(new MockToken("DisplayAreaInfo").token(), DEFAULT_DISPLAY, 0);
+    private final DisplayAreaInfo mSecondaryDisplayAreaInfo =
+            new DisplayAreaInfo(new MockToken("SecondaryDisplayAreaInfo").token(), 5, 0);
+
     private WindowContainerTransaction mLastStartedTransitionWCT = null;
 
-    private ActivityManager.RunningTaskInfo mMainChild;
-    private ActivityManager.RunningTaskInfo mSideChild;
+    private RunningTaskInfo mMainChild;
+    private RunningTaskInfo mSideChild;
+    private RunningTaskInfo mHomeTask;
 
     @Before
     @UiThreadTest
@@ -171,12 +177,16 @@ public class SplitTransitionTests extends ShellTestCase {
                 StageTaskListener.StageListenerCallbacks.class), mSyncQueue,
                 mIconProvider, Optional.of(mWindowDecorViewModel), STAGE_TYPE_MAIN,
                 Optional.of(mBubbleController)));
-        mMainStage.onTaskAppeared(new TestRunningTaskInfoBuilder().build(), createMockSurface());
+        mMainStage.onTaskAppeared(
+                new TestRunningTaskInfoBuilder("MainStage").build(),
+                createMockSurface());
         mSideStage = spy(new StageTaskListener(mContext, mTaskOrganizer, DEFAULT_DISPLAY, mock(
                 StageTaskListener.StageListenerCallbacks.class), mSyncQueue,
                 mIconProvider, Optional.of(mWindowDecorViewModel), STAGE_TYPE_SIDE,
                 Optional.of(mBubbleController)));
-        mSideStage.onTaskAppeared(new TestRunningTaskInfoBuilder().build(), createMockSurface());
+        mSideStage.onTaskAppeared(
+                new TestRunningTaskInfoBuilder("SideStage").build(),
+                createMockSurface());
         mStageCoordinator = new SplitTestUtils.TestStageCoordinator(mContext, DEFAULT_DISPLAY,
                 mSyncQueue, mTaskOrganizer, mMainStage, mSideStage, mDisplayController,
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
@@ -194,16 +204,22 @@ public class SplitTransitionTests extends ShellTestCase {
             return mock(IBinder.class);
         }).when(mTransitions).startTransition(anyInt(), any(), any());
 
-        mMainChild = new TestRunningTaskInfoBuilder()
+        mMainChild = new TestRunningTaskInfoBuilder("MainChild")
                 .setTaskId(MAIN_TASK_ID)
                 .setVisible(true)
                 .setVisibleRequested(true)
                 .setParentTaskId(mMainStage.mRootTaskInfo.taskId).build();
-        mSideChild = new TestRunningTaskInfoBuilder()
+        mSideChild = new TestRunningTaskInfoBuilder("SideChild")
                 .setTaskId(SIDE_TASK_ID)
                 .setVisible(true)
                 .setVisibleRequested(true)
                 .setParentTaskId(mSideStage.mRootTaskInfo.taskId).build();
+        mHomeTask = new TestRunningTaskInfoBuilder("HomeTask")
+                .setTaskId(LAUNCHER_TASK_ID)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setActivityType(ACTIVITY_TYPE_HOME)
+                .build();
+
         doReturn(mock(SplitDecorManager.class)).when(mMainStage).getSplitDecorManager();
         doReturn(mock(SplitDecorManager.class)).when(mSideStage).getSplitDecorManager();
         mStageCoordinator.registerSplitAnimationListener(mInvocationListener, mTestShellExecutor);
@@ -385,13 +401,8 @@ public class SplitTransitionTests extends ShellTestCase {
     public void testEnterRecentsAndCommit() {
         enterSplit();
 
-        ActivityManager.RunningTaskInfo homeTask = new TestRunningTaskInfoBuilder()
-                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
-                .setActivityType(ACTIVITY_TYPE_HOME)
-                .build();
-
         // Create a request to bring home forward
-        TransitionRequestInfo request = new TransitionRequestInfo(TRANSIT_TO_FRONT, homeTask,
+        TransitionRequestInfo request = new TransitionRequestInfo(TRANSIT_TO_FRONT, mHomeTask,
                 mock(TransitionRequestInfo.RemoteTransitionInfo.class));
         IBinder transition = mock(IBinder.class);
         WindowContainerTransaction result = mStageCoordinator.handleRequest(transition, request);
@@ -446,13 +457,8 @@ public class SplitTransitionTests extends ShellTestCase {
     public void testEnterRecentsAndRestore() {
         enterSplit();
 
-        ActivityManager.RunningTaskInfo homeTask = new TestRunningTaskInfoBuilder()
-                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
-                .setActivityType(ACTIVITY_TYPE_HOME)
-                .build();
-
         // Create a request to bring home forward
-        TransitionRequestInfo request = new TransitionRequestInfo(TRANSIT_TO_FRONT, homeTask,
+        TransitionRequestInfo request = new TransitionRequestInfo(TRANSIT_TO_FRONT, mHomeTask,
                 mock(TransitionRequestInfo.RemoteTransitionInfo.class));
         IBinder transition = mock(IBinder.class);
         WindowContainerTransaction result = mStageCoordinator.handleRequest(transition, request);
