@@ -3872,6 +3872,43 @@ public final class SatelliteManager {
     }
 
     /**
+     * Get the satellite configuration for the given PLMN.
+     *
+     * @param subId current subscription id.
+     * @param plmn PLMN for which the satellite configuration is requested.
+     * @return {@link PlmnSatelliteConfig} object containing the satellite configuration for the
+     *     given PLMN.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *     Telephony service.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public @NonNull PlmnSatelliteConfig getPlmnSatelliteConfig(int subId, @NonNull String plmn) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+        Objects.requireNonNull(plmn);
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getPlmnSatelliteConfig(subId, plmn);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getPlmnSatelliteConfig() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return null;
+    }
+
+    /**
      * Get whether device is connected to satellite via carrier, either manually or automatically.
      *
      * In order to monitor ongoing carrier roaming ntn mode changes, register to
