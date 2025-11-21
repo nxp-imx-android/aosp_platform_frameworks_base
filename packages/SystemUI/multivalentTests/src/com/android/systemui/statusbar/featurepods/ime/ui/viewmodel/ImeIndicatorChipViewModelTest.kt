@@ -18,9 +18,11 @@ package com.android.systemui.statusbar.featurepods.ime.ui.viewmodel
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -28,15 +30,19 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(JUnit4::class)
 class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
+    private val fakeInputMethodRepository = kosmos.fakeInputMethodRepository
     private val Kosmos.underTest by
         Kosmos.Fixture { imeIndicatorChipViewModelFactory.create().apply { activateIn(testScope) } }
 
@@ -51,4 +57,20 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagEnabled_isShown() =
         kosmos.runTest { assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java) }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
+    fun chip_showPopup_callsShowInputMethodPicker() =
+        kosmos.runTest {
+            val chip = underTest.chip
+            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
+            val shownChip = chip as PopupChipModel.Shown
+
+            shownChip.showPopup()
+            testScope.runCurrent()
+
+            // TODO(b/458557860): Should be shown on the display containing the chip.
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
+                .isEqualTo(Display.DEFAULT_DISPLAY)
+        }
 }

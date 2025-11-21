@@ -16,7 +16,14 @@
 
 package com.android.systemui.statusbar.featurepods.ime.domain.interactor
 
+import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testScope
 
 val Kosmos.imeIndicatorChipInteractor: ImeIndicatorChipInteractor by
-    Kosmos.Fixture { ImeIndicatorChipInteractor() }
+    Kosmos.Fixture {
+        ImeIndicatorChipInteractor(
+            scope = testScope.backgroundScope,
+            inputMethodRepository = fakeInputMethodRepository,
+        )
+    }
