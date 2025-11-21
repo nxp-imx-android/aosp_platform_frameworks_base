@@ -29,6 +29,7 @@ import static android.app.servertransaction.ActivityLifecycleItem.ON_START;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_STOP;
 import static android.app.servertransaction.ActivityLifecycleItem.PRE_ON_CREATE;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
+import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -234,6 +235,7 @@ import android.window.SplashScreenView;
 import android.window.TaskFragmentTransaction;
 import android.window.TaskSnapshotManager;
 import android.window.WindowContextInfo;
+import android.window.WindowExtensionsHelper;
 import android.window.WindowProviderService;
 import android.window.WindowTokenClientController;
 
@@ -8231,6 +8233,13 @@ public final class ActivityThread extends ClientTransactionHandler
                     MetricsLoggerWrapper.logPostGcMemorySnapshot();
                 }
             });
+        }
+
+        // Initialize embedding if needed.
+        if (com.android.window.flags.Flags.virtualGamepadOverride()
+                && CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD)
+                && !Process.isIsolated()) {
+            WindowExtensionsHelper.initEmbedding(app);
         }
     }
 
