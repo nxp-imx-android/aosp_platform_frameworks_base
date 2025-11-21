@@ -312,6 +312,7 @@ java_genrule {
         ":all-modules-system-annotations",
         ":android-non-updatable-doc-stubs-system{.exportable.annotations.zip}",
     ],
+    visibility: ["//development/build"],
 }
 
 java_genrule {
@@ -321,6 +322,7 @@ java_genrule {
         ":all-modules-module-lib-annotations",
         ":android-non-updatable-doc-stubs-module-lib{.exportable.annotations.zip}",
     ],
+    visibility: ["//development/build"],
 }
 
 java_genrule {
@@ -330,6 +332,7 @@ java_genrule {
         ":all-modules-system-server-annotations",
         ":android-non-updatable-doc-stubs-system-server{.exportable.annotations.zip}",
     ],
+    visibility: ["//development/build"],
 }
 
 java_genrule {
