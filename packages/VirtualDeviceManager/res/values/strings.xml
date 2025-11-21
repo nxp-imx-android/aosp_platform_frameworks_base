@@ -23,13 +23,13 @@
     <!-- START REQUEST COMPUTER CONTROL ACCESS DIALOG -->
 
     <!-- Label for the title of request computer control access dialog [CHAR LIMIT=70] -->
-    <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to use screen automation to complete tasks for you?</string>
+    <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to use screen automation?</string>
 
     <!-- Label for the description of request computer control access dialog [CHAR LIMIT=NONE] -->
-    <string name="request_computer_control_access_dialog_description"><xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> will be able to control other apps and see their on-screen content.</string>
+    <string name="request_computer_control_access_dialog_description">This app will be able to see and interact with other apps\' screen content to help you complete tasks, even when the apps are in the background</string>
 
     <!-- Label for the allow button for request computer control access dialog. [CHAR LIMIT=40] -->
-    <string name="request_computer_control_access_dialog_button_allow">Allow this time</string>
+    <string name="request_computer_control_access_dialog_button_allow">Only this time</string>
 
     <!-- Label for the deny button for request computer control access dialog. [CHAR LIMIT=40] -->
     <string name="request_computer_control_access_dialog_button_dont_allow">Don\u2019t allow</string>
