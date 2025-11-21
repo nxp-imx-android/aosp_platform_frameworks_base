@@ -7312,6 +7312,21 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.aiseal.AiSealManager}.
+     *
+     * <p>On devices without {@link PackageManager#FEATURE_AISEAL} system
+     * feature the {@link #getSystemService(String)} will return {@code null}.
+     *
+     * @see #getSystemService(String)
+     * @see android.aiseal.AiSealManager
+     * @hide
+     */
+    @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
+    @SystemApi
+    public static final String AISEAL_HOST_SERVICE = "aiseal_host";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.bettertogether.D2dConnectivityManager}.
      *
      * @see #getSystemService(String)

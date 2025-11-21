@@ -629,6 +629,17 @@ package android.accounts {
 
 }
 
+package android.aiseal {
+
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealException extends java.lang.Exception {
+  }
+
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealManager {
+    method @FlaggedApi("android.aiseal.aiseal_host_apis") @NonNull @RequiresPermission("android.permission.MANAGE_AISEAL_VIRTUAL_MACHINE") @WorkerThread public android.os.IBinder connectService(@NonNull String) throws android.aiseal.AiSealException;
+  }
+
+}
+
 package android.app {
 
   @UiContext public class Activity extends android.view.ContextThemeWrapper implements android.content.ComponentCallbacks2 android.view.KeyEvent.Callback android.view.LayoutInflater.Factory2 android.view.View.OnCreateContextMenuListener android.view.Window.Callback {
@@ -4155,6 +4166,7 @@ package android.content {
     method @FlaggedApi("android.os.ordered_broadcast_multiple_permissions") public void sendOrderedBroadcastMultiplePermissions(@NonNull android.content.Intent, @NonNull String[], @Nullable String, @Nullable android.content.BroadcastReceiver, @Nullable android.os.Handler, int, @Nullable String, @Nullable android.os.Bundle, @Nullable android.os.Bundle);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS) public void startActivityAsUser(@NonNull @RequiresPermission android.content.Intent, @NonNull android.os.UserHandle);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS) public void startActivityAsUser(@NonNull @RequiresPermission android.content.Intent, @Nullable android.os.Bundle, @NonNull android.os.UserHandle);
+    field @FlaggedApi("android.aiseal.aiseal_host_apis") public static final String AISEAL_HOST_SERVICE = "aiseal_host";
     field public static final String AMBIENT_CONTEXT_SERVICE = "ambient_context";
     field public static final String APP_HIBERNATION_SERVICE = "app_hibernation";
     field public static final String APP_INTEGRITY_SERVICE = "app_integrity";
