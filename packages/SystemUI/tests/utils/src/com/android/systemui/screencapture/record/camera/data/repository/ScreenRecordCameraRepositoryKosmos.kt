@@ -18,4 +18,7 @@ package com.android.systemui.screencapture.record.camera.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.screenRecordCameraRepository by Kosmos.Fixture { ScreenRecordCameraRepositoryImpl() }
+val Kosmos.fakeScreenRecordCameraRepository: FakeScreenRecordCameraRepository by
+    Kosmos.Fixture { FakeScreenRecordCameraRepository() }
+var Kosmos.screenRecordCameraRepository: ScreenRecordCameraRepository by
+    Kosmos.Fixture { fakeScreenRecordCameraRepository }

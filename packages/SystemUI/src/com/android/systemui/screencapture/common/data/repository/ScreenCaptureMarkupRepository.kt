@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common.data.repository
 
+import android.graphics.Color
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +26,7 @@ class ScreenCaptureMarkupRepository @Inject constructor() {
     private val _enabled = MutableStateFlow(false)
     val enabled = _enabled.asStateFlow()
 
-    private val _color = MutableStateFlow(0)
+    private val _color = MutableStateFlow(Color.CYAN)
     val color = _color.asStateFlow()
 
     fun setEnabled(enabled: Boolean) {
