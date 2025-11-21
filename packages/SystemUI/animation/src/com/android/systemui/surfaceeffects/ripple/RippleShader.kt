@@ -20,10 +20,6 @@ import android.util.Log
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
 import androidx.annotation.VisibleForTesting
-import androidx.core.graphics.ColorUtils
-import com.android.systemui.surfaceeffects.ripple.RippleAnimationConfig.Companion.DEFAULT_BLUR_END
-import com.android.systemui.surfaceeffects.ripple.RippleAnimationConfig.Companion.DEFAULT_BLUR_START
-import com.android.systemui.surfaceeffects.ripple.RippleAnimationConfig.Companion.DISTORTION_MULTIPLIER
 import com.android.systemui.surfaceeffects.shaderutil.SdfShaderLibrary
 import com.android.systemui.surfaceeffects.shaderutil.ShaderUtilLibrary
 
@@ -44,9 +40,8 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
     enum class RippleShape {
         CIRCLE,
         ROUNDED_BOX,
-        ELLIPSE,
+        ELLIPSE
     }
-
     // language=AGSL
     companion object {
         private val TAG = RippleShader::class.simpleName
@@ -64,8 +59,6 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
         const val DEFAULT_CENTER_FILL_FADE_IN_END = 0f
         const val DEFAULT_CENTER_FILL_FADE_OUT_START = 0f
         const val DEFAULT_CENTER_FILL_FADE_OUT_END = 0.6f
-
-        const val DEFAULT_RIPPLE_EFFECT_DURATION = 3000L
 
         const val RIPPLE_SPARKLE_STRENGTH: Float = 0.3f
         const val RIPPLE_DEFAULT_COLOR: Int = 0xffffffff.toInt()
@@ -204,57 +197,14 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
         setFloatUniform("in_center", x, y)
     }
 
-    fun applyConfig(config: RippleAnimationConfig) {
-        setCenter(config.centerX, config.centerY)
-        rippleSize.apply { setMaxSize(config.maxWidth, config.maxHeight) }
-        color = ColorUtils.setAlphaComponent(config.color, config.opacity)
-        blurStart = config.blurStart
-        blurEnd = config.blurEnd
-        sparkleStrength = config.sparkleStrength
-        pixelDensity = config.pixelDensity
-
-        if (config.baseRingFadeParams != null && config.baseRingFadeParams != baseRingFadeParams) {
-            baseRingFadeParams.apply {
-                fadeInStart = config.baseRingFadeParams.fadeInStart
-                fadeInEnd = config.baseRingFadeParams.fadeInEnd
-                fadeOutStart = config.baseRingFadeParams.fadeOutStart
-                fadeOutEnd = config.baseRingFadeParams.fadeOutEnd
-            }
-        }
-
-        if (
-            config.sparkleRingFadeParams != null &&
-                config.sparkleRingFadeParams != sparkleRingFadeParams
-        ) {
-            sparkleRingFadeParams.apply {
-                fadeInStart = config.sparkleRingFadeParams.fadeInStart
-                fadeInEnd = config.sparkleRingFadeParams.fadeInEnd
-                fadeOutStart = config.sparkleRingFadeParams.fadeOutStart
-                fadeOutEnd = config.sparkleRingFadeParams.fadeOutEnd
-            }
-        }
-
-        if (
-            config.centerFillFadeParams != null &&
-                config.centerFillFadeParams != centerFillFadeParams
-        ) {
-            centerFillFadeParams.apply {
-                fadeInStart = config.centerFillFadeParams.fadeInStart
-                fadeInEnd = config.centerFillFadeParams.fadeInEnd
-                fadeOutStart = config.centerFillFadeParams.fadeOutStart
-                fadeOutEnd = config.centerFillFadeParams.fadeOutEnd
-            }
-        }
-    }
-
     /**
      * Blur multipliers for the ripple.
      *
      * <p>It interpolates from [blurStart] to [blurEnd] based on the [progress]. Increase number to
      * add more blur.
      */
-    var blurStart: Float = DEFAULT_BLUR_START
-    var blurEnd: Float = DEFAULT_BLUR_END
+    var blurStart: Float = 1.25f
+    var blurEnd: Float = 0.5f
 
     /** Size of the ripple. */
     val rippleSize = RippleSize()
@@ -272,9 +222,6 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
             setFloatUniform("in_fadeSparkle", getFade(sparkleRingFadeParams, value))
             setFloatUniform("in_fadeRing", getFade(baseRingFadeParams, value))
             setFloatUniform("in_fadeFill", getFade(centerFillFadeParams, value))
-
-            setFloatUniform("in_distort_radial", DISTORTION_MULTIPLIER * value * distortionStrength)
-            setFloatUniform("in_distort_xy", DISTORTION_MULTIPLIER * distortionStrength)
         }
 
     /** Progress with Standard easing curve applied. */
@@ -289,7 +236,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
             // Corner radius is always max of the min between the current width and height.
             setFloatUniform(
                 "in_cornerRadius",
-                Math.min(rippleSize.currentWidth, rippleSize.currentHeight),
+                Math.min(rippleSize.currentWidth, rippleSize.currentHeight)
             )
             setFloatUniform("in_blur", lerp(1.25f, 0.5f, value))
         }
@@ -344,7 +291,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
             DEFAULT_FADE_IN_START,
             DEFAULT_SPARKLE_RING_FADE_IN_END,
             DEFAULT_SPARKLE_RING_FADE_OUT_START,
-            DEFAULT_FADE_OUT_END,
+            DEFAULT_FADE_OUT_END
         )
 
     /**
@@ -357,7 +304,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
             DEFAULT_FADE_IN_START,
             DEFAULT_BASE_RING_FADE_IN_END,
             DEFAULT_BASE_RING_FADE_OUT_START,
-            DEFAULT_FADE_OUT_END,
+            DEFAULT_FADE_OUT_END
         )
 
     /** Parameters that are used to fade in/ out of the center fill. */
@@ -366,7 +313,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
             DEFAULT_FADE_IN_START,
             DEFAULT_CENTER_FILL_FADE_IN_END,
             DEFAULT_CENTER_FILL_FADE_OUT_START,
-            DEFAULT_CENTER_FILL_FADE_OUT_END,
+            DEFAULT_CENTER_FILL_FADE_OUT_END
         )
 
     /**
@@ -430,7 +377,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
         /** Target width size of the ripple at time [t]. */
         var width: Float,
         /** Target height size of the ripple at time [t]. */
-        var height: Float,
+        var height: Float
     )
 
     /** Updates and stores the ripple size. */
@@ -441,7 +388,6 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
 
         var currentWidth: Float = 0f
             private set
-
         var currentHeight: Float = 0f
             private set
 
@@ -493,7 +439,7 @@ class RippleShader(rippleShape: RippleShape = RippleShape.CIRCLE) :
                     Log.e(
                         TAG,
                         "Did you forget to set the ripple size? Use [setMaxSize] or " +
-                            "[setSizeAtProgresses] before playing the animation.",
+                            "[setSizeAtProgresses] before playing the animation."
                     )
                 }
                 // If there's no size is set, we set everything to 0 and return early.
