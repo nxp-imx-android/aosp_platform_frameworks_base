@@ -30,6 +30,8 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
+import android.window.TransitionRequestInfo
+import android.window.TransitionRequestInfo.RequestedLocation
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
@@ -183,6 +185,16 @@ class PinnedLayerController(
         wct.setBounds(taskInfo.token, dragBounds)
         // TODO(b/449118417): setAppBounds? caption insets exclusion?
         transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
+    }
+
+    fun requestTaskLocationChange(
+        triggerTask: TaskInfo,
+        requestedLocation: TransitionRequestInfo.RequestedLocation,
+        outWct: WindowContainerTransaction,
+    ) {
+        val newBounds =
+            presentationController.calculateNewTaskBounds(triggerTask, requestedLocation) ?: return
+        outWct.setBounds(triggerTask.token, newBounds)
     }
 
     // TODO(b/449681882): Remove when Handler introduces its own state management for animations.
