@@ -228,8 +228,8 @@ internal object BubbleFlickerTestHelper {
         val bubbleAppIcon =
             bubbles.find { bubble -> bubble.containsBubbleApp(appSwitchTo) }
                 ?: error(
-                    "Can't find the bubble with ${appSwitchTo.packageName}. " +
-                        "Bubbles are ${bubbles.describeAll()}"
+                    "Can't find the bubble with packageName=${appSwitchTo.packageName} " +
+                        "appName=${appSwitchTo.appName}. Bubbles are ${bubbles.describeAll()}"
                 )
         bubbleAppIcon.click()
 
@@ -339,8 +339,8 @@ internal object BubbleFlickerTestHelper {
                 val bubbles = Root.get().expandedBubbleStack.bubbles
                 bubbles.find { bubble -> bubble.containsBubbleApp(testApp) }?.dismiss()
                     ?: error(
-                        "Can't find the bubble with ${testApp.packageName}. " +
-                            "Bubbles are ${bubbles.describeAll()}"
+                        "Can't find the bubble with packageName=${testApp.packageName} " +
+                            "appName=${testApp.appName}. Bubbles are ${bubbles.describeAll()}"
                     )
             }
             FROM_BUBBLE_BAR_HANDLE -> {
@@ -565,10 +565,12 @@ internal object BubbleFlickerTestHelper {
         By.pkg(launcherPackageName).res(launcherPackageName, resourcesId)
 
     private fun Bubble.containsBubbleApp(testApp: StandardAppHelper): Boolean =
-        contentDescription().contains(testApp.packageName)
+        contentDescription().contains(testApp.packageName) ||
+            contentDescription().contains(testApp.appName)
 
     private fun BubbleBarItem.containsBubbleApp(testApp: StandardAppHelper): Boolean =
-        item.contentDescription.contains(testApp.packageName)
+        item.contentDescription.contains(testApp.packageName) ||
+            item.contentDescription.contains(testApp.appName)
 
     /** The source to launch the bubble app by bubble menu. */
     internal enum class BubbleLaunchSource {
