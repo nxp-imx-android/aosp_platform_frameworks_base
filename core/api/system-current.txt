@@ -792,6 +792,7 @@ package android.app {
     field public static final String OPSTR_TOAST_WINDOW = "android:toast_window";
     field public static final String OPSTR_TURN_SCREEN_ON = "android:turn_screen_on";
     field public static final String OPSTR_VIBRATE = "android:vibrate";
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE = "android:voice_interaction_assist_structure";
     field public static final String OPSTR_WAKE_LOCK = "android:wake_lock";
     field public static final String OPSTR_WIFI_SCAN = "android:wifi_scan";
     field public static final String OPSTR_WRITE_CLIPBOARD = "android:write_clipboard";
