@@ -71,6 +71,13 @@ flag {
 }
 
 flag {
+    name: "enable_weaver_warmup"
+    namespace: "security"
+    description: "Enable warm-up of secure element before credential verification"
+    bug: "455600390"
+}
+
+flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
