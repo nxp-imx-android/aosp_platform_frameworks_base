@@ -25,6 +25,8 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.FLAG_ALWAYS_FOCUSABLE;
+import static android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES;
+import static android.multiuser.Flags.hsuAllowlistActivities;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 
@@ -43,6 +45,7 @@ import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_R
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -68,6 +71,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
+import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
@@ -83,6 +87,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.Log;
 import android.util.Pair;
 import android.view.DisplayInfo;
 
@@ -111,6 +116,8 @@ import java.util.function.Consumer;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class RootWindowContainerTests extends WindowTestsBase {
+
+    private static final String TAG = RootWindowContainerTests.class.getSimpleName();
 
     @Before
     public void setUp() throws Exception {
@@ -1389,6 +1396,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
 
         assertNotNull(taskDisplayArea.getRootHomeTask());
         assertEquals(taskDisplayArea.getTopRootTask(), taskDisplayArea.getRootHomeTask());
+        assertCurrentUserOnUserHelper(otherUser);
     }
 
     @Test
@@ -1426,6 +1434,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
                 new int[]{rootTask2.mTaskId, rootTask3.mTaskId},
                 mRootWindowContainer.mUserVisibleRootTasks.get(currentUser).toArray()
         );
+        assertCurrentUserOnUserHelper(otherUser);
     }
 
     @Test
@@ -1863,5 +1872,17 @@ public class RootWindowContainerTests extends WindowTestsBase {
         aInfo.applicationInfo.packageName =
                 primaryHome ? "fakeHomePackage" : "fakeSecondaryHomePackage";
         return  aInfo;
+    }
+
+    private void assertCurrentUserOnUserHelper(@UserIdInt int userId) {
+        if (!hsuAllowlistActivities()) {
+            Log.d(TAG, "assertCurrentUserOnUserHelper(): ignoring as flag "
+                    + FLAG_HSU_ALLOWLIST_ACTIVITIES + " is disabled");
+            return;
+        }
+        UserHelper userHelper = mRootWindowContainer.getUserHelper();
+        assertWithMessage("current user on UserHelper (%s)", userHelper)
+                .that(userHelper.getCurrentUserId())
+                .isEqualTo(userId);
     }
 }

@@ -241,7 +241,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             new SparseArray<>();
 
     /** The current user */
-    int mCurrentUser;
+    @UserIdInt int mCurrentUser;
     /** Root task id of the front root task when user switched, indexed by userId. */
     SparseIntArray mUserRootTaskInFront = new SparseIntArray(2);
     SparseArray<IntArray> mUserVisibleRootTasks = new SparseArray<>();
@@ -429,6 +429,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     };
 
+    // TODO(b/412177078): remove @Nullable (and checks) once Flags.hsuAllowlistActivities() is gone
+    @Nullable
+    private final UserHelper mUserHelper;
+
     RootWindowContainer(WindowManagerService service) {
         super(service);
         mHandler = new MyHandler(service.mH.getLooper());
@@ -440,6 +444,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDeviceStateAutoRotateSettingController =
                 DisplayRotation.createDeviceStateAutoRotateDependencies(service.mContext,
                         mDeviceStateController, service);
+        mUserHelper = android.multiuser.Flags.hsuAllowlistActivities()
+                ? new UserHelper(service.mAtmService.getUserManagerInternal())
+                : null;
+    }
+
+    // TODO(b/412177078): remove @Nullable (and checks) once Flags.hsuAllowlistActivities() is gone
+    @Nullable
+    UserHelper getUserHelper() {
+        return mUserHelper;
     }
 
     /**
@@ -1931,7 +1944,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
-    boolean switchUser(int userId, UserState uss) {
+    boolean switchUser(@UserIdInt int userId, UserState uss) {
         final Task topFocusedRootTask = getTopDisplayFocusedRootTask();
         final int focusRootTaskId = topFocusedRootTask != null
                 ? topFocusedRootTask.getRootTaskId() : INVALID_TASK_ID;
@@ -1991,6 +2004,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             final int topRootTaskId = rootTaskIdsToRestore.get(rootTaskIdsToRestore.size() - 1);
             homeInFront = isHomeTask(topRootTaskId);
         }
+
+        if (mUserHelper != null) {
+            mUserHelper.setCurrentUserId(userId);
+        }
+
         return homeInFront;
     }
 
