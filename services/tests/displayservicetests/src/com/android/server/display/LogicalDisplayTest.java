@@ -55,6 +55,7 @@ import org.mockito.AdditionalAnswers;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 @SmallTest
@@ -103,6 +104,10 @@ public class LogicalDisplayTest {
         when(mDisplayDevice.getDisplayDeviceInfoLocked()).thenReturn(mDisplayDeviceInfo);
         when(mSyntheticModeManager.createAppSupportedModes(any(), any(), anyBoolean())).thenAnswer(
                 AdditionalAnswers.returnsSecondArg());
+
+        DisplayDeviceConfig mockDisplayDeviceConfig = mock(DisplayDeviceConfig.class);
+        when(mDisplayDevice.getDisplayDeviceConfig()).thenReturn(mockDisplayDeviceConfig);
+        when(mockDisplayDeviceConfig.getFrameRateVelocityMapping()).thenReturn(new ArrayList<>());
 
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();

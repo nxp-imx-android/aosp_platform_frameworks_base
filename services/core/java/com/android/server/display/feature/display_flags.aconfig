@@ -449,3 +449,10 @@ flag {
           purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "frame_rate_mapping_api"
+    namespace: "core_graphics"
+    description: "Adds new api to query the frame rate / velocity mapping values"
+    bug: "453060939"
+}

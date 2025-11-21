@@ -37,6 +37,7 @@ import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Spline;
+import android.view.FrameRateVelocityPoint;
 import android.view.SurfaceControl;
 
 import com.android.internal.R;
@@ -52,6 +53,7 @@ import com.android.server.display.config.DisplayConfiguration;
 import com.android.server.display.config.DisplayDeviceConfigUtils;
 import com.android.server.display.config.DisplayQuirks;
 import com.android.server.display.config.EvenDimmerBrightnessData;
+import com.android.server.display.config.FrameRateVelocityData;
 import com.android.server.display.config.HdrBrightnessData;
 import com.android.server.display.config.HighBrightnessMode;
 import com.android.server.display.config.HighBrightnessModeData;
@@ -950,6 +952,12 @@ public class DisplayDeviceConfig {
 
     private final DisplayManagerFlags mFlags;
 
+    /**
+     * Frame rate / velocity thresholds mappings for Adaptive Refresh Rate (ARR).
+     */
+    @NonNull
+    private List<FrameRateVelocityPoint> mFrameRateVelocityMapping = new ArrayList<>();
+
     @VisibleForTesting
     public DisplayDeviceConfig(Context context, DisplayManagerFlags flags) {
         mContext = context;
@@ -1758,6 +1766,15 @@ public class DisplayDeviceConfig {
     }
 
     /**
+     * @return The mapping between frame rate and velocity that can be used to determine the
+     * appropriate frame rate based on the content velocity.
+     */
+    @NonNull
+    public List<FrameRateVelocityPoint> getFrameRateVelocityMapping() {
+        return mFrameRateVelocityMapping;
+    }
+
+    /**
      * @return The thermal throttling data including brightness throttling data map, refresh rate
      * throttling data map, thermal throttling work durations.
      */
@@ -1863,6 +1880,7 @@ public class DisplayDeviceConfig {
                 + "mDozeBrightnessSensorValueToBrightness= "
                 + Arrays.toString(mDozeBrightnessSensorValueToBrightness) + "\n"
                 + "mDefaultDozeBrightness= " + mDefaultDozeBrightness + "\n"
+                + "mFrameRateVelocityMapping=" + mFrameRateVelocityMapping + "\n"
                 + "}";
     }
 
@@ -1961,6 +1979,7 @@ public class DisplayDeviceConfig {
                 loadBrightnessCapForMinMode(config);
                 mVrrSupportEnabled = config.getSupportsVrr();
                 loadDozeBrightness(config);
+                loadFrameRateVelocityMapping(config);
             } else {
                 Slog.w(TAG, "DisplayDeviceConfig file is null");
             }
@@ -2504,6 +2523,10 @@ public class DisplayDeviceConfig {
         mRawNits = sysNits;
         mRawBacklight = sysBrightnessFloat;
         constrainNitsAndBacklightArrays();
+    }
+
+    private void loadFrameRateVelocityMapping(DisplayConfiguration config) {
+        mFrameRateVelocityMapping = FrameRateVelocityData.load(config);
     }
 
     private void setSimpleMappingStrategyValues() {

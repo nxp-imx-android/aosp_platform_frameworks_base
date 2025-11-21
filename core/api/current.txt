@@ -52420,6 +52420,7 @@ package android.view {
     method @Nullable public android.hardware.display.DeviceProductInfo getDeviceProductInfo();
     method public int getDisplayId();
     method public int getFlags();
+    method @FlaggedApi("com.android.server.display.feature.flags.frame_rate_mapping_api") @NonNull public java.util.List<android.view.FrameRateVelocityPoint> getFrameRateVelocityMapping();
     method @Nullable public android.view.Display.HdrCapabilities getHdrCapabilities();
     method public float getHdrSdrRatio();
     method @Deprecated public int getHeight();
@@ -52588,6 +52589,15 @@ package android.view {
     field public static final int TOTAL_DURATION = 8; // 0x8
     field public static final int UNKNOWN_DELAY_DURATION = 0; // 0x0
     field public static final int VSYNC_TIMESTAMP = 11; // 0xb
+  }
+
+  @FlaggedApi("com.android.server.display.feature.flags.frame_rate_mapping_api") public final class FrameRateVelocityPoint implements android.os.Parcelable {
+    ctor public FrameRateVelocityPoint(float, float);
+    method public int describeContents();
+    method public float getFramePerSecond();
+    method public float getPixelPerSecond();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.view.FrameRateVelocityPoint> CREATOR;
   }
 
   public abstract class FrameStats {

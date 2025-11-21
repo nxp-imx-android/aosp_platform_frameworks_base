@@ -560,6 +560,7 @@ class DeferredDisplayUpdater {
                 || !Arrays.equals(first.appsSupportedModes, second.appsSupportedModes)
                 || first.colorMode != second.colorMode
                 || !Arrays.equals(first.supportedColorModes, second.supportedColorModes)
+                || !Objects.equals(first.frameRateVelocityMapping, second.frameRateVelocityMapping)
                 || !Objects.equals(first.hdrCapabilities, second.hdrCapabilities)
                 || !Arrays.equals(first.userDisabledHdrTypes, second.userDisabledHdrTypes)
                 || first.minimalPostProcessingSupported != second.minimalPostProcessingSupported

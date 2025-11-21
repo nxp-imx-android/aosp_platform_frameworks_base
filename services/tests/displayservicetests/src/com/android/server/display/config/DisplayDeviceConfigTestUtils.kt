@@ -225,6 +225,12 @@ fun XmlSerializer.refreshRateConfigs(content: XmlSerializer.() -> Unit) {
     }
 }
 
+fun XmlSerializer.frameRateVelocityDataConfig(
+    frameRateVelocityMapping: List<Pair<String, String>>? = null,
+) {
+    map("frameRateVelocityMapping", "point", "first", "second", frameRateVelocityMapping)
+}
+
 fun createDisplayConfiguration(content: XmlSerializer.() -> Unit = { }): DisplayConfiguration {
     val byteArrayOutputStream = ByteArrayOutputStream()
     val xmlSerializer = Xml.newSerializer()
