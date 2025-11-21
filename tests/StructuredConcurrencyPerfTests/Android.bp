@@ -54,6 +54,7 @@ android_test {
     ],
     optimize: {
         proguard_flags_files: ["proguard.flags"],
+        included_proguard_flags_files: [":sysui_proguard_common_and_kotlin"],
     },
     test_config: "configs/structured-concurrency-perf.xml",
     test_options: {
