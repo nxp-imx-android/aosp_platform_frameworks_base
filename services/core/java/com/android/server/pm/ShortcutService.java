@@ -522,6 +522,8 @@ public class ShortcutService extends IShortcutService.Stub {
                 notifyListeners(packageName, userId);
             }
             user.rescanPackageIfNeeded(packageName, /* forceRescan=*/ true);
+            ShortcutPackage ps = getPackageShortcutsLocked(packageName, userId);
+            ps.deleteAllDynamicShortcuts();
         }
     }
 
@@ -2079,6 +2081,10 @@ public class ShortcutService extends IShortcutService.Stub {
             @UserIdInt int userId) {
         verifyCaller(packageName, userId);
 
+        if (isPackageAppLockEnabled(packageName, userId)) {
+            return false;
+        }
+
         final boolean unlimited = injectHasUnlimitedShortcutsApiCallsPermission(
                 injectBinderCallingPid(), injectBinderCallingUid());
         final List<ShortcutInfo> newShortcuts =
@@ -2249,6 +2255,10 @@ public class ShortcutService extends IShortcutService.Stub {
             @UserIdInt int userId) {
         verifyCaller(packageName, userId);
 
+        if (isPackageAppLockEnabled(packageName, userId)) {
+            return false;
+        }
+
         final boolean unlimited = injectHasUnlimitedShortcutsApiCallsPermission(
                 injectBinderCallingPid(), injectBinderCallingUid());
         final List<ShortcutInfo> newShortcuts =
@@ -2311,6 +2321,10 @@ public class ShortcutService extends IShortcutService.Stub {
             @UserIdInt int userId) {
         verifyCaller(packageName, userId);
         verifyShortcutInfoPackage(packageName, shortcut);
+
+        if (isPackageAppLockEnabled(packageName, userId)) {
+            return;
+        }
 
         List<ShortcutInfo> changedShortcuts = new ArrayList<>();
         List<ShortcutInfo> removedShortcuts = null;
@@ -2721,6 +2735,10 @@ public class ShortcutService extends IShortcutService.Stub {
     @Override
     public int getRemainingCallCount(String packageName, @UserIdInt int userId) {
         verifyCaller(packageName, userId);
+
+        if (isPackageAppLockEnabled(packageName, userId)) {
+            return 0;
+        }
 
         final boolean unlimited = injectHasUnlimitedShortcutsApiCallsPermission(
                 injectBinderCallingPid(), injectBinderCallingUid());
@@ -4170,6 +4188,10 @@ public class ShortcutService extends IShortcutService.Stub {
 
     boolean isPackageInstalled(String packageName, int userId) {
         return getApplicationInfo(packageName, userId) != null;
+    }
+
+    boolean isPackageAppLockEnabled(String packageName, int userId) {
+        return mPackageManagerInternal.isPackageAppLockEnabled(packageName, userId);
     }
 
     boolean isEphemeralApp(String packageName, int userId) {
