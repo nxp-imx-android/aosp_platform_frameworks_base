@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.panel.component.mnc.ui.viewmodel
 
+import android.content.Context
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 class MncViewModel
 @Inject
 constructor(
+    private val context: Context,
     @VolumePanelScope private val coroutineScope: CoroutineScope,
     private val userRepository: UserRepository,
     private val desktopEffectInteractor: DesktopEffectInteractor,
@@ -47,9 +49,16 @@ constructor(
             .map { effects ->
                 ButtonViewModel(
                     isActive = effects.studioMic,
-                    // TODO(b/460536046): Replace the placeholder with the correct icon and label.
-                    icon = Icon.Resource(R.drawable.ic_spatial_audio, null),
-                    label = "Mic Noise Cancellation",
+                    icon =
+                        Icon.Resource(
+                            if (effects.studioMic) {
+                                R.drawable.ic_mic_noise_cancel_high
+                            } else {
+                                R.drawable.ic_mic_noise_cancel_off
+                            },
+                            null,
+                        ),
+                    label = context.getString(R.string.volume_panel_mic_noise_cancellation_title),
                 )
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
