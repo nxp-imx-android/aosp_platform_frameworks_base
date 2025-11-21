@@ -16,6 +16,7 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.annotation.ElapsedRealtimeLong
+import android.annotation.FlaggedApi
 import android.text.format.DateUtils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +51,8 @@ import kotlinx.coroutines.delay
  *   event that will occur in the future, like a future meeting. [Chronometer.Running.eventTime]
  *   represents the time the event will occur and the timer will tick down: 04:00, 03:59, ... No
  *   timer is shown if [Chronometer.Running.eventTime] is in the past and
- *   [Chronometer.Running.isCountdown] is true.
+ *   [Chronometer.Running.isCountdown] is true. If [chronometer] is [Chronometer.Paused], then this
+ *   represents a "paused" chronometer. The duration specified will be shown, unless it is negative.
  */
 class ChronometerState(
     private val timeSource: SystemClock,
@@ -67,10 +69,9 @@ class ChronometerState(
      * the timer string.
      */
     val currentTimeText: String? by derivedStateOf {
-        if (chronometer is Chronometer.Running) {
-            formatRunningChronometer(chronometer)
-        } else {
-            throw IllegalStateException("Unknown Chronometer type: $chronometer")
+        when (chronometer) {
+            is Chronometer.Running -> formatRunningChronometer(chronometer)
+            is Chronometer.Paused -> formatPausedChronometer(chronometer)
         }
     }
 
@@ -96,6 +97,11 @@ class ChronometerState(
             }
             // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
         }
+    }
+
+    private fun formatPausedChronometer(chronometer: Chronometer.Paused): String? {
+        return if (!chronometer.atDuration.isNegative) formatter.format(chronometer.atDuration)
+        else null
     }
 
     suspend fun run(chronometer: Chronometer.Running) {
@@ -171,6 +177,10 @@ sealed class Chronometer {
      * [eventTime]).
      */
     data class Running(val eventTime: EventTime, val isCountdown: Boolean) : Chronometer()
+
+    /** Chronometer paused at a specific time. Won't be displayed if negative. */
+    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    data class Paused(val atDuration: Duration) : Chronometer()
 }
 
 /** Event, or "zero" time, of a chronometer. */

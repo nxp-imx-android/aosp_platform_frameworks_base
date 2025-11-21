@@ -26,6 +26,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
+import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit.SECONDS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -689,6 +690,45 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(state.currentTimeText).isEqualTo("00:46")
 
         job.cancelAndJoin()
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    fun text_pausedDurationPositive_isShown() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer = Chronometer.Paused(Duration.ofSeconds(90)),
+            )
+
+        assertThat(state.currentTimeText).isEqualTo("01:30")
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    fun text_pausedDurationZero_isShown() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer = Chronometer.Paused(Duration.ZERO),
+            )
+
+        assertThat(state.currentTimeText).isEqualTo("00:00")
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    fun text_pausedDurationNegative_isNotShown() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer = Chronometer.Paused(Duration.ofSeconds(-10)),
+            )
+
+        assertThat(state.currentTimeText).isNull()
     }
 
     /** Starts the chronometer ticking. */
