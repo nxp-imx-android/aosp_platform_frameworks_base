@@ -43,7 +43,9 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mock
+import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.reset
 import org.mockito.Spy
@@ -116,6 +118,7 @@ class ResizeVeilTest : ShellTestCase() {
             .whenever(mockTransaction)
             .setPosition(any(), anyFloat(), anyFloat())
         doReturn(mockTransaction).whenever(mockTransaction).setWindowCrop(any(), anyInt(), anyInt())
+        doReturn(mockTransaction).whenever(mockTransaction).setFrameTimeline(anyLong())
     }
 
     @Test
@@ -160,6 +163,7 @@ class ResizeVeilTest : ShellTestCase() {
         verify(mockTransaction).show(mockBackgroundSurface)
         verify(mockTransaction).show(mockIconSurface)
         verify(mockTransaction).apply()
+        verify(mockTransaction, never()).setFrameTimeline(anyLong())
     }
 
     @Test
@@ -201,6 +205,44 @@ class ResizeVeilTest : ShellTestCase() {
         )
 
         verify(mockTransaction).reparent(mockResizeVeilSurface, newParent)
+    }
+
+    @Test
+    fun showVeil_fadeIn_tracksJank() = runTest {
+        val veil = createResizeVeil()
+
+        // showVeil with the default fadeIn=true should track jank.
+        veil.showVeil(mock(), Rect(0, 0, 100, 100), taskInfo)
+
+        verify(mockTransaction).setFrameTimeline(anyLong())
+    }
+
+    @Test
+    fun updateResizeVeil_tracksJank() = runTest {
+        val veil = createResizeVeil()
+        // Show the veil so it's visible and can be updated.
+        veil.showVeil(mockTransaction, mock(), Rect(0, 0, 100, 100), taskInfo, false /* fadeIn */)
+        // Clear invocations from the setup call to focus on the update call.
+        clearInvocations(mockTransaction)
+
+        veil.updateResizeVeil(Rect(0, 0, 200, 200))
+
+        verify(mockTransaction).setFrameTimeline(anyLong())
+        verify(mockTransaction).apply()
+    }
+
+    @Test
+    fun updateTransactionWithResizeVeil_tracksJank() = runTest {
+        val veil = createResizeVeil()
+        // Show the veil so it's visible and can be updated.
+        veil.showVeil(mockTransaction, mock(), Rect(0, 0, 100, 100), taskInfo, false /* fadeIn */)
+        // Clear invocations from the setup call to focus on the update call.
+        clearInvocations(mockTransaction)
+
+        veil.updateTransactionWithResizeVeil(mockTransaction, Rect(0, 0, 200, 200))
+
+        verify(mockTransaction).setFrameTimeline(anyLong())
+        verify(mockTransaction, never()).apply()
     }
 
     @Test
