@@ -6917,8 +6917,11 @@ public class Notification implements Parcelable
 
         private void bindNotificationHeader(RemoteViews contentView, StandardTemplateParams p) {
             bindSmallIcon(contentView, p);
-
             boolean hasTextToLeft = p.mTitleViewId == R.id.alt_title && p.hasTitle();
+            if (hasTextToLeft) {
+                 contentView.setViewLayoutMarginDimen(R.id.app_name_text,
+                        RemoteViews.MARGIN_START, R.dimen.notification_header_separating_margin);
+            }
             // Populate text left-to-right so that separators are only shown between strings
             hasTextToLeft |= bindHeaderAppName(contentView, p, false /* force */, hasTextToLeft);
             hasTextToLeft |= bindHeaderTextSecondary(contentView, p, hasTextToLeft);
