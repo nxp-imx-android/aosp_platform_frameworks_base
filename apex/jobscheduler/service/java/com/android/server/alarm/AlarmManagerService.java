@@ -281,7 +281,7 @@ public class AlarmManagerService extends SystemService {
     private final long[] mTickHistory = new long[TICK_HISTORY_DEPTH];
     private int mNextTickHistory;
 
-    private final Injector mInjector;
+    final Injector mInjector;
     int mBroadcastRefCount = 0;
     MetricsHelper mMetricsHelper;
     PowerManager.WakeLock mWakeLock;
@@ -301,6 +301,8 @@ public class AlarmManagerService extends SystemService {
     final DeliveryTracker mDeliveryTracker = new DeliveryTracker();
     IBinder.DeathRecipient mListenerDeathRecipient;
     Intent mTimeTickIntent;
+    private TimeZoneOffsetHelper mTimeZoneOffsetHelper;
+
     Bundle mTimeTickOptions;
     IAlarmListener mTimeTickTrigger;
     PendingIntent mDateChangeSender;
@@ -1888,6 +1890,7 @@ public class AlarmManagerService extends SystemService {
                     mClockReceiver.scheduleTimeTickEvent();
                 }
             };
+            mTimeZoneOffsetHelper = new TimeZoneOffsetHelper(this, mLock, mInjector);
 
             Intent intent = new Intent(Intent.ACTION_DATE_CHANGED);
             intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING
@@ -2076,6 +2079,10 @@ public class AlarmManagerService extends SystemService {
             mRoleManager = getContext().getSystemService(RoleManager.class);
 
             mMetricsHelper.registerPuller(() -> mAlarmStore);
+
+            if (android.timezone.flags.Flags.enableTimeZoneOffsetChangeBroadcast()) {
+                mTimeZoneOffsetHelper.scheduleNextTzOffsetTransition(/* newTimeZone= */ null);
+            }
         }
     }
 
@@ -2093,6 +2100,10 @@ public class AlarmManagerService extends SystemService {
             @NonNull String logMsg) {
         synchronized (mLock) {
             mInjector.setCurrentTimeMillis(newSystemClockTimeMillis, confidence, logMsg);
+
+            if (android.timezone.flags.Flags.enableTimeZoneOffsetChangeBroadcast()) {
+                mTimeZoneOffsetHelper.scheduleNextTzOffsetTransition(/* newTimeZone= */ null);
+            }
 
             // The native implementation of setKernelTime can return -1 even when the kernel
             // time was set correctly, so assume setting kernel time was successful and always
@@ -2124,6 +2135,10 @@ public class AlarmManagerService extends SystemService {
         if (timeZoneWasChanged) {
             // Don't wait for broadcasts to update our midnight alarm
             mClockReceiver.scheduleDateChangedEvent();
+
+            if (android.timezone.flags.Flags.enableTimeZoneOffsetChangeBroadcast()) {
+                mTimeZoneOffsetHelper.scheduleNextTzOffsetTransition(newZone);
+            }
 
             // And now let everyone else know
             Intent intent = new Intent(Intent.ACTION_TIMEZONE_CHANGED);
@@ -4683,6 +4698,11 @@ public class AlarmManagerService extends SystemService {
                 return mBroadcastOptsRestrictBal.toBundle();
             }
         }
+    }
+
+    @VisibleForTesting
+    Handler getHandler() {
+        return mHandler;
     }
 
     @VisibleForTesting
