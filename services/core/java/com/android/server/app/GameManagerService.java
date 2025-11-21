@@ -252,7 +252,7 @@ public final class GameManagerService extends IGameManagerService.Stub {
         if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_GAME_SERVICE)) {
             mGameServiceController = new GameServiceController(
                     context, BackgroundThread.getExecutor(),
-                    new GameServiceProviderSelectorImpl(context.getResources(), mPackageManager),
+                    new GameServiceProviderSelectorImpl(context),
                     new GameServiceProviderInstanceFactoryImpl(context));
         } else {
             mGameServiceController = null;
