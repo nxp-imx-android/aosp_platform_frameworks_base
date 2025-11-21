@@ -270,6 +270,33 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         verify(communalViewModel).onResetTouchState()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER)
+    fun testUpEvent_sceneContainerEnabled_notCaptured_sentToWindowRootView() {
+        mTouchHandler.onSessionStart(mTouchSession)
+        verify(mTouchSession).registerGestureListener(mGestureListenerCaptor.capture())
+        verify(mTouchSession).registerInputListener(mInputListenerCaptor.capture())
+
+        // Simulate a swipe up, which is not captured
+        val startY = TOUCH_HEIGHT.toFloat()
+        val endY = 0f
+        val event1 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0f, startY, 0)
+        val event2 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0f, endY, 0)
+        mInputListenerCaptor.lastValue.onInputEvent(event1)
+        mInputListenerCaptor.lastValue.onInputEvent(event2)
+        val captured = mGestureListenerCaptor.lastValue.onScroll(event1, event2, 0f, startY - endY)
+
+        assertThat(captured).isFalse()
+        verify(windowRootView, never()).dispatchTouchEvent(any())
+
+        // Simulate ACTION_UP
+        val upEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0f, 0f, 0)
+        mInputListenerCaptor.lastValue.onInputEvent(upEvent)
+
+        // Verify the ACTION_UP event was sent to the window root view
+        verify(windowRootView).dispatchTouchEvent(upEvent)
+    }
+
     /**
      * Simulates a swipe in the given direction and returns true if the touch was intercepted by the
      * touch handler's gesture listener.
