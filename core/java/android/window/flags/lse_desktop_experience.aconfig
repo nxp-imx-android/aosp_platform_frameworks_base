@@ -1428,6 +1428,16 @@ flag {
 }
 
 flag {
+    name: "keep_desk_active_on_keyguard_appear"
+    namespace: "lse_desktop_experience"
+    description: "Keeps the active desk active if keyguard appears"
+    bug: "428800310"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "keyboard_shortcuts_to_switch_desks"
     namespace: "lse_desktop_experience"
     description: "Enable switching the active desk with keyboard shortcuts"
