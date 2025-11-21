@@ -21,8 +21,10 @@ java_library_static {
     defaults: ["platform_service_defaults"],
     srcs: [
         ":services.companion-sources",
+        ":statslog-computercontrol-java-gen",
     ],
     libs: [
+        "androidx.annotation_annotation",
         "app-compat-annotations",
         "services.core",
     ],
@@ -33,4 +35,14 @@ java_library_static {
     lint: {
         baseline_filename: "lint-baseline.xml",
     },
+}
+
+genrule {
+    name: "statslog-computercontrol-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out)" +
+        " --module computercontrol" +
+        " --javaPackage com.android.server.companion.virtual.computercontrol" +
+        " --javaClass ComputerControlStatsLog",
+    out: ["com/android/server/companion/virtual/computercontrol/ComputerControlStatsLog.java"],
 }

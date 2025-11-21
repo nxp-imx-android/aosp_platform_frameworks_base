@@ -178,6 +178,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final ImageReader mBlockedStateImageReader;
     private final ComputerControlAllowlistController mAllowlistController;
+    private final ComputerControlStatsController mStatsController;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -189,21 +190,24 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @Override
                 public void onActive() {
                     mVirtualDisplay.setSurface(mClientSurface);
+                    mStatsController.onSessionActive();
                 }
 
                 @Override
-                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason,
+                public void onBlocked(@ComputerControlSession.SessionBlockReason int reason,
                         @Nullable String blockingPackage) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
                     // Prevent the client from being able to see the display by disconnecting
                     // the client surface from the display.
                     mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
+                    mStatsController.onSessionBlocked(reason);
                 }
 
                 @Override
                 public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
                     releaseResources();
+                    mStatsController.onSessionClosed(reason);
                 }
             };
 
@@ -268,6 +272,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 ActivityTaskManagerInternal.class);
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
         mDisplayManagerGlobal = displayManagerGlobal;
+        mStatsController = new ComputerControlStatsController(
+            mContext.getPackageManager(), attributionSource, params);
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
@@ -451,6 +457,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mContext.startActivityAsUser(intent,
                         ActivityOptions.makeBasic()
                                 .setLaunchDisplayId(mVirtualDisplayId).toBundle(), mOwnerUser));
+        mStatsController.onApplicationLaunched(packageName);
     }
 
     @Override
@@ -468,6 +475,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
+        mStatsController.onTap();
     }
 
     @Override
@@ -481,6 +489,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
         performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0, SWIPE_STEPS);
+        mStatsController.onSwipe();
     }
 
     @Override
@@ -497,6 +506,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         (double) mViewConfiguration.getLongPressTimeoutMillis() *
                                 LONG_PRESS_TIMEOUT_MULTIPLIER / TOUCH_EVENT_DELAY_MS);
         performSwipeStep(x, y, x, y, /* step= */ 0, longPressStepCount);
+        mStatsController.onLongPress();
     }
 
     @Override
@@ -512,7 +522,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP));
         } else {
             Slog.e(TAG, "Invalid action code for performAction: " + actionCode);
+            return;
         }
+        mStatsController.onPerformAction(actionCode);
     }
 
     @Override
@@ -527,6 +539,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        mStatsController.onMirrorViewCreated();
         return mirror;
     }
 
@@ -540,7 +553,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                this::removeInteractiveMirror);
+                mStatsController::onMirrorViewInteractive, this::removeInteractiveMirror);
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
@@ -629,7 +642,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
         } catch (RemoteException e) {
             Slog.e(TAG, "Unable to insert text through InputConnection", e);
+            return;
         }
+        mStatsController.onInsertText();
     }
 
     @Override

@@ -50,11 +50,13 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final SurfaceControl mMirrorLeash;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
+    private final Consumer<Boolean> mStatsUpdateInteractiveMirror;
     private final Consumer<InteractiveMirrorImpl> mRemoveInteractiveMirror;
 
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal,
+            Consumer<Boolean> statsUpdateInteractiveMirror,
             Consumer<InteractiveMirrorImpl> removeInteractiveMirror) {
         mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
@@ -64,6 +66,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
                 .build();
+        mStatsUpdateInteractiveMirror = statsUpdateInteractiveMirror;
         mRemoveInteractiveMirror = removeInteractiveMirror;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
@@ -98,6 +101,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
             SurfaceControl.Transaction transaction) {
         transaction.setDropInputMode(mMirror.getMirrorSurfaceControl(),
                 interactive ? DropInputMode.NONE : DropInputMode.ALL);
+        mStatsUpdateInteractiveMirror.accept(interactive);
     }
 
     @RequiresNoPermission
