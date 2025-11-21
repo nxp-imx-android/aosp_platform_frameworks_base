@@ -332,6 +332,7 @@ class BluetoothDetailsContentViewModelTest(flags: FlagsParameterization) : Sysui
             assertThat(bluetoothDetailsContentViewModel.title).isEqualTo("")
             assertThat(bluetoothDetailsContentViewModel.subTitle).isEqualTo("")
 
+            whenever(mDialogTransitionAnimator.show(any(), any(), anyBoolean())).thenReturn(true)
             bluetoothDetailsContentViewModel.showDialog(expandable)
             runCurrent()
 
