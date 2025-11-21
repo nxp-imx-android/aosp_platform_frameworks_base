@@ -3922,6 +3922,11 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void setTaskBounds(TaskViewTaskController taskView, Rect boundsOnScreen) {
+            if (mBubblePositioner.isPendingBubbleBarTopOnScreenUpdate()) {
+                BubbleLog.d(
+                        "BubbleController.setTaskBounds skipped due to stale bubble bar position");
+                return;
+            }
             mBaseTransitions.setTaskBounds(taskView, boundsOnScreen);
         }
     }
