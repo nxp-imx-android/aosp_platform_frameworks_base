@@ -20,6 +20,7 @@ import static com.android.settingslib.media.flags.Flags.enableTvMediaOutputDialo
 
 import android.annotation.CallbackExecutor;
 import android.annotation.StringRes;
+import android.app.UiModeManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothCsipSetCoordinator;
@@ -2648,6 +2649,14 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             }
         } catch (RuntimeException e) {
             Log.w(TAG, "Fail to check isAndroidAuto for " + this);
+        }
+        if (Flags.enableAndroidAutoCheckByUiModeManager()) {
+            UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+            int projectionType = uiModeManager.getActiveProjectionTypes();
+            Log.d(TAG, "Check isAndroidAuto, android auto projection type = " + projectionType);
+            if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+                return true;
+            }
         }
         return false;
     }
