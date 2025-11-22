@@ -115,4 +115,30 @@ public class CursorWindowTest {
         assertEquals(window.getType(0, 6), Cursor.FIELD_TYPE_BLOB);
         assertTrue(Arrays.equals(blob, window.getBlob(0, 6)));
     }
+
+    @Test
+    public void testUsageAfterClose() {
+        // Create and close a window.
+        CursorWindow window = new CursorWindow("testUsageAfterClose");
+        window.close();
+
+        // After closing, the window should be unusable and operations should throw.
+        // This verifies that the dispose() method (called by close()) has correctly
+        // invalidated the window's state.
+        assertThrows(IllegalStateException.class, () -> window.setNumColumns(1));
+        assertThrows(IllegalStateException.class, () -> window.allocRow());
+        assertThrows(IllegalStateException.class, () -> window.getNumRows());
+        assertThrows(IllegalStateException.class, () -> window.getString(0, 0));
+        assertThrows(IllegalStateException.class, () -> window.putLong(42L, 0, 0));
+    }
+
+    @Test
+    public void testMultipleClose() {
+        // Create and close a window multiple times.
+        CursorWindow window = new CursorWindow("testMultipleClose");
+        window.close();
+
+        // Subsequent calls to close() should be safe and not throw any exceptions.
+        window.close();
+    }
 }
