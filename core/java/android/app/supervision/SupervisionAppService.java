@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.app.Service;
 import android.app.supervision.flags.Flags;
 import android.content.Intent;
@@ -48,7 +49,6 @@ import android.os.Looper;
  * @hide
  */
 @SystemApi
-@FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
 public class SupervisionAppService extends Service {
     /**
      * Service Action: Action for a service that a supervision role holder must extend.
@@ -85,8 +85,21 @@ public class SupervisionAppService extends Service {
     @Nullable
     @Override
     public final IBinder onBind(@Nullable Intent intent) {
+        onServiceBound(intent);
         return mBinder.asBinder();
     }
+
+      /**
+      * Called when the service is bound.
+      *
+      * <p>Used for testing since {@code onBind} is final.</p>
+      *
+      * @hide
+      */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi")
+    public void onServiceBound(@Nullable Intent intent) {}
+
 
     /**
      * Called when supervision is enabled.

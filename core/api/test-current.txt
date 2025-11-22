@@ -864,6 +864,10 @@ package android.app.prediction {
 
 package android.app.supervision {
 
+  public class SupervisionAppService extends android.app.Service {
+    method public void onServiceBound(@Nullable android.content.Intent);
+  }
+
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
     method public void setSupervisionEnabled(boolean);
   }
