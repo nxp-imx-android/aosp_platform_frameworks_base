@@ -42,9 +42,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -67,6 +69,7 @@ import android.telephony.SubscriptionManager;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.server.am.ActivityManagerService;
 import com.android.server.compat.PlatformCompat;
 
 import org.junit.Before;
@@ -118,6 +121,7 @@ public class BroadcastRecordTest {
     @Mock BroadcastQueue mQueue;
     @Mock ProcessRecord mProcess;
     @Mock PlatformCompat mPlatformCompat;
+    @Mock ActivityManagerService mService;
 
     @Before
     public void setUp() throws Exception {
@@ -1029,6 +1033,93 @@ public class BroadcastRecordTest {
         assertTrue("Missing broadcast type in " + actualShortString,
                 actualShortString.contains("0x" + Integer.toHexString(
                         record.calculateTypeForLogging())));
+    }
+
+    /**
+     * Verifies that {@link BroadcastRecord#getReceiverUid(Object)} returns the UID from
+     * {@link ActivityInfo#getUid()}, which may differ from the application's UID.
+     */
+    @Test
+    public void testGetReceiverUid() {
+        final int appUid = 10123;
+        final int pccUid = 10456;
+
+        // Create a ResolveInfo with a spied ActivityInfo
+        ResolveInfo resolveInfo = createResolveInfo(PACKAGE1, appUid);
+        // By default, getUid() should return the applicationInfo.uid
+        assertEquals(appUid, BroadcastRecord.getReceiverUid(resolveInfo));
+
+        ActivityInfo activityInfo = spy(resolveInfo.activityInfo);
+        doReturn(pccUid).when(activityInfo).getUid();
+        resolveInfo.activityInfo = activityInfo;
+
+        // Verify that getReceiverUid returns the UID from ActivityInfo.getUid()
+        assertEquals(pccUid, BroadcastRecord.getReceiverUid(resolveInfo));
+    }
+
+    /**
+     * Verifies that {@link BroadcastRecord#applySingletonPolicy(ActivityManagerService)} uses the
+     * UID from {@link ActivityInfo#getUid()} when performing singleton checks.
+     */
+    @Test
+    public void testApplySingletonPolicy_usesPccUid() {
+        final int appUid = 10123;
+        final int pccUid = 10456;
+        final int callingUid = 10789;
+
+        // Create a ResolveInfo with a spied ActivityInfo that returns a PCC UID
+        ResolveInfo resolveInfo = createResolveInfo(PACKAGE1, appUid);
+        ActivityInfo activityInfo = spy(resolveInfo.activityInfo);
+        doReturn(pccUid).when(activityInfo).getUid();
+        resolveInfo.activityInfo = activityInfo;
+
+        List<Object> receivers = new ArrayList<>();
+        receivers.add(resolveInfo);
+
+        // Create a BroadcastRecord with a non-system calling UID
+        BroadcastRecord record = new BroadcastRecord(
+                mQueue,
+                new Intent("test.action.APPLY_SINGLETON_POLICY"),
+                mProcess,
+                "caller.pkg",
+                null, // callerFeatureId
+                123, // callingPid
+                callingUid,
+                false, // callerInstantApp
+                null, // resolvedType
+                null, // requiredPermissions
+                null, // excludedPermissions
+                null, // excludedPackages
+                0, // appOp
+                null, // options
+                receivers,
+                null, // resultToApp
+                null, // resultTo
+                0, // resultCode
+                null, // resultData
+                null, // resultExtras
+                false, // serialized
+                false, // sticky
+                false, // initialSticky
+                UserHandle.USER_SYSTEM,
+                BackgroundStartPrivileges.NONE,
+                false, // timeoutExempt
+                null, // filterExtrasForReceiver
+                PROCESS_STATE_UNKNOWN,
+                mPlatformCompat);
+
+        // Mock service calls
+        doReturn(true).when(mService).isSingleton(any(), any(), any(), anyInt());
+        doReturn(true).when(mService).isValidSingletonCall(callingUid, pccUid);
+
+        // Act
+        record.applySingletonPolicy(mService);
+
+        // Assert
+        // Verify that isValidSingletonCall was checked with the PCC UID
+        verify(mService).isValidSingletonCall(callingUid, pccUid);
+        // Verify that the activity info was updated for the system user
+        verify(mService).getActivityInfoForUser(eq(activityInfo), eq(UserHandle.USER_SYSTEM));
     }
 
     private void testLogBroadcastProcessedEventRecord(int times) {
