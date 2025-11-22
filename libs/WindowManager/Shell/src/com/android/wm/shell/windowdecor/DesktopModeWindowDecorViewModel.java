@@ -2196,6 +2196,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
 
         @Override
+        public void onSwitchToBrowser(@NonNull RunningTaskInfo taskInfo, @NonNull Intent intent) {
+            onOpenInBrowser(taskInfo.taskId, intent);
+            onClose(taskInfo);
+        }
+
+        @Override
         public void onOpenInstance(@NonNull ActivityManager.RunningTaskInfo taskInfo,
                 int requestedTaskId) {
             mDesktopTasksController.openInstance(taskInfo, requestedTaskId);
