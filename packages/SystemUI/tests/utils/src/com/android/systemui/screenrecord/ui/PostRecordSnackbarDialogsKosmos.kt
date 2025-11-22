@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
+import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
 val Kosmos.postRecordSnackbarDialogs by
@@ -29,5 +30,6 @@ val Kosmos.postRecordSnackbarDialogs by
             dialogFactory = systemUIDialogFactory,
             drawableViewModel = drawableLoaderViewModel,
             activityStarter = activityStarter,
+            screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
         )
     }

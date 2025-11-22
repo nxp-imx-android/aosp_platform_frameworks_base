@@ -59,12 +59,13 @@ constructor(
     private val panelInteractor: PanelInteractor,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : QSTileUserActionInteractor<ScreenRecordModel> {
     override suspend fun handleInput(input: QSTileInput<ScreenRecordModel>): Unit =
         with(input) {
             when (action) {
                 is QSTileUserAction.Click -> {
-                    if (ScreenCaptureRecordFeaturesInteractor.shouldShowNewToolbar) {
+                    if (screenCaptureRecordFeaturesInteractor.shouldShowNewRecordingToolbar) {
                         withContext(mainDispatcher) {
                             // TODO(b/412723197): pass actual params here.
                             activityStarter.executeRunnableDismissingKeyguard(

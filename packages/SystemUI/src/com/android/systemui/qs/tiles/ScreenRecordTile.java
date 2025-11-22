@@ -81,6 +81,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     private final MediaProjectionMetricsLogger mMediaProjectionMetricsLogger;
     private final UserContextProvider mUserContextProvider;
     private final ScreenCaptureUiInteractor mScreenCaptureUiInteractor;
+    private final ScreenCaptureRecordFeaturesInteractor mScreenCaptureRecordFeaturesInteractor;
 
     private long mMillisUntilFinished = 0;
 
@@ -103,7 +104,8 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             PanelInteractor panelInteractor,
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
             ScreenCaptureUiInteractor screenCaptureUiInteractor,
-            UserContextProvider userContextProvider
+            UserContextProvider userContextProvider,
+            ScreenCaptureRecordFeaturesInteractor screenCaptureRecordFeaturesInteractor
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -117,6 +119,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureUiInteractor = screenCaptureUiInteractor;
         mUserContextProvider = userContextProvider;
+        mScreenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor;
     }
 
     @Override
@@ -129,7 +132,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
 
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
-        if (ScreenCaptureRecordFeaturesInteractor.INSTANCE.getShouldShowNewToolbar()) {
+        if (mScreenCaptureRecordFeaturesInteractor.getShouldShowNewRecordingToolbar()) {
             mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
                     () -> mScreenCaptureUiInteractor.show(
                             new ScreenCaptureUiParameters.Record()

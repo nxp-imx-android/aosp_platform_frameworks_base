@@ -23,6 +23,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.domain.interactor.screenCaptureComponentInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.ui.postRecordingShelfFactory
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
@@ -39,5 +40,6 @@ val Kosmos.screenCaptureStartable: ScreenCaptureStartable by
             screenRecordingServiceInteractor,
             postRecordingShelfFactory,
             activityStarter,
+            screenCaptureRecordFeaturesInteractor,
         )
     }

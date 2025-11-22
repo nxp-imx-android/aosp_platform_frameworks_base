@@ -71,6 +71,7 @@ constructor(
     private val uiEventLogger: StatusBarChipsUiEventLogger,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val activityStarter: ActivityStarter,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : OngoingActivityChipViewModel {
     private val instanceId = uiEventLogger.createNewInstanceId()
 
@@ -119,7 +120,8 @@ constructor(
                             clickBehavior =
                                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                                     if (
-                                        ScreenCaptureRecordFeaturesInteractor.shouldShowNewToolbar
+                                        screenCaptureRecordFeaturesInteractor
+                                            .shouldShowNewRecordingToolbar
                                     ) {
                                         { showScreenRecordingToolbar() }
                                     } else {

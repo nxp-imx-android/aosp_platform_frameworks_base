@@ -32,6 +32,7 @@ class ScreenCaptureRecordParametersViewModel
 constructor(
     private val interactor: ScreenCaptureRecordParametersInteractor,
     screenRecordCameraInteractor: ScreenRecordCameraInteractor,
+    screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : HydratedActivatable() {
 
     val audioSource: ScreenRecordingAudioSource? by
@@ -90,7 +91,7 @@ constructor(
         }
 
     val canUseFrontCamera: Boolean by
-        if (ScreenCaptureRecordFeaturesInteractor.isSelfieAvailable) {
+        if (screenCaptureRecordFeaturesInteractor.isSelfieAvailable) {
                 screenRecordCameraInteractor.isCameraSupported
             } else {
                 flowOf(false)
