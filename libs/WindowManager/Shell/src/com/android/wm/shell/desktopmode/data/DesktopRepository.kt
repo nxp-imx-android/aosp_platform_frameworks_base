@@ -1265,6 +1265,17 @@ class DesktopRepository(
         rememberedBoundsRatioByPackageName.remove(packageName)
     }
 
+    /** Clears the remembered bounds ratio for all package. */
+    fun clearAllRememberedBoundsRatio() {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName.clear()
+        // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
+        // needs to be updated.
+        updatePersistentRepository(DEFAULT_DISPLAY)
+    }
+
     fun restoreRememberedBoundsRatioByPackageName(source: ArrayMap<String, RectF>) {
         if (!Flags.enableRememberedBounds()) {
             return
