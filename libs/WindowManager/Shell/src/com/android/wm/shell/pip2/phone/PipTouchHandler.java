@@ -120,6 +120,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private int mDeferResizeToNormalBoundsUntilRotation = -1;
     private int mDisplayRotation;
 
+    private final PipAccessibilityInteractionConnection mConnection;
+
     // Behaviour states
     private int mMenuState = MENU_STATE_NONE;
     private boolean mIsImeShowing;
@@ -246,6 +248,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
                 mainExecutor, mPipPerfHintController, pipInteractionHandler);
+        mConnection = new PipAccessibilityInteractionConnection(mContext, pipBoundsState,
+                mMotionHelper, mPipBoundsAlgorithm.getSnapAlgorithm(), mPipTransitionState,
+                mPipScheduler, mSurfaceTransactionHelper,
+                this::onAccessibilityShowMenu, this::animateToUnStashedState, mainExecutor);
         mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> onAspectRatioChanged());
 
         mMoveOnShelVisibilityChanged = () -> {
@@ -478,6 +484,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mDisplayRotation = displayRotation;
         updateMovementBounds();
         mMovementBoundsExtraOffsets = extraOffset;
+        mConnection.onMovementBoundsChanged(normalBounds, mPipBoundsState.getExpandedBounds(),
+                mPipBoundsState.getNormalMovementBounds(),
+                mPipBoundsState.getExpandedMovementBounds());
 
         // If we have a deferred resize, apply it now
         if (mDeferResizeToNormalBoundsUntilRotation == displayRotation) {
@@ -494,7 +503,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      */
     public void onRegistrationChanged(boolean isRegistered) {
         if (isRegistered) {
-            // Register the accessibility connection.
+            mConnection.register(mAccessibilityManager);
         } else {
             mAccessibilityManager.setPictureInPictureActionReplacingConnection(null);
         }
