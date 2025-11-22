@@ -286,7 +286,12 @@ class DesktopTasksController(
     private val desktopMode: DesktopModeImpl
     private var visualIndicator: DesktopModeVisualIndicator? = null
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
-        DesktopModeShellCommandHandler(this, focusTransitionObserver)
+        DesktopModeShellCommandHandler(
+            this,
+            focusTransitionObserver,
+            userRepositories,
+            shellController,
+        )
     private val latencyTracker: LatencyTracker
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
