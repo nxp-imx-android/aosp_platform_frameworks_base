@@ -118,6 +118,7 @@ class ConnectedDisplayCujSmokeTests {
     @Before
     fun setup() {
         Assume.assumeTrue(desktopState.canEnterDesktopMode)
+        Utils.clearAllRememberedDesktopBounds()
 
         // Ensure rotation in launcher.
         tapl.setEnableRotation(true)

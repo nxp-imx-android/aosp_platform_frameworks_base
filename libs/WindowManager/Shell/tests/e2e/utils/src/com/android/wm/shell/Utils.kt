@@ -142,6 +142,19 @@ object Utils {
                 ?.getTaskDisplayArea(ComponentNameMatcher.LAUNCHER)
                 ?.windowingMode == WINDOWING_MODE_FREEFORM
 
+    /**
+     * Clears remembered bounds for all packages.
+     */
+    fun clearAllRememberedDesktopBounds() {
+        try {
+            device.executeShellCommand(
+                "wm shell desktopmode clearAllRememberedBounds"
+            )
+        } catch (e: IOException) {
+            Log.e("TestUtils", "Failed to clear all remembered bounds", e)
+        }
+    }
+
     private fun getSettingsString(resName: String): String {
         val identifier = settingsResources.getIdentifier(resName, "string",
             SETTINGS_PACKAGE_NAME)
