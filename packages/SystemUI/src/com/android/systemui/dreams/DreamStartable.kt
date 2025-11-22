@@ -28,6 +28,8 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.DreamLog
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
@@ -54,6 +56,45 @@ constructor(
     override fun start() {
         if (SceneContainerFlag.isEnabled) {
             handleStopDreamWhenGoingToGone()
+            handleDreamState()
+        }
+    }
+
+    /** Manages scene transitions to and from the Dream scene. */
+    @RequiresPermission(WRITE_DREAM_STATE)
+    private fun handleDreamState() {
+        applicationScope.launch {
+            keyguardInteractor.isAbleToDream.collect { isAbleToDream ->
+                if (isAbleToDream) {
+                    if (
+                        sceneInteractor.currentScene.value == Scenes.Lockscreen &&
+                            Overlays.Bouncer in sceneInteractor.currentOverlays.value
+                    ) {
+                        // Apply "Snap, then Animate" fix for bouncer to dream transition.
+                        sceneInteractor.snapToScene(
+                            toScene = Scenes.Dream,
+                            loggingReason = "Snap to dream behind bouncer",
+                            hideAllOverlays = false,
+                        )
+                        sceneInteractor.hideOverlay(
+                            overlay = Overlays.Bouncer,
+                            loggingReason = "Hiding bouncer to reveal dream",
+                        )
+                    } else {
+                        // Standard transition to dream.
+                        sceneInteractor.changeScene(
+                            toScene = Scenes.Dream,
+                            loggingReason = "Dream started",
+                        )
+                    }
+                } else {
+                    sceneInteractor.changeScene(
+                        toScene = SceneFamilies.Home,
+                        loggingReason = "Dream stopped",
+                        hideAllOverlays = !keyguardInteractor.isKeyguardShowing.value,
+                    )
+                }
+            }
         }
     }
 
@@ -73,7 +114,7 @@ constructor(
                 .sample(keyguardInteractor.isAbleToDream, ::Pair)
                 .collect { (dreamToGone, isDreaming) ->
                     if (dreamToGone && isDreaming) {
-                        logger.i("Stopping dream due to going from dream to gone")
+                        logger.i("Stopping dream due to going from Dream to Gone")
                         dreamManager.stopDream()
                     }
                 }

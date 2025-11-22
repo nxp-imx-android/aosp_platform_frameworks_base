@@ -367,7 +367,6 @@ constructor(
         handleSimUnlock()
         handleDeviceUnlockStatus()
         handlePowerState()
-        handleDreamState()
         handleShadeTouchability()
         handleDisableFlags()
     }
@@ -750,27 +749,6 @@ constructor(
                             loggingReason = "device is starting to wake up with a locked sim",
                         )
                     }
-                }
-            }
-        }
-    }
-
-    private fun handleDreamState() {
-        applicationScope.launch {
-            keyguardInteractor.isAbleToDream.collect { isAbleToDream ->
-                if (isAbleToDream) {
-                    switchToScene(targetSceneKey = Scenes.Dream, loggingReason = "dream started")
-                } else {
-                    switchToScene(
-                        targetSceneKey = SceneFamilies.Home,
-                        loggingReason = "dream stopped",
-                        hideOverlays =
-                            if (deviceUnlockedInteractor.isUnlocked) {
-                                HideOverlayCommand.HideAll
-                            } else {
-                                HideOverlayCommand.HideNone
-                            },
-                    )
                 }
             }
         }
