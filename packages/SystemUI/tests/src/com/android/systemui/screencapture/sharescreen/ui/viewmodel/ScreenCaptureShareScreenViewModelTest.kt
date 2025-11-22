@@ -42,7 +42,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewMod
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
 import com.android.systemui.screencapture.sharescreen.domain.interactor.mockAsyncActivityLauncher
 import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
-import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
+import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
