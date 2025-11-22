@@ -23,6 +23,9 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
+import com.android.systemui.scene.data.model.SceneStack
+import com.android.systemui.scene.data.model.asIterable
+import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.combine
@@ -48,6 +51,7 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
+    sceneBackInteractor: SceneBackInteractor,
 ) : SceneResolver {
     override val targetFamily: SceneKey = SceneFamilies.Home
 
@@ -60,6 +64,7 @@ constructor(
                 deviceEntryInteractor.isUnlocked,
                 keyguardInteractor.isDreamingWithOverlay,
                 keyguardInteractor.isAbleToDream,
+                sceneBackInteractor.backStack,
                 transform = ::homeScene,
             )
             .stateIn(
@@ -74,6 +79,7 @@ constructor(
                         isUnlocked = deviceEntryInteractor.isUnlocked.value,
                         isDreamingWithOverlay = false,
                         isAbleToDream = false,
+                        backStack = sceneBackInteractor.backStack.value,
                     ),
             )
 
@@ -87,6 +93,7 @@ constructor(
         isUnlocked: Boolean,
         isDreamingWithOverlay: Boolean,
         isAbleToDream: Boolean,
+        backStack: SceneStack,
     ): SceneKey {
         return when {
             // Dream can run even if Keyguard is disabled, thus it has the highest priority here.
@@ -96,6 +103,11 @@ constructor(
             canSwipeToEnter == true -> Scenes.Lockscreen
             !isDeviceEntered -> Scenes.Lockscreen
             !isUnlocked -> Scenes.Lockscreen
+            // If we have SWIPE security, isUnlocked will never be false. Locking the device
+            // actually means showing the lockscreen. If we are unable to show the lockscreen
+            // immediately and we end up adding it to the backstack, we need to resolve the
+            // home scene to lockscreen.
+            backStack.asIterable().lastOrNull() == Scenes.Lockscreen -> Scenes.Lockscreen
             else -> Scenes.Gone
         }
     }
