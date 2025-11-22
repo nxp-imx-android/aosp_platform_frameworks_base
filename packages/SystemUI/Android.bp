@@ -953,6 +953,9 @@ android_app {
         shrink_resources: false,
         optimized_shrink_resources: false,
         proguard_flags_files: ["proguard.flags"],
+        included_proguard_flags_files: [
+            ":sysui_proguard_common_and_kotlin",
+        ],
     },
 
     plugins: ["dagger2-compiler"],
@@ -1150,8 +1153,7 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
         included_proguard_flags_files: [
-            "proguard_common.flags",
-            "proguard_kotlin.flags",
+            ":sysui_proguard_common_and_kotlin",
         ],
     },
     required: [
@@ -1163,4 +1165,12 @@ filegroup {
     name: "sysui_proguard_kotlin",
     srcs: ["proguard_kotlin.flags"],
     visibility: ["//frameworks/base/packages/SystemUI:__subpackages__"],
+}
+
+filegroup {
+    name: "sysui_proguard_common_and_kotlin",
+    srcs: [
+        "proguard_common.flags",
+        "proguard_kotlin.flags",
+    ],
 }
