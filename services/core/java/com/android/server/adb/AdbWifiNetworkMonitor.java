@@ -15,8 +15,11 @@
  */
 package com.android.server.adb;
 
+import static com.android.server.adb.AdbMetricsLogger.logAdbConnectionChanged;
+
 import android.content.ContentResolver;
 import android.content.Context;
+import android.debug.AdbProtoEnums;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -117,6 +120,7 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
 
     @Override
     public final void onLost(@NonNull Network network) {
+        logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
         mLastSSID = null;
         setAdbWifiState(false, "Wi-Fi network lost. Disabling adb over Wi-Fi.");
     }
@@ -126,6 +130,7 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
                 || TextUtils.isEmpty(wifiInfo.getBSSID())
                 || TextUtils.isEmpty(wifiInfo.getSSID())
                 || TextUtils.equals(wifiInfo.getSSID(), WifiManager.UNKNOWN_SSID)) {
+            logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
             setAdbWifiState(
                     false,
                     TextUtils.formatSimple(
@@ -167,6 +172,10 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
     @VisibleForTesting
     protected void setAdbWifiState(boolean enabled, String reason) {
         Slog.i(TAG, reason);
+        logAdbConnectionChanged(
+                enabled
+                        ? AdbProtoEnums.ADB_WIFI_AUTO_ENABLED
+                        : AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
         Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, enabled ? 1 : 0);
     }
 }
