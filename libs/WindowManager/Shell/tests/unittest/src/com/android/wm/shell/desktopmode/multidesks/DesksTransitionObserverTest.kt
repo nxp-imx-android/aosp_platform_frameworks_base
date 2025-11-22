@@ -1049,6 +1049,43 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
+    fun independentDeskTransition_deskToBack_deskWithNonCurrentUserId_deactivatesCurrentUserDesk() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        )
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            // User another userId, which could happen if the desk was initially
+                            // created by this other user.
+                            userId = USER_ID_2,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            // The desk is deactivated for the correct user repository (USER_ID_1).
+            assertThat(repository.getActiveDeskId(displayId)).isNull()
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperOverActiveDesk_reactivatesDeskWithOrder() =
         testScope.runTest {
