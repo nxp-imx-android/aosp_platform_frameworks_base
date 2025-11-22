@@ -241,6 +241,16 @@ flag {
 }
 
 flag {
+    name: "reduce_two_way_binder_calls_in_media_router2"
+    namespace: "media_better_together"
+    description: "Fix an issue of blocking binder calls for getting remote sessions in MediaRouter2."
+    bug: "330300516"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "release_ringtone_as_api"
     namespace: "telecom"
     description: "Flag for unhiding ringtone APIs"
