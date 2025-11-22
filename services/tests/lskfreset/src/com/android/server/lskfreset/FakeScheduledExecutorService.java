@@ -18,13 +18,12 @@ package com.android.server.lskfreset;
 
 import com.android.internal.util.Preconditions;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,7 +39,7 @@ import java.util.concurrent.TimeoutException;
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
-    private final List<FakeScheduledFuture<?>> mFutures = new ArrayList<>();
+    private final DelayQueue<FakeScheduledFuture<?>> mFutures = new DelayQueue<>();
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -85,34 +84,25 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     int fastForwardMillis(long millis) {
         assertExecutionThread();
         mElapsedMillis += millis;
-        // Make a copy of the futures for us to iterate over, and clear out the existing mFutures.
-        // Otherwise if any tasks were to schedule new tasks you would end up modifying the list
-        // of futures while we're iterating over it.
-        ImmutableList<FakeScheduledFuture<?>> futuresCopy = ImmutableList.copyOf(mFutures);
-        mFutures.clear();
-        int numTasksRun = 0;
-        for (FakeScheduledFuture<?> future : futuresCopy) {
-            if (future.getDelay(TimeUnit.MILLISECONDS) <= 0) {
-                future.execute();
-                numTasksRun += 1;
-            } else {
-                mFutures.add(future);
-            }
+        List<FakeScheduledFuture<?>> readyFutures = new ArrayList<>();
+        mFutures.drainTo(readyFutures);
+        for (FakeScheduledFuture<?> future : readyFutures) {
+            future.execute();
         }
-        return numTasksRun;
+        return readyFutures.size();
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         FakeScheduledFuture<?> future = new FakeScheduledFuture<>(command, unit.toMillis(delay));
-        mFutures.add(future);
+        mFutures.put(future);
         return future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
         FakeScheduledFuture<V> future = new FakeScheduledFuture<>(callable, unit.toMillis(delay));
-        mFutures.add(future);
+        mFutures.put(future);
         return future;
     }
 
