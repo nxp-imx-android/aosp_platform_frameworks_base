@@ -1227,7 +1227,9 @@ public abstract class Conference extends Conferenceable {
      * {@code false} if it should emulate a standalone call (i.e. not multiparty).
      * @hide
      */
-    public boolean isMultiparty() {
+    @SystemApi
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public boolean isConferenceState() {
         return mIsMultiparty;
     }
 
