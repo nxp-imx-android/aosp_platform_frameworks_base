@@ -34,6 +34,7 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
@@ -329,10 +330,25 @@ constructor(
             if (isLockscreenEnabled() && !isAuthenticationRequired()) {
                 sceneInteractor
                     .get()
-                    .changeScene(
-                        toScene = Scenes.Lockscreen,
-                        loggingReason = "lock now with SWIPE auth method, reason: $debuggingReason",
-                    )
+                    .resolveSceneFamilyOrNull(SceneFamilies.Home)?.value?.let {
+                        resolvedScene ->
+                            // If the resolved scene is Gone, we should always show the lockscreen.
+                            val toScene =
+                                resolvedScene
+                                    .takeIf { it != Scenes.Gone } ?: Scenes.Lockscreen
+                            if (toScene != Scenes.Lockscreen) {
+                                // We should never be in a state where the current scene is the
+                                // [Scenes.Lockscreen] and the lockscreen is also on the back stack.
+                                sceneBackInteractor.get().addLockscreenToBackStack()
+                            }
+                            sceneInteractor
+                                .get()
+                                .changeScene(
+                                    toScene = toScene,
+                                    loggingReason =
+                                        "lock now with SWIPE auth method, reason: $debuggingReason",
+                                )
+                            }
             }
         }
     }

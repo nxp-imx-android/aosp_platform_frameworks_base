@@ -109,6 +109,26 @@ constructor(
         }
     }
 
+    /**
+     * Adds the [Scenes.Lockscreen] to the bottom of the navigation backstack.
+     *
+     * If the backstack is empty, the lockscreen is pushed onto the stack. Otherwise, if the last
+     * item on the stack is [Scenes.Gone] it is replaced with the lockscreen.
+     */
+    fun addLockscreenToBackStack() {
+        updateBackStack { stack ->
+            val list = stack.asIterable().toMutableList()
+            if (list.isEmpty()) {
+                sceneStackOf(Scenes.Lockscreen)
+            } else if (list.lastOrNull() == Scenes.Gone) {
+                list[list.size - 1] = Scenes.Lockscreen
+                sceneStackOf(*list.toTypedArray())
+            } else {
+                stack
+            }
+        }
+    }
+
     private fun stackOperation(from: SceneKey, to: SceneKey, stack: SceneStack): StackOperation? {
         val fromDistance =
             checkNotNull(sceneContainerConfig.navigationDistances[from]) {
