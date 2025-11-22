@@ -102,10 +102,12 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private long mAnrTimeout;
 
     /**
-     * A Runnable that is executed after {@link mAnrTimeout} passes, terminating the remote provider
+     * A Runnable that is executed after {@link #mAnrTimeout} passes, terminating the remote
+     * provider
      * with ANR.
      */
-    @Nullable private NotRespondingRunnable mAnrRunnable;
+    @Nullable
+    private NotRespondingRunnable mAnrRunnable;
 
     /**
      * Similar to mAnrTimeout, but the timeout starts when a {@link CancellationSignal} passed to
@@ -116,10 +118,11 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private long mAnrTimeoutOnCancel;
 
     /**
-     * A Runnable that is executed after {@link mAnrTimeoutOnCancel} passes, terminating the remote
+     * A Runnable that is executed after {@link #mAnrTimeoutOnCancel} passes, terminating the remote
      * provider with ANR.
      */
-    @Nullable private NotRespondingRunnable mAnrRunnableOnCancel;
+    @Nullable
+    private NotRespondingRunnable mAnrRunnableOnCancel;
 
     /** @hide */
     @VisibleForTesting
@@ -266,12 +269,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         }
         CancellationSignal innerSignal = new CancellationSignal();
         callerSignal.setOnCancelListener(
-                new CancellationSignal.OnCancelListener() {
-                    @Override
-                    public void onCancel() {
-                        innerSignal.cancel();
-                        sAnrHandler.postDelayed(mAnrRunnableOnCancel, mAnrTimeoutOnCancel);
-                    }
+                () -> {
+                    innerSignal.cancel();
+                    sAnrHandler.postDelayed(mAnrRunnableOnCancel, mAnrTimeoutOnCancel);
                 });
         return innerSignal;
     }
@@ -280,14 +280,14 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public @Nullable Cursor query(@NonNull Uri url, @Nullable String[] projection,
             @Nullable String selection, @Nullable String[] selectionArgs,
             @Nullable String sortOrder) throws RemoteException {
-        return query(url, projection, selection,  selectionArgs, sortOrder, null);
+        return query(url, projection, selection, selectionArgs, sortOrder, null);
     }
 
     /** See {@link ContentProvider#query ContentProvider.query} */
     public @Nullable Cursor query(@NonNull Uri uri, @Nullable String[] projection,
             @Nullable String selection, @Nullable String[] selectionArgs,
             @Nullable String sortOrder, @Nullable CancellationSignal cancellationSignal)
-                    throws RemoteException {
+            throws RemoteException {
         Bundle queryArgs =
                 ContentResolver.createSqlQueryBundle(selection, selectionArgs, sortOrder);
         return query(uri, projection, queryArgs, cancellationSignal);
@@ -297,21 +297,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     @Override
     public @Nullable Cursor query(@NonNull Uri uri, @Nullable String[] projection,
             Bundle queryArgs, @Nullable CancellationSignal cancellationSignal)
-                    throws RemoteException {
+            throws RemoteException {
         Objects.requireNonNull(uri, "url");
-
-        beforeRemote(cancellationSignal);
-
-        try {
-            ICancellationSignal remoteCancellationSignal = null;
-            if (cancellationSignal != null) {
-                cancellationSignal.throwIfCanceled();
-                if (enableContentProviderClientAnrOnCancel()) {
-                    cancellationSignal = maybeWrapNotRespondingSignal(cancellationSignal);
-                }
-                remoteCancellationSignal = mContentProvider.createCancellationSignal();
-                cancellationSignal.setRemote(remoteCancellationSignal);
-            }
+        return execute(cancellationSignal, remoteCancellationSignal -> {
             final Cursor cursor = mContentProvider.query(
                     mAttributionSource, uri, projection, queryArgs,
                     remoteCancellationSignal);
@@ -319,33 +307,14 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
                 return null;
             }
             return new CursorWrapperInner(cursor);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        });
     }
 
     /** See {@link ContentProvider#getType ContentProvider.getType} */
     @Override
     public @Nullable String getType(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.getType(mAttributionSource, url);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.getType(mAttributionSource, url));
     }
 
     /** See {@link ContentProvider#getStreamTypes ContentProvider.getStreamTypes} */
@@ -354,57 +323,22 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mimeTypeFilter, "mimeTypeFilter");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.getStreamTypes(mAttributionSource, url, mimeTypeFilter);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(
+                () -> mContentProvider.getStreamTypes(mAttributionSource, url, mimeTypeFilter));
     }
 
     /** See {@link ContentProvider#canonicalize} */
     @Override
     public final @Nullable Uri canonicalize(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.canonicalize(mAttributionSource, url);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.canonicalize(mAttributionSource, url));
     }
 
     /** See {@link ContentProvider#uncanonicalize} */
     @Override
     public final @Nullable Uri uncanonicalize(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.uncanonicalize(mAttributionSource, url);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.uncanonicalize(mAttributionSource, url));
     }
 
     /** See {@link ContentProvider#refresh} */
@@ -412,29 +346,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public boolean refresh(Uri url, @Nullable Bundle extras,
             @Nullable CancellationSignal cancellationSignal) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(cancellationSignal);
-
-        try {
-            ICancellationSignal remoteCancellationSignal = null;
-            if (cancellationSignal != null) {
-                cancellationSignal.throwIfCanceled();
-                if (enableContentProviderClientAnrOnCancel()) {
-                    cancellationSignal = maybeWrapNotRespondingSignal(cancellationSignal);
-                }
-                remoteCancellationSignal = mContentProvider.createCancellationSignal();
-                cancellationSignal.setRemote(remoteCancellationSignal);
-            }
-            return mContentProvider.refresh(mAttributionSource, url, extras,
-                    remoteCancellationSignal);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(cancellationSignal, (remoteCancellationSignal) ->
+                mContentProvider.refresh(mAttributionSource, url, extras, remoteCancellationSignal)
+        );
     }
 
     /** @hide */
@@ -442,20 +356,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public int checkUriPermission(@NonNull Uri uri, int uid, @Intent.AccessUriMode int modeFlags)
             throws RemoteException {
         Objects.requireNonNull(uri, "uri");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.checkUriPermission(mAttributionSource, uri, uid,
-                    modeFlags);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.checkUriPermission(mAttributionSource, uri, uid,
+                modeFlags));
     }
 
     /** See {@link ContentProvider#insert ContentProvider.insert} */
@@ -469,20 +371,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public @Nullable Uri insert(@NonNull Uri url, @Nullable ContentValues initialValues,
             @Nullable Bundle extras) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.insert(mAttributionSource, url, initialValues,
-                    extras);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.insert(mAttributionSource, url, initialValues,
+                extras));
     }
 
     /** See {@link ContentProvider#bulkInsert ContentProvider.bulkInsert} */
@@ -491,19 +381,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(initialValues, "initialValues");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.bulkInsert(mAttributionSource, url, initialValues);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.bulkInsert(mAttributionSource, url, initialValues));
     }
 
     /** See {@link ContentProvider#delete ContentProvider.delete} */
@@ -516,19 +394,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     @Override
     public int delete(@NonNull Uri url, @Nullable Bundle extras) throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.delete(mAttributionSource, url, extras);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.delete(mAttributionSource, url, extras));
     }
 
     /** See {@link ContentProvider#update ContentProvider.update} */
@@ -542,19 +408,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public int update(@NonNull Uri url, @Nullable ContentValues values, @Nullable Bundle extras)
             throws RemoteException {
         Objects.requireNonNull(url, "url");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.update(mAttributionSource, url, values, extras);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.update(mAttributionSource, url, values, extras));
     }
 
     /**
@@ -581,28 +435,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable CancellationSignal signal) throws RemoteException, FileNotFoundException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mode, "mode");
-
-        beforeRemote(signal);
-
-        try {
-            ICancellationSignal remoteSignal = null;
-            if (signal != null) {
-                signal.throwIfCanceled();
-                if (enableContentProviderClientAnrOnCancel()) {
-                    signal = maybeWrapNotRespondingSignal(signal);
-                }
-                remoteSignal = mContentProvider.createCancellationSignal();
-                signal.setRemote(remoteSignal);
-            }
-            return mContentProvider.openFile(mAttributionSource, url, mode, remoteSignal);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return executeWithFileNotFound(signal, (remoteSignal) ->
+                mContentProvider.openFile(mAttributionSource, url, mode, remoteSignal));
     }
 
     /**
@@ -629,42 +463,21 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable CancellationSignal signal) throws RemoteException, FileNotFoundException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mode, "mode");
-
-        beforeRemote(signal);
-
-        try {
-            ICancellationSignal remoteSignal = null;
-            if (signal != null) {
-                signal.throwIfCanceled();
-                if (enableContentProviderClientAnrOnCancel()) {
-                    signal = maybeWrapNotRespondingSignal(signal);
-                }
-                remoteSignal = mContentProvider.createCancellationSignal();
-                signal.setRemote(remoteSignal);
-            }
-            return mContentProvider.openAssetFile(mAttributionSource, url, mode,
-                    remoteSignal);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return executeWithFileNotFound(signal, (remoteSignal) ->
+                mContentProvider.openAssetFile(mAttributionSource, url, mode, remoteSignal));
     }
 
     /** See {@link ContentProvider#openTypedAssetFile ContentProvider.openTypedAssetFile} */
     public final @Nullable AssetFileDescriptor openTypedAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mimeType, @Nullable Bundle opts)
-                    throws RemoteException, FileNotFoundException {
+            throws RemoteException, FileNotFoundException {
         return openTypedAssetFileDescriptor(uri, mimeType, opts, null);
     }
 
     /** See {@link ContentProvider#openTypedAssetFile ContentProvider.openTypedAssetFile} */
     public final @Nullable AssetFileDescriptor openTypedAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mimeType, @Nullable Bundle opts, @Nullable CancellationSignal signal)
-                    throws RemoteException, FileNotFoundException {
+            throws RemoteException, FileNotFoundException {
         return openTypedAssetFile(uri, mimeType, opts, signal);
     }
 
@@ -674,29 +487,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable CancellationSignal signal) throws RemoteException, FileNotFoundException {
         Objects.requireNonNull(uri, "uri");
         Objects.requireNonNull(mimeTypeFilter, "mimeTypeFilter");
-
-        beforeRemote(signal);
-
-        try {
-            ICancellationSignal remoteSignal = null;
-            if (signal != null) {
-                signal.throwIfCanceled();
-                if (enableContentProviderClientAnrOnCancel()) {
-                    signal = maybeWrapNotRespondingSignal(signal);
-                }
-                remoteSignal = mContentProvider.createCancellationSignal();
-                signal.setRemote(remoteSignal);
-            }
-            return mContentProvider.openTypedAssetFile(
-                    mAttributionSource, uri, mimeTypeFilter, opts, remoteSignal);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return executeWithFileNotFound(signal,
+                (remoteSignal) -> mContentProvider.openTypedAssetFile(
+                        mAttributionSource, uri, mimeTypeFilter, opts, remoteSignal));
     }
 
     /** See {@link ContentProvider#applyBatch ContentProvider.applyBatch} */
@@ -713,19 +506,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException, OperationApplicationException {
         Objects.requireNonNull(operations, "operations");
 
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.applyBatch(mAttributionSource, authority,
-                    operations);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return executeWithOperationApplicationException(
+                () -> mContentProvider.applyBatch(mAttributionSource, authority,
+                        operations));
     }
 
     /** See {@link ContentProvider#call(String, String, Bundle)} */
@@ -740,20 +523,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable String arg, @Nullable Bundle extras) throws RemoteException {
         Objects.requireNonNull(authority, "authority");
         Objects.requireNonNull(method, "method");
-
-        beforeRemote(/* cancellationSignal= */ null);
-
-        try {
-            return mContentProvider.call(mAttributionSource, authority, method, arg,
-                    extras);
-        } catch (DeadObjectException e) {
-            if (!mStable) {
-                mContentResolver.unstableProviderDied(mContentProvider);
-            }
-            throw e;
-        } finally {
-            afterRemote();
-        }
+        return execute(() -> mContentProvider.call(mAttributionSource, authority, method, arg,
+                extras));
     }
 
     /**
@@ -836,7 +607,206 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         }
     }
 
-    private final class CursorWrapperInner extends CrossProcessCursorWrapper {
+    /**
+     * A functional interface for a remote apply that doesn't take a cancellation signal.
+     *
+     * @param <T> The return type of the remote apply.
+     */
+    @FunctionalInterface
+    private interface RemoteCall<T> {
+        /**
+         * Applies this function to the given arguments.
+         *
+         * @return the function result
+         */
+        T apply() throws RemoteException;
+    }
+
+    /**
+     * A functional interface for a remote apply that takes a cancellation signal.
+     *
+     * @param <T> The return type of the remote apply.
+     */
+    @FunctionalInterface
+    private interface CancellableRemoteCall<T> {
+        /**
+         * Applies this function to the given arguments.
+         *
+         * @param signal the cancellation signal
+         * @return the function result
+         */
+        T apply(@Nullable ICancellationSignal signal) throws RemoteException;
+    }
+
+    /**
+     * Prepares a remote cancellation signal for a cancellable remote operation.
+     *
+     * @param cancellationSignal The cancellation signal provided by the caller.
+     * @return The remote cancellation signal, or {@code null} if the provided signal was
+     * {@code null}.
+     * @throws RemoteException if the remote content provider is not available.
+     */
+    private @Nullable ICancellationSignal prepareRemoteCancellationSignal(
+            @Nullable CancellationSignal cancellationSignal) throws RemoteException {
+        if (cancellationSignal == null) {
+            return null;
+        }
+
+        cancellationSignal.throwIfCanceled();
+
+        CancellationSignal transport = cancellationSignal;
+        if (enableContentProviderClientAnrOnCancel()) {
+            transport = maybeWrapNotRespondingSignal(cancellationSignal);
+        }
+
+        final ICancellationSignal remote = mContentProvider.createCancellationSignal();
+        transport.setRemote(remote);
+        return remote;
+    }
+
+    /**
+     * Executes a remote apply and handles ANR and DeadObjectException.
+     *
+     * @param remoteCall The remote apply to execute.
+     * @param <T>        The return type of the remote apply.
+     * @return The result of the remote apply.
+     * @throws RemoteException if the remote apply fails.
+     */
+    private <T> T execute(RemoteCall<T> remoteCall) throws RemoteException {
+        beforeRemote(/* cancellationSignal= */ null);
+        try {
+            return remoteCall.apply();
+        } catch (DeadObjectException e) {
+            if (!mStable) {
+                mContentResolver.unstableProviderDied(mContentProvider);
+            }
+            throw e;
+        } finally {
+            afterRemote();
+        }
+    }
+
+    /**
+     * Executes a cancellable remote apply and handles ANR and DeadObjectException.
+     *
+     * @param cancellationSignal The cancellation signal for the remote apply.
+     * @param remoteCall         The remote apply to execute.
+     * @param <T>                The return type of the remote apply.
+     * @return The result of the remote apply.
+     * @throws RemoteException if the remote apply fails.
+     */
+    private <T> T execute(
+            @Nullable CancellationSignal cancellationSignal,
+            CancellableRemoteCall<T> remoteCall) throws RemoteException {
+        beforeRemote(cancellationSignal);
+        try {
+            final ICancellationSignal remoteCancellationSignal =
+                    prepareRemoteCancellationSignal(cancellationSignal);
+            return remoteCall.apply(remoteCancellationSignal);
+        } catch (DeadObjectException e) {
+            if (!mStable) {
+                mContentResolver.unstableProviderDied(mContentProvider);
+            }
+            throw e;
+        } finally {
+            afterRemote();
+        }
+    }
+
+    /**
+     * A remote operation that can be executed and may throw a {@link FileNotFoundException}.
+     *
+     * @param <T> The type of the result of the operation.
+     */
+    @FunctionalInterface
+    private interface RemoteCallWithFileNotFound<T> {
+        /**
+         * Applies this function to the given arguments.
+         *
+         * @return The result of the operation.
+         * @throws RemoteException       if a remote error occurs.
+         * @throws FileNotFoundException if the file is not found.
+         */
+        T apply(@Nullable ICancellationSignal signal) throws RemoteException, FileNotFoundException;
+    }
+
+    /**
+     * Executes a remote operation that may throw a {@link FileNotFoundException} and handles ANR
+     * and DeadObjectException.
+     *
+     * @param remoteCallable The remote operation to execute.
+     * @param <T>            The type of the result of the operation.
+     * @return The result of the operation.
+     * @throws RemoteException       if a remote error occurs.
+     * @throws FileNotFoundException if the file is not found.
+     */
+    private <T> T executeWithFileNotFound(@Nullable CancellationSignal cancellationSignal,
+            RemoteCallWithFileNotFound<T> remoteCallable)
+            throws RemoteException, FileNotFoundException {
+        beforeRemote(cancellationSignal);
+        try {
+            final ICancellationSignal remoteCancellationSignal =
+                    prepareRemoteCancellationSignal(cancellationSignal);
+            return remoteCallable.apply(remoteCancellationSignal);
+        } catch (DeadObjectException e) {
+            if (!mStable) {
+                mContentResolver.unstableProviderDied(mContentProvider);
+            }
+            throw e;
+        } finally {
+            afterRemote();
+        }
+    }
+
+    /**
+     * A remote operation that can be executed and may throw an
+     * {@link OperationApplicationException}.
+     *
+     * @param <T> The type of the result of the operation.
+     */
+    @FunctionalInterface
+    private interface RemoteCallWithOperationApplicationException<T> {
+        /**
+         * Applies this function to the given arguments.
+         *
+         * @return The result of the operation.
+         * @throws RemoteException               if a remote error occurs.
+         * @throws OperationApplicationException if the operation fails to apply.
+         */
+        T apply() throws RemoteException, OperationApplicationException;
+    }
+
+    /**
+     * Executes a remote operation that may throw an {@link OperationApplicationException} and
+     * handles ANR and DeadObjectException.
+     *
+     * @param remoteCallable The remote operation to execute.
+     * @param <T>            The type of the result of the operation.
+     * @return The result of the operation.
+     * @throws RemoteException               if a remote error occurs.
+     * @throws OperationApplicationException if the operation fails to apply.
+     */
+    private <T> T executeWithOperationApplicationException(
+            RemoteCallWithOperationApplicationException<T> remoteCallable)
+            throws RemoteException, OperationApplicationException {
+        beforeRemote(/* cancellationSignal= */ null);
+        try {
+            return remoteCallable.apply();
+        } catch (DeadObjectException e) {
+            if (!mStable) {
+                mContentResolver.unstableProviderDied(mContentProvider);
+            }
+            throw e;
+        } finally {
+            afterRemote();
+        }
+    }
+
+    /**
+     * A specialized {@link CrossProcessCursorWrapper} that adds a {@link CloseGuard} to detect
+     * unclosed cursors.
+     */
+    private static final class CursorWrapperInner extends CrossProcessCursorWrapper {
         private final CloseGuard mCloseGuard = CloseGuard.get();
 
         CursorWrapperInner(Cursor cursor) {
