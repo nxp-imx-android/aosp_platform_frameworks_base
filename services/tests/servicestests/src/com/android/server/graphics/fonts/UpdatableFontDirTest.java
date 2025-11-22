@@ -1897,6 +1897,163 @@ public final class UpdatableFontDirTest {
         assertTestFontInstalled(nextDir, 2 /* version */);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_INSERT_FONT_FAMILY)
+    public void testAddFileToMapIfSameOrNewer_upgradeDuringLoad() throws Exception {
+        // Install an older version of font
+        UpdatableFontDir dirForPreparation = createNewUpdateDir();
+        dirForPreparation.update(Collections.singletonList(
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE)));
+        File oldFontFile = dirForPreparation.getPostScriptMap().get("test");
+        String oldFontDirPath = oldFontFile.getParentFile().getAbsolutePath();
+        assertThat(new File(oldFontDirPath).exists()).isTrue();
+
+        // Install a newer version and save it to config, without deleting the old one yet
+        dirForPreparation.update(Collections.singletonList(
+                newFontUpdateRequest("test.ttf,2,test", GOOD_SIGNATURE)));
+        File newFontFile = dirForPreparation.getPostScriptMap().get("test");
+        String newFontDirPath = newFontFile.getParentFile().getAbsolutePath();
+        assertThat(new File(newFontDirPath).exists()).isTrue();
+        assertThat(oldFontDirPath).isNotEqualTo(newFontDirPath);
+
+        // Load fonts, simulating a reboot. The old font dir should be deleted.
+        UpdatableFontDir dir = createNewUpdateDir();
+        dir.loadFontFileMap();
+
+        assertThat(dir.getPostScriptMap()).containsKey("test");
+        assertThat(mParser.getRevision(dir.getPostScriptMap().get("test"))).isEqualTo(2);
+        assertThat(new File(oldFontDirPath).exists()).isFalse(); // Old dir should be gone
+        assertThat(new File(newFontDirPath).exists()).isTrue(); // New dir should remain
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INSERT_FONT_FAMILY)
+    public void testAddFileToMapIfSameOrNewer_downgradeDuringLoad() throws Exception {
+        // Install a newer version of font
+        UpdatableFontDir dirForPreparation = createNewUpdateDir();
+        dirForPreparation.update(Collections.singletonList(
+                newFontUpdateRequest("test.ttf,2,test", GOOD_SIGNATURE)));
+        File currentFontFile = dirForPreparation.getPostScriptMap().get("test");
+        String currentFontDirPath = currentFontFile.getParentFile().getAbsolutePath();
+        assertThat(new File(currentFontDirPath).exists()).isTrue();
+
+        // Simulate an older version being 'found' during loadFontFileMap, e.g., from a restore or
+        // manual copy. For this, we'll manually create an older font file and its signature in a
+        // new random dir.
+        File olderDir = new File(mUpdatableFontFilesDir, "~~older");
+        assertThat(olderDir.mkdir()).isTrue();
+        File olderFontFile = new File(olderDir, "test.ttf");
+        FileUtils.stringToFile(olderFontFile, "test.ttf,1,test");
+        File olderSigFile = new File(olderDir, "font.fsv_sig");
+        FileUtils.stringToFile(olderSigFile, GOOD_SIGNATURE);
+        mFakeFsverityUtil.setUpFsverity(olderFontFile.getAbsolutePath());
+
+        // Update the persistent config to include both the current font dir and the older font dir
+        PersistentSystemFontConfig.Config config = readConfig(mConfigFile);
+        config.updatedFontDirs.add(olderDir.getName());
+        writeConfig(config, mConfigFile);
+
+        // Load fonts, simulating a reboot. The older font dir should be deleted.
+        UpdatableFontDir dir = createNewUpdateDir();
+        dir.loadFontFileMap();
+
+        assertThat(dir.getPostScriptMap()).containsKey("test");
+        assertThat(mParser.getRevision(dir.getPostScriptMap().get("test"))).isEqualTo(2);
+        // Older dir should be gone
+        assertThat(new File(olderDir.getAbsolutePath()).exists()).isFalse();
+        // Current dir should remain
+        assertThat(new File(currentFontDirPath).exists()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INSERT_FONT_FAMILY)
+    public void testAddFileToMapIfSameOrNewer_preinstalledWinsDuringLoad_unnamedFamily()
+            throws Exception {
+        // Setup a preinstalled font with a higher revision
+        File preinstalledFile = new File(mPreinstalledFontDirs.get(0), "NotoColorEmoji.ttf");
+        FileUtils.stringToFile(preinstalledFile, "NotoColorEmoji.ttf,10,NotoColorEmoji");
+
+        // Other emoji fonts which have the same language.
+        File preinstalledOEMFile = new File(mPreinstalledFontDirs.get(0), "OEMColorEmoji.ttf");
+        FileUtils.stringToFile(preinstalledOEMFile, "OEMColorEmoji.ttf,2,OEMColorEmoji");
+
+        File preinstalledFlagFile = new File(
+                mPreinstalledFontDirs.get(0), "NotoColorEmojiFlag.ttf");
+        FileUtils.stringToFile(
+                preinstalledFlagFile, "NotoColorEmojiFlag.ttf,5,NotoColorEmojiFlag");
+
+        // Simulate an updatable font with a lower revision
+        UpdatableFontDir dirForPreparation = createNewUpdateDir();
+        dirForPreparation.update(Collections.singletonList(
+                newFontUpdateRequest("my_emoji.ttf,6,my_emoji", GOOD_SIGNATURE)));
+
+        FontFamilyUpdateRequest.Font font =
+                new FontFamilyUpdateRequest.Font.Builder(
+                        "my_emoji", new FontStyle()).build();
+        FallbackFontUpdateRequest fallbackFontUpdateRequest =
+                new FallbackFontUpdateRequest.Builder().setLanguages("und-Zsye").setPriority(5)
+                        .addFont(font).build();
+        FontUpdateRequest request = new FontUpdateRequest(
+                LocaleList.forLanguageTags(fallbackFontUpdateRequest.getLanguages()),
+                fallbackFontUpdateRequest.getFonts(),
+                fallbackFontUpdateRequest.getPriority());
+        dirForPreparation.updateFontFallbacks(Collections.singletonList(request));
+
+        File updatableFile = dirForPreparation.getPostScriptMap().get("my_emoji");
+        String updatableDirPath = updatableFile.getParentFile().getAbsolutePath();
+        assertThat(new File(updatableDirPath).exists()).isTrue();
+
+        // Reconfigure configSupplier to include the preinstalled font for comparison
+        Function<Map<String, File>, FontConfig> configSupplierWithPreinstalled =
+                (map) -> {
+                    FontConfig.Font preinstalledOEMFont = new FontConfig.Font(
+                            preinstalledOEMFile, null, "OEMColorEmoji",
+                            new FontStyle(400, FontStyle.FONT_SLANT_UPRIGHT),
+                            0, null, null,
+                            FontConfig.Font.VAR_TYPE_AXES_NONE);
+                    FontConfig.FontFamily family1 = new FontConfig.FontFamily(
+                            Collections.singletonList(preinstalledOEMFont),
+                            LocaleList.forLanguageTags("und-Zsye"),
+                            FontConfig.FontFamily.VARIANT_DEFAULT);
+
+                    FontConfig.Font preinstalledEmojiFont = new FontConfig.Font(
+                            preinstalledFile, null, "NotoColorEmoji",
+                            new FontStyle(400, FontStyle.FONT_SLANT_UPRIGHT),
+                            0, null, null,
+                            FontConfig.Font.VAR_TYPE_AXES_NONE);
+                    FontConfig.FontFamily family2 = new FontConfig.FontFamily(
+                            Collections.singletonList(preinstalledEmojiFont),
+                            LocaleList.forLanguageTags("und-Zsye"),
+                            FontConfig.FontFamily.VARIANT_DEFAULT);
+
+                    FontConfig.Font preinstalledFont3 = new FontConfig.Font(
+                            preinstalledFlagFile, null, "NotoColorEmojiFlag",
+                            new FontStyle(400, FontStyle.FONT_SLANT_UPRIGHT),
+                            0, null, null,
+                            FontConfig.Font.VAR_TYPE_AXES_NONE);
+                    FontConfig.FontFamily family3 = new FontConfig.FontFamily(
+                            Collections.singletonList(preinstalledFont3),
+                            LocaleList.forLanguageTags("und-Zsye"),
+                            FontConfig.FontFamily.VARIANT_DEFAULT);
+                    return new FontConfig(
+                            Arrays.asList(family1, family2, family3),
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyList(), 0, 1);
+                };
+
+        // Load fonts with the updated config supplier. The updatable font should be discarded.
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, configSupplierWithPreinstalled);
+        dir.loadFontFileMap();
+        // Updatable font should be removed.
+        assertThat(dir.getPostScriptMap()).doesNotContainKey("my_emoji");
+        // Updatable font's dir should be gone
+        assertThat(new File(updatableDirPath).exists()).isFalse();
+        // Preinstalled font should remain
+        assertThat(preinstalledFile.exists()).isTrue();
+    }
 
     @Test
     public void testUpdateFontFallbacks_success() throws Exception {

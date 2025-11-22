@@ -19,6 +19,7 @@ package com.android.server.graphics.fonts;
 import static com.android.server.graphics.fonts.FontManagerService.SystemFontException;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.graphics.fonts.FontManager;
 import android.graphics.fonts.FontUpdateRequest;
 import android.graphics.fonts.SystemFonts;
@@ -33,6 +34,8 @@ import android.util.Base64;
 import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
+
+import com.android.text.flags.Flags;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -165,6 +168,21 @@ final class UpdatableFontDir {
         mConfigSupplier = configSupplier;
     }
 
+    private @Nullable FontUpdateRequest.Family findPrioritizedFamily(
+            List<PersistentSystemFontConfig.PrioritizedFamily> prioritizedFamilyList,
+            FontFileInfo fontFileInfo) {
+        for (PersistentSystemFontConfig.PrioritizedFamily prioritizedFamily
+                : prioritizedFamilyList) {
+            List<FontUpdateRequest.Font> fonts = prioritizedFamily.family.getFonts();
+            for (FontUpdateRequest.Font font: fonts) {
+                if (font.getPostScriptName().equals(fontFileInfo.getPostScriptName())) {
+                    return prioritizedFamily.family;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Loads fonts from file system, validate them, and delete obsolete font files.
      * Note that this method may be called by multiple times in integration tests via {@link
@@ -177,6 +195,8 @@ final class UpdatableFontDir {
         boolean success = false;
         try {
             PersistentSystemFontConfig.Config config = readPersistentConfig();
+            List<PersistentSystemFontConfig.PrioritizedFamily> prioritizedFamilyList =
+                    config.prioritizedFamilyList;
             mLastModifiedMillis = config.lastModifiedMillis;
 
             File[] dirs = mFilesDir.listFiles();
@@ -228,7 +248,12 @@ final class UpdatableFontDir {
                     // Use preinstalled font config for checking revision number.
                     fontConfig = mConfigSupplier.apply(Collections.emptyMap());
                 }
-                addFileToMapIfSameOrNewer(fontFileInfo, fontConfig, true /* deleteOldFile */);
+                FontUpdateRequest.Family prioritizedFamily = null;
+                if (Flags.insertFontFamily()) {
+                    prioritizedFamily = findPrioritizedFamily(prioritizedFamilyList, fontFileInfo);
+                }
+                addFileToMapIfSameOrNewer(fontFileInfo, prioritizedFamily, fontConfig,
+                        /* deleteOldFile= */ true);
             }
 
             // Treat as error if post script name of font family was not installed.
@@ -629,7 +654,8 @@ final class UpdatableFontDir {
             }
 
             FontConfig fontConfig = getSystemFontConfig();
-            if (!addFileToMapIfSameOrNewer(fontFileInfo, fontConfig, false)) {
+            if (!addFileToMapIfSameOrNewer(fontFileInfo, /* prioritizedFamily= */null, fontConfig,
+                    /* deleteOldFile= */ false)) {
                 throw new SystemFontException(
                         FontManager.RESULT_ERROR_DOWNGRADING,
                         "Downgrading font file is forbidden.");
@@ -668,24 +694,61 @@ final class UpdatableFontDir {
         mFontFileInfoMap.put(info.getPostScriptName(), info);
     }
 
+    private long getPreinstalledDefaultEmojiRevision(FontConfig fontConfig) {
+        for (FontConfig.FontFamily fontFamily : fontConfig.getFontFamilies()) {
+            if (EMOJI_LANG.equals(fontFamily.getLocaleList().toLanguageTags())) {
+                for (FontConfig.Font font : fontFamily.getFontList()) {
+                    if (font.getPostScriptName().equals(EMOJI_DEFAULT_POSTSCRIPT_NAME)) {
+                        return getPreinstalledFontRevision(font.getPostScriptName(), fontConfig);
+                    }
+                }
+            }
+        }
+        return -1; // Not found
+    }
+
+    // check if the font file has the prioritizedFamily, if the prioritizedFamily is an
+    // emoji font, we need to verify the revision of the font.
+    private boolean isValidEmojiFontUpdate(FontFileInfo fontFileInfo,
+            @Nullable FontUpdateRequest.Family prioritizedFamily,
+            FontConfig fontConfig) {
+        if (prioritizedFamily != null
+                && prioritizedFamily.getLang() != null
+                && EMOJI_LANG.equals(prioritizedFamily.getLang().toLanguageTags())) {
+            long preInstalledDefaultFontRev = getPreinstalledDefaultEmojiRevision(fontConfig);
+            if (preInstalledDefaultFontRev != -1) {
+                return preInstalledDefaultFontRev <= fontFileInfo.getRevision();
+            }
+        }
+        return true;
+    }
+
     /**
      * Add the given {@link FontFileInfo} to {@link #mFontFileInfoMap} if its font revision is
      * equal to or higher than the revision of currently used font file (either in
      * {@link #mFontFileInfoMap} or {@code fontConfig}).
      */
-    private boolean addFileToMapIfSameOrNewer(FontFileInfo fontFileInfo, FontConfig fontConfig,
+    private boolean addFileToMapIfSameOrNewer(FontFileInfo fontFileInfo,
+            @Nullable FontUpdateRequest.Family prioritizedFamily, FontConfig fontConfig,
             boolean deleteOldFile) {
         FontFileInfo existingInfo = lookupFontFileInfo(fontFileInfo.getPostScriptName());
-        final boolean shouldAddToMap;
+        boolean shouldAddToMap;
         if (existingInfo == null) {
             // We got a new updatable font. We need to check if it's newer than preinstalled fonts.
             // Note that getPreinstalledFontRevision() returns -1 if there is no preinstalled font
             // with 'name'.
-            long preInstalledRev = getPreinstalledFontRevision(fontFileInfo, fontConfig);
+            long preInstalledRev = getPreinstalledFontRevision(
+                    fontFileInfo.getPostScriptName(), fontConfig);
             shouldAddToMap = preInstalledRev <= fontFileInfo.getRevision();
         } else {
             shouldAddToMap = existingInfo.getRevision() <= fontFileInfo.getRevision();
         }
+
+        if (Flags.insertFontFamily()) {
+            shouldAddToMap = shouldAddToMap
+                    && isValidEmojiFontUpdate(fontFileInfo, prioritizedFamily, fontConfig);
+        }
+
         if (shouldAddToMap) {
             if (deleteOldFile && existingInfo != null) {
                 FileUtils.deleteContentsAndDir(existingInfo.getRandomizedFontDir());
@@ -727,8 +790,7 @@ final class UpdatableFontDir {
         return targetFont;
     }
 
-    private long getPreinstalledFontRevision(FontFileInfo info, FontConfig fontConfig) {
-        String psName = info.getPostScriptName();
+    private long getPreinstalledFontRevision(String psName, FontConfig fontConfig) {
         FontConfig.Font targetFont = getFontByPostScriptName(psName, fontConfig);
 
         if (targetFont == null) {
@@ -911,7 +973,7 @@ final class UpdatableFontDir {
             }
         }
 
-        if (com.android.text.flags.Flags.insertFontFamily()) {
+        if (Flags.insertFontFamily()) {
             // Now, handle the fallback families, inserting the dynamic ones at the correct
             // position. In general we insert updated fallback fonts before the corresponding
             // fallback fonts based on lang. For Emoji, vendors may have put custom emojis before
