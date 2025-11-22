@@ -1955,7 +1955,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_PERSISTED_LAUNCH_PARAMS_BUGFIX})
     public void testDoesntInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
         doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any(), any());
@@ -1966,7 +1967,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         mCurrent.mPreferredTaskDisplayArea = currTaskDisplayArea;
         mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
 
-        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task).calculate());
         assertEquals(task.getRootTask().getDisplayArea(), mResult.mPreferredTaskDisplayArea);
         assertNotEquals(currTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
         assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
