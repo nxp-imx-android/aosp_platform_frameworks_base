@@ -1842,6 +1842,11 @@ public class BiometricService extends SystemService {
                     }
                 }
 
+                promptInfo.setIsSystemCaller(
+                        Utils.isSystemUI(getContext(), opPackageName) || Utils.isSettings(
+                                getContext(), opPackageName) || Utils.isSystem(getContext(),
+                                opPackageName));
+
                 final int eligible = preAuthInfo.getEligibleModalities();
                 final boolean hasEligibleFingerprintSensor =
                         (eligible & TYPE_FINGERPRINT) == TYPE_FINGERPRINT;

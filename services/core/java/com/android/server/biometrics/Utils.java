@@ -557,6 +557,17 @@ public class Utils {
         return hasInternalPermission(context) && "com.android.settings".equals(clientPackage);
     }
 
+    /**
+     * Checks if a client package matches SystemUI and can perform internal biometric operations.
+     *
+     * @param context The system context.
+     * @param clientPackage The name of the package to be checked against SystemUI.
+     * @return Whether the given package matches SystemUI.
+     */
+    public static boolean isSystemUI(@NonNull Context context, @Nullable String clientPackage) {
+        return hasInternalPermission(context) && "com.android.systemui".equals(clientPackage);
+    }
+
     private static boolean hasInternalPermission(@NonNull Context context) {
         return context.checkCallingOrSelfPermission(USE_BIOMETRIC_INTERNAL)
                 == PackageManager.PERMISSION_GRANTED;

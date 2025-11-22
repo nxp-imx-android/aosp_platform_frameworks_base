@@ -63,6 +63,7 @@ public class PromptInfo implements Parcelable {
     private ComponentName mRealCallerForConfirmDeviceCredentialActivity = null;
     private String mClassNameIfItIsConfirmDeviceCredentialActivity = null;
     private boolean mClearIdentityCheckFallbackOption = false;
+    private boolean mIsSystemCaller = false;
 
     public PromptInfo() {
 
@@ -107,6 +108,7 @@ public class PromptInfo implements Parcelable {
         if (Flags.clearFallbackOption()) {
             mClearIdentityCheckFallbackOption = in.readBoolean();
         }
+        mIsSystemCaller = in.readBoolean();
     }
 
     public static final Creator<PromptInfo> CREATOR = new Creator<PromptInfo>() {
@@ -161,6 +163,7 @@ public class PromptInfo implements Parcelable {
         if (Flags.clearFallbackOption()) {
             dest.writeBoolean(mClearIdentityCheckFallbackOption);
         }
+        dest.writeBoolean(mIsSystemCaller);
     }
 
     // LINT.IfChange
@@ -369,6 +372,10 @@ public class PromptInfo implements Parcelable {
         mClassNameIfItIsConfirmDeviceCredentialActivity = className;
     }
 
+    public void setIsSystemCaller(boolean isSystemCaller) {
+        mIsSystemCaller = isSystemCaller;
+    }
+
 
     // Getters
 
@@ -511,6 +518,10 @@ public class PromptInfo implements Parcelable {
      */
     public String getClassNameIfItIsConfirmDeviceCredentialActivity() {
        return mClassNameIfItIsConfirmDeviceCredentialActivity;
+    }
+
+    public boolean isSystemCaller() {
+        return mIsSystemCaller;
     }
 
     public List<FallbackOption> getFallbackOptions() {
