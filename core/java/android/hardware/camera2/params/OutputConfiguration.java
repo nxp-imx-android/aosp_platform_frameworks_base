@@ -37,8 +37,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.MultiResolutionImageReader;
 import android.hardware.camera2.utils.HashCodeHelpers;
-import android.hardware.camera2.utils.SurfaceUtils;
 import android.hardware.camera2.utils.ListUtils;
+import android.hardware.camera2.utils.SurfaceUtils;
 import android.media.ImageReader;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -654,6 +654,14 @@ public final class OutputConfiguration implements Parcelable {
      *
      * <p>This constructor takes an argument for a
      * {@link android.hardware.camera2.MultiResolutionImageReader}.</p>
+     *
+     * <p>For the output configurations returned by this function, the application must
+     * not enable surface sharing.</p>
+     *
+     * <p>As of {@link android.os.Build.VERSION_CODES#CINNAMON_BUN Android 17},
+     * the application must not set different timestamp bases or different readout
+     * timestamp enablements among the outputs. Otherwise,
+     * {@link CameraDevice#createCaptureSession} will fail.</p>
      *
      * @param multiResolutionImageReader
      *          The multi-resolution image reader object.

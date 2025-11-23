@@ -56,9 +56,9 @@ import android.hardware.camera2.params.SharedSessionConfiguration;
 import android.hardware.camera2.params.SharedSessionConfiguration.SharedOutputConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.hardware.camera2.utils.ArrayUtils;
-import android.hardware.camera2.utils.SessionConfigurationAndStreamIds;
 import android.hardware.camera2.utils.ListUtils;
 import android.hardware.camera2.utils.OutputAndInputStreamIds;
+import android.hardware.camera2.utils.SessionConfigurationAndStreamIds;
 import android.hardware.camera2.utils.SubmitInfo;
 import android.hardware.camera2.utils.SurfaceUtils;
 import android.os.Binder;
@@ -2732,19 +2732,23 @@ public class CameraDeviceImpl extends CameraDevice
                                                 holder.getRequest(i),
                                                 timestampForReq,
                                                 frameNumber - (subsequenceId - i));
+                                            long readoutTimestampForReq = -1;
                                             if (hasReadoutTimestamp) {
+                                                readoutTimestampForReq = readoutTimestamp
+                                                        - (subsequenceId - i) * NANO_PER_SECOND
+                                                        / fpsRange.getUpper();
                                                 holder.getCallback().onReadoutStarted(
-                                                    CameraDeviceImpl.this,
-                                                    holder.getRequest(i),
-                                                    readoutTimestamp - (subsequenceId - i) *
-                                                    NANO_PER_SECOND / fpsRange.getUpper(),
-                                                    frameNumber - (subsequenceId - i));
+                                                        CameraDeviceImpl.this,
+                                                        holder.getRequest(i),
+                                                        readoutTimestampForReq,
+                                                        frameNumber - (subsequenceId - i));
                                             }
 
                                             sendOnMultiResolutionOutputStarted(
                                                     holder.getRequest(i),
                                                     frameNumber - (subsequenceId - i),
                                                     timestampForReq,
+                                                    readoutTimestampForReq,
                                                     multiResConcurrentReadersInfo);
                                         }
                                     } else {
@@ -2758,6 +2762,7 @@ public class CameraDeviceImpl extends CameraDevice
                                         }
                                         sendOnMultiResolutionOutputStarted(
                                                 request, frameNumber, timestamp,
+                                                hasReadoutTimestamp ? readoutTimestamp : -1,
                                                 multiResConcurrentReadersInfo);
                                     }
                                 }
@@ -2770,7 +2775,7 @@ public class CameraDeviceImpl extends CameraDevice
         }
 
         private void sendOnMultiResolutionOutputStarted(CaptureRequest request, long frameNumber,
-                long timestamp,
+                long timestamp, long readoutTimestamp,
                 MultiResConcurrentReadersStartInfo[] multiResConcurrentReadersInfo) {
             if (!Flags.multiResolutionConcurrentReaders()) {
                 return;
@@ -2781,6 +2786,7 @@ public class CameraDeviceImpl extends CameraDevice
                 Surface targetSurface = null;
                 MultiResolutionImageReader multiResImageReader = null;
                 ArrayList<Surface> activeOutputSurfaces = new ArrayList<Surface>();
+                boolean isReadoutTimestamp = false;
                 for (int i = 0; i < mConfiguredOutputs.size(); ++i) {
                     int streamId = mConfiguredOutputs.keyAt(i);
                     OutputConfiguration config = mConfiguredOutputs.valueAt(i);
@@ -2810,6 +2816,7 @@ public class CameraDeviceImpl extends CameraDevice
                     Surface surface = config.getSurface();
                     if (request.containsTarget(surface)) {
                         targetSurface = surface;
+                        isReadoutTimestamp = config.isReadoutTimestampEnabled();
                     }
                     if (ArrayUtils.contains(info.streamIds, streamId)) {
                         activeOutputSurfaces.add(surface);
@@ -2827,8 +2834,13 @@ public class CameraDeviceImpl extends CameraDevice
                     return;
                 }
 
+                // Choose capture/readout timestamp, and apply offsets to reflect the
+                // timestamp base of the outputs.
+                long chosenTimestamp = (isReadoutTimestamp && readoutTimestamp >= 0)
+                        ? readoutTimestamp : timestamp;
+                chosenTimestamp -= info.timestampOffset;
                 multiResImageReader.postOnActiveOutputSurfacesCallback(
-                        activeOutputSurfaces, timestamp, frameNumber);
+                        activeOutputSurfaces, chosenTimestamp, frameNumber);
             }
         }
 
