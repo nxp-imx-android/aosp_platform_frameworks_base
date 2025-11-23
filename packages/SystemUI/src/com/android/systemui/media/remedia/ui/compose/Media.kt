@@ -127,6 +127,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.PlatformButton
@@ -705,17 +706,20 @@ private fun ContentScope.CardForegroundContent(
                     )
 
                     if (
-                        viewModel.actionButtonLayout ==
-                            MediaCardActionButtonLayout.SecondaryActionsOnly
+                        viewModel.actionButtonLayout
+                            is MediaCardActionButtonLayout.SecondaryActionsOnly
                     ) {
-                        viewModel.additionalActions.fastForEachIndexed { index, action ->
-                            SecondaryAction(
-                                viewModel = action,
-                                resId = "action$index",
-                                element = Media.Elements.additionalActionButton(index),
-                                modifier = Modifier.padding(end = 8.dp),
-                            )
-                        }
+                        (viewModel.actionButtonLayout
+                                as MediaCardActionButtonLayout.SecondaryActionsOnly)
+                            .indicesForCompressed
+                            .fastForEach { index ->
+                                SecondaryAction(
+                                    viewModel = viewModel.additionalActions[index],
+                                    resId = "action$index",
+                                    element = Media.Elements.additionalActionButton(index),
+                                    modifier = Modifier.padding(end = 8.dp),
+                                )
+                            }
                     }
                 }
 

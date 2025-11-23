@@ -294,6 +294,7 @@ constructor(
                 subtitle = artist.toString(),
                 colorScheme = getScheme(artwork, packageName, userId),
                 notificationActions = actions,
+                notificationActionsCompressed = actionsToShowInCompact,
                 playbackStateActions = semanticActions,
                 outputDevice = device,
                 clickIntent = clickIntent,

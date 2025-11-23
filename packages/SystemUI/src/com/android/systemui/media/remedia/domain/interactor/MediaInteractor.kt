@@ -223,7 +223,10 @@ constructor(
                 get() =
                     dataModel.playbackStateActions?.let {
                         MediaCardActionButtonLayout.WithPlayPause
-                    } ?: MediaCardActionButtonLayout.SecondaryActionsOnly
+                    }
+                        ?: MediaCardActionButtonLayout.SecondaryActionsOnly(
+                            dataModel.notificationActionsCompressed
+                        )
 
             override val playPauseAction: MediaActionModel
                 get() =
