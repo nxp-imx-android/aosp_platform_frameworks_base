@@ -2734,7 +2734,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             });
 
             mDividerFadeInAnimator.start();
-        } else {
+        } else if (dividerLeash.isValid()) {
             final SurfaceControl.Transaction transaction = mTransactionPool.acquire();
             transaction.hide(dividerLeash);
             transaction.apply();
