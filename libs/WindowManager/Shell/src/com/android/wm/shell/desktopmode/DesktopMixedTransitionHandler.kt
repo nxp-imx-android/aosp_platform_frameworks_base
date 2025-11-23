@@ -370,10 +370,7 @@ class DesktopMixedTransitionHandler(
         minimizeChange?.let {
             applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
         }
-        if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue &&
-                pending.dragEvent != null
-        ) {
+        if (pending.dragEvent != null) {
             return desktopModeDragAndDropTransitionHandler.startAnimation(
                 info,
                 pending.dragEvent,

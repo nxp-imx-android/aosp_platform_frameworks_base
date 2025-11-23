@@ -10335,7 +10335,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900)
+            Rect(1100, 700, 1300, 900),
         )
     }
 
@@ -10344,7 +10344,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
             PointF(50f, 700f),
-            Rect(0, 0, 500, 1000)
+            Rect(0, 0, 500, 1000),
         )
     }
 
@@ -10353,7 +10353,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
             PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000)
+            Rect(500, 0, 1000, 1000),
         )
     }
 
@@ -10362,13 +10362,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
             PointF(1200f, 50f),
-            Rect()
+            Rect(),
         )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
@@ -10386,7 +10385,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
@@ -10406,10 +10404,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
-    )
+    @EnableFlags(Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS)
     fun onUnhandledDrag_crossDisplayDrag_noOpOnFocusedNonDesktopTask() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
@@ -12312,15 +12307,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         } else {
             expectedWindowingMode = WINDOWING_MODE_FREEFORM
             verify(desktopMixedTransitionHandler, times)
-                    .startLaunchTransition(
-                        eq(TRANSIT_OPEN),
-                        arg.capture(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        eq(mockDragEvent),
-                    )
+                .startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    arg.capture(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    eq(mockDragEvent),
+                )
         }
         if (verifyNoOp) return
         assertThat(
