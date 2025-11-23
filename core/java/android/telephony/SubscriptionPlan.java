@@ -33,11 +33,15 @@ import com.android.internal.telephony.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Instant;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Description of a billing relationship plan between a carrier and a specific
@@ -174,6 +178,118 @@ public final class SubscriptionPlan implements Parcelable {
     @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4;
 
+    /** @hide */
+    @IntDef(prefix = { "PLAN_TYPE_" }, value = {
+            PLAN_TYPE_CELLULAR,
+            PLAN_TYPE_SATELLITE,
+            PLAN_TYPE_IOT,
+            PLAN_TYPE_POSTPAID,
+            PLAN_TYPE_PREPAID,
+            PLAN_TYPE_DATA_ONLY,
+            PLAN_TYPE_FAMILY,
+            PLAN_TYPE_BUSINESS,
+            PLAN_TYPE_ROAMING,
+            PLAN_TYPE_TETHERING
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PlanType {}
+
+    /**
+     * The plan provides conventional cellular service.
+     * <p>
+     * This type is for standard mobile plans that offer data, voice, and messaging services over
+     * terrestrial cellular networks (e.g., 4G LTE, 5G).
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_CELLULAR = 1;
+
+    /**
+     * The plan provides satellite-based service.
+     * <p>
+     * This is used for plans that deliver connectivity via satellite.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_SATELLITE = 2;
+
+    /**
+     * The plan is designed for Internet of Things (IoT) devices.
+     * <p>
+     * These plans are typically tailored for devices with low data consumption and specific
+     * network requirements, such as smart sensors or asset trackers.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_IOT = 3;
+
+    /**
+     * The plan is a postpaid plan.
+     * <p>
+     * With a postpaid plan, the user consumes services and is billed at the end of each billing
+     * cycle for the usage incurred.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_POSTPAID = 4;
+
+    /**
+     * The plan is a prepaid plan.
+     * <p>
+     * With a prepaid plan, the user pays for services in advance, and the service is available
+     * until the paid balance is depleted or the service period expires.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_PREPAID = 5;
+
+    /**
+     * The plan is for data-only service.
+     * <p>
+     * This type indicates that the plan provides only mobile data connectivity and does not
+     * include traditional voice or SMS services. It is commonly used for tablets, mobile hotspots,
+     * or as a secondary data line.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_DATA_ONLY = 6;
+
+    /**
+     * The plan is a family plan, shared among multiple users.
+     * <p>
+     * This type indicates that data limits and usage may be pooled across several subscriptions.
+     * Data management applications can use this to provide a consolidated view of the shared usage
+     * for all members of the family plan.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_FAMILY = 7;
+
+    /**
+     * The plan is for business or enterprise customers.
+     * <p>
+     * This type indicates that the plan may include features tailored for corporate use, such as
+     * dedicated support, static IP addresses, or specific service-level agreements (SLAs).
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_BUSINESS = 8;
+
+    /**
+     * The plan is specifically for roaming services.
+     * <p>
+     * This type is used for plans or add-ons designed for international or out-of-network usage.
+     * It helps the system and applications to better inform the user about potential costs or
+     * usage restrictions while roaming.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_ROAMING = 9;
+
+
+    /**
+     * The plan provides a data allowance specifically for tethering or mobile hotspot usage.
+     * <p>
+     * This type is used for plans or add-ons that allocate a specific amount of data for use
+     * when the device is acting as a mobile hotspot. Many carriers offer a separate, often smaller,
+     * data cap for tethering, which is distinct from the on-device data limit. This allows the
+     * system and data management applications to track usage against this specific allowance
+     * and inform the user of their remaining hotspot data.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int PLAN_TYPE_TETHERING = 10;
+
     /**
      * The billing cycle of the subscription plan. It defines a series of time intervals
      * over which usage is measured and billed.
@@ -257,6 +373,7 @@ public final class SubscriptionPlan implements Parcelable {
      * @see #getDataUsageTime()
      * @see System#currentTimeMillis()
      */
+    @CurrentTimeMillisLong
     private final long mDataUsageTime;
 
     /**
@@ -273,7 +390,7 @@ public final class SubscriptionPlan implements Parcelable {
      */
     @NonNull
     @NetworkType
-    private final int[] mNetworkTypes;
+    private final Set<Integer> mNetworkTypes;
 
     /**
      * The status of this subscription plan.
@@ -295,6 +412,31 @@ public final class SubscriptionPlan implements Parcelable {
     private final int mSubscriptionStatus;
 
     /**
+     * The type of this subscription plan.
+     * <p>
+     * This indicates the type of the subscription, such as whether it is a cellular or satellite
+     * plan, postpaid or prepaid, or data-only. The type provides context for the plan's
+     * characteristics and can be used to inform the user about their subscription's nature.
+     * <p>
+     * The value will be a combination of the {@code PLAN_TYPE_*} constants.
+     *
+     * @see #getTypes()
+     * @see #PLAN_TYPE_CELLULAR
+     * @see #PLAN_TYPE_SATELLITE
+     * @see #PLAN_TYPE_IOT
+     * @see #PLAN_TYPE_POSTPAID
+     * @see #PLAN_TYPE_PREPAID
+     * @see #PLAN_TYPE_DATA_ONLY
+     * @see #PLAN_TYPE_FAMILY
+     * @see #PLAN_TYPE_BUSINESS
+     * @see #PLAN_TYPE_ROAMING
+     * @see #PLAN_TYPE_TETHERING
+     */
+    @NonNull
+    @PlanType
+    private final Set<Integer> mTypes;
+
+    /**
      * Creates a new SubscriptionPlan by initializing its fields from a {@link Builder}.
      * This constructor is private and is only intended to be called from the
      * {@link Builder#build()} method, which ensures that all plan properties are
@@ -310,8 +452,11 @@ public final class SubscriptionPlan implements Parcelable {
         this.mDataLimitBehavior = builder.mDataLimitBehavior;
         this.mDataUsageBytes = builder.mDataUsageBytes;
         this.mDataUsageTime = builder.mDataUsageTime;
-        this.mNetworkTypes = builder.mNetworkTypes;
+        this.mNetworkTypes = Arrays.stream(builder.mNetworkTypes)
+                .boxed().collect(Collectors.toUnmodifiableSet());
         this.mSubscriptionStatus = builder.mSubscriptionStatus;
+        this.mTypes = Arrays.stream(builder.mTypes)
+                .boxed().collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -327,8 +472,11 @@ public final class SubscriptionPlan implements Parcelable {
         mDataLimitBehavior = in.readInt();
         mDataUsageBytes = in.readLong();
         mDataUsageTime = in.readLong();
-        mNetworkTypes = in.createIntArray();
+        mNetworkTypes = Arrays.stream(in.createIntArray())
+                .boxed().collect(Collectors.toUnmodifiableSet());
         mSubscriptionStatus = in.readInt();
+        mTypes = Arrays.stream(in.createIntArray())
+                .boxed().collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
@@ -345,50 +493,105 @@ public final class SubscriptionPlan implements Parcelable {
         dest.writeInt(mDataLimitBehavior);
         dest.writeLong(mDataUsageBytes);
         dest.writeLong(mDataUsageTime);
-        dest.writeIntArray(mNetworkTypes);
+        dest.writeIntArray(mNetworkTypes.stream().mapToInt(Integer::intValue).toArray());
         dest.writeInt(mSubscriptionStatus);
+        dest.writeIntArray(mTypes.stream().mapToInt(Integer::intValue).toArray());
     }
 
     @Override
     public String toString() {
         return "SubscriptionPlan{"
                 + "cycleRule=" + mCycleRule
-                + " title=" + mTitle
-                + " summary=" + mSummary
-                + " dataLimitBytes=" + mDataLimitBytes
-                + " dataLimitBehavior=" + mDataLimitBehavior
-                + " dataUsageBytes=" + mDataUsageBytes
-                + " dataUsageTime=" + mDataUsageTime
-                + " networkTypes=" + Arrays.toString(mNetworkTypes)
-                + " subscriptionStatus=" + mSubscriptionStatus
+                + ", title=" + mTitle
+                + ", summary=" + mSummary
+                + ", dataLimitBytes=" + mDataLimitBytes
+                + ", dataLimitBehavior=" + limitBehaviorToString(mDataLimitBehavior)
+                + ", dataUsageBytes=" + mDataUsageBytes
+                + ", dataUsageTime=" + timeToString(mDataUsageTime)
+                + ", networkTypes=" + mNetworkTypes.stream()
+                .map(TelephonyManager::getNetworkTypeName)
+                .sorted() // Sort for consistent output
+                .collect(Collectors.joining(", ", "[", "]"))
+                + ", subscriptionStatus=" + subscriptionStatusToString(mSubscriptionStatus)
+                + ", types=" + mTypes.stream()
+                .map(SubscriptionPlan::planTypeToString)
+                .sorted() // Sort for consistent output
+                .collect(Collectors.joining(", ", "[", "]"))
                 + "}";
+    }
+
+    private static String timeToString(@CurrentTimeMillisLong long time) {
+        if (time == TIME_UNKNOWN) {
+            return "UNKNOWN";
+        }
+        // Instant represents a moment on the UTC timeline, and its default
+        // toString() is the standard ISO 8601 format.
+        return Instant.ofEpochMilli(time).toString();
+    }
+
+    private static String limitBehaviorToString(@LimitBehavior int behavior) {
+        return switch (behavior) {
+            case LIMIT_BEHAVIOR_UNKNOWN -> "UNKNOWN";
+            case LIMIT_BEHAVIOR_DISABLED -> "DISABLED";
+            case LIMIT_BEHAVIOR_BILLED -> "BILLED";
+            case LIMIT_BEHAVIOR_THROTTLED -> "THROTTLED";
+            default -> String.valueOf(behavior);
+        };
+    }
+
+    private static String subscriptionStatusToString(@SubscriptionStatus int status) {
+        return switch (status) {
+            case SUBSCRIPTION_STATUS_UNKNOWN -> "UNKNOWN";
+            case SUBSCRIPTION_STATUS_ACTIVE -> "ACTIVE";
+            case SUBSCRIPTION_STATUS_INACTIVE -> "INACTIVE";
+            case SUBSCRIPTION_STATUS_TRIAL -> "TRIAL";
+            case SUBSCRIPTION_STATUS_SUSPENDED -> "SUSPENDED";
+            default -> String.valueOf(status);
+        };
+    }
+
+    private static String planTypeToString(@PlanType int type) {
+        return switch (type) {
+            case PLAN_TYPE_CELLULAR -> "CELLULAR";
+            case PLAN_TYPE_SATELLITE -> "SATELLITE";
+            case PLAN_TYPE_IOT -> "IOT";
+            case PLAN_TYPE_POSTPAID -> "POSTPAID";
+            case PLAN_TYPE_PREPAID -> "PREPAID";
+            case PLAN_TYPE_DATA_ONLY -> "DATA_ONLY";
+            case PLAN_TYPE_FAMILY -> "FAMILY";
+            case PLAN_TYPE_BUSINESS -> "BUSINESS";
+            case PLAN_TYPE_ROAMING -> "ROAMING";
+            case PLAN_TYPE_TETHERING -> "TETHERING";
+            default -> String.valueOf(type);
+        };
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mCycleRule, mTitle, mSummary, mDataLimitBytes, mDataLimitBehavior,
-                mDataUsageBytes, mDataUsageTime, Arrays.hashCode(mNetworkTypes),
-                mSubscriptionStatus);
+        return Objects.hash(mCycleRule, mTitle, mSummary, mDataLimitBytes,
+                mDataLimitBehavior, mDataUsageBytes, mDataUsageTime, mNetworkTypes,
+                mSubscriptionStatus, mTypes);
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof SubscriptionPlan other) {
-            return Objects.equals(mCycleRule, other.mCycleRule)
-                    && Objects.equals(mTitle, other.mTitle)
-                    && Objects.equals(mSummary, other.mSummary)
-                    && mDataLimitBytes == other.mDataLimitBytes
+            return mDataLimitBytes == other.mDataLimitBytes
                     && mDataLimitBehavior == other.mDataLimitBehavior
                     && mDataUsageBytes == other.mDataUsageBytes
                     && mDataUsageTime == other.mDataUsageTime
-                    && Arrays.equals(mNetworkTypes, other.mNetworkTypes)
-                    && mSubscriptionStatus == other.mSubscriptionStatus;
+                    && mSubscriptionStatus == other.mSubscriptionStatus
+                    && Objects.equals(mCycleRule, other.mCycleRule)
+                    && Objects.equals(mTitle, other.mTitle)
+                    && Objects.equals(mSummary, other.mSummary)
+                    && Objects.equals(mNetworkTypes, other.mNetworkTypes)
+                    && Objects.equals(mTypes, other.mTypes);
         }
         return false;
     }
 
     @NonNull
-    public static final Parcelable.Creator<SubscriptionPlan> CREATOR = new Parcelable.Creator<>() {
+    public static final Creator<SubscriptionPlan> CREATOR = new Creator<>() {
         @Override
         public SubscriptionPlan createFromParcel(Parcel source) {
             return new SubscriptionPlan(source);
@@ -537,7 +740,7 @@ public final class SubscriptionPlan implements Parcelable {
     @NonNull
     @NetworkType
     public int[] getNetworkTypes() {
-        return Arrays.copyOf(mNetworkTypes, mNetworkTypes.length);
+        return mNetworkTypes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     /**
@@ -574,6 +777,40 @@ public final class SubscriptionPlan implements Parcelable {
     @SubscriptionStatus
     public int getSubscriptionStatus() {
         return mSubscriptionStatus;
+    }
+
+    /**
+     * Returns the characteristics of this subscription plan as a set of type constants.
+     * A plan can have multiple types that describe its nature. For example, a plan might be both a
+     * {@link #PLAN_TYPE_CELLULAR} and a {@link #PLAN_TYPE_POSTPAID} plan.
+     *
+     * <p>The returned set allows for efficient checks of plan characteristics using
+     * {@link Set#contains(Object)} and {@link Set#containsAll(java.util.Collection)}.
+     *
+     * <p>The types can be used to understand the plan's attributes and tailor an application's
+     * behavior. For instance, a data management app could display different UI elements for a
+     * {@link #PLAN_TYPE_PREPAID} versus a {@link #PLAN_TYPE_POSTPAID} plan.
+     *
+     * @return An unmodifiable {@link Set} of plan type constants, for example
+     * {@link #PLAN_TYPE_CELLULAR} or {@link #PLAN_TYPE_DATA_ONLY}. The set will be empty if no
+     * types are associated with the plan.
+     *
+     * @see #PLAN_TYPE_CELLULAR
+     * @see #PLAN_TYPE_SATELLITE
+     * @see #PLAN_TYPE_IOT
+     * @see #PLAN_TYPE_POSTPAID
+     * @see #PLAN_TYPE_PREPAID
+     * @see #PLAN_TYPE_DATA_ONLY
+     * @see #PLAN_TYPE_FAMILY
+     * @see #PLAN_TYPE_BUSINESS
+     * @see #PLAN_TYPE_ROAMING
+     * @see #PLAN_TYPE_TETHERING
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    @NonNull
+    @PlanType
+    public Set<Integer> getTypes() {
+        return Collections.unmodifiableSet(mTypes);
     }
 
     /**
@@ -703,6 +940,32 @@ public final class SubscriptionPlan implements Parcelable {
          */
         @SubscriptionStatus
         private int mSubscriptionStatus = SUBSCRIPTION_STATUS_UNKNOWN;
+
+        /**
+         * The type of this subscription plan.
+         * <p>
+         * This indicates the type of the subscription, such as whether it is a cellular or
+         * satellite plan, postpaid or prepaid, or data-only. The type provides context for the
+         * plan's characteristics and can be used to inform the user about their subscription's
+         * nature.
+         * <p>
+         * The value will be a combination of the {@code PLAN_TYPE_*} constants.
+         *
+         * @see #getTypes()
+         * @see #PLAN_TYPE_CELLULAR
+         * @see #PLAN_TYPE_SATELLITE
+         * @see #PLAN_TYPE_IOT
+         * @see #PLAN_TYPE_POSTPAID
+         * @see #PLAN_TYPE_PREPAID
+         * @see #PLAN_TYPE_DATA_ONLY
+         * @see #PLAN_TYPE_FAMILY
+         * @see #PLAN_TYPE_BUSINESS
+         * @see #PLAN_TYPE_ROAMING
+         * @see #PLAN_TYPE_TETHERING
+         */
+        @NonNull
+        @PlanType
+        private int[] mTypes = new int[0];
 
         /**
          * Create a {@link Builder} to build a {@link SubscriptionPlan}.
@@ -886,6 +1149,31 @@ public final class SubscriptionPlan implements Parcelable {
                         "Subscription status must be defined with a valid value");
             }
             mSubscriptionStatus = subscriptionStatus;
+            return this;
+        }
+
+        /**
+         * Set the types of this subscription plan. A plan can have multiple types, and this method
+         * will return all that are applicable. For example, a plan could be both a cellular plan
+         * and a postpaid plan.
+         *
+         * @return An array containing the applicable {@code PLAN_TYPE_} constants.
+         *
+         * @see #PLAN_TYPE_CELLULAR
+         * @see #PLAN_TYPE_SATELLITE
+         * @see #PLAN_TYPE_IOT
+         * @see #PLAN_TYPE_POSTPAID
+         * @see #PLAN_TYPE_PREPAID
+         * @see #PLAN_TYPE_DATA_ONLY
+         * @see #PLAN_TYPE_FAMILY
+         * @see #PLAN_TYPE_BUSINESS
+         * @see #PLAN_TYPE_ROAMING
+         * @see #PLAN_TYPE_TETHERING
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setTypes(@NonNull @PlanType int[] types) {
+            mTypes = Arrays.copyOf(types, types.length);
             return this;
         }
     }
