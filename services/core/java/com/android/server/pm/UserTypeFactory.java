@@ -469,7 +469,7 @@ public final class UserTypeFactory {
                 .setMaxAllowed(1)
                 .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions())
                 .setActivitiesAllowlist(android.multiuser.Flags.hsuAllowlistActivities()
-                        ? com.android.internal.R.array.config_hsu_allowlist_activities
+                        ? com.android.internal.R.array.hsu_allowlist_activities
                         : Resources.ID_NULL);
     }
 
