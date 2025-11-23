@@ -25,7 +25,9 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Slog;
 
@@ -40,6 +42,8 @@ import android.util.Slog;
 public class ContentRestrictionAppService extends Service {
     private static final String TAG = "ContentRestrictionAppService";
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+
     /**
      * Service action: Action for a service that the {@code
      * android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
@@ -53,11 +57,13 @@ public class ContentRestrictionAppService extends Service {
     private final IContentRestrictionAppService mBinder = new IContentRestrictionAppService.Stub() {
         @Override
         public void onContentRestrictionEnabled(boolean enabled) {
-            if (enabled) {
-                ContentRestrictionAppService.this.onContentRestrictionEnabled();
-            } else {
-                ContentRestrictionAppService.this.onContentRestrictionDisabled();
-            }
+            mHandler.post(() -> {
+                if (enabled) {
+                    ContentRestrictionAppService.this.onContentRestrictionEnabled();
+                } else {
+                    ContentRestrictionAppService.this.onContentRestrictionDisabled();
+                }
+            });
         }
 
         @Override
