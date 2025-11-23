@@ -173,7 +173,7 @@ import com.android.systemui.qs.panels.ui.compose.EditTileListState.Companion.INV
 import com.android.systemui.qs.panels.ui.compose.dragAndDropRemoveZone
 import com.android.systemui.qs.panels.ui.compose.dragAndDropTileList
 import com.android.systemui.qs.panels.ui.compose.dragAndDropTileSource
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveTileCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileArrangementPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ToggleTargetSize
@@ -921,7 +921,7 @@ fun LazyGridScope.EditTiles(
                                 MaterialTheme.colorScheme.secondary.copy(
                                     alpha = EditModeTileDefaults.PLACEHOLDER_ALPHA
                                 ),
-                            shape = RoundedCornerShape(InactiveCornerRadius),
+                            shape = RoundedCornerShape(InactiveTileCornerRadius),
                         )
                     )
                 } else {
@@ -1146,11 +1146,11 @@ private fun LazyGridItemScope.TileGridCell(
                 }
                 .borderOnFocus(
                     MaterialTheme.colorScheme.secondary,
-                    CornerSize(InactiveCornerRadius),
+                    CornerSize(InactiveTileCornerRadius),
                 )
                 .thenIf(isSelectable) { draggableModifier }
                 .tileBackground(
-                    cornerRadius = InactiveCornerRadius,
+                    cornerRadius = InactiveTileCornerRadius,
                     alpha = { containerAlpha },
                     color = { colors.background },
                 )
@@ -1257,9 +1257,9 @@ private fun AvailableTileGridCell(
                     .fillMaxSize()
                     .borderOnFocus(
                         MaterialTheme.colorScheme.secondary,
-                        CornerSize(InactiveCornerRadius),
+                        CornerSize(InactiveTileCornerRadius),
                     )
-                    .tileBackground(cornerRadius = InactiveCornerRadius) { colors.background }
+                    .tileBackground(cornerRadius = InactiveTileCornerRadius) { colors.background }
                     .clickable(
                         enabled = !cell.isCurrent,
                         onClick = onClick,

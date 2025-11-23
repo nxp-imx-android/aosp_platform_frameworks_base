@@ -126,7 +126,7 @@ fun LargeTileContent(
     modifier: Modifier = Modifier,
     isVisible: () -> Boolean = { true },
     accessibilityUiState: AccessibilityUiState? = null,
-    iconShape: RoundedCornerShape = RoundedCornerShape(CommonTileDefaults.InactiveCornerRadius),
+    iconShape: RoundedCornerShape = RoundedCornerShape(CommonTileDefaults.InactiveIconCornerRadius),
     textScale: () -> Float = { 1f },
     toggleClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -418,10 +418,15 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_icon_size)
 
-    val InactiveCornerRadius: Dp
+    val InactiveIconCornerRadius: Dp
         @Composable
         @ReadOnlyComposable
-        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_corner_radius)
+        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_icon_corner_radius)
+
+    val InactiveTileCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_tile_corner_radius)
 
     val LargeTileIconSize: Dp
         @Composable

@@ -91,7 +91,8 @@ import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveIconCornerRadius
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveTileCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelMoreDetails
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
@@ -212,7 +213,7 @@ fun ContentScope.Tile(
 
             val animatedCornerRadius by animateDpAsState(TileDefaults.tileRadius(uiState))
 
-            val inactiveCornerRadius = InactiveCornerRadius
+            val inactiveCornerRadius = InactiveIconCornerRadius
             surfaceRevealModifier =
                 Modifier.verticalTactileSurfaceReveal(
                     deltaY = marginBottom,
@@ -615,8 +616,8 @@ private object TileDefaults {
     fun iconRadius(uiState: TileUiState): Dp {
         return when (uiState.visualState) {
             STATE_ACTIVE -> ActiveIconCornerRadius
-            STATE_INACTIVE -> InactiveCornerRadius
-            else -> InactiveCornerRadius
+            STATE_INACTIVE -> InactiveIconCornerRadius
+            else -> InactiveIconCornerRadius
         }
     }
 
@@ -624,8 +625,8 @@ private object TileDefaults {
     fun tileRadius(uiState: TileUiState): Dp {
         return when (uiState.visualState) {
             STATE_ACTIVE -> ActiveTileCornerRadius
-            STATE_INACTIVE -> InactiveCornerRadius
-            else -> InactiveCornerRadius
+            STATE_INACTIVE -> InactiveTileCornerRadius
+            else -> InactiveTileCornerRadius
         }
     }
 
