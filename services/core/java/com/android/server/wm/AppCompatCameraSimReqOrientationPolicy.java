@@ -41,7 +41,6 @@ import android.content.res.CompatibilityInfo;
 import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.Surface;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -110,9 +109,8 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     }
 
     static boolean isPolicyEnabled(@NonNull DisplayContent displayContent) {
-        return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                && (DesktopModeHelper.canEnterDesktopMode(displayContent.mWmService.mContext)
-                        || Flags.cameraCompatUnifyCameraPolicies())
+        return (DesktopModeHelper.canEnterDesktopMode(displayContent.mWmService.mContext)
+                || Flags.cameraCompatUnifyCameraPolicies())
                 && displayContent.mWmService.mAppCompatConfiguration
                         .isCameraCompatSimReqOrientationTreatmentEnabled();
     }

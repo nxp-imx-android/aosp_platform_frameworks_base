@@ -5298,7 +5298,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraCompatAspectRatioAppliedForFixedOrientationCameraActivities() {
         // Needed to create camera compat policy in DisplayContent.
         allowDesktopMode();
@@ -5324,7 +5323,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraCompatAspectRatioForFixedOrientationCameraActivitiesPortraitWindow() {
         // Needed to create camera compat policy in DisplayContent.
         allowDesktopMode();
@@ -5350,7 +5348,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraCompatAspectRatioAppliedInsteadOfDefaultAspectRatio() {
         // Needed to create camera compat policy in DisplayContent.
         allowDesktopMode();
@@ -5380,7 +5377,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraCompatAspectRatio_defaultAspectRatioAppliedWhenGreater() {
         // Needed to create camera compat policy in DisplayContent.
         allowDesktopMode();

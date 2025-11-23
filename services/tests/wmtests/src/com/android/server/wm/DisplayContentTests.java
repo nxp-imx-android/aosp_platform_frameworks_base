@@ -93,7 +93,6 @@ import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.server.wm.WindowTracingLogLevel.ALL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
-import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API;
 import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
@@ -3310,25 +3309,14 @@ public class DisplayContentTests extends WindowTestsBase {
     verify(mWm.mUmInternal, never()).getUserAssignedToDisplay(displayId);
   }
 
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @Test
     public void cameraCompatFreeformFlagEnabled_cameraCompatFreeformPolicyNotNull() {
         doReturn(true).when(() ->
                 DesktopModeHelper.canEnterDesktopMode(any(Context.class)));
 
         assertTrue(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
-    }
+  }
 
-    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    @Test
-    public void cameraCompatFreeformFlagNotEnabled_cameraCompatFreeformPolicyIsNull() {
-        doReturn(true).when(() ->
-                DesktopModeHelper.canEnterDesktopMode(any(Context.class)));
-
-        assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
-    }
-
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags({FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     @Test
     public void desktopWindowingFlagNotEnabled_cameraCompatFreeformPolicyIsNull() {

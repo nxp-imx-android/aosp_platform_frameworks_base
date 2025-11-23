@@ -43,8 +43,6 @@ import java.util.function.BooleanSupplier;
 public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
-    ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION(
-            Flags::enableCameraCompatForDesktopWindowing, true),
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, true),

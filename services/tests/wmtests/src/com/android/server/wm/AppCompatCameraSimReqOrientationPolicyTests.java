@@ -50,7 +50,6 @@ import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX;
-import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -118,18 +117,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     private static final String CAMERA_ID_1 = "camera-1";
 
     @Test
-    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testFeatureDisabled_cameraCompatSimReqOrientationPolicyNotCreated() {
-        runTestScenario((robot) -> {
-            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
-
-            robot.checkCameraCompatPolicyNotCreated();
-        });
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION})
     public void testIsCameraRunningAndWindowingModeEligible_disabledViaOverride_returnsFalse() {
         runTestScenario((robot) -> {
@@ -142,7 +129,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testIsCameraRunningAndWindowingModeEligible_cameraNotRunning_returnsFalse() {
         runTestScenario((robot) -> {
@@ -153,7 +139,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraRunningAndWindowingModeEligible_fullscreenAndNotAllowed_returnsFalse() {
@@ -167,7 +152,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testIsCameraRunningAndWindowingModeEligible_freeformCameraRunning_true() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -179,8 +163,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraRunningAndWindowingModeEligible_splitScreenCameraRunning_true() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT, WINDOWING_MODE_MULTI_WINDOW);
@@ -192,8 +175,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraRunningAndWindowingModeEligible_fullscreenEnabled_true() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT, WINDOWING_MODE_FULLSCREEN);
@@ -205,8 +187,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraRunningAndWindowingModeEligible_ignoreOrientationReqFalse_false() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT, WINDOWING_MODE_FULLSCREEN);
@@ -219,7 +200,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testIsFreeformLetterboxingForCameraAllowed_notOptedOut_returnsTrue() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -231,7 +211,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testIsFreeformLetterboxingForCameraAllowed_cameraNotRunning_returnsFalse() {
         runTestScenario((robot) -> {
@@ -242,7 +221,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testIsFreeformLetterboxingForCameraAllowed_notFreeformWindowing_returnsFalse() {
@@ -256,7 +234,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testFullscreen_flagToUnifyNotEnabled_doesNotActivateCameraCompatMode() {
@@ -271,8 +248,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testFullscreen_flagToUnifyEnabled_activatesCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -290,8 +266,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
+    @EnableFlags({FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
             FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX})
     public void testOrientationUnspecified_doesNotActivateCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -306,7 +281,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testNoCameraConnection_doesNotActivateCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -317,7 +291,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraConnected_deviceInPortrait_portraitCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -336,7 +309,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraConnected_deviceInLandscape_portraitCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -355,7 +327,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraConnected_deviceInPortrait_landscapeCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -374,7 +345,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraConnected_deviceInLandscape_landscapeCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -393,7 +363,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraOpenedForDifferentPackage_notInCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -406,7 +375,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testShouldApplyCameraCompatFreeformTreatment_notOptedOut_returnsTrue() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -418,7 +386,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testGetCameraCompatAspectRatio_activityNotInCameraCompat_returnsDefaultAspRatio() {
         runTestScenario((robot) -> {
@@ -432,7 +399,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testGetCameraCompatAspectRatio_activityInCameraCompat_returnsConfigAspectRatio() {
         runTestScenario((robot) -> {
@@ -448,7 +414,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testGetCameraCompatAspectRatio_inCameraCompatPerAppOverride_returnDefAspectRatio() {
         runTestScenario((robot) -> {
@@ -464,7 +429,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_portraitActivity_sendsDisplayRotationInCompatibilityInfo() {
         runTestScenario((robot) -> {
@@ -480,8 +444,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_portraitActivity90_sendsRotateAndCrop270InCompatibilityInfo() {
         runTestScenario((robot) -> {
@@ -497,8 +460,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_portraitActivity270_sendsRotateAndCrop90InCompatibilityInfo() {
         runTestScenario((robot) -> {
@@ -514,7 +476,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_portraitActivity270_sendsShouldLetterboxInCompatibilityInfo() {
         runTestScenario((robot) -> {
@@ -530,7 +491,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_portraitActivity270_sendsNoSensorChangeInCompatibilityInfo() {
         runTestScenario((robot) -> {
@@ -547,7 +507,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_landscapeActivity_sandboxesDisplayRotationAndUpdatesApp() {
         runTestScenario((robot) -> {
@@ -563,8 +522,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_externalDisplayFixedOrientation_fullTreatment() {
         runTestScenario((robot) -> {
@@ -593,8 +551,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
+    @EnableFlags(FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_landscapeDisplay_sandboxedToPortrait() {
         runTestScenario((robot) -> {
@@ -619,8 +576,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
+    @EnableFlags(FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_neededRotateAndCropNotSupported_noCameraCompatMode() {
         runTestScenario((robot) -> {
@@ -639,8 +595,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_fixedOrientExtDisplRotateAndCropNotSupported_sandbDispRotOnly() {
         runTestScenario((robot) -> {
@@ -671,8 +626,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOnCameraOpened_externalDisplayResponsive_sandboxDisplayRotationOnly() {
         runTestScenario((robot) -> {
@@ -700,7 +654,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testCameraClosed_activityDetachedFromProcess_handlesGracefully() {
         runTestScenario((robot) -> {
