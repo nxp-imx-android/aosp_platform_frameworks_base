@@ -196,11 +196,6 @@ public class DisplayManagerFlags {
             Flags::minmodeCapBrightnessEnabled
     );
 
-    private final FlagState mSyntheticModesV2 = new FlagState(
-            Flags.FLAG_ENABLE_SYNTHETIC_MODES_V2,
-            Flags::enableSyntheticModesV2
-    );
-
     private final FlagState mIsDisplayMirrorInLockTaskModeEnabled = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE,
             DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
@@ -394,10 +389,6 @@ public class DisplayManagerFlags {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
     }
 
-    public boolean isSyntheticModesV2Enabled() {
-        return mSyntheticModesV2.isEnabled();
-    }
-
     public boolean isDisplayMirrorInLockTaskModeEnabled() {
         return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
     }
@@ -445,7 +436,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
-        pw.println(" " + mSyntheticModesV2);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
         pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);
     }

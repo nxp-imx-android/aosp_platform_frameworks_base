@@ -353,16 +353,6 @@ flag {
 }
 
 flag {
-    name: "enable_synthetic_modes_v2"
-    namespace: "display_manager"
-    description: "Added synthetic mode flags, parentId. Construction moved to LocalDisplay "
-    bug: "428843411"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_display_mirror_in_lock_task_mode"
     namespace: "lse_desktop_experience"
     description: "Starts mirroring on the connected display if the device is in lock task mode."

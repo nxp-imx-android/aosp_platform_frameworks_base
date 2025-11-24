@@ -67,7 +67,6 @@ import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.DisplayIdProducer;
 import com.android.server.display.layout.Layout;
-import com.android.server.display.mode.SyntheticModeManager;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.utils.FoldSettingProvider;
@@ -229,7 +228,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private boolean mBootCompleted = false;
     private boolean mIsInteractive;
     private final DisplayManagerFlags mFlags;
-    private final SyntheticModeManager mSyntheticModeManager;
     private final Context mContext;
     private final DisplayGroupAllocator mDisplayGroupAllocator;
     private final Predicate<DisplayInfo> mIsDisplayAllowedInTopology;
@@ -245,7 +243,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 new DeviceStateToLayoutMap(
                         (isDefault) -> isDefault ? DEFAULT_DISPLAY
                                 : sNextNonDefaultDisplayId++, stableEdidsFlag),
-                flags, new SyntheticModeManager(flags), new DisplayGroupAllocator(context),
+                flags, new DisplayGroupAllocator(context),
                 isDisplayAllowedInTopology, displayInfoCache);
     }
 
@@ -253,8 +251,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             @NonNull DisplayDeviceRepository repo,
             @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
             @NonNull Handler handler, @NonNull DeviceStateToLayoutMap deviceStateToLayoutMap,
-            DisplayManagerFlags flags, SyntheticModeManager syntheticModeManager,
-            DisplayGroupAllocator displayGroupAllocator,
+            DisplayManagerFlags flags, DisplayGroupAllocator displayGroupAllocator,
             Predicate<DisplayInfo> isDisplayAllowedInTopology,
             CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> displayInfoCache) {
         mSyncRoot = syncRoot;
@@ -276,7 +273,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         mDisplayDeviceRepo.addListener(this);
         mDeviceStateToLayoutMap = deviceStateToLayoutMap;
         mFlags = flags;
-        mSyntheticModeManager = syntheticModeManager;
         mDisplayGroupAllocator = displayGroupAllocator;
         mIsDisplayAllowedInTopology = isDisplayAllowedInTopology;
         mDisplayInfoCache = displayInfoCache;
@@ -888,7 +884,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             mTempDisplayInfo.copyFrom(display.getDisplayInfoLocked());
             display.getNonOverrideDisplayInfoLocked(mTempNonOverrideDisplayInfo);
 
-            display.updateLocked(mDisplayDeviceRepo, mSyntheticModeManager);
+            display.updateLocked(mDisplayDeviceRepo);
             assignDisplayGroupLocked(display);
 
             final DisplayInfo newDisplayInfo = display.getDisplayInfoLocked();
@@ -1406,9 +1402,9 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private LogicalDisplay createNewLogicalDisplayLocked(DisplayDevice device, int displayId) {
         final int layerStack = assignLayerStackLocked(displayId);
         final LogicalDisplay display = new LogicalDisplay(displayId, layerStack, device,
-                mFlags.isSyncedResolutionSwitchEnabled(), mFlags.isSyntheticModesV2Enabled(),
+                mFlags.isSyncedResolutionSwitchEnabled(),
                 mFlags.isSizeOverrideForExternalDisplaysEnabled(), mDisplayInfoCache);
-        display.updateLocked(mDisplayDeviceRepo, mSyntheticModeManager);
+        display.updateLocked(mDisplayDeviceRepo);
 
         final DisplayInfo info = display.getDisplayInfoLocked();
         if (info.type == Display.TYPE_INTERNAL && mDeviceStateToLayoutMap.size() > 1) {

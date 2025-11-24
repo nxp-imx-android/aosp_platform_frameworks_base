@@ -150,9 +150,6 @@ public class DisplayModeDirector {
 
     // A map from the display ID to the supported modes on that display.
     private SparseArray<Display.Mode[]> mSupportedModesByDisplay;
-    // A map from the display ID to the app supported modes on that display, might be different from
-    // mSupportedModesByDisplay for VRR displays, used in app mode requests.
-    private SparseArray<Display.Mode[]> mAppSupportedModesByDisplay;
     // A map from the display ID to the default mode of that display.
     private SparseArray<Display.Mode> mDefaultModeByDisplay;
     // a map from display id to display device config
@@ -206,7 +203,6 @@ public class DisplayModeDirector {
         mInjector = injector;
         mVotesStatsReporter = injector.getVotesStatsReporter();
         mSupportedModesByDisplay = new SparseArray<>();
-        mAppSupportedModesByDisplay = new SparseArray<>();
         mDefaultModeByDisplay = new SparseArray<>();
         mHasArrSupport = new SparseBooleanArray();
         mAppRequestObserver = new AppRequestObserver(displayManagerFlags);
@@ -571,12 +567,6 @@ public class DisplayModeDirector {
                 final Display.Mode[] modes = mSupportedModesByDisplay.valueAt(i);
                 pw.println("    " + id + " -> " + Arrays.toString(modes));
             }
-            pw.println("  mAppSupportedModesByDisplay:");
-            for (int i = 0; i < mAppSupportedModesByDisplay.size(); i++) {
-                final int id = mAppSupportedModesByDisplay.keyAt(i);
-                final Display.Mode[] modes = mAppSupportedModesByDisplay.valueAt(i);
-                pw.println("    " + id + " -> " + Arrays.toString(modes));
-            }
             pw.println("  mDefaultModeByDisplay:");
             for (int i = 0; i < mDefaultModeByDisplay.size(); i++) {
                 final int id = mDefaultModeByDisplay.keyAt(i);
@@ -647,10 +637,6 @@ public class DisplayModeDirector {
         mSupportedModesByDisplay = supportedModesByDisplay;
     }
 
-    @VisibleForTesting
-    void injectAppSupportedModesByDisplay(SparseArray<Display.Mode[]> appSupportedModesByDisplay) {
-        mAppSupportedModesByDisplay = appSupportedModesByDisplay;
-    }
 
     @VisibleForTesting
     void injectDefaultModeByDisplay(SparseArray<Display.Mode> defaultModeByDisplay) {
@@ -1352,7 +1338,7 @@ public class DisplayModeDirector {
 
         @GuardedBy("mLock")
         private Display.Mode findAppModeByIdLocked(int displayId, int modeId) {
-            Display.Mode[] modes = mAppSupportedModesByDisplay.get(displayId);
+            Display.Mode[] modes = mSupportedModesByDisplay.get(displayId);
             if (modes == null) {
                 return null;
             }
@@ -1445,7 +1431,6 @@ public class DisplayModeDirector {
         public void onDisplayRemoved(int displayId) {
             synchronized (mLock) {
                 mSupportedModesByDisplay.remove(displayId);
-                mAppSupportedModesByDisplay.remove(displayId);
                 mDefaultModeByDisplay.remove(displayId);
                 mDisplayDeviceConfigByDisplay.remove(displayId);
                 mSettingsObserver.removeRefreshRateSetting(displayId);
@@ -1649,11 +1634,6 @@ public class DisplayModeDirector {
             synchronized (mLock) {
                 if (!Arrays.equals(mSupportedModesByDisplay.get(displayId), info.supportedModes)) {
                     mSupportedModesByDisplay.put(displayId, info.supportedModes);
-                    changed = true;
-                }
-                if (!Arrays.equals(mAppSupportedModesByDisplay.get(displayId),
-                        info.appsSupportedModes)) {
-                    mAppSupportedModesByDisplay.put(displayId, info.appsSupportedModes);
                     changed = true;
                 }
                 if (!Objects.equals(mDefaultModeByDisplay.get(displayId), info.getDefaultMode())) {

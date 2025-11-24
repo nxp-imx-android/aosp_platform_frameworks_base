@@ -55,10 +55,9 @@ public class DisplayModeFactory {
 
     @SuppressLint("WrongConstant")
     static Display.Mode createMode(SurfaceControl.DisplayMode mode, float[] alternativeRefreshRates,
-            boolean hasArrSupport, boolean syntheticModesV2Enabled, boolean sizeOverrideEnabled) {
+            boolean hasArrSupport, boolean sizeOverrideEnabled) {
         int flags = 0;
-        if (syntheticModesV2Enabled
-                && hasArrSupport && mode.peakRefreshRate <= SYNTHETIC_MODE_HIGH_BOUNDARY) {
+        if (hasArrSupport && mode.peakRefreshRate <= SYNTHETIC_MODE_HIGH_BOUNDARY) {
             flags |= Display.Mode.FLAG_ARR_RENDER_RATE;
         }
 
@@ -75,11 +74,7 @@ public class DisplayModeFactory {
 
     @SuppressWarnings("MixedMutabilityReturnType")
     static List<DisplayModeRecord> createArrSyntheticModes(List<DisplayModeRecord> records,
-            boolean hasArrSupport, boolean syntheticModesV2Enabled) {
-        if (!syntheticModesV2Enabled) {
-            return Collections.emptyList();
-        }
-
+            boolean hasArrSupport) {
         if (!hasArrSupport) {
             return Collections.emptyList();
         }

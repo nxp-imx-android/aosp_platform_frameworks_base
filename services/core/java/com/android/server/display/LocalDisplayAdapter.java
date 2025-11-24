@@ -323,7 +323,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             int activeSfDisplayModeId = dynamicInfo.activeDisplayModeId;
             float renderFrameRate = dynamicInfo.renderFrameRate;
             boolean hasArrSupport = dynamicInfo.hasArrSupport;
-            boolean syntheticModesV2Enabled = getFeatureFlags().isSyntheticModesV2Enabled();
             boolean sizeOverrideEnabled =
                     getFeatureFlags().isSizeOverrideForExternalDisplaysEnabled() && !isInternal;
 
@@ -378,7 +377,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         alternativeRates[j] = alternativeRefreshRates.get(j);
                     }
                     Display.Mode displayMode = DisplayModeFactory.createMode(mode, alternativeRates,
-                            hasArrSupport, syntheticModesV2Enabled, sizeOverrideEnabled);
+                            hasArrSupport, sizeOverrideEnabled);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
                 }
@@ -455,7 +454,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             }
             List<DisplayModeRecord> syntheticModes = new ArrayList<>();
             syntheticModes.addAll(DisplayModeFactory
-                    .createArrSyntheticModes(records, hasArrSupport, syntheticModesV2Enabled));
+                    .createArrSyntheticModes(records, hasArrSupport));
             if (!isInternal) {
                 syntheticModes.addAll(DisplayModeFactory
                         .createAnisotropyCorrectedModes(records, modeIdToSfMode));
