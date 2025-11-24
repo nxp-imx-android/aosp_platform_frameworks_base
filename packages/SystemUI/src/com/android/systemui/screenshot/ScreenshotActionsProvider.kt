@@ -127,26 +127,7 @@ constructor(
             }
         }
 
-        actionsCallback.provideActionButton(
-            ActionButtonAppearance(
-                AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_edit),
-                context.resources.getString(R.string.screenshot_edit_label),
-                context.resources.getString(R.string.screenshot_edit_description),
-            ),
-            showDuringEntrance = true,
-        ) {
-            debugLog(LogConfig.DEBUG_ACTIONS) { "Edit tapped" }
-            uiEventLogger.log(SCREENSHOT_EDIT_TAPPED, 0, request.packageNameString)
-            onDeferrableActionTapped { result ->
-                actionExecutor.startSharedTransition(
-                    actionIntentCreator.createEdit(result.uri),
-                    result.user,
-                    true,
-                )
-            }
-        }
-
-        if (isLargeScreenCaptureEnabled()) {
+        if (useLargeScreenCaptureUi()) {
             actionsCallback.provideActionButton(
                 ActionButtonAppearance(
                     AppCompatResources.getDrawable(context, R.drawable.ic_content_copy),
@@ -159,6 +140,27 @@ constructor(
                 uiEventLogger.log(SCREENSHOT_COPY_TAPPED, 0, request.packageNameString)
                 onDeferrableActionTapped { result ->
                     actionExecutor.copyScreenshotToClipboard(result.uri)
+                }
+            }
+        } else {
+            // The edit button is intentionally hidden on large-screen devices since the screenshot
+            // thumbnail serves the same action.
+            actionsCallback.provideActionButton(
+                ActionButtonAppearance(
+                    AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_edit),
+                    context.resources.getString(R.string.screenshot_edit_label),
+                    context.resources.getString(R.string.screenshot_edit_description),
+                ),
+                showDuringEntrance = true,
+            ) {
+                debugLog(LogConfig.DEBUG_ACTIONS) { "Edit tapped" }
+                uiEventLogger.log(SCREENSHOT_EDIT_TAPPED, 0, request.packageNameString)
+                onDeferrableActionTapped { result ->
+                    actionExecutor.startSharedTransition(
+                        actionIntentCreator.createEdit(result.uri),
+                        result.user,
+                        true,
+                    )
                 }
             }
         }
@@ -207,7 +209,7 @@ constructor(
             ?: run { pendingAction = onResult }
     }
 
-    private fun isLargeScreenCaptureEnabled(): Boolean {
+    private fun useLargeScreenCaptureUi(): Boolean {
         // TODO(b/430362954) Use the member from ScreenCaptureRecordFeaturesInteractor when ready
         return Flags.largeScreenScreencapture() &&
             context.resources.getBoolean(R.bool.config_enableLargeScreenScreencapture)

@@ -265,6 +265,50 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun editAction_whenFeatureFlagDisabled_includesButton() {
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .contains(context.getString(R.string.screenshot_edit_description))
+    }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun editAction_whenFeatureFlagEnabled_andSmallScreen_includesButton() {
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, false)
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .contains(context.getString(R.string.screenshot_edit_description))
+    }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun editAction_whenFeatureFlagEnabled_andLargeScreen_doesNotIncludeButton() {
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .doesNotContain(context.getString(R.string.screenshot_edit_description))
+    }
+
+    @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun copyToClipboardAction_whenFeatureFlagDisabled_doesNotIncludeButton() {
         actionsProvider = createActionsProvider()
 
@@ -315,10 +359,10 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         actionsProvider.setCompletedScreenshot(validResult)
 
         val actionButtonCaptor = argumentCaptor<() -> Unit>()
-        // share, edit, copy
-        verify(actionsCallback, times(3))
+        // share, copy
+        verify(actionsCallback, atLeastOnce())
             .provideActionButton(any(), any(), actionButtonCaptor.capture())
-        val copyAction = actionButtonCaptor.thirdValue
+        val copyAction = actionButtonCaptor.lastValue
         copyAction.invoke()
 
         val uriCaptor = argumentCaptor<Uri>()
