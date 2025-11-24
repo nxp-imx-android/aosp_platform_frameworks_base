@@ -108,6 +108,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     private float mContentTranslation;
     protected boolean mLastInSection;
     protected boolean mFirstInSection;
+    private String mYTranslationSource;
 
     protected SpringAnimation mMagneticAnimator = new SpringAnimation(
             this /* object */, DynamicAnimation.TRANSLATION_X);
@@ -157,6 +158,14 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
             }
         }
     };
+
+    public void setYTranslationSource(String source) {
+        mYTranslationSource = source;
+    }
+
+    public String getYTranslationSource() {
+        return mYTranslationSource;
+    }
 
     /**
      * @return true if the ExpandableView can be dismissed. False otherwise.
@@ -1030,6 +1039,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         pw.print("mExtraWidthForClipping", mExtraWidthForClipping);
         pw.print("mMinimumHeightForClipping", mMinimumHeightForClipping);
         pw.print("getClipBounds()", getClipBounds());
+        pw.print("mYTranslationSource", mYTranslationSource);
         pw.println();
     }
 

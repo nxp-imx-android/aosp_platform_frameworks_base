@@ -651,7 +651,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val viewState =
             ExpandableViewState().apply {
                 height = 100
-                yTranslation = 200f
+                setYTranslation(200f, "test")
             }
 
         // When
@@ -675,7 +675,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val viewState =
             ExpandableViewState().apply {
                 height = 100
-                yTranslation = 200f
+                setYTranslation(200f, "test")
             }
 
         // When
@@ -702,7 +702,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val viewState =
             ExpandableViewState().apply {
                 height = 100
-                yTranslation = 200f
+                setYTranslation(200f, "test")
             }
 
         // When
@@ -1069,8 +1069,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun resetViewStates_shelfTopLessThanViewTop_hidesView() {
-        notificationRow.viewState.yTranslation = 10f
-        notificationShelf.viewState.yTranslation = 0.9f
+        notificationRow.viewState.setYTranslation(10f, "test")
+        notificationShelf.viewState.setYTranslation(0.9f, "test")
         notificationShelf.viewState.hidden = false
         ambientState.shelf = notificationShelf
         stackScrollAlgorithm.initView(context)
@@ -1083,8 +1083,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun resetViewStates_shelfTopGreaterOrEqualThanViewTop_viewAlphaDoesNotChange() {
         val expected = notificationRow.viewState.alpha
-        notificationRow.viewState.yTranslation = 10f
-        notificationShelf.viewState.yTranslation = 10f
+        notificationRow.viewState.setYTranslation(10f, "test")
+        notificationShelf.viewState.setYTranslation(10f, "test")
         notificationShelf.viewState.hidden = false
         ambientState.shelf = notificationShelf
         stackScrollAlgorithm.initView(context)
@@ -1305,7 +1305,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         whenever(expandableView.hasExpandingChild()).thenReturn(false)
 
         val expandableViewState = ExpandableViewState()
-        expandableViewState.yTranslation = viewStart
+        expandableViewState.setYTranslation(viewStart, "test")
 
         stackScrollAlgorithm.updateViewWithShelf(expandableView, expandableViewState, shelfStart)
         assertThat(expandableViewState.hidden).isFalse()
@@ -1321,7 +1321,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         whenever(expandableView.hasExpandingChild()).thenReturn(false)
 
         val expandableViewState = ExpandableViewState()
-        expandableViewState.yTranslation = viewStart
+        expandableViewState.setYTranslation(viewStart, "test")
 
         stackScrollAlgorithm.updateViewWithShelf(expandableView, expandableViewState, shelfStart)
         assertThat(expandableViewState.hidden).isTrue()
@@ -1337,7 +1337,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         whenever(expandableView.hasExpandingChild()).thenReturn(true)
 
         val expandableViewState = ExpandableViewState()
-        expandableViewState.yTranslation = viewStart
+        expandableViewState.setYTranslation(viewStart, "test")
 
         stackScrollAlgorithm.updateViewWithShelf(expandableView, expandableViewState, shelfStart)
         assertThat(expandableViewState.hidden).isFalse()
@@ -1431,7 +1431,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun clampHunToTop_viewYGreaterThanQqs_viewYUnchanged() {
         val expandableViewState = ExpandableViewState()
-        expandableViewState.yTranslation = 50f
+        expandableViewState.setYTranslation(50f, "test")
 
         stackScrollAlgorithm.clampHunToTop(
             /* headsUpTop= */ 10f,
@@ -1446,7 +1446,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun clampHunToTop_viewYLessThanQqs_viewYChanged() {
         val expandableViewState = ExpandableViewState()
-        expandableViewState.yTranslation = -10f
+        expandableViewState.setYTranslation(-10f, "test")
 
         stackScrollAlgorithm.clampHunToTop(
             /* headsUpTop= */ 10f,
@@ -1462,7 +1462,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun clampHunToTop_viewYFarAboveVisibleStack_heightCollapsed() {
         val expandableViewState = ExpandableViewState()
         expandableViewState.height = 20
-        expandableViewState.yTranslation = -100f
+        expandableViewState.setYTranslation(-100f, "test")
 
         stackScrollAlgorithm.clampHunToTop(
             /* headsUpTop= */ 10f,
@@ -1480,7 +1480,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun clampHunToTop_viewYNearVisibleStack_heightTallerThanCollapsed() {
         val expandableViewState = ExpandableViewState()
         expandableViewState.height = 20
-        expandableViewState.yTranslation = 5f
+        expandableViewState.setYTranslation(5f, "test")
 
         stackScrollAlgorithm.clampHunToTop(
             /* headsUpTop= */ 10f,
@@ -1582,7 +1582,10 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val childHunView =
             createHunViewMock(isShadeOpen = true, fullyVisible = false, headerVisibleAmount = 1f)
         // Use half of the HUN's height as overlap
-        childHunView.viewState.yTranslation = (childHunView.viewState.height + 1 shr 1).toFloat()
+        childHunView.viewState.setYTranslation(
+            (childHunView.viewState.height + 1 shr 1).toFloat(),
+            "test"
+        )
         val algorithmState = StackScrollAlgorithm.StackScrollAlgorithmState()
         algorithmState.visibleChildren.add(childHunView)
 
@@ -1615,8 +1618,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val childHunView =
             createHunViewMock(isShadeOpen = true, fullyVisible = true, headerVisibleAmount = 1f)
         // HUN doesn't overlap with QQS Panel
-        childHunView.viewState.yTranslation =
-            ambientState.topPadding + ambientState.stackTranslation
+        childHunView.viewState.setYTranslation(
+            ambientState.topPadding + ambientState.stackTranslation, "test")
         val algorithmState = StackScrollAlgorithm.StackScrollAlgorithmState()
         algorithmState.visibleChildren.add(childHunView)
 
@@ -1644,7 +1647,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         ambientState.setLayoutMinHeight(1000)
         val childHunView =
             createHunViewMock(isShadeOpen = false, fullyVisible = false, headerVisibleAmount = 0f)
-        childHunView.viewState.yTranslation = 0f
+        childHunView.viewState.setYTranslation(0f, "test")
         // Shade is closed, thus childHunView's headerVisibleAmount is 0
         childHunView.headerVisibleAmount = 0f
         val algorithmState = StackScrollAlgorithm.StackScrollAlgorithmState()
@@ -1674,7 +1677,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         ambientState.setLayoutMinHeight(1000)
         val childHunView =
             createHunViewMock(isShadeOpen = false, fullyVisible = false, headerVisibleAmount = 0.5f)
-        childHunView.viewState.yTranslation = 0f
+        childHunView.viewState.setYTranslation(0f, "test")
         // Shade is being opened, thus childHunView's headerVisibleAmount is between 0 and 1
         // use 0.5 as headerVisibleAmount here
         childHunView.headerVisibleAmount = 0.5f
@@ -1873,7 +1876,10 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val viewState =
             ExpandableViewState().apply {
                 height = 100
-                yTranslation = ambientState.maxHeadsUpTranslation - height // move it to the max
+                setYTranslation(
+                    ambientState.maxHeadsUpTranslation - height,
+                    "test"
+                ) // move it to the max
             }
 
         assertThat(stackScrollAlgorithm.shouldHunAppearFromBottom(ambientState, viewState)).isTrue()
@@ -1885,8 +1891,10 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val viewState =
             ExpandableViewState().apply {
                 height = 100
-                yTranslation =
-                    ambientState.maxHeadsUpTranslation - height - 1 // move it below the max
+                setYTranslation(
+                    ambientState.maxHeadsUpTranslation - height - 1,
+                    "test"
+                ) // move it below the max
             }
 
         assertThat(stackScrollAlgorithm.shouldHunAppearFromBottom(ambientState, viewState))
@@ -1939,9 +1947,9 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             // ambientState.stackTranslation
             height = (ambientState.topPadding + ambientState.stackTranslation).toInt()
             if (isShadeOpen && fullyVisible) {
-                yTranslation = ambientState.topPadding + ambientState.stackTranslation
+                setYTranslation(ambientState.topPadding + ambientState.stackTranslation, "test")
             } else {
-                yTranslation = 0f
+                setYTranslation(0f, "test")
             }
             headsUpIsVisible = fullyVisible
         }

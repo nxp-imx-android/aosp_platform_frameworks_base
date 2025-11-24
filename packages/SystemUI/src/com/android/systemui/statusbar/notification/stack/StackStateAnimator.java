@@ -532,7 +532,8 @@ public class StackStateAnimator {
 
                 mTmpState.copyFrom(changingView.getViewState());
                 mTmpState.setYTranslation(changingView.getViewState().getYTranslation()
-                        + getHeadsUpCyclingInYTranslationStart(event.headsUpFromBottom));
+                        + getHeadsUpCyclingInYTranslationStart(event.headsUpFromBottom),
+                        "StackStateAnimator.processAnimationEvents.cyclingIn");
                 mTmpState.applyToView(changingView);
 
                 // TODO(b/339519404): use a different interpolator
@@ -552,9 +553,9 @@ public class StackStateAnimator {
                 mHeadsUpAppearChildren.add(changingView);
 
                 mTmpState.copyFrom(changingView.getViewState());
-                mTmpState.setYTranslation(
-                        getHeadsUpYTranslationStart(
-                                event.headsUpFromBottom, event.headsUpHasStatusBarChip));
+                mTmpState.setYTranslation(getHeadsUpYTranslationStart(
+                                event.headsUpFromBottom, event.headsUpHasStatusBarChip),
+                        "StackStateAnimator.processAnimationEvents.headsUpAppear");
                 // set the height and the initial position
                 mTmpState.applyToView(changingView);
                 mAnimationProperties.setCustomInterpolator(View.TRANSLATION_Y,
@@ -584,9 +585,8 @@ public class StackStateAnimator {
                     // StackScrollAlgorithm cannot find this view because it has been removed
                     // from the NSSL. To correctly translate the view to the top or bottom of
                     // the screen (where it animated from), we need to update its translation.
-                    mTmpState.setYTranslation(
-                            mTmpState.getYTranslation() + 10
-                    );
+                    mTmpState.setYTranslation(mTmpState.getYTranslation() + 10,
+                            "StackStateAnimator.processAnimationEvents.cyclingOut");
                     endRunnable = changingView::removeFromTransientContainer;
                 }
 
@@ -668,7 +668,8 @@ public class StackStateAnimator {
                     // the screen (where it animated from), we need to update its translation.
                     mTmpState.setYTranslation(
                             getHeadsUpYTranslationStart(
-                                    event.headsUpFromBottom, event.headsUpHasStatusBarChip));
+                                    event.headsUpFromBottom, event.headsUpHasStatusBarChip),
+                                    "StackStateAnimator.processAnimationEvents.disappear");
                     endRunnable = changingView::removeFromTransientContainer;
                 }
 
