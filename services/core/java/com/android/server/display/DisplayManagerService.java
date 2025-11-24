@@ -4700,7 +4700,7 @@ public final class DisplayManagerService extends SystemService {
         private void sendSnapshotEventIfNeededLocked(
                 @InternalEventFlag long oldFlagsMask,
                 @InternalEventFlag long newFlagsMask) {
-            if (!Flags.displayListenerSnapshot()) {
+            if (!Flags.displayListenerSnapshot() && !Flags.displayIdsCache()) {
                 return;
             }
 

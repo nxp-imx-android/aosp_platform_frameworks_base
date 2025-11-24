@@ -397,6 +397,20 @@ flag {
 }
 
 flag {
+    name: "display_ids_cache"
+    namespace: "display_manager"
+    description: "Feature flag for cache of display ids in DisplayManagerGlobal"
+    bug: "461159073"
+}
+
+flag {
+    name: "display_ids_cache_validation"
+    namespace: "display_manager"
+    description: "Feature flag for validation cache of display ids in DisplayManagerGlobal"
+    bug: "461159073"
+}
+
+flag {
     name: "force_color_fade"
     namespace: "wear_systems"
     description: "Force Color Fade."
