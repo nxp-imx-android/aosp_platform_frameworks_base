@@ -1,0 +1,25 @@
+<!--
+  ~ Copyright (C) 2025 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:pathData="M3.175 19.825C3.95833 20.6083 4.9 21 6 21H18C19.1 21 20.0417 20.6083 20.825 19.825C21.6083 19.0417 22 18.1 22 17V9C22 7.9 21.6083 6.95833 20.825 6.175C20.0417 5.39167 19.1 5 18 5H16.5L14.5 3H9.5L7.5 5H6C4.9 5 3.95833 5.39167 3.175 6.175C2.39167 6.95833 2 7.9 2 9V17C2 18.1 2.39167 19.0417 3.175 19.825Z" android:fillColor="#000"/>
+    <path android:pathData="M14.707 2.5L16.707 4.5H18C19.2337 4.5 20.3024 4.94494 21.1787 5.82129C22.0551 6.69764 22.5 7.76634 22.5 9V17C22.5 18.2337 22.0551 19.3024 21.1787 20.1787C20.3024 21.0551 19.2337 21.5 18 21.5H6C4.76634 21.5 3.69764 21.0551 2.82129 20.1787C1.94494 19.3024 1.5 18.2337 1.5 17V9C1.5 7.76634 1.94494 6.69764 2.82129 5.82129C3.69764 4.94494 4.76634 4.5 6 4.5H7.29297L9.29297 2.5H14.707Z" android:strokeColor="#FFF"/>
+    <path android:pathData="M12 8.5C13.0992 8.5 14.051 8.89474 14.8281 9.67188C15.6053 10.449 16 11.4008 16 12.5C16 13.5992 15.6053 14.551 14.8281 15.3281C14.051 16.1053 13.0992 16.5 12 16.5C10.9008 16.5 9.94901 16.1053 9.17188 15.3281C8.39474 14.551 8 13.5992 8 12.5C8 11.4008 8.39474 10.449 9.17188 9.67188C9.94901 8.89474 10.9008 8.5 12 8.5Z" android:fillColor="#000" android:strokeColor="#FFF"/>
+</vector>
