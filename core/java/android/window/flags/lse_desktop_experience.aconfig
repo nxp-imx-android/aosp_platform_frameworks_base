@@ -1334,16 +1334,6 @@ flag {
 }
 
 flag {
-    name: "enable_windowing_task_stack_order_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Reverses the order of TaskStackListener updates."
-    bug: "414808458"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_windowing_transition_handlers_observers"
     namespace: "lse_desktop_experience"
     description: "Whether to enable desktop windowing transition handler and observer instead of task listeners."
