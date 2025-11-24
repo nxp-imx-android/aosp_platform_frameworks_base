@@ -14,12 +14,14 @@ import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToBouncerTransition
+import com.android.systemui.scene.ui.composable.transitions.communalToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTransition
@@ -377,6 +379,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 bouncerToLockscreenTransition()
             }
             from(Scenes.Communal, to = Overlays.Bouncer) { communalToBouncerTransition() }
+            from(Scenes.Communal, to = Scenes.Gone, key = TransitionKeys.SwipeUpToGone) {
+                communalToGoneTransition()
+            }
             from(
                 Overlays.Bouncer,
                 to = Scenes.Communal,
