@@ -263,9 +263,12 @@ public class DreamManagerServiceTest {
     }
 
     @Test
-    public void testCanStartDreaming_charging() {
+    public void testCanStartDreaming_charging() throws PackageManager.NameNotFoundException {
         enableDreaming();
         setupDreamPreconditions();
+        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                new ComponentName("a", "b"), true);
+
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -276,6 +279,22 @@ public class DreamManagerServiceTest {
 
         // Can start dreaming is true.
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isTrue();
+    }
+
+    @Test
+    public void testCanStartDreaming_returnsFalseWhenNoDreamConfigured() {
+        enableDreaming();
+        setupDreamPreconditions();
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Battery changed event is received.
+        sendBatteryChangeEvent();
+
+        // Can't start dreaming because no dream is configured.
+        assertThat(service.canStartDreamingInternal(true)).isFalse();
     }
 
     @Test
