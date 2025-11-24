@@ -85,8 +85,6 @@ public enum DesktopModeFlags {
     ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS(Flags::enableTaskResizingKeyboardShortcuts, true),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
-    ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING(Flags::enableTopVisibleRootTaskPerUserTracking,
-            true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
     IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
