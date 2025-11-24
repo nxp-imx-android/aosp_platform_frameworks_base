@@ -182,6 +182,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
+import static android.app.admin.DevicePolicyManager.STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_FULL_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_OK;
@@ -10685,7 +10686,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
      */
     @GuardedBy("getLockObject()")
     private void enforceCanSetDeviceOwnerLocked(
-            CallerIdentity caller, @Nullable ComponentName owner, @UserIdInt int deviceOwnerUserId,
+            CallerIdentity caller, @NonNull ComponentName owner, @UserIdInt int deviceOwnerUserId,
             boolean hasIncompatibleAccountsOrNonAdb) {
         boolean showComponentOnError = false;
         if (!isAdb(caller)) {
@@ -10695,9 +10696,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             showComponentOnError = true;
         }
 
-        final int code = checkDeviceOwnerProvisioningPreConditionLocked(owner,
-                /* deviceOwnerUserId= */ deviceOwnerUserId, /* callingUserId*/ caller.getUserId(),
-                isAdb(caller), hasIncompatibleAccountsOrNonAdb);
+        final int code = checkDeviceOwnerProvisioningPreConditionLocked(owner, deviceOwnerUserId,
+                caller.getUserId(), isAdb(caller), hasIncompatibleAccountsOrNonAdb);
         if (code != STATUS_OK) {
             final String provisioningErrorStringLocked = computeProvisioningErrorStringLocked(code,
                     deviceOwnerUserId, owner, showComponentOnError);
@@ -17046,19 +17046,61 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     return checkManagedProfileProvisioningPreCondition(packageName, userId);
                 case ACTION_PROVISION_MANAGED_DEVICE:
                 case DevicePolicyManager.ACTION_PROVISION_FINANCED_DEVICE:
-                    return checkDeviceOwnerProvisioningPreCondition(componentName, userId);
+                    return checkDeviceOwnerProvisioningPreCondition(
+                            packageName, componentName, userId);
             }
         }
         throw new IllegalArgumentException("Unknown provisioning action " + action);
     }
 
     /**
-     * The device owner can only be set before the setup phase of the primary user has completed,
-     * except for adb command if no accounts or additional users are present on the device.
+     * Checks if the device owner can be set for the given component.
+     * <p>
+     * This is a wrapper for {@link #checkDeviceOwnerProvisioningPreConditionLocked(String,
+     * ComponentName, int, int, boolean, boolean)}
+     * that automatically extracts the package name from the provided {@code owner}.
+     *
+     * @param owner The component name of the admin to check. Must not be null.
+     * @return {@link #STATUS_OK} if the device owner can be set, or an error code indicating the
+     *                            failure reason.
+     * @see #checkDeviceOwnerProvisioningPreConditionLocked(String, ComponentName, int, int,
+     *      boolean, boolean)
      */
-    private int checkDeviceOwnerProvisioningPreConditionLocked(@Nullable ComponentName owner,
+    private int checkDeviceOwnerProvisioningPreConditionLocked(
+            @NonNull ComponentName owner,
             @UserIdInt int deviceOwnerUserId, @UserIdInt int callingUserId, boolean isAdb,
             boolean hasIncompatibleAccountsOrNonAdb) {
+        return checkDeviceOwnerProvisioningPreConditionLocked(owner.getPackageName(),
+                owner, deviceOwnerUserId, callingUserId, isAdb, hasIncompatibleAccountsOrNonAdb);
+    }
+
+    /**
+     * Checks if the device owner can be set, enforcing all provisioning preconditions.
+     * <p>
+     * The device owner can only be set before the setup phase of the primary user has completed,
+     * except for adb command if no accounts or additional users are present on the device.
+     * <p>
+     * When a non-default package is holding the Device Policy Management Role Holder, only a
+     * testOnly napp can be set as the device owner.
+     *
+     * @param packageName The package name of the admin. Used for validation if {@code owner} is
+     *                    null.
+     * @param owner The component name of the admin. If non-null, this is considered the source of
+     *              truth for the package name, overriding the {@code packageName} parameter.
+     * @param deviceOwnerUserId The user ID where the device owner is being set.
+     * @param callingUserId The user ID of the caller.
+     * @param isAdb Whether the call is coming from ADB.
+     * @param hasIncompatibleAccountsOrNonAdb Whether incompatible accounts exist or the call is not
+     *                                        from ADB.
+     * @return {@link #STATUS_OK} if the device owner can be set, or an error code indicating the
+     *                            failure reason.
+     */
+    private int checkDeviceOwnerProvisioningPreConditionLocked(String packageName,
+            @Nullable ComponentName owner,
+            @UserIdInt int deviceOwnerUserId, @UserIdInt int callingUserId, boolean isAdb,
+            boolean hasIncompatibleAccountsOrNonAdb) {
+        final String effectivePackageName = (owner != null) ? owner.getPackageName() : packageName;
+
         if (mOwners.hasDeviceOwner()) {
             return STATUS_HAS_DEVICE_OWNER;
         }
@@ -17068,6 +17110,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         if (!mUserManager.isUserRunning(new UserHandle(deviceOwnerUserId))) {
             return STATUS_USER_NOT_RUNNING;
+        }
+
+        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                && hasNonDefaultDevicePolicyManagementRoleHolder()
+                && !isPackageTestOnly(effectivePackageName, deviceOwnerUserId)) {
+            return STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS;
         }
 
         DeviceAdminInfo adminInfo = null;
@@ -17220,7 +17268,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     private int checkDeviceOwnerProvisioningPreCondition(
-            @Nullable ComponentName componentName, @UserIdInt int callingUserId) {
+            String packageName,
+            @Nullable ComponentName componentName,
+            @UserIdInt int callingUserId
+    ) {
         synchronized (getLockObject()) {
             int deviceOwnerUserId = -1;
             deviceOwnerUserId = mInjector.userManagerIsHeadlessSystemUserMode()
@@ -17230,9 +17281,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             Slogf.i(LOG_TAG, "Calling user %d, device owner will be set on user %d",
                     callingUserId, deviceOwnerUserId);
             // hasIncompatibleAccountsOrNonAdb doesn't matter since the caller is not adb.
-            return checkDeviceOwnerProvisioningPreConditionLocked(componentName,
-                    deviceOwnerUserId, callingUserId, /* isAdb= */ false,
-                    /* hasIncompatibleAccountsOrNonAdb=*/ true);
+            return checkDeviceOwnerProvisioningPreConditionLocked(
+                    packageName, componentName, deviceOwnerUserId, callingUserId,
+                    /* isAdb= */ false, /* hasIncompatibleAccountsOrNonAdb=*/ true);
         }
     }
 
@@ -23087,6 +23138,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     /**
+     * Check if there is any DMRH app on any user, that is not the default DMRH.
+     *
+     * @return true, if such an app exists, false, otherwise
+     */
+    private boolean hasNonDefaultDevicePolicyManagementRoleHolder() {
+        final List<UserPackage> userPackages = getDevicePolicyManagementRoleHolderPackages();
+        Set<String> uniquePackages =
+                userPackages
+                        .stream()
+                        .map(up -> up.packageName)
+                        .collect(Collectors.toSet());
+        for (String packageName : uniquePackages) {
+            if (!isDefaultRoleHolder(packageName)) {
+                Slogf.i(LOG_TAG, "Found non default DMRH: %s", packageName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if there is any DMRH app on any user, that is not marked as TEST ONLY.
      *
      * @return true, if such an app exists, false, otherwise
@@ -23204,7 +23276,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                         /* flags= */ 0,
                         user,
                         mExecutor,
-                        successful -> {});
+                        successful -> {
+                        });
             }
         }
 
@@ -23219,7 +23292,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     broadcastExplicitIntentToRoleHolder(
                             intent, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT, user);
                     ActiveAdmin admin =
-                        mDeviceAdmins.getDeviceOrProfileOwnerAdmin(user.getIdentifier());
+                            mDeviceAdmins.getDeviceOrProfileOwnerAdmin(user.getIdentifier());
                     if (admin == null) {
                         continue;
                     }
@@ -23240,67 +23313,67 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 }
             });
         }
+    }
 
-        private String getDeviceManagementRoleHolder(UserHandle user) {
-            return DevicePolicyManagerService.this.getRoleHolderPackageNameOnUser(
-                    mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT, user);
-        }
+    private String getDeviceManagementRoleHolder(UserHandle user) {
+        return DevicePolicyManagerService.this.getRoleHolderPackageNameOnUser(
+                mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT, user);
+    }
 
-        private boolean isDefaultRoleHolder(String packageName) {
-            String defaultRoleHolder = getDefaultRoleHolderPackageName();
-            if (packageName == null || defaultRoleHolder == null) {
-                return false;
-            }
-            if (!defaultRoleHolder.equals(packageName)) {
-                return false;
-            }
-            return hasSigningCertificate(
-                    packageName, getDefaultRoleHolderPackageSignature());
+    private boolean isDefaultRoleHolder(String packageName) {
+        String defaultRoleHolder = getDefaultRoleHolderPackageName();
+        if (packageName == null || defaultRoleHolder == null) {
+            return false;
         }
+        if (!defaultRoleHolder.equals(packageName)) {
+            return false;
+        }
+        return hasSigningCertificate(
+                packageName, getDefaultRoleHolderPackageSignature());
+    }
 
-        private boolean hasSigningCertificate(String packageName, String  certificateString) {
-            if (packageName == null || certificateString == null) {
-                return false;
-            }
-            byte[] certificate;
-            try {
-                certificate = new Signature(certificateString).toByteArray();
-            } catch (IllegalArgumentException e) {
-                Slogf.w(LOG_TAG, "Cannot parse signing certificate: " + certificateString, e);
-                return false;
-            }
-            PackageManager pm = mInjector.getPackageManager();
-            return pm.hasSigningCertificate(
-                    packageName, certificate, PackageManager.CERT_INPUT_SHA256);
+    private boolean hasSigningCertificate(String packageName, String  certificateString) {
+        if (packageName == null || certificateString == null) {
+            return false;
         }
+        byte[] certificate;
+        try {
+            certificate = new Signature(certificateString).toByteArray();
+        } catch (IllegalArgumentException e) {
+            Slogf.w(LOG_TAG, "Cannot parse signing certificate: " + certificateString, e);
+            return false;
+        }
+        PackageManager pm = mInjector.getPackageManager();
+        return pm.hasSigningCertificate(
+                packageName, certificate, PackageManager.CERT_INPUT_SHA256);
+    }
 
-        private String getDefaultRoleHolderPackageName() {
-            String[] info = getDefaultRoleHolderPackageNameAndSignature();
-            if (info == null) {
-                return null;
-            }
-            return info[0];
+    private String getDefaultRoleHolderPackageName() {
+        String[] info = getDefaultRoleHolderPackageNameAndSignature();
+        if (info == null) {
+            return null;
         }
+        return info[0];
+    }
 
-        private String getDefaultRoleHolderPackageSignature() {
-            String[] info = getDefaultRoleHolderPackageNameAndSignature();
-            if (info == null || info.length < 2) {
-                return null;
-            }
-            return info[1];
+    private String getDefaultRoleHolderPackageSignature() {
+        String[] info = getDefaultRoleHolderPackageNameAndSignature();
+        if (info == null || info.length < 2) {
+            return null;
         }
+        return info[1];
+    }
 
-        private String[] getDefaultRoleHolderPackageNameAndSignature() {
-            String packageNameAndSignature = mContext.getString(
-                    R.string.config_devicePolicyManagement);
-            if (TextUtils.isEmpty(packageNameAndSignature)) {
-                return null;
-            }
-            if (packageNameAndSignature.contains(":")) {
-                return packageNameAndSignature.split(":");
-            }
-            return new String[]{packageNameAndSignature};
+    private String[] getDefaultRoleHolderPackageNameAndSignature() {
+        String packageNameAndSignature = mContext.getString(
+                R.string.config_devicePolicyManagement);
+        if (TextUtils.isEmpty(packageNameAndSignature)) {
+            return null;
         }
+        if (packageNameAndSignature.contains(":")) {
+            return packageNameAndSignature.split(":");
+        }
+        return new String[]{packageNameAndSignature};
     }
 
     private void broadcastExplicitIntentToRoleHolder(

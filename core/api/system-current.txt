@@ -1572,6 +1572,7 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19; // 0x13
     field public static final int STATUS_MANAGED_USERS_NOT_SUPPORTED = 9; // 0x9
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
+    field @FlaggedApi("android.app.admin.flags.secure_adb_role_bypassing") public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 23; // 0x17
     field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final int STATUS_NOT_FULL_USER = 21; // 0x15
     field public static final int STATUS_NOT_SYSTEM_USER = 7; // 0x7
     field public static final int STATUS_OK = 0; // 0x0
