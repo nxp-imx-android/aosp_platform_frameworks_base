@@ -21,7 +21,9 @@ import static android.telecom.CallException.TRANSACTION_EXCEPTION_KEY;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.OutcomeReceiver;
@@ -334,6 +336,94 @@ public final class CallControl {
         try {
             mServerInterface.requestVideoState(callType, mCallId,
                     new CallControlResultReceiver("requestVideoState", executor, callback));
+        } catch (RemoteException e) {
+            throw e.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
+     * Sets the group call state for an ongoing call.
+     *
+     * <p>This method should be invoked by a VoIP application.
+     * when a call transitions to or from being a group call. For instance, if a one-on-one
+     * call adds more participants and becomes a conference, this method informs the system of that
+     * change.
+     *
+     * <p>Providing this state allows the Android system to correctly represent the call in the
+     * system's user interface, such as the native call log. As part of the integrated call logs
+     * feature, which provides a unified history for both carrier and VoIP calls, accurately
+     * identifying group calls is essential for a consistent user experience.
+     *
+     * @param isGroupCall {@code true} if the call is currently a group call, {@code false}
+     *                    otherwise.
+     * @param executor    The {@link Executor} on which the {@link OutcomeReceiver} callback
+     *                    will be called on.
+     * @param callback    that will be completed on the Telecom side that details success or failure
+     *                    of the requested operation.
+     *
+     *                    {@link OutcomeReceiver#onResult} will be called if Telecom has
+     *                    successfully switched the video state.
+     *
+     *                    {@link OutcomeReceiver#onError} will be called if Telecom has failed to
+     *                    set the new video state.  A {@link CallException} will be passed  that
+     *                    details why the operation failed.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public void setGroupCallState(boolean isGroupCall, @NonNull Executor executor,
+            @NonNull OutcomeReceiver<Void, CallException> callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        try {
+            mServerInterface.setGroupCallState(mCallId, isGroupCall,
+                    new CallControlResultReceiver("setGroupCallState", executor, callback));
+        } catch (RemoteException e) {
+            throw e.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
+     * Sets the VoIP contact URI for an ongoing call.
+     *
+     * <p>This method should be invoked by a VoIP application.
+     * when a call transitions to or from being a group call. For instance, if a one-on-one
+     * call adds more participants and becomes a conference. This should be used in par with
+     * {@link CallControl#setGroupCallState}.
+     *
+     * <p>Providing this state allows the Android system to correctly represent the call in the
+     * system's user interface, such as the native call log. As part of the integrated call logs
+     * feature, which provides a unified history for both carrier and VoIP calls, accurately
+     * associating the calls with a valid lookup URI is essential for a consistent user experience.
+     *
+     * <p>The {@code uri} parameter is crucial for linking the call to a specific group entity
+     * within the VoIP contact directory or a CP2 contact. This helps in associating the call log
+     * entry with the correct contact information, such as the group's name and avatar.
+     *
+     * @param uri        The content URI of the contact or group in the VoIP application's contact
+     *                   directory or a valid CP2 contact. This URI must be stable and resolvable
+     *                   by the system or null if unused.
+     * @param executor   The {@link Executor} on which the {@link OutcomeReceiver} callback
+     *                   will be called on.
+     * @param callback   that will be completed on the Telecom side that details success or failure
+     *                   of the requested operation.
+     *
+     *                   {@link OutcomeReceiver#onResult} will be called if Telecom has successfully
+     *                   switched the video state.
+     *
+     *                   {@link OutcomeReceiver#onError} will be called if Telecom has failed to set
+     *                   the new video state.  A {@link CallException} will be passed
+     *                   that details why the operation failed.
+     * @throws IllegalArgumentException if the provided {@code uri} is invalid or improperly
+     *                                  formatted.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public void setContactUri(@Nullable Uri uri, @NonNull Executor executor,
+            @NonNull OutcomeReceiver<Void, CallException> callback) {
+        CallAttributes.validateVoipContactUri(uri);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        try {
+            mServerInterface.setContactUri(mCallId, uri,
+                    new CallControlResultReceiver("setContactUri", executor, callback));
         } catch (RemoteException e) {
             throw e.rethrowAsRuntimeException();
         }

@@ -20,9 +20,12 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.ContentResolver;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.text.TextUtils;
 
 import com.android.internal.telecom.ParcelUtils;
@@ -66,8 +69,8 @@ public final class CallAttributes implements Parcelable {
     /** Indicate whether this call was a group call **/
     private final boolean mIsGroupCall;
     /**
-     * The VoIP contact directory lookup URI that will be used by the system dialer to get the
-     * enriched call info.
+     * The VoIP contact directory or CP2 lookup URI that will be used by the system dialer to get
+     * the enriched call info.
      */
     private final Uri mContactUri;
 
@@ -268,13 +271,15 @@ public final class CallAttributes implements Parcelable {
 
         /**
          * Sets the contact directory URI for the VoIP app. This must be a valid URI pointing to the
-         * VoIP contact directory.
-         * @param contactUri The contact URI pointing to the VoIP contact directory.
+         * VoIP contact directory or a valid CP2 contact.
+         * @param contactUri The contact URI pointing to the VoIP contact directory or CP2 contact.
          * @return Builder
          */
         @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
         @NonNull
         public Builder setContactUri(@NonNull Uri contactUri) {
+            Objects.requireNonNull(contactUri);
+            validateVoipContactUri(contactUri);
             mContactUri = contactUri;
             return this;
         }
@@ -353,7 +358,7 @@ public final class CallAttributes implements Parcelable {
     }
 
     /**
-     * @return The contact URI pointing to the VoIP contact directory
+     * @return The contact URI pointing to the VoIP contact directory or CP2 contact
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     public @Nullable Uri getContactUri() {
@@ -470,5 +475,41 @@ public final class CallAttributes implements Parcelable {
         return Objects.hash(mPhoneAccountHandle, mAddress, mDisplayName,
                 mDirection, mCallType, mCallCapabilities, mIsLogExcluded,
                 mIsGroupCall, mContactUri);
+    }
+
+    /**
+     * Validates the uri to ensure that it will resolve to a valid VoIP contact directory or CP2
+     * contact URI. Also ensure that URIs are not passed across user boundaries.
+     * @hide
+     * @param uri VoIP contact URI to validate
+     * @throws IllegalArgumentException if the uri is invalid
+     */
+    public static void validateVoipContactUri(Uri uri) {
+        String errorMsg = TextUtils.formatSimple("The contact URI passed in, %s, is not"
+                + " a valid URI. This must be a valid CP2 contact or VoIP contact "
+                + "directory URI.", uri);
+        // Todo: once VoIP contact directory URIs are established, we should validate on that
+        //       as well.
+        if (uri == null) {
+            return;
+        }
+        final String scheme = uri.getScheme();
+        final String authority = uri.getAuthority();
+        if (!ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            throw new IllegalArgumentException(errorMsg);
+        }
+        // The authority should either be "com.android.contacts" or resolve to a user like
+        // "0@com.android.contacts".
+        if (authority == null || !authority.endsWith(ContactsContract.AUTHORITY)) {
+            throw new IllegalArgumentException(errorMsg);
+        }
+        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+        int requestingUserId = StatusHints.getUserIdFromAuthority(uri.getAuthority(),
+                callingUserId);
+        if (callingUserId != requestingUserId) {
+            // If we are transcending the profile boundary, throw an error.
+            throw new IllegalArgumentException("The contact URI passed in, " + uri + ", is not "
+                    + "accessible by user " + callingUserId);
+        }
     }
 }
