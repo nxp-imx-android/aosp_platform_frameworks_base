@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
@@ -513,7 +514,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     Slog.w(TAG, "Active display mode no longer available, reverting to default"
                             + " mode.");
                 }
-                mActiveModeId = getPreferredModeId();
+                mActiveModeId = getDefaultModeId();
             }
 
             // Schedule traversals so that we apply pending changes.
@@ -533,6 +534,17 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             return mUserPreferredModeId != INVALID_MODE_ID
                     ? mUserPreferredModeId
                     : mDefaultModeId;
+        }
+
+        private int getDefaultModeId() {
+            if (mUserPreferredMode == null || mUserPreferredModeId == INVALID_MODE_ID) {
+                return mDefaultModeId;
+            }
+            if (mUserPreferredMode.getParentModeId() != INVALID_MODE_ID
+                    || (mUserPreferredMode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
+                return mDefaultModeId;
+            }
+            return mUserPreferredModeId;
         }
 
         private long getAppVsyncOffsetNanos() {
@@ -736,7 +748,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 mInfo.height = mActiveSfDisplayMode.height;
                 mInfo.modeId = mActiveModeId;
                 mInfo.renderFrameRate = mActiveRenderFrameRate;
-                mInfo.defaultModeId = getPreferredModeId();
+                mInfo.defaultModeId = getDefaultModeId();
                 mInfo.userPreferredModeId = mUserPreferredModeId;
                 mInfo.supportedModes = getDisplayModes(mSupportedModes);
                 mInfo.colorMode = mActiveColorMode;
