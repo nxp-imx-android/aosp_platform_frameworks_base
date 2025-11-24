@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.RemoteAction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -45,11 +46,9 @@ import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -265,7 +264,33 @@ public class NotificationActionRenderer implements Renderer {
     @Nullable
     private Notification.Action createNotificationAction(
             ActionableInsight insight, UserHandle user) {
-        final Intent actionIntent = insight.getActionDetails().createActionIntent();
+        Intent actionIntent = insight.getActionDetails().createActionIntent();
+        // TODO(b/462239221): simplify logic when we migrate remote action to pending intent
+        RemoteAction remoteAction = insight.getActionDetails().getRemoteAction();
+        PendingIntent pendingIntent;
+        if (actionIntent != null) {
+            // Action details contain intent, create a PendingIntent for the adjustment.
+            pendingIntent =
+                    PendingIntent.getActivityAsUser(
+                            mContext,
+                            /* requestCode= */ actionIntent.hashCode(),
+                            actionIntent,
+                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
+                            /* options= */ null,
+                            user);
+        } else if (remoteAction != null) {
+            // Action details contains RemoteAction, grab the intent and PendingIntent from that.
+            pendingIntent = remoteAction.getActionIntent();
+            actionIntent = pendingIntent.getIntent();
+        } else {
+            // Action details did not contain any action, give up.
+            return null;
+        }
+
+        if (actionIntent == null) {
+            return null;
+        }
+
         final ActivityInfo activityInfo = getActivityInfo(actionIntent, user);
 
         if (activityInfo == null) {
@@ -276,6 +301,7 @@ public class NotificationActionRenderer implements Renderer {
 
         final Icon icon = getIconOrDefault(displayDetails.getIcon(), activityInfo);
 
+        // TODO(b/460848566): icon is not included for some CUJs, handle gracefully
         if (icon == null) {
             Slog.w(
                     TAG,
@@ -285,15 +311,6 @@ public class NotificationActionRenderer implements Renderer {
         }
 
         final CharSequence title = getTitleOrDefault(displayDetails.getTitle(), activityInfo);
-
-        final PendingIntent pendingIntent =
-                PendingIntent.getActivityAsUser(
-                        mContext,
-                        /* requestCode= */ actionIntent.hashCode(),
-                        actionIntent,
-                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
-                        /* options= */ null,
-                        user);
 
         final Bundle extras = new Bundle();
         final CharSequence contentDescription = displayDetails.getContentDescription();
