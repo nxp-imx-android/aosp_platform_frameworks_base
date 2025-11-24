@@ -2046,3 +2046,10 @@ flag {
     description: "Enables note as a selectable option in the action corner customization."
     bug: "451913526"
 }
+
+flag {
+    name: "communal_edit_mode_accessibility_resize"
+    namespace: "systemui"
+    description: "Allows users to resize communal hub widgets by single-point actions."
+    bug: "431683508"
+}
