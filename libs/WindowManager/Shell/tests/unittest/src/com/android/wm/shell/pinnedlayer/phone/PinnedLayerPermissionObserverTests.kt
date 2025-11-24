@@ -73,6 +73,9 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock
+    private lateinit var pinnedWindowRepositionAnimationHandler:
+        PinnedWindowRepositionAnimationHandler
     @Mock private lateinit var transactionPool: TransactionPool
 
     private val uid = Binder.getCallingUid()
@@ -90,6 +93,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
+                pinnedWindowRepositionAnimationHandler,
                 transactionPool,
             )
         pinnedLayerPermissionObserver =
