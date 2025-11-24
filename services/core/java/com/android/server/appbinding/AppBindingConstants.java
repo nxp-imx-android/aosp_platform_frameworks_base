@@ -130,16 +130,9 @@ public class AppBindingConstants {
 
         boolean smsServiceEnabled = parser.getBoolean(SMS_SERVICE_ENABLED_KEY, true);
 
-        int smsAppBindFlags;
-        if (com.android.server.am.Flags.lowerSmsOomImportance()) {
-            smsAppBindFlags = parser.getInt(
-                    SMS_APP_BIND_FLAGS_KEY,
-                    Context.BIND_ALMOST_PERCEPTIBLE | Context.BIND_FOREGROUND_SERVICE);
-        } else {
-            smsAppBindFlags = parser.getInt(
-                    SMS_APP_BIND_FLAGS_KEY,
-                    Context.BIND_NOT_VISIBLE | Context.BIND_FOREGROUND_SERVICE);
-        }
+        int smsAppBindFlags = parser.getInt(
+                SMS_APP_BIND_FLAGS_KEY,
+                Context.BIND_ALMOST_PERCEPTIBLE | Context.BIND_FOREGROUND_SERVICE);
 
         boolean supervisionAppServiceEnabled =
                 parser.getBoolean(SUPERVISION_APP_SERVICE_ENABLED_KEY, true);
