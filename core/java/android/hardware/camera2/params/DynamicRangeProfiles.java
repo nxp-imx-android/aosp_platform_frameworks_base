@@ -156,7 +156,7 @@ public final class DynamicRangeProfiles {
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX;
 
     /**
-     * <p>8-bit SDR profile with SMPTE 2094-50 per-frame metadata.
+     * <p>8-bit SDR profile with adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long STANDARD_AGTM =
@@ -164,7 +164,7 @@ public final class DynamicRangeProfiles {
 
     /**
      * 10-bit pixel samples encoded using the Hybrid log-gamma transfer function with
-     * SMPTE 2094-50 per-frame metadata.
+     * adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
      *
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
@@ -175,7 +175,8 @@ public final class DynamicRangeProfiles {
      * 10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.
      *
      * <p>This profile utilizes internal static metadata to increase the quality
-     * of the capture and includes SMPTE 2094-50 per-frame metadata.</p>
+     * of the capture and includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
+     * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long HDR10_AGTM  =
@@ -185,7 +186,7 @@ public final class DynamicRangeProfiles {
      * 10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.
      *
      * <p>In contrast to HDR10, this profile uses internal per-frame metadata
-     * to further enhance the quality of the capture and also includes
+     * to further enhance the quality of the capture and also includes adaptive global tone mapping
      * SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
@@ -196,7 +197,7 @@ public final class DynamicRangeProfiles {
      * <p>This is a camera mode for Dolby Vision capture optimized for a more scene
      * accurate capture. This would typically differ from what a specific device
      * might want to tune for a consumer optimized Dolby Vision general capture. This mode
-     * also includes SMPTE 2094-50 per-frame metadata.</p>
+     * also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_10B_HDR_REF_AGTM =
@@ -204,7 +205,7 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the power optimized mode for 10-bit Dolby Vision HDR Reference Mode and also
-     * includes SMPTE 2094-50 per-frame metadata..</p>
+     * includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata..</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_10B_HDR_REF_PO_AGTM =
@@ -215,7 +216,8 @@ public final class DynamicRangeProfiles {
      * specific device. This would be tuned by each specific device for consumer
      * pleasing results that resonate with their particular audience. We expect
      * that each specific device would have a different look for their default
-     * Dolby Vision capture. This format and also includes SMPTE 2094-50 per-frame metadata.</p>
+     * Dolby Vision capture. This format and also includes adaptive global tone mapping
+     * SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_10B_HDR_OEM_AGTM =
@@ -223,7 +225,7 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the power optimized mode for 10-bit Dolby Vision HDR device specific capture
-     * Mode and also includes SMPTE 2094-50 per-frame metadata.</p>
+     * Mode and also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_10B_HDR_OEM_PO_AGTM =
@@ -231,7 +233,8 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the 8-bit version of the Dolby Vision reference capture mode optimized
-     * for scene accuracy and also includes SMPTE 2094-50 per-frame metadata.</p>
+     * for scene accuracy and also includes adaptive global tone mapping SMPTE 2094-50 per-frame
+     * metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_8B_HDR_REF_AGTM =
@@ -239,7 +242,7 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the power optimized mode for 8-bit Dolby Vision HDR Reference Mode and
-     * also includes SMPTE 2094-50 per-frame metadata.</p>
+     * also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_8B_HDR_REF_PO_AGTM =
@@ -247,7 +250,8 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the 8-bit version of device specific tuned and optimized Dolby Vision
-     * capture mode and also includes SMPTE 2094-50 per-frame metadata.</p>
+     * capture mode and also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
+     * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_8B_HDR_OEM_AGTM =
@@ -255,7 +259,8 @@ public final class DynamicRangeProfiles {
 
     /**
      * <p>This is the power optimized mode for 8-bit Dolby Vision HDR device specific
-     * capture Mode and also includes SMPTE 2094-50 per-frame metadata.</p>
+     * capture Mode and also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
+     * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
     public static final long DOLBY_VISION_8B_HDR_OEM_PO_AGTM =
