@@ -26,14 +26,20 @@ import android.hardware.serial.SerialPortInfo
 import android.hardware.serial.SerialPortListener
 import android.os.Binder
 import android.os.Bundle
+import android.os.Process
 import androidx.lifecycle.Lifecycle.State
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -41,8 +47,10 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -54,6 +62,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class AccessDialogTest {
     @get:Rule val mockitoRule = MockitoJUnit.rule()
+
+    private lateinit var mDevice: UiDevice
 
     @Mock
     val mApplicationInfo: ApplicationInfo? = null
@@ -72,6 +82,7 @@ class AccessDialogTest {
 
     @Before
     fun setUp() {
+        mDevice = UiDevice.getInstance(getInstrumentation())
         doReturn(null).whenever(sPackageManager)!!.queryIntentServices(any(), any<Int>())
         doReturn(mApplicationInfo).whenever(sPackageManager)!!
             .getApplicationInfo(any<String>(), any<Int>())
@@ -82,42 +93,61 @@ class AccessDialogTest {
         doReturn(APP_NAME).whenever(mApplicationInfo)!!.loadLabel(sPackageManager!!)
 
         launchActivity().use { scenario ->
-            scenario.onActivity({ activity ->
+            scenario.onActivity { activity ->
                 assertEquals("Allow SerialApp to access ttyS0?", activity!!.getAlertTitle())
-            })
+            }
         }
     }
 
     @Test
     fun testClickAllow() {
         launchActivity().use {
-            onView(withText("Allow")).perform(click())
+            val latch = CountDownLatch(1)
+            doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
+                .grantSerialPortAccess(PORT_NAME, UID, mToken)
 
-            getInstrumentation().waitForIdle {
-                verify(sSerialAccessManager!!).grantSerialPortAccess(PORT_NAME, UID, mToken)
-            }
+            val label = Pattern.compile("Allow", Pattern.CASE_INSENSITIVE)
+            val button = mDevice.wait(
+                Until.findObject(By.text(label).clickable(true)),
+                Duration.ofSeconds(1).toMillis()
+            )
+            button.click()
+
+            assertTrue(latch.await(2, TimeUnit.SECONDS))
+            verify(sSerialAccessManager!!, never()).revokeSerialPortAccess(any(), any(), any())
         }
     }
 
     @Test
     fun testClickDontAllow() {
         launchActivity().use {
-            onView(withText("Don't allow")).perform(click())
+            val latch = CountDownLatch(1)
+            doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
+                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
 
-            getInstrumentation().waitForIdle {
-                verify(sSerialAccessManager!!).revokeSerialPortAccess(PORT_NAME, UID, mToken)
-            }
+            val label = Pattern.compile("Don't allow", Pattern.CASE_INSENSITIVE)
+            val button = mDevice.wait(
+                Until.findObject(By.text(label).clickable(true)),
+                Duration.ofSeconds(1).toMillis()
+            )
+            button.click()
+
+            assertTrue(latch.await(2, TimeUnit.SECONDS))
+            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
         }
     }
 
     @Test
     fun testDismissDialog() {
         launchActivity().use { scenario ->
+            val latch = CountDownLatch(1)
+            doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
+                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
+
             scenario.moveToState(State.DESTROYED)
 
-            getInstrumentation().waitForIdle {
-                verify(sSerialAccessManager!!).revokeSerialPortAccess(PORT_NAME, UID, mToken)
-            }
+            assertTrue(latch.await(1, TimeUnit.SECONDS))
+            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
         }
     }
 
@@ -132,11 +162,14 @@ class AccessDialogTest {
         }
 
         launchActivity().use {
+            val latch = CountDownLatch(1)
+            doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
+                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
+
             listener!!.onSerialPortDisconnected(port)
 
-            getInstrumentation().waitForIdle {
-                verify(sSerialAccessManager!!).revokeSerialPortAccess(PORT_NAME, UID, mToken)
-            }
+            assertTrue(latch.await(1, TimeUnit.SECONDS))
+            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
         }
     }
 
@@ -164,6 +197,6 @@ class AccessDialogTest {
         val APP_NAME = "SerialApp"
         val APP_PACKAGE_NAME = "com.android.serial.accessdialog.AccessDialogTest"
         val PORT_NAME = "ttyS0"
-        val UID = 10001
+        val UID = Process.myUid()
     }
 }
