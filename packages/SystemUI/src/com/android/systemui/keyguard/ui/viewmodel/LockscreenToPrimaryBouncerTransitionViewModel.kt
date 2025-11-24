@@ -121,7 +121,7 @@ constructor(private val blurConfig: BlurConfig, animationFlow: KeyguardTransitio
                     }
                 } else {
                     transitionProgressToBlurRadius(
-                        starBlurRadius = blurConfig.minBlurRadiusPx,
+                        startBlurRadius = blurConfig.minBlurRadiusPx,
                         endBlurRadius = blurConfig.maxBlurRadiusPx,
                         transitionProgress = step,
                     )

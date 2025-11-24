@@ -72,7 +72,7 @@ constructor(
             duration = TO_DOZING_DURATION,
             onStep = { step ->
                 transitionProgressToBlurRadius(
-                    starBlurRadius = blurConfig.maxBlurRadiusPx,
+                    startBlurRadius = blurConfig.maxBlurRadiusPx,
                     endBlurRadius = blurConfig.minBlurRadiusPx,
                     transitionProgress = step,
                 )
