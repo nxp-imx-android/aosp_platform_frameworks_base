@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import java.util.UUID
 
 val Kosmos.screenshotActionsProviderFactory by
@@ -36,6 +37,7 @@ val Kosmos.screenshotActionsProviderFactory by
                     uiEventLogger = uiEventLogger,
                     actionIntentCreator = actionIntentCreator,
                     applicationScope = applicationCoroutineScope,
+                    screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
                     requestId = requestId,
                     request = request,
                     actionExecutor = actionExecutor,

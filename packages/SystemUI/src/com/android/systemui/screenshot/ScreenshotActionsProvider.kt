@@ -26,6 +26,7 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_COPY_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_EDIT_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_PREVIEW_TAPPED
@@ -76,6 +77,7 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val actionIntentCreator: ActionIntentCreator,
     @Application private val applicationScope: CoroutineScope,
+    screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     @Assisted val requestId: UUID,
     @Assisted val request: ScreenshotData,
     @Assisted val actionExecutor: ActionExecutor,
@@ -127,7 +129,7 @@ constructor(
             }
         }
 
-        if (useLargeScreenCaptureUi()) {
+        if (screenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
             actionsCallback.provideActionButton(
                 ActionButtonAppearance(
                     AppCompatResources.getDrawable(context, R.drawable.ic_content_copy),
@@ -207,12 +209,6 @@ constructor(
     private fun onDeferrableActionTapped(onResult: suspend (ScreenshotSavedResult) -> Unit) {
         result?.let { applicationScope.launch { onResult.invoke(it) } }
             ?: run { pendingAction = onResult }
-    }
-
-    private fun useLargeScreenCaptureUi(): Boolean {
-        // TODO(b/430362954) Use the member from ScreenCaptureRecordFeaturesInteractor when ready
-        return Flags.largeScreenScreencapture() &&
-            context.resources.getBoolean(R.bool.config_enableLargeScreenScreencapture)
     }
 
     @AssistedFactory

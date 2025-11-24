@@ -29,6 +29,7 @@ import com.android.systemui.Flags as SysuiFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDeviceStateRepository
 import com.android.systemui.screenshot.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.screenshot.ui.viewmodel.PreviewAction
 import com.android.systemui.shared.Flags
@@ -64,10 +65,12 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @Before
     fun setUp() {
         kosmos.uiEventLoggerFake.logs.clear()
+        // Default to small screen.
+        kosmos.fakeScreenCaptureDeviceStateRepository.setLargeScreen(false)
     }
 
     @Test
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun previewActionAccessed_beforeScreenshotCompleted_doesNothing() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -79,7 +82,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionButtonsAccessed_beforeScreenshotCompleted_doesNothing() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -92,7 +95,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionAccessed_withResult_launchesIntent() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -117,8 +120,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_CONTEXT_URL)
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(Flags.FLAG_SCREENSHOT_CONTEXT_URL, SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun shareAction_includesAssistContentUri() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -151,7 +153,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionAccessed_whilePending_launchesMostRecentAction() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -176,10 +178,8 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
-        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-    )
+    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun scrollChipClicked_callsOnClick_legacy() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -196,8 +196,10 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(
+        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
+        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+    )
     fun scrollChipClicked_callsOnClick() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -215,7 +217,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun scrollChipClicked_afterInvalidate_doesNothing() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -233,10 +235,8 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
-        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-    )
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     fun scrollChipClicked_afterUpdate_runsNewAction_legacy() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -258,8 +258,10 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
-    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(
+        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
+        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+    )
     fun scrollChipClicked_afterUpdate_runsNewAction() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()
@@ -300,7 +302,6 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun editAction_whenFeatureFlagEnabled_andSmallScreen_includesButton() =
         kosmos.runTest {
-            overrideResource(R.bool.config_enableLargeScreenScreencapture, false)
             actionsProvider = createActionsProvider()
 
             val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
@@ -316,7 +317,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun editAction_whenFeatureFlagEnabled_andLargeScreen_doesNotIncludeButton() =
         kosmos.runTest {
-            overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+            fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
             actionsProvider = createActionsProvider()
 
             val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
@@ -347,7 +348,6 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun copyToClipboardAction_whenFeatureFlagEnabled_andNotLargeScreen_doesNotIncludeButton() =
         kosmos.runTest {
-            overrideResource(R.bool.config_enableLargeScreenScreencapture, false)
             actionsProvider = createActionsProvider()
 
             val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
@@ -363,7 +363,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun copyToClipboardAction_whenFeatureFlagEnabled_andIsLargeScreen_includesButton() =
         kosmos.runTest {
-            overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+            fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
             actionsProvider = createActionsProvider()
 
             val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
@@ -379,7 +379,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun copyToClipboardAction_copiesToClipboard() =
         kosmos.runTest {
-            overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+            fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
             actionsProvider = createActionsProvider()
             actionsProvider.setCompletedScreenshot(validResult)
 
