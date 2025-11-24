@@ -19,8 +19,10 @@ import android.graphics.Color
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseShader.Companion.Type.SIMPLEX_NOISE
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseShader.Companion.Type.SIMPLEX_NOISE_FRACTAL
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseAnimationConfig
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseShader.Companion.Type.SIMPLEX_NOISE
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseShader.Companion.Type.SIMPLEX_NOISE_FRACTAL
+import com.android.systemui.surfaceeffects.view.turbulencenoise.TurbulenceNoiseView
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat

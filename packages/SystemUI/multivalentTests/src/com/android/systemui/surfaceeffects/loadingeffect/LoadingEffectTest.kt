@@ -23,10 +23,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
-import com.android.systemui.surfaceeffects.PaintDrawCallback
-import com.android.systemui.surfaceeffects.RenderEffectDrawCallback
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseAnimationConfig
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseShader
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseAnimationConfig
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseShader
+import com.android.systemui.surfaceeffects.view.PaintDrawCallback
+import com.android.systemui.surfaceeffects.view.RenderEffectDrawCallback
+import com.android.systemui.surfaceeffects.view.loadingeffect.LoadingEffect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

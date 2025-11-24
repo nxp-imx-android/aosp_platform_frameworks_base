@@ -31,7 +31,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.surfaceeffects.ripple.RippleView
+import com.android.systemui.surfaceeffects.view.ripple.RippleView
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import org.junit.Before
