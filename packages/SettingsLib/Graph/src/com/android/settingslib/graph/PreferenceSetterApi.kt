@@ -37,7 +37,7 @@ import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
-import com.android.settingslib.metadata.UnvalidatedKeyParameters
+import com.android.settingslib.metadata.KeyParameters
 import com.android.settingslib.metadata.toMap
 import com.android.settingslib.metadata.usePreferenceHierarchyScope
 
@@ -57,7 +57,7 @@ class PreferenceSetterRequest : PreferenceCoordinate {
 
     constructor(
         screenKey: String,
-        keyParameters: UnvalidatedKeyParameters?,
+        keyParameters: KeyParameters?,
         key: String,
         value: PreferenceValueProto,
     ) : super(screenKey, keyParameters, key) {
@@ -264,7 +264,7 @@ class PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
         return if (CatalystFlags.catalystUseKeyParameters()) {
             PreferenceSetterRequest(
                 screenKey,
-                data.getBundle(KEY_PARAMETERS)?.let { UnvalidatedKeyParameters(it.toMap()) },
+                data.getBundle(KEY_PARAMETERS)?.let { KeyParameters(it.toMap()) },
                 key,
                 value
             )

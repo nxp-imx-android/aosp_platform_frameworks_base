@@ -19,14 +19,14 @@ package com.android.settingslib.metadata
 /**
  * Marks a class as being a parameterized preference.
  *
- * Any class implementing this interface is expected to hold the [KeyParameters] that were used
+ * Any class implementing this interface is expected to hold the [ValidatedKeyParameters] that were used
  * to configure and create it.
  */
 interface ParameterizedPreference {
     /**
      * The validated set of parameters that this preference instance was created with.
      */
-    val parameters: KeyParameters
+    val parameters: ValidatedKeyParameters
 }
 
 /**
@@ -53,7 +53,7 @@ interface ParameterizedPreference {
  *
  * @param T The type of [ParameterizedPreference] this factory creates.
  */
-interface ParameterizedPreferenceFactory<T: ParameterizedPreference> {
+interface ParameterizedPreferenceFactory<T : ParameterizedPreference> {
     /**
      * The schema for the parameters required to create an instance of [T].
      */
@@ -64,10 +64,10 @@ interface ParameterizedPreferenceFactory<T: ParameterizedPreference> {
      *
      * It is typically implemented by assigning the constructor reference.
      *
-     * The function takes a [KeyParameters] object that is guaranteed to have been successfully
+     * The function takes a [ValidatedKeyParameters] object that is guaranteed to have been successfully
      * validated against the [parametersSchema].
      */
-    val creator: (KeyParameters) -> T
+    val creator: (ValidatedKeyParameters) -> T
 
     /**
      * A convenience operator that validates a map of parameters and creates an instance of [T].
@@ -79,8 +79,7 @@ interface ParameterizedPreferenceFactory<T: ParameterizedPreference> {
      * @return A new instance of [T].
      * @throws IllegalArgumentException if the provided parameters do not conform to the schema.
      */
-    operator fun invoke(parameters: Map<String, String>)
-            = creator(parametersSchema.prepare(parameters))
+    operator fun invoke(parameters: Map<String, String>) = creator(parametersSchema.prepare(parameters))
 
     /**
      * A convenience operator that validates a map of parameters and creates an instance of [T].
