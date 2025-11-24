@@ -155,6 +155,16 @@ constructor(
                             view.setNegativeClippingShape(shape)
                         }
                     )
+                    register(
+                        viewModel.stackScrollTop.observe { scrollTop ->
+                            view.setStackScrollTop(scrollTop)
+                        }
+                    )
+                    register(
+                        viewModel.stackBounds.observe { stackBounds ->
+                            view.updateStackBounds(stackBounds)
+                        }
+                    )
                 }
             }
         }

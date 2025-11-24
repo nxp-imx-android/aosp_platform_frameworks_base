@@ -47,13 +47,13 @@ import org.mockito.kotlin.mock
 
 var Kosmos.sceneKeys by Fixture {
     listOf(
-        Scenes.QuickSettings,
-        Scenes.Shade,
-        Scenes.Lockscreen,
         Scenes.Gone,
         Scenes.Communal,
         Scenes.Dream,
         Scenes.Occluded,
+        Scenes.Lockscreen,
+        Scenes.QuickSettings,
+        Scenes.Shade,
     )
 }
 

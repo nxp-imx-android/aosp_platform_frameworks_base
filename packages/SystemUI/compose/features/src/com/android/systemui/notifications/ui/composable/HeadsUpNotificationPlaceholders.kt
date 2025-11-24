@@ -42,6 +42,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.modifiers.onUnplaced
 import com.android.compose.modifiers.thenIf
 import com.android.compose.modifiers.width
 import com.android.systemui.res.R
@@ -187,21 +189,6 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
         }
     }
 
-    // Wait for being Idle on this content, otherwise LaunchedEffect would fire too soon, and
-    // another transition could override the NSSL stack bounds.
-    val updateStackBounds = layoutState.transitionState.isIdle() && useStackBounds()
-
-    LaunchedEffect(updateStackBounds) {
-        if (updateStackBounds) {
-            // Reset the stack bounds to avoid caching these values from the previous Scenes, and
-            // not to confuse the StackScrollAlgorithm when it displays a HUN over GONE.
-            stackScrollView.apply {
-                // use -headsUpInset to allow HUN translation outside bounds for snoozing
-                setStackTop(-headsUpInset)
-            }
-        }
-    }
-
     HeadsUpNotificationPlaceholder(
         tag = "$tag.Snoozable",
         stackScrollView = stackScrollView,
@@ -224,11 +211,20 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                             ),
                     )
                 }
-                .onGloballyPositioned {
-                    if (updateStackBounds) {
-                        val bounds = it.boundsInWindow()
-                        stackScrollView.updateStackBounds(YSpace(bounds.top, bounds.bottom))
-                    }
+                // TODO(462706428) Make NSSL use strictly HeadsUpPlaceholder values and leave stack
+                // related updates strictly to the other placeholders.
+                //
+                // Make sure NSSL needs to receive some valid stack bounds, even if the
+                // HeadsUpPlaceholder is displayed without the regular StackPlaceholder.
+                .onPlaced {
+                    val bounds = it.boundsInWindow()
+                    viewModel.setStackBounds(YSpace(bounds.top, bounds.bottom))
+                    // Use -headsUpInset to allow HUN translation outside bounds for snoozing.
+                    viewModel.setStackScrollTop(-headsUpInset)
+                }
+                .onUnplaced {
+                    viewModel.resetStackBounds()
+                    viewModel.resetStackScrollTop()
                 }
                 .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
                 .scrollable(orientation = Orientation.Vertical, state = scrollableState),

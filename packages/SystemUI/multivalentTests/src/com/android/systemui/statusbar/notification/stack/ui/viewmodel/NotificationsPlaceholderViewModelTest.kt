@@ -21,9 +21,12 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -35,6 +38,11 @@ import org.junit.runner.RunWith
 @EnableSceneContainer
 class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
+    private val vmFactory = kosmos.notificationsPlaceholderViewModelFactory
+    private val lockscreenViewModel = vmFactory.create(Scenes.Lockscreen)
+    private val quickSettingsViewModel = vmFactory.create(Scenes.QuickSettings)
+    private val shadeViewModel = vmFactory.create(Scenes.Shade)
+
     private val underTest by lazy { kosmos.notificationsPlaceholderViewModel }
 
     @Test
@@ -42,10 +50,80 @@ class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             val bounds = ShadeScrimBounds(left = 5f, top = 15f, right = 25f, bottom = 35f)
             underTest.onScrimBoundsChanged(bounds)
-            val stackBounds by
+            val scrimBounds by
                 collectLastValue(
                     kosmos.notificationStackAppearanceInteractor.notificationShadeScrimBounds
                 )
-            assertThat(stackBounds).isEqualTo(bounds)
+            assertThat(scrimBounds).isEqualTo(bounds)
+        }
+
+    @Test
+    fun onStackScrollTopChanged_lockscreenAndShade() =
+        kosmos.runTest {
+            var scrollTop: Float? = Float.NaN
+            val disposable =
+                kosmos.notificationScrollViewModel.stackScrollTop.observe { value ->
+                    scrollTop = value
+                }
+
+            // Given: Initial value is zero.
+            assertThat(scrollTop).isEqualTo(0f)
+
+            // When: LS sends updates
+            lockscreenViewModel.setStackScrollTop(100f)
+            // Then: Observers are notified
+            assertThat(scrollTop).isEqualTo(100f)
+
+            // When: Shade sends an update
+            shadeViewModel.setStackScrollTop(80f)
+            // Then: Observers get the value from Shade
+            assertThat(scrollTop).isEqualTo(80f)
+
+            // When: Shade is removed
+            shadeViewModel.resetStackScrollTop()
+            // Then: Observers get the LS values again
+            assertThat(scrollTop).isEqualTo(100f)
+
+            // When: LS is removed
+            lockscreenViewModel.resetStackScrollTop()
+            // Then: Observers get the default value again
+            assertThat(scrollTop).isEqualTo(0f)
+
+            disposable.dispose()
+        }
+
+    @Test
+    fun onStackBoundsChanged_quickSettingsAndShade() =
+        kosmos.runTest {
+            var stackBounds: YSpace? = YSpace(Float.NaN, Float.NaN)
+            val disposable =
+                kosmos.notificationScrollViewModel.stackBounds.observe { value ->
+                    stackBounds = value
+                }
+
+            // Given: Initial bounds are zero.
+            assertThat(stackBounds).isEqualTo(YSpace.Zero)
+
+            // When: Shade sends an update
+            shadeViewModel.setStackBounds(YSpace(0f, 100f))
+            // Then: Observers are notified
+            assertThat(stackBounds).isEqualTo(YSpace(0f, 100f))
+
+            // When: Shade sends more updates
+            shadeViewModel.setStackBounds(YSpace(50f, 150f))
+            // Then: Observers are notified
+            assertThat(stackBounds).isEqualTo(YSpace(50f, 150f))
+
+            // When: QS sends updates
+            quickSettingsViewModel.setStackBounds(YSpace(100f, 200f))
+            // Then: Observers still see the last value from Shade
+            assertThat(stackBounds).isEqualTo(YSpace(50f, 150f))
+
+            // When: Shade is removed
+            shadeViewModel.resetStackBounds()
+            // Then: Observers get the QS values
+            assertThat(stackBounds).isEqualTo(YSpace(100f, 200f))
+
+            disposable.dispose()
         }
 }

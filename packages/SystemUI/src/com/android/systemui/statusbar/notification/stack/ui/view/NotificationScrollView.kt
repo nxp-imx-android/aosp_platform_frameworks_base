@@ -80,7 +80,7 @@ interface NotificationScrollView {
     fun setEnabled(enabled: Boolean)
 
     /** set the y position in px of the top of the stack in this view's coordinates */
-    fun setStackTop(stackTop: Float)
+    fun setStackScrollTop(stackTop: Float)
 
     /** sets the vertical bounds for the user visible area of the notification stack */
     fun updateStackBounds(boundsInWindow: YSpace)

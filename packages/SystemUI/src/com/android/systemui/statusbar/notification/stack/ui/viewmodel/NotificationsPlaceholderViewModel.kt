@@ -27,6 +27,7 @@ import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.notifications.ui.NotificationPlaceholderStateStorage
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -41,6 +42,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.Accessibil
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.util.kotlin.ActivatableFlowDumper
 import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
@@ -62,6 +64,7 @@ class NotificationsPlaceholderViewModel
 @AssistedInject
 constructor(
     @param:Assisted private val contentKey: ContentKey,
+    private val placeholderStateStorage: NotificationPlaceholderStateStorage,
     private val interactor: NotificationStackAppearanceInteractor,
     private val sceneInteractor: SceneInteractor,
     shadeInteractor: ShadeInteractor,
@@ -77,6 +80,22 @@ constructor(
         dumpManager = dumpManager,
         tag = "NotificationsPlaceholderViewModel",
     ) {
+
+    fun setStackScrollTop(value: Float) {
+        placeholderStateStorage.setStackScrollTop(contentKey, value)
+    }
+
+    fun resetStackScrollTop() {
+        placeholderStateStorage.resetStackScrollTop(contentKey)
+    }
+
+    fun setStackBounds(space: YSpace) {
+        placeholderStateStorage.setStackBounds(contentKey, space)
+    }
+
+    fun resetStackBounds() {
+        placeholderStateStorage.resetStackBounds(contentKey)
+    }
 
     private val hydrator = Hydrator("NotificationsPlaceholderViewModel")
 

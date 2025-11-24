@@ -1356,10 +1356,10 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setStackTop(float stackTop) {
+    public void setStackScrollTop(float stackScrollTop) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (mAmbientState.getStackScrollTop() != stackTop) {
-            mAmbientState.setStackScrollTop(stackTop);
+        if (mAmbientState.getStackScrollTop() != stackScrollTop) {
+            mAmbientState.setStackScrollTop(stackScrollTop);
             onTopPaddingChanged(/* animate = */ isAddOrRemoveAnimationPending());
         }
     }
