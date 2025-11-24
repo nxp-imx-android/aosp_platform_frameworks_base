@@ -26,8 +26,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.inMultiWindowMode;
 import static android.os.Process.myUid;
 
-import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
-
 import static java.lang.Character.MIN_VALUE;
 
 import android.Manifest;
@@ -1928,27 +1926,25 @@ public class Activity extends ContextThemeWrapper
             mDefaultBackCallback = this::onBackInvoked;
             getOnBackInvokedDispatcher().registerSystemOnBackInvokedCallback(mDefaultBackCallback);
         }
-        if (predictiveBackStopKeycodeBackForwarding()) {
-            mObserverBackCallback = new ObserverOnBackAnimationCallback() {
-                    @Override
-                    public void onBackStarted(@NonNull BackEvent backEvent) {
-                        onUserInteraction();
-                    }
+        mObserverBackCallback = new ObserverOnBackAnimationCallback() {
+                @Override
+                public void onBackStarted(@NonNull BackEvent backEvent) {
+                    onUserInteraction();
+                }
 
-                    @Override
-                    public void onBackInvoked() {
-                        onUserInteraction();
-                    }
+                @Override
+                public void onBackInvoked() {
+                    onUserInteraction();
+                }
 
-                    @Override
-                    public void onBackCancelled() {}
-                };
-            // Register a ObserverOnBackAnimationCallback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER
-            // to get notified on every back navigation so that onUserInteraction can be called.
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
-                    mObserverBackCallback);
-        }
+                @Override
+                public void onBackCancelled() {}
+            };
+        // Register a ObserverOnBackAnimationCallback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER
+        // to get notified on every back navigation so that onUserInteraction can be called.
+        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
+                mObserverBackCallback);
     }
 
     /**
