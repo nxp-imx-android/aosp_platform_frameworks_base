@@ -30,6 +30,8 @@ import android.graphics.Rect;
 import android.view.Display;
 import android.window.WindowContainerToken;
 
+import com.android.testing.wm.util.MockToken;
+
 public final class TestRunningTaskInfoBuilder {
     static int sNextTaskId = 500;
     private Rect mBounds = new Rect(0, 0, 100, 100);

@@ -40,9 +40,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.protolog.ProtoLog
+import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener

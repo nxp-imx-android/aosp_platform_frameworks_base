@@ -74,7 +74,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.launcher3.icons.BubbleIconFactory;
-import com.android.wm.shell.MockToken;
+import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;

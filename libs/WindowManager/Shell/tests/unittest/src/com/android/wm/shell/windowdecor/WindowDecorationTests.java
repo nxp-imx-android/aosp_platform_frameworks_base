@@ -83,8 +83,8 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.testing.wm.util.MockToken;
 import com.android.window.flags.Flags;
-import com.android.wm.shell.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestHandler;

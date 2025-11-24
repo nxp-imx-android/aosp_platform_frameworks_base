@@ -31,7 +31,7 @@ import android.graphics.Rect
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
-import com.android.wm.shell.MockToken
+import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import org.mockito.Mockito.mock
 

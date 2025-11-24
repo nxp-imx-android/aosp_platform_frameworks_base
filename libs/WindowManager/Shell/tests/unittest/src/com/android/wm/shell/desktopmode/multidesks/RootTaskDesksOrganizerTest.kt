@@ -35,8 +35,8 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_S
 import android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID
 import androidx.core.util.valueIterator
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskListener

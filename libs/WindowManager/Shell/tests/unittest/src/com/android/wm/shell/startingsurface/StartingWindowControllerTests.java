@@ -51,6 +51,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.util.function.TriConsumer;
 import com.android.launcher3.icons.IconProvider;
 import com.android.server.testutils.StubTransaction;
+import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -60,7 +61,6 @@ import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.TransitionInfoBuilder;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
