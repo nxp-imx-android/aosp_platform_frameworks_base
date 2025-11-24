@@ -27,6 +27,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAsleepInState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.scene.data.model.asIterable
+import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -58,7 +60,8 @@ constructor(
     fromAlternateBouncerInteractor: FromAlternateBouncerTransitionInteractor,
     notificationLaunchAnimationInteractor: NotificationLaunchAnimationInteractor,
     sceneInteractor: Lazy<SceneInteractor>,
-    deviceEntryInteractor: Lazy<DeviceEntryInteractor>,
+    private val sceneBackInteractor: Lazy<SceneBackInteractor>,
+    private val deviceEntryInteractor: Lazy<DeviceEntryInteractor>,
     wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     deviceProvisioningInteractor: Lazy<DeviceProvisioningInteractor>,
     powerInteractor: PowerInteractor,
@@ -228,6 +231,23 @@ constructor(
                 }
             }
 
+    /**
+     * The lockscreen is visible when dreaming if the device is locked, or if the lockscreen scene
+     * is in the backstack. The latter check ensures that we still consider it visible if the
+     * lockscreen is showing but not locked, such as with the Swipe auth method.
+     */
+    private fun getDreamLockscreenVisibility(context: String): Flow<Pair<Boolean, String>> =
+        combine(
+            deviceEntryInteractor.get().isUnlocked,
+            sceneBackInteractor.get().backStack,
+        ) { isUnlocked, backStack ->
+            val lockscreenOnBackStack = backStack.asIterable().lastOrNull() == Scenes.Lockscreen
+            val visible = !isUnlocked || lockscreenOnBackStack
+            visible to
+                "$context on Dream, isUnlocked=$isUnlocked," +
+                    " lockscreenOnBackStack=$lockscreenOnBackStack"
+        }
+
     private val lockscreenVisibilityWithScenes: Flow<Pair<Boolean, String>> =
         deviceProvisioningInteractor.get().isDeviceProvisioned.flatMapLatestConflated {
             isProvisioned ->
@@ -241,11 +261,7 @@ constructor(
                                         // if the device is unlocked. This allows the dream to go
                                         // directly to the gone state when dismissed.
                                         it.currentScene == Scenes.Dream ->
-                                            deviceEntryInteractor.get().isUnlocked.map { isUnlocked
-                                                ->
-                                                !isUnlocked to
-                                                    "Idle on Dream, isUnlocked=$isUnlocked"
-                                            }
+                                            getDreamLockscreenVisibility("Idle")
                                         // If idle on one of the keyguard scenes, report that the
                                         // keyguard is visible.
                                         it.currentScene in keyguardScenes ->
@@ -309,11 +325,7 @@ constructor(
                                         // since dreams can display while the device is unlocked
                                         // and keyguard is disabled.
                                         it.currentScene == Scenes.Dream ->
-                                            deviceEntryInteractor.get().isUnlocked.map { isUnlocked
-                                                ->
-                                                !isUnlocked to
-                                                    "Overlay on Dream, isUnlocked=$isUnlocked"
-                                            }
+                                            getDreamLockscreenVisibility("Overlay")
                                         // If showing, hiding, or replacing an overlay and the
                                         // current scene under those overlays is one of the keyguard
                                         // scenes, report that the keyguard is showing.
