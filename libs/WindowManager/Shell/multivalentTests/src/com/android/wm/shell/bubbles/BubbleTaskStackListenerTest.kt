@@ -148,6 +148,27 @@ class BubbleTaskStackListenerTest {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_collapsesStack() {
+        val captionInsetsOwner = Binder()
+        mockTaskView.stub { on { getCaptionInsetsOwner() } doReturn captionInsetsOwner }
+        task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        bubbleData.stub {
+            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
+            on { isExpanded } doReturn true
+        }
+
+        bubbleTaskStackListener.onActivityRestartAttempt(
+            task,
+            homeTaskVisible = false,
+            clearedTask = false,
+            wasVisible = false,
+        )
+
+        verify(bubbleData).setExpanded(false)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
     fun onActivityRestartAttempt_inStackAppBubbleToSplit_doesNothing() {
         task.parentTaskId = 456
         bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }

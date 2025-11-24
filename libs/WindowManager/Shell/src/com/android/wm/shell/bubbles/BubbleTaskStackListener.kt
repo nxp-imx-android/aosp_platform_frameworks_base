@@ -62,7 +62,7 @@ class BubbleTaskStackListener(
         )
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
-                task.isBubbleToFullscreen() -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
+                task.isBubbleToFullscreen() -> moveExistingBubbleToFullscreen(bubble, task)
                 task.isBubbleToSplit(splitScreenController) -> return // skip split task restarts
                 !task.isAppBubbleMovingToFront() -> selectAndExpandInStackBubble(bubble, task)
             }
@@ -73,9 +73,7 @@ class BubbleTaskStackListener(
         val taskId = task.taskId
         BubbleLog.d("BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d", taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
-            when {
-                task.isBubbleToFullscreen() -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
-            }
+            if (task.isBubbleToFullscreen()) moveExistingBubbleToFullscreen(bubble, task)
         }
     }
 
@@ -103,13 +101,13 @@ class BubbleTaskStackListener(
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
     }
 
-    /** Moves a collapsed bubble that is currently in the stack to fullscreen. */
-    private fun moveCollapsedInStackBubbleToFullscreen(
+    /** Moves a bubble that is currently in the stack to fullscreen. */
+    private fun moveExistingBubbleToFullscreen(
         bubble: Bubble,
         task: ActivityManager.RunningTaskInfo,
     ) {
         BubbleLog.d(
-            "BubbleTaskStackListener.moveCollapsedInStackBubbleToFullscreen() taskId=%d bubble=%s" +
+            "BubbleTaskStackListener.moveExistingBubbleToFullscreen() taskId=%d bubble=%s" +
                 " to fullscreen",
             task.taskId,
             bubble.key,
@@ -121,5 +119,7 @@ class BubbleTaskStackListener(
         taskOrganizer.applyTransaction(wct)
 
         taskViewTaskController.notifyTaskRemovalStarted(task)
+
+        if (bubbleData.isExpanded) bubbleData.isExpanded = false
     }
 }
