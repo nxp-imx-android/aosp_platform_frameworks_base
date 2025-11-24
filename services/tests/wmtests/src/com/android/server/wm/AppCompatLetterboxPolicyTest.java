@@ -147,8 +147,6 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
         });
     }
 
-
-    @EnableFlags(Flags.FLAG_ADD_SURFACE_INSETS_FOR_CROP)
     @Test
     public void testGetCropBoundsIfNeeded_appliesCropWithSurfaceInsets() {
         runTestScenario((robot) -> {

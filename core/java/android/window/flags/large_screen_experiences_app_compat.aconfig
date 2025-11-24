@@ -218,13 +218,3 @@ flag {
   bug: "414381398"
   is_fixed_read_only: true
 }
-
-flag {
-  name: "add_surface_insets_for_crop"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Accounts for surface insets when applying window crop for rounded corners."
-  bug: "425184002"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
