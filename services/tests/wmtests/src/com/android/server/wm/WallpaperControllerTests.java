@@ -52,7 +52,6 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -66,8 +65,6 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -272,7 +269,6 @@ public class WallpaperControllerTests extends WindowTestsBase {
         assertEquals(otherWindowInitialZoom, wallpaperWindow.mWallpaperZoomOut, .01f);
     }
 
-    @EnableFlags(Flags.FLAG_CHOOSING_VISIBLE_AS_WALLPAPER_TARGET)
     @Test
     public void testUpdateWallpaperTarget() {
         final DisplayContent dc = mDisplayContent;
