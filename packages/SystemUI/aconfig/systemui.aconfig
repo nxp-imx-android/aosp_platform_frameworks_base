@@ -1854,16 +1854,6 @@ flag {
 }
 
 flag {
-   name: "defer_doze_transition_on_shade_drag"
-   namespace: "systemui"
-   description: "Defer doze-to-lockscreen transition animation during notification shade drag"
-   bug: "419763981"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "ambient_cue_plugin"
     namespace: "ailabs"
     description: "Enable plugin for ambient cue project"
