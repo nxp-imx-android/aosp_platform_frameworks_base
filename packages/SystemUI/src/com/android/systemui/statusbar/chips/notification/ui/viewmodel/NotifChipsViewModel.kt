@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
+import android.app.Notification
+import android.app.Notification.ResolvedBasicCompactContent
 import android.content.ComponentName
 import android.content.Context
 import com.android.internal.jank.Cuj
@@ -52,6 +54,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
+import com.android.systemui.statusbar.notification.shared.NotificationChipApi
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -137,35 +140,61 @@ constructor(
         // Chips are never shown when locked, so it's safe to use the version with sensitive content
         val content = promotedContent.privateVersion
 
-        val firstMetricValue = content.metrics?.firstOrNull()
-        val textFromMetric = (firstMetricValue as? Metric.Text)?.metricValue?.toString()
-        val timeFromMetric = (firstMetricValue as? Metric.TimeDifference)?.toWhen()
-        val timeFromWhen =
-            when (val rawTime = content.time) {
-                null -> null
-                is PromotedNotificationContentModel.When.Time -> {
-                    if (
-                        rawTime.currentTimeMillis >=
-                            systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
-                    ) {
-                        rawTime
-                    } else {
-                        // Don't show a `when` time that's close to now or in the past because it's
-                        // likely that the app didn't intentionally set the `when` time to be shown
-                        // in the status bar chip.
-                        // TODO(b/393369213): If a notification sets a `when` time in the future and
-                        // then that time comes and goes, the chip *will* start showing times in the
-                        // past. Not going to fix this right now because the Compose implementation
-                        // automatically handles this for us and we're hoping to launch the
-                        // notification chips at the same time as the Compose chips.
-                        null
-                    }
-                }
-                is PromotedNotificationContentModel.When.Chronometer -> rawTime
-            }
+        val chipText: String?
+        val chipTime: PromotedNotificationContentModel.When?
+        val chipChronometer: Chronometer?
+        val chipChronometerFormat: OngoingActivityChipModel.Content.Timer.Format?
 
-        val chipText = content.shortCriticalText ?: textFromMetric
-        val chipTime = timeFromMetric ?: timeFromWhen
+        if (NotificationChipApi.isEnabled) {
+            if (content.compactContent is ResolvedBasicCompactContent) {
+                val contentText = content.compactContent.text
+                chipText =
+                    contentText
+                        ?.takeUnless { it is Notification.Metric.TimeDifference }
+                        ?.toValueString(context)
+                        ?.text()
+                chipChronometer =
+                    (contentText as? Notification.Metric.TimeDifference)?.toChronometer()
+                chipChronometerFormat =
+                    (contentText as? Notification.Metric.TimeDifference)?.toChronometerFormat()
+                chipTime = null
+            } else {
+                throw IllegalStateException("Unknown compactContent: ${content.compactContent}")
+            }
+        } else {
+            val firstMetricValue = content.metrics?.firstOrNull()
+            val textFromMetric = (firstMetricValue as? Metric.Text)?.metricValue?.toString()
+            val timeFromMetric = (firstMetricValue as? Metric.TimeDifference)?.toWhen()
+            val timeFromWhen =
+                when (val rawTime = content.time) {
+                    null -> null
+                    is PromotedNotificationContentModel.When.Time -> {
+                        if (
+                            rawTime.currentTimeMillis >=
+                                systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
+                        ) {
+                            rawTime
+                        } else {
+                            // Don't show a `when` time that's close to now or in the past because
+                            // it's likely that the app didn't intentionally set the `when` time to
+                            // be shown in the status bar chip.
+                            // TODO(b/393369213): If a notification sets a `when` time in the future
+                            // and then that time comes and goes, the chip *will* start showing
+                            // times in the past. Not going to fix this right now because the
+                            // Compose implementation automatically handles this for us and we're
+                            // hoping to launch the notification chips at the same time as the
+                            // Compose chips.
+                            null
+                        }
+                    }
+                    is PromotedNotificationContentModel.When.Chronometer -> rawTime
+                }
+
+            chipText = content.shortCriticalText ?: textFromMetric
+            chipTime = timeFromMetric ?: timeFromWhen
+            chipChronometer = null
+            chipChronometerFormat = null
+        }
 
         return PrunedNotificationChipModel(
             key = key,
@@ -175,12 +204,33 @@ constructor(
             statusBarChipIconView = statusBarChipIconView,
             text = chipText,
             time = chipTime,
+            chronometer = chipChronometer,
+            chronometerFormat =
+                chipChronometerFormat ?: OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
             wasPromotedAutomatically = content.wasPromotedAutomatically,
             isAppVisible = isAppVisible,
             instanceId = instanceId,
         )
     }
 
+    private fun Notification.Metric.TimeDifference.toChronometer(): Chronometer =
+        if (this.pausedDuration != null) Chronometer.Paused(this.pausedDuration!!)
+        else
+            Chronometer.Running(
+                if (this.zeroElapsedRealtime != null)
+                    EventTime.ElapsedRealtime(this.zeroElapsedRealtime!!)
+                else if (this.zeroTime != null) EventTime.ClockTime(this.zeroTime!!)
+                else throw IllegalArgumentException("Invalid TimeDifference: $this"),
+                isCountdown = this.isTimer,
+            )
+
+    private fun Notification.Metric.TimeDifference.toChronometerFormat():
+        OngoingActivityChipModel.Content.Timer.Format =
+        if (this.format == Notification.Metric.TimeDifference.FORMAT_ADAPTIVE)
+            OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE
+        else OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER
+
+    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
     private fun PromotedNotificationContentModel.Metric.TimeDifference.toWhen():
         PromotedNotificationContentModel.When? =
         when (this) {
@@ -215,10 +265,12 @@ constructor(
         }
 
     /** Converts a system time (epoch millis) to elapsed realtime. */
+    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
     private fun SystemClock.toElapsedRealtime(fromSystemTime: Long): Long =
         fromSystemTime + (elapsedRealtime() - currentTimeMillis())
 
     /** Converts an elapsed realtime to a system time (epoch millis). */
+    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
     private fun SystemClock.toSystemTime(fromElapsedRealtime: Long): Long =
         fromElapsedRealtime + (currentTimeMillis() - elapsedRealtime())
 
@@ -296,6 +348,8 @@ constructor(
         isHidden: Boolean? = null,
     ): OngoingActivityChipModel.Active {
         val contentDescription = getContentDescription(this.appName)
+        // Note: ResolvedBasicCompactContent has an option for SOURCE_APP_ICON, but it's not used by
+        // AOSP and not choosable by apps. So for now we only behave as if it's SOURCE_SMALL_ICON.
         val icon =
             if (this.statusBarChipIconView != null) {
                 StatusBarConnectedDisplays.assertInLegacyMode()
@@ -305,6 +359,7 @@ constructor(
                 )
             } else {
                 StatusBarConnectedDisplays.unsafeAssertInNewMode()
+
                 OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
                     this.key,
                     contentDescription,
@@ -343,6 +398,13 @@ constructor(
                     // time.
                     OngoingActivityChipModel.Content.IconOnly
                 }
+                NotificationChipApi.isEnabled && chronometer != null ->
+                    OngoingActivityChipModel.Content.Timer(
+                        value = chronometer,
+                        format = chronometerFormat,
+                        timeSource = systemClock,
+                    )
+                NotificationChipApi.isEnabled -> OngoingActivityChipModel.Content.IconOnly
                 else -> {
                     when (time) {
                         null -> OngoingActivityChipModel.Content.IconOnly
@@ -435,7 +497,13 @@ constructor(
          * over [time].
          */
         val text: String?,
+        /** The chronometer to show in the chip, or null if it shouldn't be shown. */
+        val chronometer: Chronometer?,
+        val chronometerFormat: OngoingActivityChipModel.Content.Timer.Format =
+            OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
+
         /** The time to show in the chip, or null if the time shouldn't be shown. */
+        // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
         val time: PromotedNotificationContentModel.When?,
         /** See [PromotedNotificationContentModel.wasPromotedAutomatically]. */
         val wasPromotedAutomatically: Boolean,

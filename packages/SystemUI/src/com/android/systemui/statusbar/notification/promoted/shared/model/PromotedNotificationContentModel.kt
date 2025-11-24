@@ -18,6 +18,9 @@ package com.android.systemui.statusbar.notification.promoted.shared.model
 
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
+import android.annotation.FlaggedApi
+import android.app.Notification
+import android.app.Notification.ResolvedCompactContent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -62,14 +65,20 @@ data class PromotedNotificationContentModel(
 
     // for all styles:
     /**
-     * True if this notification was automatically promoted - see [AutomaticPromotionCoordinator].
+     * True if this notification was automatically promoted - see
+     * [com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator].
      */
     val wasPromotedAutomatically: Boolean,
     val skeletonNotifIcon: NotifIcon?,
     val iconLevel: Int,
     val appName: CharSequence?,
     val subText: CharSequence?,
+    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
     val shortCriticalText: String?,
+    // TODO: b/462677827 - Make non-nullable when inlining API_NOTIFICATION_CHIP
+    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    val compactContent: ResolvedCompactContent?,
+
     /**
      * The timestamp associated with the notification. Null if the timestamp should not be
      * displayed.
@@ -103,6 +112,7 @@ data class PromotedNotificationContentModel(
         var subText: CharSequence? = null
         var time: When? = null
         var shortCriticalText: String? = null
+        var compactContent: ResolvedCompactContent? = null
         var lastAudiblyAlertedMs: Long = 0L
         var profileBadgeBitmap: Bitmap? = null
         var title: CharSequence? = null
@@ -133,6 +143,7 @@ data class PromotedNotificationContentModel(
                 appName = appName,
                 subText = subText,
                 shortCriticalText = shortCriticalText,
+                compactContent = compactContent,
                 time = time,
                 lastAudiblyAlertedMs = lastAudiblyAlertedMs,
                 profileBadgeBitmap = profileBadgeBitmap,
@@ -232,6 +243,7 @@ data class PromotedNotificationContentModel(
             "appName=$appName, " +
             "subText=${subText?.toRedactedString()}, " +
             "shortCriticalText=$shortCriticalText, " +
+            "compactContent=${compactContent?.toRedactedString()}, " +
             "time=$time, " +
             "lastAudiblyAlertedMs=$lastAudiblyAlertedMs, " +
             "profileBadgeBitmap=$profileBadgeBitmap, " +
@@ -274,5 +286,22 @@ data class PromotedNotificationContentModel(
             is ImageResult.Empty -> this.toString()
             is ImageResult.Image -> "Image(drawable=[${drawable.javaClass.simpleName}])"
         }
+    }
+
+    private fun ResolvedCompactContent.toRedactedString(): String {
+        return when (this) {
+            is Notification.ResolvedBasicCompactContent -> this.toRedactedString()
+            else -> "${this::class.qualifiedName} (missing toRedactedString)"
+        }
+    }
+
+    private fun Notification.ResolvedBasicCompactContent.toRedactedString(): String {
+        return ("ResolvedBasicCompactContent(" +
+            "icon=${this.icon}, " +
+            "text=${this.text?.toRedactedString()})")
+    }
+
+    private fun Notification.Metric.MetricValue.toRedactedString(): String {
+        return this::class.simpleName!!
     }
 }

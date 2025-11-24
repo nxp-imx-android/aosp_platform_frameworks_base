@@ -68,6 +68,7 @@ import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.MediumSquare
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.SmallSquare
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
+import com.android.systemui.statusbar.notification.shared.NotificationChipApi
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 
@@ -247,7 +248,11 @@ constructor(
         contentBuilder.appName = notification.loadHeaderAppName(packageContext)
         contentBuilder.subText = notification.subText()
         contentBuilder.time = notification.extractWhen()
-        contentBuilder.shortCriticalText = notification.shortCriticalText()
+        if (NotificationChipApi.isEnabled) {
+            contentBuilder.compactContent = notification.resolveCompactContent(packageContext)
+        } else {
+            contentBuilder.shortCriticalText = notification.shortCriticalText()
+        }
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
         contentBuilder.profileBadgeBitmap = Notification.getProfileBadge(packageContext)
         contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
