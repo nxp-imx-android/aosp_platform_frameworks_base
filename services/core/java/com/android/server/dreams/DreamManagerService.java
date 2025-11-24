@@ -646,6 +646,11 @@ public final class DreamManagerService extends SystemService {
                 return false;
             }
 
+            if (chooseDreamForUser(false /*doze*/, userId) == null) {
+                Slog.i(TAG, "Can't start dreaming because no dream is configured.");
+                return false;
+            }
+
             // All dream prerequisites fulfilled, check if device state matches "when to dream"
             // setting.
             return dreamConditionActiveInternalLocked();
