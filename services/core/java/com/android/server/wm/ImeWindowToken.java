@@ -52,21 +52,16 @@ final class ImeWindowToken extends WindowToken {
         mTargetUserId = targetUserId;
     }
 
-    /**
-     * Sets the visibility of the window token, which overrides the visibility of its children.
-     *
-     * @param visible the new visibility.
-     */
-    void setVisible(boolean visible) {
-        if (visible != mVisibleRequested) {
-            ProtoLog.d(WM_DEBUG_IME, "ImeWindowToken %s setVisible=%b", token, visible);
-            setVisibleRequested(visible);
+    @Override
+    void setClientVisible(boolean clientVisible) {
+        if (clientVisible == isClientVisible()) {
+            return;
         }
-
-        if (visible != isClientVisible()) {
-            setClientVisible(visible);
-            mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
-        }
+        ProtoLog.d(WM_DEBUG_IME, "ImeWindowToken %s setClientVisible=%b", token, clientVisible);
+        super.setClientVisible(clientVisible);
+        // Also sets visibleRequested as this influences the child window's visibleRequested.
+        setVisibleRequested(clientVisible);
+        mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
     }
 
     @Override
@@ -80,8 +75,18 @@ final class ImeWindowToken extends WindowToken {
 
     @Override
     boolean isVisible() {
-        // Manages its own visibility, without checking children visibility.
-        return isClientVisible();
+        // Requires client visibility in addition to children visibility.
+        return isClientVisible() && super.isVisible();
+    }
+
+    @Override
+    boolean shouldCheckTokenClientVisible() {
+        return true;
+    }
+
+    @Override
+    boolean shouldCheckTokenVisibleRequested() {
+        return true;
     }
 
     @Override
@@ -93,7 +98,7 @@ final class ImeWindowToken extends WindowToken {
     @Override
     void updateSurfaceVisibility(@NonNull SurfaceControl.Transaction t) {
         // Can be explicitly hidden, it should also hide the surface.
-        t.setVisibility(mSurfaceControl, isVisible());
+        t.setVisibility(mSurfaceControl, isClientVisible());
     }
 
     @Override
@@ -116,8 +121,9 @@ final class ImeWindowToken extends WindowToken {
     @Override
     void dump(@NonNull PrintWriter pw, @NonNull String prefix, boolean dumpAll) {
         super.dump(pw, prefix, dumpAll);
-        pw.print(prefix); pw.print("visibleRequested="); pw.print(mVisibleRequested);
-        pw.print(" visible="); pw.println(isVisible());
+        pw.print(prefix); pw.print("visible="); pw.print(isVisible());
+        pw.print(" visibleRequested="); pw.print(isVisibleRequested());
+        pw.print(" clientVisible="); pw.println(isClientVisible());
         pw.print(" targetUserId="); pw.println(mTargetUserId);
     }
 }

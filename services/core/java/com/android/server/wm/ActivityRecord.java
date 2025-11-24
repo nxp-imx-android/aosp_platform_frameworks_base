@@ -5355,6 +5355,11 @@ final class ActivityRecord extends WindowToken {
     }
 
     @Override
+    boolean shouldCheckTokenVisibleRequested() {
+        return true;
+    }
+
+    @Override
     protected boolean onChildVisibleRequestedChanged(@Nullable WindowContainer child) {
         // Activity manages visibleRequested directly (it's not determined by children)
         return false;

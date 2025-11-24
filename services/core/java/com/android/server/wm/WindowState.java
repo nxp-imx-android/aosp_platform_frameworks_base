@@ -912,7 +912,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Starting window doesn't consider insets.
             return false;
         }
-        final boolean visible = shouldCheckTokenVisibleRequested()
+        final boolean visible = mToken.shouldCheckTokenVisibleRequested()
                 ? isVisibleRequested() : isVisible();
         return visible && mFrozenInsetsState == null;
     }
@@ -1729,28 +1729,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Override
     boolean isVisible() {
-        return wouldBeVisibleIfPolicyIgnored() && isVisibleByPolicyOrInsets();
+        return wouldBeVisibleIfPolicyIgnored() && isVisibleByPolicyOrInsets()
+                && (!mToken.shouldCheckTokenClientVisible() || mToken.isClientVisible());
     }
 
     @Override
     boolean isVisibleRequested() {
-        final boolean localVisibleRequested =
-                wouldBeVisibleRequestedIfPolicyIgnored() && isVisibleByPolicyOrInsets();
-        if (localVisibleRequested && shouldCheckTokenVisibleRequested()) {
-            return mToken.isVisibleRequested();
-        }
-        return localVisibleRequested;
-    }
-
-    /**
-     * Returns {@code true} if {@link WindowToken#isVisibleRequested()} should be considered
-     * before dispatching the latest configuration. Currently only {@link
-     * ActivityRecord#isVisibleRequested()}, {@link WallpaperWindowToken#isVisibleRequested()} and
-     * {@link ImeWindowToken#isVisibleRequested()} implement explicit visible-requested.
-     */
-    boolean shouldCheckTokenVisibleRequested() {
-        return mActivityRecord != null || mToken.asWallpaperToken() != null
-                || mToken.asImeToken() != null;
+        return wouldBeVisibleRequestedIfPolicyIgnored() && isVisibleByPolicyOrInsets()
+                && (!mToken.shouldCheckTokenVisibleRequested() || mToken.isVisibleRequested());
     }
 
     /**
@@ -3748,7 +3734,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // If this is an activity or wallpaper and is invisible or going invisible, don't report
         // either since it is going away. This is likely during a transition so we want to preserve
         // the original state.
-        if (shouldCheckTokenVisibleRequested() && !mToken.isVisibleRequested()) {
+        if (mToken.shouldCheckTokenVisibleRequested() && !mToken.isVisibleRequested()) {
             return;
         }
 
