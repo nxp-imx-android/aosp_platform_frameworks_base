@@ -40,7 +40,6 @@ import com.android.internal.widget.ConversationLayout;
 import com.android.internal.widget.ImageFloatingTextView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
@@ -379,7 +378,7 @@ public class NotificationGroupingUtil {
 
         @Override
         public boolean isEmpty(View view) {
-            if (AsyncGroupHeaderViewInflation.isEnabled() && view == null) {
+            if (view == null) {
                 return true;
             }
             if (view instanceof ImageView) {

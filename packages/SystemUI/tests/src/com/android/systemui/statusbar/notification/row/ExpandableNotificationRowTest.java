@@ -536,7 +536,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
 
         row.onDensityOrFontScaleChanged();
 
-        verify(mockContainer).reInflateViews(any());
+        verify(mockContainer).reInflateViews();
     }
 
     @Test
