@@ -18,6 +18,7 @@ package android.media.quality;
 
 
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.StringDef;
 import android.media.tv.flags.Flags;
 
@@ -329,6 +330,31 @@ public class MediaQualityContract {
      */
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_SPACE_OFF = "OFF";
+
+    /**
+     * Defines the supported display panel technology types.
+     * <p>
+     * This is used with
+     * {@link android.media.quality.MediaQualityManager#usesDisplayTechnology(int)}
+     * to query if a specific panel technology is used by the device.
+     *
+     * <p>More panel technologies will be added here in the future.
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "PANEL_TECHNOLOGY" }, value = {
+            PANEL_TECHNOLOGY_OLED
+    })
+    public @interface PanelTechnology {}
+
+    /**
+     * Display panel technology for OLED (Organic Light Emitting Diode).
+     * <p>OLED displays are known for their high contrast ratios and deep blacks.
+     *
+     * Corresponds to PanelTechnologyType.OLED in the HAL.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final int PANEL_TECHNOLOGY_OLED = 0;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
