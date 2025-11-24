@@ -41,4 +41,17 @@ parcelable BinderCallsStats {
      *  targets for which call stats are collected. */
     int secondsWithAtLeast10Calls;
     int secondsWithAtLeast50Calls;
+
+    /** Sum of squared call duration in microseconds for the sampled calls. */
+    long callDurationSumSquaredMicros;
+
+    /**
+     * Number of calls for which CPU time was sampled.
+     * CPU time is sampled because it is expensive to collect.
+     */
+    long cpuTimeCount;
+    /** Total CPU time in microseconds for the sampled calls. */
+    long cpuTimeSumMicros;
+    /** Sum of squared CPU time in microseconds for the sampled calls. */
+    long cpuTimeSumSquaredMicros;
 }
