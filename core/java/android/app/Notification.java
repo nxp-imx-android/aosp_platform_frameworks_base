@@ -18743,11 +18743,14 @@ public class Notification implements Parcelable
             }
 
             if (Flags.apiNotificationSemanticStyle()) {
-                // TODO: b/454876153 - Use theme-based tokens, once they exist.
-                mSemanticInfo = ensureTextContrast(Color.BLUE, mBackgroundColor);
-                mSemanticSafe = ensureTextContrast(Color.GREEN, mBackgroundColor);
-                mSemanticCaution = ensureTextContrast(Color.YELLOW, mBackgroundColor);
-                mSemanticDanger = ensureTextContrast(Color.RED, mBackgroundColor);
+                mSemanticInfo = ensureTextContrast(
+                    ctx.getColor(R.color.semanticBlueOnSurfaceVariant), mBackgroundColor);
+                mSemanticSafe = ensureTextContrast(
+                        ctx.getColor(R.color.semanticGreenOnSurfaceVariant), mBackgroundColor);
+                mSemanticCaution = ensureTextContrast(
+                        ctx.getColor(R.color.semanticYellowOnSurfaceVariant), mBackgroundColor);
+                mSemanticDanger = ensureTextContrast(
+                        ctx.getColor(R.color.semanticRedOnSurfaceVariant), mBackgroundColor);
             }
 
             // make sure every color has a valid value
