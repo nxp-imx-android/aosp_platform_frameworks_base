@@ -42,6 +42,7 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys.SwipeUpToGone
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -87,7 +88,8 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
+            assertThat(actions?.get(Swipe.Up))
+                .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
             assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
         }
 
@@ -111,7 +113,8 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
+            assertThat(actions?.get(Swipe.Up))
+                .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
         }
@@ -136,7 +139,8 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
+            assertThat(actions?.get(Swipe.Up))
+                .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
         }
