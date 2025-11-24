@@ -19,6 +19,7 @@ package android.app;
 import static android.app.ActivityManager.START_ASSISTANT_HIDDEN_SESSION;
 import static android.app.ActivityManager.START_ASSISTANT_NOT_ACTIVE_SESSION;
 import static android.app.ActivityManager.START_CANCELED;
+import static android.app.ActivityManager.START_CANNOT_GUARANTEE_TASK_MOVABILITY;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_FORWARD_AND_REQUEST_CONFLICT;
 import static android.app.ActivityManager.START_INTENT_NOT_RESOLVED;
@@ -214,6 +215,14 @@ public final class InstrumentationTest {
                 () -> checkStartActivityResult(START_NOT_ALLOWED_FOR_USER, mIntent));
 
         assertMessage(thrown, "Cannot start activity for %s for this user", mIntent);
+    }
+
+    @Test
+    public void testCheckStartActivityResult_startCannotGuaranteeTaskMovability() {
+        var thrown = assertThrows(InfeasibleActivityOptionsException.class,
+                () -> checkStartActivityResult(START_CANNOT_GUARANTEE_TASK_MOVABILITY, mIntent));
+
+        assertMessage(thrown, "Cannot guarantee that the activity will start in a movable task");
     }
 
     @Test

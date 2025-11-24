@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.Manifest.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS;
+import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -498,6 +499,9 @@ public class ActivityOptions extends ComponentOptions {
      */
     public static final String KEY_LAUNCH_COOKIE = "android.activity.launchCookie";
 
+    /** See {@link #setMovableTaskRequired(boolean)}. */
+    private static final String KEY_MOVABLE_TASK_REQUIRED = "android.activity.movableTaskRequired";
+
     /** @hide */
     public static final int ANIM_UNDEFINED = -1;
     /** @hide */
@@ -597,6 +601,7 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mFlexibleLaunchSize = false;
     private boolean mDisableStartingWindow;
     private boolean mAllowPassThroughOnTouchOutside;
+    private boolean mMovableTaskRequired = false;
 
     /**
      * Create an ActivityOptions specifying a custom animation to run when
@@ -1444,6 +1449,7 @@ public class ActivityOptions extends ComponentOptions {
         mAllowPassThroughOnTouchOutside = opts.getBoolean(KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE);
         mAnimationAbortListener = IRemoteCallback.Stub.asInterface(
                 opts.getBinder(KEY_ANIM_ABORT_LISTENER));
+        mMovableTaskRequired = opts.getBoolean(KEY_MOVABLE_TASK_REQUIRED);
     }
 
     /**
@@ -1899,6 +1905,43 @@ public class ActivityOptions extends ComponentOptions {
     @FlaggedApi(com.android.window.flags.Flags.FLAG_TOUCH_PASS_THROUGH_OPT_IN)
     public void setAllowPassThroughOnTouchOutside(boolean allowed) {
         mAllowPassThroughOnTouchOutside = allowed;
+    }
+
+    /**
+     * Sets whether a task in which the activity will be launched is required to be movable right
+     * after launch using the {@link ActivityManager.AppTask#moveTaskTo(TaskLocation,
+     * java.util.concurrent.Executor, android.os.OutcomeReceiver)} method. If the system cannot
+     * guarantee this, the {@link Context#startActivity} call will throw an {@link
+     * InfeasibleActivityOptionsException}.
+     *
+     * <p> Defaults to {@code false}, if not set.
+     *
+     * <p> This option will cause the {@link Context#startActivity} call to throw an {@link
+     * InfeasibleActivityOptionsException} if the activity is not launched in a new task. For more
+     * information about how the host task of a new activity is determined, see the <a
+     * href="https://developer.android.com/guide/components/activities/tasks-and-back-stack#ManagingTasks">guide
+     * on task management</a>.
+     *
+     * @see ActivityManager.AppTask#moveTaskTo(TaskLocation, java.util.concurrent.Executor,
+     * android.os.OutcomeReceiver)
+     */
+    @RequiresPermission(REPOSITION_SELF_WINDOWS)
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_REQUIRE_MOVABLE_TASK_API)
+    public @NonNull ActivityOptions setMovableTaskRequired(boolean movableTaskRequired) {
+        mMovableTaskRequired = movableTaskRequired;
+        return this;
+    }
+
+    /**
+     * Gets whether a task in which the activity will be launched is required to be movable right
+     * after launch using the {@link ActivityManager.AppTask#moveTaskTo(TaskLocation,
+     * java.util.concurrent.Executor, android.os.OutcomeReceiver)} method.
+     *
+     * @see #setMovableTaskRequired(boolean)
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_REQUIRE_MOVABLE_TASK_API)
+    public boolean isMovableTaskRequired() {
+        return mMovableTaskRequired;
     }
 
     /** @hide */
@@ -2656,6 +2699,9 @@ public class ActivityOptions extends ComponentOptions {
         }
         b.putBinder(KEY_ANIM_ABORT_LISTENER,
                 mAnimationAbortListener != null ? mAnimationAbortListener.asBinder() : null);
+        if (mMovableTaskRequired) {
+            b.putBoolean(KEY_MOVABLE_TASK_REQUIRED, mMovableTaskRequired);
+        }
         return b;
     }
 

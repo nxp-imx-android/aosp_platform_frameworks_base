@@ -571,6 +571,14 @@ public class ActivityManager {
             FIRST_START_FATAL_ERROR_CODE + 12;
 
     /**
+     * Result for IActivityManager.startActivity: the system cannot guarantee that the new task
+     * will be movable right after launch.
+     * @hide
+     */
+    public static final int START_CANNOT_GUARANTEE_TASK_MOVABILITY =
+            FIRST_START_FATAL_ERROR_CODE + 13;
+
+    /**
      * Result for IActivityManager.startActivity: the activity was started
      * successfully as normal.
      * @hide

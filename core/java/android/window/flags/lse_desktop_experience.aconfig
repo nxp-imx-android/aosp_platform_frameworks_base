@@ -1087,6 +1087,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the API for apps to request movable tasks for new activities via ActivityOptions."
     bug: "400407139"
+    is_exported: true
 }
 
 flag {
