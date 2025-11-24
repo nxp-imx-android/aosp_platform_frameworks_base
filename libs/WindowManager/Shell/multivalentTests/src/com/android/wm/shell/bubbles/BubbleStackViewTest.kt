@@ -326,6 +326,42 @@ class BubbleStackViewTest {
     }
 
     @Test
+    fun setExpandedTrue_thenDataCollapsed_whenImeHides_doesNotExpand() {
+        val bubble = createAndInflateBubble()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+        }
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        positioner.setImeVisible(true, 100)
+
+        var onImeHidden: Runnable? = null
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // 1. Request expansion while IME is visible.
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true // This will queue the onImeHidden runnable
+            onImeHidden = bubbleStackViewManager.onImeHidden
+            assertThat(onImeHidden).isNotNull()
+
+            // 2. Before IME hides, change the data layer state to collapsed.
+            bubbleData.isExpanded = false
+        }
+
+        // 3. IME hides, and the original expansion runnable is executed.
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            onImeHidden!!.run()
+            shellExecutor.flushAll()
+        }
+
+        // 4. Verify that the stack did NOT expand, because it re-checked bubbleData.isExpanded.
+        assertThat(bubbleStackView.isExpanded).isFalse()
+    }
+
+    @Test
     fun expandStack_clearsImeRunnable() {
         val bubble = createAndInflateBubble()
 
