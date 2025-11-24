@@ -173,6 +173,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason;
 import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
+import static com.android.server.am.Flags.FLAG_FGS_DELEGATE_SYSTEM_API;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
@@ -18352,10 +18353,39 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        @FlaggedApi(FLAG_FGS_DELEGATE_SYSTEM_API)
+        public boolean startForegroundServiceDelegate(
+                @NonNull ForegroundServiceDelegationParams params,
+                @Nullable ServiceConnection connection) {
+            synchronized (ActivityManagerService.this) {
+                if (params == null) {
+                    throw new IllegalArgumentException(
+                        "ForegroundServiceDelegationParams is null!");
+                }
+                return mServices.startForegroundServiceDelegateLocked(
+                        params.getForegroundServiceDelegationOptions(), connection);
+            }
+        }
+
+        @Override
         public void stopForegroundServiceDelegate(
                 @NonNull ForegroundServiceDelegationOptions options) {
             synchronized (ActivityManagerService.this) {
                 mServices.stopForegroundServiceDelegateLocked(options);
+            }
+        }
+
+        @Override
+        @FlaggedApi(FLAG_FGS_DELEGATE_SYSTEM_API)
+        public void stopForegroundServiceDelegate(
+                @NonNull ForegroundServiceDelegationParams params) {
+            synchronized (ActivityManagerService.this) {
+                if (params == null) {
+                    throw new IllegalArgumentException(
+                        "ForegroundServiceDelegationParams is null!");
+                }
+                mServices.stopForegroundServiceDelegateLocked(
+                        params.getForegroundServiceDelegationOptions());
             }
         }
 

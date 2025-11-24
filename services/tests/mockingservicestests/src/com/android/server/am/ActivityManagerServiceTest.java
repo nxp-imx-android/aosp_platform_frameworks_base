@@ -1775,16 +1775,27 @@ public class ActivityManagerServiceTest {
 
     @Test
     public void testStartForegroundServiceDelegateWithNotification() throws Exception {
-        testStartForegroundServiceDelegate(true);
+        testForegroundServiceDelegate(true, true);
     }
 
     @Test
     public void testStartForegroundServiceDelegateWithoutNotification() throws Exception {
-        testStartForegroundServiceDelegate(false);
+        testForegroundServiceDelegate(true, false);
+    }
+
+    // Tests the start/stop foreground service delegate System Apis exposed to mainline modules.
+    @Test
+    @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_FGS_DELEGATE_SYSTEM_API)
+    public void testStartForegroundServiceDelegateSystemApis() throws Exception {
+        testForegroundServiceDelegate(false, false);
     }
 
     @SuppressWarnings("GuardedBy")
-    private void testStartForegroundServiceDelegate(boolean withNotification) throws Exception {
+    private void testForegroundServiceDelegate(
+            // If true, it will construct ForegroundServiceDelegationOptions else
+            // ForegroundServiceDelegationParams and calls the appropriate method.
+            boolean useOptions,
+            boolean withNotification) throws Exception {
         mockNoteOperation();
 
         final int notificationId = 42;
@@ -1814,27 +1825,52 @@ public class ActivityManagerServiceTest {
 
         mAms.mAppProfiler.mCachedAppsWatermarkData.mCachedAppHighWatermark = Integer.MAX_VALUE;
 
-        final ForegroundServiceDelegationOptions.Builder optionsBuilder =
-                new ForegroundServiceDelegationOptions.Builder()
-                .setClientPid(app.mPid)
-                .setClientUid(app.uid)
-                .setClientPackageName(app.info.packageName)
-                .setClientAppThread(app.getThread())
-                .setSticky(false)
-                .setClientInstanceName(
-                        "SpecialUseFgsDelegate_"
-                        + Process.myUid()
-                        + "_"
-                        + app.uid
-                        + "_"
-                        + app.info.packageName)
-                .setForegroundServiceTypes(ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-                .setDelegationService(
-                        ForegroundServiceDelegationOptions.DELEGATION_SERVICE_SPECIAL_USE);
-        if (withNotification) {
-            optionsBuilder.setClientNotification(notificationId, notification);
+        ForegroundServiceDelegationOptions fgsdo = null;
+        ForegroundServiceDelegationParams fgsdp = null;
+
+        if (useOptions) {
+            final ForegroundServiceDelegationOptions.Builder optionsBuilder =
+                    new ForegroundServiceDelegationOptions.Builder()
+                            .setClientPid(app.mPid)
+                            .setClientUid(app.uid)
+                            .setClientPackageName(app.info.packageName)
+                            .setClientAppThread(app.getThread())
+                            .setSticky(false)
+                            .setClientInstanceName(
+                                    "SpecialUseFgsDelegate_"
+                                            + Process.myUid()
+                                            + "_"
+                                            + app.uid
+                                            + "_"
+                                            + app.info.packageName)
+                            .setForegroundServiceTypes(
+                                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                            .setDelegationService(
+                                ForegroundServiceDelegationOptions.DELEGATION_SERVICE_SPECIAL_USE);
+            if (withNotification) {
+                optionsBuilder.setClientNotification(notificationId, notification);
+            }
+            fgsdo = optionsBuilder.build();
+        } else {
+            // Spy on the real mPidsSelfLocked map object to mock its behavior.
+            spyOn(mAms.mPidsSelfLocked);
+            doReturn(app).when(mAms.mPidsSelfLocked).get(anyInt());
+            fgsdp = new ForegroundServiceDelegationParams(
+                app.mPid,
+                app.uid,
+                app.info.packageName,  // clientPackageName
+                false,  // isSticky
+                "SpecialUseFgsDelegate_"
+                    + Process.myUid()
+                    + "_"
+                    + app.uid
+                    + "_"
+                    + app.info.packageName,  // clientInstanceName
+                // foregroundServiceTypes
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+                // delegationReason
+                ForegroundServiceDelegationParams.DELEGATION_REASON_SPECIAL_USE);
         }
-        final ForegroundServiceDelegationOptions options = optionsBuilder.build();
 
         final CountDownLatch[] latchHolder = new CountDownLatch[1];
         final ServiceConnection conn = new ServiceConnection() {
@@ -1850,7 +1886,11 @@ public class ActivityManagerServiceTest {
         };
 
         latchHolder[0] = new CountDownLatch(1);
-        mAms.mInternal.startForegroundServiceDelegate(options, conn);
+        if (useOptions) {
+            mAms.mInternal.startForegroundServiceDelegate(fgsdo, conn);
+        } else {
+            ((ActivityManagerLocal) mAms.mInternal).startForegroundServiceDelegate(fgsdp, conn);
+        }
 
         assertThat(latchHolder[0].await(5, TimeUnit.SECONDS)).isTrue();
         assertEquals(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE, app.getCurProcState());
@@ -1863,7 +1903,11 @@ public class ActivityManagerServiceTest {
                         eq(notificationId), eq(notification), anyInt(), eq(true));
 
         latchHolder[0] = new CountDownLatch(1);
-        mAms.mInternal.stopForegroundServiceDelegate(options);
+        if (useOptions) {
+            mAms.mInternal.stopForegroundServiceDelegate(fgsdo);
+        } else {
+            ((ActivityManagerLocal) mAms.mInternal).stopForegroundServiceDelegate(fgsdp);
+        }
 
         assertThat(latchHolder[0].await(5, TimeUnit.SECONDS)).isTrue();
         assertEquals(ActivityManager.PROCESS_STATE_CACHED_EMPTY, app.getCurProcState());

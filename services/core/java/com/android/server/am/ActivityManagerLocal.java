@@ -193,4 +193,33 @@ public interface ActivityManagerLocal {
     @FlaggedApi(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
     @NonNull
     String[] getPackageNamesForPid(int pid, int uid);
+
+    /**
+     * Start a foreground service delegate on behalf of the actual app. By this the client app's
+     * process state can be promoted to FOREGROUND_SERVICE process state which is higher than the
+     * app's actual process state if the app is in the background. This can help to keep the app in
+     * the memory and extra run-time. The app does not need to define an actual service component
+     * nor add it into manifest file.
+     * @param params foreground service delegate params.
+     * @param connection a service connection served as callback to caller.
+     * @return true if delegate is started successfully, false otherwise.
+     * @hide
+     */
+    @SystemApi(client = SystemApi.Client.SYSTEM_SERVER)
+    @FlaggedApi(Flags.FLAG_FGS_DELEGATE_SYSTEM_API)
+    boolean startForegroundServiceDelegate(
+            @NonNull ForegroundServiceDelegationParams params,
+            @Nullable ServiceConnection connection);
+
+    /**
+     * Stop a foreground service delegate that was started with
+     * {@link #startForegroundServiceDelegate}.
+     *
+     * @param params the foreground service delegate params.
+     * @hide
+     */
+    @SystemApi(client = SystemApi.Client.SYSTEM_SERVER)
+    @FlaggedApi(Flags.FLAG_FGS_DELEGATE_SYSTEM_API)
+    void stopForegroundServiceDelegate(
+            @NonNull ForegroundServiceDelegationParams params);
 }
