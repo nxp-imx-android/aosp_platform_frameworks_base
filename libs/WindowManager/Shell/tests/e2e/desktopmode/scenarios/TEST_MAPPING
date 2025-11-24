@@ -14,55 +14,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-ChromeNewTabAtWindowLimitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-TabTearingInteractionDependantTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-TabTearingTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-appcompat-DialogStaysInsideDesktopAppTest",
       "keywords": [
         "device",
@@ -127,6 +78,20 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
       "keywords": [
         "device",
         "desktop"
@@ -204,41 +169,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowSingleWindowTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromTaskbarTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppInBrowserTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppsInDesktopModeTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-OpenUnlimitedAppsTest",
       "keywords": [
         "device",
         "desktop"
@@ -383,6 +313,48 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromAllAppsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromTaskbarTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppInBrowserTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppsInDesktopModeTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenTrampolineAppInDesktopModeTaskLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenUnlimitedAppsTest",
       "keywords": [
         "device",
         "desktop"
@@ -655,6 +627,34 @@
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithKeyboardTest",
       "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingDesktopWindowingLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingInteractionDependantTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-taskbar-ChromeNewTabAtWindowLimitTest",
+      "keywords": [
+        "device",
         "desktop"
       ]
     },

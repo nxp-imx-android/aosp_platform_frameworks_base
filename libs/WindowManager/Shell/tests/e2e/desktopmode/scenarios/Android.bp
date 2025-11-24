@@ -70,15 +70,10 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
-        "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
-        "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
-        "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
-        "com.android.wm.shell.functional.TabTearingInteractionDependantTest",
-        "com.android.wm.shell.functional.TabTearingTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
@@ -100,11 +95,6 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowMultiWindowAndPipTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowSingleWindowTest",
-        "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
-        "com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest",
-        "com.android.wm.shell.functional.fundamentals.OpenAppInBrowserTest",
-        "com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest",
-        "com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViaOverviewTest",
         "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
@@ -126,6 +116,12 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenAppFromAllAppsTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenAppFromTaskbarTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenAppInBrowserTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenAppsInDesktopModeTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenTrampolineAppInDesktopModeTaskLimitTest",
+        "com.android.wm.shell.functional.fundamentals.open.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ActionTabSwitchToDesktopAppTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest",
@@ -169,16 +165,13 @@ test_module_config {
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithButtonTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithDragTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithKeyboardTest",
+        "com.android.wm.shell.functional.tabtearing.TabTearingDesktopWindowingLimitTest",
+        "com.android.wm.shell.functional.tabtearing.TabTearingInteractionDependantTest",
+        "com.android.wm.shell.functional.tabtearing.TabTearingTest",
+        "com.android.wm.shell.functional.taskbar.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.taskbar.LaunchNewInstanceFromTaskbarMenuTest",
         "com.android.wm.shell.functional.tiling.TilingTest",
     ],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-ChromeNewTabAtWindowLimitTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest"],
 }
 
 test_module_config {
@@ -193,34 +186,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-TabTearingInteractionDependantTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.TabTearingInteractionDependantTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-TabTearingTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.TabTearingTest"],
 }
 
 test_module_config {
@@ -385,41 +350,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-OpenAppFromTaskbarTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-OpenAppInBrowserTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppInBrowserTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-OpenAppsInDesktopModeTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-OpenUnlimitedAppsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenViaOverviewTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -564,6 +494,48 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromAllAppsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenAppFromAllAppsTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromTaskbarTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenAppFromTaskbarTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenAppInBrowserTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenAppInBrowserTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenAppsInDesktopModeTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenAppsInDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenTrampolineAppInDesktopModeTaskLimitTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenTrampolineAppInDesktopModeTaskLimitTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-open-OpenUnlimitedAppsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.open.OpenUnlimitedAppsTest"],
 }
 
 test_module_config {
@@ -858,6 +830,34 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithKeyboardTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-tabtearing-TabTearingDesktopWindowingLimitTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.tabtearing.TabTearingDesktopWindowingLimitTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-tabtearing-TabTearingInteractionDependantTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.tabtearing.TabTearingInteractionDependantTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-tabtearing-TabTearingTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.tabtearing.TabTearingTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-taskbar-ChromeNewTabAtWindowLimitTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.taskbar.ChromeNewTabAtWindowLimitTest"],
 }
 
 test_module_config {

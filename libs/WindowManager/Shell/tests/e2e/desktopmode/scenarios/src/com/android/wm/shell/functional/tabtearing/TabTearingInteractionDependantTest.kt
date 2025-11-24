@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.tabtearing
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
