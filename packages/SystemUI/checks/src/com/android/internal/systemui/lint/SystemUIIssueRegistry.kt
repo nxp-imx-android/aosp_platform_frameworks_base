@@ -42,6 +42,8 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 MissingApacheLicenseDetector.ISSUE,
                 NonInjectedMainThreadDetector.ISSUE,
                 NonInjectedServiceDetector.ISSUE,
+                NoMetricInParameterizedDetector.ISSUE_BEFORE,
+                NoMetricInParameterizedDetector.ISSUE_AFTER,
                 RegisterContentObserverSyncViaSettingsProxyDetector.SYNC_WARNING,
                 RegisterContentObserverViaContentResolverDetector.CONTENT_RESOLVER_ERROR,
                 RegisterReceiverViaContextDetector.ISSUE,
