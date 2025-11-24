@@ -38,7 +38,7 @@ import static com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
-import static com.android.wm.shell.Flags.splitToFullSetWindowMode;
+
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.RESTING_DIM_LAYER;
@@ -1040,11 +1040,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             mRecentTasks.get().removeSplitPair(taskId);
         }
         options = options != null ? options : new Bundle();
-        if (splitToFullSetWindowMode()) {
-            addActivityOptions(options, null, WINDOWING_MODE_FULLSCREEN);
-        } else {
-            addActivityOptions(options, null);
-        }
+        addActivityOptions(options, null, WINDOWING_MODE_FULLSCREEN);
         Bundle[] outOptions = new Bundle[]{options};
         RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
         if (taskInfo != null && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
@@ -1076,11 +1072,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         if (taskId == INVALID_TASK_ID) {
             options1 = options1 != null ? options1 : new Bundle();
-            if (splitToFullSetWindowMode()) {
-                addActivityOptions(options1, null, WINDOWING_MODE_FULLSCREEN);
-            } else {
-                addActivityOptions(options1, null);
-            }
+            addActivityOptions(options1, null, WINDOWING_MODE_FULLSCREEN);
             wct.startShortcut(mContext.getPackageName(), shortcutInfo, options1);
             mSplitTransitions.startFullscreenTransition(wct, remoteTransition);
             return;
@@ -1252,11 +1244,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         if (pendingIntent2 == null) {
             options1 = options1 != null ? options1 : new Bundle();
-            if (splitToFullSetWindowMode()) {
-                addActivityOptions(options1, null, WINDOWING_MODE_FULLSCREEN);
-            } else {
-                addActivityOptions(options1, null);
-            }
+            addActivityOptions(options1, null, WINDOWING_MODE_FULLSCREEN);
             if (shortcutInfo1 != null) {
                 wct.startShortcut(mContext.getPackageName(), shortcutInfo1, options1);
             } else {
@@ -1363,11 +1351,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         if (firstIntentPipped || secondIntentPipped) {
             Bundle options = secondIntentPipped ? options1 : options2;
             options = options == null ? new Bundle() : options;
-            if (splitToFullSetWindowMode()) {
-                addActivityOptions(options, null, WINDOWING_MODE_FULLSCREEN);
-            } else {
-                addActivityOptions(options, null);
-            }
+            addActivityOptions(options, null, WINDOWING_MODE_FULLSCREEN);
             if (shortcutInfo1 != null || shortcutInfo2 != null) {
                 ShortcutInfo infoToLaunch = secondIntentPipped ? shortcutInfo1 : shortcutInfo2;
                 wct.startShortcut(mContext.getPackageName(), infoToLaunch, options);

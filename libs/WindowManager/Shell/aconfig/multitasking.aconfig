@@ -247,15 +247,7 @@ flag {
      bug: "439992109"
 }
 
-flag {
-    name: "split_to_full_set_window_mode"
-    namespace: "multitasking"
-    description: "Set the launch windowing mode when split screen launches app in fullscreen."
-    bug: "427103183"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
+
 
 flag {
     name: "bug_dont_remove_task_bubble"
