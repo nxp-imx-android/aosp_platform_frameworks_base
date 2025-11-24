@@ -93,6 +93,7 @@ class BiometricPromptLogger @Inject constructor() {
             promptInfo.fallbackOptions.size,
             promptInfo.isIdentityCheckActive,
             promptInfo.isSystemCaller,
+            promptInfo.identityCheckInactiveReason,
         )
     }
 
