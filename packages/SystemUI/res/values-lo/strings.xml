@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ບໍ່ສາມາດບັນທຶກຮູບໜ້າຈໍໄດ້"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"ບັນທຶກໃສ່"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ເລືອກໂຟນເດີ"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"ບັນທຶກໃສ່ໂຟນເດີ %1$s ແລ້ວ"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"ມີບາງຢ່າງຜິດພາດເກີດຂຶ້ນ. ບໍ່ສາມາດບັນທຶກໃສ່ໂຟນເດີ \"%1$s\" ໄດ້."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ຈໍສະແດງຜົນພາຍນອກ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ຈະຕ້ອງປົດລັອກອຸປະກອນກ່ອນບັນທຶກຮູບໜ້າຈໍ"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ກະລຸນາລອງຖ່າຍຮູບໜ້າຈໍອີກຄັ້ງ"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ບໍ່ສາມາດບັນທຶກຮູບໜ້າຈໍໄດ້"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ແອັບ ຫຼື ອົງກອນຂອງທ່ານບໍ່ອະນຸຍາດໃຫ້ຖ່າຍຮູບໜ້າຈໍ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ຜູ້ເບິ່ງແຍງໄອທີຂອງທ່ານບລັອກການຖ່າຍຮູບໜ້າຈໍໄວ້."</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ແກ້ໄຂ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ປຸ່ມແກ້ໄຂຮູບໜ້າຈໍ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ແບ່ງປັນ"</string>
@@ -731,7 +731,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ສຽງ ແລະ ແຈ້ງເຕືອນອຸປະກອນຂອງທ່ານຖືກຫຼຸດລົງໂດຍອັດຕະໂນມັດເປັນເວລາເຖິງ 2 ນາທີເມື່ອທ່ານໄດ້ຮັບການແຈ້ງເຕືອນຫຼາຍເກີນໄປໃນຄັ້ງດຽວ."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ປິດ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ປົດລັອກເພື່ອເບິ່ງການແຈ້ງເຕືອນເກົ່າ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ການຕັ້ງຄ່າຈໍານວນໜຶ່ງໄດ້ຮັບການຈັດການໂດຍພໍ່ແມ່ຂອງທ່ານ"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ການຕັ້ງຄ່າບາງຢ່າງໄດ້ຮັບການຈັດການໂດຍພໍ່ແມ່ຂອງທ່ານ"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ອຸປະກອນນີ້ແມ່ນຈັດການໂດຍຜູ້ປົກຄອງຂອງທ່ານ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ການຕັ້ງຄ່າອຸປະກອນບາງຢ່າງໄດ້ຮັບການປ້ອງກັນດ້ວຍ PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ອົງການຂອງທ່ານເປັນເຈົ້າຂອງອຸປະກອນນີ້ ແລະ ສາມາດຕິດຕາມທຣາບຟິກເຄືອຂ່າຍໄດ້"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ແລ້ວໆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ນຳໃຊ້"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ປິດ"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"ປິດສຽງ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ຄ່າເລີ່ມຕົ້ນ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ອັດຕະໂນມັດ"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"ບໍ່ມີສຽງ ຫຼື ການສັ່ນເຕືອນ"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ບໍ່ມີສຽງ ຫຼື ການສັ່ນເຕືອນແຕ່ຍັງຄົງປາກົດໃນພາກສ່ວນການສົນທະນາ"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ອາດສົ່ງສຽງ ຫຼື ສັ່ນເຕືອນໂດຍອ້າງອີງຈາກການຕັ້ງຄ່າອຸປະກອນ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ອາດສົ່ງສຽງ ຫຼື ສັ່ນເຕືອນໂດຍອ້າງອີງຈາກການຕັ້ງຄ່າອຸປະກອນ. ການສົນທະນາຈາກ <xliff:g id="APP_NAME">%1$s</xliff:g> ຈະເປັນ bubble ຕາມຄ່າເລີ່ມຕົ້ນ."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ໃຫ້ລະບົບກຳນົດວ່າການແຈ້ງເຕືອນນິ້ຄວນມີສຽງ ຫຼື ສັ່ນເຕືອນຫຼືບໍ່"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;ສະຖານະ:&lt;/b&gt; ເລື່ອນລະດັບເປັນຄ່າເລີ່ມຕົ້ນແລ້ວ"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;ສະຖານະ:&lt;/b&gt; ຫຼຸດລະດັບເປັນປິດສຽງແລ້ວ"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;ສະຖານະ:&lt;/b&gt; ມີອັນດັບສູງຂຶ້ນແລ້ວ"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;ສະຖານະ:&lt;/b&gt; ມີອັນດັບຕ່ຳລົງແລ້ວ"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"ສະຖານທີ່"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"ໄມໂຄຣໂຟນ"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"ການບັນທຶກໜ້າຈໍ"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"ຄວາມເປັນສ່ວນຕົວ"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"ບໍ່ມີຊື່"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"ສະແຕນບາຍ"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ຂະໜາດຟອນ"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ອຸປະກອນທີ່ສາມາດໃຊ້ໄດ້ສຳລັບເອົ້າພຸດສຽງ."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ລະດັບສຽງ"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"ອຸປະກອນບາງຢ່າງບໍ່ສາມາດເບິ່ງເຫັນໄດ້. ອັບເດດການອະນຸຍາດແອັບຂອງທ່ານ"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"ແກ້ໄຂ"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ລຳໂພງທີ່ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ລຳໂພງ ແລະ ຈໍສະແດງຜົນ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ແນະນຳ"</string>
@@ -1754,6 +1767,6 @@
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ຂະຫຍາຍ"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ແບ່ງປັນສະຖານທີ່ແບບລະອຽດ"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ໃຊ້ສະຖານທີ່ແບບລະອຽດ"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ໃກ້ກັບສະຖານທີ່ແບບລະອຽດ"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ໃກ້ຄຽງສະຖານທີ່ແບບລະອຽດ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ສະຖານທີ່ແບບລະອຽດ"</string>
 </resources>

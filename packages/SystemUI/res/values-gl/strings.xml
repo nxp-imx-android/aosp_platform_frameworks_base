@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Non se puido gardar a captura de pantalla"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Gardar en"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Seleccionar cartafol"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"Gardouse o contido no cartafol \"%1$s\""</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"Produciuse un erro. Non se puido gardar o contido no cartafol \"%1$s\"."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Pantalla externa"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Para que se poida gardar a captura de pantalla, o dispositivo debe estar desbloqueado"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Volve tentar crear unha captura de pantalla"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Non se puido gardar a captura de pantalla"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"A aplicación ou a túa organización non permite realizar capturas de pantalla"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"O teu administrador de TI bloqueou a opción de facer capturas de pantalla"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editar"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Botón para editar a captura de pantalla"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Compartir"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Feito"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactivar"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Silenciadas"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Configuración predeterminada"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automática"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Sen son nin vibración"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Sen son nin vibración, pero aínda aparece na sección de conversas"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Poderían facer que o dispositivo soe ou vibre en función da súa configuración"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Poderían facer que o dispositivo soe ou vibre en función da súa configuración. As conversas de <xliff:g id="APP_NAME">%1$s</xliff:g> móstranse en burbullas de forma predeterminada."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Fai que o sistema determine se a notificación debe emitir un son ou unha vibración"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;Estado:&lt;/b&gt; ascendeuse a Predeterminada"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Estado:&lt;/b&gt; o nivel diminuíuse a Silencioso"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Estado:&lt;/b&gt; clasificouse nun nivel superior"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Estado:&lt;/b&gt; clasificouse nun nivel inferior"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"a localiz."</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"o micrófono"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"gravación pantalla"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"Privacidade"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"Sen título"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"Modo de espera"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"Tamaño do tipo de letra"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Dispositivos dispoñibles para a saída de audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Algúns dispositivos non están visibles. Actualiza os permisos da aplicación"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Solucionar"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altofalantes conectados"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altofalantes e pantallas"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suxestións"</string>
