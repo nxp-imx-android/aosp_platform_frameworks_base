@@ -1873,7 +1873,7 @@ package android {
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistData;
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistScreenshots;
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistStructureScreenContent;
-    field @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic") public static final int usesCleartextTraffic = 16844012; // 0x10104ec
+    field @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic2") public static final int usesCleartextTraffic = 16844012; // 0x10104ec
     field public static final int usesPermissionFlags = 16844356; // 0x1010644
     field public static final int value = 16842788; // 0x1010024
     field public static final int valueFrom = 16843486; // 0x10102de
