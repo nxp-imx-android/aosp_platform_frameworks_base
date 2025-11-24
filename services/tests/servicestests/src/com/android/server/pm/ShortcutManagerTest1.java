@@ -59,6 +59,12 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.set;
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.waitOnMainThread;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -100,6 +106,7 @@ import android.util.SparseArray;
 import android.util.Xml;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.frameworks.servicestests.R;
 import com.android.modules.utils.TypedXmlPullParser;
@@ -107,6 +114,8 @@ import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.pm.ShortcutService.ConfigConstants;
 import com.android.server.pm.ShortcutService.FileOutputStreamWithPath;
 
+import org.junit.runner.RunWith;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.xmlpull.v1.XmlPullParser;
@@ -141,6 +150,7 @@ import java.util.function.BiConsumer;
  */
 @Presubmit
 @SmallTest
+@RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
 
     private static final int CACHE_OWNER_0 = LauncherApps.FLAG_CACHE_NOTIFICATION_SHORTCUTS;
@@ -148,7 +158,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     private static final int CACHE_OWNER_2 = LauncherApps.FLAG_CACHE_PEOPLE_TILE_SHORTCUTS;
 
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         deleteUriFile("file32x32.jpg");
         deleteUriFile("file64x64.jpg");
         deleteUriFile("file512x512.jpg");
@@ -196,6 +206,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test for the restoration from saved file.
      */
+    @Test
     public void testInitializeFromSavedFile() {
 
         mInjectedCurrentTimeMillis = START_TIME + 4 * INTERVAL + 50;
@@ -219,6 +230,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test for the restoration from restored file.
      */
+    @Test
     public void testLoadFromBrokenFile() {
         // TODO Add various broken cases.
     }
@@ -825,6 +837,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(1, mManager.getRemainingCallCount());
     }
 
+    @Test
     public void testIcons() throws IOException {
         final Icon res32x32 = Icon.createWithResource(getTestContext(), R.drawable.black_32x32);
         final Icon res64x64 = Icon.createWithResource(getTestContext(), R.drawable.black_64x64);
@@ -3922,6 +3935,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Try save and load, also stop/start the user.
      */
+    @Test
     public void testSaveAndLoadUser() {
         // First, create some shortcuts and save.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -4578,6 +4592,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testHandleGonePackage_crossProfile() {
         // Create some shortcuts.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -4913,6 +4928,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkCanRestoreTo(DISABLED_REASON_BACKUP_NOT_SUPPORTED, spi3, true, 10, true, "sig1");
     }
 
+    @Test
     public void testHandlePackageDelete() {
         checkHandlePackageDeleteInner((userId, packageName) -> {
             uninstallPackage(userId, packageName);
@@ -4921,6 +4937,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testHandlePackageDisable() {
         checkHandlePackageDeleteInner((userId, packageName) -> {
             disablePackage(userId, packageName);
@@ -5171,6 +5188,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testHandlePackageUpdate() throws Throwable {
         // Set up shortcuts and launchers.
 
@@ -5420,6 +5438,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testHandlePackageUpdate_systemAppUpdate() {
 
         // Package1 is a system app.  Package 2 is not a system app, so it's not scanned
