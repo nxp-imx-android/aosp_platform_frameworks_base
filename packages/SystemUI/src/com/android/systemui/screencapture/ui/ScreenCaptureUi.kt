@@ -27,7 +27,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -40,7 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
-import com.android.compose.modifiers.thenIf
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -50,6 +48,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureUiViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import dagger.assisted.Assisted
@@ -76,7 +75,7 @@ constructor(
         >,
     dialogFactory: SystemUIDialogFactory,
 ) {
-    private val dialog =
+    private val dialog: SystemUIDialog =
         dialogFactory
             .create(
                 context =
@@ -94,8 +93,7 @@ constructor(
             }
             .apply {
                 setupWindow(window!!)
-                setCancelable(false)
-                setCanceledOnTouchOutside(false)
+                setDismissOverride { visibleState.targetState = false }
             }
     private val visibleState = MutableTransitionState(false)
 
@@ -125,10 +123,16 @@ constructor(
         }
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
-        val isLargeScreen = viewModel.isLargeScreen ?: false
+        SideEffect {
+            dialog.setCancelable(viewModel.cancelOnTouchOutside)
+            dialog.setCanceledOnTouchOutside(viewModel.cancelOnTouchOutside)
+        }
 
         if (!visibleState.targetState && visibleState.isIdle) {
-            SideEffect { dialog.dismissWithoutAnimation() }
+            SideEffect {
+                dialog.setDismissOverride(null)
+                dialog.dismissWithoutAnimation()
+            }
         }
 
         AnimatedVisibility(
@@ -146,19 +150,7 @@ constructor(
                 remember(parameters, coroutineScope) {
                     builder.setScope(coroutineScope).setDisplay(display).setWindow(window).build()
                 }
-            Box(
-                modifier =
-                    Modifier.focusable().thenIf(!isLargeScreen) {
-                        // On small screens, follow the design pattern of a dialog
-                        Modifier.clickable(
-                            onClick = { hide() },
-                            indication = null,
-                            interactionSource = null,
-                        )
-                    }
-            ) {
-                component.screenCaptureContent.Content()
-            }
+            Box(modifier = Modifier.focusable()) { component.screenCaptureContent.Content() }
         }
     }
 
@@ -167,18 +159,14 @@ constructor(
      */
     suspend fun show(): Unit = suspendCancellableCoroutine { invocation ->
         dialog.setOnDismissListener {
-            hide()
+            dialog.dismiss()
             if (invocation.isActive) {
                 invocation.resume(Unit)
             }
         }
         visibleState.targetState = true
         dialog.show()
-        invocation.invokeOnCancellation { hide() }
-    }
-
-    private fun hide() {
-        visibleState.targetState = false
+        invocation.invokeOnCancellation { dialog.dismiss() }
     }
 
     @AssistedFactory
