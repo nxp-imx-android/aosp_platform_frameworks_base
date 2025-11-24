@@ -21,5 +21,5 @@ import kotlinx.coroutines.flow.StateFlow
 /** Provides information about the current state of the device related to screen capture. */
 interface ScreenCaptureDeviceStateRepository {
     /** Emits `true` if the device is considered a large screen for screen capture purposes. */
-    val isLargeScreen: StateFlow<Boolean?>
+    val isLargeScreen: StateFlow<Boolean>
 }

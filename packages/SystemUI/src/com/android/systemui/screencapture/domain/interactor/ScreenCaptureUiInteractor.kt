@@ -32,7 +32,6 @@ import com.android.systemui.user.data.repository.UserRepository
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -48,7 +47,7 @@ constructor(
     private val devicePolicyResolver: Lazy<ScreenCaptureDevicePolicyResolver>,
 ) {
 
-    val isLargeScreen: Flow<Boolean?> = deviceStateRepository.isLargeScreen
+    val isLargeScreen: StateFlow<Boolean> = deviceStateRepository.isLargeScreen
 
     fun uiState(type: ScreenCaptureType): StateFlow<ScreenCaptureUiState> = repository.uiState(type)
 
