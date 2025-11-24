@@ -20,6 +20,10 @@
 #include <SkDocument.h>
 #include <SkSurface.h>
 
+#ifdef __ANDROID__
+#include <gui/BLASTBufferQueue.h>
+#endif
+
 #include "Lighting.h"
 #include "LightingInfo.h"
 #include "hwui/AnimatedImageDrawable.h"
@@ -66,6 +70,34 @@ public:
     }
 
     void setTargetSdrHdrRatio(float ratio) override;
+#ifdef __ANDROID__
+    virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) { mBLASTBufferQueue = bbq; }
+
+    bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
+                             bool acquireSingleBuffer = true) override {
+        if (mBLASTBufferQueue != nullptr) {
+            return mBLASTBufferQueue->syncNextTransaction(callback, acquireSingleBuffer);
+        } else {
+            return false;
+        }
+    }
+    void mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                  uint64_t frameNumber) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->mergeWithNextTransaction(t, frameNumber);
+        } else {
+            // It would be surprising if we got here, but leaving a dangling
+            // transaction often ANRs apps waiting on a buffer release
+            // callback, so lets be defensive!
+            t->apply();
+        }
+    }
+    void applyPendingTransactions(uint64_t frameNumber) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->applyPendingTransactions(frameNumber);
+        }
+    }
+#endif
 
 protected:
     renderthread::RenderThread& mRenderThread;
@@ -169,6 +201,10 @@ private:
     // Set by setPictureCapturedCallback and when set, CallbackAPI mode recording is ongoing.
     // Not used in other recording modes.
     std::function<void(sk_sp<SkPicture>&&)> mPictureCapturedCallback;
+
+#ifdef __ANDROID__
+    sp<BLASTBufferQueue> mBLASTBufferQueue;
+#endif
 };
 
 } /* namespace skiapipeline */

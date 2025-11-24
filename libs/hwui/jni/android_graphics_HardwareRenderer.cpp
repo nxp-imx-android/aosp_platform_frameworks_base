@@ -54,6 +54,7 @@
 #include <src/image/SkImage_Base.h>
 #include <thread/CommonPool.h>
 #ifdef __ANDROID__
+#include <gui/BLASTBufferQueue.h>
 #include <gui/SurfaceControl.h>
 #include <ui/GraphicBufferAllocator.h>
 #endif
@@ -105,6 +106,15 @@ struct {
     jmethodID onCopyFinished;
     jmethodID getDestinationBitmap;
 } gCopyRequest;
+
+static struct {
+    jclass clazz;
+    jmethodID ctor;
+} gTransactionClassInfo;
+
+struct {
+    jmethodID accept;
+} gTransactionConsumer;
 
 static JNIEnv* getenv(JavaVM* vm) {
     JNIEnv* env;
@@ -220,11 +230,65 @@ static void android_view_ThreadedRenderer_setSurface(JNIEnv* env, jobject clazz,
 }
 
 static void android_view_ThreadedRenderer_setSurfaceControl(JNIEnv* env, jobject clazz,
-        jlong proxyPtr, jlong surfaceControlPtr) {
+                                                            jlong proxyPtr,
+                                                            jlong surfaceControlPtr) {
 #ifdef __ANDROID__
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
     SurfaceControl* surfaceControl = reinterpret_cast<SurfaceControl*>(surfaceControlPtr);
     proxy->setSurfaceControl(sp<SurfaceControl>::fromExisting(surfaceControl));
+#endif
+}
+
+static void android_view_ThreadedRenderer_setBLASTBufferQueue(JNIEnv* env, jobject clazz,
+                                                              jlong proxyPtr, jlong bbqPtr) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    BLASTBufferQueue* bbq = reinterpret_cast<BLASTBufferQueue*>(bbqPtr);
+    proxy->setBLASTBufferQueue(sp<BLASTBufferQueue>::fromExisting(bbq));
+#endif
+}
+
+static bool android_view_ThreadedRenderer_syncNextTransaction(JNIEnv* env, jclass clazz, jlong ptr,
+                                                              jobject callback,
+                                                              jboolean acquireSingleBuffer) {
+#ifdef __ANDROID__
+    LOG_ALWAYS_FATAL_IF(!callback, "callback passed in to syncNextTransaction must not be NULL");
+
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    JavaVM* vm = nullptr;
+    LOG_ALWAYS_FATAL_IF(env->GetJavaVM(&vm) != JNI_OK, "Unable to get Java VM");
+
+    auto globalCallbackRef = std::make_shared<JGlobalRefHolder>(vm, env->NewGlobalRef(callback));
+    return proxy->syncNextTransaction(
+            [globalCallbackRef](SurfaceComposerClient::Transaction* t) {
+                JNIEnv* env = getenv(globalCallbackRef->vm());
+                ScopedLocalRef<jobject> transactionObject(
+                        env, env->NewObject(gTransactionClassInfo.clazz, gTransactionClassInfo.ctor,
+                                            reinterpret_cast<jlong>(t)));
+                env->CallVoidMethod(globalCallbackRef->object(), gTransactionConsumer.accept,
+                                    transactionObject.get());
+            },
+            acquireSingleBuffer);
+#else
+    return false;
+#endif
+}
+
+static void android_view_ThreadedRenderer_mergeWithNextTransaction(JNIEnv*, jclass clazz, jlong ptr,
+                                                                   jlong transactionPtr,
+                                                                   jlong framenumber) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionPtr);
+    proxy->mergeWithNextTransaction(transaction, CC_UNLIKELY(framenumber < 0) ? 0 : framenumber);
+#endif
+}
+
+static void android_view_ThreadedRenderer_applyPendingTransactions(JNIEnv* env, jclass clazz,
+                                                                   jlong ptr, jlong frameNum) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    proxy->applyPendingTransactions(frameNum);
 #endif
 }
 
@@ -996,6 +1060,7 @@ static const JNINativeMethod gMethods[] = {
         {"nSetSurface", "(JLandroid/view/Surface;Z)V",
          (void*)android_view_ThreadedRenderer_setSurface},
         {"nSetSurfaceControl", "(JJ)V", (void*)android_view_ThreadedRenderer_setSurfaceControl},
+        {"nSetBLASTBufferQueue", "(JJ)V", (void*)android_view_ThreadedRenderer_setBLASTBufferQueue},
         {"nPause", "(J)Z", (void*)android_view_ThreadedRenderer_pause},
         {"nSetStopped", "(JZ)V", (void*)android_view_ThreadedRenderer_setStopped},
         {"nSetLightAlpha", "(JFF)V", (void*)android_view_ThreadedRenderer_setLightAlpha},
@@ -1091,6 +1156,13 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_notifyExpensiveFrame},
         {"nNotifyGpuLoadUp", "(J)V", (void*)android_view_ThreadedRenderer_notifyGpuLoadUp},
         {"nTrimCaches", "(I)V", (void*)android_view_ThreadedRenderer_trimCaches},
+        {"nSyncNextTransaction", "(JLjava/util/function/Consumer;Z)Z",
+         (void*)android_view_ThreadedRenderer_syncNextTransaction},
+        {"nMergeWithNextTransaction", "(JJJ)V",
+         (void*)android_view_ThreadedRenderer_mergeWithNextTransaction},
+        {"nApplyPendingTransactions", "(JJ)V",
+         (void*)android_view_ThreadedRenderer_applyPendingTransactions},
+
 };
 
 static JavaVM* mJvm = nullptr;
@@ -1156,6 +1228,17 @@ int register_android_view_ThreadedRenderer(JNIEnv* env) {
     fromSurface = (ANW_fromSurface)SharedLib::getSymbol(handle_, "ANativeWindow_fromSurface");
     LOG_ALWAYS_FATAL_IF(fromSurface == nullptr,
                         "Failed to find required symbol ANativeWindow_fromSurface!");
+
+#ifdef __ANDROID__
+    jclass transactionClazz = FindClassOrDie(env, "android/view/SurfaceControl$Transaction");
+    gTransactionClassInfo.clazz = MakeGlobalRefOrDie(env, transactionClazz);
+    gTransactionClassInfo.ctor =
+            GetMethodIDOrDie(env, gTransactionClassInfo.clazz, "<init>", "(J)V");
+
+    jclass consumer = FindClassOrDie(env, "java/util/function/Consumer");
+    gTransactionConsumer.accept =
+            GetMethodIDOrDie(env, consumer, "accept", "(Ljava/lang/Object;)V");
+#endif
 
     return RegisterMethodsOrDie(env, kClassPathName, gMethods, NELEM(gMethods));
 }

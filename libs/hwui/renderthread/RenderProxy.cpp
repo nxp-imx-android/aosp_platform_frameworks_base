@@ -24,6 +24,7 @@
 #include "utils/Thread.h"
 
 #ifdef __ANDROID__
+#include <gui/BLASTBufferQueue.h>
 #include <gui/SurfaceControl.h>
 #endif
 
@@ -129,6 +130,32 @@ void RenderProxy::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
     });
 #endif
 }
+
+/**
+ * Sync methods below execute directly on the calling thread, and so
+ * setBLASTBufferQueue also does.
+ */
+void RenderProxy::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
+#ifdef __ANDROID__
+    mContext->setBLASTBufferQueue(std::move(bbq));
+#endif
+}
+
+#ifdef __ANDROID__
+void RenderProxy::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                           uint64_t frameNumber) {
+    mContext->mergeWithNextTransaction(t, frameNumber);
+}
+
+bool RenderProxy::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
+                                      bool acquireSingleBuffer) {
+    return mContext->syncNextTransaction(t, acquireSingleBuffer);
+}
+
+void RenderProxy::applyPendingTransactions(uint64_t frameNumber) {
+    mContext->applyPendingTransactions(frameNumber);
+}
+#endif
 
 void RenderProxy::allocateBuffers() {
     mRenderThread.queue().post([this]() { mContext->allocateBuffers(); });

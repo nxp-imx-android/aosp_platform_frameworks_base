@@ -50,8 +50,13 @@
 #include "utils/ForceDark.h"
 #include "utils/RingBuffer.h"
 
+#ifdef __ANDROID__
+#include <gui/SurfaceComposerClient.h>
+#endif
+
 namespace android {
 
+class BLASTBufferQueue;
 class SurfaceStats;
 
 namespace uirenderer {
@@ -136,6 +141,15 @@ public:
     void setHardwareBuffer(AHardwareBuffer* buffer);
     void setSurface(ANativeWindow* window, bool enableTimeout = true);
     void setSurfaceControl(sp<SurfaceControl> surfaceControl);
+
+    void setBLASTBufferQueue(const sp<BLASTBufferQueue>& surfaceControl);
+
+#ifdef __ANDROID__
+    bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
+    void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
+    void applyPendingTransactions(uint64_t);
+#endif
+
     bool pauseSurface();
     void setStopped(bool stopped);
     bool isStopped() { return mStopped || !hasOutputTarget(); }

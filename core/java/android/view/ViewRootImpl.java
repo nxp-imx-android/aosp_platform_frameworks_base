@@ -133,6 +133,7 @@ import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClie
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopExperienceFlags.DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW;
 
+import static com.android.graphics.libgui.flags.Flags.outOfProcessRendering;
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
@@ -4619,7 +4620,7 @@ public final class ViewRootImpl implements ViewParent,
                 // But better a one or two frame flicker than steady-state broken from dropping
                 // whatever is in this transaction
                 // apply immediately with bbq apply token
-                mergeWithNextTransaction(mPendingTransaction, 0);
+                applyTransactionInOrder(mPendingTransaction);
                 mHasPendingTransactions = false;
             }
             mSyncBuffer = false;
@@ -5581,14 +5582,16 @@ public final class ViewRootImpl implements ViewParent,
                 mergeWithNextTransaction(t, frame);
                 if ((syncResult
                         & (SYNC_LOST_SURFACE_REWARD_IF_FOUND | SYNC_CONTEXT_IS_STOPPED)) != 0) {
-                    mBlastBufferQueue.applyPendingTransactions(frame);
+                    HardwareRenderer.SyncInterface.applyPendingTransactions(
+                        mAttachInfo.mThreadedRenderer, frame);
                     return null;
                 }
 
                 return didProduceBuffer -> {
                     if (!didProduceBuffer) {
                         logAndTrace("Transaction not synced due to no frame drawn");
-                        mBlastBufferQueue.applyPendingTransactions(frame);
+                        HardwareRenderer.SyncInterface.applyPendingTransactions(
+                            mAttachInfo.mThreadedRenderer, frame);
                     }
                 };
 
@@ -5723,7 +5726,7 @@ public final class ViewRootImpl implements ViewParent,
                         + logReason);
             }
             // apply immediately with bbq apply token
-            mergeWithNextTransaction(pendingTransaction, 0);
+            applyTransactionInOrder(pendingTransaction);
         }
     }
     /**
@@ -12975,10 +12978,11 @@ public final class ViewRootImpl implements ViewParent,
         SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
         transaction.setBlurRegions(surfaceControl, regionCopy);
 
-        if (mBlastBufferQueue != null) {
-            transaction.onMergeWithNextTransaction(getTitle());
-            mBlastBufferQueue.mergeWithNextTransaction(transaction, frameNumber);
-        }
+        transaction.onMergeWithNextTransaction(getTitle());
+        // This is only called from RT worker threads so we can assume ThreadedRenderer
+        // is non-null
+        HardwareRenderer.SyncInterface.mergeWithNextTransaction(
+            mAttachInfo.mThreadedRenderer, transaction, frameNumber);
     }
 
     /**
@@ -12999,17 +13003,32 @@ public final class ViewRootImpl implements ViewParent,
 
     /**
      * Merges the transaction passed in with the next transaction in BLASTBufferQueue. This ensures
-     * you can add transactions to the upcoming frame.
+     * you can add transactions to the upcoming frame. This may only called from
+     * RenderThread during frame drawing/commit callbacks.
      */
     public void mergeWithNextTransaction(Transaction t, long frameNumber) {
-        if (mBlastBufferQueue != null) {
-            if (t != null) {
-                t.onMergeWithNextTransaction(getTitle());
-            }
-            mBlastBufferQueue.mergeWithNextTransaction(t, frameNumber);
-        } else {
-            t.apply();
+        if (t != null) {
+            t.onMergeWithNextTransaction(getTitle());
         }
+        HardwareRenderer.SyncInterface.mergeWithNextTransaction(mAttachInfo.mThreadedRenderer, t, frameNumber);
+    }
+
+    /**
+     * Apply the transaction AFTER any buffers or other-work already submitted by RenderThread.
+     * (or apply it immediately if there is no RenderThread).
+     *
+     * See {@link android.graphics.HardwareRenderer#applyTransactionInOrder}
+     */
+    public void applyTransactionInOrder(Transaction t) {
+        if (t != null) {
+            t.onMergeWithNextTransaction(getTitle());
+        }
+
+        if (mAttachInfo.mThreadedRenderer != null) {
+            HardwareRenderer.SyncInterface.applyTransactionInOrder(mAttachInfo.mThreadedRenderer, t);
+            return;
+        }
+        t.apply();
     }
 
     @Override
@@ -13223,7 +13242,8 @@ public final class ViewRootImpl implements ViewParent,
                 }
 
                 if (syncBuffer) {
-                    boolean result = mBlastBufferQueue.syncNextTransaction(transaction -> {
+                    boolean result = HardwareRenderer.SyncInterface.syncNextTransaction(
+                        mAttachInfo.mThreadedRenderer, transaction -> {
                         Runnable timeoutRunnable = () -> Log.e(mTag,
                                 "Failed to submit the sync transaction after 4s. Likely to ANR "
                                         + "soon");

@@ -279,6 +279,28 @@ void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
 #endif
 }
 
+void CanvasContext::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
+#ifdef __ANDROID__
+    mRenderPipeline->setBLASTBufferQueue(bbq);
+#endif
+}
+
+#ifdef __ANDROID__
+bool CanvasContext::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
+                                        bool acquireSingleBuffer) {
+    return mRenderPipeline->syncNextTransaction(t, acquireSingleBuffer);
+}
+
+void CanvasContext::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                             uint64_t frameNumber) {
+    mRenderPipeline->mergeWithNextTransaction(t, frameNumber);
+}
+
+void CanvasContext::applyPendingTransactions(uint64_t frameNumber) {
+    mRenderPipeline->applyPendingTransactions(frameNumber);
+}
+#endif
+
 void CanvasContext::setupPipelineSurface() {
     bool hasSurface = mRenderPipeline->setSurface(
             mNativeSurface ? mNativeSurface->getNativeWindow() : nullptr, mSwapBehavior);

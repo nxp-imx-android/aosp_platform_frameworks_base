@@ -192,7 +192,7 @@ static jboolean android_view_RenderNode_stretch(CRITICAL_JNI_PARAMS_COMMA jlong 
                                                 jfloat vX, jfloat vY, jfloat maxX,
                                                 jfloat maxY) {
     auto* renderNode = reinterpret_cast<RenderNode*>(renderNodePtr);
-    StretchEffect effect = StretchEffect({.fX = vX, .fY = vY}, maxX, maxY);
+    uirenderer::StretchEffect effect = uirenderer::StretchEffect({.fX = vX, .fY = vY}, maxX, maxY);
     renderNode->mutateStagingProperties().mutateLayerProperties().mutableStretchEffect().mergeWith(
             effect);
     renderNode->setPropertyFieldsDirty(RenderNode::GENERIC);
@@ -717,7 +717,7 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
             // Search up to find the nearest stretcheffect parent
             const DamageAccumulator::StretchResult result =
                 info.damageAccumulator->findNearestStretchEffect();
-            const StretchEffect* effect = result.stretchEffect;
+            const uirenderer::StretchEffect* effect = result.stretchEffect;
             if (effect) {
                 if (surfaceview_stretch_alignment()) {
                     auto& parentBounds = result.parentBounds;
@@ -926,5 +926,4 @@ int register_android_view_RenderNode(JNIEnv* env) {
     return RegisterMethodsOrDie(env, kClassPathName, gMethods, NELEM(gMethods));
 }
 
-};
-
+};  // namespace android

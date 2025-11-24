@@ -20,6 +20,7 @@
 #include <SkRect.h>
 #include <android-base/unique_fd.h>
 #ifdef __ANDROID__
+#include <gui/BLASTBufferQueue.h>
 #include <gui/SurfaceControl.h>
 #endif
 #include <utils/RefBase.h>
@@ -81,6 +82,13 @@ public:
     virtual bool setSurface(ANativeWindow* window, SwapBehavior swapBehavior) = 0;
 #ifdef __ANDROID__
     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
+    virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
+    virtual bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>,
+                                     bool) {
+        return false;
+    }
+    virtual void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t) {}
+    virtual void applyPendingTransactions(uint64_t) {}
 #endif
     virtual void onStop() = 0;
     virtual bool isSurfaceReady() = 0;
