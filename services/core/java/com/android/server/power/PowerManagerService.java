@@ -7676,6 +7676,12 @@ public final class PowerManagerService extends SystemService
                         }
                         continue; // never actually goes to sleep for SOFT_SLEEP
                     }
+                    if (groupId == Display.DEFAULT_DISPLAY_GROUP
+                            && mWakeUpDelegate != null
+                            && mWakeUpDelegate.sleep(eventTime, reason, uid)) {
+                        Slog.i(TAG, "Sleep up handled by delegate");
+                        continue;
+                    }
                     if (isNoDoze) {
                         sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
                     } else {
