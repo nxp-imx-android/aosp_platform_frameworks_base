@@ -50,6 +50,7 @@ import android.app.ecm.EnhancedConfirmationFrameworkInitializer;
 import android.app.job.JobSchedulerFrameworkInitializer;
 import android.app.lskfreset.ILskfResetManager;
 import android.app.lskfreset.LskfResetManager;
+import android.app.modes.ContextualModeManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
@@ -692,6 +693,16 @@ public final class SystemServiceRegistry {
                                     com.android.internal.R.style.Theme_DeviceDefault_Light_Dialog))
                 );
             }});
+
+        if (android.service.notification.Flags.enableDndSync()) {
+            registerService(Context.CONTEXTUAL_MODE_SERVICE, ContextualModeManager.class,
+                    new CachedServiceFetcher<ContextualModeManager>() {
+                @Override
+                public ContextualModeManager createService(ContextImpl ctx) {
+                    return new ContextualModeManager(ctx);
+                }
+            });
+        }
 
         registerService(Context.PEOPLE_SERVICE, PeopleManager.class,
                 new CachedServiceFetcher<PeopleManager>() {

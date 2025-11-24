@@ -1084,6 +1084,9 @@
     <uses-permission android:name="android.permission.SHOW_POWER_MENU_PRIVILEGED" />
     <uses-permission android:name="android.permission.SHOW_POWER_MENU" />
 
+    <!-- Permission required for contextual mode tests -->
+    <uses-permission android:name="android.permission.MANAGE_CONTEXTUAL_MODES" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"
