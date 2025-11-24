@@ -570,15 +570,19 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     }
 
     private void reportImeDrawnForOrganizer(@NonNull InsetsControlTarget caller) {
-        final Task callerTask = caller.getWindow() != null ? caller.getWindow().getTask() : null;
+        final WindowState callerWindow = caller.getWindow();
+        if (callerWindow == null) {
+            return;
+        }
+        final Task callerTask = callerWindow.getTask();
         if (callerTask == null) {
             return;
         }
         if (com.android.window.flags.Flags.deferSnapshotRemovalForPredictiveBackWithIme()) {
             final WindowContainer<?> imeParent = mDisplayContent.getImeParent();
-            // The Shell is only interested in when the IME is attached to a task, as this triggers
-            // the removal of the snapshot's starting window.
-            if (imeParent == null || !imeParent.isDescendantOf(callerTask)) {
+            // The Shell is only interested in when the IME is attached to the task of the caller,
+            // as this triggers the removal of the snapshot's starting window.
+            if (imeParent == null || !callerWindow.isDescendantOf(imeParent)) {
                 return;
             }
         }
