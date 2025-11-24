@@ -2135,7 +2135,9 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
     // the shared objects and mark them readable.
 #ifdef BUILD_EXECUTE_ONLY_MEMORY
     if (!(runtime_flags & RuntimeFlags::ENABLE_EXECUTE_ONLY_MEMORY)) {
+        ZYGOTE_TRACE_BEGIN("disable_execute_only");
         dl_iterate_phdr(disable_execute_only, nullptr);
+        ZYGOTE_TRACE_END("disable_execute_only");
     }
 #endif
     // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
