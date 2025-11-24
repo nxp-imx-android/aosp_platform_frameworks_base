@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.fundamentals.open
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.OpenAppFromTaskbar
+import com.android.wm.shell.scenarios.OpenAppsInDesktopMode
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
@@ -28,4 +28,4 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class OpenAppFromTaskbarTest : OpenAppFromTaskbar()
+class OpenAppsInDesktopModeTest : OpenAppsInDesktopMode()

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.fundamentals.open
 
-import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.OpenTrampolineAppInDesktopModeTaskLimit
+import com.android.wm.shell.scenarios.OpenAppFromAllApps
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [OpenTrampolineAppInDesktopModeTaskLimit]. */
+/* Functional test for [OpenAppsInDesktopMode]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
-@Postsubmit
+@Presubmit
 @ScreenRecordRule.ScreenRecord
-class OpenTrampolineAppInDesktopModeTaskLimitTest : OpenTrampolineAppInDesktopModeTaskLimit()
+class OpenAppFromAllAppsTest : OpenAppFromAllApps()

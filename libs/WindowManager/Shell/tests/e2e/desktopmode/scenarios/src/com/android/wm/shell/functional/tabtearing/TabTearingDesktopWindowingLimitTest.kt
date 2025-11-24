@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.tabtearing
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.TabTearing
+import com.android.wm.shell.scenarios.TabTearingDesktopWindowingLimit
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [TabTearing]. */
+/* Functional test for [TabTearingDesktopWindowingLimit]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class TabTearingTest : TabTearing()
+class TabTearingDesktopWindowingLimitTest : TabTearingDesktopWindowingLimit()
