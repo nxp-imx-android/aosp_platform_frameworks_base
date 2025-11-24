@@ -1178,7 +1178,8 @@ class DesktopRepository(
      * appropriate classes.
      */
     fun updateTaskExclusionRegions(taskId: Int, taskExclusionRegions: Region) {
-        desktopExclusionRegions.put(taskId, taskExclusionRegions)
+        val exclusionRegion = Region.obtain(taskExclusionRegions)
+        desktopExclusionRegions.put(taskId, exclusionRegion)
         desktopGestureExclusionExecutor?.execute {
             desktopGestureExclusionListener?.accept(calculateDesktopExclusionRegion())
         }
