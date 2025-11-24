@@ -3187,10 +3187,8 @@ class Task extends TaskFragment {
     }
 
     ActivityRecord getTopWaitSplashScreenActivity() {
-        return getActivity((r) -> {
-            return r.mHandleExitSplashScreen
-                    && r.mTransferringSplashScreenState == TRANSFER_SPLASH_SCREEN_COPYING;
-        });
+        return getActivity((r) -> r.mHandleExitSplashScreen
+                && r.mTransferringSplashScreenState == TRANSFER_SPLASH_SCREEN_COPYING);
     }
 
     void setTaskDescription(TaskDescription taskDescription) {

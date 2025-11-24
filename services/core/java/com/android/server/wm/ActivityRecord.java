@@ -2528,7 +2528,6 @@ final class ActivityRecord extends WindowToken {
                 Slog.w(TAG, "Activity transferring splash screen timeout for "
                         + ActivityRecord.this + " state " + mTransferringSplashScreenState);
                 if (isTransferringSplashScreen()) {
-                    mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
                     cleanUpSplashScreen();
                     removeStartingWindow();
                 }
@@ -2590,7 +2589,7 @@ final class ActivityRecord extends WindowToken {
      * Receive the splash screen data from shell, sending to client.
      * @param parcelable The data to reconstruct the splash screen view, null mean unable to copy.
      */
-    void onCopySplashScreenFinish(@Nullable SplashScreenViewParcelable parcelable) {
+    boolean onCopySplashScreenFinish(@Nullable SplashScreenViewParcelable parcelable) {
         removeTransferSplashScreenTimeout();
         final SurfaceControl windowAnimationLeash = (parcelable == null
                 || mTransferringSplashScreenState != TRANSFER_SPLASH_SCREEN_COPYING
@@ -2600,13 +2599,9 @@ final class ActivityRecord extends WindowToken {
         if (windowAnimationLeash == null) {
             // Unable to copy from shell, maybe it's not a splash screen, or something went wrong.
             // Either way, abort and reset the sequence.
-            if (parcelable != null) {
-                parcelable.clearIfNeeded();
-            }
-            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             cleanUpSplashScreen();
             removeStartingWindow();
-            return;
+            return false;
         }
         mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_ATTACH_TO_CLIENT;
         final TransferSplashScreenViewStateItem item =
@@ -2617,10 +2612,9 @@ final class ActivityRecord extends WindowToken {
             scheduleTransferSplashScreenTimeout();
         } else {
             mStartingWindow.cancelAnimation();
-            parcelable.clearIfNeeded();
-            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             cleanUpSplashScreen();
         }
+        return isSuccessful;
     }
 
     private void onSplashScreenAttachComplete() {
@@ -2642,9 +2636,12 @@ final class ActivityRecord extends WindowToken {
      */
     void cleanUpSplashScreen() {
         // Clean up the splash screen if client were supposed to handle it.
-        if (mHandleExitSplashScreen
+        if (mHandleExitSplashScreen && isAttached()
                 && mTransferringSplashScreenState != TRANSFER_SPLASH_SCREEN_IDLE) {
             ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "Cleaning splash screen token=%s", this);
+            removeTransferSplashScreenTimeout();
+            mHandleExitSplashScreen = false;
+            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             mAtmService.mTaskOrganizerController.onAppSplashScreenViewRemoved(getTask(),
                     mStartingSurface != null ? mStartingSurface.mTaskOrganizer : null);
         }
@@ -4390,6 +4387,9 @@ final class ActivityRecord extends WindowToken {
                 + " delayed=%b Callers=%s", this, delayed, Debug.getCallers(4));
 
         if (mStartingData != null) {
+            if (isTransferringSplashScreen()) {
+                cleanUpSplashScreen();
+            }
             removeStartingWindow();
         }
 
