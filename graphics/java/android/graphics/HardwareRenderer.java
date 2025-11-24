@@ -260,17 +260,22 @@ public class HardwareRenderer {
     /**
      * Creates a new instance of a HardwareRenderer. The HardwareRenderer will default
      * to opaque with no light source configured.
+     * @hide
      */
-    public HardwareRenderer() {
+    public HardwareRenderer(boolean useIpcCanvas) {
         ProcessInitializer.sInstance.initUsingContext();
         mRootNode = RenderNode.adopt(nCreateRootRenderNode());
         mRootNode.setClipToBounds(false);
-        mNativeProxy = nCreateProxy(!mOpaque, mRootNode.mNativeRenderNode);
+        mNativeProxy = nCreateProxy(!mOpaque, mRootNode.mNativeRenderNode, useIpcCanvas);
         if (mNativeProxy == 0) {
             throw new OutOfMemoryError("Unable to create hardware renderer");
         }
         Cleaner.create(this, new DestroyContextRunnable(mNativeProxy));
         ProcessInitializer.sInstance.init(mNativeProxy);
+    }
+
+    public HardwareRenderer() {
+        this(false);
     }
 
     /**
@@ -1607,7 +1612,8 @@ public class HardwareRenderer {
 
     private static native long nCreateRootRenderNode();
 
-    private static native long nCreateProxy(boolean translucent, long rootRenderNode);
+    private static native long nCreateProxy(boolean translucent, long rootRenderNode,
+            boolean useIpc);
 
     private static native void nDeleteProxy(long nativeProxy);
 

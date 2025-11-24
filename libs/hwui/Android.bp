@@ -668,6 +668,7 @@ cc_defaults {
                 "pipeline/skia/PipelineCache.cpp",
                 "pipeline/skia/ShaderCache.cpp",
                 "pipeline/skia/SkiaGpuPipeline.cpp",
+                "pipeline/skia/SkiaIpcPipeline.cpp",
                 "pipeline/skia/SkiaMemoryTracer.cpp",
                 "pipeline/skia/SkiaOpenGLPipeline.cpp",
                 "pipeline/skia/SkiaProfileRenderer.cpp",
@@ -691,6 +692,10 @@ cc_defaults {
                 "Readback.cpp",
                 "WebViewFunctorManager.cpp",
                 "protos/graphicsstats.proto",
+            ],
+
+            static_libs: [
+                "libipcrenderbuffer_static",
             ],
 
             // Allow implicit fallthroughs in HardwareBitmapUploader.cpp until they are fixed.
@@ -757,8 +762,12 @@ cc_defaults {
         android: {
             local_include_dirs: ["platform/android"],
             shared_libs: [
+                "libbinder",
                 "libgui",
                 "libui",
+            ],
+            static_libs: [
+                "libipcrenderbuffer_static",
             ],
         },
     },
@@ -789,6 +798,7 @@ cc_test {
         "libflagtest",
         "libgmock",
         "libhwui_static",
+        "libipcrenderbuffer_static",
     ],
     shared_libs: [
         "libmemunreachable",
