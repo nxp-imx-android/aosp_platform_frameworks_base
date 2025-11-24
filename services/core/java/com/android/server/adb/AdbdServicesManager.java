@@ -42,6 +42,29 @@ public class AdbdServicesManager {
 
     private final ContentResolver mContentResolver;
 
+    /** Callback for service registration results. */
+    interface RegistrationCallback {
+        /** A RegistrationCallback that does nothing. */
+        RegistrationCallback NO_OP =
+                new RegistrationCallback() {
+                    @Override
+                    public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+                        // No-op
+                    }
+
+                    @Override
+                    public void onServiceRegistered(NsdServiceInfo serviceInfo) {
+                        // No-op
+                    }
+                };
+
+        /** Called when service registration fails. */
+        void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode);
+
+        /** Called when service is successfully registered. */
+        void onServiceRegistered(NsdServiceInfo serviceInfo);
+    }
+
     AdbdServicesManager(Context context) {
         mNsdManager = context.getSystemService(NsdManager.class);
         mContentResolver = context.getContentResolver();
@@ -52,6 +75,14 @@ public class AdbdServicesManager {
     }
 
     void registerService(String instanceName, String serviceType, int port) {
+        registerService(instanceName, serviceType, port, RegistrationCallback.NO_OP);
+    }
+
+    void registerService(
+            String instanceName,
+            String serviceType,
+            int port,
+            RegistrationCallback registrationCallback) {
         String key = keyForService(instanceName, serviceType);
         if (mRegisteredServices.containsKey(key)) {
             AdbdRegistrationListener listener = mRegisteredServices.get(key);
@@ -77,7 +108,7 @@ public class AdbdServicesManager {
         }
 
         AdbdRegistrationListener listener =
-                new AdbdRegistrationListener(instanceName, serviceType, port);
+                new AdbdRegistrationListener(instanceName, serviceType, port, registrationCallback);
 
         try {
             mNsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, listener);
@@ -126,16 +157,23 @@ public class AdbdServicesManager {
         final String mInstanceName;
         final String mServiceType;
         final int mPort;
+        final RegistrationCallback mRegistrationCallback;
 
-        private AdbdRegistrationListener(String instanceName, String serviceType, int port) {
+        private AdbdRegistrationListener(
+                String instanceName,
+                String serviceType,
+                int port,
+                RegistrationCallback registrationCallback) {
             mInstanceName = instanceName;
             mServiceType = serviceType;
             mPort = port;
+            mRegistrationCallback = registrationCallback;
         }
 
         @Override
         public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
             Slog.e(TAG, "Failed to register service (err=" + errorCode + "): " + serviceInfo);
+            mRegistrationCallback.onRegistrationFailed(serviceInfo, errorCode);
         }
 
         @Override
@@ -146,6 +184,7 @@ public class AdbdServicesManager {
         @Override
         public void onServiceRegistered(NsdServiceInfo serviceInfo) {
             Slog.i(TAG, "Registered service '" + serviceInfo + "'");
+            mRegistrationCallback.onServiceRegistered(serviceInfo);
         }
 
         @Override
