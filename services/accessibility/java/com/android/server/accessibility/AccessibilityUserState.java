@@ -612,6 +612,7 @@ public class AccessibilityUserState {
         pw.println();
         dumpShortcutTargets(pw, TOP_ROW_KEY, "top row key");
         dumpShortcutTargets(pw, QUICK_ACCESS, "quick access dialog");
+        dumpShortcutTargets(pw, KEY_GESTURE, "keyboard shortcuts targets");
         pw.append("     Bound services:{");
         final int serviceCount = mBoundServices.size();
         for (int j = 0; j < serviceCount; j++) {
