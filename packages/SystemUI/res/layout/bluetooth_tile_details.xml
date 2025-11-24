@@ -20,7 +20,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/root"
+    android:id="@+id/bluetooth_tile_details"
     style="@style/Widget.SliceView.Panel"
     android:paddingBottom="@dimen/tile_details_bottom_padding"
     android:layout_width="wrap_content"
