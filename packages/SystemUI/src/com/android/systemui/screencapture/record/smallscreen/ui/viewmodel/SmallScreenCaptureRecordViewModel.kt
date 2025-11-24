@@ -36,6 +36,8 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.shared.model.currentTargetModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
@@ -64,6 +66,7 @@ constructor(
     private val markupInteractor: ScreenCaptureMarkupInteractor,
     private val activityManager: ActivityManagerWrapper,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -99,8 +102,16 @@ constructor(
                 traceName = "SmallScreenCaptureRecordViewModel#markupEnabled",
                 initialValue = null,
             )
+    private val captureTargetModel by
+        recordDetailsTargetInteractor.model.hydratedStateOf(
+            traceName = "SmallScreenCaptureRecordViewModel#captureTargetModel",
+            initialValue = null,
+        )
 
-    val shouldShowMarkupButton: Boolean = screenCaptureRecordFeaturesInteractor.isMarkupAvailable
+    val shouldShowMarkupButton: Boolean by derivedStateOf {
+        screenCaptureRecordFeaturesInteractor.isMarkupAvailable &&
+            captureTargetModel?.currentTargetModel?.canUseMarkup == true
+    }
 
     val shouldShowSettingsButton: Boolean by derivedStateOf { isRecording }
 
@@ -173,7 +184,7 @@ constructor(
 
     private suspend fun startRecording() {
         val audioSource = recordDetailsParametersViewModel.audioSource ?: return
-        val target = recordDetailsTargetViewModel.currentTarget?.screenCaptureTarget ?: return
+        val target = captureTargetModel?.currentTargetModel?.screenCaptureTarget ?: return
         when (target) {
             is ScreenCaptureTarget.Fullscreen -> {
                 val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
