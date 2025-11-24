@@ -182,6 +182,12 @@ class FakeHomeStatusBarViewModel(
     val isNotificationsChipHighlightedSource = mutableStateOf(false)
     override val isNotificationsChipHighlighted: Boolean by isNotificationsChipHighlightedSource
 
+    val isNotificationsChipClickableSource = mutableStateOf(false)
+    override val isNotificationsChipClickable: Boolean by isNotificationsChipClickableSource
+
+    val isQuickSettingsChipClickableSource = mutableStateOf(false)
+    override val isQuickSettingsChipClickable: Boolean by isQuickSettingsChipClickableSource
+
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }

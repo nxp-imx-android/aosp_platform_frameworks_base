@@ -207,6 +207,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
                     Alignment.Start,
                 ),
+            isClickable = viewModel.isNotificationsChipClickable,
         ) {
             Icon(
                 icon =
@@ -263,6 +264,7 @@ private fun QuickSettingsChip(
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
                     Alignment.Start,
                 ),
+            isClickable = viewModel.isQuickSettingsChipClickable,
         ) {
             if (SystemStatusIconsInCompose.isEnabled) {
                 SystemStatusIcons(
