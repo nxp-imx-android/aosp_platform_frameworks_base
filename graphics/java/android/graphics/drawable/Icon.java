@@ -1201,10 +1201,19 @@ public final class Icon implements Parcelable {
         if (bitmapWidth > maxWidth || bitmapHeight > maxHeight) {
             float scale = Math.min((float) maxWidth / bitmapWidth,
                     (float) maxHeight / bitmapHeight);
+            int newWidth = Math.max(1, (int) (scale * bitmapWidth));
+            int newHeight = Math.max(1, (int) (scale * bitmapHeight));
+
+            if (bitmap.isMutable() && bitmap.getAllocationByteCount() >= MIN_ASHMEM_ICON_SIZE) {
+                StrictMode.noteSlowCall("Downscaling oversized Icon Bitmap to ashmem");
+                // Downscale directly to ashmem in anticipation of parceling.
+                return Bitmap.createScaledAshmemBitmap(bitmap, newWidth, newHeight, true);
+            }
+
             StrictMode.noteSlowCall("Downscaling oversized Icon Bitmap");
             bitmap = Bitmap.createScaledBitmap(bitmap,
-                    Math.max(1, (int) (scale * bitmapWidth)),
-                    Math.max(1, (int) (scale * bitmapHeight)),
+                    newWidth,
+                    newHeight,
                     true /* filter */);
         }
         return bitmap;

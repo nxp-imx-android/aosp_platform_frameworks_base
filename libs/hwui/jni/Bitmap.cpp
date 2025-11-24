@@ -29,6 +29,7 @@
 #include "SkColor.h"
 #include "SkColorSpace.h"
 #include "SkData.h"
+#include "SkImage.h"
 #include "SkImageInfo.h"
 #include "SkPaint.h"
 #include "SkPixmap.h"
@@ -543,6 +544,40 @@ static jobject Bitmap_copyAshmemConfig(JNIEnv* env, jobject, jlong srcHandle, ji
     auto bitmap = Bitmap_copyAshmemImpl(env, src, dstCT);
     jobject ret = createBitmap(env, bitmap, getPremulBitmapCreateFlags(false));
     return ret;
+}
+
+static jobject Bitmap_createEmptyAshmemBitmap(JNIEnv* env, jobject, jint width, jint height,
+                                              jint configHandle, jlong colorSpacePtr) {
+    SkColorType colorType = GraphicsJNI::legacyBitmapConfigToColorType(configHandle);
+    if (colorType == kARGB_4444_SkColorType) {
+        colorType = kN32_SkColorType;
+    }
+
+    sk_sp<SkColorSpace> colorSpace;
+    if (colorType == kAlpha_8_SkColorType) {
+        colorSpace = nullptr;
+    } else {
+        colorSpace = GraphicsJNI::getNativeColorSpace(colorSpacePtr);
+    }
+
+    SkImageInfo info = SkImageInfo::Make(width, height, colorType, kPremul_SkAlphaType, colorSpace);
+
+    SkBitmap result;
+    AshmemPixelAllocator allocator(env);
+    if (!result.setInfo(info) || !result.tryAllocPixels(&allocator)) {
+        ALOGE("OOM allocating Ashmem Bitmap with dimensions %i x %i", width, height);
+        doThrowOOME(env);
+        return NULL;
+    }
+
+    auto bitmap = allocator.getStorageObjAndReset();
+    if (!bitmap) {
+        ALOGE("OOM allocating Ashmem Bitmap with dimensions %i x %i", width, height);
+        doThrowOOME(env);
+        return NULL;
+    }
+
+    return createBitmap(env, bitmap, getPremulBitmapCreateFlags(true));
 }
 
 static jint Bitmap_getAshmemFd(JNIEnv* env, jobject, jlong bitmapHandle) {
@@ -1397,6 +1432,8 @@ static void Bitmap_setSourceId(JNIEnv*, jobject, jlong bitmapHandle, jlong sourc
 static const JNINativeMethod gBitmapMethods[] = {
         {"nativeCreate", "([IIIIIIZJ)Landroid/graphics/Bitmap;", (void*)Bitmap_creator},
         {"nativeCopy", "(JIZ)Landroid/graphics/Bitmap;", (void*)Bitmap_copy},
+        {"nativeCreateEmptyAshmemBitmap", "(IIIJ)Landroid/graphics/Bitmap;",
+         (void*)Bitmap_createEmptyAshmemBitmap},
         {"nativeCopyAshmem", "(J)Landroid/graphics/Bitmap;", (void*)Bitmap_copyAshmem},
         {"nativeCopyAshmemConfig", "(JI)Landroid/graphics/Bitmap;", (void*)Bitmap_copyAshmemConfig},
         {"nativeGetAshmemFD", "(J)I", (void*)Bitmap_getAshmemFd},
