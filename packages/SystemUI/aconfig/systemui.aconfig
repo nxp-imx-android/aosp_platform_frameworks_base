@@ -2053,3 +2053,10 @@ flag {
   description: "Use the views moved into system ui from the framework for the system selection toolbar."
   bug: "450977221"
 }
+
+flag {
+    name: "communal_edit_mode_accessibility_resize"
+    namespace: "systemui"
+    description: "Allows users to resize communal hub widgets by single-point actions."
+    bug: "431683508"
+}
