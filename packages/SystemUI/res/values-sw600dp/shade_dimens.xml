@@ -26,6 +26,12 @@
 
     <!-- QS shade overlay common tiles -->
     <dimen
+        name="common_tile_default_active_icon_corner_radius"
+        android:featureFlag="com.android.systemui.desktop_sizing">12dp</dimen>
+    <dimen
+        name="common_tile_default_active_tile_corner_radius"
+        android:featureFlag="com.android.systemui.desktop_sizing">18dp</dimen>
+    <dimen
         name="common_tile_default_icon_size"
         android:featureFlag="com.android.systemui.desktop_sizing">20dp</dimen>
     <dimen
