@@ -279,6 +279,8 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Riavvia"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Emergenza"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Segnalazione di bug"</string>
+    <!-- no translation found for global_action_feedback (3480836834202300036) -->
+    <skip />
     <string name="global_action_logout" msgid="6093581310002476511">"Termina sessione"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Screenshot"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Standby"</string>
@@ -825,10 +827,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Consente all\'app di leggere i file video dal tuo spazio di archiviazione condiviso."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"Lettura dei file immagine dallo spazio di archiviazione condiviso"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Consente all\'app di leggere i file immagine dal tuo spazio di archiviazione condiviso."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"lettura dei file documento dallo spazio di archiviazione condiviso"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Consente all\'app di leggere i file documento dal tuo spazio di archiviazione condiviso."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"Lettura dei file immagine e video selezionati dall\'utente dallo spazio di archiviazione condiviso"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Consente all\'app di leggere i file immagine e video che selezioni dal tuo spazio di archiviazione condiviso."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"Modifica/eliminazione dei contenuti dell\'archivio condiviso"</string>
@@ -2181,13 +2181,29 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Nessun suggerimento di Compilazione automatica"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{Un suggerimento di compilazione automatica}many{# suggerimenti di compilazione automatica}other{# suggerimenti di compilazione automatica}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Vuoi salvare su "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
+    <skip />
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Vuoi salvare la <xliff:g id="TYPE">%1$s</xliff:g> su "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
+    <skip />
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Vuoi salvare <xliff:g id="TYPE_0">%1$s</xliff:g> e <xliff:g id="TYPE_1">%2$s</xliff:g> su "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
+    <skip />
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Vuoi salvare <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> e <xliff:g id="TYPE_2">%3$s</xliff:g> su "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
+    <skip />
     <string name="autofill_update_title" msgid="3630695947047069136">"Vuoi aggiornare su "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
+    <skip />
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Vuoi aggiornare <xliff:g id="TYPE">%1$s</xliff:g> su "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
+    <skip />
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Vuoi aggiornare <xliff:g id="TYPE_0">%1$s</xliff:g> e <xliff:g id="TYPE_1">%2$s</xliff:g> su "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
+    <skip />
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Vuoi aggiornare i seguenti dati in "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> e <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
+    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
+    <skip />
     <string name="autofill_save_yes" msgid="8035743017382012850">"Salva"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"No, grazie"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Non ora"</string>

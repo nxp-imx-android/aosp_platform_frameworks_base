@@ -278,6 +278,8 @@
     <string name="global_action_restart" msgid="4678451019561687074">"යළි අරඹන්න"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"හදිසි"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"දෝෂ වර්තාව"</string>
+    <!-- no translation found for global_action_feedback (3480836834202300036) -->
+    <skip />
     <string name="global_action_logout" msgid="6093581310002476511">"සැසිය අවසන් කරන්න"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"තිර රුව"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"පොරොත්තු"</string>
@@ -824,10 +826,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"ඔබගේ බෙදා ගත් ගබඩාවෙන් වීඩියෝ ගොනු කියවීමට යෙදුමට ඉඩ දෙයි."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"බෙදා ගත් ගබඩාවෙන් රූප ගොනු කියවන්න"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"ඔබගේ බෙදා ගත් ගබඩාවෙන් රූප ගොනු කියවීමට යෙදුමට ඉඩ දෙයි."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"බෙදා ගත් ගබඩාවෙන් ලේඛන ගොනු කියවන්න"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"ඔබේ බෙදා ගත් ගබඩාවෙන් ලේඛන ගොනු කියවීමට යෙදුමට ඉඩ දෙයි."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"බෙදා ගත් ආචයනයෙන් පරිශීලක තෝරන ලද රූප සහ වීඩියෝ ගොනු කියවන්න"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ඔබේ බෙදා ගත් ආචයනයෙන් ඔබ තෝරන රූප සහ වීඩියෝ ගොනු කියවීමට යෙදුමට ඉඩ දෙයි."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"ඔබේ බෙදා ගත් ගබඩාවේ අන්තර්ගත වෙනස් කරන්න නැතහොත් මකන්න"</string>
@@ -2180,13 +2180,29 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"ස්වයං පිරවුම් යෝජනා නැත"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{ස්වයං පිරවුම් යෝජනා එකක්}one{ස්වයං පිරවුම් යෝජනා #ක්}other{ස්වයං පිරවුම් යෝජනා #ක්}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" වෙත සුරකින්නද?"</string>
+    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
+    <skip />
     <string name="autofill_save_title_with_type" msgid="3002460014579799605"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" වෙත <xliff:g id="TYPE">%1$s</xliff:g> සුරකින්නද?"</string>
+    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
+    <skip />
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" වෙත <xliff:g id="TYPE_0">%1$s</xliff:g> සහ <xliff:g id="TYPE_1">%2$s</xliff:g> සුරකින්නද?"</string>
+    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
+    <skip />
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" වෙත <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, සහ <xliff:g id="TYPE_2">%3$s</xliff:g> සුරකින්න?"</string>
+    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
+    <skip />
     <string name="autofill_update_title" msgid="3630695947047069136"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" තුළ යාවත්කාලීන කරන්නද?"</string>
+    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
+    <skip />
     <string name="autofill_update_title_with_type" msgid="5264152633488495704"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" තුළ <xliff:g id="TYPE">%1$s</xliff:g> යාවත්කාලීන කරන්නද?"</string>
+    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
+    <skip />
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" තුළ <xliff:g id="TYPE_0">%1$s</xliff:g> සහ <xliff:g id="TYPE_1">%2$s</xliff:g> යාවත්කාලීන කරන්නද?"</string>
+    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
+    <skip />
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, සහ <xliff:g id="TYPE_2">%3$s</xliff:g> තුළ මෙම අයිතම යාවත්කාලීන කරන්න ද?"</string>
+    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
+    <skip />
     <string name="autofill_save_yes" msgid="8035743017382012850">"සුරකින්න"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"එපා ස්තූතියි"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"දැන් නොවේ"</string>

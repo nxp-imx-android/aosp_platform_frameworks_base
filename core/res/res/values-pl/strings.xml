@@ -280,6 +280,8 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Zrestartuj"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Połączenie alarmowe"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Zgłoś błąd"</string>
+    <!-- no translation found for global_action_feedback (3480836834202300036) -->
+    <skip />
     <string name="global_action_logout" msgid="6093581310002476511">"Zakończ sesję"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Zrzut ekranu"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Tryb gotowości"</string>
@@ -826,10 +828,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Zezwala na odczyt przez aplikację plików wideo w pamięci współdzielonej."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"odczyt plików graficznych z pamięci współdzielonej"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Zezwala na odczyt przez aplikację plików graficznych w pamięci współdzielonej."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"odczytywanie plików dokumentów w pamięci współdzielonej"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Zezwala aplikacji na odczytywanie plików dokumentów w pamięci współdzielonej."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"odczyt plików obrazów i filmów wybranych przez użytkownika w pamięci współdzielonej"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Zezwala na odczyt przez aplikację plików obrazów i filmów wybranych w pamięci współdzielonej."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"modyfikowanie i usuwanie zawartości pamięci współdzielonej"</string>
@@ -1101,7 +1101,7 @@
     <string name="lockscreen_failed_attempts_now_wiping" product="tv" msgid="2205435033340091883">"Próbujesz odblokować urządzenie z Androidem TV w nieprawidłowy sposób. To była <xliff:g id="NUMBER">%d</xliff:g> próba. Urządzenie z Androidem TV zostanie teraz zresetowane do ustawień fabrycznych."</string>
     <string name="lockscreen_failed_attempts_now_wiping" product="default" msgid="2203704707679895487">"Próbowano <xliff:g id="NUMBER">%d</xliff:g> razy nieprawidłowo odblokować telefon. Telefon zostanie teraz zresetowany do ustawień fabrycznych."</string>
     <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6807200118164539589">"Spróbuj ponownie za <xliff:g id="NUMBER">%d</xliff:g> sek."</string>
-    <string name="lockscreen_forgot_pattern_button_text" msgid="8362442730606839031">"Zapomniałeś wzoru?"</string>
+    <string name="lockscreen_forgot_pattern_button_text" msgid="8362442730606839031">"Nie pamiętasz wzoru?"</string>
     <string name="lockscreen_glogin_forgot_pattern" msgid="9218940117797602518">"Odblokowanie konta"</string>
     <string name="lockscreen_glogin_too_many_attempts" msgid="3775904917743034195">"Zbyt wiele prób narysowania wzoru"</string>
     <string name="lockscreen_glogin_instructions" msgid="4695162942525531700">"Aby odblokować, zaloguj się za pomocą konta Google."</string>
@@ -2182,13 +2182,29 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Brak sugestii autouzupełniania"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{Jedna propozycja autouzupełnienia}few{# propozycje autouzupełniania}many{# propozycji autouzupełniania}other{# propozycji autouzupełniania}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Zapisać w: "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
+    <skip />
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Zapisać: <xliff:g id="TYPE">%1$s</xliff:g> w "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
+    <skip />
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Zapisać: <xliff:g id="TYPE_0">%1$s</xliff:g> i <xliff:g id="TYPE_1">%2$s</xliff:g> w: "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
+    <skip />
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Zapisać: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> i <xliff:g id="TYPE_2">%3$s</xliff:g> w: "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
+    <skip />
     <string name="autofill_update_title" msgid="3630695947047069136">"Zaktualizować w: "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
+    <skip />
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Zaktualizować: <xliff:g id="TYPE">%1$s</xliff:g> w: "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
+    <skip />
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Zaktualizować: <xliff:g id="TYPE_0">%1$s</xliff:g> i <xliff:g id="TYPE_1">%2$s</xliff:g> w: "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
+    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
+    <skip />
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Zaktualizować w "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" te elementy: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> i <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
+    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
+    <skip />
     <string name="autofill_save_yes" msgid="8035743017382012850">"Zapisz"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"Nie, dziękuję"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Nie teraz"</string>
