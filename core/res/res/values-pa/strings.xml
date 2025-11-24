@@ -74,9 +74,9 @@
     <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਸਮਰਥਿਤ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਸਮਰਥਿਤ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਸਮਰਥਿਤ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਮੰਗ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਦੀ ਮੰਗ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ਦੁਬਾਰਾ ਨਾ ਦਿਖਾਓ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ਐਪ ਦੀ ਅਨੁਰੂਪਤਾ"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : ਲੋਡ ਹਿੱਸਾ ਇਕਸਾਰ ਨਹੀਂ ਹੈ&lt;br&gt;"</string>
@@ -278,6 +278,8 @@
     <string name="global_action_restart" msgid="4678451019561687074">"ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"ਐਮਰਜੈਂਸੀ"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"ਬਗ ਰਿਪੋਰਟ"</string>
+    <!-- no translation found for global_action_feedback (3480836834202300036) -->
+    <skip />
     <string name="global_action_logout" msgid="6093581310002476511">"ਸੈਸ਼ਨ ਸਮਾਪਤ ਕਰੋ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਵੋ"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"ਸਟੈਂਡਬਾਈ"</string>
@@ -1143,7 +1145,7 @@
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
     <string name="password_keyboard_label_alpha_key" msgid="5294837425652726684">"ABC"</string>
     <string name="password_keyboard_label_alt_key" msgid="8528261816395508841">"ALT"</string>
-    <string name="granularity_label_character" msgid="8903387663153706317">"ਅੱਖਰ"</string>
+    <string name="granularity_label_character" msgid="8903387663153706317">"ਅੱਖਰ-ਚਿੰਨ੍ਹ"</string>
     <string name="granularity_label_word" msgid="3686589158760620518">"ਸ਼ਬਦ"</string>
     <string name="granularity_label_link" msgid="9007852307112046526">"ਲਿੰਕ"</string>
     <string name="granularity_label_line" msgid="376204904280620221">"ਲਾਈਨ"</string>
@@ -2178,13 +2180,29 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"ਕੋਈ ਆਟੋਫਿਲ ਸੁਝਾਅ ਨਹੀਂ ਹਨ"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{ਇੱਕ ਆਟੋਫਿਲ ਸੁਝਾਅ}one{# ਆਟੋਫਿਲ ਸੁਝਾਅ}other{# ਆਟੋਫਿਲ ਸੁਝਾਅ}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" ਵਿੱਚ ਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
+    <skip />
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" ਵਿੱਚ <xliff:g id="TYPE">%1$s</xliff:g> ਨੂੰ ਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
+    <skip />
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" ਵਿੱਚ <xliff:g id="TYPE_0">%1$s</xliff:g> ਅਤੇ <xliff:g id="TYPE_1">%2$s</xliff:g> ਨੂੰ ਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
+    <skip />
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" ਵਿੱਚ <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ਅਤੇ <xliff:g id="TYPE_2">%3$s</xliff:g> ਨੂੰ ਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
+    <skip />
     <string name="autofill_update_title" msgid="3630695947047069136">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" ਵਿੱਚ ਅੱਪਡੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
+    <skip />
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" ਵਿੱਚ <xliff:g id="TYPE">%1$s</xliff:g> ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
+    <skip />
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" ਵਿੱਚ <xliff:g id="TYPE_0">%1$s</xliff:g> ਅਤੇ <xliff:g id="TYPE_1">%2$s</xliff:g> ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
+    <skip />
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"ਕੀ ਤੁਸੀਂ "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" ਵਿੱਚ ਇਨ੍ਹਾਂ ਆਈਟਮਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, ਅਤੇ<xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
+    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
+    <skip />
     <string name="autofill_save_yes" msgid="8035743017382012850">"ਰੱਖਿਅਤ ਕਰੋ"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"ਨਹੀਂ ਧੰਨਵਾਦ"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"ਹੁਣੇ ਨਹੀਂ"</string>
