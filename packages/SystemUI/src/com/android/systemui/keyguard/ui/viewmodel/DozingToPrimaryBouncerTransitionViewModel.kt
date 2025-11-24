@@ -55,7 +55,7 @@ constructor(private val blurConfig: BlurConfig, animationFlow: KeyguardTransitio
             TO_PRIMARY_BOUNCER_DURATION,
             onStep = { step ->
                 transitionProgressToBlurRadius(
-                    starBlurRadius = blurConfig.minBlurRadiusPx,
+                    startBlurRadius = blurConfig.minBlurRadiusPx,
                     endBlurRadius = blurConfig.maxBlurRadiusPx,
                     transitionProgress = step,
                 )
