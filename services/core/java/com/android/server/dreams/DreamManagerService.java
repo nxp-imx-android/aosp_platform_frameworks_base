@@ -853,7 +853,7 @@ public final class DreamManagerService extends SystemService {
         // fallback to the default dream component if necessary
         if (validComponents.isEmpty()) {
             ComponentName defaultDream = getDefaultDreamComponentForUser(userId);
-            if (defaultDream != null) {
+            if (defaultDream != null && validateDream(defaultDream, userId)) {
                 Slog.w(TAG, "Falling back to default dream " + defaultDream);
                 validComponents.add(defaultDream);
             }
