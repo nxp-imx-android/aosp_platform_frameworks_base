@@ -18,9 +18,11 @@ package android.os;
 
 import static android.os.Flags.FLAG_STATE_OF_HEALTH_PUBLIC;
 import static android.os.Flags.FLAG_BATTERY_PART_STATUS_API;
+import static android.os.Flags.FLAG_BATTERY_CHARGING_INFO_API;
 
 import android.Manifest.permission;
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
@@ -33,6 +35,9 @@ import android.content.Intent;
 import android.hardware.health.V1_0.Constants;
 
 import com.android.internal.app.IBatteryStats;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * The BatteryManager class contains strings and constants used for values
@@ -165,6 +170,7 @@ public class BatteryManager {
      * Int value representing the battery charging status.
      */
     public static final String EXTRA_CHARGING_STATUS = "android.os.extra.CHARGING_STATUS";
+    // TODO: b/461917615 - add EXTRA_CHARGING_STATUS API constants with clear definitions
 
     /**
      * Battery capacity level is unsupported.
@@ -294,6 +300,18 @@ public class BatteryManager {
     /** Power source is dock. */
     public static final int BATTERY_PLUGGED_DOCK = OsProtoEnums.BATTERY_PLUGGED_DOCK; // = 8
 
+    /** @hide */
+    @IntDef(prefix = { "CHARGING_POLICY_" }, value = {
+            CHARGING_POLICY_DEFAULT,
+            CHARGING_POLICY_ADAPTIVE_AON,
+            CHARGING_POLICY_ADAPTIVE_AC,
+            CHARGING_POLICY_ADAPTIVE_LONGLIFE,
+            CHARGING_POLICY_FORCE_FULL_CHARGE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface BatteryChargingPolicy {}
+
+
     // values for "charge policy" property
     /**
      * Default policy (e.g. normal).
@@ -322,6 +340,16 @@ public class BatteryManager {
     @SystemApi
     public static final int CHARGING_POLICY_ADAPTIVE_LONGLIFE =
                                             OsProtoEnums.CHARGING_POLICY_ADAPTIVE_LONGLIFE; // = 4
+
+    /**
+     * Bypassing the "LONGLIFE" policy to charge to full, which recalibrates the battery's capacity
+     * estimation to maintain accuracy.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_BATTERY_CHARGING_INFO_API)
+    public static final int CHARGING_POLICY_FORCE_FULL_CHARGE =
+                                            OsProtoEnums.CHARGING_POLICY_FORCE_FULL_CHARGE; // = 5
 
     /**
      * Returns true if the policy is some type of adaptive charging policy.

@@ -215,31 +215,38 @@ public class PolicyHandler<T> {
      * The methods below can be overwritten to change the behavior of your policy.
      *****************************************************************************************/
 
-    /** Performs every step required to set the policy. */
-    public void setPolicy(
+    /**
+     * Performs every step required to set the policy, except for permission checks.
+     *
+     * <p>The caller is responsible for calling {@link #checkPermissions(CallerIdentity, int)}
+     * before calling this method.
+     */
+    public void setPolicyUnchecked(
             @NonNull CallerIdentity caller,
             @PolicyScope int scope,
             @Nullable PolicyValueTransport transportValue) {
         validateScope(scope);
 
-        T value = convertValue(caller, transportValue);
+        T value = convertValue(transportValue);
 
-        checkPermissions(caller, scope);
         validateValue(caller, value);
 
         storePolicyValue(caller, scope, value);
     }
 
-    /** Performs every step required to retrieve the policy. */
-    public @Nullable PolicyValueTransport getPolicy(
+    /**
+     * Performs every step required to retrieve the policy, except for permission checks.
+     *
+     * <p>The caller is responsible for calling {@link #checkPermissions(CallerIdentity, int)}
+     * before calling this method.
+     */
+    public @Nullable PolicyValueTransport getPolicyUnchecked(
             @NonNull CallerIdentity caller, @PolicyScope int scope) {
         validateScope(scope);
 
-        checkPermissions(caller, scope);
-
         T value = getPolicyValue(caller, scope);
 
-        return convertValue(caller, value);
+        return convertValue(value);
     }
 
     /**
@@ -264,8 +271,7 @@ public class PolicyHandler<T> {
      * stored.
      */
     @Nullable
-    protected T convertValue(
-            @NonNull CallerIdentity caller, @Nullable PolicyValueTransport transportValue) {
+    protected T convertValue(@Nullable PolicyValueTransport transportValue) {
         if (transportValue == null) {
             return null;
         }
@@ -274,7 +280,7 @@ public class PolicyHandler<T> {
 
     /** Converts the given value to the corresponding {@link PolicyValueTransport}. */
     @Nullable
-    protected PolicyValueTransport convertValue(@NonNull CallerIdentity caller, @Nullable T value) {
+    protected PolicyValueTransport convertValue(@Nullable T value) {
         if (value == null) {
             return null;
         }
@@ -292,15 +298,28 @@ public class PolicyHandler<T> {
      *
      * @throws SecurityException when the caller does not have the required permissions.
      */
-    protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
+    public void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
         var permissionChecker = getPermissionChecker();
 
+        // Check for the permission here to catch any issues early.
+        var requiredPermission = getPolicyMetadata().getRequiredPermission();
+        if (requiredPermission == null) {
+            throw new IllegalStateException(
+                    "Policy "
+                            + getKey().getId()
+                            + " has no requiredPermission, either add one or override"
+                            + " checkPermissions in the handler");
+        }
+
         if (!isPolicyAllowedForDpc(mDelegate.getDpcType(caller))) {
-            permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
+            permissionChecker.enforce(requiredPermission, caller);
         }
 
         if (scope != POLICY_SCOPE_USER) {
-            permissionChecker.enforce(getPolicyMetadata().getRequiredCrossUserPermission(), caller);
+            var requiredCrossUserPermission = getPolicyMetadata().getRequiredCrossUserPermission();
+            if (requiredCrossUserPermission != null) {
+                permissionChecker.enforce(requiredCrossUserPermission, caller);
+            }
         }
     }
 

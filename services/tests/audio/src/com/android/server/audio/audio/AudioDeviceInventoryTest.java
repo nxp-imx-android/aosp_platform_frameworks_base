@@ -15,8 +15,6 @@
  */
 package com.android.server.audio;
 
-import static com.android.media.audio.Flags.asDeviceConnectionFailure;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -104,17 +102,14 @@ public class AudioDeviceInventoryTest {
 
         // test that no device is added when AudioSystem returns AUDIO_STATUS_ERROR
         // when setDeviceConnectionState is called for the connection
-        // NOTE: for now this is only when flag asDeviceConnectionFailure is true
-        if (asDeviceConnectionFailure()) {
-            when(mSpyAudioSystem.setDeviceConnectionState(ada, AudioSystem.DEVICE_STATE_AVAILABLE,
-                    AudioSystem.AUDIO_FORMAT_DEFAULT, false /*deviceSwitch*/))
-                    .thenReturn(AudioSystem.AUDIO_STATUS_ERROR);
-            runWithBluetoothPrivilegedPermission(
-                    () ->  mDevInventory.onSetBtActiveDevice(/*btInfo*/ btInfo,
-                        /*codec*/ AudioSystem.AUDIO_FORMAT_DEFAULT, AudioManager.STREAM_MUSIC));
+        when(mSpyAudioSystem.setDeviceConnectionState(ada, AudioSystem.DEVICE_STATE_AVAILABLE,
+                AudioSystem.AUDIO_FORMAT_DEFAULT, false /*deviceSwitch*/))
+                .thenReturn(AudioSystem.AUDIO_STATUS_ERROR);
+        runWithBluetoothPrivilegedPermission(
+                () ->  mDevInventory.onSetBtActiveDevice(/*btInfo*/ btInfo,
+                    /*codec*/ AudioSystem.AUDIO_FORMAT_DEFAULT, AudioManager.STREAM_MUSIC));
 
-            assertEquals(0, mDevInventory.getConnectedDevices().size());
-        }
+        assertEquals(0, mDevInventory.getConnectedDevices().size());
 
         // test that the device is added when AudioSystem returns AUDIO_STATUS_OK
         // when setDeviceConnectionState is called for the connection

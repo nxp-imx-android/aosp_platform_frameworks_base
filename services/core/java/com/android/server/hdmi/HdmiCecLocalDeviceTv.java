@@ -589,7 +589,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
             return Constants.HANDLED;
         }
         int portId = getPrevPortId();
-        if (portId != Constants.INVALID_PORT_ID) {
+        if (portId != Constants.INVALID_PORT_ID && portId != Constants.CEC_SWITCH_HOME) {
             // TODO: Do this only if TV is not showing multiview like PIP/PAP.
 
             HdmiDeviceInfo inactiveSource = mService.getHdmiCecNetwork().getCecDeviceInfo(

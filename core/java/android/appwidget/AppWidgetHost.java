@@ -38,6 +38,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.TransactionTooLargeException;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
@@ -630,8 +631,10 @@ public class AppWidgetHost {
         RemoteViews views = null;
         try {
             views = mService.getAppWidgetViews(mContextOpPackageName, appWidgetId);
+        } catch (TransactionTooLargeException e) {
+            Log.e(TAG, "setListener: Transaction too large for appWidgetId=" + appWidgetId, e);
         } catch (RemoteException e) {
-            throw new RuntimeException("system server dead?", e);
+            e.rethrowFromSystemServer();
         }
         listener.updateAppWidget(views);
     }

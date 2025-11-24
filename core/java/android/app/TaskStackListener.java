@@ -179,12 +179,7 @@ public abstract class TaskStackListener extends ITaskStackListener.Stub {
         if (!mIsRemote || snapshot == null) {
             return;
         }
-        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-            snapshot.closeBuffer();
-        } else if (snapshot.getHardwareBuffer() != null) {
-            // Preemptively clear any reference to the buffer
-            snapshot.getHardwareBuffer().close();
-        }
+        snapshot.closeBuffer();
     }
 
     /**

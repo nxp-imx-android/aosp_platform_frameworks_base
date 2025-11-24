@@ -86,6 +86,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         whenever(mockPipDesktopState.isDisplayDesktopFirst(any())).thenReturn(false)
         whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
         whenever(mockPipDesktopState.isRecentsAnimating()).thenReturn(false)
+        whenever(mockPipDesktopState.getCurrentDisplayId()).thenReturn(DISPLAY_ID)
         whenever(mockDesktopUserRepositories.getProfile(any())).thenReturn(mockDesktopRepository)
         whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(DESK_ID)
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(taskInfo.taskId)).thenReturn(taskInfo)
@@ -244,7 +245,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                 wct = wct,
                 newTask = taskInfo,
                 userId = mockDesktopRepository.userId,
-                displayId = taskInfo.displayId,
+                displayId = DISPLAY_ID,
                 enterReason = EnterReason.EXIT_PIP,
             )
         verify(mockDesktopTasksController)
@@ -275,6 +276,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
     private companion object {
         const val DESK_ID = 1
+        const val DISPLAY_ID = 0
 
         @JvmStatic
         @Parameters(name = "{0}")

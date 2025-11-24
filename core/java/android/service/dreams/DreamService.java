@@ -18,7 +18,6 @@ package android.service.dreams;
 
 import static android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.service.dreams.Flags.allowDreamAttachFailure;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamHandlesConfirmKeys;
 import static android.service.dreams.Flags.userSelectableMetadata;
@@ -1591,14 +1590,12 @@ public class DreamService extends Service implements Window.Callback {
         if (mDreamToken != null) {
             Slog.e(mTag, "attach() called when dream with token=" + mDreamToken
                     + " already attached");
-            if (allowDreamAttachFailure()) {
-                try {
-                    final Bundle result = new Bundle();
-                    result.putBoolean(BUNDLE_KEY_ATTACH_ERROR, true);
-                    started.sendResult(result);
-                } catch (RemoteException e) {
-                    // The dream controller is dead, so there is nothing to do.
-                }
+            try {
+                final Bundle result = new Bundle();
+                result.putBoolean(BUNDLE_KEY_ATTACH_ERROR, true);
+                started.sendResult(result);
+            } catch (RemoteException e) {
+                // The dream controller is dead, so there is nothing to do.
             }
             return;
         }

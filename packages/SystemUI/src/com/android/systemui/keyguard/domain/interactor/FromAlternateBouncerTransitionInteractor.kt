@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.domain.interactor
 import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -116,7 +115,9 @@ constructor(
                 .onEach { delay(150L) }
                 .filterRelevantKeyguardState()
                 .collect { isAlternateBouncerShowing ->
-                    if (isAlternateBouncerShowing || keyguardInteractor.primaryBouncerShowing.value) {
+                    if (
+                        isAlternateBouncerShowing || keyguardInteractor.primaryBouncerShowing.value
+                    ) {
                         return@collect
                     }
 
@@ -143,8 +144,10 @@ constructor(
                                 if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.GLANCEABLE_HUB
                             } else if (isOccluded && !isDreaming) {
+                                if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.OCCLUDED
                             } else if (isDreaming) {
+                                if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.DREAMING
                             } else if (hubV2 && isIdleOnCommunal) {
                                 if (SceneContainerFlag.isEnabled) return@collect
@@ -192,7 +195,7 @@ constructor(
                 .filterRelevantKeyguardState()
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
-                    if (Flags.hubEditModeTransition() && editModeState != null) {
+                    if (editModeState != null) {
                         Log.i(
                             TAG,
                             "Ignoring isKeyguardGoingAway due to editModeState: $editModeState",
@@ -236,6 +239,7 @@ constructor(
     }
 
     fun dismissAlternateBouncer() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch { startTransitionTo(KeyguardState.GONE) }
     }
 

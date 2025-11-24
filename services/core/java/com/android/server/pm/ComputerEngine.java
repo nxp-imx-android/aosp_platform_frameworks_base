@@ -244,7 +244,7 @@ public class ComputerEngine implements Computer {
         // TODO: Find replacement
         @Nullable
         public SettingBase getSettingBase(int appId) {
-            if (Process.isPccUid(appId)) {
+            if (Process.isPrivateComputeCoreUid(appId)) {
                 return mSettings.getPccSettingLPr(appId);
             } else {
                 return mSettings.getSettingLPr(appId);
@@ -2278,7 +2278,7 @@ public class ComputerEngine implements Computer {
             return false;
         }
 
-        if (Process.isPccUid(uid)) {
+        if (Process.isPrivateComputeCoreUid(uid)) {
             PackageSetting packageSetting =
                     (PackageSetting) mSettings.mSettings.getPccSettingLPr(UserHandle.getAppId(uid));
             return packageSetting != null && packageSetting.getAppId() == pkg.getUid();

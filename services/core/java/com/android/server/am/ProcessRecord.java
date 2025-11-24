@@ -66,8 +66,9 @@ import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
-import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
+import com.android.server.am.psc.OomAdjuster;
+import com.android.server.am.psc.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
@@ -1831,7 +1832,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         }
         for (int i = mProviders.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = mProviders.getProviderConnectionAt(i);
-            ProcessRecord provider = cpc.provider.proc;
+            ProcessRecord provider = cpc.provider.mProc;
             consumer.accept(provider);
         }
     }

@@ -18,6 +18,8 @@ package android.media;
 
 import static android.media.audio.Flags.FLAG_ENABLE_MULTICHANNEL_GROUP_DEVICE;
 import static android.media.audio.Flags.FLAG_SPEAKER_LAYOUT_API;
+import static android.media.audio.Flags.FLAG_BLE_HEARING_AID_DEVICE;
+
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -207,6 +209,12 @@ public final class AudioDeviceInfo {
      */
     @FlaggedApi(FLAG_ENABLE_MULTICHANNEL_GROUP_DEVICE)
     public static final int TYPE_MULTICHANNEL_GROUP = 32;
+
+    /**
+     * A device type describing a Bluetooth Low Energy (BLE) hearing aid.
+     */
+    @FlaggedApi(FLAG_BLE_HEARING_AID_DEVICE)
+    public static final int TYPE_BLE_HEARING_AID = 33;
 
     /** @hide */
     @IntDef(flag = false, prefix = "TYPE", value = {

@@ -41,10 +41,13 @@ import android.telephony.euicc.EuiccManager;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.view.WindowManagerImpl;
+import android.view.accessibility.AccessibilityManager;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.IAutoFillManager;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.inputmethod.InputMethodManager;
+import android.view.textclassifier.TextClassificationManager;
+import android.view.textservice.TextServicesManager;
 
 import com.android.internal.policy.PhoneLayoutInflater;
 
@@ -186,6 +189,21 @@ public class SystemServiceRegistry_ravenwood {
             public DisplayManager createService(ContextImpl ctx) {
                 return new DisplayManager(ctx.getOuterContext());
             }});
+        registerService(Context.TEXT_CLASSIFICATION_SERVICE, TextClassificationManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public TextClassificationManager createService(ContextImpl ctx) {
+                        return null;
+                    }
+                });
+        registerService(Context.TEXT_SERVICES_MANAGER_SERVICE, TextServicesManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public TextServicesManager createService(ContextImpl ctx) {
+                        // TextServicesManager is optional, see SystemServerRegistry
+                        return null;
+                    }
+                });
 
         registerStubServices();
     }
@@ -246,6 +264,13 @@ public class SystemServiceRegistry_ravenwood {
                     @Override
                     public WallpaperManager createService(ContextImpl ctx) {
                         return DisabledWallpaperManager.getInstance();
+                    }
+                });
+        registerService(Context.ACCESSIBILITY_SERVICE, AccessibilityManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public AccessibilityManager createService(ContextImpl ctx) {
+                        return objenesis.newInstance(AccessibilityManager.class);
                     }
                 });
     }

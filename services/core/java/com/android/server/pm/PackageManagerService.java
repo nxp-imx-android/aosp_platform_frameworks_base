@@ -19,6 +19,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_ADMINS;
 import static android.Manifest.permission.SET_HARMFUL_APP_WARNINGS;
 import static android.app.AppOpsManager.MODE_IGNORED;
 import static android.app.admin.flags.Flags.crossUserSuspensionEnabledRo;
+import static android.content.pm.Flags.isDeviceUpgradingUsesSharedMemory;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED;
@@ -186,6 +187,7 @@ import com.android.internal.app.ResolverActivity;
 import com.android.internal.content.F2fsUtils;
 import com.android.internal.content.InstallLocationUtils;
 import com.android.internal.content.om.OverlayConfig;
+import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.pm.parsing.PackageParser2;
 import com.android.internal.pm.parsing.pkg.AndroidPackageInternal;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
@@ -1143,6 +1145,37 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      */
     @Nullable
     private final SnapshotStatistics mSnapshotStatistics;
+
+    /**
+     * Mock upgrade flag, read from settings.
+     */
+    private boolean mIsMockUpgrade;
+
+    /**
+     * Runnable to be called on system properties change.
+     */
+    private final Runnable mMockUpgradeCallback = new Runnable() {
+        @Override
+        public void run() {
+            // The system property allows testing ota flow when upgraded to the same image.
+            boolean isMockUpgrade = SystemProperties.getBoolean("persist.pm.mock-upgrade",
+                    false /* default */);
+            // mIsUpgrade is final, but isMockUpgrade can change, update the member and ASM
+            if (mIsMockUpgrade != isMockUpgrade) {
+                mIsMockUpgrade = isMockUpgrade;
+                updateAsmIsDeviceUpgrading();
+            }
+        }
+    };
+
+    /**
+     * Updates the Application Shared Memory isDeviceUpgrading flag accordingly.
+     */
+    private void updateAsmIsDeviceUpgrading() {
+        if (isDeviceUpgradingUsesSharedMemory()) {
+            ApplicationSharedMemory.getInstance().setIsDeviceUpgrading(isDeviceUpgrading());
+        }
+    }
 
     /**
      * Return the cached computer.  The method will rebuild the cached computer if necessary.
@@ -2242,6 +2275,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
 
             final VersionInfo ver = mSettings.getInternalVersion();
+
+            // Read isMockUpgrade for the first time.
+            mIsMockUpgrade = SystemProperties.getBoolean("persist.pm.mock-upgrade",
+                    false /* default */);
+
             mIsUpgrade =
                     !partitionsFingerprint.equals(ver.fingerprint);
             if (mIsUpgrade) {
@@ -2607,9 +2645,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     public boolean isDeviceUpgrading() {
         // allow instant applications
-        // The system property allows testing ota flow when upgraded to the same image.
-        return mIsUpgrade || SystemProperties.getBoolean(
-                "persist.pm.mock-upgrade", false /* default */);
+        return mIsUpgrade || mIsMockUpgrade;
     }
 
     @NonNull
@@ -4310,7 +4346,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             mReleaseOnSystemReady = null;
         }
+
         mSystemReady = true;
+
+        // Initialize Application Shared Memory isDeviceUpgrading flag, after mSystemReady is true.
+        updateAsmIsDeviceUpgrading();
+
+        // Register SystemProperties callback to update the ApplicationSharedMemory on change.
+        SystemProperties.addChangeCallback(mMockUpgradeCallback);
+
         ContentObserver co = new ContentObserver(mHandler) {
             @Override
             public void onChange(boolean selfChange) {
@@ -6740,9 +6784,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
 
         @Override
-        public int getAppUidForPccUid(int pccUid) {
+        public int getAppUidForPrivateComputeCoreUid(int pccUid) {
             final int callerUid = Binder.getCallingUid();
-            if (!Process.isPccUid(pccUid)) {
+            if (!Process.isPrivateComputeCoreUid(pccUid)) {
                 return Process.INVALID_UID;
             }
 
@@ -7313,7 +7357,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             Computer snapshot = snapshot();
             int uid = snapshot.getPackageUid(packageName, flags, userId,
-                    Process.isPccUid(callingUid));
+                    Process.isPrivateComputeCoreUid(callingUid));
             return UserHandle.isSameApp(uid, callingUid);
         }
 

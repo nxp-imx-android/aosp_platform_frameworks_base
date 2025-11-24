@@ -109,6 +109,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ERROR_", value = {
+            // Keep in sync with computercontrol_extension_atoms.proto
             ERROR_UNKNOWN,
             ERROR_SESSION_LIMIT_REACHED,
             ERROR_DEVICE_LOCKED,
@@ -148,6 +149,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "CLOSE_REASON_", value = {
+            // Keep in sync with computercontrol_extension_atoms.proto
             CLOSE_REASON_UNKNOWN,
             CLOSE_REASON_CALLER_INITIATED,
             CLOSE_REASON_USER_INITIATED,
@@ -177,6 +179,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "BLOCK_REASON_", value = {
+            // Keep in sync with computercontrol_extension_atoms.proto
             BLOCK_REASON_UNKNOWN,
             BLOCK_REASON_SECURE_CONTENT,
             BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH})
@@ -192,6 +195,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ACTION_", value = {
+            // Keep in sync with computercontrol_extension_atoms.proto
             ACTION_GO_BACK,
     })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})

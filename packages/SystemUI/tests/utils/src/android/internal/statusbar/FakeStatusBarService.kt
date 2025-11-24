@@ -17,6 +17,7 @@ package android.internal.statusbar
 
 import android.annotation.EnforcePermission
 import android.app.Notification
+import android.app.motioncues.MotionCuesSettings
 import android.content.ComponentName
 import android.graphics.Rect
 import android.graphics.drawable.Icon
@@ -441,10 +442,20 @@ class FakeStatusBarService : IStatusBarService.Stub() {
     override fun showRearDisplayDialog(currentBaseState: Int) {}
 
     /** Use with [android.os.test.FakePermissionEnforcer]. */
-    @EnforcePermission("android.permission.SHOW_POWER_MENU")
+    @EnforcePermission(
+        anyOf =
+            ["android.permission.SHOW_POWER_MENU", "android.permission.SHOW_POWER_MENU_PRIVILEGED"]
+    )
     override fun showGlobalActionsFromApp(future: AndroidFuture<*>) {
         showGlobalActionsFromApp_enforcePermission()
     }
+
+    override fun startMotionCuesSession(
+        componentName: ComponentName?,
+        motionCuesSettings: MotionCuesSettings,
+    ) {}
+
+    override fun endMotionCuesSession() {}
 
     companion object {
         const val DEFAULT_DISPLAY_ID = Display.DEFAULT_DISPLAY

@@ -1060,11 +1060,11 @@ public class ScreenDecorations implements
      * When {@link ScreenDecorations#mDebug} is {@code true}, this value is updated to use
      * {@link ScreenDecorations#mDebugColor}, and does not handle inversion.
      *
-     * @param colorsInvertedValue if non-zero, assume that colors are inverted, and use Color.WHITE
+     * @param colorsInvertedValue if it is 1, assume that colors are inverted, and use Color.WHITE
      *                            for screen decoration tint
      */
     private void updateColorInversion(int colorsInvertedValue) {
-        mTintColor = colorsInvertedValue != 0 ? Color.WHITE : Color.BLACK;
+        mTintColor = colorsInvertedValue == 1 ? Color.WHITE : Color.BLACK;
         if (mDebug) {
             mTintColor = mDebugColor;
             mDebugRoundedCornerDelegate.setColor(mTintColor);

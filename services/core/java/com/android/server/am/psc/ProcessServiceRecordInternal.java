@@ -20,8 +20,6 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.SystemClock;
 
-import com.android.server.am.OomAdjuster;
-
 import java.util.ArrayList;
 
 /**

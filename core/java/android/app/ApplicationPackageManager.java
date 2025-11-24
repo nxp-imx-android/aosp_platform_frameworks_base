@@ -29,6 +29,7 @@ import static android.content.pm.Checksum.TYPE_WHOLE_MERKLE_ROOT_4K_SHA256;
 import static android.content.pm.Checksum.TYPE_WHOLE_SHA1;
 import static android.content.pm.Checksum.TYPE_WHOLE_SHA256;
 import static android.content.pm.Checksum.TYPE_WHOLE_SHA512;
+import static android.content.pm.Flags.isDeviceUpgradingUsesSharedMemory;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.DrawableRes;
@@ -138,6 +139,7 @@ import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.pm.RoSystemFeatures;
 import com.android.internal.util.UserIcons;
@@ -3485,10 +3487,14 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public boolean isDeviceUpgrading() {
-        try {
-            return mPM.isDeviceUpgrading();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        if (isDeviceUpgradingUsesSharedMemory()) {
+            return ApplicationSharedMemory.getInstance().getIsDeviceUpgrading();
+        } else {
+            try {
+                return mPM.isDeviceUpgrading();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
         }
     }
 
@@ -4416,9 +4422,9 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
-    public int getAppUidForPccUid(int pccUid) {
+    public int getAppUidForPrivateComputeCoreUid(int pccUid) {
         try {
-            return mPM.getAppUidForPccUid(pccUid);
+            return mPM.getAppUidForPrivateComputeCoreUid(pccUid);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -158,6 +158,10 @@ class BundleEntryAdapter(
         return entry.bucket
     }
 
+    override fun getLoggingBucket(): Int {
+        return entry.bucketForLogging
+    }
+
     override fun isAmbient(): Boolean {
         return false
     }

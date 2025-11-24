@@ -23,6 +23,7 @@ import static com.android.server.autofill.Helper.sVerbose;
 import android.annotation.LayoutRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.StringRes;
 import android.annotation.StyleRes;
 import android.app.ActivityOptions;
 import android.app.Dialog;
@@ -295,29 +296,24 @@ final class SaveUi {
 
         switch (types.size()) {
             case 1:
-                mTitle = Html.fromHtml(context.getString(
-                        isUpdate ? R.string.autofill_update_title_with_type
-                                : R.string.autofill_save_title_with_type,
-                        types.valueAt(0), serviceLabel), 0);
+                mTitle = Html.fromHtml(
+                        context.getString(getTitleResWithType(isUpdate), types.valueAt(0),
+                                serviceLabel), 0);
                 break;
             case 2:
-                mTitle = Html.fromHtml(context.getString(
-                        isUpdate ? R.string.autofill_update_title_with_2types
-                                : R.string.autofill_save_title_with_2types,
-                        types.valueAt(0), types.valueAt(1), serviceLabel), 0);
+                mTitle = Html.fromHtml(
+                        context.getString(getTitleResWithTwoTypes(isUpdate), types.valueAt(0),
+                                types.valueAt(1), serviceLabel), 0);
                 break;
             case 3:
-                mTitle = Html.fromHtml(context.getString(
-                        isUpdate ? R.string.autofill_update_title_with_3types
-                                : R.string.autofill_save_title_with_3types,
-                        types.valueAt(0), types.valueAt(1), types.valueAt(2), serviceLabel), 0);
+                mTitle = Html.fromHtml(
+                        context.getString(getTitleResWithThreeTypes(isUpdate), types.valueAt(0),
+                                types.valueAt(1), types.valueAt(2), serviceLabel), 0);
                 break;
             default:
                 // Use generic if more than 3 or invalid type (size 0).
                 mTitle = Html.fromHtml(
-                        context.getString(isUpdate ? R.string.autofill_update_title
-                                : R.string.autofill_save_title, serviceLabel),
-                        0);
+                        context.getString(getGenericTitleRes(isUpdate), serviceLabel), 0);
         }
         titleView.setText(mTitle);
 
@@ -737,6 +733,45 @@ final class SaveUi {
         Configuration configuration = context.getResources().getConfiguration();
         int modeType = configuration.uiMode & Configuration.UI_MODE_TYPE_MASK;
         return Flags.expressiveSaveDialog() && modeType != Configuration.UI_MODE_TYPE_TELEVISION;
+    }
+
+    @StringRes
+    private static int getGenericTitleRes(boolean isUpdate) {
+        if (Flags.expressiveSaveDialog()) {
+            return isUpdate ? R.string.autofill_update_title_expressive
+                    : R.string.autofill_save_title_expressive;
+        }
+        return isUpdate ? R.string.autofill_update_title : R.string.autofill_save_title;
+    }
+
+    @StringRes
+    private static int getTitleResWithType(boolean isUpdate) {
+        if (Flags.expressiveSaveDialog()) {
+            return isUpdate ? R.string.autofill_update_title_with_type_expressive
+                    : R.string.autofill_save_title_with_type_expressive;
+        }
+        return isUpdate ? R.string.autofill_update_title_with_type
+                : R.string.autofill_save_title_with_type;
+    }
+
+    @StringRes
+    private static int getTitleResWithTwoTypes(boolean isUpdate) {
+        if (Flags.expressiveSaveDialog()) {
+            return isUpdate ? R.string.autofill_update_title_with_2types_expressive
+                    : R.string.autofill_save_title_with_2types_expressive;
+        }
+        return isUpdate ? R.string.autofill_update_title_with_2types
+                : R.string.autofill_save_title_with_2types;
+    }
+
+    @StringRes
+    private static int getTitleResWithThreeTypes(boolean isUpdate) {
+        if (Flags.expressiveSaveDialog()) {
+            return isUpdate ? R.string.autofill_update_title_with_3types_expressive
+                    : R.string.autofill_save_title_with_3types_expressive;
+        }
+        return isUpdate ? R.string.autofill_update_title_with_3types
+                : R.string.autofill_save_title_with_3types;
     }
 
     void dump(PrintWriter pw, String prefix) {

@@ -181,6 +181,10 @@ class NotificationEntryAdapter(
         return entry.bucket
     }
 
+    override fun getLoggingBucket(): Int {
+        return entry.bucketForLogging
+    }
+
     override fun isAmbient(): Boolean {
         return entry.ranking.isAmbient
     }

@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"اسکرین شاٹ کو محفوظ نہیں کیا جا سکا"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"اس میں محفوظ کریں"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"فولڈر منتخب کریں"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"خارجی ڈسپلے"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"اسکرین شاٹ محفوظ کرنے سے پہلے آلے کو غیر مقفل کرنا ضروری ہے"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"دوبارہ اسکرین شاٹ لینے کی کوشش کریں"</string>
@@ -708,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"سبھی کو صاف کریں"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"نظم کریں"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"سرگزشت"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"بند کریں"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"اطلاع کی ترتیبات"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"اطلاع کی سرگزشت"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"نیا"</string>
@@ -905,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"‏مبارک ہو! سسٹم UI ٹیونر کو ترتیبات میں شامل کر دیا گیا ہے"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ترتیبات سے ہٹائیں"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"‏ترتیبات سے سسٹم UI ٹیونر کو ہٹائیں اور اس کی سبھی خصوصیات کا استعمال بند کریں؟"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"ہٹائیں"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"بلوٹوتھ آن کریں؟"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"اپنے کی بورڈ کو اپنے ٹیبلٹ کے ساتھ منسلک کرنے کیلئے پہلے آپ کو اپنا بلو ٹوتھ آن کرنا ہو گا۔"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"آن کریں"</string>
@@ -1261,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"مقام"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"مائیکروفون"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"اسکرین ریکارڈنگ"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"کوئی عنوان نہیں ہے"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"اسٹینڈ بائی"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"فونٹ سائز"</string>
@@ -1408,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"آڈیو آؤٹ پٹ کے لیے دستیاب آلات۔"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"والیوم"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"منسلک اسپیکرز"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"اسپیکرز اور ڈسپلیز"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"تجویز کردہ"</string>

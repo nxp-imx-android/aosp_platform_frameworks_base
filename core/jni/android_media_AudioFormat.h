@@ -278,6 +278,7 @@ static inline int audioFormatFromNative(audio_format_t nativeFormat)
 
 // This function converts Java channel masks to a native channel mask.
 // validity should be checked with audio_is_output_channel().
+// TODO(b/460465715): use channelMasksToNative instead, that takes isInput, and remove this.
 static inline audio_channel_mask_t nativeChannelMaskFromJavaChannelMasks(
         jint channelPositionMask, jint channelIndexMask)
 {
@@ -336,6 +337,26 @@ static inline int inChannelMaskFromNative(audio_channel_mask_t nativeMask)
         default:
             return (int)nativeMask;
     }
+}
+
+// This function converts Java channel masks to a native channel mask using a separate indicator.
+// This will prioritize the channelIndexMask, if set, or use [in|out]ChannelMaskToNative to convert
+// the channel mask based on the isInput value.
+static inline audio_channel_mask_t channelMasksToNative(jint channelPositionMask,
+                                                        jint channelIndexMask, jboolean isInput) {
+    // 0 is the java android.media.AudioFormat.CHANNEL_INVALID value
+    if (channelIndexMask != 0) { // channel index mask takes priority
+        // To convert to a native channel mask, the Java channel index mask
+        // requires adding the index representation.
+        return audio_channel_mask_from_representation_and_bits(AUDIO_CHANNEL_REPRESENTATION_INDEX,
+                                                               channelIndexMask);
+    }
+    // Haptic channels should be preserved between java and native masks.
+    uint32_t audioChannels = (channelPositionMask & ~AUDIO_CHANNEL_HAPTIC_ALL);
+    uint32_t hapticChannels = (channelPositionMask & AUDIO_CHANNEL_HAPTIC_ALL);
+    uint32_t convertedAudioChannels =
+            isInput ? inChannelMaskToNative(audioChannels) : outChannelMaskToNative(audioChannels);
+    return (audio_channel_mask_t)(convertedAudioChannels | hapticChannels);
 }
 
 #endif // ANDROID_MEDIA_AUDIOFORMAT_H

@@ -16,16 +16,12 @@
 
 package com.android.systemui.screencapture.data.repository
 
-import android.content.res.mainResources
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.statusbar.policy.configurationController
 
-var Kosmos.screenCaptureDeviceStateRepository: ScreenCaptureDeviceStateRepository by Fixture {
-    ScreenCaptureDeviceStateRepository(
-        resources = mainResources,
-        scope = backgroundScope,
-        configurationController = configurationController,
-    )
+val Kosmos.fakeScreenCaptureDeviceStateRepository:
+    FakeScreenCaptureDeviceStateRepository by Fixture { FakeScreenCaptureDeviceStateRepository() }
+
+val Kosmos.screenCaptureDeviceStateRepository: ScreenCaptureDeviceStateRepository by Fixture {
+    fakeScreenCaptureDeviceStateRepository
 }

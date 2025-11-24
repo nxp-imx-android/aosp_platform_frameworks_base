@@ -67,6 +67,8 @@ open class HostStubGenClassProcessorOptions(
 
     val disableJdkPatch: SetOnce<Boolean> = SetOnce(false),
 
+    val ensureOutermostClassAnnotation: SetOnce<Boolean> = SetOnce(true),
+
     val enableClassChecker: SetOnce<Boolean> = SetOnce(false),
     val enablePreTrace: SetOnce<Boolean> = SetOnce(false),
     val enablePostTrace: SetOnce<Boolean> = SetOnce(false),
@@ -156,6 +158,9 @@ open class HostStubGenClassProcessorOptions(
 
             "--no-jdk-patch" -> disableJdkPatch.set(true)
 
+            "--ensure-outermost-class-annotation" -> ensureOutermostClassAnnotation.set(true)
+            "--no-ensure-outermost-class-annotation" -> ensureOutermostClassAnnotation.set(false)
+
             // Following options are for debugging.
             "--enable-class-checker" -> enableClassChecker.set(true)
             "--no-class-checker" -> enableClassChecker.set(false)
@@ -194,6 +199,8 @@ open class HostStubGenClassProcessorOptions(
             defaultPolicy=$defaultPolicy,
             deleteFinals=$deleteFinals,
             throwExceptionType=$throwExceptionType,
+            disableJdkPatch=$disableJdkPatch,
+            ensureOutermostClassAnnotation=$ensureOutermostClassAnnotation,
             enableClassChecker=$enableClassChecker,
             enablePreTrace=$enablePreTrace,
             enablePostTrace=$enablePostTrace,

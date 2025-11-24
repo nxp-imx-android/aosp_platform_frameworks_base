@@ -199,6 +199,9 @@ public class FloatExpression extends Operation
                                 mPreCalcValue,
                                 mPreCalcValue.length);
             } catch (Exception e) {
+                if (mPreCalcValue == null) {
+                    throw new RuntimeException(this.toString(), e);
+                }
                 throw new RuntimeException(this.toString() + " len = " + mPreCalcValue.length, e);
             }
             context.loadFloat(mId, v);

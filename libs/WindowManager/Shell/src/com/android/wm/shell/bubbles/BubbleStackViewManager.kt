@@ -45,30 +45,31 @@ interface BubbleStackViewManager {
     companion object {
 
         @JvmStatic
-        fun fromBubbleController(controller: BubbleController) = object : BubbleStackViewManager {
-            override fun onAllBubblesAnimatedOut() {
-                controller.onAllBubblesAnimatedOut()
-            }
+        fun fromBubbleController(controller: BubbleController) =
+            object : BubbleStackViewManager {
+                override fun onAllBubblesAnimatedOut() {
+                    controller.onAllBubblesAnimatedOut()
+                }
 
-            override fun updateWindowFlagsForBackpress(interceptBack: Boolean) {
-                controller.updateWindowFlagsForBackpress(interceptBack)
-            }
+                override fun updateWindowFlagsForBackpress(interceptBack: Boolean) {
+                    controller.updateWindowFlagsForBackpress(interceptBack)
+                }
 
-            override fun checkNotificationPanelExpandedState(callback: Consumer<Boolean>) {
-                controller.isNotificationPanelExpanded(callback)
-            }
+                override fun checkNotificationPanelExpandedState(callback: Consumer<Boolean>) {
+                    controller.isNotificationPanelExpanded(callback)
+                }
 
-            override fun hideCurrentInputMethod(onImeHidden: Runnable?) {
-                controller.hideCurrentInputMethod(onImeHidden)
-            }
+                override fun hideCurrentInputMethod(onImeHidden: Runnable?) {
+                    controller.hideCurrentInputMethod(onImeHidden)
+                }
 
-            override fun clearImeHiddenRunnable() {
-                controller.clearImeHiddenRunnable()
-            }
+                override fun clearImeHiddenRunnable() {
+                    controller.clearImeHiddenRunnable()
+                }
 
-            override fun isGestureNavigationMode(): Boolean {
-                return controller.isGestureNavigationMode()
+                override fun isGestureNavigationMode(): Boolean {
+                    return controller.isGestureNavigationMode()
+                }
             }
-        }
     }
 }

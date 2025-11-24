@@ -574,5 +574,6 @@ non_updatable_exportable_droidstubs {
     sdk_version: "module_current",
     libs: [
         "framework-annotations-lib",
+        "am_flags_lib",
     ],
 }

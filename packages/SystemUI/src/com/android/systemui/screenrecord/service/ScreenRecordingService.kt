@@ -29,6 +29,8 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.data.repository.StaticScreenCaptureDeviceStateRepository
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.RecordingServiceStrings
 import com.android.systemui.screenrecord.ScreenMediaRecorder
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
@@ -44,38 +46,34 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "ScreenRecordingService"
 
-open class ScreenRecordingService
-protected constructor(
-    private val tag: String,
-    private val createNotificationInteractor: Context.() -> NotificationInteractor,
+open class ScreenRecordingService : ComponentService() {
+    private val tag: String = TAG
+    private val createNotificationInteractor: Context.() -> NotificationInteractor = {
+        val featuresInteractor =
+            ScreenCaptureRecordFeaturesInteractor(
+                StaticScreenCaptureDeviceStateRepository(resources)
+            )
+        ScreenRecordingServiceNotificationInteractor(
+            context = this,
+            notificationManager = getSystemService(NotificationManager::class.java)!!,
+            strings = RecordingServiceStrings(resources),
+            channelId = CHANNEL_ID,
+            tag = TAG,
+            serviceClass = ScreenRecordingService::class.java,
+            screenCaptureRecordFeaturesInteractor = featuresInteractor,
+        )
+    }
     private val onRecordingSaved:
         ScreenRecordingService.(
             recordingContext: RecordingContext, recording: SavedRecording,
-        ) -> Unit,
-) : ComponentService() {
-
-    @Suppress("unused") // used by the system
-    constructor() :
-        this(
-            tag = TAG,
-            createNotificationInteractor = {
-                ScreenRecordingServiceNotificationInteractor(
-                    context = this,
-                    notificationManager = getSystemService(NotificationManager::class.java)!!,
-                    strings = RecordingServiceStrings(resources),
-                    channelId = CHANNEL_ID,
-                    tag = TAG,
-                    serviceClass = ScreenRecordingService::class.java,
-                )
-            },
-            onRecordingSaved = { recordingContext, recording ->
-                notificationInteractor.notifySaved(
-                    notificationId = recordingContext.notificationId,
-                    audioSource = recordingContext.audioSource,
-                    savedRecording = recording,
-                )
-            },
-        )
+        ) -> Unit =
+        { recordingContext, recording ->
+            notificationInteractor.notifySaved(
+                notificationId = recordingContext.notificationId,
+                audioSource = recordingContext.audioSource,
+                savedRecording = recording,
+            )
+        }
 
     private val backgroundContext = Dispatchers.IO
     private val binder = BinderInterface()

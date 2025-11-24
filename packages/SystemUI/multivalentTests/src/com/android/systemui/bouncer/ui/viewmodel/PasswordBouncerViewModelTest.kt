@@ -97,19 +97,6 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onHidden_resetsPasswordInputAndMessage() =
-        kosmos.runTest {
-            lockDeviceAndOpenPasswordBouncer()
-
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
-            assertThat(underTest.textFieldState.text.toString()).isNotEmpty()
-
-            underTest.onHidden()
-            assertThat(underTest.textFieldState.text.toString()).isEmpty()
-            assertThat(underTest.isPasswordRevealed.value).isFalse()
-        }
-
-    @Test
     fun onPasswordInputChanged() =
         kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
@@ -181,27 +168,6 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             underTest.onAuthenticateKeyPressed()
 
             assertThat(authResult).isTrue()
-        }
-
-    @Test
-    fun onShown_againAfterSceneChange_resetsPassword() =
-        kosmos.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            lockDeviceAndOpenPasswordBouncer()
-
-            // The user types a password.
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
-            assertThat(underTest.textFieldState.text.toString()).isEqualTo("password")
-
-            // The user doesn't confirm the password, but navigates back to the lockscreen instead.
-            hideBouncer()
-
-            // The user navigates to the bouncer again.
-            showBouncer()
-
-            // Ensure the previously-entered password is not shown.
-            assertThat(underTest.textFieldState.text.toString()).isEmpty()
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
@@ -514,7 +480,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
     private fun Kosmos.hideBouncer() {
         val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
         sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
-        underTest.onHidden()
+        underTest.resetTextFieldFocus()
         runCurrent()
 
         assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)

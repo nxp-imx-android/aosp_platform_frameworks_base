@@ -525,6 +525,7 @@ private class FakeAppContentProjectionCallback(context: Context) :
     override fun onLoopbackProjectionStarted(
         session: IAppContentProjectionSession?,
         contentId: Int,
+        isAudioRequested: Boolean,
     ) {
         onLoopbackProjectionStarted_enforcePermission()
     }

@@ -67,8 +67,10 @@ class com.android.internal.ravenwood.RavenwoodHelperBridge
 # Enable all the classes in the following packages as "experimental".
 package android.animation exp
 package android.app exp
+package android.gesture exp
 package android.graphics.drawable exp
 package android.hardware exp
+package android.inputmethodservice exp
 package android.tracing exp
 package android.transition exp
 package android.util exp
@@ -130,6 +132,10 @@ class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp
 
+class android.content.UndoManager exp
+class android.content.UndoOwner exp
+class android.content.UndoOperation exp
+
 class android.content.res.AssetManager
     method getLoaders exp # let it return an empty loader
 
@@ -154,3 +160,6 @@ class android.tracing.perfetto.Producer exp
 
 class android.view.SurfaceControl exp
     method nativeSetTransformHint i #experimental -- ignore native methods
+
+class android.view.accessibility.AccessibilityManager
+    method isEnabled i #experimental -- accessibility disabled

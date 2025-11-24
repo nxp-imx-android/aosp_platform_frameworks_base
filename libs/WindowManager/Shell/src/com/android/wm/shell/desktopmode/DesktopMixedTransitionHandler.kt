@@ -36,7 +36,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
-import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
@@ -59,7 +59,7 @@ class DesktopMixedTransitionHandler(
     private val freeformTaskTransitionHandler: FreeformTaskTransitionHandler,
     private val closeDesktopTaskTransitionHandler: CloseDesktopTaskTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
-    private val clientFullscreenRequestTransitionHandler: ClientFullscreenRequestTransitionHandler,
+    private val desktopFullscreenRequestHandler: DesktopFullscreenRequestHandler,
     private val desktopMinimizationTransitionHandler: DesktopMinimizationTransitionHandler,
     private val desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler,
     private val systemModalsTransitionHandler: Optional<SystemModalsTransitionHandler>,
@@ -370,10 +370,7 @@ class DesktopMixedTransitionHandler(
         minimizeChange?.let {
             applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
         }
-        if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue &&
-                pending.dragEvent != null
-        ) {
+        if (pending.dragEvent != null) {
             return desktopModeDragAndDropTransitionHandler.startAnimation(
                 info,
                 pending.dragEvent,
@@ -459,7 +456,7 @@ class DesktopMixedTransitionHandler(
         )
 
         subAnimationCount = 1
-        clientFullscreenRequestTransitionHandler.startEnterFullscreenFromDesktopAnimation(
+        desktopFullscreenRequestHandler.startEnterFullscreenFromDesktopAnimation(
             taskId = pending.fromDesktopTask,
             transition = transition,
             info = info,
@@ -532,7 +529,7 @@ class DesktopMixedTransitionHandler(
         }
 
         subAnimationCount = 1 + topTransparentAnimationCount
-        clientFullscreenRequestTransitionHandler.startExitFullscreenToDesktopAnimation(
+        desktopFullscreenRequestHandler.startExitFullscreenToDesktopAnimation(
             taskId = pending.toDesktopTask,
             transition = transition,
             info = info,

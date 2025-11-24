@@ -67,6 +67,7 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.startable.SceneContainerStartable.HideOverlayCommand.HideSome
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.logger.SceneLogger
@@ -366,7 +367,6 @@ constructor(
         handleSimUnlock()
         handleDeviceUnlockStatus()
         handlePowerState()
-        handleDreamState()
         handleShadeTouchability()
         handleDisableFlags()
     }
@@ -410,6 +410,14 @@ constructor(
                         switchToScene(
                             targetSceneKey = Scenes.Lockscreen,
                             loggingReason = "SIM unlock required",
+                            hideOverlays =
+                                HideSome(
+                                    overlays =
+                                        listOf(
+                                            Overlays.NotificationsShade,
+                                            Overlays.QuickSettingsShade,
+                                        )
+                                ),
                         )
                         sceneInteractor.showOverlay(
                             overlay = Overlays.Bouncer,
@@ -466,6 +474,7 @@ constructor(
                         }
                     val isOnLockscreen = renderedScenes.contains(Scenes.Lockscreen)
                     val isOnShade = renderedScenes.contains(Scenes.Shade)
+                    val isOnCommunal = renderedScenes.contains(Scenes.Communal)
                     val isAlternateBouncerVisible = alternateBouncerInteractor.isVisibleState()
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
@@ -503,7 +512,7 @@ constructor(
                             alternateBouncerInteractor.hide()
 
                             // ... and go to Gone or stay on the current scene
-                            if (isOnLockscreen || !leaveShadeOpen) {
+                            if (isOnCommunal || isOnLockscreen || !leaveShadeOpen) {
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = Scenes.Gone,
                                     loggingReason =
@@ -520,7 +529,11 @@ constructor(
                             // Gone or remain in the current scene. If transition is a scene change,
                             // take the destination scene.
                             val targetScene = renderedScenes.last()
-                            if (targetScene == Scenes.Lockscreen || !leaveShadeOpen) {
+                            if (
+                                targetScene == Scenes.Lockscreen ||
+                                    targetScene == Scenes.Communal ||
+                                    !leaveShadeOpen
+                            ) {
                                 val loggingReason = buildString {
                                     append(
                                         "device was unlocked while the primary bouncer was showing"
@@ -529,25 +542,47 @@ constructor(
                                         append(" and shade needed to be left open")
                                     } else {
                                         append(" and shade didn't need to be left open")
+
+                                        if (willAnimateDismissAction) {
+                                            append(" and will animate dismiss action")
+                                        } else {
+                                            append(" and will not animate dismiss action")
+                                        }
                                     }
                                 }
-                                SwitchSceneCommand.SwitchToScene(
-                                    targetSceneKey = Scenes.Gone,
-                                    hideOverlays =
-                                        if (leaveShadeOpen) {
+                                if (leaveShadeOpen) {
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        hideOverlays =
                                             // Only hide the bouncer overlay, leaving any other
                                             // overlay (right now the only other overlays are
                                             // shades) visible.
-                                            HideOverlayCommand.HideSome(Overlays.Bouncer)
-                                        } else {
-                                            HideOverlayCommand.HideAll
-                                        },
-                                    loggingReason = loggingReason,
-                                    // Only snap instantly if we're staying on shade. Otherwise, we
-                                    // want to run the unlock animation, which is tied to the
-                                    // transition.
-                                    instantlySnapScenes = leaveShadeOpen,
-                                )
+                                            HideSome(Overlays.Bouncer),
+                                        loggingReason = loggingReason,
+                                        instantlySnapScenes = true,
+                                    )
+                                } else if (willAnimateDismissAction) {
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        hideOverlays = HideOverlayCommand.HideAll,
+                                        loggingReason = loggingReason,
+                                        // Do not snap to scene here or this will break the
+                                        // notification animation
+                                        instantlySnapScenes = false,
+                                    )
+                                } else {
+                                    // Snap to scene to avoid any flicker of the current scene
+                                    // This is intentionally not using [SwitchToScene] as the
+                                    // scene transition needs to happen before the overlay is
+                                    // hidden.
+                                    sceneInteractor.snapToScene(
+                                        toScene = Scenes.Gone,
+                                        loggingReason = loggingReason,
+                                        hideAllOverlays = false,
+                                    )
+                                    sceneInteractor.hideOverlay(Overlays.Bouncer, loggingReason)
+                                    SwitchSceneCommand.NoOp
+                                }
                             } else if (targetScene == Scenes.Shade && willAnimateDismissAction) {
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = Scenes.Gone,
@@ -570,7 +605,7 @@ constructor(
                                 )
                             }
                         }
-                        isOnLockscreen ->
+                        isOnLockscreen || isOnCommunal ->
                             // The lockscreen should be dismissed automatically in 2 scenarios:
                             // 1. When face auth bypass is enabled and authentication happens while
                             //    the user is on the lockscreen.
@@ -716,37 +751,6 @@ constructor(
                     }
                 }
             }
-        }
-    }
-
-    private fun handleDreamState() {
-        applicationScope.launch {
-            keyguardInteractor.isAbleToDream
-                .sample(sceneInteractor.transitionState, ::Pair)
-                .collect { (isAbleToDream, transitionState) ->
-                    if (transitionState.isIdle(Scenes.Communal)) {
-                        // The dream is automatically started underneath the hub, don't transition
-                        // to dream when this is happening as communal is still visible on top.
-                        return@collect
-                    }
-                    if (isAbleToDream) {
-                        switchToScene(
-                            targetSceneKey = Scenes.Dream,
-                            loggingReason = "dream started",
-                        )
-                    } else {
-                        switchToScene(
-                            targetSceneKey = SceneFamilies.Home,
-                            loggingReason = "dream stopped",
-                            hideOverlays =
-                                if (deviceUnlockedInteractor.isUnlocked) {
-                                    HideOverlayCommand.HideAll
-                                } else {
-                                    HideOverlayCommand.HideNone
-                                },
-                        )
-                    }
-                }
         }
     }
 
@@ -1140,7 +1144,7 @@ constructor(
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
         instantlySnapScenes: Boolean = false,
     ) {
-        if (hideOverlays is HideOverlayCommand.HideSome) {
+        if (hideOverlays is HideSome) {
             hideOverlays.overlays.fastForEach { overlay ->
                 sceneInteractor.hideOverlay(overlay, loggingReason)
             }
@@ -1250,7 +1254,14 @@ constructor(
             deviceUnlockedInteractor.deviceUnlockStatus
                 .map { it.isUnlocked }
                 .distinctUntilChanged()
-                .collect { _ -> lockscreenUserManager.updatePublicMode() }
+                .collect {
+                    // If the device has just become locked, notify Notifications
+                    // so they can make sure redaction is immediately applied: b/440335509
+                    // If the device has just become UNlocked, *don't* notify Notifications,
+                    // because doing so will cause notifications to briefly flash the
+                    // unredacted version during the unlock animation: b/454362854
+                    if (!it) {lockscreenUserManager.updatePublicMode() }
+                }
         }
     }
 

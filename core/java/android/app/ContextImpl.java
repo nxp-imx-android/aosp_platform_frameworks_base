@@ -386,10 +386,10 @@ class ContextImpl extends Context {
     @UnsupportedAppUsage
     final Object[] mServiceCache = SystemServiceRegistry.createServiceCache();
 
-    static final int STATE_UNINITIALIZED = 0;
-    static final int STATE_INITIALIZING = 1;
-    static final int STATE_READY = 2;
-    static final int STATE_NOT_FOUND = 3;
+    static final byte STATE_UNINITIALIZED = 0;
+    static final byte STATE_INITIALIZING = 1;
+    static final byte STATE_READY = 2;
+    static final byte STATE_NOT_FOUND = 3;
 
     /** @hide */
     @IntDef(prefix = { "STATE_" }, value = {
@@ -406,7 +406,7 @@ class ContextImpl extends Context {
      * {@link #STATE_INITIALIZING} or {@link #STATE_READY},
      */
     @ServiceInitializationState
-    final int[] mServiceInitializationStateArray = new int[mServiceCache.length];
+    final byte[] mServiceInitializationStateArray = new byte[mServiceCache.length];
 
     private final Object mDeviceIdListenerLock = new Object();
     /**
@@ -2326,10 +2326,9 @@ class ContextImpl extends Context {
     }
 
     @Override
-    public void updateServiceBindings(@NonNull List<UpdateBindingParams> params) {
+    public void updateServiceBindings(@NonNull Collection<UpdateBindingParams> params) {
         final ArrayList<BindUpdateInfo> updates = new ArrayList<>(params.size());
-        for (int i = 0, size = params.size(); i < size; i++) {
-            final UpdateBindingParams param = params.get(i);
+        for (UpdateBindingParams param : params) {
             final ServiceConnection conn = param.getConnection();
             if (conn == null) {
                 throw new IllegalArgumentException("connection is null");

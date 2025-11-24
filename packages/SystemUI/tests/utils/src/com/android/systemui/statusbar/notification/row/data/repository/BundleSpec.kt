@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row.data.repository
 
 import com.android.internal.R
 import com.android.systemui.statusbar.notification.collection.BundleSpec
+import com.android.systemui.statusbar.notification.stack.BUCKET_DYNAMIC_BUNDLE
 import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 
 val TEST_BUNDLE_SPEC =
@@ -26,8 +27,8 @@ val TEST_BUNDLE_SPEC =
         titleText = R.string.recs_notification_channel_label,
         summaryTextRes = R.string.redacted_notification_action_title,
         icon = R.drawable.ic_settings,
-        bucket = BUCKET_RECS,
-        bundleType = 0,
+        bucket = BUCKET_DYNAMIC_BUNDLE,
+        bundleType = 100,
     )
 
 val TEST_BUNDLE_SPEC_2 =
@@ -37,5 +38,5 @@ val TEST_BUNDLE_SPEC_2 =
         summaryTextRes = R.string.redacted_notification_action_title,
         icon = R.drawable.ic_settings,
         bucket = BUCKET_RECS,
-        bundleType = 0,
+        bundleType = 99,
     )

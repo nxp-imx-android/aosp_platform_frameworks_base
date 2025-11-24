@@ -84,7 +84,6 @@ import com.android.systemui.keyguard.data.repository.keyguardTransitionRepositor
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.domain.interactor.dozeInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
@@ -390,49 +389,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Dream)
             underTest.start()
             assertThat(isVisible).isFalse()
-        }
-
-    @Test
-    fun hydrateVisibility_onCommunalWhileOccluded() =
-        kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
-
-            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
-            prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Communal)
-            underTest.start()
-            runCurrent()
-            assertThat(isVisible).isTrue()
-        }
-
-    @Test
-    fun hydrateVisibility_inCommunalTransition() =
-        kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
-
-            // GIVEN the device is dreaming
-            val transitionState =
-                prepareState(
-                    authenticationMethod = AuthenticationMethodModel.Pin,
-                    isDeviceUnlocked = false,
-                    initialSceneKey = Scenes.Dream,
-                )
-            underTest.start()
-            assertThat(isVisible).isFalse()
-
-            // WHEN a transition starts to the communal hub
-            sceneInteractor.changeScene(Scenes.Dream, "switching to dream for test")
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = Scenes.Dream,
-                    toScene = Scenes.Communal,
-                    currentScene = flowOf(Scenes.Dream),
-                    progress = flowOf(0.5f),
-                    isInitiatedByUserInput = true,
-                    isUserInputOngoing = flowOf(false),
-                )
-            runCurrent()
-            // THEN scenes are visible
-            assertThat(isVisible).isTrue()
         }
 
     @Test
@@ -1703,12 +1659,20 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun switchesToBouncer_whenSimBecomesLocked() =
         kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            enableDualShade()
 
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
+                initialOverlays =
+                    setOf(
+                        Overlays.NotificationsShade,
+                        Overlays.QuickSettingsShade,
+                        Overlays.Bouncer,
+                    ),
                 authenticationMethod = AuthenticationMethodModel.Pin,
                 isDeviceUnlocked = false,
             )
@@ -2419,36 +2383,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun handleOcclusion_occludedWhileDreaming_doesNotSwitchToOccludedScene() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            prepareState()
-            underTest.start()
-            runCurrent()
-
-            // Device is dreaming
-            keyguardInteractor.setDreaming(true)
-            testScope.advanceTimeBy(DREAMING_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Dream)
-
-            // Device got occluded
-            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
-            runCurrent()
-
-            // We should stay on dream and not switch to occluded
-            assertThat(currentScene).isEqualTo(Scenes.Dream)
-
-            // Device no longer dreaming
-            keyguardInteractor.setDreaming(false)
-            testScope.advanceTimeBy(DREAMING_DELAY_MS)
-            runCurrent()
-
-            // We should switch to occluded if there is still a locked activity on top
-            assertThat(currentScene).isEqualTo(Scenes.Occluded)
-        }
-
-    @Test
     fun switchToLockscreen_whenShadeBecomesNotTouchable() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -2689,85 +2623,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun stayOnLockscreen_whenDozingStarted() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            prepareState()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            underTest.start()
-
-            // Stay on Lockscreen when dozing and dreaming
-            dozeInteractor.setIsDozing(true)
-            keyguardInteractor.setDreaming(true)
-            fakeKeyguardRepository.setDreamingWithOverlay(false)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-        }
-
-    @Test
-    fun switchFromLockscreenToDream_whenDreamStarted() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            prepareState()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            underTest.start()
-
-            powerInteractor.setAwakeForTest()
-            keyguardInteractor.setDreaming(true)
-            testScope.advanceTimeBy(DREAMING_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Dream)
-        }
-
-    @Test
-    fun switchFromDreamToLockscreen_whenLockedAndDreamStopped() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            prepareState(initialSceneKey = Scenes.Dream)
-            underTest.start()
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            keyguardInteractor.setDreaming(true)
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Dream)
-            emulateOverlayTransition(
-                transitionStateFlow =
-                    MutableStateFlow(ObservableTransitionState.Idle(Scenes.Dream)),
-                toOverlay = Overlays.Bouncer,
-            )
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-            runCurrent()
-
-            keyguardInteractor.setDreaming(false)
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-        }
-
-    @Test
-    fun switchFromDreamToGone_whenUnlockedAndDreamStopped() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            prepareState(initialSceneKey = Scenes.Dream, isDeviceUnlocked = true)
-            underTest.start()
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            keyguardInteractor.setDreaming(true)
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Dream)
-
-            keyguardInteractor.setDreaming(false)
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
-            runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
     fun replacesLockscreenSceneOnBackStack_whenUnlockdViaAlternateBouncer_fromShade() =
         kosmos.runTest {
             enableSingleShade()
@@ -2897,6 +2752,67 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
             assertThat(isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Communal)
+        }
+
+    @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_withBouncer() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+                initialOverlays = setOf(Overlays.Bouncer),
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_withAlternateBouncer() =
+        kosmos.runTest {
+            val alternateBouncerVisible by
+                collectLastValue(keyguardBouncerRepository.alternateBouncerVisible)
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+
+            fakeKeyguardBouncerRepository.setAlternateVisible(true)
+            assertThat(alternateBouncerVisible).isTrue()
+
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(alternateBouncerVisible).isFalse()
+        }
+
+    @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_dismissesLockscreen() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
         }
 
     @Test

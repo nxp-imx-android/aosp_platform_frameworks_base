@@ -304,9 +304,6 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
                 Slog.d(TAG, this + ": Starting");
             }
             mRunning = true;
-            if (!Flags.enablePreventionOfKeepAliveRouteProviders()) {
-                updateBinding();
-            }
         }
         if (rebindIfDisconnected && mActiveConnection == null && shouldBind()) {
             unbind();
@@ -445,20 +442,11 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
 
     private void onBindingDiedInternal(ComponentName name) {
         unbind();
-        if (Flags.enablePreventionOfKeepAliveRouteProviders()) {
-            Slog.w(
-                    TAG,
-                    TextUtils.formatSimple(
-                            "Route provider service (%s) binding died, but we did not rebind.",
-                            name.toString()));
-        } else if (shouldBind()) {
-            Slog.w(
-                    TAG,
-                    TextUtils.formatSimple(
-                            "Rebound to provider service (%s) after binding died.",
-                            name.toString()));
-            bind();
-        }
+        Slog.w(
+                TAG,
+                TextUtils.formatSimple(
+                        "Route provider service (%s) binding died, but we did not rebind.",
+                        name.toString()));
     }
 
     private void onConnectionReady(Connection connection) {

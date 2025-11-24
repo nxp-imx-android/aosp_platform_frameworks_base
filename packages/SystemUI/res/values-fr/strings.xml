@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Impossible d\'enregistrer la capture d\'écran"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Enregistrer dans"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Sélectionner un dossier"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Écran externe"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Vous devez déverrouiller l\'appareil pour que la capture d\'écran soit enregistrée"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Essayez de nouveau de faire une capture d\'écran"</string>
@@ -708,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Tout effacer"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Gérer"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Historique"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"Fermer"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Paramètres de notification"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Historique des notifications"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Nouvelles notifications"</string>
@@ -905,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Félicitations ! System UI Tuner a bien été ajouté aux paramètres."</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Supprimer l\'outil des paramètres"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Supprimer System UI Tuner des paramètres et arrêter d\'utiliser toutes ses fonctionnalités ?"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"Supprimer"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Activer le Bluetooth ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Pour connecter un clavier à votre tablette, vous devez avoir activé le Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activer"</string>
@@ -1160,16 +1162,16 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu Marche/Arrêt"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"L\'action <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Le raccourci clavier <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> permet d\'utiliser <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Appuyez de nouveau sur <xliff:g id="ID_1">%1$s</xliff:g>+<xliff:g id="ID_2">%2$s</xliff:g>+<xliff:g id="ID_3">%3$s</xliff:g> pour activer <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> activé"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"L\'action <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_4">^4</xliff:g>, une fonctionnalité d\'accessibilité. Elle vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu. Une fois l\'agrandissement activé, appuyez sur <xliff:g id="ID_5">^1</xliff:g>"<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_6">^2</xliff:g> et \"+\" ou \"-\" pour ajuster le zoom."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Le raccourci clavier <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> permet d\'utiliser la fonctionnalité d\'accessibilité <xliff:g id="ID_4">^4</xliff:g>. Elle vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu. Une fois l\'agrandissement activé, appuyez sur <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_6">^2</xliff:g> et \"+\" ou \"-\" pour ajuster le zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Laisser activé"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"L\'action <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre des éléments prononcés à voix haute. Cet outil est conçu pour les personnes qui ont du mal à voir l\'écran. Il peut affecter le fonctionnement de votre appareil."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Le raccourci clavier <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> permet d\'utiliser <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre des éléments prononcés à voix haute. Cet outil est conçu pour les personnes qui ont du mal à voir l\'écran. Il peut affecter le fonctionnement de votre appareil."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"En activant le raccourci clavier, vous autoriserez TalkBack à contrôler totalement votre appareil."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Le contrôle total convient aux applications qui répondent à vos besoins d\'accessibilité. Il ne convient pas à la plupart des applications."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Afficher et contrôler l\'écran"</string>
@@ -1261,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"la position"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"le micro"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"enregistrement écran"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"Sans titre"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"Mode Veille imminent"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"Taille de la police"</string>
@@ -1408,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Appareils disponibles pour la sortie audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Haut-parleurs connectés"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Enceintes et écrans"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggestions"</string>

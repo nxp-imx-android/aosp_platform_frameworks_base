@@ -561,15 +561,13 @@ public class MagnificationController implements MagnificationConnectionManager.C
 
         mLastMotionEventTriggeredByMouse = isMouse;
 
-        // Mouse events are always throttled. Touch events are throttled only when the flag is on.
-        if (isMouse || Flags.throttleMotionEventsForUiUpdate()) {
-            final long currentTime = mSystemClock.uptimeMillis();
-            if (currentTime - mLastMotionEventTriggeredUiChangeTime
-                    < AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS) {
-                return;
-            }
-            mLastMotionEventTriggeredUiChangeTime = currentTime;
+        // Mouse and touch events are both throttled.
+        final long currentTime = mSystemClock.uptimeMillis();
+        if (currentTime - mLastMotionEventTriggeredUiChangeTime
+                < AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS) {
+            return;
         }
+        mLastMotionEventTriggeredUiChangeTime = currentTime;
 
         updateMagnificationUIControls(displayId, mode);
     }

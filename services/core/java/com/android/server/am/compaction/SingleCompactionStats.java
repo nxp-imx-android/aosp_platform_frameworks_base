@@ -18,11 +18,10 @@ package com.android.server.am.compaction;
 
 import android.app.ActivityManagerInternal;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.am.CachedAppOptimizer;
 import com.android.server.am.Flags;
-import com.android.server.am.OomAdjuster;
+import com.android.server.am.psc.OomAdjuster;
 
 import dalvik.annotation.optimization.NeverCompile;
 

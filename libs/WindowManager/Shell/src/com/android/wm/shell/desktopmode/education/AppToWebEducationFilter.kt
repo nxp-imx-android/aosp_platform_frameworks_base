@@ -23,12 +23,14 @@ import android.os.SystemClock
 import android.os.SystemProperties
 import android.provider.Settings.Secure
 import android.window.DesktopExperienceFlags
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.apptoweb.AppToWebRepository
 import com.android.wm.shell.apptoweb.isBrowserApp
 import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository
 import com.android.wm.shell.desktopmode.education.data.WindowingEducationProto
+import com.android.wm.shell.transition.FocusTransitionObserver
 import java.time.Duration
 
 /** Filters incoming App-to-Web education triggers based on set conditions. */
@@ -36,6 +38,7 @@ class AppToWebEducationFilter(
     private val context: Context,
     private val appToWebEducationDatastoreRepository: AppToWebEducationDatastoreRepository,
     private val appToWebRepository: AppToWebRepository,
+    private val focusTransitionObserver: FocusTransitionObserver,
 ) {
 
     /** Returns true if conditions to show App-to-web education are met, returns false otherwise. */
@@ -51,13 +54,27 @@ class AppToWebEducationFilter(
 
         return if (isAppToWebEducationRequested(taskInfo)) {
             !isEducationViewLimitReached(windowingEducationProto) &&
-                taskInfo.isFocused &&
+                if (
+                    DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                        Flags.enableFocusTransitionObserverCleanup()
+                ) {
+                    focusTransitionObserver.hasGlobalFocus(taskInfo)
+                } else {
+                    taskInfo.isFocused
+                } &&
                 !isOtherEducationShowing() &&
                 !isBrowserApp(taskInfo) &&
                 isBrowserSessionAvailable(taskInfo)
         } else {
             !isEducationViewLimitReached(windowingEducationProto) &&
-                taskInfo.isFocused &&
+                if (
+                    DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                        Flags.enableFocusTransitionObserverCleanup()
+                ) {
+                    focusTransitionObserver.hasGlobalFocus(taskInfo)
+                } else {
+                    taskInfo.isFocused
+                } &&
                 !isOtherEducationShowing() &&
                 hasSufficientTimeSinceSetup() &&
                 !isFeatureUsedBefore(windowingEducationProto) &&

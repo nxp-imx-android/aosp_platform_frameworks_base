@@ -29,8 +29,8 @@ import com.android.internal.widget.remotecompose.core.operations.FloatExpression
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
-import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 import com.android.internal.widget.remotecompose.player.RemoteComposePlayer;
+import com.android.internal.widget.remotecompose.player.RemoteDocument;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -40,7 +40,7 @@ import java.util.Map;
 
 /** remote compose Document after being prepared */
 public class RemotePreparedDocument implements RemoteComposePlayer.PreparedDocument {
-    private final RemoteComposeDocument mOriginalDoc;
+    private final RemoteDocument mOriginalDoc;
     private final HashMap<Integer, Object> mResolvedData = new HashMap<>();
     private final RemoteContext mContext =
             new RemoteContext() {
@@ -301,7 +301,7 @@ public class RemotePreparedDocument implements RemoteComposePlayer.PreparedDocum
                         int metadataId) {}
             };
 
-    public RemotePreparedDocument(@NonNull RemoteComposeDocument doc) {
+    public RemotePreparedDocument(@NonNull RemoteDocument doc) {
         mOriginalDoc = doc;
         BitmapData[] data = doc.getDocument().getBitmapDataSet();
         for (BitmapData d : data) {
@@ -310,7 +310,7 @@ public class RemotePreparedDocument implements RemoteComposePlayer.PreparedDocum
     }
 
     @Override
-    public @NonNull RemoteComposeDocument getOriginalDoc() {
+    public @NonNull RemoteDocument getOriginalDoc() {
         return mOriginalDoc;
     }
 

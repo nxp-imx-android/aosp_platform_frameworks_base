@@ -31,6 +31,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -82,6 +83,7 @@ import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestableContext;
+import com.android.systemui.accessibility.floatingmenu.MenuViewLayer.LayerIndex;
 import com.android.systemui.accessibility.utils.TestUtils;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.res.R;
@@ -174,10 +176,13 @@ public class MenuViewLayerTest extends SysuiTestCase {
         // Ensure tests don't actually update metrics.
         doNothing().when(mMenuView).incrementTexMetric(any());
 
+        MenuAnimationController realController = mMenuView.getMenuAnimationController();
+        mMenuAnimationController = spy(realController);
+        doReturn(mMenuAnimationController).when(mMenuView).getMenuAnimationController();
+
         mMenuViewLayer = spy(new MenuViewLayer(mSpyContext, mStubWindowManager,
                 mStubAccessibilityManager, mMenuViewModel, menuViewAppearance, mMenuView,
                 mFloatingMenu, mSecureSettings, mock(NavigationModeController.class)));
-        mMenuAnimationController = mMenuView.getMenuAnimationController();
 
         doNothing().when(mSpyContext).startActivity(any());
         doNothing().when(mSpyContext).startActivityAsUser(any(), any());
@@ -519,6 +524,30 @@ public class MenuViewLayerTest extends SysuiTestCase {
         }
         when(mMockPackageManager.queryIntentActivities(
                 any(), any(PackageManager.ResolveInfoFlags.class))).thenReturn(resolveInfos);
+    }
+
+    @Test
+    public void cycleMenuPosition_triggersCorrectMovementsInSequence() {
+        clearInvocations(mMenuAnimationController);
+
+        mMenuViewModel.cycleMenuPosition();
+        verify(mMenuAnimationController).moveToTopLeftPosition();
+        clearInvocations(mMenuAnimationController);
+
+        mMenuViewModel.cycleMenuPosition();
+        verify(mMenuAnimationController).moveToTopRightPosition();
+        clearInvocations(mMenuAnimationController);
+
+        mMenuViewModel.cycleMenuPosition();
+        verify(mMenuAnimationController).moveToBottomRightPosition();
+        clearInvocations(mMenuAnimationController);
+
+        mMenuViewModel.cycleMenuPosition();
+        verify(mMenuAnimationController).moveToBottomLeftPosition();
+        clearInvocations(mMenuAnimationController);
+
+        mMenuViewModel.cycleMenuPosition();
+        verify(mMenuAnimationController).moveToTopLeftPosition();
     }
 
 }

@@ -733,6 +733,9 @@
         <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Small</item>
         <item name="strokeColor">@color/media_dialog_outline_variant</item>
     </style>
+    <style name="MediaOutput.Dialog.FixPermissionsButton" parent="@style/Widget.Material3.Button.TextButton">
+        <item name="theme">@style/Theme.Material3.DynamicColors.DayNight</item>
+    </style>
 
     <style name="MediaOutput.Item" />
     <style name="MediaOutput.Item.Icon">

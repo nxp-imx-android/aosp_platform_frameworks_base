@@ -18,12 +18,10 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.hardware.vibrator.CompositeEffect;
+import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
-import android.hardware.vibrator.OneShotPrimitive;
-import android.hardware.vibrator.PwleV2Primitive;
 import android.hardware.vibrator.VibrationEffectContent;
 import android.os.Binder;
 import android.os.DeadObjectException;
@@ -32,13 +30,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.vibrator.Flags;
-import android.os.vibrator.HapticGeneratorSession;
 import android.os.vibrator.IHapticChannelStream;
-import android.os.vibrator.PrebakedSegment;
-import android.os.vibrator.PrimitiveSegment;
-import android.os.vibrator.PwleSegment;
-import android.os.vibrator.StepSegment;
-import android.os.vibrator.VibrationEffectSegment;
 import android.util.IndentingPrintWriter;
 import android.util.LongSparseArray;
 import android.util.Slog;
@@ -82,73 +74,6 @@ class VintfHalVibratorManager {
         Slog.v(TAG, "No default services declared for IVibratorManager or IVibrator."
                 + " Vibrator manager service will proceed without vibrator hardware.");
         return new LegacyHalVibratorManager();
-    }
-
-    /**
-     * Converts an array of {@link VibrationEffectSegment} into a list of HAL
-     * {@link VibrationEffectContent} variants.
-     *
-     * <p>This supports converting {@link PrebakedSegment}, {@link PrimitiveSegment},
-     * {@link StepSegment}, and {@link PwleSegment}.
-     *
-     * @param segments The vibration effect segments to convert.
-     * @return A list of HAL VibrationEffectContent variants, or null if the conversion fails due to
-     *         an unsupported segment type.
-     */
-    @Nullable
-    static VibrationEffectContent[] toHalVibrationEffectContent(
-            @NonNull VibrationEffectSegment[] segments) {
-
-        ArrayList<VibrationEffectContent> effects = new ArrayList<>();
-
-        for (int i = 0; i < segments.length; i++) {
-            VibrationEffectSegment segment = segments[i];
-            switch (segment) {
-                case PrebakedSegment prebaked -> {
-                    android.hardware.vibrator.PredefinedEffect predefinedEffect =
-                            new android.hardware.vibrator.PredefinedEffect();
-                    predefinedEffect.effect = prebaked.getEffectId();
-                    predefinedEffect.strength = (byte) prebaked.getEffectStrength();
-                    effects.add(VibrationEffectContent.predefined(predefinedEffect));
-                }
-                case PrimitiveSegment primitive -> {
-                    CompositeEffect compositeEffect = new CompositeEffect();
-                    compositeEffect.primitive = primitive.getPrimitiveId();
-                    compositeEffect.scale = primitive.getScale();
-                    compositeEffect.delayMs = primitive.getDelay();
-                    effects.add(VibrationEffectContent.composite(compositeEffect));
-                }
-                case PwleSegment pwleSegment -> {
-                    PwleV2Primitive pwle = new PwleV2Primitive();
-
-                    if (i == 0 || !(segments[i - 1] instanceof PwleSegment)) {
-                        pwle.amplitude = pwleSegment.getStartAmplitude();
-                        pwle.frequencyHz = pwleSegment.getStartFrequencyHz();
-                        pwle.timeMillis = 0;
-                        effects.add(VibrationEffectContent.pwleV2Primitive(pwle));
-                    }
-
-                    pwle.amplitude = pwleSegment.getEndAmplitude();
-                    pwle.frequencyHz = pwleSegment.getEndFrequencyHz();
-                    pwle.timeMillis = (int) pwleSegment.getDuration();
-                    effects.add(VibrationEffectContent.pwleV2Primitive(pwle));
-                }
-                case StepSegment stepSegment -> {
-                    OneShotPrimitive oneShotPrimitive = new OneShotPrimitive();
-                    oneShotPrimitive.amplitude = stepSegment.getAmplitude();
-                    oneShotPrimitive.timeMillis = (int) stepSegment.getDuration();
-                    effects.add(VibrationEffectContent.oneShotPrimitive(
-                            oneShotPrimitive));
-                }
-                default -> {
-                    Slog.w(TAG, "Unsupported segment type for haptic generator stream: "
-                            + segment.getClass().getSimpleName());
-                    return null; // Fail the entire conversion if one segment is unsupported
-                }
-            }
-        }
-
-        return effects.toArray(new VibrationEffectContent[0]);
     }
 
     /** {@link VintfSupplier} for default {@link IVibratorManager} service. */
@@ -381,7 +306,7 @@ class VintfHalVibratorManager {
 
         @Override
         public boolean startHapticGeneratorSession(long sessionId, int vibratorId,
-                @NonNull HapticGeneratorSession.Config config) {
+                @NonNull HapticGeneratorConfig config) {
             if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
                 Slog.w(TAG,
                         "No capability to start haptic generator sessions, ignoring start haptic "
@@ -416,18 +341,14 @@ class VintfHalVibratorManager {
 
         @Override
         public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
-                @NonNull VibrationEffectSegment[] segments) {
+                @NonNull VibrationEffectContent[] segments) {
             if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
                 Slog.w(TAG,
                         "No capability to start haptic generator sessions, ignoring create "
                                 + "haptic generator stream request.");
                 return false;
             }
-            VibrationEffectContent[] effect = toHalVibrationEffectContent(segments);
-            if (effect == null) {
-                return false;
-            }
-            return mNativeHandler.startHapticGeneratorStream(sessionId, vibratorId, effect);
+            return mNativeHandler.startHapticGeneratorStream(sessionId, vibratorId, segments);
         }
 
         @Override
@@ -623,7 +544,7 @@ class VintfHalVibratorManager {
 
         @Override
         public boolean startHapticGeneratorSession(long sessionId, int vibratorId,
-                @NonNull HapticGeneratorSession.Config config) {
+                @NonNull HapticGeneratorConfig config) {
             // Not supported on legacy devices.
             return false;
         }
@@ -641,7 +562,7 @@ class VintfHalVibratorManager {
 
         @Override
         public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
-                @NonNull VibrationEffectSegment[] segments) {
+                @NonNull VibrationEffectContent[] segments) {
             // Not supported on legacy devices.
             return false;
         }

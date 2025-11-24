@@ -287,6 +287,12 @@ constructor(
 
     /** @return true if the interaction is accepted, false if it should be cancelled */
     internal fun canDragDown(): Boolean {
+        if (SceneContainerFlag.isEnabled) {
+            // In flexiglass, dragging on lockscreen always opens the shade, notifications cannot be
+            // peeked anymore. Details on that decision in b/445863936.
+            return false
+        }
+
         return (statusBarStateController.state == StatusBarState.KEYGUARD ||
             nsslController.isInLockedDownShade()) && (isQsFullyCollapsed || useSplitShade)
     }
@@ -848,7 +854,7 @@ class DragDownHelper(
                 lastHeight = y - initialTouchY
                 captureStartingChild(initialTouchX, initialTouchY)
                 dragDownCallback.dragDownAmount = lastHeight + dragDownAmountOnStart
-                if (startingChild != null) {
+                if (startingChild != null && !SceneContainerFlag.isEnabled) {
                     handleExpansion(lastHeight, startingChild!!)
                 }
                 if (lastHeight > minDragDistance) {

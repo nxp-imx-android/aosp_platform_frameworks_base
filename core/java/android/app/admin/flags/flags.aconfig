@@ -162,16 +162,6 @@ flag {
 }
 
 flag {
-  name: "internal_log_event_listener"
-  namespace: "enterprise"
-  description: "Allow internal listeners to see unfiltered event stream"
-  bug: "385730709"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "allow_querying_profile_type"
     is_exported: true
     namespace: "enterprise"
@@ -347,16 +337,6 @@ flag {
     namespace: "enterprise"
     description: "Add provisioningContext to store metadata about when the admin was set"
     bug: "326525847"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "active_admin_cleanup"
-    namespace: "enterprise"
-    description: "Remove ActiveAdmin from EnforcingAdmin and related cleanups"
-    bug: "335663055"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -601,4 +581,22 @@ flag {
   namespace: "enterprise"
   description: "Add a generic provisioning error for forward compatibility."
   bug: "458352522"
+}
+
+flag {
+  name: "multi_user_management_user_provisioning"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Enable the multi user management user provisioning APIs."
+  bug: "425840472"
+}
+
+flag {
+  name: "policy_transparency_refactor_v2"
+  namespace: "enterprise"
+  description: "Refactor policy transparency to use new API during the rollout of policy_transparency_refactor_enabled."
+  bug: "445889973"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }

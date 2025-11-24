@@ -21,6 +21,7 @@ import android.view.SurfaceControlViewHost;
 
 /** @hide */
 interface IEmbeddedInsightSurfaceCallback {
-    void onSurfaceCreated(in SurfaceControlViewHost.SurfacePackage result);
-    void onReceiveInsight(in ContextInsightWrapper insight);
+    oneway void onSurfaceCreated(in SurfaceControlViewHost.SurfacePackage surfacePackage);
+    oneway void onSurfaceReleased(in SurfaceControlViewHost.SurfacePackage surfacePackage);
+    oneway void onReceiveInsight(in ContextInsightWrapper insight);
 }

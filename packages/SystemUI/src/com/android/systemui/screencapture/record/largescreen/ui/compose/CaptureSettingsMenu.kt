@@ -75,13 +75,16 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
             offset = DpOffset(x = 0.dp, y = 28.dp),
             shape = RoundedCornerShape(28.dp),
         ) {
-            SettingsMenuItem(
-                text = stringResource(R.string.screen_capture_show_clicks_and_keys),
-                leadingIcon = { icons?.showClicks?.let { Icon(icon = it) } },
-                checked = recordParameters.shouldShowTaps ?: false,
-                onCheckedChange = { recordParameters.setShouldShowTaps(it) },
-                enabled = screenRecordingSelected,
-            )
+            if (viewModel.showClicksAndKeysSupported) {
+                SettingsMenuItem(
+                    text = stringResource(R.string.screen_capture_show_clicks_and_keys),
+                    leadingIcon = { icons?.showClicks?.let { Icon(icon = it) } },
+                    checked = recordParameters.shouldShowTaps ?: false,
+                    onCheckedChange = { recordParameters.setShouldShowTaps(it) },
+                    enabled = screenRecordingSelected,
+                )
+            }
+
             SettingsMenuItem(
                 text = stringResource(R.string.screen_capture_device_audio),
                 leadingIcon = { icons?.deviceAudio?.let { Icon(icon = it) } },
@@ -96,13 +99,16 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 onCheckedChange = { recordParameters.shouldRecordMicrophone = it },
                 enabled = screenRecordingSelected,
             )
-            SettingsMenuItem(
-                text = stringResource(R.string.screen_capture_front_camera),
-                leadingIcon = { icons?.frontCamera?.let { Icon(icon = it) } },
-                checked = recordParameters.shouldShowFrontCamera ?: false,
-                onCheckedChange = { recordParameters.setShouldShowFrontCamera(it) },
-                enabled = screenRecordingSelected,
-            )
+
+            if (viewModel.frontCameraSupported) {
+                SettingsMenuItem(
+                    text = stringResource(R.string.screen_capture_front_camera),
+                    leadingIcon = { icons?.frontCamera?.let { Icon(icon = it) } },
+                    checked = recordParameters.shouldShowFrontCamera ?: false,
+                    onCheckedChange = { recordParameters.setShouldShowFrontCamera(it) },
+                    enabled = screenRecordingSelected,
+                )
+            }
 
             if (viewModel.customSaveLocationSupported) {
                 SaveLocationDropdown(

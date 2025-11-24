@@ -197,6 +197,48 @@ class SceneBackInteractorTest : SysuiTestCase() {
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
         }
 
+    @Test
+    fun addLockscreenToBackStack_empty() =
+        kosmos.runTest {
+            enableSingleShade()
+            assertThat(underTest.backStack.value.asIterable().toList()).isEmpty()
+
+            underTest.addLockscreenToBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Lockscreen))
+        }
+
+    @Test
+    fun addLockscreenToBackStack_replacesGone() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Gone, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
+
+            underTest.addLockscreenToBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+        }
+
+    @Test
+    fun addLockscreenToBackStack_alreadyLockscreen() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Lockscreen, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+
+            underTest.addLockscreenToBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+        }
+
     private suspend fun Kosmos.assertRoute(vararg route: RouteNode) {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
         val backScene by collectLastValue(underTest.backScene)

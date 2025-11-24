@@ -73,6 +73,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -85,7 +86,9 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -109,7 +112,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
 
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
-    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
+    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_BYTES = 70;
 
     // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
@@ -123,7 +126,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @VisibleForTesting
     static final float LONG_PRESS_TIMEOUT_MULTIPLIER = 1.5f;
     @VisibleForTesting
-    static final long KEY_EVENT_DELAY_MS = 10L;
+    static final long KEY_EVENT_DELAY_MS = 50L;
     // The session will be closed whenever the display remains empty for this timeout period.
     // This timeout is used to avoid closing the session immediately upon the display being empty
     // to allow for transient cases of emptiness, like when an Activity is launched in a new task
@@ -175,6 +178,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final ImageReader mBlockedStateImageReader;
     private final ComputerControlAllowlistController mAllowlistController;
+    private final ComputerControlStatsController mStatsController;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -186,21 +190,24 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @Override
                 public void onActive() {
                     mVirtualDisplay.setSurface(mClientSurface);
+                    mStatsController.onSessionActive();
                 }
 
                 @Override
-                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason,
+                public void onBlocked(@ComputerControlSession.SessionBlockReason int reason,
                         @Nullable String blockingPackage) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
                     // Prevent the client from being able to see the display by disconnecting
                     // the client surface from the display.
                     mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
+                    mStatsController.onSessionBlocked(reason);
                 }
 
                 @Override
                 public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
                     releaseResources();
+                    mStatsController.onSessionClosed(reason);
                 }
             };
 
@@ -265,6 +272,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 ActivityTaskManagerInternal.class);
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
         mDisplayManagerGlobal = displayManagerGlobal;
+        mStatsController = new ComputerControlStatsController(
+            mContext.getPackageManager(), attributionSource, params);
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
@@ -426,7 +435,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalArgumentException(
                     "Could not find launcher activity for " + packageName + "/" + className);
         }
-        if (!mAllowlistController.isPackageAutomatable(packageName, mOwnerPackageName)) {
+        if (!mAllowlistController.isPackageAutomatable(packageName, mOwnerPackageName,
+                mOwnerContext.getPackageManager())) {
             throw new IllegalArgumentException(
                     "Trying to launch " + packageName + " which is not allowlisted");
         }
@@ -447,6 +457,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mContext.startActivityAsUser(intent,
                         ActivityOptions.makeBasic()
                                 .setLaunchDisplayId(mVirtualDisplayId).toBundle(), mOwnerUser));
+        mStatsController.onApplicationLaunched(packageName);
     }
 
     @Override
@@ -464,6 +475,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
+        mStatsController.onTap();
     }
 
     @Override
@@ -477,6 +489,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
         performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0, SWIPE_STEPS);
+        mStatsController.onSwipe();
     }
 
     @Override
@@ -493,6 +506,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         (double) mViewConfiguration.getLongPressTimeoutMillis() *
                                 LONG_PRESS_TIMEOUT_MULTIPLIER / TOUCH_EVENT_DELAY_MS);
         performSwipeStep(x, y, x, y, /* step= */ 0, longPressStepCount);
+        mStatsController.onLongPress();
     }
 
     @Override
@@ -508,7 +522,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP));
         } else {
             Slog.e(TAG, "Invalid action code for performAction: " + actionCode);
+            return;
         }
+        mStatsController.onPerformAction(actionCode);
     }
 
     @Override
@@ -523,6 +539,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        mStatsController.onMirrorViewCreated();
         return mirror;
     }
 
@@ -536,7 +553,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                this::removeInteractiveMirror);
+                mStatsController::onMirrorViewInteractive, this::removeInteractiveMirror);
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
@@ -574,7 +591,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         cancelOngoingKeyGestures();
 
-        IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
+        InputMethodManagerInternal.ComputerControlInputConnectionData data = getInputConnectionData(
+                mVirtualDisplayId);
+        if (data == null) {
+            Slog.e(TAG, "Unable to insert text: No input connection data found!");
+            return;
+        }
+        final IRemoteComputerControlInputConnection ic = data.inputConnection();
         if (ic == null) {
             Slog.e(TAG, "Unable to insert text: No input connection found!");
             return;
@@ -592,16 +615,36 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 ic.commitText(new InputConnectionCommandHeader(0), text,
                         1 /* newCursorPosition */);
             }
-            // TODO(b/422134565): Use right editor action to commit text instead key enter
             if (commit) {
-                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                // Use the saved editor info of the current client on CC display to perform the
+                // default editor action (if any). Otherwise fallback to pressing enter key.
+                // Introduced a delay for performing editor action/pressing enter key to let the
+                // text be committed to text field first. Some apps might be processing input
+                // connection actions differently causing race conditions between "insertion of
+                // text" and "committing the text" actions. Introducing a small delay (50 ms),
+                // would ensure things happen in order.
+                final EditorInfo editorInfo = data.editorInfo();
+                mInsertTextFuture = mScheduler.schedule(() -> {
+                    try {
+                        if (!performDefaultEditorAction(editorInfo, ic)) {
+                            Slog.w(TAG,
+                                    "Unable to perform editor action to commit text: defaulting "
+                                            + "to pressing enter key");
+                            ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                            ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                                    new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Unable to commit text through InputConnection", e);
+                    }
+                }, KEY_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
             }
         } catch (RemoteException e) {
             Slog.e(TAG, "Unable to insert text through InputConnection", e);
+            return;
         }
+        mStatsController.onInsertText();
     }
 
     @Override
@@ -684,6 +727,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
     }
 
+    private boolean performDefaultEditorAction(@Nullable EditorInfo editorInfo,
+            @NonNull IRemoteComputerControlInputConnection ic) throws RemoteException {
+        // Check if currently active input connection on CC display has a valid editor action
+        // provided by the client view
+        if (editorInfo != null && editorInfo.imeOptions != EditorInfo.IME_ACTION_UNSPECIFIED
+                && (editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION)
+                != EditorInfo.IME_ACTION_NONE) {
+            ic.performEditorAction(new InputConnectionCommandHeader(0),
+                    editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION);
+            return true;
+        }
+        return false;
+    }
+
     private void cancelOngoingKeyGestures() {
         if (mInsertTextFuture != null) {
             mInsertTextFuture.cancel(false);
@@ -707,9 +764,27 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private String createInputDeviceNamePrefix(String packageName) {
         final String prefix = packageName + ":" + mParams.getName();
-        return (prefix.length() > MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
-                ? prefix.substring(prefix.length() - MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
-                : prefix;
+
+        byte[] bytes = prefix.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length <= MAX_INPUT_DEVICE_NAME_PREFIX_BYTES) {
+            return prefix;
+        }
+
+        int startIndex = bytes.length - MAX_INPUT_DEVICE_NAME_PREFIX_BYTES;
+        while (startIndex < bytes.length) {
+            byte currentByte = bytes[startIndex];
+            // Check if the byte is a continuation byte (0x80 <= byte <= 0xBF)
+            // In Java, bytes are signed, so the range check is: (currentByte & 0xC0) == 0x80
+            if ((currentByte & 0xC0) == 0x80) {
+                // This is a continuation byte, so we must advance the start index
+                startIndex++;
+            } else {
+                // This is a start byte (or an ASCII byte), which is a safe cut-off point.
+                break;
+            }
+        }
+        byte[] truncatedBytes = Arrays.copyOfRange(bytes, startIndex, bytes.length);
+        return new String(truncatedBytes, StandardCharsets.UTF_8);
     }
 
     private boolean isActivityLaunchAllowed(@NonNull ComponentName componentName,
@@ -739,11 +814,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
-    private IRemoteComputerControlInputConnection getInputConnection(int displayId) {
+    private InputMethodManagerInternal.ComputerControlInputConnectionData getInputConnectionData(
+            int displayId) {
         // getUserAssignedToDisplay returns the main userId, if we want to support cross
         // profile CC interactions and typing on CC display, we need to find the right user
         // profile here for the CC input connection
-        return mInputMethodManagerInternal.getComputerControlInputConnection(
+        return mInputMethodManagerInternal.getComputerControlInputConnectionData(
                 mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
     }
 

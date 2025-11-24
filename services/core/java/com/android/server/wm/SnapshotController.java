@@ -42,7 +42,6 @@ import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -125,11 +124,11 @@ class SnapshotController {
             // the end of the transient transition (see Transition#finishTransition()), because IME
             // won't move be moved during the transition and the tasks are still live.
             // Also don't take the snapshot if there is a bounds change in a visible to invisible
-            // transition as the app won't redraw. This can happen when a task is moving from one
-            // display to another.
+            // transition with a display change as the app won't redraw.
             if (task != null && !task.mCreatedByOrganizer && !task.isVisibleRequested()
                     && !task.mTransitionController.isTransientHide(task)
-                    && task.getBounds().equals(info.mAbsoluteBounds)) {
+                    && (task.getBounds().equals(info.mAbsoluteBounds)
+                    || info.mDisplayId == task.mDisplayContent.mDisplayId)) {
                 mTaskSnapshotController.recordSnapshot(task, info);
             }
             // Won't need to capture activity snapshot in close transition.
@@ -233,14 +232,8 @@ class SnapshotController {
             final WindowContainer wc = changeInfos.get(i).mContainer;
             final Task task = wc.asTask();
             if (task != null && wc.isVisibleRequested() && !task.inPinnedWindowingMode()) {
-                final TaskSnapshot snapshot;
-                if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                    snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
-                            TaskSnapshotManager.RESOLUTION_ANY);
-                } else {
-                    snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
-                            false /* isLowResolution */);
-                }
+                final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
+                        TaskSnapshotManager.RESOLUTION_ANY);
                 if (snapshot != null) {
                     mTaskSnapshotController.removeAndDeleteSnapshot(task.mTaskId, task.mUserId);
                 }

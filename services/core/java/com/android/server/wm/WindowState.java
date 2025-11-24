@@ -1745,11 +1745,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     /**
      * Returns {@code true} if {@link WindowToken#isVisibleRequested()} should be considered
      * before dispatching the latest configuration. Currently only {@link
-     * ActivityRecord#isVisibleRequested()} and {@link WallpaperWindowToken#isVisibleRequested()}
-     * implement explicit visible-requested.
+     * ActivityRecord#isVisibleRequested()}, {@link WallpaperWindowToken#isVisibleRequested()} and
+     * {@link ImeWindowToken#isVisibleRequested()} implement explicit visible-requested.
      */
     boolean shouldCheckTokenVisibleRequested() {
-        return mActivityRecord != null || mToken.asWallpaperToken() != null;
+        return mActivityRecord != null || mToken.asWallpaperToken() != null
+                || mToken.asImeToken() != null;
     }
 
     /**
@@ -4634,9 +4635,17 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return false;
     }
 
+    private static boolean contentEqualsSparseArray(@Nullable SparseArray<?> sa1,
+            @Nullable SparseArray<?> sa2) {
+        if (sa1 == null || sa2 == null) {
+            return sa1 == sa2;
+        }
+        return sa1.contentEquals(sa2);
+    }
+
     @Override
     void updateAboveInsetsState(InsetsState aboveInsetsState,
-            SparseArray<InsetsSource> localInsetsSourcesFromParent,
+            @Nullable SparseArray<InsetsSource> localInsetsSourcesFromParent,
             ArraySet<WindowState> insetsChangedWindows) {
         final SparseArray<InsetsSource> mergedLocalInsetsSources =
                 createMergedSparseArray(localInsetsSourcesFromParent, mLocalInsetsSources);
@@ -4651,7 +4660,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 insetsChangedWindows.add(w);
             }
 
-            if (!mergedLocalInsetsSources.contentEquals(w.mMergedLocalInsetsSources)) {
+            if (!contentEqualsSparseArray(mergedLocalInsetsSources, w.mMergedLocalInsetsSources)) {
                 // The traversal will reach the ImeContainer (and thus the IME Window) if this
                 // window is the current IME Layering Target. However, we should not copy the local
                 // insets to the IME window.

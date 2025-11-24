@@ -127,6 +127,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.PlatformButton
@@ -705,17 +706,20 @@ private fun ContentScope.CardForegroundContent(
                     )
 
                     if (
-                        viewModel.actionButtonLayout ==
-                            MediaCardActionButtonLayout.SecondaryActionsOnly
+                        viewModel.actionButtonLayout
+                            is MediaCardActionButtonLayout.SecondaryActionsOnly
                     ) {
-                        viewModel.additionalActions.fastForEachIndexed { index, action ->
-                            SecondaryAction(
-                                viewModel = action,
-                                resId = "action$index",
-                                element = Media.Elements.additionalActionButton(index),
-                                modifier = Modifier.padding(end = 8.dp),
-                            )
-                        }
+                        (viewModel.actionButtonLayout
+                                as MediaCardActionButtonLayout.SecondaryActionsOnly)
+                            .indicesForCompressed
+                            .fastForEach { index ->
+                                SecondaryAction(
+                                    viewModel = viewModel.additionalActions[index],
+                                    resId = "action$index",
+                                    element = Media.Elements.additionalActionButton(index),
+                                    modifier = Modifier.padding(end = 8.dp),
+                                )
+                            }
                     }
                 }
 
@@ -779,7 +783,7 @@ private fun ContentScope.CompactCardForeground(
             iconColor = MaterialTheme.colorScheme.onSurface,
         )
 
-        val rightAction = (viewModel.navigation as? MediaNavigationViewModel.Showing)?.right
+        val rightAction = viewModel.navigation.right
         if (rightAction != null) {
             SecondaryAction(
                 viewModel = rightAction,
@@ -867,16 +871,14 @@ private fun ContentScope.Navigation(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier,
             ) {
-                if (areActionsVisible) {
-                    if (viewModel.left is MediaSecondaryActionViewModel.None) {
-                        Spacer(Modifier.size(width = 16.dp, height = 48.dp))
-                    } else {
-                        SecondaryAction(
-                            viewModel = viewModel.left,
-                            modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
-                            element = Media.Elements.PrevButton,
-                        )
-                    }
+                if (!areActionsVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
+                    Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+                } else {
+                    SecondaryAction(
+                        viewModel = viewModel.left,
+                        modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
+                        element = Media.Elements.PrevButton,
+                    )
                 }
 
                 val interactionSource = remember { MutableInteractionSource() }
@@ -899,12 +901,16 @@ private fun ContentScope.Navigation(
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
-                            onValueChange = { progress -> viewModel.onScrubChange(progress) },
+                            enabled = viewModel.onScrubChange != null,
+                            onValueChange = { progress ->
+                                viewModel.onScrubChange?.invoke(progress)
+                            },
                             onValueChangeFinished = {
-                                viewModel.onScrubFinished(sliderDragDelta.value)
+                                viewModel.onScrubFinished?.invoke(sliderDragDelta.value)
                             },
                             colors = colors,
                             thumb = {
+                                // TODO(b/461759426): Hide thumb if not enabled
                                 SeekBarThumb(interactionSource = interactionSource, colors = colors)
                             },
                             track = { sliderState ->
@@ -957,22 +963,37 @@ private fun ContentScope.Navigation(
                     }
                 }
 
-                if (areActionsVisible) {
-                    if (viewModel.right is MediaSecondaryActionViewModel.None) {
-                        Spacer(Modifier.size(width = 16.dp, height = 48.dp))
-                    } else {
-                        SecondaryAction(
-                            viewModel = viewModel.right,
-                            modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
-                            element = Media.Elements.NextButton,
-                        )
-                    }
+                if (!areActionsVisible || viewModel.right is MediaSecondaryActionViewModel.None) {
+                    Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+                } else {
+                    SecondaryAction(
+                        viewModel = viewModel.right,
+                        modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
+                        element = Media.Elements.NextButton,
+                    )
                 }
             }
         }
 
         is MediaNavigationViewModel.Hidden -> {
-            Spacer(Modifier.size(48.dp))
+            if (!areActionsVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
+                Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+            } else {
+                SecondaryAction(
+                    viewModel = viewModel.left,
+                    modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
+                    element = Media.Elements.PrevButton,
+                )
+            }
+            if (!areActionsVisible || viewModel.right is MediaSecondaryActionViewModel.None) {
+                Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+            } else {
+                SecondaryAction(
+                    viewModel = viewModel.right,
+                    modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
+                    element = Media.Elements.NextButton,
+                )
+            }
         }
     }
 }

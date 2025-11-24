@@ -145,13 +145,15 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                         )
                     }
                 }
-                Text(
-                    text = subTitle,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant,
-                )
+                if (subTitle.isNotEmpty()) {
+                    Text(
+                        text = subTitle,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                    )
+                }
             }
 
             Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
@@ -192,6 +194,6 @@ private object TileDetailsDefaults {
 
     val TitleRowTop = 14.dp
     val TitleRowBottom = 2.dp
-    val DetailsMaxHeight = 600.dp
-    val DetailsMinHeight = 300.dp
+    val DetailsMaxHeight = 680.dp
+    val DetailsMinHeight = 120.dp
 }

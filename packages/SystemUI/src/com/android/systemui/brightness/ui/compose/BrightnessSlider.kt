@@ -37,7 +37,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -83,7 +82,6 @@ import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.sliderPercentage
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.drawInOverlay
 import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.brightness.shared.model.GammaBrightness
@@ -96,6 +94,7 @@ import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrack
 import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.brightness.ui.viewmodel.Drag
+import com.android.systemui.common.shared.colors.SystemUISliderColors
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.haptics.slider.SeekableSliderTrackerConfig
@@ -122,6 +121,7 @@ fun BrightnessSlider(
     onStop: (Int) -> Unit,
     overriddenByAppState: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     showToast: () -> Unit = {},
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
     dimensions: BrightnessSliderDimensions = BrightnessSliderDimensions.Default,
@@ -131,7 +131,6 @@ fun BrightnessSlider(
         animateFloatAsState(targetValue = value.toFloat(), label = "BrightnessSliderAnimatedValue")
     val floatValueRange = valueRange.first.toFloat()..valueRange.last.toFloat()
     val isRestricted = restriction is PolicyRestriction.Restricted
-    val enabled = !isRestricted
     val contentDescription = stringResource(R.string.accessibility_brightness)
     val interactionSource = remember { MutableInteractionSource() }
     val hapticsViewModel: SliderHapticsViewModel =
@@ -146,7 +145,7 @@ fun BrightnessSlider(
                 SeekableSliderTrackerConfig(),
             )
         }
-    val colors = colors()
+    val colors = SystemUISliderColors.Defaults
 
     // The value state is recreated every time gammaValue changes, so we recreate this derivedState
     // We have to use value as that's the value that changes when the user is dragging (gammaValue
@@ -368,11 +367,14 @@ fun BrightnessSliderContainer(
         )
     val overriddenByAppState by viewModel.brightnessOverriddenByWindow.collectAsStateWithLifecycle()
     var dragging by remember { mutableStateOf(false) }
+    var enabled by remember { mutableStateOf(false) }
 
     DisposableEffectWithLifecycle(Unit) {
+        enabled = true
         onDispose {
             dragging = false
             viewModel.setIsDragging(false)
+            enabled = false
         }
     }
 
@@ -385,6 +387,7 @@ fun BrightnessSliderContainer(
         )
 
     val backgroundFrameHeight = dimensions.verticalPadding
+    val isRestricted = restriction is PolicyRestriction.Restricted
     Box(
         modifier =
             modifier
@@ -393,6 +396,7 @@ fun BrightnessSliderContainer(
                 .sysuiResTag("brightness_slider")
     ) {
         BrightnessSlider(
+            enabled = enabled && !isRestricted,
             gammaValue = gamma,
             valueRange = viewModel.minBrightness.value..viewModel.maxBrightness.value,
             iconResProvider = BrightnessSliderViewModel::getIconForPercentage,
@@ -493,14 +497,4 @@ object BrightnessSliderMotionTestKeys {
     val AnimatingIcon = MotionTestValueKey<Boolean>("animatingIcon")
     val ActiveIconAlpha = MotionTestValueKey<Float>("activeIconAlpha")
     val InactiveIconAlpha = MotionTestValueKey<Float>("inactiveIconAlpha")
-}
-
-@Composable
-private fun colors(): SliderColors {
-    return SliderDefaults.colors()
-        .copy(
-            inactiveTrackColor = LocalAndroidColorScheme.current.surfaceEffect1,
-            activeTickColor = MaterialTheme.colorScheme.onPrimary,
-            inactiveTickColor = MaterialTheme.colorScheme.onSurface,
-        )
 }

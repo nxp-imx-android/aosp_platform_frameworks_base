@@ -350,7 +350,10 @@ class KeyguardSurfaceBehindInteractorTest : SysuiTestCase() {
             kosmos.notificationLaunchAnimationInteractor.setIsLaunchAnimationRunning(true)
             runCurrent()
 
-            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(Scenes.Lockscreen, Scenes.Gone),
+                unlockDevice = true,
+            )
 
             values.assertValuesMatch(
                 // We should be at alpha = 0f during the animation.

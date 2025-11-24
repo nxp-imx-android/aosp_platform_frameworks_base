@@ -54,13 +54,13 @@ public class RemoteTaskFactoryTest {
     }
 
     @Test
-    public void testCreate_returnsRemoteTask() {
+    public void testCreate_packageInstalled_returnsRemoteTask() {
         int associationId = 1;
         String associationDisplayName = "test_device";
         String packageName = "com.example.app";
         String label = "label";
         setupMockApplicationInfo(packageName, label, R.drawable.black_32x32);
-        HandoffOptions handoffOptions = new HandoffOptions(true, true);
+        HandoffOptions handoffOptions = new HandoffOptions(true, false);
         RemoteTaskInfo remoteTaskInfo =
                 new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
 
@@ -70,6 +70,58 @@ public class RemoteTaskFactoryTest {
         assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(associationDisplayName);
         assertThat(remoteTask.getPackageName()).isEqualTo(packageName);
         assertThat(remoteTask.getLabel()).isEqualTo(label);
+        assertThat(remoteTask.isHandoffEnabled()).isTrue();
+        assertThat(remoteTask.isTaskInForeground()).isTrue();
+    }
+
+    @Test
+    public void testCreate_handoffDisabled_returnsNull() {
+        int associationId = 1;
+        String associationDisplayName = "test_device";
+        String packageName = "com.example.app";
+        String label = "label";
+        setupMockApplicationInfo(packageName, label, R.drawable.black_32x32);
+        HandoffOptions handoffOptions = new HandoffOptions(false, false);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
+
+        RemoteTask remoteTask =
+                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
+
+        assertThat(remoteTask).isNull();
+    }
+
+    @Test
+    public void testCreate_packageNotInstalled_returnsNull() {
+        int associationId = 1;
+        String associationDisplayName = "test_device";
+        String packageName = "com.example.uninstalled_app";
+        HandoffOptions handoffOptions = new HandoffOptions(true, true);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
+
+        RemoteTask remoteTask =
+                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
+
+        assertThat(remoteTask).isNull();
+    }
+
+    @Test
+    public void testCreate_packageNotInstalledButHandoffAllowedWithoutPackage_returnsRemoteTask() {
+        int associationId = 1;
+        String associationDisplayName = "test_device";
+        String packageName = "com.example.uninstalled_app";
+        HandoffOptions handoffOptions = new HandoffOptions(true, false);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
+
+        RemoteTask remoteTask =
+                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
+
+        assertThat(remoteTask).isNotNull();
+        assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(associationDisplayName);
+        assertThat(remoteTask.getPackageName()).isEqualTo(packageName);
+        assertThat(remoteTask.getLabel()).isNull();
         assertThat(remoteTask.isHandoffEnabled()).isTrue();
         assertThat(remoteTask.isTaskInForeground()).isTrue();
     }

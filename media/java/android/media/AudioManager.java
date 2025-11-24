@@ -28,6 +28,7 @@ import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
 import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
+import static android.media.audio.Flags.FLAG_AMSCO_AVAILABLE_API;
 import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
@@ -55,6 +56,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.compat.CompatChanges;
 import android.bluetooth.BluetoothCodecConfig;
+import android.bluetooth.BluetoothCodecType;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothLeAudioCodecConfig;
 import android.companion.virtual.VirtualDeviceManager;
@@ -8630,10 +8632,20 @@ public class AudioManager {
         }
 
         for (Integer format : formatsList) {
-            int btSourceCodec = AudioSystem.audioFormatToBluetoothSourceCodec(format);
-            if (btSourceCodec != BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID) {
-                codecConfigList.add(
-                        new BluetoothCodecConfig.Builder().setCodecType(btSourceCodec).build());
+            if (com.android.bluetooth.flags.Flags.a2dpCreateCodecTypeFromIdApi()) {
+                long codecId = AudioSystem.audioFormatToBluetoothA2dpSourceCodec(format);
+                if (codecId != -1) {
+                    codecConfigList.add(
+                            new BluetoothCodecConfig.Builder()
+                                    .setExtendedCodecType(BluetoothCodecType.createFromId(codecId))
+                                    .build());
+                }
+            } else {
+                int btSourceCodec = AudioSystem.audioFormatToBluetoothSourceCodec(format);
+                if (btSourceCodec != BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID) {
+                    codecConfigList.add(
+                            new BluetoothCodecConfig.Builder().setCodecType(btSourceCodec).build());
+                }
             }
         }
         return codecConfigList;
@@ -9977,7 +9989,7 @@ public class AudioManager {
      * @return true if SCO audio is managed by the audio framework, false otherwise.
      */
     @SystemApi
-    @FlaggedApi(FLAG_SCO_MANAGED_BY_AUDIO)
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
     public boolean isScoManagedByAudio() {
         try {
             return getService().isScoManagedByAudio();

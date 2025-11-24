@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"نماگرفت ذخیره نشد"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"ذخیره در"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"انتخاب پوشه"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"نمایشگر خارجی"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"برای ذخیره کردن نماگرفت، قفل دستگاه باید باز باشد"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"دوباره نماگرفت بگیرید"</string>
@@ -154,7 +158,7 @@
     <string name="screen_record_undo" msgid="7942716736019800870">"واگرد"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ضبط مجدد"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ویرایش"</string>
-    <string name="screen_record_delete" msgid="1023421937978254537">"حذف کردن"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"حذف"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"این ضبط حذف شود؟"</string>
     <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"حذف این ضبط موجب حذف دائم فایل ویدیویی از دستگاه می‌شود."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"پخش کردن"</string>
@@ -708,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"پاک کردن همه"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"مدیریت"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"سابقه"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"بستن"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"تنظیمات اعلان"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"سابقه اعلان"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"جدید"</string>
@@ -905,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"تبریک! «تنظیم‌کننده واسط کاربری سیستم» به «تنظیمات» اضافه شد"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"حذف از تنظیمات"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"«تنظیم‌کننده واسط کاربری سیستم» از «تنظیمات» حذف شود و استفاده از همه ویژگی‌های آن متوقف شود؟"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"برداشتن"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"بلوتوث روشن شود؟"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"برای مرتبط کردن صفحه‌کلید با رایانه لوحی، ابتدا باید بلوتوث را روشن کنید."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"روشن کردن"</string>
@@ -1261,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"مکان"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"میکروفون"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"ضبط صفحه‌نمایش"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"بی‌عنوان"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"آماده‌به‌کار"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"اندازه قلم"</string>
@@ -1408,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"دستگاه‌های دردسترس برای خروجی صوتی."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"میزان صدا"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"پیشنهادی"</string>
@@ -1622,7 +1630,7 @@
     <string name="shortcut_helper_customize_mode_title" msgid="8327297960035006036">"سفارشی‌سازی میان‌برها"</string>
     <string name="shortcut_customize_mode_remove_shortcut_dialog_title" msgid="7106420484940737208">"میان‌بر برداشته شود؟"</string>
     <string name="shortcut_customize_mode_reset_shortcut_dialog_title" msgid="8131184731313717780">"به تنظیم پیش‌فرض بازنشانی می‌کنید؟"</string>
-    <string name="shortcut_customize_mode_add_shortcut_description" msgid="7636040209946696120">"برای ایجاد این میان‌بر، دکمه «کنش» و یک یا چند دکمه دیگر را هم‌زمان فشار دهید."</string>
+    <string name="shortcut_customize_mode_add_shortcut_description" msgid="7636040209946696120">"برای ایجاد این میان‌بر، کلید «کنش» و یک یا چند کلید دیگر را هم‌زمان فشار دهید."</string>
     <string name="shortcut_customize_mode_remove_shortcut_description" msgid="6851287900585057128">"با این کار، میان‌بر سفارشی شما برای همیشه حذف می‌شود."</string>
     <string name="shortcut_customize_mode_reset_shortcut_description" msgid="2081849715634358684">"با این کار، همه میان‌برهای سفارشی برای همیشه حذف خواهند شد."</string>
     <string name="shortcut_helper_search_placeholder" msgid="5488547526269871819">"جستجوی میان‌برها"</string>
@@ -1686,10 +1694,10 @@
     <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"اشاره جابه‌جایی بین برنامه‌ها را تکمیل کردید."</string>
     <string name="touchpad_switch_gesture_error_body" msgid="5895231916964677918">"برای جابه‌جا شدن بین برنامه‌ها، با چهار انگشت روی صفحه لمسی تند به چپ بکشید"</string>
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"مشاهده همه برنامه‌ها"</string>
-    <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"دکمه کنش را روی صفحه لمسی فشار دهید"</string>
+    <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"کلید کنش را روی صفحه لمسی فشار دهید"</string>
     <string name="tutorial_action_key_success_title" msgid="2371827347071979571">"عالی بود!"</string>
     <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"اشاره «مشاهده همه برنامه‌ها» را تمام کردید"</string>
-    <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"برای مشاهده همه برنامه‌ها، دکمه کنش را روی صفحه‌کلید فشار دهید"</string>
+    <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"برای مشاهده همه برنامه‌ها، کلید کنش را روی صفحه‌کلید فشار دهید"</string>
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"پویانمایی آموزش گام‌به‌گام، برای توقف موقت و ازسرگیری پخش کلیک کنید."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"نور پس‌زمینه صفحه‌کلید"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"‏سطح %1$d از %2$d"</string>
@@ -1699,7 +1707,7 @@
     <string name="back_edu_toast_content" msgid="4530314597378982956">"برای برگشتن، در صفحه لمسی با سه انگشت تند به‌چپ یا راست بکشید"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"برای رفتن به صفحه اصلی، در صفحه لمسی با سه انگشت تند به‌بالا بکشید"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"برای مشاهده برنامه‌های اخیر، در صفحه لمسی با سه انگشت تند به‌بالا بکشید و نگه دارید"</string>
-    <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"برای مشاهده همه برنامه‌ها، دکمه کنش در صفحه‌کلید را فشار دهید"</string>
+    <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"برای مشاهده همه برنامه‌ها، کلید کنش در صفحه‌کلید را فشار دهید"</string>
     <string name="public_notification_single_line_title" msgid="3161485511931439629">"برای مشاهده، قفل را باز کنید"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"برای مشاهده کد، قفل دستگاه را باز کنید"</string>
     <string name="empty_notification_single_line_title" msgid="4464430045266180257">"برای مشاهده، ازهم باز کنید"</string>
@@ -1711,7 +1719,7 @@
     <string name="overview_edu_notification_title" msgid="1265824157319562406">"برای مشاهده برنامه‌های اخیر از صفحه لمسی استفاده کنید"</string>
     <string name="overview_edu_notification_content" msgid="3578204677648432500">"با سه انگشت تند به‌بالا بکشید و نگه دارید. برای آشنایی با اشاره‌های بیشتر، تک‌ضرب بزنید."</string>
     <string name="all_apps_edu_notification_title" msgid="372262997265569063">"برای مشاهده همه برنامه‌ها، از صفحه‌کلید استفاده کنید"</string>
-    <string name="all_apps_edu_notification_content" msgid="3255070575694025585">"در هرزمانی دکمه کنش را فشار دهید. برای آشنایی با اشاره‌های بیشتر، تک‌ضرب بزنید."</string>
+    <string name="all_apps_edu_notification_content" msgid="3255070575694025585">"در هرزمانی کلید کنش را فشار دهید. برای آشنایی با اشاره‌های بیشتر، تک‌ضرب بزنید."</string>
     <string name="accessibility_deprecate_extra_dim_dialog_title" msgid="910988771011857460">"«بسیار کم‌نور» اکنون بخشی از لغزنده روشنایی است"</string>
     <string name="accessibility_deprecate_extra_dim_dialog_description" msgid="4453123359258743230">"اکنون می‌توانید با پایین‌تر آوردن سطح روشنایی، صفحه‌نمایش را بسیار کم‌نور کنید.\n\nاز آنجایی‌که این ویژگی اکنون بخشی از لغزنده روشنایی است، میان‌برهای بسیار کم‌نور برداشته می‌شوند."</string>
     <string name="accessibility_deprecate_extra_dim_dialog_button" msgid="3947537827396916005">"برداشتن میان‌برهای بسیار کم‌نور"</string>

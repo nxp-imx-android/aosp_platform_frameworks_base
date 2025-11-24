@@ -70,7 +70,6 @@ import static android.content.Intent.EXTRA_REPLACING;
 import static android.content.pm.PermissionInfo.PROTECTION_DANGEROUS;
 import static android.content.pm.PermissionInfo.PROTECTION_FLAG_APPOP;
 import static android.os.Flags.binderFrozenStateChangeCallback;
-import static android.permission.flags.Flags.appOpsServiceHandlerFix;
 import static android.permission.flags.Flags.checkOpValidatePackage;
 import static android.permission.flags.Flags.deviceAwareAppOpNewSchemaEnabled;
 import static android.permission.flags.Flags.useFrozenAwareRemoteCallbackList;
@@ -281,6 +280,8 @@ public class AppOpsService extends IAppOpsService.Stub {
     private final @Nullable File mNoteOpCallerStacktracesFile;
     /* AMS handler, this shouldn't be used for IO */
     final Handler mHandler;
+    /* IO handler should be used for IO */
+    final Handler mIoHandler;
 
     private final AppOpsRecentAccessPersistence mRecentAccessPersistence;
     /**
@@ -1059,6 +1060,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             mNoteOpCallerStacktracesFile = null;
         }
         mHandler = handler;
+        mIoHandler = IoThread.getHandler();
         mConstants = new Constants(mHandler);
         // To migrate storageFile to recentAccessesFile, these reads must be called in this order.
         readRecentAccesses();
@@ -1198,7 +1200,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
         }, UserHandle.ALL, packageSuspendFilter, null, null);
 
-        getIoHandler().postDelayed(new Runnable() {
+        mIoHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 List<String> packageNames = getPackageListAndResample();
@@ -1445,7 +1447,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     @GuardedBy("this")
     private void packageRemovedLocked(int uid, String packageName) {
-        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistryInterface::clearHistory,
+        mIoHandler.post(PooledLambda.obtainRunnable(HistoricalRegistryInterface::clearHistory,
                 mHistoricalRegistry, uid, packageName));
 
         UidState uidState = mUidStates.get(uid);
@@ -1718,7 +1720,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (mWriteScheduled) {
                 mWriteScheduled = false;
                 mFastWriteScheduled = false;
-                getIoHandler().removeCallbacks(mWriteRunner);
+                mIoHandler.removeCallbacks(mWriteRunner);
                 doWrite = true;
             }
         }
@@ -2013,7 +2015,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                         new String[attributionChainExemptPackages.size()]) : null;
 
         // Must not hold the appops lock
-        getIoHandler().post(PooledLambda.obtainRunnable(
+        mIoHandler.post(PooledLambda.obtainRunnable(
                 HistoricalRegistryInterface::getHistoricalOps,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
@@ -2046,7 +2048,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 new String[attributionChainExemptPackages.size()]) : null;
 
         // Must not hold the appops lock
-        getIoHandler().post(PooledLambda.obtainRunnable(
+        mIoHandler.post(PooledLambda.obtainRunnable(
                 HistoricalRegistryInterface::getHistoricalOpsFromDiskRaw,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
@@ -4986,8 +4988,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                 // Shouldn't happen for the supplemental package
                 e.printStackTrace();
             }
-        } else if (Process.isPccUid(uid)) {
-            uid = pm.getAppUidForPccUid(uid);
+        } else if (Process.isPrivateComputeCoreUid(uid)) {
+            uid = pm.getAppUidForPrivateComputeCoreUid(uid);
         }
         return uid;
     }
@@ -5247,7 +5249,7 @@ public class AppOpsService extends IAppOpsService.Stub {
     private void scheduleWriteLocked() {
         if (!mWriteScheduled) {
             mWriteScheduled = true;
-            getIoHandler().postDelayed(mWriteRunner, WRITE_DELAY);
+            mIoHandler.postDelayed(mWriteRunner, WRITE_DELAY);
         }
     }
 
@@ -5255,8 +5257,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (!mFastWriteScheduled) {
             mWriteScheduled = true;
             mFastWriteScheduled = true;
-            getIoHandler().removeCallbacks(mWriteRunner);
-            getIoHandler().postDelayed(mWriteRunner, 10 * 1000);
+            mIoHandler.removeCallbacks(mWriteRunner);
+            mIoHandler.postDelayed(mWriteRunner, 10 * 1000);
         }
     }
 
@@ -6132,7 +6134,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                     final long token = Binder.clearCallingIdentity();
                     try {
                         synchronized (shell.mInternal) {
-                            shell.mInternal.getIoHandler().removeCallbacks(
+                            shell.mInternal.mIoHandler.removeCallbacks(
                                     shell.mInternal.mWriteRunner);
                         }
                         shell.mInternal.writeRecentAccesses();
@@ -8192,14 +8194,6 @@ public class AppOpsService extends IAppOpsService.Stub {
             mCheckOpsDelegate.finishProxyOperation(clientId, code, attributionSource,
                     skipProxyOperation, AppOpsService.this::finishProxyOperationImpl);
             return null;
-        }
-    }
-
-    private Handler getIoHandler() {
-        if (appOpsServiceHandlerFix()) {
-            return IoThread.getHandler();
-        } else {
-            return mHandler;
         }
     }
 }

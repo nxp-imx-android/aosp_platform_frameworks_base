@@ -71,7 +71,8 @@ public abstract class ContextInsight {
                 INSIGHT_TYPE_ERROR,
                 INSIGHT_TYPE_BUNDLE,
                 INSIGHT_TYPE_ACTIONABLE,
-                INSIGHT_TYPE_DISPLAY
+                INSIGHT_TYPE_DISPLAY,
+                INSIGHT_TYPE_COLLECTION
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InsightType {}
@@ -92,6 +93,9 @@ public abstract class ContextInsight {
 
     /** Type identifier for {@link DisplayInsight}. */
     static final int INSIGHT_TYPE_DISPLAY = 3;
+
+    /** Type identifier for {@link InsightCollection}. */
+    static final int INSIGHT_TYPE_COLLECTION = 4;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -146,7 +150,7 @@ public abstract class ContextInsight {
 
     /** Returns the set of {@link ContextHint}s that were used to generate this insight. */
     @NonNull
-    public final Set<ContextHintWithSignature> getOriginHints() {
+    public Set<ContextHintWithSignature> getOriginHints() {
         return mOriginHints;
     }
 
@@ -176,7 +180,7 @@ public abstract class ContextInsight {
 
     /** Returns the set of tokens that were added to this insight. */
     @NonNull
-    public final Set<Token> getTokens() {
+    public Set<Token> getTokens() {
         return mTokens;
     }
 
@@ -246,6 +250,7 @@ public abstract class ContextInsight {
                 case INSIGHT_TYPE_BUNDLE -> new BundleInsight(constructorParams, data);
                 case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(constructorParams, data);
                 case INSIGHT_TYPE_DISPLAY -> new DisplayInsight(constructorParams, data);
+                case INSIGHT_TYPE_COLLECTION -> new InsightCollection(constructorParams, data);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {

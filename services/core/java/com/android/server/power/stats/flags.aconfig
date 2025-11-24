@@ -38,3 +38,10 @@ flag {
      description: "Add a configurable value for power stats logging frequency"
      bug: "166689029"
 }
+
+flag {
+    name: "x86_cpu_energy_attribution"
+    namespace: "desktop_pnp"
+    description: "Enable CPU energy attribution for x86 platforms using eBPF and RAPL."
+    bug: "452123601"
+}

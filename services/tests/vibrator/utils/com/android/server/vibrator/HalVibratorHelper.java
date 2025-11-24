@@ -22,6 +22,7 @@ import android.hardware.vibrator.ActivePwle;
 import android.hardware.vibrator.CompositeEffect;
 import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.FrequencyAccelerationMapEntry;
+import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
@@ -38,7 +39,6 @@ import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.VibrationEffect.VendorEffect;
 import android.os.VibratorInfo;
-import android.os.vibrator.HapticGeneratorSession;
 import android.os.vibrator.IHapticChannelStream;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
@@ -727,7 +727,7 @@ public final class HalVibratorHelper {
 
         @Override
         public boolean startHapticGeneratorSessionWithCallback(long sessionId, int vibratorId,
-                @NonNull HapticGeneratorSession.Config config) {
+                @NonNull HapticGeneratorConfig config) {
             return false;
         }
 

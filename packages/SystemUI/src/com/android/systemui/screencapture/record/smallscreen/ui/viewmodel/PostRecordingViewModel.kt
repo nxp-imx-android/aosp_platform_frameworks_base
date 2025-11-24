@@ -20,14 +20,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.getValue
+import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.service.ActivityStartingReceiver
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
+import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -41,7 +43,8 @@ class PostRecordingViewModel
 constructor(
     @Assisted val videoUri: Uri,
     private val context: Context,
-    private val activityStarter: ActivityStarter,
+    private val broadcastSender: BroadcastSender,
+    private val userTracker: UserTracker,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
@@ -61,6 +64,7 @@ constructor(
         startVideoActivity(
             action = Intent.ACTION_EDIT,
             label = context.getString(R.string.screen_record_edit),
+            shouldShowChooser = false,
         )
     }
 
@@ -68,19 +72,32 @@ constructor(
         startVideoActivity(
             action = Intent.ACTION_SEND,
             label = context.getString(R.string.screenrecord_share_label),
+            shouldShowChooser = true,
         )
     }
 
-    private fun startVideoActivity(action: String, label: String) {
+    private fun startVideoActivity(action: String, label: String, shouldShowChooser: Boolean) {
         val intent =
             Intent(action)
                 .setDataAndType(videoUri, MIME_TYPE)
-                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 .putExtra(Intent.EXTRA_STREAM, videoUri)
+                .let { intent ->
+                    if (shouldShowChooser) {
+                        Intent.createChooser(intent, label)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    } else {
+                        intent
+                    }
+                }
 
-        activityStarter.startActivity(
-            Intent.createChooser(intent, label).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            true,
+        broadcastSender.sendBroadcastAsUser(
+            intent = ActivityStartingReceiver.wrapIntent(context, intent),
+            userHandle = userTracker.userHandle,
         )
     }
 

@@ -43,7 +43,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 
 @SysUISingleton
@@ -124,6 +123,7 @@ constructor(
     @OptIn(FlowPreview::class)
     @SuppressLint("MissingPermission")
     private fun listenForDozingToDreaming() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.isAbleToDream
                 .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
@@ -156,13 +156,12 @@ constructor(
                 }
                 .sample(communalInteractor.isCommunalAvailable, ::Pair)
                 .collect { (_, isCommunalAvailable) ->
-
                     val biometricUnlockState = keyguardInteractor.biometricUnlockState.value
 
                     // Do not transition to LOCKSCREEN if we are waking and dismissing.
                     // That transition is handled by listenForWakeFromDozing.
                     if (isWakeAndDismiss(biometricUnlockState.mode)) {
-                       return@collect
+                        return@collect
                     }
 
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
@@ -187,7 +186,9 @@ constructor(
                             startTransitionTo(KeyguardState.PRIMARY_BOUNCER)
                         }
                     } else if (isKeyguardOccludedLegacy) {
-                        startTransitionTo(KeyguardState.OCCLUDED)
+                        if (!SceneContainerFlag.isEnabled) {
+                            startTransitionTo(KeyguardState.OCCLUDED)
+                        }
                     } else if (shouldTransitionToCommunal(isCommunalAvailable)) {
                         if (!SceneContainerFlag.isEnabled) {
                             transitionToGlanceableHub()

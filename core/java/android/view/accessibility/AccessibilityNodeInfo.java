@@ -8109,7 +8109,7 @@ public class AccessibilityNodeInfo implements Parcelable {
          * @param attributeKey The attribute key.
          * @param value The attribute value.
          */
-        public void addAttribute(@NonNull String attributeKey, @NonNull String value) {
+        public void putAttribute(@NonNull String attributeKey, @NonNull String value) {
             getAttributesBundle().putString(attributeKey, value);
         }
 
@@ -8172,7 +8172,7 @@ public class AccessibilityNodeInfo implements Parcelable {
      * the denominator.
      * <p>
      * To add math information to a node, create an instance of {@link MathInfo}, set its attributes
-     * using {@link #addAttribute(String, String)}, and then call {@link
+     * using {@link #putAttribute(String, String)}, and then call {@link
      * #setStructuredDataInfo(StructuredDataInfo)} on the {@link AccessibilityNodeInfo}.
      */
     @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
@@ -8341,9 +8341,9 @@ public class AccessibilityNodeInfo implements Parcelable {
          * {@inheritDoc}
          */
         @Override
-        public void addAttribute(@MathAttribute @NonNull String attributeKey,
+        public void putAttribute(@MathAttribute @NonNull String attributeKey,
                 @NonNull String value) {
-            super.addAttribute(attributeKey, value);
+            super.putAttribute(attributeKey, value);
         }
 
         /**
@@ -8711,8 +8711,9 @@ public class AccessibilityNodeInfo implements Parcelable {
         void recycle() {}
 
         /**
-         * Returns the current color selected for primary text if the node has visible text, or 0
-         * otherwise.
+         * Returns the current color selected for primary text if the node has visible text. If the
+         * color has not been set or is unavailable, zero (equivalent to {@link Color#TRANSPARENT})
+         * will be returned.
          *
          * @see android.widget.TextView#getCurrentTextColor()
          */
@@ -8722,8 +8723,9 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
 
         /**
-         * Returns the current color selected to paint the hint text if the node has hint text, or 0
-         * otherwise.
+         * Returns the current color selected to paint the hint text if the node has hint text. If
+         * the color has not been set or is unavailable, zero (equivalent to {@link
+         * Color#TRANSPARENT}) will be returned.
          *
          * @see android.widget.TextView#getCurrentHintTextColor()
          */
@@ -8733,8 +8735,9 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
 
         /**
-         * Returns the current color selected to paint the link text if the node has link text, or 0
-         * otherwise.
+         * Returns the current color selected to paint the link text if the node has link text. If
+         * the color has not been set or is unavailable, zero (equivalent to {@link
+         * Color#TRANSPARENT}) will be returned.
          *
          * @see android.widget.TextView#getLinkTextColors()
          */
@@ -8745,7 +8748,8 @@ public class AccessibilityNodeInfo implements Parcelable {
 
         /**
          * Returns the background color of the node if it is a {@link
-         * android.graphics.drawable.ColorDrawable}, or 0 otherwise.
+         * android.graphics.drawable.ColorDrawable}. If the color has not been set or is
+         * unavailable, zero (equivalent to {@link Color#TRANSPARENT}) will be returned.
          *
          * @see android.view.View#getBackground()
          */
@@ -8764,9 +8768,6 @@ public class AccessibilityNodeInfo implements Parcelable {
             return mAlpha;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
         public int describeContents() {
@@ -8788,7 +8789,6 @@ public class AccessibilityNodeInfo implements Parcelable {
             if (isBitSet(nonDefaultFields, fieldIndex++)) mAlpha = parcel.readFloat();
         }
 
-        /** {@inheritDoc} */
         @Override
         @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
         public void writeToParcel(@NonNull Parcel parcel, int flags) {

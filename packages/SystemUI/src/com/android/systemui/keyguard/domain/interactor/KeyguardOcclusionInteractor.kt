@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -158,26 +159,14 @@ constructor(
         repository.setShowWhenLockedActivityInfo(showWhenLockedActivityOnTop, taskInfo)
     }
 
-    private val isAsleep: StateFlow<Boolean> =
-        combine(
-                transitionInteractor.startedKeyguardTransitionStep.map { it.to },
-                sceneInteractor.get().currentScene,
-            ) { startedKeyguardTransitionTo, currentScene ->
-                // We use the KeyguardState and Scene to determine whether the device is asleep
-                // instead of using PowerInteractor#isAsleep to avoid unnecessary updates to the
-                // asleep state that get sent when outer/inner displays go to sleep and wake up
-                // after fold and unfold events on foldables.
-                KeyguardState.deviceIsAsleepInState(startedKeyguardTransitionTo, currentScene)
-            }
-            .stateIn(
-                scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
-            )
-
-    /** Has the device been entered (Gone state) or on AOD? */
+    /** Has the device been entered (Gone state) or asleep? */
     private val isGoneOrAsleep: StateFlow<Boolean> =
-        anyOf(isAsleep, deviceEntryInteractor.isDeviceEntered)
+        anyOf(
+                powerInteractor.isAsleep.onStart {
+                    emit(powerInteractor.detailedWakefulness.value.isAsleep())
+                },
+                deviceEntryInteractor.isDeviceEntered,
+            )
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
@@ -186,7 +175,7 @@ constructor(
 
     /**
      * Whether the keyguard is in an occluded state: when "show when locked" activity is present.
-     * AOD should always take precedence.
+     * Asleep should always take precedence.
      */
     val isKeyguardOccluded: StateFlow<Boolean> =
         combine(isShowWhenLockedActivityOnTop, isGoneOrAsleep) {

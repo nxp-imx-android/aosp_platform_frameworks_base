@@ -82,6 +82,18 @@ public class LightsService extends SystemService {
     private final class LightsManagerBinderService extends ILightsManager.Stub
           implements IBinder.DeathRecipient {
 
+        private final LightsManagerBinderService.Session.EventListener mSessionListener =
+                new Session.EventListener() {
+                    @Override
+                    public void onEffectPlaybackComplete(Session session) {
+                        synchronized (LightsService.this) {
+                            session.transitionToNextEffect();
+
+                            computeAndApplyLightConfigurationsLocked();
+                        }
+                    }
+                };
+
         @GuardedBy("LightsService.this")
         private final List<Session> mSessions = new ArrayList<>();
 
@@ -216,10 +228,7 @@ public class LightsService extends SystemService {
             }
         }
 
-        @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
-        @Override
         public void setEnabledState(boolean enabled) {
-            setEnabledState_enforcePermission();
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
@@ -232,7 +241,7 @@ public class LightsService extends SystemService {
                 Preconditions.checkState(getSessionLocked(token) == null, "already registered");
                 try {
                     token.linkToDeath(LightsManagerBinderService.this, 0);
-                    mSessions.add(new Session(token, priority));
+                    mSessions.add(new Session(token, priority, mSessionListener, mH));
                     Collections.sort(mSessions);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Couldn't open session, client already died" , e);
@@ -449,18 +458,26 @@ public class LightsService extends SystemService {
             };
         }
 
-        private final class Session implements Comparable<Session> {
+        final class Session implements Comparable<Session> {
+            public interface EventListener {
+                void onEffectPlaybackComplete(Session session);
+            }
+
             private static final int MAX_EFFECT_QUEUE_SIZE = 10;
 
             final IBinder mToken;
             final SparseArray<LightConfiguration> mConfigurations = new SparseArray<>();
             final Deque<MultiLightEffect> mEffects = new ArrayDeque<>(MAX_EFFECT_QUEUE_SIZE);
+            final EventListener mListener;
+            final Handler mHandler;
 
             final int mPriority;
 
-            Session(IBinder token, int priority) {
+            Session(IBinder token, int priority, EventListener listener, Handler handler) {
                 mToken = token;
                 mPriority = priority;
+                mListener = listener;
+                mHandler = handler;
             }
 
             void setRequest(int lightId, LightState state) {
@@ -468,7 +485,7 @@ public class LightsService extends SystemService {
                 // If the light was part of an effect, clear the effect first.
                 if (previousConfig != null && previousConfig.isDynamic()) {
                     clearEffectConfiguration(mEffects.getFirst());
-                    mEffects.clear();
+                    clearEffectQueue();
                 }
 
                 if (state != null) {
@@ -483,14 +500,25 @@ public class LightsService extends SystemService {
                     throw new IllegalStateException("Too many effects queued.");
                 }
 
-                if (effect.isPreemptive()) {
-                    mEffects.clear();
+                if (effect.isPreemptive() && !mEffects.isEmpty()) {
+                    clearEffectConfiguration(mEffects.getFirst());
+                    clearEffectQueue();
                 }
                 mEffects.add(effect);
 
-                // If the effect should start playback immediatelly, update the internal state.
+                // If the effect should start playback immediately, update the internal state.
                 if (mEffects.size() == 1) {
                     applyEffectConfiguration(mEffects.getFirst());
+                }
+            }
+
+            void transitionToNextEffect() {
+                // Remove the effect that just ended playback and clear the state.
+                clearEffectConfiguration(mEffects.pop());
+
+                MultiLightEffect nextEffect = mEffects.peek();
+                if (nextEffect != null) {
+                    applyEffectConfiguration(nextEffect);
                 }
             }
 
@@ -499,6 +527,21 @@ public class LightsService extends SystemService {
                 for (int lightId : effect.getLights()) {
                     mConfigurations.put(lightId, newConfig);
                 }
+
+                // If the effect is not infinite, schedule the transition.
+                if (effect.getIterations() > 0) {
+                    mHandler.postDelayed(
+                            () -> {
+                                mListener.onEffectPlaybackComplete(this);
+                            },
+                            /* token= */this,
+                            effect.getTotalDurationMillis());
+                }
+            }
+
+            private void clearEffectQueue() {
+                mHandler.removeCallbacksAndMessages(Session.this);
+                mEffects.clear();
             }
 
             private void clearEffectConfiguration(MultiLightEffect effect) {

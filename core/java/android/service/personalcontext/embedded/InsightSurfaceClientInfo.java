@@ -170,7 +170,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
-     * Sends the given {@link SurfaceControlViewHost.SurfacePackage} to the client.
+     * The given {@link SurfaceControlViewHost.SurfacePackage} has been created.
      *
      * @param surfacePackage the created {@link SurfaceControlViewHost.SurfacePackage}
      */
@@ -178,7 +178,21 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         try {
             mCallback.onSurfaceCreated(surfacePackage);
         } catch (RemoteException e) {
-            Log.e(TAG, "Error sending SurfaceView to client", e);
+            Log.e(TAG, "Error creating SurfacePackage", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * The given {@link SurfaceControlViewHost.SurfacePackage} has been released.
+     *
+     * @param surfacePackage the released {@link SurfaceControlViewHost.SurfacePackage}
+     */
+    public void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+        try {
+            mCallback.onSurfaceReleased(surfacePackage);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error releasing SurfacePackage", e);
             throw e.rethrowFromSystemServer();
         }
     }

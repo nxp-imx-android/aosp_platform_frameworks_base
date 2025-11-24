@@ -41,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon as MaterialIcon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformSlider
 import com.android.compose.PlatformSliderColors
 import com.android.systemui.Flags
+import com.android.systemui.common.shared.colors.SystemUISliderColors
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -103,7 +105,8 @@ fun VolumeSlider(
     onValueChangeFinished: (() -> Unit)? = null,
     button: (@Composable RowScope.() -> Unit)? = null,
     showLabel: Boolean = true,
-    dimensions: VolumeSliderDimensions = VolumeSliderDimensions.Defaults
+    dimensions: VolumeSliderDimensions = VolumeSliderDimensions.Defaults,
+    materialSliderColors: SliderColors = SystemUISliderColors.Defaults,
 ) {
     if (!Flags.volumeRedesign()) {
         LegacyVolumeSlider(
@@ -129,23 +132,12 @@ fun VolumeSlider(
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensions.verticalPadding),
+            modifier = Modifier.fillMaxWidth().padding(vertical = dimensions.verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val materialSliderColors =
-                SliderDefaults.colors(
-                    activeTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    disabledActiveTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                )
             if (state is SliderState.Empty) {
                 // reserve the space for the slider to avoid excess resizing
-                Spacer(modifier = Modifier
-                    .weight(1f)
-                    .height(dimensions.thumbHeight))
+                Spacer(modifier = Modifier.weight(1f).height(dimensions.thumbHeight))
             } else {
                 Slider(
                     value = state.value,
@@ -228,10 +220,8 @@ fun VolumeSlider(
                                 orientation = Orientation.Horizontal,
                             )
                         } ?: Haptics.Disabled,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(dimensions.thumbHeight)
-                        .sysuiResTag(state.label),
+                    modifier =
+                        Modifier.weight(1f).height(dimensions.thumbHeight).sysuiResTag(state.label),
                 )
             }
             button?.invoke(this)
@@ -449,14 +439,28 @@ data class VolumeSliderDimensions(
     val thumbHeight: Dp,
     val thumbWidth: Dp,
     val trackHeight: Dp,
-    val verticalPadding: Dp
+    val verticalPadding: Dp,
 ) {
     companion object {
-        val Defaults = VolumeSliderDimensions(
-            thumbHeight = 52.dp,
-            thumbWidth = 4.dp,
-            trackHeight = 40.dp,
-            verticalPadding = 4.dp
-        )
+        val Defaults =
+            VolumeSliderDimensions(
+                thumbHeight = 52.dp,
+                thumbWidth = 4.dp,
+                trackHeight = 40.dp,
+                verticalPadding = 4.dp,
+            )
     }
+}
+
+object VolumeSliderColors {
+    val Defaults: SliderColors
+        @Composable
+        get() =
+            SliderDefaults.colors()
+                .copy(
+                    activeTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledActiveTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                )
 }

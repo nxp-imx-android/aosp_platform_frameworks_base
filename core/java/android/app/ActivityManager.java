@@ -6322,7 +6322,7 @@ public class ActivityManager {
      * </p>
      *
      * @param pids The list of the pids to be killed
-     * @pram reason The reason of the kill
+     * @param reason The reason of the kill
      *
      * @hide
      */
@@ -6524,6 +6524,8 @@ public class ActivityManager {
          * <ul>
          * <li>{@link SecurityException} if the requester doesn't hold the permission required to
          * use this method;</li>
+         * <li>{@link SecurityException} if this task cannot be placed as requested due to violation
+         * of the Background Activity Launch (BAL) policy;</li>
          * <li>{@link IllegalStateException} if the task is not in a state that allows it to
          * change its {@link TaskLocation} programmatically at runtime of the request;</li>
          * <li>{@link SecurityException} if this task cannot be placed on the target display

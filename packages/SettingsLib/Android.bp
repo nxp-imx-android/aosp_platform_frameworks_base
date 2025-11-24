@@ -47,6 +47,7 @@ android_library {
         "SettingsLibIllustrationPreference",
         "SettingsLibIntroPreference",
         "SettingsLibLayoutPreference",
+        "SettingsLibListDialogSwitcherPreference",
         "SettingsLibMainSwitchPreference",
         "SettingsLibMenuPreference",
         "SettingsLibMetadata",

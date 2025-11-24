@@ -87,6 +87,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_DREAM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IMMERSIVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_LOCKTASK;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.server.am.ActivityManagerService.STOCK_PM_FLAGS;
 import static com.android.server.am.ActivityManagerServiceDumpActivitiesProto.ROOT_WINDOW_CONTAINER;
@@ -110,6 +111,7 @@ import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_FIRST_O
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_LAST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_FIRST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_LAST_ORDERED_ID;
+import static com.android.server.wm.ActivityRecord.STOP_TIMEOUT;
 import static com.android.server.wm.ActivityRecord.State.DESTROYED;
 import static com.android.server.wm.ActivityRecord.State.DESTROYING;
 import static com.android.server.wm.ActivityRecord.State.FINISHING;
@@ -156,6 +158,7 @@ import android.app.AlertDialog;
 import android.app.AnrController;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
+import android.app.ApplicationExitInfo;
 import android.app.Dialog;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
@@ -437,6 +440,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     final ProcessMap<WindowProcessController> mProcessNames = new ProcessMap<>();
     /** All processes we currently have running mapped by pid and uid */
     final WindowProcessControllerMap mProcessMap = new WindowProcessControllerMap();
+    /** All processes that are going through stop activities for a package */
+    private final Map<String, ArraySet<Integer>> mPkgToStoppingProcessMap = new ArrayMap<>();
     /** This is the process holding what we currently consider to be the "home" activity. */
     volatile WindowProcessController mHomeProcess;
     /** The currently running heavy-weight process, if any. */
@@ -1381,7 +1386,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             // effectively saying that app switches are allowed at this point.
             final Task topFocusedRootTask = getTopDisplayFocusedRootTask();
             if (topFocusedRootTask != null && topFocusedRootTask.getTopResumedActivity() != null
-                    && topFocusedRootTask.getTopResumedActivity().info.applicationInfo.uid
+                    && topFocusedRootTask.getTopResumedActivity().getUid()
                     == Binder.getCallingUid()) {
                 mAppSwitchesState = APP_SWITCH_ALLOW;
             }
@@ -3265,9 +3270,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 }
                 final ActivityInfo ainfo = AppGlobals.getPackageManager().getActivityInfo(comp,
                         STOCK_PM_FLAGS, UserHandle.getUserId(callingUid));
-                if (ainfo == null || ainfo.applicationInfo.uid != callingUid) {
+                if (ainfo == null || ainfo.getUid() != callingUid) {
                     Slog.e(TAG, "Can't add task for another application: target uid="
-                            + (ainfo == null ? Process.INVALID_UID : ainfo.applicationInfo.uid)
+                            + (ainfo == null ? Process.INVALID_UID : ainfo.getUid())
                             + ", calling uid=" + callingUid);
                     return INVALID_TASK_ID;
                 }
@@ -3828,6 +3833,11 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return mRecentTasks.isCallerRecents(callingUid);
     }
 
+    @VisibleForTesting
+    boolean isCallerSystem(int callingUid) {
+        return UserHandle.getAppId(callingUid) == SYSTEM_UID;
+    }
+
     boolean isGetTasksAllowed(String caller, int callingPid, int callingUid) {
         if (isCallerRecents(callingUid)) {
             // Always allow the recents component to get tasks
@@ -4219,7 +4229,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     voiceInteractor);
             final long token = Binder.clearCallingIdentity();
             try {
-                startRunningVoiceLocked(voiceSession, activityToCallback.info.applicationInfo.uid);
+                startRunningVoiceLocked(voiceSession, activityToCallback.getUid());
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
@@ -4654,15 +4664,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 return null;
             }
             // Try to load snapshot from cache first, and add reference if the snapshot is in cache.
-            final TaskSnapshot snapshot;
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(isLowResolution);
-                snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                        taskId, retrieveFlag, usage);
-            } else {
-                snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(taskId,
-                        isLowResolution, usage);
-            }
+            final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(isLowResolution);
+            final TaskSnapshot snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
+                    taskId, retrieveFlag, usage);
             if (snapshot != null) {
                 return snapshot;
             }
@@ -4685,16 +4689,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     Slog.w(TAG, "getTaskSnapshot: taskId=" + taskId + " not found");
                     return null;
                 }
-                final TaskSnapshot snapshot;
-                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                    final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(
-                            isLowResolution);
-                    snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                                    taskId, retrieveFlag, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                } else {
-                    snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                            taskId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                }
+                final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(
+                        isLowResolution);
+                final TaskSnapshot snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
+                        taskId, retrieveFlag, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                 if (snapshot != null) {
                     return snapshot;
                 }
@@ -5809,7 +5807,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         // TODO: Probably not, because we don't want to resume voice on switching
         // back to this activity
         if (task.voiceInteractor != null) {
-            startRunningVoiceLocked(task.voiceSession, r.info.applicationInfo.uid);
+            startRunningVoiceLocked(task.voiceSession, r.getUid());
         } else {
             finishRunningVoiceLocked();
 
@@ -5957,7 +5955,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // Exclude recents that should be bound-foreground-service state.
                 && !mRecentTasks.isRecentsComponent(
                         stoppedActivity.mActivityComponent,
-                        stoppedActivity.info.applicationInfo.uid)) {
+                        stoppedActivity.getUid())) {
             final WindowProcessController previousProcess = stoppedActivity.app;
             mPreviousProcess = previousProcess;
             mPreviousProcessVisibleTime = stoppedActivity.lastVisibleTime;
@@ -5992,7 +5990,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mStartingProcessActivities.sort(null /* by WindowContainer#compareTo */);
             }
         } else if (mProcessNames.get(
-                activity.processName, activity.info.applicationInfo.uid) != null) {
+                activity.processName, activity.getUid()) != null) {
             // The process is already starting. Wait for it to attach.
             return;
         }
@@ -6005,11 +6003,37 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             // ATMS lock held.
             final Message m = PooledLambda.obtainMessage(ActivityManagerInternal::startProcess,
                     mAmInternal, activity.processName, activity.info.applicationInfo, knownToBeDead,
-                    isTop, hostingType, activity.intent.getComponent());
+                    isTop, hostingType, activity.intent.getComponent(),
+                    activity.info.shouldRunInPccSandbox());
             mH.sendMessage(m);
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
+    }
+
+    void onProcessReadyToBeKilled(String packageName, WindowProcessController wpc) {
+        synchronized (mGlobalLock) {
+            // Hold the lock while editing this map.
+            final ArraySet<Integer> processes = mPkgToStoppingProcessMap.get(packageName);
+            if (processes == null) {
+                ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                        "Tried to remove process for untracked package: %s", packageName);
+                return;
+            }
+            processes.remove(wpc.getPid());
+            if (processes.isEmpty()) {
+                mPkgToStoppingProcessMap.remove(packageName);
+            }
+            // Kill app outside of the lock
+            killApplicationAsync(packageName, wpc, "killDueToPackageUpdate");
+        }
+    }
+
+    private void killApplicationAsync(String packageName, WindowProcessController wpc,
+            String reason) {
+        mH.post(() -> mAmInternal.killApplicationSync(packageName, UserHandle.getAppId(wpc.mUid),
+                wpc.mUserId,
+                reason, ApplicationExitInfo.REASON_PACKAGE_UPDATED));
     }
 
     void setBooting(boolean booting) {
@@ -7057,7 +7081,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                             new ArrayList<>(mStartingProcessActivities);
                     for (int i = activities.size() - 1; i >= 0; i--) {
                         final ActivityRecord r = activities.get(i);
-                        if (uid == r.info.applicationInfo.uid && name.equals(r.processName)) {
+                        if (uid == r.getUid() && name.equals(r.processName)) {
                             Slog.w(TAG, proc + " is removed with pending start " + r);
                             mStartingProcessActivities.remove(r);
                             // If visible, finish it to avoid getting stuck on screen.
@@ -7528,6 +7552,77 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
+        public void stopAndKillAppForUpdate(String packageName, @UserIdInt int userId, int appId) {
+            if (!com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+                ProtoLog.e(WM_DEBUG_PACKAGE_UPDATE,
+                        "Cannot use stopAndKillApp when enableAppRestartAfterUpdate flag is "
+                                + "disabled");
+                return;
+            }
+            if (packageName == null) {
+                return;
+            }
+
+            // Make sure the uid is valid.
+            if (appId < 0) {
+                ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE, "Invalid appid specified for pkg : %s",
+                        packageName);
+                return;
+            }
+
+            // Only the system server can initiate stop and kill.
+            int callingUid = Binder.getCallingUid();
+            if (!isCallerSystem(callingUid)) {
+                ProtoLog.e(WM_DEBUG_PACKAGE_UPDATE,
+                        "Only the system server can initiate stop and kill");
+                return;
+            }
+            synchronized (mGlobalLock) {
+                final SparseArray<WindowProcessController> pidMap = mProcessMap.getPidMap();
+                final ArraySet<Integer> processesToWait = new ArraySet<>();
+                for (int i = 0; i < pidMap.size(); i++) {
+                    final int pid = pidMap.keyAt(i);
+                    final WindowProcessController proc = pidMap.get(pid);
+                    if (proc.containsPackage(packageName) && proc.hasActivities()) {
+                        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE,
+                                "Found process %d belonging to package: %s", pid, packageName);
+                        processesToWait.add(pid);
+                    }
+                }
+
+                // No process with activities for this package, let's log
+                if (processesToWait.isEmpty()) {
+                    ProtoLog.e(WM_DEBUG_PACKAGE_UPDATE,
+                            "Package %s no process with activities in it.", packageName);
+                } else {
+                    mPkgToStoppingProcessMap.put(packageName, processesToWait);
+                    for (int i = 0; i < processesToWait.size(); i++) {
+                        final WindowProcessController proc = pidMap.get(processesToWait.valueAt(i));
+                        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE,
+                                "Going ahead with stop and kill for %s", packageName);
+                        proc.stopAndKillProcessForUpdate(packageName);
+                    }
+                    mH.postDelayed(() -> {
+                        synchronized (mGlobalLock) {
+                            // If we have already killed the app before, package will be removed so
+                            // no need to trigger a kill again.
+                            if (mPkgToStoppingProcessMap.get(packageName) == null) {
+                                return;
+                            } else {
+                                mPkgToStoppingProcessMap.remove(packageName);
+                            }
+                        }
+                        mAmInternal.killApplicationSync(packageName, appId,
+                                userId,
+                                "stopPackageTimeout",
+                                ApplicationExitInfo.REASON_PACKAGE_UPDATED);
+                    }, STOP_TIMEOUT);
+                }
+            }
+
+        }
+
+        @Override
         public void resumeTopActivities(boolean scheduleIdle) {
             synchronized (mGlobalLock) {
                 mRootWindowContainer.resumeFocusedTasksTopActivities();
@@ -7546,7 +7641,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // Let the application initialize with consistent configuration as its activity.
                 for (int i = mStartingProcessActivities.size() - 1; i >= 0; i--) {
                     final ActivityRecord r = mStartingProcessActivities.get(i);
-                    if (wpc.mUid == r.info.applicationInfo.uid && wpc.mName.equals(r.processName)) {
+                    if (wpc.mUid == r.getUid() && wpc.mName.equals(r.processName)) {
                         wpc.registerActivityConfigurationListener(r);
                         break;
                     }

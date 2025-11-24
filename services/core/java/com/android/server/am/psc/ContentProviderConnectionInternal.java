@@ -16,9 +16,6 @@
 
 package com.android.server.am.psc;
 
-import com.android.server.am.OomAdjuster;
-import com.android.server.am.OomAdjusterImpl;
-
 /**
  * An interface encapsulating common internal properties for a link between a content provider and
  * client.

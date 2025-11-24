@@ -13492,12 +13492,21 @@ public class Intent implements Parcelable, Cloneable {
                             new ClipData.Item(text, htmlText, null, stream));
                     setClipData(clipData);
                     if (stream != null && isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                        String errorMessage =
+                                "Implicit URI grant for " + ACTION_SEND + " action will be "
+                                        + "discontinued from Android 18 onwards. Please set the "
+                                        + "grant explicitly in the app.";
+                        if (android.security.Flags.strictModeViolationForImplicitUriGrantsEnabled()
+                                && StrictMode.vmImplicitUriPermissionGrantEnabled()) {
+                            StrictMode.onImplicitUriPermissionGrant(errorMessage);
+                        }
                         int grantType;
                         if (android.security.Flags.implicitUriGrantsRestrictedForSendAction()) {
                             Log.e(TAG, "Skipping implicit URI grants for " + ACTION_SEND
-                                    + " action because it is restricted");
+                                    + " action because it is restricted", new Throwable());
                             grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
                         } else {
+                            Log.e(TAG, errorMessage, new Throwable());
                             addFlags(FLAG_GRANT_READ_URI_PERMISSION);
                             grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
                         }
@@ -13547,13 +13556,22 @@ public class Intent implements Parcelable, Cloneable {
 
                     setClipData(clipData);
                     if (streams != null && isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                        String errorMessage = "Implicit URI grant for " + ACTION_SEND_MULTIPLE
+                                + " action will be discontinued from Android 18 onwards. Please"
+                                + " set the grant explicitly in the app.";
+                        if (android.security.Flags.strictModeViolationForImplicitUriGrantsEnabled()
+                                && StrictMode.vmImplicitUriPermissionGrantEnabled()) {
+                            StrictMode.onImplicitUriPermissionGrant(errorMessage);
+                        }
                         int grantType;
                         if (android.security.Flags
                                 .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
                             Log.e(TAG, "Skipping implicit URI grants for "
-                                    + ACTION_SEND_MULTIPLE + " action because it is restricted");
+                                    + ACTION_SEND_MULTIPLE + " action because it is restricted",
+                                    new Throwable());
                             grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
                         } else {
+                            Log.e(TAG, errorMessage, new Throwable());
                             addFlags(FLAG_GRANT_READ_URI_PERMISSION);
                             grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
                         }
@@ -13583,14 +13601,22 @@ public class Intent implements Parcelable, Cloneable {
                 setClipData(ClipData.newRawUri("", output));
 
                 if (isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                    String errorMessage = "Implicit URI read grant for ImageCapture action will be "
+                                    + "discontinued from Android 18 onwards. Please set the grant"
+                                    + " explicitly in the app.";
+                    if (android.security.Flags.strictModeViolationForImplicitUriGrantsEnabled()
+                            && StrictMode.vmImplicitUriPermissionGrantEnabled()) {
+                        StrictMode.onImplicitUriPermissionGrant(errorMessage);
+                    }
                     int grantType;
                     if (android.security.Flags
                             .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
                         Log.e(TAG,
                                 "Skipping implicit URI read grants for ImageCapture action "
-                                        + "because it is restricted");
+                                        + "because it is restricted", new Throwable());
                         grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
                     } else {
+                        Log.e(TAG, errorMessage, new Throwable());
                         addFlags(FLAG_GRANT_READ_URI_PERMISSION);
                         grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
                     }
@@ -13601,14 +13627,23 @@ public class Intent implements Parcelable, Cloneable {
                             IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__IMAGE_CAPTURE);
                 }
                 if (isMissingGrantFlag(FLAG_GRANT_WRITE_URI_PERMISSION)) {
+                    String errorMessage =
+                            "Implicit URI write grant for ImageCapture action will be "
+                                    + "discontinued from Android 18 onwards. Please set the grant"
+                                    + " explicitly in the app.";
+                    if (android.security.Flags.strictModeViolationForImplicitUriGrantsEnabled()
+                            && StrictMode.vmImplicitUriPermissionGrantEnabled()) {
+                        StrictMode.onImplicitUriPermissionGrant(errorMessage);
+                    }
                     int grantType;
                     if (android.security.Flags
                             .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
                         Log.e(TAG,
                                 "Skipping implicit URI write grants for ImageCapture action "
-                                        + "because it is restricted");
+                                        + "because it is restricted", new Throwable());
                         grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
                     } else {
+                        Log.e(TAG, errorMessage, new Throwable());
                         addFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
                         grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
                     }

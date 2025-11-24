@@ -61,6 +61,8 @@ public enum ScreenshotEvent implements UiEventLogger.UiEventEnum {
     SCREENSHOT_SMART_ACTION_TAPPED(374),
     @UiEvent(doc = "screenshot scroll tapped")
     SCREENSHOT_SCROLL_TAPPED(373),
+    @UiEvent(doc = "screenshot copy tapped")
+    SCREENSHOT_COPY_TAPPED(2519),
     @UiEvent(doc = "screenshot interaction timed out")
     SCREENSHOT_INTERACTION_TIMEOUT(310),
     @UiEvent(doc = "screenshot explicitly dismissed")

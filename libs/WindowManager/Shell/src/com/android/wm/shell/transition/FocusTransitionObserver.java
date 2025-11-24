@@ -245,7 +245,8 @@ public class FocusTransitionObserver {
         }
     }
 
-    private boolean isFocusedOnDisplay(@NonNull RunningTaskInfo task) {
+    /** Returns if the given RunningTaskInfo is focused */
+    public boolean isFocusedOnDisplay(@NonNull RunningTaskInfo task) {
         if (!ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
             return task.isFocused;
         }

@@ -146,6 +146,23 @@ class DragZoneFactoryTest {
     }
 
     @Test
+    fun dragZonesForBubble_foldable_portrait_splitUnsupported() {
+        splitScreenMode = SplitScreenMode.UNSUPPORTED
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldablePortrait)
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
+        val expectedZones: List<DragZoneVerifier> =
+            listOf(
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+                verifyInstance<DragZone.FullScreen>(),
+            )
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+    }
+
+    @Test
     fun dragZonesForBubble_foldable_landscape() {
         dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
@@ -201,6 +218,29 @@ class DragZoneFactoryTest {
                 verifyInstance<DragZone.DesktopWindow>(),
                 verifyInstance<DragZone.Split.Left>(),
                 verifyInstance<DragZone.Split.Right>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+            )
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP)
+        }
+    }
+
+    @Test
+    fun dragZonesForExpandedView_tablet_landscape_splitUnsupported() {
+        splitScreenMode = SplitScreenMode.UNSUPPORTED
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletLandscape)
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+            )
+        val expectedZones: List<DragZoneVerifier> =
+            listOf(
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.DesktopWindow>(),
                 verifyInstance<DragZone.Bubble.Left>(),
                 verifyInstance<DragZone.Bubble.Right>(),
             )

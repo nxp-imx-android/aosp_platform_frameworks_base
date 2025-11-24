@@ -679,7 +679,7 @@ applications that come with the platform
         <!-- Permission required for CTS test - CtsProviderUiTestCases -->
         <permission name="android.permission.MANAGE_DOCUMENTS"/>
         <!-- Permission required for CTS test - StatusBarManagerTest -->
-        <permission name="android.permission.SHOW_POWER_MENU" />
+        <permission name="android.permission.SHOW_POWER_MENU_PRIVILEGED" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
@@ -752,5 +752,6 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.crossdevicesync">
         <permission name="android.permission.INTERACT_ACROSS_USERS" />
+        <permission name="android.permission.MANAGE_USERS" />
     </privapp-permissions>
 </permissions>

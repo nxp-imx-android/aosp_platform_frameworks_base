@@ -24,6 +24,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.util.DisplayMetrics
 import android.view.Display
+import android.window.TransitionRequestInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -34,13 +35,14 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.any
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.`when` as whenever
-import org.mockito.MockitoAnnotations
 
 /**
  * Unit tests against [PinnedLayerPresentationController]
@@ -63,7 +65,8 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
     @Before
     fun setUp() {
         // Default display setup: 1080x1920, density 2.0, insets top=100 bottom=50
-        // 10px padding for pinned window
+        // 10px padding for pinned window.
+        // The center of available display area (excl. insets) is (540, 910).
         val testableResources = mContext.getOrCreateTestableResources()
         testableResources.addOverride(R.dimen.pinned_window_init_padding, 10)
         displayMetrics = DisplayMetrics()
@@ -75,8 +78,11 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
         whenever(displayLayout.width()).thenReturn(1080)
         whenever(displayLayout.height()).thenReturn(1920)
         whenever(displayLayout.stableInsets()).thenReturn(Rect(0, 100, 0, 50))
-        whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt()))
-            .thenReturn(true)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer {
+            val outRect = it.getArgument<Rect>(0)
+            outRect.set(0, 100, 1080, 1870) // incl. insets
+        }
+        whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt())).thenReturn(true)
 
         controller = PinnedLayerPresentationController(context, displayController, desktopState)
     }
@@ -196,18 +202,20 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
 
     @Test
     fun isTaskSupportedForPinning_supported() {
-        val task = TestRunningTaskInfoBuilder()
-            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
-            .build()
+        val task =
+            TestRunningTaskInfoBuilder()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
+                .build()
 
         assertThat(controller.isTaskSupportedForPinning(task)).isTrue()
     }
 
     @Test
     fun isTaskSupportedForPinning_notFreeform_returnsFalse() {
-        val task = TestRunningTaskInfoBuilder()
-            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
-            .build()
+        val task =
+            TestRunningTaskInfoBuilder()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
+                .build()
 
         assertThat(controller.isTaskSupportedForPinning(task)).isFalse()
     }
@@ -215,17 +223,251 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
     @Test
     fun isTaskSupportedForPinning_desktopModeNotSupported_returnsFalse() {
         whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt())).thenReturn(false)
-        val task = TestRunningTaskInfoBuilder()
-            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
-            .build()
+        val task =
+            TestRunningTaskInfoBuilder()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
+                .build()
 
         assertThat(controller.isTaskSupportedForPinning(task)).isFalse()
     }
 
-    private fun createTaskInfo(bounds: Rect): TaskInfo {
+    @Test
+    fun calculateNewTaskBounds_resize_fromAllQuadrants() {
+        // Deliberately not using junit parameterized testing, for readability.
+        data class TestCase(
+            val name: String,
+            val initialBounds: Rect,
+            val requestedSize: Rect,
+            val expectedBounds: Rect,
+        )
+
+        val testCases =
+            listOf(
+                // Shrinking cases
+                TestCase(
+                    name = "shrink, top-left quadrant",
+                    // Shrink, closer edges (right, bottom) move.
+                    initialBounds = Rect(0, 100, 500, 700),
+                    requestedSize = Rect(0, 0, 450, 550),
+                    expectedBounds = Rect(0, 100, 450, 650),
+                ),
+                TestCase(
+                    name = "shrink, top-right quadrant",
+                    // Shrink, closer edges (left, bottom) move.
+                    initialBounds = Rect(580, 100, 1080, 700),
+                    requestedSize = Rect(0, 0, 450, 550),
+                    expectedBounds = Rect(630, 100, 1080, 650),
+                ),
+                TestCase(
+                    name = "shrink, bottom-left quadrant",
+                    // Shrink, closer edges (right, top) move.
+                    initialBounds = Rect(0, 1000, 500, 1600),
+                    requestedSize = Rect(0, 0, 450, 550),
+                    expectedBounds = Rect(0, 1050, 450, 1600),
+                ),
+                TestCase(
+                    name = "shrink, bottom-right quadrant",
+                    // Shrink, closer edges (left, top) move.
+                    initialBounds = Rect(580, 1000, 1080, 1600),
+                    requestedSize = Rect(0, 0, 450, 550),
+                    expectedBounds = Rect(630, 1050, 1080, 1600),
+                ),
+                // Expanding cases
+                TestCase(
+                    name = "expand, top-left quadrant",
+                    // Expand, farther edges (left, top) move.
+                    initialBounds = Rect(0, 100, 500, 700),
+                    requestedSize = Rect(0, 0, 600, 700),
+                    expectedBounds = Rect(0, 100, 600, 800),
+                ),
+                TestCase(
+                    name = "expand, top-right quadrant",
+                    // Expand, farther edges (right, top) move.
+                    initialBounds = Rect(580, 100, 1080, 700),
+                    requestedSize = Rect(0, 0, 600, 700),
+                    expectedBounds = Rect(480, 100, 1080, 800),
+                ),
+                TestCase(
+                    name = "expand, bottom-left quadrant",
+                    // Expand, farther edges (left, bottom) move.
+                    initialBounds = Rect(0, 1000, 500, 1600),
+                    requestedSize = Rect(0, 0, 600, 700),
+                    expectedBounds = Rect(0, 1000, 600, 1700),
+                ),
+                TestCase(
+                    name = "expand, bottom-right quadrant",
+                    // Expand, farther edges (right, bottom) move.
+                    initialBounds = Rect(580, 1000, 1080, 1600),
+                    requestedSize = Rect(0, 0, 600, 700),
+                    expectedBounds = Rect(480, 1000, 1080, 1700),
+                ),
+            )
+
+        testCases.forEachIndexed { i, testCase ->
+            val task = createTaskInfo(testCase.initialBounds, taskId = i)
+            val requestedLocation = requestLocation(testCase.requestedSize)
+
+            val newBounds = controller.calculateNewTaskBounds(task, requestedLocation)
+
+            assertWithMessage(testCase.name).that(newBounds).isEqualTo(testCase.expectedBounds)
+        }
+    }
+
+    @Test
+    fun calculateNewTaskBounds_resizeTooSmall_scalesUp() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800)) // 500x600
+        val requestedBounds = Rect(0, 0, 200, 300)
+        val requestedLocation = requestLocation(requestedBounds)
+
+        val newBounds = controller.calculateNewTaskBounds(task, requestedLocation)
+
+        // minSize is 440px. scale = max(440/200, 440/300) = 2.2 -> new size: 440x660.
+        // Width shrinks (closer edge, right, moves), height expands (farther edge, top, moves).
+        val expected = Rect(100, 140, 540, 800)
+        assertThat(newBounds).isEqualTo(expected)
+    }
+
+    @Test
+    fun calculateNewTaskBounds_resizeTooLarge_scalesDown() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800)) // 500x600
+        val requestedBounds = Rect(0, 0, 1000, 1500)
+        val requestedLocation = requestLocation(requestedBounds)
+
+        val newBounds = controller.calculateNewTaskBounds(task, requestedLocation)
+
+        // maxWidth=756, maxHeight=1344. scale=min(756/1000, 1344/1500) = 0.756 -> 756x1134.
+        // Width and height expand, so farther edges (left, top) move. Then ensureNotOffscreen.
+        val expected = Rect(0, 100, 756, 1234)
+        assertThat(newBounds).isEqualTo(expected)
+    }
+
+    @Test
+    fun calculateNewTaskBounds_resizeCausesOffscreen_movesOnscreen() {
+        data class TestCase(
+            val name: String,
+            val initialBounds: Rect,
+            val requestedSize: Rect,
+            val expectedBounds: Rect,
+        )
+        val testCases =
+            listOf(
+                TestCase(
+                    "resize wider, goes offscreen right",
+                    Rect(500, 200, 1000, 800),
+                    Rect(0, 0, 600, 600), // right edge would be 1100
+                    Rect(480, 200, 1080, 800), // 1080 - 0 (inset) = 1080
+                ),
+                TestCase(
+                    "resize taller, goes offscreen bottom",
+                    Rect(100, 1300, 600, 1800),
+                    Rect(0, 0, 500, 600), // bottom edge would be 1900
+                    Rect(100, 1270, 600, 1870), // 1920 - 50 (inset) = 1870
+                ),
+                TestCase(
+                    "resize wider, goes offscreen left",
+                    Rect(50, 200, 550, 800),
+                    Rect(0, 0, 600, 600), // left edge would be -50
+                    Rect(0, 200, 600, 800),
+                ),
+                TestCase(
+                    "resize taller, goes offscreen top",
+                    Rect(100, 150, 600, 750),
+                    Rect(0, 0, 500, 700), // top edge would be 50
+                    Rect(100, 100, 600, 800), // top inset = 100
+                ),
+            )
+
+        testCases.forEachIndexed { i, testCase ->
+            val task = createTaskInfo(testCase.initialBounds, taskId = i)
+            val requestedLocation = requestLocation(testCase.requestedSize)
+
+            val newBounds = controller.calculateNewTaskBounds(task, requestedLocation)
+
+            assertWithMessage(testCase.name).that(newBounds).isEqualTo(testCase.expectedBounds)
+        }
+    }
+
+    @Test
+    fun calculateNewTaskBounds_multipleResizes_maintainsOriginalBoundsForResize() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800)) // 500x600
+
+        // First resize
+        val requestedLocation1 = requestLocation(Rect(0, 0, 450, 550))
+        val newBounds1 = controller.calculateNewTaskBounds(task, requestedLocation1)!!
+        val expected1 = Rect(100, 200, 550, 750)
+        assertThat(newBounds1).isEqualTo(expected1)
+
+        // Create a new task info with the updated bounds for the second call
+        val taskAfterResize = createTaskInfo(newBounds1, taskId = task.taskId)
+
+        // Second resize. The resize should still be based on the original bounds.
+        val requestedLocation2 = requestLocation(Rect(0, 0, 650, 850))
+        val newBounds2 = controller.calculateNewTaskBounds(taskAfterResize, requestedLocation2)
+        val expected2 = Rect(0, 100, 650, 950)
+        assertThat(newBounds2).isEqualTo(expected2)
+    }
+
+    @Test
+    fun calculateNewTaskBounds_multipleResizes_resizesBackToOriginalSize() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800)) // 500x600
+
+        // First resize - expand offscreen
+        val requestedLocation1 = requestLocation(Rect(0, 0, 650, 800))
+        val newBounds1 = controller.calculateNewTaskBounds(task, requestedLocation1)!!
+        val expected1 = Rect(0, 100, 650, 900)
+        assertThat(newBounds1).isEqualTo(expected1)
+
+        // Create a new task info with the updated bounds for the second call
+        val taskAfterResize = createTaskInfo(newBounds1, taskId = task.taskId)
+
+        // Second resize. The resize should still be based on the original bounds.
+        val requestedLocation2 = requestLocation(Rect(0, 0, 500, 600))
+        val newBounds2 = controller.calculateNewTaskBounds(taskAfterResize, requestedLocation2)
+        val expected2 = Rect(100, 200, 600, 800)
+        assertThat(newBounds2).isEqualTo(expected2)
+    }
+
+    @Test
+    fun calculateNewTaskBounds_externalBoundsChange_resetsAnchor() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800))
+
+        // First resize
+        val requestedLocation1 = requestLocation(Rect(0, 0, 450, 550))
+        controller.calculateNewTaskBounds(task, requestedLocation1)
+
+        // Now, simulate an external change (e.g., user moved the window)
+        val externallyMovedBounds = Rect(300, 400, 750, 950) // 450x550
+        val taskAfterMove = createTaskInfo(externallyMovedBounds, taskId = task.taskId)
+
+        // Second resize. Should be based on the new position.
+        val requestedLocation2 = requestLocation(Rect(0, 0, 500, 700))
+        val newBounds = controller.calculateNewTaskBounds(taskAfterMove, requestedLocation2)
+
+        // Expanding, farther edges (left, top) should move; dx=50, dy=150
+        val expected = Rect(250, 250, 750, 950)
+        assertThat(newBounds).isEqualTo(expected)
+    }
+
+    @Test
+    fun calculateNewTaskBounds_differentDisplay_returnsCurrentBounds() {
+        val task = createTaskInfo(Rect(100, 200, 600, 800))
+        val requestedBounds = Rect(0, 0, 450, 550)
+        val requestedLocation =
+            requestLocation(requestedBounds, displayId = Display.DEFAULT_DISPLAY + 1)
+
+        val newBounds = controller.calculateNewTaskBounds(task, requestedLocation)
+
+        assertThat(newBounds).isEqualTo(task.configuration.windowConfiguration.bounds)
+    }
+
+    private fun createTaskInfo(bounds: Rect, taskId: Int = 44): TaskInfo {
         return TestRunningTaskInfoBuilder()
+            .setTaskId(taskId)
             .setDisplayId(Display.DEFAULT_DISPLAY)
             .setBounds(bounds)
             .build()
     }
+
+    private fun requestLocation(bounds: Rect, displayId: Int = Display.DEFAULT_DISPLAY) =
+        TransitionRequestInfo.RequestedLocation(displayId, bounds)
 }

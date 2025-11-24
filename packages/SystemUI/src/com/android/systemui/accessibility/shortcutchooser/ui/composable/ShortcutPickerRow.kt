@@ -54,7 +54,6 @@ private object Constants {
     const val ICON_SWITCH_SCALE = 40 / 52f
 }
 
-// TODO: https://issuetracker.google.com/454128374 - Refactor this when top row key dialog lands.
 @Composable
 fun ShortcutPickerRow(
     target: AccessibilityTargetModel,

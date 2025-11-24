@@ -30,7 +30,6 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CameraExtensionSession;
-import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
@@ -65,7 +64,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.IntArray;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -254,7 +252,7 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
 
         CaptureRequest sessionParams = null;
         if (Flags.vendorDefinedCameraExtensions()) {
-            sessionParams = config.getSessionParameters();
+            sessionParams = config.getSessionWideParams();
         }
         if (sessionParams == null) {
             sessionParams = cameraDevice.createCaptureRequest(
@@ -371,8 +369,12 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
             cameraOutput.setReadoutTimestampEnabled(false);
             cameraOutput.setPhysicalCameraId(output.physicalCameraId);
             boolean validDynamicRangeProfile = false;
+            long currentMax = DynamicRangeProfiles.PUBLIC_MAX;
+            if (Flags.newDynamicRangeProfiles()) {
+                currentMax = DynamicRangeProfiles.CURRENT_MAX;
+            }
             for (long profile = DynamicRangeProfiles.STANDARD;
-                    profile < DynamicRangeProfiles.PUBLIC_MAX; profile <<= 1) {
+                    profile < currentMax; profile <<= 1) {
                 if (output.dynamicRangeProfile == profile) {
                     validDynamicRangeProfile = true;
                     break;

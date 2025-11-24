@@ -18,9 +18,11 @@ package com.android.systemui.keyguard.domain.interactor
 
 import android.media.AudioManager
 import android.media.session.MediaSessionLegacyHelper
+import android.platform.test.annotations.EnableFlags
 import android.view.KeyEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.back.domain.interactor.BackActionInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
@@ -187,6 +189,15 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         whenever(statusBarStateController.state).thenReturn(StatusBarState.SHADE_LOCKED)
 
         verifyActionUpCollapsesTheShade(KeyEvent.KEYCODE_ENTER)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PRESS_ANY_KEY_TO_ACCESS_BOUNCER)
+    fun dispatchKeyEvent_enterActionUp_X() {
+        powerInteractor.setAwakeForTest()
+        whenever(statusBarStateController.state).thenReturn(StatusBarState.SHADE_LOCKED)
+
+        verifyActionUpCollapsesTheShade(KeyEvent.KEYCODE_X)
     }
 
     @Test

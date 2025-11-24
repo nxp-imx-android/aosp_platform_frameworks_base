@@ -198,6 +198,16 @@ flag {
 }
 
 flag {
+    name: "remove_set_wake_ready_immediately"
+    namespace: "windowing_frontend"
+    description: "Remove a potentially obsolete Transition.setReady() when waking up"
+    bug: "429140578"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "predictive_back_priority_system_navigation_observer"
     namespace: "systemui"
     description: "PRIORITY_SYSTEM_NAVIGATION_OBSERVER predictive back API extension"
@@ -290,21 +300,20 @@ flag {
 }
 
 flag {
+    name: "exit_split_on_display_move_bugfix"
+    namespace: "windowing_frontend"
+    description: "Exit split to remaining task when one task moves to another display"
+    bug: "460447267"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "aod_transition"
     namespace: "windowing_frontend"
     description: "Support to show lock wallpaper in aod state"
     bug: "361438779"
-}
-
-flag {
-    name: "reduce_task_snapshot_memory_usage"
-    namespace: "windowing_frontend"
-    description: "Reduce task snapshot memory usage in either heap and dmabuf."
-    bug: "238206323"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -316,7 +325,6 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
 
 flag {
     name: "enable_handlers_debugging_mode"
@@ -499,6 +507,16 @@ flag {
     namespace: "windowing_frontend"
     description: "Fix dim layer flickering during activity transition"
     bug: "456398458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "defer_snapshot_removal_for_predictive_back_with_ime"
+    namespace: "windowing_frontend"
+    description: "Prevents flicker by keeping the snapshot visible until the input method has drawn"
+    bug: "435285991"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

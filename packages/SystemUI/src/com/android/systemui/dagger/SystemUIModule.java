@@ -140,8 +140,6 @@ import com.android.systemui.statusbar.disableflags.dagger.DisableFlagsModule;
 import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingInteractorModule;
 import com.android.systemui.statusbar.events.StatusBarEventsModule;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
-import com.android.systemui.statusbar.featurepods.av.AvControlsChipModule;
-import com.android.systemui.statusbar.featurepods.dagger.StatusBarFeaturePodsModule;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.inflation.NotificationRowBinder;
@@ -166,6 +164,8 @@ import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionCont
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.dagger.SmartRepliesInflationModule;
 import com.android.systemui.statusbar.policy.dagger.StatusBarPolicyModule;
+import com.android.systemui.statusbar.quickactions.av.AvControlsChipModule;
+import com.android.systemui.statusbar.quickactions.dagger.StatusBarFeaturePodsModule;
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsModule;
 import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;

@@ -24,6 +24,7 @@ import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.Slog
 import android.util.SparseArray
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
@@ -247,6 +248,8 @@ class DesktopRepository(
 
     /** Creates a new merged region representative of all exclusion regions in all desktop tasks. */
     private fun calculateDesktopExclusionRegion(): Region {
+        // TODO: b/457129297 - Remove log once bug is fixed
+        logD("calculateDesktopExclusionRegion: desktopExclusionRegions=%s", desktopExclusionRegions)
         val desktopExclusionRegion = Region()
         desktopExclusionRegions.valueIterator().forEach { taskExclusionRegion ->
             desktopExclusionRegion.op(taskExclusionRegion, Region.Op.UNION)
@@ -1263,6 +1266,9 @@ class DesktopRepository(
             return
         }
         rememberedBoundsRatioByPackageName.remove(packageName)
+        // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
+        // needs to be updated.
+        updatePersistentRepository(DEFAULT_DISPLAY)
     }
 
     fun restoreRememberedBoundsRatioByPackageName(source: ArrayMap<String, RectF>) {
@@ -1280,13 +1286,6 @@ class DesktopRepository(
             if (displayId == INVALID_DISPLAY) return
 
             val desks = desktopData.desksSequence(displayId).map { it.deepCopy() }.toList()
-            if (desks.isEmpty()) {
-                logD(
-                    "updatePersistentRepository: no desks found for displayId=%d, skipping",
-                    displayId,
-                )
-                return
-            }
             if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
                 persistentUpdateQueue.post {
                     Trace.beginSection("DesktopRepository#UpdateRepoWork")
@@ -1390,6 +1389,12 @@ class DesktopRepository(
         dumpDesktopTaskData(pw, innerPrefix)
         pw.println("${innerPrefix}activeTasksListeners=${activeTasksListeners.size}")
         pw.println("${innerPrefix}visibleTasksListeners=${visibleTasksListeners.size}")
+        if (Flags.enableRememberedBounds()) {
+            pw.println("${innerPrefix}rememberedBoundsRatioByPackageName:")
+            rememberedBoundsRatioByPackageName.forEach { (packageName, bounds) ->
+                pw.println("$innerPrefix  $packageName -> $bounds")
+            }
+        }
     }
 
     private fun dumpDesktopTaskData(pw: PrintWriter, prefix: String) {

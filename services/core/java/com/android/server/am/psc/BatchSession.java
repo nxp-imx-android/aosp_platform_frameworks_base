@@ -17,7 +17,7 @@ package com.android.server.am.psc;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COUNT;
 
-import static com.android.server.am.OomAdjuster.oomAdjReasonToStringSuffix;
+import static com.android.server.am.psc.OomAdjuster.oomAdjReasonToStringSuffix;
 
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.os.Trace;
@@ -38,7 +38,7 @@ import java.util.Arrays;
 @RavenwoodKeepWholeClass
 public abstract class BatchSession implements AutoCloseable {
     private static final String TAG = "BatchSession";
-    public static final String[] BATCH_SESSION_TAGS = new String[OOM_ADJ_REASON_COUNT];
+    static final String[] BATCH_SESSION_TAGS = new String[OOM_ADJ_REASON_COUNT];
     static {
         Arrays.setAll(BATCH_SESSION_TAGS,
                 i -> "BatchSession:" + oomAdjReasonToStringSuffix(i));

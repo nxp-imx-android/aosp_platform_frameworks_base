@@ -10,16 +10,6 @@ flag {
 }
 
 flag {
-  name: "notify_keyguard_events"
-  namespace: "systemui"
-  description: "Send keyguard showing/hiding/going-away events to wallpaper as wallpaper commands (guarded by permission)"
-  bug: "395897130"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enable_wallpaper_transform_surface_control_command"
   namespace: "systemui"
   description: "Enables sending SurfaceControl to onCommand that could be used to transform the wallpaper"
@@ -34,4 +24,11 @@ flag {
   namespace: "lse_desktop_experience"
   description: "Enable wallpaper support in connected displays"
   bug: "366461618"
+}
+
+flag {
+  name: "enable_wallpaper_description_set_component"
+  namespace: "systemui"
+  description: "Expose setComponent method in WallpaperDescription"
+  bug: "448138290"
 }

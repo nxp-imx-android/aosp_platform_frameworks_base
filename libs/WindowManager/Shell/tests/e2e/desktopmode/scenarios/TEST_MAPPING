@@ -21,70 +21,14 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfLiveOverviewTaskTest",
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfStaticOverviewTaskTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopViaStaticDesktopOverviewTaskTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragExistingWindowsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarOverflowTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayProjectedTest",
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
       "keywords": [
         "device",
         "desktop"
@@ -99,6 +43,13 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-TabTearingInteractionDependantTest",
       "keywords": [
         "device",
         "desktop"
@@ -124,6 +75,13 @@
          "device",
          "desktop"
        ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-appcompat-RestartSizeCompatAppInDesktopMode",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
     },
     {
       "name": "FunctionalTestsDesktopMode-appcompat-ShowAppDialogInDesktopModeTest",
@@ -182,6 +140,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-ScaleDensityForExternalDisplayTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-SettingsToggleMirroringSwitchTest",
       "keywords": [
         "device",
@@ -196,6 +161,41 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-ClickAndFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-CloseAndKeepFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-DragAndKeepFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-MoveToNextDisplayAndFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-focus-OpenAndFocusTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowMultiWindowAndPipTest",
       "keywords": [
         "device",
@@ -204,48 +204,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowSingleWindowTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuExistingWindowsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithDragTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithDragTest",
       "keywords": [
         "device",
         "desktop"
@@ -354,35 +312,77 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopFromSplitScreenWithAppHandleMenuTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuExistingWindowsTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-DragAndKeepFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-MoveToNextDisplayAndFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragExistingWindowsTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragWindowsLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithAppHandleMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithDragTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromAllAppsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
       "keywords": [
         "device",
         "desktop"
@@ -582,6 +582,27 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfLiveOverviewTaskTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfStaticOverviewTaskTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaStaticDesktopOverviewTaskTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-overview-SwitchBetweenDesktopAndSplitScreenTest",
       "keywords": [
         "device",
@@ -598,63 +619,42 @@
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithCornerResizeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTest",
       "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest",
-      "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithButtonTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithDragTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithKeyboardTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },

@@ -44,8 +44,10 @@ public class ComputerControlInputConnectionTest extends InputMethodManagerServic
         startInputOrWindowGainedFocus();
 
         UserData data = mInputMethodManagerService.getUserData(mUserId);
-        assertEquals(mRemoteComputerControlInputConnection,
-                data.mComputerControlInputConnectionMap.get(CLIENT_DISPLAY_ID));
+        InputMethodManagerInternal.ComputerControlInputConnectionData ccData =
+                data.mComputerControlInputConnectionMap.get(CLIENT_DISPLAY_ID);
+        assertEquals(mRemoteComputerControlInputConnection, ccData.inputConnection());
+        assertEquals(mEditorInfo, ccData.editorInfo());
     }
 
     @Test

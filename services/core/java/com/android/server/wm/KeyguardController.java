@@ -202,7 +202,6 @@ class KeyguardController {
             updateDeferTransitionForAod(false /* waiting */);
         }
         if (!keyguardChanged && !aodChanged) {
-            setWakeTransitionReady();
             return;
         }
 
@@ -276,20 +275,25 @@ class KeyguardController {
         mRootWindowContainer.ensureActivitiesVisible();
         InputMethodManagerInternal.get().updateImeWindowStatus(false /* disableImeIcon */,
                 displayId);
-        setWakeTransitionReady();
+
+        boolean setReady = false;
         if (aodChanged) {
             // Ensure the new state takes effect.
             mWindowManager.mWindowPlacerLocked.performSurfacePlacement();
+            if (aodShowing) {
+                setReady = true;
+            }
         }
-        mService.mChainTracker.endPartial();
-    }
-
-    private void setWakeTransitionReady() {
-        if (mWindowManager.mAtmService.getTransitionController().getCollectingTransitionType()
-                == WindowManager.TRANSIT_WAKE) {
+        if (!Flags.removeSetWakeReadyImmediately()
+                && mWindowManager.mAtmService.getTransitionController()
+                        .getCollectingTransitionType() == WindowManager.TRANSIT_WAKE) {
+            setReady = true;
+        }
+        if (setReady) {
             mWindowManager.mAtmService.getTransitionController().setReady(
                     mRootWindowContainer.getDefaultDisplay());
         }
+        mService.mChainTracker.endPartial();
     }
 
     /**

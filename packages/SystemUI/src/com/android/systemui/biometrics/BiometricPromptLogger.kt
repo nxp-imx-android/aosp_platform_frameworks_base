@@ -92,6 +92,7 @@ class BiometricPromptLogger @Inject constructor() {
             hasCustomNegativeButtonText,
             promptInfo.fallbackOptions.size,
             promptInfo.isIdentityCheckActive,
+            promptInfo.isSystemCaller,
         )
     }
 

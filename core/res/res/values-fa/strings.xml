@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"به برنامه اجازه می‌دهد فایل‌های ویدیویی موجود در فضای ذخیره‌سازی هم‌رسانی‌شده را بخواند."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"خواندن فایل‌های تصویری موجود در فضای ذخیره‌سازی مشترک"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"به برنامه اجازه می‌دهد فایل‌های تصویری موجود در فضای ذخیره‌سازی مشترک را بخواند."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"خواندن فایل‌های تصویری و ویدیویی انتخابی کاربر از فضای ذخیره‌سازی مشترک"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"به برنامه جازه می‌دهد فایل‌های تصویری و ویدیویی‌ای را که از فضای ذخیره‌سازی مشترکتان انتخاب می‌کنید بخواند."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"تغییر یا حذف محتوای فضای ذخیره‌سازی مشترک"</string>
@@ -1660,7 +1664,7 @@
     <string name="date_picker_next_month_button" msgid="4858207337779144840">"ماه بعد"</string>
     <string name="keyboardview_keycode_alt" msgid="8997420058584292385">"Alt"</string>
     <string name="keyboardview_keycode_cancel" msgid="2134624484115716975">"لغو"</string>
-    <string name="keyboardview_keycode_delete" msgid="2661117313730098650">"Delete"</string>
+    <string name="keyboardview_keycode_delete" msgid="2661117313730098650">"حذف"</string>
     <string name="keyboardview_keycode_done" msgid="2524518019001653851">"تمام"</string>
     <string name="keyboardview_keycode_mode_change" msgid="2743735349997999020">"تغییر حالت"</string>
     <string name="keyboardview_keycode_shift" msgid="3026509237043975573">"Shift"</string>

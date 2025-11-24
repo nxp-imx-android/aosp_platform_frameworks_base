@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation.getContentAlpha
 import com.android.systemui.dump.DumpManager
@@ -112,13 +111,13 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val headsUpZ = px(R.dimen.heads_up_pinned_elevation)
     private val bigGap = notifSectionDividerGap
     private val smallGap = px(R.dimen.notification_section_divider_height_lockscreen)
+    private val groupingDisabledSectionGapHeight = px(R.dimen.grouping_disabled_section_gap_height)
 
     companion object {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(Flags.FLAG_NOTIFICATION_FIX_HUN_SHADOWS)
-                .andSceneContainer()
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
         }
     }
 
@@ -1247,6 +1246,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             stackScrollAlgorithm.getGapForLocation(
                 /* fractionToShade= */ 0f,
                 /* onKeyguard= */ true,
+                /* isGroupingDisabled= */ false,
             )
         assertThat(gap).isEqualTo(smallGap)
     }
@@ -1257,6 +1257,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             stackScrollAlgorithm.getGapForLocation(
                 /* fractionToShade= */ 0.5f,
                 /* onKeyguard= */ true,
+                /* isGroupingDisabled= */ false,
             )
         assertThat(gap).isEqualTo(smallGap * 0.5f + bigGap * 0.5f)
     }
@@ -1267,8 +1268,31 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             stackScrollAlgorithm.getGapForLocation(
                 /* fractionToShade= */ 0f,
                 /* onKeyguard= */ false,
+                /* isGroupingDisabled= */ false,
             )
         assertThat(gap).isEqualTo(bigGap)
+    }
+
+    @Test
+    fun getGapForLocation_for_groupingDisabled_onLockscreen_returnsGroupingDisabledGap() {
+        val gap =
+            stackScrollAlgorithm.getGapForLocation(
+                /* fractionToShade= */ 0f,
+                /* onKeyguard= */ true,
+                /* isGroupingDisabled= */ true,
+            )
+        assertThat(gap).isEqualTo(groupingDisabledSectionGapHeight)
+    }
+
+    @Test
+    fun getGapForLocation_for_groupingDisabled_notOnLockscreen_returnsGroupingDisabledGap() {
+        val gap =
+            stackScrollAlgorithm.getGapForLocation(
+                /* fractionToShade= */ 0f,
+                /* onKeyguard= */ false,
+                /* isGroupingDisabled= */ true,
+            )
+        assertThat(gap).isEqualTo(groupingDisabledSectionGapHeight)
     }
 
     @Test

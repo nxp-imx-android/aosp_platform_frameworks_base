@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.logging;
 
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_DYNAMIC_BUNDLE;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_FOREGROUND_SERVICE;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HEADS_UP;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HIGHLIGHTS;
@@ -37,6 +38,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.logging.nano.Notifications;
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
 import com.android.systemui.statusbar.notification.stack.PriorityBucket;
 
 import java.util.List;
@@ -110,7 +112,9 @@ public interface NotificationPanelLogger {
                 if (n.getNotification() != null) {
                     proto.isGroupSummary = n.getNotification().isGroupSummary();
                 }
-                proto.section = toNotificationSection(ne.getBucket());
+                proto.section = toNotificationSection(NmContextualDisplay.isEnabled()
+                        ? ne.getBucketForLogging()
+                        : ne.getBucket());
                 proto_array[i] = proto;
             }
             ++i;
@@ -146,7 +150,9 @@ public interface NotificationPanelLogger {
                 if (n.getNotification() != null) {
                     proto.isGroupSummary = n.getNotification().isGroupSummary();
                 }
-                proto.section = toNotificationSection(ne.getSectionBucket());
+                proto.section = toNotificationSection(NmContextualDisplay.isEnabled()
+                        ? ne.getLoggingBucket()
+                        : ne.getSectionBucket());
                 proto_array[i] = proto;
             }
             ++i;
@@ -177,6 +183,7 @@ public interface NotificationPanelLogger {
             case BUCKET_RECS: return Notifications.Notification.SECTION_RECS;
             case BUCKET_PROMO: return Notifications.Notification.SECTION_PROMO;
             case BUCKET_HIGHLIGHTS: return Notifications.Notification.SECTION_HIGHLIGHTS;
+            case BUCKET_DYNAMIC_BUNDLE: return Notifications.Notification.SECTION_DYNAMIC_BUNDLE;
         }
         return Notifications.Notification.SECTION_UNKNOWN;
     }

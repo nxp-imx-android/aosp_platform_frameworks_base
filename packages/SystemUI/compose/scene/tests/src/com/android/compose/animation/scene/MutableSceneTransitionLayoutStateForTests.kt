@@ -16,6 +16,7 @@
 
 package com.android.compose.animation.scene
 
+import android.view.ViewRootImpl
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MotionScheme
 import com.android.compose.animation.scene.content.state.TransitionState
@@ -36,6 +37,7 @@ internal fun MutableSceneTransitionLayoutStateForTests(
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
             override var transitions = transitions
             override val motionScheme = MotionScheme.standard()
+            override val viewRootImpl: ViewRootImpl? = null
         }
 
     return MutableSceneTransitionLayoutStateImpl(

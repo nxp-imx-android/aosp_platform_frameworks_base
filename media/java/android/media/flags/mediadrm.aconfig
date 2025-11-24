@@ -1,0 +1,9 @@
+package: "com.android.media.mediadrm.flags"
+container: "system"
+
+flag {
+  name: "deprecate_platform_mediadrm_securestop_apis"
+  namespace: "media_drm"
+  description: "Deprecate platform MediaDrm.SecureStop APIs"
+  bug: "454071592"
+}

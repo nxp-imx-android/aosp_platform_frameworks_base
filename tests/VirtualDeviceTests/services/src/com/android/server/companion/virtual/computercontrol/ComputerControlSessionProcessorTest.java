@@ -47,7 +47,6 @@ import android.content.AttributionSource;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.display.VirtualDisplay;
 import android.os.Binder;
 import android.os.ResultReceiver;
@@ -98,8 +97,6 @@ public class ComputerControlSessionProcessorTest {
     private KeyguardManager mKeyguardManager;
     @Mock
     private AppOpsManager mAppOpsManager;
-    @Mock
-    private PackageManager mPackageManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -157,19 +154,12 @@ public class ComputerControlSessionProcessorTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
-        when(context.getPackageManager()).thenReturn(mPackageManager);
 
         when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
                 .thenReturn(false);
 
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
-
-        when(mPackageManager.getPermissionControllerPackageName())
-                .thenReturn(PACKAGE_NAME_PERMISSION_CONTROLLER);
-        when(mPackageManager.getLaunchIntentForPackage(TARGET_PACKAGE)).thenReturn(new Intent());
-        when(mPackageManager.getLaunchIntentForPackage(ANOTHER_TARGET_PACKAGE))
-                .thenReturn(new Intent());
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
@@ -186,9 +176,10 @@ public class ComputerControlSessionProcessorTest {
 
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
 
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(true);
-        when(mAllowlistController.isPackageAutomatable(TARGET_PACKAGE, OWNER_PACKAGE_NAME))
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
                 .thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(
+                eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
         mProcessor = new ComputerControlSessionProcessor(
                 context, mVirtualDeviceFactory, mPendingIntentFactory, mAllowlistController);
@@ -218,8 +209,20 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    public void consentDeniedInSettings_sessionNotCreated() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
+                .thenReturn(AppOpsManager.MODE_IGNORED);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback)
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
+    }
+
+    @Test
     public void callerNotAllowListed_throwsException() throws Exception {
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(false);
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
+                .thenReturn(false);
 
         assertThrows(SecurityException.class,
                 () -> mProcessor.processNewSessionRequest(
@@ -228,8 +231,8 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void anyTargetAppNotAllowListed_throwsException() throws Exception {
-        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE, OWNER_PACKAGE_NAME))
-                .thenReturn(false);
+        when(mAllowlistController.isPackageAutomatable(
+                eq(ANOTHER_TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(false);
 
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
                 .setName(ComputerControlSessionImplTest.class.getSimpleName())
@@ -243,8 +246,8 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void allTargetAppsAllowListed_sessionCreated() throws Exception {
-        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE, OWNER_PACKAGE_NAME))
-                .thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(
+                eq(ANOTHER_TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
                 .setName(ComputerControlSessionImplTest.class.getSimpleName())
@@ -292,7 +295,7 @@ public class ComputerControlSessionProcessorTest {
     @Test
     public void onSessionPending_consentGranted_sessionCreated() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
-                .thenReturn(AppOpsManager.MODE_IGNORED);
+                .thenReturn(AppOpsManager.MODE_DEFAULT);
 
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
@@ -309,7 +312,7 @@ public class ComputerControlSessionProcessorTest {
     @Test
     public void onSessionPending_consentDenied_sessionCreationFailed() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
-                .thenReturn(AppOpsManager.MODE_IGNORED);
+                .thenReturn(AppOpsManager.MODE_DEFAULT);
 
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
@@ -344,47 +347,13 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    public void validateParams_invalidPackageNames_permissionController() {
-        String packageName = PACKAGE_NAME_PERMISSION_CONTROLLER;
-        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionImplTest.class.getSimpleName())
-                .setTargetPackageNames(List.of(packageName))
-                .build();
-
-        when(mPackageManager.getPermissionControllerPackageName()).thenReturn(packageName);
-        when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            mProcessor.processNewSessionRequest(
-                    ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
-        });
-    }
-
-    @Test
-    public void validateParams_invalidPackageNames_packageWithoutLauncherIntent() {
-        String packageName = "package.name";
-        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionImplTest.class.getSimpleName())
-                .setTargetPackageNames(List.of(packageName))
-                .build();
-
-        when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            mProcessor.processNewSessionRequest(
-                    ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
-        });
-    }
-
-    @Test
     public void validateParams_userManaged_throwsSecurityException() {
         when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
                 .thenReturn(true);
 
         assertThrows(SecurityException.class, () ->
                 mProcessor.processNewSessionRequest(
-                        ATTRIBUTION_SOURCE,
-                        validParams(), mComputerControlSessionCallback));
+                        ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
     }
 
     @Test
@@ -492,15 +461,6 @@ public class ComputerControlSessionProcessorTest {
         assertTrue(mProcessor.isComputerControlSession(DEVICE_ID));
         // And the underlying virtual device was not closed.
         verify(mVirtualDevice, never()).close();
-    }
-
-    private ComputerControlSessionParams validParams() {
-        String packageName = "package.name";
-        when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
-        return new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionImplTest.class.getSimpleName())
-                .setTargetPackageNames(List.of(packageName))
-                .build();
     }
 
     private ComputerControlSessionParams generateUniqueParams(int index) {

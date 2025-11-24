@@ -24,10 +24,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
@@ -101,15 +103,28 @@ constructor(
         @Composable abstract fun LockscreenScope<ContentScope>.Layout(modifier: Modifier = Modifier)
 
         @Composable
-        protected fun LockscreenScope<ContentScope>.Notifications(modifier: Modifier = Modifier) {
-            Box(modifier = modifier.fillMaxHeight().then(context.burnInModifier)) {
-                AODNotifications()
+        protected fun LockscreenScope<ContentScope>.Notifications(
+            aodAlignment: Alignment,
+            modifier: Modifier = Modifier,
+        ) {
+            Box(modifier = Modifier.fillMaxSize().then(context.burnInModifier).then(modifier)) {
+                AODNotifications(Modifier.align(aodAlignment))
                 // Make the Notification section overlap with the AOD icons,
                 // to avoid jumps while animating them in.
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
                     LockscreenElement(Notifications.Stack)
                 }
             }
+        }
+
+        @Composable
+        protected fun LockscreenScope<ContentScope>.MediaCarousel(modifier: Modifier = Modifier) {
+            val bottomPadding =
+                dimensionResource(R.dimen.notification_section_divider_height_lockscreen)
+            LockscreenElement(
+                MediaCarousel,
+                Modifier.padding(bottom = bottomPadding).then(modifier),
+            )
         }
 
         @Composable
@@ -122,11 +137,18 @@ constructor(
             }
         }
 
-        protected fun TransitionBuilder.configureClockTransition(
+        protected fun TransitionBuilder.configureClockCenteringTransition() {
+            val duration =
+                if (viewModel.shouldSkipTransition) 1 else CLOCK_CENTERING_DURATION_MILLIS
+            spec = tween(duration, easing = Easings.Emphasized)
+        }
+
+        protected fun TransitionBuilder.configureClockSwitchTransition(
             enter: PropertyTransformationBuilder.() -> Unit,
             exit: PropertyTransformationBuilder.() -> Unit,
         ) {
-            spec = tween(300, easing = Easings.Emphasized)
+            val duration = if (viewModel.shouldSkipTransition) 1 else 300
+            spec = tween(duration, easing = Easings.Emphasized)
 
             // Since Smartspace cards are guaranteed to be shared between the small and large clock
             // regions, it's convenient to anchor the movement of the small clock elements to it.
@@ -134,8 +156,10 @@ constructor(
             anchoredTranslate(Smartspace.DWA.SmallClock.Row, anchor = Smartspace.Cards)
             anchoredTranslate(Smartspace.DWA.SmallClock.Column, anchor = Smartspace.Cards)
 
-            timestampRange(endMillis = 133) { exit() }
-            timestampRange(startMillis = 133, endMillis = 300) { enter() }
+            if (!viewModel.shouldSkipTransition) {
+                timestampRange(endMillis = 133) { exit() }
+                timestampRange(startMillis = 133, endMillis = 300) { enter() }
+            }
         }
 
         protected fun PropertyTransformationBuilder.fadeLargeClock() {
@@ -172,13 +196,13 @@ constructor(
                     },
                 transitions = {
                     from(from = NarrowScenes.SmallClock, to = NarrowScenes.LargeClock) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeLargeClock() },
                             exit = { fadeSmallClock() },
                         )
                     }
                     from(from = NarrowScenes.LargeClock, to = NarrowScenes.SmallClock) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeSmallClock() },
                             exit = { fadeLargeClock() },
                         )
@@ -190,16 +214,8 @@ constructor(
                 scene(NarrowScenes.SmallClock) {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        LockscreenElement(
-                            MediaCarousel,
-                            Modifier.padding(
-                                bottom =
-                                    dimensionResource(
-                                        R.dimen.notification_section_divider_height_lockscreen
-                                    )
-                            ),
-                        )
-                        Notifications()
+                        MediaCarousel()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 }
             }
@@ -237,19 +253,19 @@ constructor(
                     },
                 transitions = {
                     from(from = WideScenes.CenteredClock, to = WideScenes.TwoColumn.LargeClock) {
-                        spec = tween(CLOCK_CENTERING_DURATION_MILLIS, easing = Easings.Emphasized)
+                        configureClockCenteringTransition()
                     }
                     from(from = WideScenes.TwoColumn.LargeClock, to = WideScenes.CenteredClock) {
-                        spec = tween(CLOCK_CENTERING_DURATION_MILLIS, easing = Easings.Emphasized)
+                        configureClockCenteringTransition()
                     }
                     from(from = WideScenes.CenteredClock, to = WideScenes.TwoColumn.SmallClock) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeSmallClock() },
                             exit = { fadeLargeClock() },
                         )
                     }
                     from(from = WideScenes.TwoColumn.SmallClock, to = WideScenes.CenteredClock) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeLargeClock() },
                             exit = { fadeSmallClock() },
                         )
@@ -258,7 +274,7 @@ constructor(
                         from = WideScenes.TwoColumn.LargeClock,
                         to = WideScenes.TwoColumn.SmallClock,
                     ) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeSmallClock() },
                             exit = { fadeLargeClock() },
                         )
@@ -267,7 +283,7 @@ constructor(
                         from = WideScenes.TwoColumn.SmallClock,
                         to = WideScenes.TwoColumn.LargeClock,
                     ) {
-                        configureClockTransition(
+                        configureClockSwitchTransition(
                             enter = { fadeLargeClock() },
                             exit = { fadeSmallClock() },
                         )
@@ -275,18 +291,41 @@ constructor(
                 },
                 modifier = modifier,
             ) {
-                scene(WideScenes.CenteredClock) { LockscreenElement(Region.Clock.Large) }
+                scene(WideScenes.CenteredClock) {
+                    // Media is unsupported with centered large clock
+                    LargeClockCenter_NotifsAlign(
+                        notifAlignment =
+                            when (viewModel.shadeMode) {
+                                ShadeMode.Dual -> {
+                                    if (viewModel.useDesktopStatusBar) Alignment.TopEnd
+                                    else Alignment.TopStart
+                                }
+                                ShadeMode.Split -> Alignment.TopEnd
+                                else -> {
+                                    logger.wtf("WideLayout state is invalid")
+                                    Alignment.TopCenter
+                                }
+                            }
+                    )
+                }
                 scene(WideScenes.TwoColumn.LargeClock) {
                     when (viewModel.shadeMode) {
-                        ShadeMode.Dual -> NotificationsStartLargeClock()
-                        ShadeMode.Split -> NotificationsEndLargeClock()
+                        ShadeMode.Dual -> {
+                            if (viewModel.useDesktopStatusBar) LargeClockStart_NotifsEnd_MediaEnd()
+                            else LargeClockEnd_NotifsStart_MediaStart()
+                        }
+                        // Media is unsupported with large clock in split shade mode
+                        ShadeMode.Split -> LargeClockStart_NotifsEnd()
                         else -> logger.wtf("WideLayout state is invalid")
                     }
                 }
                 scene(WideScenes.TwoColumn.SmallClock) {
                     when (viewModel.shadeMode) {
-                        ShadeMode.Dual -> NotificationsStartSmallClock()
-                        ShadeMode.Split -> NotificationsEndSmallClock()
+                        ShadeMode.Dual -> {
+                            if (viewModel.useDesktopStatusBar) SmallClockStart_NotifsEnd_MediaEnd()
+                            else SmallClockStart_NotifsStart_MediaStart()
+                        }
+                        ShadeMode.Split -> SmallClockStart_NotifsEnd_MediaStart()
                         else -> logger.wtf("WideLayout state is invalid")
                     }
                 }
@@ -294,14 +333,32 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsStartLargeClock(
+        private fun LockscreenScope<ContentScope>.LargeClockCenter_NotifsAlign(
+            notifAlignment: Alignment,
+            modifier: Modifier = Modifier,
+        ) {
+            // We overlap the notification stack with large clock region so that large clock is
+            // horizontally centered as expected. Since this layout should only be used when the
+            // all notifications are in the shelf, these elements won't overlap visually in
+            // practice outside of momentarially during certain transitions.
+            Box(
+                modifier = Modifier.fillMaxSize().then(modifier),
+                contentAlignment = Alignment.Center,
+            ) {
+                LockscreenElement(Region.Clock.Large)
+                Notifications(aodAlignment = notifAlignment)
+            }
+        }
+
+        @Composable
+        private fun LockscreenScope<ContentScope>.LargeClockEnd_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
-                        LockscreenElement(MediaCarousel)
-                        Notifications()
+                        MediaCarousel()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
                 endContent = { LockscreenElement(Region.Clock.Large) },
@@ -310,23 +367,15 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsStartSmallClock(
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        LockscreenElement(
-                            MediaCarousel,
-                            Modifier.padding(
-                                bottom =
-                                    dimensionResource(
-                                        R.dimen.notification_section_divider_height_lockscreen
-                                    )
-                            ),
-                        )
-                        Notifications()
+                        MediaCarousel()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
                 modifier = modifier,
@@ -334,28 +383,60 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndLargeClock(
+        private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = { LockscreenElement(Region.Clock.Large) },
-                endContent = { Notifications() },
+                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
                 modifier = modifier,
             )
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndSmallClock(
+        private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd_MediaEnd(
+            modifier: Modifier = Modifier
+        ) {
+            TwoColumn(
+                startContent = { LockscreenElement(Region.Clock.Large) },
+                endContent = {
+                    Column {
+                        MediaCarousel()
+                        Notifications(aodAlignment = Alignment.TopEnd)
+                    }
+                },
+                modifier = modifier,
+            )
+        }
+
+        @Composable
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        LockscreenElement(MediaCarousel)
+                        MediaCarousel()
                     }
                 },
-                endContent = { Notifications() },
+                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
+                modifier = modifier,
+            )
+        }
+
+        @Composable
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaEnd(
+            modifier: Modifier = Modifier
+        ) {
+            TwoColumn(
+                startContent = { LockscreenElement(Region.Clock.Small) },
+                endContent = {
+                    Column {
+                        MediaCarousel()
+                        Notifications(aodAlignment = Alignment.TopEnd)
+                    }
+                },
                 modifier = modifier,
             )
         }

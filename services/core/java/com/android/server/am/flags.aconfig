@@ -313,3 +313,11 @@ flag {
     description: "Whether to use new System APIs to start and stop FGS delegation."
     bug: "303241170"
 }
+
+flag {
+    name: "enable_get_package_names_for_pid"
+    namespace: "system_performance"
+    description: "Enable getting package names for a PID."
+    is_exported: true
+    bug: "456466241"
+}

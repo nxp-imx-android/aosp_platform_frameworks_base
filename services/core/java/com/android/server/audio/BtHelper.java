@@ -35,6 +35,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothCodecConfig;
 import android.bluetooth.BluetoothCodecStatus;
+import android.bluetooth.BluetoothCodecType;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothHearingAid;
@@ -52,7 +53,6 @@ import android.media.BluetoothProfileConnectionInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
@@ -279,10 +279,16 @@ public class BtHelper {
                     mA2dpCodecConfig = null;
                     return new Pair<>(AudioSystem.AUDIO_FORMAT_DEFAULT, changed);
                 }
+                final BluetoothCodecType btCodecType = btCodecConfig.getExtendedCodecType();
+                if (btCodecType == null) {
+                    mA2dpCodecConfig = null;
+                    return new Pair<>(AudioSystem.AUDIO_FORMAT_DEFAULT, changed);
+                }
                 changed = !btCodecConfig.equals(mA2dpCodecConfig);
                 mA2dpCodecConfig = btCodecConfig;
-                return new Pair<>(AudioSystem.bluetoothA2dpCodecToAudioFormat(
-                        btCodecConfig.getCodecType()), changed);
+                return new Pair<>(
+                        AudioSystem.bluetoothA2dpCodecToAudioFormat(btCodecType.getCodecId()),
+                        changed);
             }
             case BluetoothProfile.LE_AUDIO: {
                 boolean changed = mLeAudioCodecConfig != null;

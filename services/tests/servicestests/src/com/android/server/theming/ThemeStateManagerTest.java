@@ -25,6 +25,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
 import android.content.om.OverlayManagerTransaction;
 import android.content.theming.ThemeStyle;
 import android.os.UserHandle;
@@ -73,6 +75,8 @@ public class ThemeStateManagerTest {
     private UserManagerInternal mUserManager;
     @Mock
     private OverlayManagerInternal mOverlayManager;
+    @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
 
@@ -110,9 +114,11 @@ public class ThemeStateManagerTest {
 
         LocalServices.removeServiceForTest(OverlayManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityManagerInternal.class);
 
         LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
         LocalServices.addService(UserManagerInternal.class, mUserManager);
+        LocalServices.addService(ActivityManagerInternal.class, mActivityManagerInternal);
 
         // create user testable resources
         TestableResources userResources = mUserContext.getOrCreateTestableResources();
@@ -123,6 +129,10 @@ public class ThemeStateManagerTest {
 
         when(mUserManager.getProfileParentId(eq(DEFAULT_USER_ID))).thenReturn(DEFAULT_USER_ID);
         when(mUserManager.getProfileParentId(eq(PROFILE_ID))).thenReturn(DEFAULT_USER_ID);
+        when(mUserManager.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
+            int requestedUserId = invocation.getArgument(0);
+            return new int[]{requestedUserId};
+        });
 
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor);
@@ -133,6 +143,7 @@ public class ThemeStateManagerTest {
     public void tearDown() throws Exception {
         LocalServices.removeServiceForTest(OverlayManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityManagerInternal.class);
     }
 
     @Test
@@ -143,13 +154,21 @@ public class ThemeStateManagerTest {
     }
 
     @Test
-    public void test_canNotStartUserTwice() {
-        // start first user
-        ThemeStatePair pair = startProvisionedUser();
-        assertThat(pair).isNotNull();
+    public void test_startingUserTwice_isIgnored() {
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true,
+                0xFFFF0000 /* RED */, DEFAULT_CONTRAST, DEFAULT_STYLE);
 
-        // Fails when trying to add same user
-        assertThrows(IllegalStateException.class, this::startProvisionedUser);
+        ThemeStatePair firstState = mThemeStateManager.getState(DEFAULT_USER_ID);
+        assertThat(firstState.getCurrentState().seedColor()).isEqualTo(0xFFFF0000);
+
+        // Try to start duplicate user with BLUE
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true,
+                0xFF0000FF /* BLUE */, DEFAULT_CONTRAST, DEFAULT_STYLE);
+
+        // Verify the state was NOT overwritten
+        ThemeStatePair stateAfterDup = mThemeStateManager.getState(DEFAULT_USER_ID);
+        assertThat(stateAfterDup).isSameInstanceAs(firstState);
+        assertThat(stateAfterDup.getCurrentState().seedColor()).isEqualTo(0xFFFF0000);
     }
 
     @Test

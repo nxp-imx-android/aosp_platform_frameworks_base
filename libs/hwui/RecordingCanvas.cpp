@@ -801,23 +801,26 @@ private:
 
 public:
     void draw(SkCanvas* c, const SkMatrix&) const {
-        if (needsCompositedLayer(c)) {
-            // What we do now is create an offscreen surface, sized by the clip bounds.
-            // We won't apply a clip while drawing - clipping will be performed when compositing the
-            // surface back onto the original canvas. Note also that we're not using saveLayer
-            // because the webview functor still doesn't respect the canvas clip stack.
-            const SkIRect deviceBounds = c->getDeviceClipBounds();
-            if (mLayerSurface == nullptr || c->imageInfo() != mLayerImageInfo) {
-                mLayerImageInfo =
-                        c->imageInfo().makeWH(deviceBounds.width(), deviceBounds.height());
-                // SkCanvas::makeSurface returns a new surface that will be GPU-backed if
-                // canvas was also.
-                mLayerSurface = c->makeSurface(mLayerImageInfo);
-            }
+        if (!needsCompositedLayer(c)) {
+            c->drawDrawable(drawable.get());
+            return;
+        }
 
+        // What we do now is create an offscreen surface, sized by the clip bounds.
+        // We won't apply a clip while drawing - clipping will be performed when compositing the
+        // surface back onto the original canvas. Note also that we're not using saveLayer
+        // because the webview functor still doesn't respect the canvas clip stack.
+        const SkIRect deviceBounds = c->getDeviceClipBounds();
+        if (mLayerSurface == nullptr || c->imageInfo() != mLayerImageInfo) {
+            mLayerImageInfo = c->imageInfo().makeWH(deviceBounds.width(), deviceBounds.height());
+            // SkCanvas::makeSurface returns a new GPU-backed surface if canvas was also.
+            mLayerSurface = c->makeSurface(mLayerImageInfo);
+        }
+
+        {
             SkCanvas* layerCanvas = mLayerSurface->getCanvas();
 
-            SkAutoCanvasRestore(layerCanvas, true);
+            SkAutoCanvasRestore acr(layerCanvas, true);
             layerCanvas->clear(SK_ColorTRANSPARENT);
 
             // Preserve the transform from the original canvas, but now the clip rectangle is
@@ -826,21 +829,19 @@ public:
             mat4.postTranslate(-deviceBounds.fLeft, -deviceBounds.fTop);
             layerCanvas->concat(mat4);
             layerCanvas->drawDrawable(drawable.get());
-
-            SkAutoCanvasRestore acr(c, true);
-
-            // Temporarily use an identity transform, because this is just blitting to the parent
-            // canvas with an offset.
-            SkMatrix invertedMatrix;
-            if (!c->getTotalMatrix().invert(&invertedMatrix)) {
-                ALOGW("Unable to extract invert canvas matrix; aborting VkFunctor draw");
-                return;
-            }
-            c->concat(invertedMatrix);
-            mLayerSurface->draw(c, deviceBounds.fLeft, deviceBounds.fTop);
-        } else {
-            c->drawDrawable(drawable.get());
         }
+
+        SkAutoCanvasRestore acr(c, true);
+
+        // Temporarily use an identity transform, because this is just blitting to the parent
+        // canvas with an offset.
+        SkMatrix invertedMatrix;
+        if (!c->getTotalMatrix().invert(&invertedMatrix)) {
+            ALOGW("Unable to extract invert canvas matrix; aborting VkFunctor draw");
+            return;
+        }
+        c->concat(invertedMatrix);
+        mLayerSurface->draw(c, deviceBounds.fLeft, deviceBounds.fTop);
     }
 };
 }

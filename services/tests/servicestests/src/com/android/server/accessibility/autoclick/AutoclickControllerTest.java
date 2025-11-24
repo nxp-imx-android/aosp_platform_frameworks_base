@@ -1490,16 +1490,15 @@ public class AutoclickControllerTest {
         mController.clickPanelController.handleAutoclickTypeChange(
                 AutoclickTypePanel.AUTOCLICK_TYPE_LONG_PRESS);
 
-        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to false.
+        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to true.
         Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
-                AccessibilityUtils.State.OFF,
+                AccessibilityUtils.State.ON,
                 mTestableContext.getUserId());
         mController.onChangeForTesting(/* selfChange= */ true,
                 Settings.Secure.getUriFor(
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
-        when(mockAutoclickTypePanel.isPaused()).thenReturn(false);
-        assertThat(mController.mClickScheduler.getRevertToLeftClickForTesting()).isFalse();
+        assertThat(mController.mClickScheduler.getRevertToLeftClickForTesting()).isTrue();
         assertThat(mController.getActiveClickTypeForTest()).isEqualTo(
                 AutoclickTypePanel.AUTOCLICK_TYPE_LONG_PRESS);
 

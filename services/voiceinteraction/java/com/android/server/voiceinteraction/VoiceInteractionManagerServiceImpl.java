@@ -27,8 +27,8 @@ import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.policy.PhoneWindowManager.SYSTEM_DIALOG_REASON_ASSIST;
 
-import android.annotation.IntDef;
 import android.Manifest;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -880,6 +880,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             ServiceInfo hotwordDetectionServiceInfo =
                     getHotwordDetectionServiceInfoLocked(callback, detectorType);
             hotwordDetectionServiceType = getServiceTypeLocked(hotwordDetectionServiceInfo);
+            Slog.d(TAG, "hotwordDetectionServiceType: " + hotwordDetectionServiceType);
             if (hotwordDetectionServiceType == SERVICE_TYPE_UNRESTRICTED) {
                 logUnrestrictedServiceTypeAndThrowExceptionLocked(callback, detectorType);
             }

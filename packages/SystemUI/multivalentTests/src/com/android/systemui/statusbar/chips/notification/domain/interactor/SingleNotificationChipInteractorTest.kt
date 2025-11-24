@@ -16,6 +16,9 @@
 
 package com.android.systemui.statusbar.chips.notification.domain.interactor
 
+import android.app.PendingIntent
+import android.content.ComponentName
+import android.content.Intent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,15 +37,30 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class SingleNotificationChipInteractorTest : SysuiTestCase() {
+    @get:Rule val mockito: MockitoRule = MockitoJUnit.rule()
+
+    @Mock private lateinit var pendingIntent: PendingIntent
+
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    val factory = kosmos.singleNotificationChipInteractorFactory
+    private val factory = kosmos.singleNotificationChipInteractorFactory
+
+    @Before
+    fun setUp() {
+        whenever(pendingIntent.intent).thenReturn(Intent.makeMainActivity(COMPONENT))
+    }
 
     @Test
     fun notificationChip_startsWithStartingModel() =
@@ -54,6 +72,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
                     key = "notif1",
                     appName = "Fake Name",
                     statusBarChipIcon = icon,
+                    contentIntent = pendingIntent,
                     promotedContent = PROMOTED_CONTENT,
                     instanceId = instanceId,
                 )
@@ -64,6 +83,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
 
             assertThat(latest!!.key).isEqualTo("notif1")
             assertThat(latest!!.appName).isEqualTo("Fake Name")
+            assertThat(latest!!.componentName).isEqualTo(COMPONENT)
             assertThat(latest!!.statusBarChipIconView).isEqualTo(icon)
             assertThat(latest!!.promotedContent).isEqualTo(PROMOTED_CONTENT)
             assertThat(latest!!.instanceId).isEqualTo(instanceId)
@@ -95,6 +115,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
                     key = "notif1",
                     appName = "New Name",
                     statusBarChipIcon = newIconView,
+                    contentIntent = pendingIntent,
                     promotedContent = PROMOTED_CONTENT,
                     instanceId = newInstanceId,
                 )
@@ -102,6 +123,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
 
             assertThat(latest!!.key).isEqualTo("notif1")
             assertThat(latest!!.appName).isEqualTo("New Name")
+            assertThat(latest!!.componentName).isEqualTo(COMPONENT)
             assertThat(latest!!.statusBarChipIconView).isEqualTo(newIconView)
             assertThat(latest!!.instanceId).isEqualTo(newInstanceId)
         }
@@ -459,6 +481,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
 
     companion object {
         private const val UID = 885
+        private val COMPONENT = ComponentName("package", "class")
         private val PROMOTED_CONTENT = PromotedNotificationContentBuilder("notif1").build()
     }
 }

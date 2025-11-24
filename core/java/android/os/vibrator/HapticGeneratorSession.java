@@ -66,16 +66,13 @@ public final class HapticGeneratorSession implements AutoCloseable {
          * Creates a new configuration for a haptic generator session.
          *
          * @param audioFormat     The audio format of the PCM data to be generated.
-         *                        Must meet three criteria:
+         *                        <p>The format must satisfy the following requirements:
          *                         <ol>
-         *                        <li>Use a PCM encoding (e.g.,
-         *                        {@link AudioFormat#ENCODING_PCM_16BIT}).</li>
-         *                        <li>Have a positive sample rate.</li>
-         *                        <li>Use a valid haptic channel mask:
-         *                        {@link AudioFormat#CHANNEL_OUT_HAPTIC_A},
-         *                        {@link AudioFormat#CHANNEL_OUT_HAPTIC_B}, or a combination of both
-         *                        ({@code CHANNEL_OUT_HAPTIC_A | CHANNEL_OUT_HAPTIC_B}). Other
-         *                        masks are not supported.</li>
+         *                        <li>Sample rate must be a positive non-zero value.</li>
+         *                        <li>Must specify at least one valid channel configuration,
+         *                        either via a channel mask (e.g.,
+         *                        {@link AudioFormat#CHANNEL_OUT_HAPTIC_A}) or a channel index
+         *                        mask.</li>
          *                        </ol>
          * @param vendorExtension An optional parcelable for vendor-specific data. Can be null.
          * @throws IllegalArgumentException if the AudioFormat is invalid.

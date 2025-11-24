@@ -40,6 +40,8 @@ import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenR
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenRecordTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.mapper.ScreenRecordTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepository
+import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepositoryImpl
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.LegacyScreenRecordingStartStopRepository
@@ -77,6 +79,12 @@ interface ScreenRecordModule {
     fun provideScreenRecordAvailabilityInteractor(
         impl: ScreenRecordTileDataInteractor
     ): QSTileAvailabilityInteractor
+
+    @Binds
+    @SysUISingleton
+    fun bindScreenCaptureDeviceStateRepository(
+        impl: ScreenCaptureDeviceStateRepositoryImpl
+    ): ScreenCaptureDeviceStateRepository
 
     companion object {
         private const val SCREEN_RECORD_TILE_SPEC = "screenrecord"
@@ -171,8 +179,9 @@ interface ScreenRecordModule {
         fun provideScreenRecordRepository(
             serviceRepository: Lazy<ScreenRecordingServiceRepository>,
             impl: Lazy<ScreenRecordRepositoryImpl>,
+            screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
         ): ScreenRecordRepository {
-            return if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
+            return if (screenCaptureRecordFeaturesInteractor.shouldShowNewRecordingToolbar) {
                     serviceRepository
                 } else {
                     impl

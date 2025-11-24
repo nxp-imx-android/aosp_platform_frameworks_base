@@ -39,12 +39,16 @@ public class RemoteTaskFactory {
         mDefaultIcon = Icon.createWithResource(context, android.R.drawable.sym_def_app_icon);
     }
 
-    @NonNull
+    @Nullable
     public RemoteTask create(
             int associationId,
             @Nullable String associationDisplayName,
             @NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
+
+        if (!canTaskBeHandedOffLocally(remoteTaskInfo)) {
+            return null;
+        }
 
         return new RemoteTask.Builder(associationId, remoteTaskInfo.id())
                 .setPackageName(remoteTaskInfo.packageName())
@@ -89,5 +93,17 @@ public class RemoteTaskFactory {
             Slog.w(TAG, "Could not find package info for package: " + packageName);
             return null;
         }
+    }
+
+    private boolean canTaskBeHandedOffLocally(@NonNull RemoteTaskInfo remoteTaskInfo) {
+        Objects.requireNonNull(remoteTaskInfo);
+
+        if (!remoteTaskInfo.handoffOptions().isHandoffEnabled()) {
+            return false;
+        }
+
+        boolean isPackageInstalled = getPackageInfo(remoteTaskInfo.packageName()) != null;
+        return (isPackageInstalled && remoteTaskInfo.handoffOptions().isHandoffEnabled())
+                || !remoteTaskInfo.handoffOptions().requirePackageInstalled();
     }
 }

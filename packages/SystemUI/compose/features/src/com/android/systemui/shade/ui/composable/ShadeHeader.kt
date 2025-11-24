@@ -21,6 +21,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.ColorInt
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -84,13 +85,16 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.Flags.groupedPrivacyChip
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.kairos.util.nameTag
+import com.android.systemui.privacy.AbstractOngoingPrivacyChip
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyItem
+import com.android.systemui.privacy.ui.view.ComposeOngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
@@ -415,7 +419,7 @@ fun ContentScope.OverlayShadeHeader(
                         chipHighlightModel = quickSettingsHighlight,
                     )
                 }
-                if (viewModel.isPrivacyChipVisible) {
+                if (!groupedPrivacyChip() && viewModel.isPrivacyChipVisible) {
                     Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                         PrivacyChip(
                             privacyList = viewModel.privacyItems,
@@ -439,6 +443,23 @@ fun QuickSettingsOverlayHeader(viewModel: ShadeHeaderViewModel, modifier: Modifi
     ) {
         ShadeCarrierGroup(viewModel = viewModel)
         BatteryInfo(viewModel = viewModel, showIcon = false, useExpandedFormat = true)
+    }
+}
+
+@Composable
+fun ContentScope.QuickSettingsOverlayPrivacyChip(
+    viewModel: ShadeHeaderViewModel,
+    modifier: Modifier = Modifier,
+) {
+    if (groupedPrivacyChip() && viewModel.isPrivacyChipVisible) {
+        Box(modifier = modifier.height(48.dp).fillMaxWidth()) {
+            PrivacyChip(
+                privacyList = viewModel.privacyItems,
+                onClick = viewModel::onPrivacyChipClicked,
+                showPrivacyText = true,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
     }
 }
 
@@ -763,19 +784,33 @@ private fun CarrierTextWithSubscriptionIdKairos(
 @Composable
 private fun ContentScope.PrivacyChip(
     privacyList: List<PrivacyItem>,
-    onClick: (OngoingPrivacyChip) -> Unit,
+    onClick: (AbstractOngoingPrivacyChip) -> Unit,
     modifier: Modifier = Modifier,
+    showPrivacyText: Boolean = false,
 ) {
     AndroidView(
         factory = { context ->
             val view =
-                OngoingPrivacyChip(context, null).also { privacyChip ->
-                    privacyChip.privacyList = privacyList
-                    privacyChip.setOnClickListener { onClick(privacyChip) }
-                }
+                if (groupedPrivacyChip()) {
+                        ComposeOngoingPrivacyChip(context).apply {
+                            this.showPrivacyText = showPrivacyText
+                            layoutParams.apply { height = MATCH_PARENT }
+                        }
+                    } else {
+                        OngoingPrivacyChip(context, null)
+                    }
+                    .also { privacyChip: AbstractOngoingPrivacyChip ->
+                        privacyChip.privacyList = privacyList
+                        privacyChip.setOnClickListener { onClick(privacyChip) }
+                    }
             view
         },
-        update = { it.privacyList = privacyList },
+        update = {
+            it.privacyList = privacyList
+            if (groupedPrivacyChip()) {
+                (it as ComposeOngoingPrivacyChip).apply { this.showPrivacyText = showPrivacyText }
+            }
+        },
         modifier = modifier.element(ShadeHeader.Elements.PrivacyChip),
     )
 }

@@ -131,16 +131,6 @@ flag {
 }
 
 flag {
-    name: "deprecate_window_animator_frame_callback"
-    namespace: "window_surfaces"
-    description: "Utilize postVsyncCallback from Choreographer for WindowAnimator allowing more precise scheduling via vsyncId."
-    bug: "443142083"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "mirror_surface_api"
     namespace: "window_surfaces"
     description: "Gate the api that allows apps to get mirrored surface control of its own window."

@@ -566,6 +566,7 @@ final class LogicalDisplay {
             mBaseDisplayInfo.frameRateCategoryRate = deviceInfo.frameRateCategoryRate;
             mBaseDisplayInfo.supportedRefreshRates = Arrays.copyOf(
                     deviceInfo.supportedRefreshRates, deviceInfo.supportedRefreshRates.length);
+            mBaseDisplayInfo.frameRateVelocityMapping = config.getFrameRateVelocityMapping();
             mBaseDisplayInfo.defaultModeId = deviceInfo.defaultModeId;
             mBaseDisplayInfo.userPreferredModeId = deviceInfo.userPreferredModeId;
             mBaseDisplayInfo.supportedModes = Arrays.copyOf(

@@ -26,6 +26,7 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
+import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_COPY_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_EDIT_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_PREVIEW_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_SHARE_TAPPED
@@ -144,6 +145,23 @@ constructor(
                 )
             }
         }
+
+        if (isLargeScreenCaptureEnabled()) {
+            actionsCallback.provideActionButton(
+                ActionButtonAppearance(
+                    AppCompatResources.getDrawable(context, R.drawable.ic_content_copy),
+                    null,
+                    context.resources.getString(R.string.screenshot_copy_description),
+                ),
+                showDuringEntrance = true,
+            ) {
+                debugLog(LogConfig.DEBUG_ACTIONS) { "Copy tapped" }
+                uiEventLogger.log(SCREENSHOT_COPY_TAPPED, 0, request.packageNameString)
+                onDeferrableActionTapped { result ->
+                    actionExecutor.copyScreenshotToClipboard(result.uri)
+                }
+            }
+        }
     }
 
     override fun onScrollChipReady(onClick: ScrollClickCallback) {
@@ -187,6 +205,12 @@ constructor(
     private fun onDeferrableActionTapped(onResult: suspend (ScreenshotSavedResult) -> Unit) {
         result?.let { applicationScope.launch { onResult.invoke(it) } }
             ?: run { pendingAction = onResult }
+    }
+
+    private fun isLargeScreenCaptureEnabled(): Boolean {
+        // TODO(b/430362954) Use the member from ScreenCaptureRecordFeaturesInteractor when ready
+        return Flags.largeScreenScreencapture() &&
+            context.resources.getBoolean(R.bool.config_enableLargeScreenScreencapture)
     }
 
     @AssistedFactory

@@ -532,7 +532,7 @@ public abstract class SessionProcessor {
                     for (CaptureRequest.Key captureRequestKey : sessionParameters.getKeys()) {
                         paramMap.put(captureRequestKey, sessionParameters.get(captureRequestKey));
                     }
-                    cameraConfig.setSessionParameters(paramMap);
+                    cameraConfig.setSessionWideParams(paramMap);
                 }
                 config = SessionProcessor.this.initSession(token, cameraId,
                         new CharacteristicsMap(charsMap), cameraConfig);

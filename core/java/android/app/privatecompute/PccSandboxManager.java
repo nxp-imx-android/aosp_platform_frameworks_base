@@ -17,9 +17,12 @@
 package android.app.privatecompute;
 
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 
 /**
@@ -56,6 +59,22 @@ public final class PccSandboxManager {
     public boolean isPrivateComputeServicesUid(int uid) {
         try {
             return mService.isPrivateComputeServicesUid(uid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Writes data to the audit log, if audit mode is enabled. Otherwise, does nothing.
+     *
+     * <p> Nested Bundles are supported up to a depth of 100.
+     *
+     * @param data The data to write to the audit log.
+     */
+    @RequiresNoPermission // Not gating sensitive functionality, and audit log is size-capped.
+    public void writeToAuditLog(@NonNull PersistableBundle data) {
+        try {
+            mService.writeToAuditLog(data);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

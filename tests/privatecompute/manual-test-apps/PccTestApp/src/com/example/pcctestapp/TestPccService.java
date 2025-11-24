@@ -16,16 +16,14 @@
 
 package com.example.pcctestapp;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
+import android.annotation.NonNull;
+import android.app.privatecompute.PccService;
+import android.os.Bundle;
 import android.util.Log;
 
-public class TestPccService extends Service {
-    private static final String TAG = TestPccService.class.getSimpleName();
 
-    private final IPccService.Stub mBinder = new IPccService.Stub() {
-    };
+public class TestPccService extends PccService {
+    private static final String TAG = TestPccService.class.getSimpleName();
 
     @Override
     public void onCreate() {
@@ -34,7 +32,12 @@ public class TestPccService extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
+    public void onReceiveData(@NonNull Bundle data, @NonNull String packageName) {
+        String text = data.getString("my_key");
+        if (text != null) {
+            String message = String.format("Data received in Pcc service: \"%s\", from: \"%s\"",
+                    text, packageName);
+            Log.i(TAG, message);
+        }
     }
 }

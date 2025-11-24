@@ -146,7 +146,10 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     InteractionJankMonitor mInteractionJankMonitor;
     @Mock
     private DumpManager mDumpManager;
-    @Mock CsdWarningDialog mCsdWarningDialog;
+    @Mock
+    CsdWarningDialogDelegate mCsdWarningDialogDelegate;
+    @Mock
+    SystemUIDialog mCsdWarningDialog;
     @Mock
     DevicePostureController mPostureController;
     @Mock SystemUIDialog mSystemUIDialog;
@@ -165,12 +168,12 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     @Mock
     private VolumeDialogInteractor mVolumeDialogInteractor;
 
-    private final CsdWarningDialog.Factory mCsdWarningDialogFactory =
-            new CsdWarningDialog.Factory() {
+    private final CsdWarningDialogDelegate.Factory mCsdWarningDialogFactory =
+            new CsdWarningDialogDelegate.Factory() {
                 @Override
-                public CsdWarningDialog create(int warningType, Runnable onCleanup,
+                public CsdWarningDialogDelegate create(int warningType, Runnable onCleanup,
                         Optional<List<CsdWarningAction>> actionIntents) {
-                    return mCsdWarningDialog;
+                    return mCsdWarningDialogDelegate;
                 }
             };
     @Mock
@@ -216,6 +219,8 @@ public class VolumeDialogImplTest extends SysuiTestCase {
         when(mLazySecureSettings.get()).thenReturn(mSecureSettings);
 
         when(mVibratorHelper.getPrimitiveDurations(anyInt())).thenReturn(new int[]{0});
+
+        when(mCsdWarningDialogDelegate.createDialog()).thenReturn(mCsdWarningDialog);
 
         mDialog = new VolumeDialogImpl(
                 getContext(),
@@ -492,8 +497,9 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     @Test
     public void showCsdWarning_dialogShown() {
         mDialog.showCsdWarningH(AudioManager.CSD_WARNING_DOSE_REACHED_1X,
-                CsdWarningDialog.NO_ACTION_TIMEOUT_MS);
+                CsdWarningDialogDelegate.NO_ACTION_TIMEOUT_MS);
 
+        verify(mCsdWarningDialogDelegate).createDialog();
         verify(mCsdWarningDialog).show();
     }
 

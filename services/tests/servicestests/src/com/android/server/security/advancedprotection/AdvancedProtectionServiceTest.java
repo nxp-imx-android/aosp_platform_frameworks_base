@@ -19,7 +19,9 @@ package com.android.server.security.advancedprotection;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -39,6 +41,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.security.Flags;
 import android.security.advancedprotection.AdvancedProtectionFeature;
+import android.security.advancedprotection.AdvancedProtectionFeature.ProvisioningMode;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
@@ -54,7 +57,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -65,9 +67,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @SuppressLint("VisibleForTests")
-@RunWith(JUnit4.class)
+@RunWith(JUnitParamsRunner.class)
 public class AdvancedProtectionServiceTest {
     private static final int HOOK_ID = AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
     private static final String HOOK_NAME = "DISALLOW_CELLULAR_2G";
@@ -207,7 +211,8 @@ public class AdvancedProtectionServiceTest {
         AdvancedProtectionProvider provider = createProvider();
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertContainsInAnyOrder(features, HOOK_ID, PROVIDER_ID);
     }
@@ -220,7 +225,8 @@ public class AdvancedProtectionServiceTest {
         AdvancedProtectionProvider provider = createProvider();
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertContainsInAnyOrder(features, PROVIDER_ID);
         assertDoesNotContain(features, HOOK_ID);
@@ -234,7 +240,8 @@ public class AdvancedProtectionServiceTest {
         mockSystemConfigWithFeatures(HOOK_NAME, PROVIDER_NAME);
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertContainsInAnyOrder(features, HOOK_ID, PROVIDER_ID);
     }
@@ -247,7 +254,8 @@ public class AdvancedProtectionServiceTest {
         mockSystemConfigWithFeatures(PROVIDER_NAME);
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertContainsInAnyOrder(features, PROVIDER_ID);
         assertDoesNotContain(features, HOOK_ID);
@@ -262,7 +270,8 @@ public class AdvancedProtectionServiceTest {
         mockSystemConfigWithFeatures(HOOK_NAME, PROVIDER_NAME);
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertContainsInAnyOrder(features, PROVIDER_ID);
         assertDoesNotContain(features, HOOK_ID);
@@ -277,9 +286,268 @@ public class AdvancedProtectionServiceTest {
         mockSystemConfigWithFeatures();
         AdvancedProtectionService service = createService(hook, provider);
 
-        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
 
         assertTrue(features.isEmpty());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    @Parameters(method = "parametersFor_testGetFeatures_featureDefaultProvisioningMode")
+    public void testGetFeatures_featureDefaultProvisioningMode(
+            int featureId, int provisioningMode) {
+        AdvancedProtectionHook hook =
+                createHook(featureId, /* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(features, featureId, provisioningMode);
+    }
+
+    private Object[] parametersFor_testGetFeatures_featureDefaultProvisioningMode() {
+        return new Object[] {
+            new Object[] {
+                AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
+            },
+            new Object[] {
+                AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
+            },
+            new Object[] {
+                AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
+            },
+            new Object[] {
+                AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
+            }
+        };
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_provisioned() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.updateAdvancedProtectionFeaturesProvisioning(new int[] {HOOK_ID}, null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN);
+
+        features = service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_deprovisioned() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.updateAdvancedProtectionFeaturesProvisioning(null, new int[] {HOOK_ID});
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN);
+
+        features = service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_provisionedAndDeprovisioned_differentFeatureIds() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionProvider provider = createProvider();
+        AdvancedProtectionService service = createService(hook, provider);
+
+        List<AdvancedProtectionFeature> features =
+                service.updateAdvancedProtectionFeaturesProvisioning(
+                        new int[] {HOOK_ID}, new int[] {PROVIDER_ID});
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN);
+        assertProvisioningMode(
+                features,
+                PROVIDER_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_provisionedAndDeprovisioned_sameFeatureId() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        service.updateAdvancedProtectionFeaturesProvisioning(
+                                new int[] {HOOK_ID}, new int[] {HOOK_ID}));
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_emptyFeatureIds() {
+        AdvancedProtectionService service = createService(null, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.updateAdvancedProtectionFeaturesProvisioning(new int[] {}, new int[] {});
+
+        assertEquals(features.size(), 0);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_nullFeatureIds() {
+        AdvancedProtectionService service = createService(null, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.updateAdvancedProtectionFeaturesProvisioning(null, null);
+
+        assertEquals(features.size(), 0);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateProvisioning_invalidFeatureId() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.updateAdvancedProtectionFeaturesProvisioning(new int[] {-1}, null));
+    }
+
+    @DisableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_apiV2Disabled_returnsDefaultProvisioningMode() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+        service.updateAdvancedProtectionFeaturesProvisioning(null, new int[] {HOOK_ID});
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_withFeatureIds_returnsOnlyRequestedFeatures() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionProvider provider = createProvider();
+        AdvancedProtectionService service = createService(hook, provider);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(new int[] {HOOK_ID});
+
+        assertEquals(features.size(), 1);
+        assertEquals(features.get(0).getId(), HOOK_ID);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_withFeatureIds_throwsExceptionForInvalidFeatureId() {
+        AdvancedProtectionService service = createService(null, null);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.getAdvancedProtectionFeatures(new int[] {-1}));
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testAdbProvisioning_provisioned() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+        service.setAdbProvisioned(HOOK_ID, true);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features, HOOK_ID, AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testAdbProvisioning_deprovisioned() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+        service.setAdbProvisioned(HOOK_ID, false);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_ADB);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testAdbProvisioning_removeProvisioning() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+        service.setAdbProvisioned(HOOK_ID, true);
+        service.removeAdbProvisioning(HOOK_ID);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT);
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testAdbAndFeatureAdminProvisioning_adbProvisioningTakesPrecedence() {
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
+        AdvancedProtectionService service = createService(hook, null);
+        service.setAdbProvisioned(HOOK_ID, true);
+        service.updateAdvancedProtectionFeaturesProvisioning(new int[] {HOOK_ID}, null);
+
+        List<AdvancedProtectionFeature> features =
+                service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features, HOOK_ID, AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB);
+
+        service.removeAdbProvisioning(HOOK_ID);
+
+        features = service.getAdvancedProtectionFeatures(/* featureIds */ null);
+
+        assertProvisioningMode(
+                features,
+                HOOK_ID,
+                AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN);
     }
 
     @Test
@@ -318,6 +586,18 @@ public class AdvancedProtectionServiceTest {
                                 new IAdvancedProtectionCallback.Default()));
     }
 
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUpdateAdvancedProtectionFeaturesProvisioning_withoutPermission() {
+        AdvancedProtectionService service = createService(null, null);
+        mPermissionEnforcer.revoke(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE);
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        service.updateAdvancedProtectionFeaturesProvisioning(
+                                new int[] {PROVIDER_ID}, new int[] {HOOK_ID}));
+    }
+
     private void assertContainsInAnyOrder(
             List<AdvancedProtectionFeature> features, Integer... featureIds) {
         assertThat(
@@ -329,6 +609,16 @@ public class AdvancedProtectionServiceTest {
         assertThat(
                 features.stream().map(AdvancedProtectionFeature::getId).toList(),
                 not(containsInAnyOrder(featureId)));
+    }
+
+    private void assertProvisioningMode(
+            List<AdvancedProtectionFeature> features,
+            @FeatureId int featureId,
+            @ProvisioningMode int provisioningMode) {
+        AdvancedProtectionFeature feature =
+                features.stream().filter(f -> f.getId() == featureId).findFirst().get();
+        assertEquals(featureId, feature.getId());
+        assertEquals(provisioningMode, feature.getProvisioningMode());
     }
 
     private IAdvancedProtectionCallback createCallback(AtomicBoolean callbackCaptor) {
@@ -407,6 +697,8 @@ public class AdvancedProtectionServiceTest {
                 new AdvancedProtectionStore(mContext) {
                     private boolean mAdvancedProtectionModeEnabled = false;
                     private boolean mUsbDataProtectionEnabled = false;
+                    private Map<Integer, Boolean> mFeatureIdToAdminProvisioned = new HashMap<>();
+                    private Map<Integer, Boolean> mFeatureIdToAdbProvisioned = new HashMap<>();
 
                     @Override
                     void saveAdvancedProtectionModeEnabled(boolean enabled) {
@@ -426,6 +718,33 @@ public class AdvancedProtectionServiceTest {
                     @Override
                     boolean retrieveUsbDataProtectionEnabled() {
                         return mUsbDataProtectionEnabled;
+                    }
+
+                    @Override
+                    void saveFeatureAdminProvisioned(
+                            @FeatureId int featureId, boolean isProvisioned) {
+                        mFeatureIdToAdminProvisioned.put(featureId, isProvisioned);
+                    }
+
+                    @Override
+                    Boolean retrieveFeatureAdminProvisioned(@FeatureId int featureId) {
+                        return mFeatureIdToAdminProvisioned.get(featureId);
+                    }
+
+                    @Override
+                    void saveFeatureAdbProvisioned(
+                            @FeatureId int featureId, boolean isProvisioned) {
+                        mFeatureIdToAdbProvisioned.put(featureId, isProvisioned);
+                    }
+
+                    @Override
+                    Boolean retrieveFeatureAdbProvisioned(@FeatureId int featureId) {
+                        return mFeatureIdToAdbProvisioned.get(featureId);
+                    }
+
+                    @Override
+                    void removeFeatureAdbProvisioning(@FeatureId int featureId) {
+                        mFeatureIdToAdbProvisioned.remove(featureId);
                     }
 
                     @Override

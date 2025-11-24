@@ -442,6 +442,24 @@ public class AidlConversion {
         return apiBuilder.build();
     }
 
+    /** Convert from SDK AudioFormat to AIDL AudioConfigBase. */
+    public static AudioConfigBase api2aidl_AudioFormat_AudioConfigBase(
+            @NonNull AudioFormat audioFormat, boolean isInput) {
+        Parcel in = api2aidl_AudioFormat_AudioConfigBase_Parcel(audioFormat.getSampleRate(),
+                audioFormat.getEncoding(), audioFormat.getChannelMask(),
+                audioFormat.getChannelIndexMask(), isInput);
+        if (in != null) {
+            try {
+                return AudioConfigBase.CREATOR.createFromParcel(in);
+            } finally {
+                in.recycle();
+            }
+        }
+        throw new IllegalArgumentException(
+                "Failed to convert (" + (isInput ? "input" : "output")
+                        + ") AudioFormat value " + audioFormat);
+    }
+
     /** Convert from AIDL AudioFormat to SDK AudioFormat.ENCODING_*. */
     public static int aidl2api_AudioFormat_AudioFormatEncoding(
             @NonNull AudioFormatDescription aidl) {
@@ -916,4 +934,6 @@ public class AidlConversion {
             Parcel aidl);
     private static native Parcel legacy2aidl_audio_format_t_AudioFormatDescription_Parcel(
             int legacy);
+    private static native Parcel api2aidl_AudioFormat_AudioConfigBase_Parcel(
+            int sampleRate, int encoding, int channelMask, int channelIndexMask, boolean isInput);
 }

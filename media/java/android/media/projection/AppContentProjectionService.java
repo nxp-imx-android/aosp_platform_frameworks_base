@@ -106,13 +106,13 @@ public abstract class AppContentProjectionService extends Service {
         @Override
         @EnforcePermission(allOf = {"MANAGE_MEDIA_PROJECTION"})
         public void onLoopbackProjectionStarted(IAppContentProjectionSession session,
-                int contentId) {
+                int contentId, boolean isAudioRequested) {
             onLoopbackProjectionStarted_enforcePermission();
             if (mSession != null) {
                 throw new IllegalStateException(
                         "Only one single AppContentProjectionSession is supported");
             }
-            mSession = new AppContentProjectionSession(session);
+            mSession = new AppContentProjectionSession(session, isAudioRequested);
             AppContentProjectionService.this.onLoopbackProjectionStarted(
                     mSession, contentId
             );

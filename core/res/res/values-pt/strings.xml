@@ -825,6 +825,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permite que o app leia arquivos de vídeo do armazenamento compartilhado."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ler arquivos de imagem do armazenamento compartilhado"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permite que o app leia arquivos de imagem do armazenamento compartilhado."</string>
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"ler documentos do armazenamento compartilhado"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Permite que o app leia documentos do armazenamento compartilhado."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ler arquivos de imagem e vídeo selecionados pelo usuário no armazenamento compartilhado"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permite que o app leia arquivos de imagem e vídeo que você selecionar no armazenamento compartilhado."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"alterar ou excluir conteúdo do armaz. compartilhado"</string>

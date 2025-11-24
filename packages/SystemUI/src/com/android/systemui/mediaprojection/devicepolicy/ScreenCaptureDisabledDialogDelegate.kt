@@ -19,6 +19,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface.BUTTON_POSITIVE
 import android.content.res.Resources
+import android.os.Bundle
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -30,7 +31,8 @@ class ScreenCaptureDisabledDialogDelegate
 constructor(
     private val context: Context,
     @Main private val resources: Resources,
-) {
+    private val systemUIDialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate {
 
     fun createPlainDialog(): AlertDialog {
         return AlertDialog.Builder(context, R.style.Theme_SystemUI_Dialog).create().also {
@@ -38,8 +40,12 @@ constructor(
         }
     }
 
-    fun createSysUIDialog(): AlertDialog {
-        return SystemUIDialog(context).also { initDialog(it) }
+    override fun createDialog(): SystemUIDialog {
+        return systemUIDialogFactory.create(this)
+    }
+
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+        initDialog(dialog)
     }
 
     private fun initDialog(dialog: AlertDialog) {

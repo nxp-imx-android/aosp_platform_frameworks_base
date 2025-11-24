@@ -26,6 +26,7 @@ import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUP
 import static com.android.server.display.feature.flags.Flags.FLAG_HIGHEST_HDR_SDR_RATIO_API;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_HAS_ARR_SUPPORT;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUGGESTED_FRAME_RATE;
+import static com.android.server.display.feature.flags.Flags.FLAG_FRAME_RATE_MAPPING_API;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -66,6 +67,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -1420,6 +1422,46 @@ public final class Display {
             } else {
                 throw new IllegalArgumentException("Invalid FrameRateCategory provided");
             }
+        }
+    }
+
+    /**
+     * Retrieves the View frame rate / velocity mapping specifications
+     * defined in the framework configuration.
+     * For example, 120 frame per second / 300 pixels per second
+     *
+     * <p>
+     * This is primarily for flinging use cases in components like RecyclerView,
+     * ScrollView, AbsListView, and NestedScrollView. When the content's velocity is high,
+     * a higher frame rate is required to ensure smoothness,
+     * and conversely, a lower frame rate can be used when the velocity is low.
+     * </p>
+     *
+     * <p>
+     * These values are specific to this {@link Display} instance. If your application
+     * moves to a different display (for example, transitioning between the inner and
+     * outer screens of a foldable device), you must query these values from the
+     * {@link Display} object associated with the window where the content is currently
+     * being rendered.
+     * </p>
+     *
+     * <p>
+     * Mapping values needs to be re-queried whenever DisplayListener#onDisplayChanged
+     * is invoked to ensure data consistency.
+     * This corresponds to the DisplayManager#EVENT_FLAG_DISPLAY_CHANGED event.
+     * </p>
+     *
+     * @return A read-only and nonempty List of
+     *          FrameRateVelocityPoint objects representing the mapping.
+     * @see FrameRateVelocityPoint
+     */
+    @NonNull
+    @FlaggedApi(FLAG_FRAME_RATE_MAPPING_API)
+    public List<FrameRateVelocityPoint> getFrameRateVelocityMapping() {
+        synchronized (mLock) {
+            updateDisplayInfoLocked();
+            // Return an unmodifiable view of the list
+            return Collections.unmodifiableList(mDisplayInfo.frameRateVelocityMapping);
         }
     }
 

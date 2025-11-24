@@ -123,7 +123,7 @@ public class ApplicationStartInfoTest {
                 mContext.getMainLooper());
         mAms.mAtmInternal = spy(mAms.mActivityTaskManager.getAtmInternal());
         mAms.mPackageManagerInt = mPackageManagerInt;
-        mAppStartInfoTracker.mService = mAms;
+        mAppStartInfoTracker.init(mAms);
         doReturn(new ComponentName("", "")).when(mPackageManagerInt).getSystemUiServiceComponent();
         doReturn("com.android.test").when(mPackageManagerInt).getNameForUid(anyInt());
         // Remove stale instance of PackageManagerInternal if there is any

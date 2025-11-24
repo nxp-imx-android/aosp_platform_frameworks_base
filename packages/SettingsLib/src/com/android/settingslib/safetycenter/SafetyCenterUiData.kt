@@ -19,6 +19,7 @@ package com.android.settingslib.safetycenter
 import android.app.PendingIntent
 import android.safetycenter.SafetyCenterEntry
 import android.safetycenter.SafetyCenterIssue
+import android.safetycenter.SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK
 import android.safetycenter.SafetyCenterStaticEntry
 import android.safetycenter.SafetyCenterStatus
 
@@ -44,9 +45,7 @@ data class SafetyCenterUiData(
     val resolvedIssues: Map<String, String> = emptyMap(),
 ) {
 
-    /**
-     * Creates a copy of this [SafetyCenterUiData] with the provided [resolvedIssues].
-     */
+    /** Creates a copy of this [SafetyCenterUiData] with the provided [resolvedIssues]. */
     fun copyWithResolvedIssues(resolvedIssues: Map<String, String>): SafetyCenterUiData {
         return this.copy(resolvedIssues = resolvedIssues)
     }
@@ -121,6 +120,7 @@ data class SafetyCenterUiData(
         val relevantIssues =
             sourceIdsOrder
                 .flatMap { sourceId -> dismissedIssuesBySourceId[sourceId] ?: emptyList() }
+                .filter { it.severityLevel > ISSUE_SEVERITY_LEVEL_OK }
                 .distinct()
         return relevantIssues.sortedWith(issueComparator(sourceIdsOrder))
     }

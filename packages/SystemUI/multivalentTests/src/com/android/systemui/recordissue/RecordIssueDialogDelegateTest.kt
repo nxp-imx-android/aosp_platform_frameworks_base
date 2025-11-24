@@ -87,7 +87,7 @@ class RecordIssueDialogDelegateTest : SysuiTestCase() {
     fun setup() {
         MockitoAnnotations.initMocks(this)
         whenever(dprLazy.get()).thenReturn(devicePolicyResolver)
-        whenever(screenCaptureDisabledDialogDelegate.createSysUIDialog())
+        whenever(screenCaptureDisabledDialogDelegate.createDialog())
             .thenReturn(screenCaptureDisabledDialog)
         whenever(state.issueTypeRes).thenReturn(ISSUE_TYPE_NOT_SET)
 

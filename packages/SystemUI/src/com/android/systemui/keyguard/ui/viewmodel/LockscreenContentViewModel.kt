@@ -19,8 +19,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -30,7 +28,6 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
-import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -40,13 +37,9 @@ import kotlinx.coroutines.coroutineScope
 class LockscreenContentViewModel
 @AssistedInject
 constructor(
-    val touchHandlingFactory: KeyguardTouchHandlingViewModel.Factory,
     shadeModeInteractor: ShadeModeInteractor,
-    deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
-    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     private val keyguardTransitionAnimationCallbackDelegator:
         KeyguardTransitionAnimationCallbackDelegator,
-    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
     private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAlphaViewModelFactory: LockscreenAlphaViewModel.Factory,
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
@@ -54,31 +47,9 @@ constructor(
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
 
-    /** @see ShadeModeInteractor.isFullWidthShade */
-    val isFullWidthShade: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isFullWidthShade",
-            source = shadeModeInteractor.isFullWidthShade,
-        )
-
     /** @see ShadeModeInteractor.shadeMode */
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
-
-    /** @see DeviceEntryBypassInteractor.isBypassEnabled */
-    val isBypassEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isBypassEnabled",
-            source = deviceEntryBypassInteractor.isBypassEnabled,
-        )
-
-    /** Whether udfps is supported. */
-    val isUdfpsSupported: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isUdfpsSupported",
-            source = deviceEntryUdfpsInteractor.isUdfpsSupported,
-            initialValue = deviceEntryUdfpsInteractor.isUdfpsSupported.value,
-        )
 
     /** Alpha value applied to all LockscreenElements. */
     val alpha: Float
@@ -106,22 +77,6 @@ constructor(
                 keyguardTransitionAnimationCallbackDelegator.delegate = null
             }
         }
-    }
-
-    fun setMediaPlayerBottom(bottom: Float) {
-        wallpaperFocalAreaInteractor.setMediaPlayerBottom(bottom)
-    }
-
-    fun setShortcutTop(top: Float) {
-        wallpaperFocalAreaInteractor.setShortcutTop(top)
-    }
-
-    fun setSmallClockBottom(bottom: Float) {
-        wallpaperFocalAreaInteractor.setSmallClockBottom(bottom)
-    }
-
-    fun setSmartspaceCardBottom(bottom: Float) {
-        wallpaperFocalAreaInteractor.setSmartspaceCardBottom(bottom)
     }
 
     /** Sets the alpha to apply to the NSSL for fade-in on lockscreen */

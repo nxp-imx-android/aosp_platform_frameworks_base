@@ -114,6 +114,7 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.instrumentation.IOffsetCallback;
@@ -142,6 +143,7 @@ import com.android.server.am.UidObserverController.ChangeRecord;
 import com.android.server.appop.AppOpsService;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.notification.NotificationManagerInternal;
+import com.android.server.privatecompute.PccSandboxManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService;
 
@@ -201,6 +203,15 @@ public class ActivityManagerServiceTest {
     private static final String TEST_PACKAGE = "com.test.package";
     private static final int USER_ID = 666;
 
+    // Example UIDs for different process types
+    private static final int PCC_UID_1 = Process.FIRST_PCC_UID;
+    private static final int REGULAR_UID = 10200;
+    private static final int REGULAR_UID_2 = 10201;
+
+    private static final String PCC_PACKAGE_1 = "com.pcc.package1";
+    private static final String REGULAR_PACKAGE = "com.regular.package";
+    private static final String REGULAR_PACKAGE_2 = "com.regular.package2";
+
     private static final long TEST_PROC_STATE_SEQ1 = 555;
     private static final long TEST_PROC_STATE_SEQ2 = 556;
 
@@ -250,6 +261,7 @@ public class ActivityManagerServiceTest {
     @Mock private NotificationManagerInternal mNotificationManagerInternal;
     @Mock private JobSchedulerInternal mJobSchedulerInternal;
     @Mock private ContentResolver mContentResolver;
+    @Mock private PccSandboxManagerInternal mMockPccSandboxManagerInternal;
 
     private TestInjector mInjector;
     private ActivityManagerService mAms;
@@ -264,6 +276,7 @@ public class ActivityManagerServiceTest {
         mMockingSession = mockitoSession()
                 .initMocks(this)
                 .mockStatic(AppGlobals.class)
+                .spyStatic(ServiceManager.class)
                 .strictness(Strictness.LENIENT)
                 .startMocking();
         MockitoAnnotations.initMocks(this);
@@ -279,6 +292,8 @@ public class ActivityManagerServiceTest {
         doReturn(mPackageManager).when(AppGlobals::getPackageManager);
         doReturn(mPermissionManager).when(AppGlobals::getPermissionManager);
         doReturn(new String[]{""}).when(mPackageManager).getPackagesForUid(eq(Process.myUid()));
+
+        LocalServices.addService(PccSandboxManagerInternal.class, mMockPccSandboxManagerInternal);
 
         mHandlerThread = new HandlerThread(TAG);
         mHandlerThread.start();
@@ -319,6 +334,31 @@ public class ActivityManagerServiceTest {
                 mAms.mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S);
     }
 
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccToRegular_isDelegatedToPccSandboxManager() {
+        when(mMockPccSandboxManagerInternal.validateAssociationAllowed(
+                eq(PCC_UID_1), eq(PCC_PACKAGE_1), eq(REGULAR_UID), eq(REGULAR_PACKAGE)))
+                .thenReturn(false);
+
+        boolean allowed = mAms.validateAssociationAllowedLocked(
+                PCC_PACKAGE_1, PCC_UID_1, REGULAR_PACKAGE, REGULAR_UID);
+
+        assertFalse("Association between a PCC UID and a regular UID should be denied", allowed);
+    }
+
+    // ActivityManagerService allows associations if there are no associations defined.
+    // This test ensures that the PCC logic is NOT triggered for regular UIDs.
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_regularToRegular_fallsThrough() {
+        boolean allowed = mAms.validateAssociationAllowedLocked(
+                REGULAR_PACKAGE, REGULAR_UID, REGULAR_PACKAGE_2, REGULAR_UID_2);
+
+        assertTrue("Association between two regular UIDs with no restrictions is allowed", allowed);
+    }
+
+
     private void mockNoteOperation() {
         SyncNotedAppOp allowed = new SyncNotedAppOp(AppOpsManager.MODE_ALLOWED,
                 AppOpsManager.OP_GET_USAGE_STATS, null, mContext.getPackageName());
@@ -338,6 +378,7 @@ public class ActivityManagerServiceTest {
         }
         clearInvocations(mNotificationManagerInternal);
 
+        LocalServices.removeServiceForTest(PccSandboxManagerInternal.class);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
         LocalServices.removeServiceForTest(NotificationManagerInternal.class);

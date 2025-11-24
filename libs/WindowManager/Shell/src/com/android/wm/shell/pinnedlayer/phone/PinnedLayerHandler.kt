@@ -72,10 +72,13 @@ class PinnedLayerHandler(
         val wct = WindowContainerTransaction()
         val isLayerPinningRequest = windowingLayerChange.isLayerPinningRequest()
         val isLayerOpeningPinnedRequest = request.isOpeningPinnedRequest()
+        val isRequestingLocation = request.isRequestLocationOfPinnedTask()
         logV(
-            "Creating a pin transition: isLayerPinningRequest=%b, isOpeningPinnedRequest=%b",
+            "Creating a transition: isLayerPinningRequest=%b, isOpeningPinnedRequest=%b, " +
+                "isRequestingLocation=%b",
             isLayerPinningRequest,
             isLayerOpeningPinnedRequest,
+            isRequestingLocation,
         )
         // There's either a pin request or an already pinned task is brought to foreground.
         if (isLayerPinningRequest || isLayerOpeningPinnedRequest) {
@@ -95,6 +98,17 @@ class PinnedLayerHandler(
                 return null
             }
             wct.merge(pinWct, /* transfer= */ true)
+        }
+
+        if (isRequestingLocation) {
+            // It's a request to move or resize a pinned task. Due to security reasons, pinned tasks
+            // have limited ability to change their location so we delegate the request to the
+            // PinnedLayerController.
+            pinnedLayerController.requestTaskLocationChange(
+                triggerTask,
+                request.requestedLocation!!,
+                wct,
+            )
         }
 
         val isClosePinnedRequest = request.isClosingPinnedRequest()
@@ -299,5 +313,12 @@ class PinnedLayerHandler(
         return task != null &&
             pinnedLayerController.isPinned(task.taskId) &&
             TransitionUtil.isClosingType(type)
+    }
+
+    private fun TransitionRequestInfo.isRequestLocationOfPinnedTask(): Boolean {
+        val task = triggerTask
+        return task != null &&
+            pinnedLayerController.isPinned(task.taskId) &&
+            requestedLocation != null
     }
 }

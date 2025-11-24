@@ -28,14 +28,6 @@ flag {
 }
 
 flag {
-    name: "enable_clear_pipe_after_restore_file"
-    namespace: "onboarding"
-    description: "Enables clearing the pipe buffer after restoring a single file to a BackupAgent."
-    bug: "320633449"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "enable_v_to_u_restore_for_system_components_in_allowlist"
     namespace: "onboarding"
     description: "Enables system components to opt in to support restore in V to U downgrade "

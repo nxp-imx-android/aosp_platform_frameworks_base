@@ -16,7 +16,6 @@
 
 package com.android.server.notification;
 
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
@@ -123,6 +122,7 @@ import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATIO
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.callstyleCallbackApi;
 import static android.service.notification.Flags.listenerHintExemptPackages;
@@ -311,6 +311,7 @@ import android.os.UserManager;
 import android.os.WorkSource;
 import android.permission.PermissionManager;
 import android.provider.Settings;
+import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
 import android.service.notification.Adjustment;
 import android.service.notification.Condition;
@@ -2848,7 +2849,7 @@ public class NotificationManagerService extends SystemService {
                 mConditionProviders, flagResolver, new ZenModeEventLogger(mPackageManagerClient));
         mZenModeHelper.addCallback(new ZenModeHelper.Callback() {
             @Override
-            public void onConfigChanged() {
+            public void onConfigApplied() {
                 handleSavePolicyFile();
                 getContext().sendBroadcastAsUser(
                         new Intent(
@@ -2858,7 +2859,12 @@ public class NotificationManagerService extends SystemService {
             }
 
             @Override
-            void onZenModeChanged() {
+            public void onConfigChanged(UserHandle user) {
+                handleSavePolicyFile();
+            }
+
+            @Override
+            public void onZenModeChanged() {
                 Binder.withCleanCallingIdentity(() -> {
                     sendRegisteredOnlyBroadcast(ACTION_INTERRUPTION_FILTER_CHANGED);
                     getContext().sendBroadcastAsUser(
@@ -2873,7 +2879,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             @Override
-            void onPolicyChanged(Policy newPolicy) {
+            public void onPolicyChanged(Policy newPolicy) {
                 Binder.withCleanCallingIdentity(() -> {
                     Intent intent = new Intent(ACTION_NOTIFICATION_POLICY_CHANGED);
                     intent.putExtra(EXTRA_NOTIFICATION_POLICY, newPolicy);
@@ -2883,7 +2889,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             @Override
-            void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {
+            public void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {
                 Binder.withCleanCallingIdentity(() -> {
                     Intent intent = new Intent(ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED);
                     intent.putExtra(EXTRA_NOTIFICATION_POLICY, newConsolidatedPolicy);
@@ -2894,7 +2900,8 @@ public class NotificationManagerService extends SystemService {
             }
 
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 Binder.withCleanCallingIdentity(() -> {
                     Intent intent = new Intent(ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED);
                     intent.setPackage(pkg);
@@ -7091,6 +7098,12 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        public List<String> getEnabledZenPackages() {
+            checkCallerIsSystem();
+            return mConditionProviders.getAllowedPackages(getCallingUserHandle().getIdentifier());
+        }
+
+        @Override
         public List<ComponentName> getEnabledNotificationListeners(
                 @CannotBeSpecialUser @UserIdInt int userId) {
             checkNotificationListenerAccess();
@@ -8596,11 +8609,8 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void setDeviceEffectsApplier(DeviceEffectsApplier applier) {
-            if (mZenModeHelper == null) {
-                throw new IllegalStateException("ZenModeHelper is not yet ready!");
-            }
             // This can also throw IllegalStateException if called too late.
-            mZenModeHelper.setDeviceEffectsApplier(applier);
+            requireZenModeHelper().setDeviceEffectsApplier(applier);
         }
 
         @Override
@@ -8623,6 +8633,96 @@ public class NotificationManagerService extends SystemService {
                     requestSystemAdjustmentsLocked(adjustments);
                 }
             }
+        }
+
+        @Override
+        public Map<String, AutomaticZenRule> getAutomaticZenRules(UserHandle userHandle) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return Map.of();
+            }
+            return requireZenModeHelper().getAutomaticZenRules(userHandle, Binder.getCallingUid());
+        }
+
+        @Override
+        public boolean isManualZenRuleActive(UserHandle userHandle) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return false;
+            }
+            return requireZenModeHelper().getManualZenMode(userHandle) != Global.ZEN_MODE_OFF;
+        }
+
+        @Override
+        public void setManualZenRuleActive(UserHandle userHandle, boolean active) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return;
+            }
+            // This should act as if user toggles the systemui button.
+            requireZenModeHelper().setManualZenMode(
+                    userHandle,
+                    active ? Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS : Global.ZEN_MODE_OFF,
+                    /* conditionId= */ null,
+                    ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI,
+                    /* reason= */ "NotificationManagerInternal.setManualZenRuleActive",
+                    /* caller= */ null,
+                    Binder.getCallingUid());
+        }
+
+        @Override
+        public boolean isAutomaticZenRuleActive(UserHandle userHandle, String id) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return false;
+            }
+            return requireZenModeHelper().getAutomaticZenRuleState(
+                    userHandle, id, Binder.getCallingUid()) == Condition.STATE_TRUE;
+        }
+
+        @Override
+        public void setAutomaticZenRuleActive(
+                UserHandle userHandle, String id, boolean active) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return;
+            }
+            ZenModeHelper zenModeHelper = requireZenModeHelper();
+            int uid = Binder.getCallingUid();
+            AutomaticZenRule rule = zenModeHelper.getAutomaticZenRule(userHandle, id, uid);
+            if (rule == null) {
+                return;
+            }
+            // This should act as if user toggles the systemui button.
+            // TODO(b/461827745): allow callers to specify the origin, and possibly support cross-
+            // device origins.
+            Condition condition =
+                    new Condition(
+                            rule.getConditionId(),
+                            /* summary= */ "",
+                            active ? Condition.STATE_TRUE : Condition.STATE_FALSE,
+                            Condition.SOURCE_USER_ACTION);
+            zenModeHelper.setAutomaticZenRuleState(
+                    userHandle, id, condition, ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI, uid);
+        }
+
+        @Override
+        public void addZenModeCallback(ZenModeHelper.Callback callback) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return;
+            }
+            requireZenModeHelper().addCallback(callback);
+        }
+
+        @Override
+        public boolean hasZenModeConfig(UserHandle userHandle) {
+            if (!android.service.notification.Flags.enableDndSync()) {
+                return false;
+            }
+            return requireZenModeHelper().hasZenModeConfig(userHandle);
+        }
+
+        @NonNull
+        private ZenModeHelper requireZenModeHelper() {
+            if (mZenModeHelper == null) {
+                throw new IllegalStateException("ZenModeHelper is not yet ready!");
+            }
+            return mZenModeHelper;
         }
     };
 
@@ -9263,7 +9363,7 @@ public class NotificationManagerService extends SystemService {
         } else {
             notification.extras.remove(Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION);
         }
-        if (android.app.Flags.bridgedNotificationsApi()) {
+        if (android.app.Flags.bridgedNotifications()) {
             // Ensure only allowed packages add bridged notification metadata.
             if (notification.getBridgedNotificationMetadata() != null) {
                 int hasPermission = getContext().checkPermission(

@@ -34,7 +34,7 @@ import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_ALWAYS;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_DEFAULT;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_NEVER;
 import static android.os.Process.SYSTEM_UID;
-import static android.telecom.TelecomManager.EMERGENCY_DIALER_COMPONENT;
+import static android.telephony.TelephonyManager.EMERGENCY_DIALER_COMPONENT;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 

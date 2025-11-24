@@ -2314,6 +2314,18 @@ public class NotificationManager {
     }
 
     /**
+     * @hide
+     */
+    public List<String> getEnabledZenPackages() {
+        INotificationManager service = service();
+        try {
+            return service.getEnabledZenPackages();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets the current user-specified default notification policy.
      *
      * <p>For apps targeting {@link Build.VERSION_CODES#VANILLA_ICE_CREAM} and above (with some

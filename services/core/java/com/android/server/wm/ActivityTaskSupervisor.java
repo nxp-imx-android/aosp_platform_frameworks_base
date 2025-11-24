@@ -1176,7 +1176,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     void startSpecificActivity(ActivityRecord r, boolean andResume, boolean checkConfig) {
         // Is this activity's application already running?
         final WindowProcessController wpc =
-                mService.getProcessController(r.processName, r.info.applicationInfo.uid);
+                mService.getProcessController(r.processName, r.getUid());
 
         boolean knownToBeDead = false;
         if (wpc != null && wpc.hasThread()) {
@@ -1247,7 +1247,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 msg = "Permission Denial: starting " + intent.toString()
                         + " from " + callerApp + " (pid=" + callingPid
                         + ", uid=" + callingUid + ")"
-                        + " not exported from uid " + aInfo.applicationInfo.uid;
+                        + " not exported from uid " + aInfo.getUid();
             } else {
                 msg = "Permission Denial: starting " + intent.toString()
                         + " from " + callerApp + " (pid=" + callingPid
@@ -1445,7 +1445,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             String callingPackage, @Nullable String callingFeatureId, int callingPid,
             int callingUid, boolean ignoreTargetSecurity) {
         if (!ignoreTargetSecurity && mService.checkComponentPermission(activityInfo.permission,
-                callingPid, callingUid, activityInfo.applicationInfo.uid, activityInfo.exported)
+                callingPid, callingUid, activityInfo.getUid(), activityInfo.exported)
                 == PERMISSION_DENIED) {
             return ACTIVITY_RESTRICTION_PERMISSION;
         }

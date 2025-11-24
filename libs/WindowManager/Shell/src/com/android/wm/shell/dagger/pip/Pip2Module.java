@@ -100,13 +100,15 @@ public abstract class Pip2Module {
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
-            PipInteractionHandler pipInteractionHandler) {
+            PipInteractionHandler pipInteractionHandler,
+            PipDisplayTransferHandler pipDisplayTransferHandler) {
         return new PipTransition(context, pipSurfaceTransactionHelper, shellInit,
                 shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
                 pipUiStateChangeController, displayController, splitScreenControllerOptional,
-                pipDesktopState, desktopPipTransitionController, pipInteractionHandler);
+                pipDesktopState, desktopPipTransitionController, pipInteractionHandler,
+                pipDisplayTransferHandler);
     }
 
     @WMSingleton
@@ -248,11 +250,13 @@ public abstract class Pip2Module {
             PipTransitionState pipTransitionState,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipDesktopState pipDesktopState,
-            PipUiEventLogger pipUiEventLogger, PipDisplayLayoutState pipDisplayLayoutState) {
+            PipUiEventLogger pipUiEventLogger,
+            PipDisplayLayoutState pipDisplayLayoutState,
+            PipInteractionHandler pipInteractionHandler) {
         return new PipMotionHelper(context, pipBoundsState, menuController, pipSnapAlgorithm,
                 floatingContentCoordinator, pipScheduler, pipPerfHintControllerOptional,
                 pipTransitionState, pipSurfaceTransactionHelper, pipDesktopState, pipUiEventLogger,
-                pipDisplayLayoutState);
+                pipDisplayLayoutState, pipInteractionHandler);
     }
 
     @WMSingleton

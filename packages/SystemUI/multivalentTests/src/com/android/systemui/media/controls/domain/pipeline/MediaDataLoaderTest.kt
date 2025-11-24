@@ -447,6 +447,71 @@ class MediaDataLoaderTest : SysuiTestCase() {
             verify(mockImageLoader, times(2)).loadBitmap(any(), anyInt(), anyInt(), anyInt())
         }
 
+    @Test
+    fun loadActionsFromNotification() =
+        testScope.runTest {
+            whenever(mediaController.playbackState).thenReturn(null)
+            val notif =
+                SbnBuilder().run {
+                    setPkg(PACKAGE_NAME)
+                    modifyNotification(context).also {
+                        it.setSmallIcon(android.R.drawable.ic_media_pause)
+                        it.addAction(Notification.Action(R.drawable.ic_media_prev, "prev", null))
+                        it.addAction(
+                            Notification.Action(R.drawable.ic_media_play_button, "play", null)
+                        )
+                        it.addAction(Notification.Action(R.drawable.ic_media_next, "next", null))
+                        it.setStyle(
+                            MediaStyle().apply {
+                                setMediaSession(session.sessionToken)
+                                setShowActionsInCompactView(1, 2)
+                            }
+                        )
+                    }
+                    build()
+                }
+
+            val result = underTest.loadMediaData(KEY, notif)!!
+
+            assertThat(result.semanticActions).isNull()
+            assertThat(result.actionIcons.size).isEqualTo(3)
+            assertThat(result.actionIcons[0].contentDescription).isEqualTo("prev")
+            assertThat(result.actionIcons[1].contentDescription).isEqualTo("play")
+            assertThat(result.actionIcons[2].contentDescription).isEqualTo("next")
+            assertThat(result.actionsToShowInCompact).containsExactly(1, 2).inOrder()
+        }
+
+    @Test
+    fun ignoresInvalidCompactActions() =
+        testScope.runTest {
+            whenever(mediaController.playbackState).thenReturn(null)
+            val notif =
+                SbnBuilder().run {
+                    setPkg(PACKAGE_NAME)
+                    modifyNotification(context).also {
+                        it.setSmallIcon(android.R.drawable.ic_media_pause)
+                        it.addAction(Notification.Action(R.drawable.ic_media_prev, "prev", null))
+                        it.addAction(
+                            Notification.Action(R.drawable.ic_media_play_button, "play", null)
+                        )
+                        it.addAction(Notification.Action(R.drawable.ic_media_next, "next", null))
+                        it.setStyle(
+                            MediaStyle().apply {
+                                setMediaSession(session.sessionToken)
+                                setShowActionsInCompactView(1, 10, 11, 12)
+                            }
+                        )
+                    }
+                    build()
+                }
+
+            val result = underTest.loadMediaData(KEY, notif)!!
+
+            assertThat(result.semanticActions).isNull()
+            assertThat(result.actionIcons.size).isEqualTo(3)
+            assertThat(result.actionsToShowInCompact).containsExactly(1)
+        }
+
     private fun createMediaNotification(
         mediaSession: MediaSession? = session,
         applicationInfo: ApplicationInfo? = null,

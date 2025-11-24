@@ -66,6 +66,7 @@ constructor(
     ) {
 
     override fun start() {
+        if (SceneContainerFlag.isEnabled) return
         listenForOccludedToLockscreenOrHub()
         listenForOccludedToDreaming()
         listenForOccludedToAsleep()
@@ -75,7 +76,6 @@ constructor(
     }
 
     private fun listenForOccludedToPrimaryBouncer() {
-        if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.primaryBouncerShowing
                 .filterRelevantKeyguardStateAnd { isBouncerShowing -> isBouncerShowing }
@@ -84,6 +84,7 @@ constructor(
     }
 
     private fun listenForOccludedToDreaming() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.isAbleToDream
                 .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
@@ -92,6 +93,7 @@ constructor(
     }
 
     private fun listenForOccludedToLockscreenOrHub() {
+        if (SceneContainerFlag.isEnabled) return
         if (KeyguardWmStateRefactor.isEnabled) {
             scope.launch {
                 keyguardOcclusionInteractor.isShowWhenLockedActivityOnTop

@@ -40,6 +40,7 @@ import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 import static android.os.UserManager.USER_TYPE_PROFILE_TEST;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
+import android.app.ActivityManager;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
 import android.content.res.Resources;
@@ -318,7 +319,8 @@ public final class UserTypeFactory {
                 .setProfileParentRequired(true)
                 .setMaxAllowed(1)
                 .setMaxAllowedPerParent(1)
-                .setEnabled(UserManager.isPrivateProfileEnabled() ? 1 : 0)
+                .setEnabled(!android.multiuser.Flags.blockPrivateSpaceCreation()
+                        || !ActivityManager.isLowRamDeviceStatic() ? 1 : 0)
                 .setLabels(R.string.profile_label_private)
                 .setIconBadge(com.android.internal.R.drawable.ic_private_profile_icon_badge)
                 .setBadgePlain(com.android.internal.R.drawable.ic_private_profile_badge)
@@ -467,7 +469,7 @@ public final class UserTypeFactory {
                 .setMaxAllowed(1)
                 .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions())
                 .setActivitiesAllowlist(android.multiuser.Flags.hsuAllowlistActivities()
-                        ? com.android.internal.R.array.config_hsu_allowlist_activities
+                        ? com.android.internal.R.array.hsu_allowlist_activities
                         : Resources.ID_NULL);
     }
 

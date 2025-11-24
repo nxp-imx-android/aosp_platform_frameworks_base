@@ -17,8 +17,14 @@
 package android.os;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -38,6 +44,7 @@ import com.android.frameworks.coretests.aidl.IBfsccTestAppCmdService;
 import com.android.frameworks.coretests.bdr_helper_app.TestCommsReceiver;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -140,9 +147,8 @@ public class BinderFrozenStateChangeNotificationTest {
     @Test
     public void onStateChangeCalled() throws Exception {
         final LinkedBlockingQueue<Boolean> results = new LinkedBlockingQueue<>();
-        if (createCallback(mBfsccTestAppCmdService.asBinder(), results) == null) {
-            return;
-        }
+        Assume.assumeTrue(BinderProxy.isFrozenStateChangeCallbackSupported());
+        assertNotNull(createCallback(mBfsccTestAppCmdService.asBinder(), results));
         ensureUnfrozenCallback(results);
         freezeApp1();
         ensureFrozenCallback(results);
@@ -154,9 +160,8 @@ public class BinderFrozenStateChangeNotificationTest {
     public void onStateChangeNotCalledAfterCallbackRemoved() throws Exception {
         final LinkedBlockingQueue<Boolean> results = new LinkedBlockingQueue<>();
         IBinder.FrozenStateChangeCallback callback;
-        if ((callback = createCallback(mBfsccTestAppCmdService.asBinder(), results)) == null) {
-            return;
-        }
+        Assume.assumeTrue(BinderProxy.isFrozenStateChangeCallbackSupported());
+        assertNotNull(callback = createCallback(mBfsccTestAppCmdService.asBinder(), results));
         ensureUnfrozenCallback(results);
         mBfsccTestAppCmdService.asBinder().removeFrozenStateChangeCallback(callback);
         freezeApp1();
@@ -168,15 +173,12 @@ public class BinderFrozenStateChangeNotificationTest {
         final LinkedBlockingQueue<Boolean> results1 = new LinkedBlockingQueue<>();
         final LinkedBlockingQueue<Boolean> results2 = new LinkedBlockingQueue<>();
         IBinder.FrozenStateChangeCallback callback1;
-        if ((callback1 = createCallback(mBfsccTestAppCmdService.asBinder(), results1)) == null) {
-            return;
-        }
+        Assume.assumeTrue(BinderProxy.isFrozenStateChangeCallbackSupported());
+        assertNotNull(callback1 = createCallback(mBfsccTestAppCmdService.asBinder(), results1));
         ensureUnfrozenCallback(results1);
         freezeApp1();
         ensureFrozenCallback(results1);
-        if (createCallback(mBfsccTestAppCmdService.asBinder(), results2) == null) {
-            return;
-        }
+        assertNotNull(createCallback(mBfsccTestAppCmdService.asBinder(), results2));
         ensureFrozenCallback(results2);
 
         unfreezeApp1();
@@ -195,11 +197,8 @@ public class BinderFrozenStateChangeNotificationTest {
         final LinkedBlockingQueue<IBinder> results = new LinkedBlockingQueue<>();
         IBinder.FrozenStateChangeCallback callback =
                 (IBinder who, int state) -> results.offer(who);
-        try {
-            binder.addFrozenStateChangeCallback(new HandlerExecutor(Handler.getMain()), callback);
-        } catch (UnsupportedOperationException e) {
-            return;
-        }
+        Assume.assumeTrue(BinderProxy.isFrozenStateChangeCallbackSupported());
+        binder.addFrozenStateChangeCallback(new HandlerExecutor(Handler.getMain()), callback);
         assertEquals("Callback received the wrong Binder object.",
                 binder, results.poll(CALLBACK_WAIT_TIMEOUT_SECS, TimeUnit.SECONDS));
         freezeApp1();
@@ -208,6 +207,19 @@ public class BinderFrozenStateChangeNotificationTest {
         unfreezeApp1();
         assertEquals("Callback received the wrong Binder object.",
                 binder, results.poll(CALLBACK_WAIT_TIMEOUT_SECS, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void addAndRemoveFrozenCallbackFailsIfUnsupported() throws Exception {
+        IBinder.FrozenStateChangeCallback callback = (IBinder who, int state) -> {};
+        Assume.assumeFalse(BinderProxy.isFrozenStateChangeCallbackSupported());
+        assertThrows(UnsupportedOperationException.class, () -> {
+            mBfsccTestAppCmdService.asBinder().addFrozenStateChangeCallback(
+                new HandlerExecutor(Handler.getMain()), callback);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            mBfsccTestAppCmdService.asBinder().removeFrozenStateChangeCallback(callback);
+        });
     }
 
     @After

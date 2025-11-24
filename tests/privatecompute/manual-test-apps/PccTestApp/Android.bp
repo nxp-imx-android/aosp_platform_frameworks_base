@@ -22,7 +22,6 @@ android_app {
     name: "PccTestApp",
     srcs: [
         "src/**/*.java",
-        "aidl/**/*.aidl",
     ],
     platform_apis: true,
     manifest: "AndroidManifest.xml",

@@ -25,17 +25,14 @@ import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
+import com.android.systemui.statusbar.notification.SourceType.Companion.from
 import com.android.systemui.statusbar.notification.collection.render.MediaContainerController
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader
 import com.android.systemui.statusbar.notification.dagger.HighlightsHeader
 import com.android.systemui.statusbar.notification.dagger.IncomingHeader
-import com.android.systemui.statusbar.notification.dagger.NewsHeader
 import com.android.systemui.statusbar.notification.dagger.PeopleHeader
-import com.android.systemui.statusbar.notification.dagger.PromoHeader
-import com.android.systemui.statusbar.notification.dagger.RecsHeader
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
-import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
@@ -61,13 +58,15 @@ internal constructor(
     @PeopleHeader private val peopleHeaderController: SectionHeaderController,
     @AlertingHeader private val alertingHeaderController: SectionHeaderController,
     @SilentHeader private val silentHeaderController: SectionHeaderController,
-    @NewsHeader private val newsHeaderController: SectionHeaderController,
-    @SocialHeader private val socialHeaderController: SectionHeaderController,
-    @RecsHeader private val recsHeaderController: SectionHeaderController,
-    @PromoHeader private val promoHeaderController: SectionHeaderController,
     @HighlightsHeader private val highlightsHeaderController: SectionHeaderController,
 ) : SectionProvider {
 
+    private val groupingDisabledBuckets =
+        buildSet<Int> {
+            if (android.app.Flags.richOngoingImprovements()) {
+                add(BUCKET_FOREGROUND_SERVICE)
+            }
+        }
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onLocaleListChanged() {
@@ -101,22 +100,6 @@ internal constructor(
         get() = mediaContainerController.mediaContainerView
 
     @VisibleForTesting
-    val newsHeaderView: SectionHeaderView?
-        get() = newsHeaderController.headerView
-
-    @VisibleForTesting
-    val socialHeaderView: SectionHeaderView?
-        get() = socialHeaderController.headerView
-
-    @VisibleForTesting
-    val recsHeaderView: SectionHeaderView?
-        get() = recsHeaderController.headerView
-
-    @VisibleForTesting
-    val promoHeaderView: SectionHeaderView?
-        get() = promoHeaderController.headerView
-
-    @VisibleForTesting
     val highlightsHeaderView: SectionHeaderView?
         get() = highlightsHeaderController.headerView
 
@@ -136,20 +119,6 @@ internal constructor(
         sections = PriorityBucket.getAllInOrder().map { NotificationSection(it) }.toMutableList()
     }
 
-    fun addSection(sectionType: Int) {
-        if (!NmContextualDisplay.isEnabled) {
-            return
-        }
-        sections.add(NotificationSection(sectionType))
-    }
-
-    fun removeSection(sectionType: Int) {
-        if (!NmContextualDisplay.isEnabled) {
-            return
-        }
-        sections.removeIf { it.bucket == sectionType }
-    }
-
     /** Reinflates the entire notification header, including all decoration views. */
     fun reinflateViews() {
         silentHeaderController.reinflateView(parent)
@@ -160,15 +129,13 @@ internal constructor(
         if (!SceneContainerFlag.isEnabled) {
             keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
         }
-        if (!NotificationBundleUi.isEnabled) {
-            newsHeaderController.reinflateView(parent)
-            socialHeaderController.reinflateView(parent)
-            recsHeaderController.reinflateView(parent)
-            promoHeaderController.reinflateView(parent)
-        }
         if (NmHighlights.isEnabled) {
             highlightsHeaderController.reinflateView(parent)
         }
+    }
+
+    override fun isGroupingDisabled(view: View): Boolean {
+        return getBucket(view) in groupingDisabledBuckets
     }
 
     override fun beginsSection(view: View, previous: View?): Boolean =
@@ -178,11 +145,6 @@ internal constructor(
             view === alertingHeaderView ||
             view === incomingHeaderView ||
             (NmHighlights.isEnabled && view === highlightsHeaderView) ||
-            (!NotificationBundleUi.isEnabled &&
-                (view === newsHeaderView ||
-                    view === socialHeaderView ||
-                    view === recsHeaderView ||
-                    view === promoHeaderView)) ||
             getBucket(view) != getBucket(previous)) &&
             // don't consider the first notification after onboarding to be a new section, so that
             // the onboarding affordance remains close to the notification
@@ -196,10 +158,6 @@ internal constructor(
             view === mediaControlsView -> BUCKET_MEDIA_CONTROLS
             view === peopleHeaderView -> BUCKET_PEOPLE
             view === alertingHeaderView -> BUCKET_ALERTING
-            view === newsHeaderView -> BUCKET_NEWS
-            view === socialHeaderView -> BUCKET_SOCIAL
-            view === recsHeaderView -> BUCKET_RECS
-            view === promoHeaderView -> BUCKET_PROMO
             view === highlightsHeaderView -> BUCKET_HIGHLIGHTS
             view is ExpandableNotificationRow ->
                 if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
@@ -302,10 +260,67 @@ internal constructor(
             noMoreLastChild.requestBottomRoundness(0f, SECTION)
         }
 
+        if (android.app.Flags.richOngoingImprovements() || NmContextualDisplay.isEnabled) {
+            for ((index, child) in children.withIndex()) {
+                if (child is ExpandableNotificationRow) {
+                    if (android.app.Flags.richOngoingImprovements()) {
+                        if (isGroupingDisabled(child)) {
+                            child.requestRoundness(1f, 1f, GROUPING_DISABLED_SECTION)
+                        } else {
+                            child.requestRoundness(0f, 0f, GROUPING_DISABLED_SECTION)
+                        }
+                    }
+                    if (NmContextualDisplay.isEnabled) {
+                        if (child.entryAdapter.isBundle) {
+                            child.requestRoundness(1f, 1f, BUNDLE)
+                        }
+                    }
+
+                    val previousIndex = index - 1
+                    val nextIndex = index + 1
+
+                    if (previousIndex >= 0) {
+                        if (hasIntrinsicTopRoundness(child)) {
+                            children[previousIndex].requestBottomRoundness(1f, FOLLOWING)
+                        } else {
+                            children[previousIndex].requestBottomRoundness(0f, FOLLOWING)
+                        }
+                    }
+                    if (nextIndex < children.size) {
+                        if (hasIntrinsicBottomRoundness(child)) {
+                            children[nextIndex].requestTopRoundness(1f, PREVIOUS)
+                        } else {
+                            children[nextIndex].requestTopRoundness(0f, PREVIOUS)
+                        }
+                    }
+                }
+            }
+        }
+
         if (DEBUG) {
             logSections(sections)
         }
         return changed
+    }
+
+    /**
+     * Whether the top of the view is rounded due to state internal to the view rather than being
+     * rounded just because a neighbor is rounded
+     */
+    @VisibleForTesting
+     fun hasIntrinsicTopRoundness(view : ExpandableView): Boolean {
+        return view.getTopRoundnessSources().contains(BUNDLE)
+                || view.getTopRoundnessSources().contains(GROUPING_DISABLED_SECTION)
+    }
+
+    /**
+     * Whether the bottom of the view is rounded due to state internal to the view rather than being
+     * rounded just because a neighbor is rounded
+     */
+    @VisibleForTesting
+    fun hasIntrinsicBottomRoundness(view : ExpandableView): Boolean {
+        return view.getBottomRoundnessSources().contains(BUNDLE)
+                || view.getBottomRoundnessSources().contains(GROUPING_DISABLED_SECTION)
     }
 
     private fun logSections(sections: List<NotificationSection>) {
@@ -332,12 +347,6 @@ internal constructor(
         peopleHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         silentHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         alertingHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-        if (!NotificationBundleUi.isEnabled) {
-            newsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-            socialHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-            recsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-            promoHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-        }
         if (NmHighlights.isEnabled) {
             highlightsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         }
@@ -365,6 +374,10 @@ internal constructor(
     companion object {
         private const val TAG = "NotifSectionsManager"
         private const val DEBUG = false
-        private val SECTION = SourceType.from("Section")
+        val SECTION = SourceType.from("Section")
+        val GROUPING_DISABLED_SECTION = SourceType.from("Grouping Disabled Section")
+        val BUNDLE = SourceType.from("Bundle")
+        val PREVIOUS: SourceType = from("Previous view bottom rounded")
+        val FOLLOWING: SourceType = from("Following view top rounded")
     }
 }

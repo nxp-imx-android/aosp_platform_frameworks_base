@@ -79,8 +79,8 @@ public final class HsumBootUserInitializer {
     /** Whether it should create a main user on first boot. */
     private final boolean mShouldDesignateMainUser;
 
-    /** Whether it should create an initial user, but without setting it as the main user. */
-    private final boolean mShouldCreateInitialUser;
+    /** Whether it should create an initial Admin user, but without setting it as the main user. */
+    private final boolean mShouldCreateInitialAdminUser;
 
     /** Whether the device is managed (a managed device doesn't need an admin). */
     private final boolean mIsManagedDevice;
@@ -94,7 +94,7 @@ public final class HsumBootUserInitializer {
             return null;
         }
         var instance = new HsumBootUserInitializer(ums, ams, pms, contentResolver,
-                designateMainUserOnBoot(context), createInitialUserOnBoot(context),
+                designateMainUserOnBoot(context), createInitialAdminUserOnBoot(context),
                 isManagedDevice, context);
         setDumpable(instance, context);
         return instance;
@@ -103,14 +103,14 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser,
+            boolean shouldDesignateMainUser, boolean shouldCreateInitialAdminUser,
             boolean isManagedDevice, Context context) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
         mContentResolver = contentResolver;
         mShouldDesignateMainUser = shouldDesignateMainUser;
-        mShouldCreateInitialUser = shouldCreateInitialUser;
+        mShouldCreateInitialAdminUser = shouldCreateInitialAdminUser;
         mIsManagedDevice = isManagedDevice;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
                     ? new HsuDeviceProvisioner(
@@ -194,9 +194,9 @@ public final class HsumBootUserInitializer {
      */
     public void init(TimingsTraceAndSlog t) {
         if (DEBUG) {
-            Slogf.d(TAG, "init(): mShouldDesignateMainUser=%b, shouldCreateInitialUser=%b, "
-                    + "isManagedDevice=%b, Flags.createInitialUser=%b",
-                    mShouldDesignateMainUser, mShouldCreateInitialUser, mIsManagedDevice,
+            Slogf.d(TAG, "init(): mShouldDesignateMainUser=%b, shouldCreateInitialAdminUser=%b, "
+                    + "isManagedDevice=%b, Flags.createInitialAdminUser=%b",
+                    mShouldDesignateMainUser, mShouldCreateInitialAdminUser, mIsManagedDevice,
                     Flags.createInitialUser());
         } else {
             Slogf.i(TAG, "Initializing");
@@ -229,7 +229,7 @@ public final class HsumBootUserInitializer {
         demoteMainUserIfNeeded(t, mainUserId);
         t.traceEnd();
 
-        if (mShouldCreateInitialUser) {
+        if (mShouldCreateInitialAdminUser) {
             createAdminUserIfNeeded(t);
             return;
         }
@@ -426,9 +426,9 @@ public final class HsumBootUserInitializer {
         pw.println(Flags.demoteMainUser());
 
         pw.print("Create initial user on boot: ");
-        pw.println(createInitialUserOnBoot(context));
-        pw.print("  config_createInitialUser: ");
-        pw.println(res.getBoolean(R.bool.config_createInitialUser));
+        pw.println(createInitialAdminUserOnBoot(context));
+        pw.print("  config_createInitialAdminUserOnHsum: ");
+        pw.println(res.getBoolean(R.bool.config_createInitialAdminUserOnHsum));
     }
 
     // Dumps internal static - will only be available until it's garbage collected
@@ -436,7 +436,7 @@ public final class HsumBootUserInitializer {
         pw.println("Effective state:");
         pw.print("  mDeviceProvisionedObserver="); pw.println(mDeviceProvisionedObserver);
         pw.print("  mShouldDesignateMainUser="); pw.println(mShouldDesignateMainUser);
-        pw.print("  mShouldCreateInitialUser="); pw.println(mShouldCreateInitialUser);
+        pw.print("  mShouldCreateInitialAdminUser="); pw.println(mShouldCreateInitialAdminUser);
         pw.print("  mIsManagedDevice="); pw.println(mIsManagedDevice);
     }
 
@@ -530,11 +530,13 @@ public final class HsumBootUserInitializer {
         }
         // Ignore devices that should not create a main user while flag is not ramped up yet
         // TODO(b/402486365): remove this workaround after flag is ramped up
-        if (!Flags.demoteMainUser() && res.getBoolean(R.bool.config_createInitialUser)
+        if (!Flags.demoteMainUser()
+                && res.getBoolean(R.bool.config_createInitialAdminUserOnHsum)
                 && !defaultValue) {
             Slogf.i(TAG, "designateMainUserOnBoot(): overriding defaultValue to true (because "
-                    + "Flags.demoteMainUser()=%b and config_createInitialUser=%b)",
-                    Flags.demoteMainUser(), res.getBoolean(R.bool.config_createInitialUser));
+                    + "Flags.demoteMainUser()=%b and config_createInitialAdminUserOnHsum=%b)",
+                    Flags.demoteMainUser(),
+                    res.getBoolean(R.bool.config_createInitialAdminUserOnHsum));
             defaultValue = true;
         }
         if (!Build.isDebuggable()) {
@@ -544,8 +546,8 @@ public final class HsumBootUserInitializer {
     }
 
     @VisibleForTesting
-    static boolean createInitialUserOnBoot(Context context) {
-        return context.getResources().getBoolean(R.bool.config_createInitialUser);
+    static boolean createInitialAdminUserOnBoot(Context context) {
+        return context.getResources().getBoolean(R.bool.config_createInitialAdminUserOnHsum);
     }
 
     @VisibleForTesting

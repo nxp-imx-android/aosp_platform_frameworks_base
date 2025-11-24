@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE;
@@ -2222,6 +2223,27 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_SKIP,
                 new CalculateRequestBuilder().setTask(launchingTask).setOptions(
                         options).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_PERSISTED_LAUNCH_PARAMS_BUGFIX})
+    public void testCalculate_desktopFirstPolicy_clearCurrentParams() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setDisplay(dc)
+                .build();
+        mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
+
+        // The current mode should be cleared.
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(launchingTask).calculate());
+        assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
     }
 
     private Task createTask(DisplayContent display, boolean isResizeable) {

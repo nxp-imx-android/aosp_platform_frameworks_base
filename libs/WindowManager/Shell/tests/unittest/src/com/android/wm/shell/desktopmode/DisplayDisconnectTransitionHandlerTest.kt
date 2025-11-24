@@ -310,6 +310,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         override fun prepareMovingSplitScreenRoot(
             wct: WindowContainerTransaction?,
             displayId: Int,
+            onTop: Boolean,
         ) {}
 
         override fun addMoveSplitPairToDisplayChanges(

@@ -41,7 +41,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -91,11 +90,7 @@ import kotlinx.coroutines.launch
 /** Renders the PIN button pad. */
 @Composable
 fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifier = Modifier) {
-    DisposableEffect(Unit) { onDispose { viewModel.onHidden() } }
-
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
-    val backspaceButtonAppearance by
-        viewModel.backspaceButtonAppearance.collectAsStateWithLifecycle()
     val confirmButtonAppearance by viewModel.confirmButtonAppearance.collectAsStateWithLifecycle()
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
     val isDigitButtonAnimationEnabled: Boolean by
@@ -138,7 +133,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             icon =
                 Icon.Resource(
                     resId =
-                        if (backspaceButtonAppearance == ActionButtonAppearance.Shown) {
+                        if (viewModel.backspaceButtonAppearance == ActionButtonAppearance.Shown) {
                             R.drawable.pin_bouncer_delete_outline
                         } else {
                             R.drawable.pin_bouncer_delete_filled
@@ -152,7 +147,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             onLongPressed = viewModel::onBackspaceButtonLongPressed,
             onLongClickLabel =
                 stringResource(R.string.keyguard_accessibility_pin_delete_long_click),
-            appearance = backspaceButtonAppearance,
+            appearance = viewModel.backspaceButtonAppearance,
             scaling = buttonScaleAnimatables[9]::value,
             elementId = "delete_button",
         )
@@ -445,11 +440,6 @@ private fun Modifier.pinPadButtonInput(
                                 }
 
                                 if (change.positionChanged()) {
-                                    // Consumes all Move events that started inside the
-                                    // bounds of the button so the ancestor Composables
-                                    // won't see a drag and take over the gesture.
-                                    change.consume()
-
                                     if (!movedTooFar) {
                                         val distanceMoved =
                                             (change.position - downPosition).getDistance()
@@ -484,6 +474,8 @@ private fun Modifier.pinPadButtonInput(
                                         onClicked()
                                     }
                                 }
+
+                                change.consume()
                             }
 
                             if (event.type == PointerEventType.Enter) {

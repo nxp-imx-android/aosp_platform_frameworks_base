@@ -18,6 +18,7 @@ package com.android.server.theming;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.content.theming.ThemeStyle;
@@ -94,15 +95,45 @@ public class ThemeStatePairTests {
     }
 
     @Test
-    public void testUpdate() {
-        ColorScheme darkScheme = mStatePair.generatePendingScheme(true);
-        ColorScheme lightScheme = mStatePair.generatePendingScheme(false);
+    public void testCommitAndGetSnapshot_updatesStateAndReturnsOverlayData() {
+        // Initial state
+        ColorScheme initialDark = mStatePair.getDarkScheme();
+        ColorScheme initialLight = mStatePair.getLightScheme();
 
+        // Apply changes
         mStatePair.applySeedColor(SEED_COLOR_RED);
-        mStatePair.update(darkScheme, lightScheme);
+        assertTrue(mStatePair.shouldUpdateOverlays());
 
+        // Commit and get snapshot
+        ThemeStatePair.OverlaySnapshot snapshot = mStatePair.commitAndGetOverlayData();
+
+        // Verify state is updated
         assertEquals(SEED_COLOR_RED, mStatePair.getCurrentState().seedColor());
         assertFalse(mStatePair.shouldUpdateOverlays());
+
+        // Verify snapshot contains new schemes
+        assertNotEquals(initialDark, snapshot.darkScheme());
+        assertNotEquals(initialLight, snapshot.lightScheme());
+        assertEquals(SEED_COLOR_RED, snapshot.darkScheme().getSeed());
+        assertEquals(SEED_COLOR_RED, snapshot.lightScheme().getSeed());
+    }
+
+    @Test
+    public void testCommitAndGetOverlayData_noOverlayUpdateNeeded_returnsSameSchemes() {
+        // Initial state
+        ColorScheme initialDark = mStatePair.getDarkScheme();
+        ColorScheme initialLight = mStatePair.getLightScheme();
+
+        // Apply change that doesn't affect overlays (timestamp only)
+        mStatePair.forceUpdate();
+        assertFalse(mStatePair.shouldUpdateOverlays());
+
+        // Commit and get snapshot
+        ThemeStatePair.OverlaySnapshot snapshot = mStatePair.commitAndGetOverlayData();
+
+        // Verify snapshot contains same schemes
+        assertEquals(initialDark, snapshot.darkScheme());
+        assertEquals(initialLight, snapshot.lightScheme());
     }
 
     @Test
@@ -149,4 +180,3 @@ public class ThemeStatePairTests {
         assertTrue(mStatePair.shouldUpdate());
     }
 }
-

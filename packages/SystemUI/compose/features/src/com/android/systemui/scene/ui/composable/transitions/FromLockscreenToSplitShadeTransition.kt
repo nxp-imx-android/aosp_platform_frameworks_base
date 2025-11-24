@@ -25,14 +25,14 @@ import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.lockscreenToSplitShadeTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.lockscreenToSplitShadeTransition(
+    transitionDistancePx: Float,
+    durationScale: Double = 1.0,
+) {
     lockscreenFadeOutTransition(durationScale)
 
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
-    distance = UserActionDistance { fromContent, _, _ ->
-        val fromContentSize = checkNotNull(fromContent.targetSize())
-        fromContentSize.height.toFloat() * 2 / 3f
-    }
+    distance = UserActionDistance { _, _, _ -> transitionDistancePx }
 
     fractionRange(end = .33f) { fade(Shade.Elements.BackgroundScrim) }
 

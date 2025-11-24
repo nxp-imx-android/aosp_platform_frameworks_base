@@ -126,7 +126,11 @@ class PolicyFile:
       #   so they're counted as "failures".
       # - Skipped methods are from failed assumptions, so we treat them as if they don't exist.
       class_percent = all_pass / self.class_total * 100
-      method_percent = self.method_passed / (self.method_passed + self.method_failed) * 100
+      num_methods = self.method_passed + self.method_failed
+      if num_methods > 0:
+        method_percent = self.method_passed / num_methods * 100
+      else:
+        method_percent = 0
 
       f.write("# AUTO-GENERATED START\n")
       f.write("\n")

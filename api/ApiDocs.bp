@@ -322,6 +322,9 @@ droiddoc {
         "-title \"Android SDK\"",
     ],
     static_doc_index_redirect: "docs/docs-preview-index.html",
+    visibility: [
+        "//development/build",
+    ],
 }
 
 droiddoc {

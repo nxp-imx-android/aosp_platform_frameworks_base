@@ -51,6 +51,7 @@ import android.credentials.ISetEnabledProvidersCallback;
 import android.credentials.PrepareGetCredentialResponseInternal;
 import android.credentials.RegisterCredentialDescriptionRequest;
 import android.credentials.UnregisterCredentialDescriptionRequest;
+import android.credentials.flags.Flags;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.IBinder;
@@ -1234,31 +1235,61 @@ public final class CredentialManagerService
                 Slog.e(TAG, "Failed to clear all credential providers");
             }
 
-            // Set the filtered primary providers to the settings key
-            if (!settingsWrapper.putStringForUser(
-                    Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
-                    String.join(":", filteredPrimaryProviders),
-                    UserHandle.myUserId(),
-                    /* overrideableByRestore= */ true)) {
-                Slog.e(TAG, "Failed to remove primary service: " + componentName);
-                return;
+            if (Flags.multiUserFixEnabled()) {
+                if (!settingsWrapper.putStringForUser(
+                        Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
+                        String.join(":", filteredPrimaryProviders),
+                        userId,
+                        /* overrideableByRestore= */ true)) {
+                    Slog.e(TAG, "Failed to remove primary service: " + componentName);
+                    return;
+                }
+            } else {
+                if (!settingsWrapper.putStringForUser(
+                        Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
+                        String.join(":", filteredPrimaryProviders),
+                        UserHandle.myUserId(),
+                        /* overrideableByRestore= */ true)) {
+                    Slog.e(TAG, "Failed to remove primary service: " + componentName);
+                    return;
+                }
             }
+
+            // Set the filtered primary providers to the settings key
+
         }
 
         // Read the credential providers to remove any reference of the removed service.
-        String rawCredentialProviders =
-                settingsWrapper.getStringForUser(
-                        Settings.Secure.CREDENTIAL_SERVICE, UserHandle.myUserId());
+        String rawCredentialProviders;
+        if (Flags.multiUserFixEnabled()) {
+            rawCredentialProviders =
+                    settingsWrapper.getStringForUser(
+                            Settings.Secure.CREDENTIAL_SERVICE, userId);
+        } else {
+            rawCredentialProviders =
+                    settingsWrapper.getStringForUser(
+                            Settings.Secure.CREDENTIAL_SERVICE, UserHandle.myUserId());
+        }
 
         // Remove any provider services that are same as the one being removed.
         Set<String> filteredCredentialProviders = getStoredProvidersExceptService(
                 rawCredentialProviders, componentName);
-        if (!settingsWrapper.putStringForUser(
-                Settings.Secure.CREDENTIAL_SERVICE,
-                String.join(":", filteredCredentialProviders),
-                UserHandle.myUserId(),
-                /* overrideableByRestore= */ true)) {
-            Slog.e(TAG, "Failed to remove secondary service: " + componentName);
+        if (Flags.multiUserFixEnabled()) {
+            if (!settingsWrapper.putStringForUser(
+                    Settings.Secure.CREDENTIAL_SERVICE,
+                    String.join(":", filteredCredentialProviders),
+                    userId,
+                    /* overrideableByRestore= */ true)) {
+                Slog.e(TAG, "Failed to remove secondary service: " + componentName);
+            }
+        } else {
+            if (!settingsWrapper.putStringForUser(
+                    Settings.Secure.CREDENTIAL_SERVICE,
+                    String.join(":", filteredCredentialProviders),
+                    UserHandle.myUserId(),
+                    /* overrideableByRestore= */ true)) {
+                Slog.e(TAG, "Failed to remove secondary service: " + componentName);
+            }
         }
     }
 

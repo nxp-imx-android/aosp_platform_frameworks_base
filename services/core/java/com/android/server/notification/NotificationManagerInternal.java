@@ -16,17 +16,22 @@
 
 package com.android.server.notification;
 
+import android.annotation.NonNull;
+import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
-import android.service.notification.Adjustment;
-import android.annotation.NonNull;
+import android.app.NotificationManager;
+import android.app.NotificationManager.Policy;
 import android.app.backup.BackupRestoreEventLogger;
+import android.os.UserHandle;
+import android.service.notification.Adjustment;
 import android.service.notification.DeviceEffectsApplier;
 
 import com.android.internal.annotations.Keep;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Keep
@@ -101,4 +106,33 @@ public interface NotificationManagerInternal {
      * @param adjustments the requested adjustments
      */
     void requestSystemAdjustments(@NonNull List<Adjustment> adjustments);
+
+    /** Check if manual zen rule is active for the provided user. */
+    boolean isManualZenRuleActive(UserHandle userHandle);
+
+    /**
+     * Activate/deactivate the manual zen rule for the provided user. Unlike
+     * {@link NotificationManager#setInterruptionFilter(int)} or
+     * {@link NotificationManager#setNotificationPolicy(Policy)}, this method doesn't create
+     * implicit automatic zen rule for the caller.
+     */
+    void setManualZenRuleActive(UserHandle userHandle, boolean active);
+
+    /** Get automatic zen rules for the provided user. */
+    Map<String, AutomaticZenRule> getAutomaticZenRules(UserHandle userHandle);
+
+    /** Check if an automatic zen rule is active for the provided user. */
+    boolean isAutomaticZenRuleActive(UserHandle userHandle, String id);
+
+    /** Activate/deactivate automatic zen rule for the provided user. */
+    void setAutomaticZenRuleActive(UserHandle userHandle, String id, boolean active);
+
+    /** Add a callback for monitoring zen mode change. */
+    void addZenModeCallback(ZenModeHelper.Callback callback);
+
+    /**
+     * Check if a user has a zen mode config. Some user types don't have zen config, e.g. work
+     * profile, secondary user, etc.
+     */
+    boolean hasZenModeConfig(UserHandle userHandle);
 }

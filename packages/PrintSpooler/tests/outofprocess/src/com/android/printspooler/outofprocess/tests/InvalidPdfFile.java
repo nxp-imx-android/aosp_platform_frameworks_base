@@ -36,7 +36,6 @@ import android.print.PrintJobInfo;
 import android.print.PrinterCapabilitiesInfo;
 import android.print.PrinterId;
 import android.print.PrinterInfo;
-import android.print.test.BasePrintTest;
 import android.print.test.services.FirstPrintService;
 import android.print.test.services.PrintServiceCallbacks;
 import android.print.test.services.PrinterDiscoverySessionCallbacks;
@@ -53,11 +52,9 @@ import org.junit.runner.RunWith;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
-/**
- * Test attempting to print an invalid PDF file.
- */
+/** Test attempting to print an invalid PDF file. */
 @RunWith(AndroidJUnit4.class)
-public class InvalidPdfFile extends BasePrintTest {
+public class InvalidPdfFile extends PrintSpoolerBaseTest {
     private static final String LOG_TAG = InvalidPdfFile.class.getSimpleName();
     private static final String PRINTER_NAME = "Test printer";
     private static final String PRINT_JOB_NAME = "test-print-job";

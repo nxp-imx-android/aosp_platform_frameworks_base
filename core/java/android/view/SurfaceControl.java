@@ -511,7 +511,8 @@ public final class SurfaceControl implements Parcelable {
         public static final int JANK_OTHER = 1 << 2;
 
         private final long mFrameVsyncId;
-        private final @JankType int mJankType;
+        private final @JankType int mJankTypeLegacy;
+        private final @JankType int mJankTypeExperimental;
         private final @DurationNanosLong long mFrameIntervalNs;
         private final @DurationNanosLong long mScheduledAppFrameTimeNs;
         private final @DurationNanosLong long mActualAppFrameTimeNs;
@@ -520,10 +521,12 @@ public final class SurfaceControl implements Parcelable {
         /**
          * @hide
          */
-        public JankData(long frameVsyncId, @JankType int jankType, long frameIntervalNs,
+        public JankData(long frameVsyncId, @JankType int jankTypeLegacy,
+                @JankType int jankTypeExperimental, long frameIntervalNs,
                 long scheduledAppFrameTimeNs, long actualAppFrameTimeNs, long presentDelayNs) {
             mFrameVsyncId = frameVsyncId;
-            mJankType = jankType;
+            mJankTypeLegacy = jankTypeLegacy;
+            mJankTypeExperimental = jankTypeExperimental;
             mFrameIntervalNs = frameIntervalNs;
             mScheduledAppFrameTimeNs = scheduledAppFrameTimeNs;
             mActualAppFrameTimeNs = actualAppFrameTimeNs;
@@ -548,7 +551,32 @@ public final class SurfaceControl implements Parcelable {
          * @return the jank type bitmask
          */
         public @JankType int getJankType() {
-            return mJankType;
+            if (com.android.graphics.surfaceflinger.flags.Flags
+                    .useExperimentalJankClassification()) {
+                return mJankTypeExperimental;
+            }
+            return mJankTypeLegacy;
+        }
+
+        /**
+         * Returns the bitmask indicating the types of jank observed using legacy classification.
+         *
+         * @return the jank type bitmask
+         * @hide
+         */
+        public @JankType int getJankTypeLegacy() {
+            return mJankTypeLegacy;
+        }
+
+        /**
+         * Returns the bitmask indicating the types of jank observed using experimental
+         * classification.
+         *
+         * @return the jank type bitmask
+         * @hide
+         */
+        public @JankType int getJankTypeExperimental() {
+            return mJankTypeExperimental;
         }
 
         /**
@@ -597,7 +625,8 @@ public final class SurfaceControl implements Parcelable {
         @Override
         public String toString() {
             return "JankData{vsync=" + mFrameVsyncId
-                    + ", jankType=0x" + Integer.toHexString(mJankType)
+                    + ", jankTypeLegacy=0x" + Integer.toHexString(mJankTypeLegacy)
+                    + ", jankTypeExperimental=0x" + Integer.toHexString(mJankTypeExperimental)
                     + ", frameInterval=" + mFrameIntervalNs + "ns"
                     + ", scheduledAppTime=" + mScheduledAppFrameTimeNs + "ns"
                     + ", actualAppTime=" + mActualAppFrameTimeNs + "ns}";

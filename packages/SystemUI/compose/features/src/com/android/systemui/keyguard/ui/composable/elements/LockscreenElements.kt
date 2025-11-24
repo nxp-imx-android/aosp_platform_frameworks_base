@@ -59,7 +59,7 @@ constructor(
         content: @Composable LockscreenScope<ContentScope>.() -> Unit,
     ) {
         val elementFactory = rememberElementFactory()
-        with(LockscreenScopeImpl(this, elementFactory, ctx)) { content() }
+        with(LockscreenScopeImpl(this.layoutState, this, elementFactory, ctx)) { content() }
     }
 
     @Composable

@@ -47,7 +47,9 @@ public final class VendorHubInfo implements Parcelable {
     private VendorHubInfo(Parcel in) {
         mName = in.readString();
         mVersion = in.readInt();
-        mExtendedInfo = ParcelableHolder.CREATOR.createFromParcel(in);
+
+        mExtendedInfo = new ParcelableHolder(Parcelable.PARCELABLE_STABILITY_VINTF);
+        mExtendedInfo.readFromParcel(in);
     }
 
     /** Get the hub name */

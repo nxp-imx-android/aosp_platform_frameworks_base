@@ -62,18 +62,13 @@ import com.android.server.backup.OperationStorage;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
 import com.android.server.backup.crossplatform.CrossPlatformManifest;
-import com.android.server.backup.adb.FullAdbBackupObbConnection;
 import com.android.server.backup.restore.RestoreEngine;
+import com.android.server.backup.restore.RestoreFileRunnable;
 import com.android.server.backup.restore.RestoreDeleteObserver;
 import com.android.server.backup.restore.RestorePolicy;
-import com.android.server.backup.restore.RestoreFileRunnable;
-import com.android.server.backup.restore.AdbRestoreFinishedRunnable;
-import com.android.server.backup.restore.AdbRestoreFinishedLatch;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
-import com.android.server.backup.utils.BytesReadListener;
 import com.android.server.backup.utils.FullBackupRestoreObserverUtils;
-import com.android.server.backup.utils.RestoreUtils;
 import com.android.server.backup.utils.TarBackupReader;
 
 import java.io.File;
@@ -86,30 +81,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-/** Full restore engine, used by both adb restore and transport-based full restore. */
+/** Full restore engine for adb restore. */
 public class FullAdbRestoreEngine extends RestoreEngine {
 
     private final UserBackupManagerService mBackupManagerService;
     private final OperationStorage mOperationStorage;
     private final int mUserId;
 
-    // Task in charge of monitoring timeouts
-    private final BackupRestoreTask mMonitorTask;
-
     private final RestoreDeleteObserver mDeleteObserver = new RestoreDeleteObserver();
 
     // Dedicated observer, if any
     private IFullBackupRestoreObserver mObserver;
 
-    final IBackupManagerMonitor mMonitor;
-
     // Where we're delivering the file data as we go
     private IBackupAgent mAgent;
-
-    // Are we permitted to only deliver a specific package's metadata?
-    final PackageInfo mOnlyPackage;
-
-    final boolean mAllowApks;
 
     // Which package are we currently handling data for?
     private String mAgentPackage;
@@ -133,7 +118,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
     private final HashSet<String> mClearedPackages = new HashSet<>();
 
     // Working buffer
-    final byte[] mBuffer;
+    private final byte[] mBuffer;
 
     // Pipes for moving data
     private ParcelFileDescriptor[] mPipes = null;
@@ -142,14 +127,9 @@ public class FullAdbRestoreEngine extends RestoreEngine {
     // Widget blob to be restored out-of-band
     private byte[] mWidgetData = null;
 
-    private int mTransportFlags = 0;
     private long mAppVersion;
-    private String mContentVersion = "";
-
-    final int mEphemeralOpToken;
 
     private final BackupAgentTimeoutParameters mAgentTimeoutParameters;
-    private final boolean mIsAdbRestore;
 
     @GuardedBy("mPipesLock")
     private boolean mPipesClosed;
@@ -158,33 +138,18 @@ public class FullAdbRestoreEngine extends RestoreEngine {
 
     private FileMetadata mReadOnlyParent = null;
 
-    private BackupManagerMonitorEventSender mBackupManagerMonitorEventSender;
-
     public FullAdbRestoreEngine(
             UserBackupManagerService backupManagerService,
             OperationStorage operationStorage,
-            BackupRestoreTask monitorTask,
             IFullBackupRestoreObserver observer,
-            IBackupManagerMonitor monitor,
-            PackageInfo onlyPackage,
-            boolean allowApks,
-            int ephemeralOpToken,
-            boolean isAdbRestore,
             BackupEligibilityRules backupEligibilityRules) {
         mBackupManagerService = backupManagerService;
         mOperationStorage = operationStorage;
-        mEphemeralOpToken = ephemeralOpToken;
-        mMonitorTask = monitorTask;
         mObserver = observer;
-        mMonitor = monitor;
-        mBackupManagerMonitorEventSender = new BackupManagerMonitorEventSender(monitor);
-        mOnlyPackage = onlyPackage;
-        mAllowApks = allowApks;
         mAgentTimeoutParameters =
                 Objects.requireNonNull(
                         backupManagerService.getAgentTimeoutParameters(),
                         "Timeout parameters cannot be null");
-        mIsAdbRestore = isAdbRestore;
         mUserId = backupManagerService.getUserId();
         mBackupEligibilityRules = backupEligibilityRules;
 
@@ -196,23 +161,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
         }
     }
 
-    @VisibleForTesting
-    FullAdbRestoreEngine(UserBackupManagerService backupManagerService) {
-        mBackupManagerService = backupManagerService;
-
-        mIsAdbRestore = false;
-        mAllowApks = false;
-        mEphemeralOpToken = 0;
-        mUserId = 0;
-        mBackupEligibilityRules = null;
-        mAgentTimeoutParameters = null;
-        mBuffer = null;
-        mOperationStorage = null;
-        mMonitor = null;
-        mMonitorTask = null;
-        mOnlyPackage = null;
-    }
-
     public IBackupAgent getAgent() {
         return mAgent;
     }
@@ -222,22 +170,14 @@ public class FullAdbRestoreEngine extends RestoreEngine {
     }
 
     /** Reads the next file from the TAR stream and attempts to restore it. */
-    public boolean restoreOneFile(
-            InputStream instream,
-            boolean mustKillAgent,
-            byte[] buffer,
-            PackageInfo onlyPackage,
-            boolean allowApks,
-            int token,
-            IBackupManagerMonitor monitor) {
+    public boolean restoreOneFile(InputStream instream) {
         if (!isRunning()) {
             Slog.w(TAG, "Restore engine used after halting");
             return false;
         }
 
-        BytesReadListener bytesReadListener = bytesRead -> {};
-
-        TarBackupReader tarBackupReader = new TarBackupReader(instream, bytesReadListener, monitor);
+        TarBackupReader tarBackupReader = new TarBackupReader(instream, bytesRead -> {},
+                /* monitor= */ null);
 
         FileMetadata info;
         try {
@@ -252,20 +192,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
 
                 final String pkg = info.packageName;
                 if (!pkg.equals(mAgentPackage)) {
-                    // In the single-package case, it's a semantic error to expect
-                    // one app's data but see a different app's on the wire
-                    if (onlyPackage != null) {
-                        if (!pkg.equals(onlyPackage.packageName)) {
-                            logBMMEvent(
-                                    BackupManagerMonitor
-                                            .LOG_EVENT_ID_RESTORE_DATA_DOES_NOT_BELONG_TO_PACKAGE,
-                                    onlyPackage);
-                            Slog.w(TAG, "Expected data for " + onlyPackage + " but saw " + pkg);
-                            setResult(RestoreEngine.TRANSPORT_FAILURE);
-                            setRunning(false);
-                            return false;
-                        }
-                    }
 
                     // okay, change in package; set up our various
                     // bookkeeping if we haven't seen it yet
@@ -279,7 +205,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                         Slog.d(TAG, "Saw new package; finalizing old one");
                         // Now we're really done
                         tearDownPipes();
-                        tearDownAgent(mTargetApp, mIsAdbRestore);
+                        tearDownAgent(mTargetApp, /* doRestoreFinished= */ true);
                         mTargetApp = null;
                         mAgentPackage = null;
                     }
@@ -296,7 +222,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                     RestorePolicy restorePolicy =
                             tarBackupReader.chooseRestorePolicy(
                                     mBackupManagerService.getPackageManager(),
-                                    allowApks,
+                                    /* allowApks= */ true,
                                     info,
                                     signatures,
                                     pmi,
@@ -311,37 +237,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                     // input file
                     tarBackupReader.skipTarPadding(info.size);
                     mObserver = FullBackupRestoreObserverUtils.sendOnRestorePackage(mObserver, pkg);
-                } else if (Flags.enableCrossPlatformTransfer()
-                        && info.path.equals(CROSS_PLATFORM_MANIFEST_FILENAME)) {
-                    // We start by reading the manifest content so we consume the data before doing
-                    // any further checks.
-                    CrossPlatformManifest manifest =
-                            tarBackupReader.readCrossPlatformManifest(info);
-                    if (mBackupEligibilityRules.getBackupDestination()
-                            != BackupDestination.CROSS_PLATFORM_TRANSFER) {
-                        mPackagePolicies.put(pkg, RestorePolicy.IGNORE);
-                    } else {
-                        PlatformSpecificParams params =
-                                findValidPlatformSpecificParams(
-                                        info.packageName, manifest, mBackupEligibilityRules);
-                        if (params == null) {
-                            Slog.w(
-                                    TAG,
-                                    "No source declared platform-specific params found that match"
-                                            + " the target app");
-                            mPackagePolicies.put(pkg, RestorePolicy.IGNORE);
-                        } else {
-                            mPackagePolicies.put(pkg, RestorePolicy.ACCEPT);
-                            mTransportFlags |= BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS;
-                            mContentVersion = params.getContentVersion();
-                        }
-                    }
-
-                    // We've read only the manifest content itself at this point,
-                    // so consume the footer before looping around to the next
-                    // input file
-                    tarBackupReader.skipTarPadding(info.size);
-                    mObserver = FullBackupRestoreObserverUtils.sendOnRestorePackage(mObserver, pkg);
                 } else if (info.path.equals(BACKUP_METADATA_FILENAME)) {
                     // Metadata blobs!
                     tarBackupReader.readMetadata(info);
@@ -351,8 +246,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                     // TODO: Refactor, so that there are no funny things like this.
                     // This is read during TarBackupReader.readMetadata().
                     mWidgetData = tarBackupReader.getWidgetData();
-                    // This can be nulled during TarBackupReader.readMetadata().
-                    monitor = tarBackupReader.getMonitor();
 
                     tarBackupReader.skipTarPadding(info.size);
                 } else {
@@ -373,7 +266,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                 // Try to install the app.
                                 String installerPackageName = mPackageInstallers.get(pkg);
                                 boolean isSuccessfullyInstalled =
-                                        RestoreUtils.installApk(
+                                        AdbRestoreUtils.installApk(
                                                 instream,
                                                 mBackupManagerService.getContext(),
                                                 mDeleteObserver,
@@ -381,7 +274,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                                 mPackagePolicies,
                                                 info,
                                                 installerPackageName,
-                                                bytesReadListener,
+                                                bytesRead -> {},
                                                 mUserId);
                                 // good to go; promote to ACCEPT
                                 mPackagePolicies.put(
@@ -487,10 +380,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                         }
 
                         if (mAgent == null) {
-                            logBMMEvent(
-                                    BackupManagerMonitor
-                                            .LOG_EVENT_ID_UNABLE_TO_CREATE_AGENT_FOR_RESTORE,
-                                    onlyPackage);
                             Slog.e(TAG, "Unable to create agent for " + pkg);
                             okay = false;
                             tearDownPipes();
@@ -528,7 +417,8 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                                 mTargetApp.uid);
                         try {
                             mBackupManagerService.prepareOperationTimeout(
-                                    token, timeout, mMonitorTask, OpType.RESTORE_WAIT);
+                                    /* token= */ 0, timeout, /* callback= */ null,
+                                    OpType.RESTORE_WAIT);
 
                             if (FullBackup.OBB_TREE_TOKEN.equals(info.domain)) {
                                 Slog.d(TAG, "Restoring OBB file for " + pkg + " : " + info.path);
@@ -540,7 +430,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                         info.path,
                                         info.mode,
                                         info.mtime,
-                                        token,
+                                        /* token= */ 0,
                                         mBackupManagerService.getBackupManagerBinder());
                             } else if (FullBackup.KEY_VALUE_DATA_TOKEN.equals(info.domain)) {
                                 // This is only possible during adb restore.
@@ -557,7 +447,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                                 info,
                                                 mPipes[0],
                                                 mAgent,
-                                                token);
+                                                /* token= */ 0);
                                 new Thread(restoreEngine, "restore-key-value-runner").start();
                             } else {
                                 if (DEBUG) {
@@ -575,7 +465,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                                     mAgent,
                                                     info,
                                                     mPipes[0],
-                                                    token);
+                                                    /* token= */ 0);
                                     new Thread(runner, "restore-sys-runner").start();
                                 } else {
                                     mAgent.doRestoreFile(
@@ -586,11 +476,11 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                             info.path,
                                             info.mode,
                                             info.mtime,
-                                            token,
+                                            /* token= */ 0,
                                             mBackupManagerService.getBackupManagerBinder(),
                                             mAppVersion,
-                                            mTransportFlags,
-                                            mContentVersion);
+                                            /* transportFlags= */ 0,
+                                            /* contentVersion= */ "");
                                 }
                             }
                         } catch (IOException e) {
@@ -601,10 +491,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                         } catch (RemoteException e) {
                             // whoops, remote entity went away.  We'll eat the content
                             // ourselves, then, and not copy it over.
-                            logBMMEvent(
-                                    BackupManagerMonitor
-                                            .LOG_EVENT_ID_AGENT_CRASHED_BEFORE_RESTORE_DATA_IS_SENT,
-                                    onlyPackage);
                             Slog.e(TAG, "Agent crashed during full restore");
                             agentSuccess = false;
                             okay = false;
@@ -620,8 +506,8 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                     new FileOutputStream(mPipes[1].getFileDescriptor());
                             while (toCopy > 0) {
                                 int toRead =
-                                        (toCopy > buffer.length) ? buffer.length : (int) toCopy;
-                                int nRead = instream.read(buffer, 0, toRead);
+                                        (toCopy > mBuffer.length) ? mBuffer.length : (int) toCopy;
+                                int nRead = instream.read(mBuffer, 0, toRead);
                                 if (nRead <= 0) {
                                     break;
                                 }
@@ -631,15 +517,12 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                 // are still good
                                 if (pipeOkay) {
                                     try {
-                                        pipe.write(buffer, 0, nRead);
+                                        pipe.write(mBuffer, 0, nRead);
                                     } catch (IOException e) {
                                         Slog.e(
                                                 TAG,
                                                 "Failed to write to restore pipe: "
                                                         + e.getMessage());
-                                        logBMMEvent(
-                                                BackupManagerMonitor.LOG_EVENT_ID_FAILED_TO_SEND_DATA_TO_AGENT_DURING_RESTORE,
-                                                onlyPackage);
                                         pipeOkay = false;
                                     }
                                 }
@@ -651,31 +534,21 @@ public class FullAdbRestoreEngine extends RestoreEngine {
 
                             // and now that we've sent it all, wait for the remote
                             // side to acknowledge receipt
-                            agentSuccess = mBackupManagerService.waitUntilOperationComplete(token);
+                            agentSuccess = mBackupManagerService.waitUntilOperationComplete(
+                                    /* token= */ 0);
                         }
 
                         // okay, if the remote end failed at any point, deal with
                         // it by ignoring the rest of the restore on it
                         if (!agentSuccess) {
-                            logBMMEvent(
-                                    BackupManagerMonitor.LOG_EVENT_ID_AGENT_FAILURE_DURING_RESTORE,
-                                    onlyPackage);
                             Slog.w(TAG, "Agent failure restoring " + pkg + "; ending restore");
                             mBackupManagerService
                                     .getBackupHandler()
                                     .removeMessages(MSG_RESTORE_OPERATION_TIMEOUT);
                             tearDownPipes();
-                            tearDownAgent(mTargetApp, false);
+                            tearDownAgent(mTargetApp, /* doRestoreFinished= */ false);
                             mAgent = null;
                             mPackagePolicies.put(pkg, RestorePolicy.IGNORE);
-
-                            // If this was a single-package restore, we halt immediately
-                            // with an agent error under these circumstances
-                            if (onlyPackage != null) {
-                                setResult(RestoreEngine.TARGET_FAILURE);
-                                setRunning(false);
-                                return false;
-                            }
                         }
                     }
 
@@ -689,10 +562,10 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                         long bytesToConsume = (info.size + 511) & ~511;
                         while (bytesToConsume > 0) {
                             int toRead =
-                                    (bytesToConsume > buffer.length)
-                                            ? buffer.length
+                                    (bytesToConsume > mBuffer.length)
+                                            ? mBuffer.length
                                             : (int) bytesToConsume;
-                            long nRead = instream.read(buffer, 0, toRead);
+                            long nRead = instream.read(mBuffer, 0, toRead);
                             if (nRead <= 0) {
                                 break;
                             }
@@ -703,9 +576,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
             }
         } catch (IOException e) {
             Slog.w(TAG, "io exception on restore socket read: " + e.getMessage());
-            logBMMEvent(
-                    BackupManagerMonitor.LOG_EVENT_ID_FAILED_TO_READ_DATA_FROM_TRANSPORT,
-                    onlyPackage);
             setResult(RestoreEngine.TRANSPORT_FAILURE);
             info = null;
         }
@@ -717,14 +587,12 @@ public class FullAdbRestoreEngine extends RestoreEngine {
             }
             tearDownPipes();
             setRunning(false);
-            if (mustKillAgent) {
-                tearDownAgent(mTargetApp, mIsAdbRestore);
-            }
+            tearDownAgent(mTargetApp, /* doRestoreFinished= */ true);
         }
         return (info != null);
     }
 
-    boolean shouldSkipReadOnlyDir(FileMetadata info) {
+    private boolean shouldSkipReadOnlyDir(FileMetadata info) {
         if (isValidParent(mReadOnlyParent, info)) {
             // This file has a read-only parent directory, we shouldn't
             // restore it.
@@ -749,19 +617,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
         }
 
         return false;
-    }
-
-    private void logBMMEvent(int eventId, PackageInfo pkgInfo) {
-        if (Flags.enableIncreasedBmmLoggingForRestoreAtInstall()) {
-            mBackupManagerMonitorEventSender.monitorEvent(
-                    eventId,
-                    pkgInfo,
-                    BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                    mBackupManagerMonitorEventSender.putMonitoringExtra(
-                            /* extras= */ null,
-                            BackupManagerMonitor.EXTRA_LOG_OPERATION_TYPE,
-                            BackupAnnotations.OperationType.RESTORE));
-        }
     }
 
     private static boolean isValidParent(FileMetadata parentDir, @NonNull FileMetadata childDir) {
@@ -851,16 +706,6 @@ public class FullAdbRestoreEngine extends RestoreEngine {
     }
 
     private boolean isRestorableFile(FileMetadata info) {
-        if (mBackupEligibilityRules.getBackupDestination() == BackupDestination.DEVICE_TRANSFER) {
-            // Everything is eligible for device-to-device migration.
-            return true;
-        } else if (Flags.enableCrossPlatformTransfer()
-                && mBackupEligibilityRules.getBackupDestination()
-                        == BackupDestination.CROSS_PLATFORM_TRANSFER) {
-            // Everything is eligible for cross platform transfers.
-            return true;
-        }
-
         if (FullBackup.CACHE_TREE_TOKEN.equals(info.domain)) {
             if (DEBUG) {
                 Slog.i(TAG, "Dropping cache file path " + info.path);
@@ -925,42 +770,5 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                 ? ApplicationThreadConstants.BACKUP_MODE_RESTORE
                                 : ApplicationThreadConstants.BACKUP_MODE_RESTORE_FULL,
                         mBackupEligibilityRules.getBackupDestination());
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    PlatformSpecificParams findValidPlatformSpecificParams(
-            String pkg,
-            @Nullable CrossPlatformManifest manifest,
-            BackupEligibilityRules backupEligibilityRules) {
-        if (manifest == null) {
-            Slog.d(TAG, "No cross-platform manifest found.");
-            return null;
-        }
-
-        ApplicationInfo targetApp;
-        try {
-            targetApp = mBackupManagerService
-                    .getPackageManager()
-                    .getApplicationInfoAsUser(
-                            pkg,
-                            PackageManager.GET_SIGNING_CERTIFICATES,
-                            mUserId);
-        } catch (NameNotFoundException e) {
-            Slog.d(TAG, "Unable to fetch cross-platform configuration for target app", e);
-            return null;
-        }
-
-        // Both source and target may specify multiple platform specific params. For us to continue
-        // restoring, there should be at least one combination that matches.
-        for (PlatformSpecificParams sourceParams : manifest.getPlatformSpecificParams()) {
-            for (PlatformSpecificParams targetParams :
-                    backupEligibilityRules.getPlatformSpecificParams(targetApp, PLATFORM_IOS)) {
-                if (TextUtils.equals(sourceParams.getBundleId(), targetParams.getBundleId())
-                        && TextUtils.equals(sourceParams.getTeamId(), targetParams.getTeamId())) {
-                    return sourceParams;
-                }
-            }
-        }
-        return null;
     }
 }

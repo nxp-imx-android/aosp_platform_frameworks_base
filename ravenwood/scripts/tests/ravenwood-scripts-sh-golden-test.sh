@@ -119,6 +119,8 @@ run_all_commands() {
 
     RAVENWOOD_RUN_DISABLED_TESTS=xxx RAVENWOOD_FORCE_FILTER_REGEX=yyy run_test "Make sure env vars are printed" run-ravenwood-tests-wrapper
 
+    run_test "Run only disabled tests" run-ravenwood-tests-wrapper -X
+
     echo "== All commands finished =="
 }
 

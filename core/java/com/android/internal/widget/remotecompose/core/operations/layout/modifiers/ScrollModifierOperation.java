@@ -34,7 +34,6 @@ import com.android.internal.widget.remotecompose.core.operations.layout.Componen
 import com.android.internal.widget.remotecompose.core.operations.layout.DecoratorComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.ListActionsOperation;
-import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.ScrollDelegate;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchHandler;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
@@ -127,15 +126,6 @@ public class ScrollModifierOperation extends ListActionsOperation
 
     public float getScrollY() {
         return mScrollY;
-    }
-
-    @Override
-    public void apply(@NonNull RemoteContext context) {
-        RootLayoutComponent root = context.getDocument().getRootLayoutComponent();
-        if (root != null) {
-            root.setHasTouchListeners(true);
-        }
-        super.apply(context);
     }
 
     @Override

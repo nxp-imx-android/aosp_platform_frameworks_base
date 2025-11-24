@@ -255,6 +255,6 @@ public final class ContactsPickerSessionContract {
          * picker session and should not be directly accessed by client applications.
          * @hide
          */
-        public static final String SESSION_REQUESTOR_UID = "requester_uid";
+        public static final String SESSION_REQUESTER_UID = "requester_uid";
     }
 }

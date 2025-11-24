@@ -68,24 +68,26 @@ class BubbleHelperImpl(
         info.changes.firstOrNull { change ->
             val taskInfo = change.taskInfo
             // Exclude non-standard activity transition scenarios.
-            taskInfo != null && taskInfo.activityType == ACTIVITY_TYPE_STANDARD &&
-                    // Only process opening or change transitions
-                    (isOpeningMode(change.mode) || change.mode == TRANSIT_CHANGE) &&
-                    // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen
-                    // scenario).
-                    isAppBubbleTask(taskInfo)
+            taskInfo != null &&
+                taskInfo.activityType == ACTIVITY_TYPE_STANDARD &&
+                // Only process opening or change transitions
+                (isOpeningMode(change.mode) || change.mode == TRANSIT_CHANGE) &&
+                // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen
+                // scenario).
+                isAppBubbleTask(taskInfo)
         }
 
     override fun getClosingBubbleTask(info: TransitionInfo): TransitionInfo.Change? =
         info.changes.firstOrNull { change ->
             val taskInfo = change.taskInfo
             // Exclude non-standard activity transition scenarios.
-            taskInfo != null && taskInfo.activityType == ACTIVITY_TYPE_STANDARD &&
-                    // Only process closing transitions.
-                    isClosingMode(change.mode) &&
-                    // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen
-                    // scenario).
-                    isAppBubbleTask(taskInfo)
+            taskInfo != null &&
+                taskInfo.activityType == ACTIVITY_TYPE_STANDARD &&
+                // Only process closing transitions.
+                isClosingMode(change.mode) &&
+                // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen
+                // scenario).
+                isAppBubbleTask(taskInfo)
         }
 
     override fun containsBubbleSwitch(info: TransitionInfo): Boolean =

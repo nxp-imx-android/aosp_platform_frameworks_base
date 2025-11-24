@@ -818,7 +818,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 case TRANSIT_CLOSE:
                     // TaskView can be null when closing
                     if (infoTv != null) {
-                        infoTv.prepareCloseAnimation();
+                        infoTv.prepareCloseAnimation(leash, startTransaction);
                     }
                     break;
                 case TRANSIT_OPEN:
@@ -979,7 +979,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                     }
                     tv.prepareHideAnimation(finishTransaction);
                 } else {
-                    tv.prepareCloseAnimation();
+                    tv.prepareCloseAnimation(chg.getLeash(), startTransaction);
                 }
                 changesHandled++;
             } else if (TransitionUtil.isOpeningType(chg.getMode())) {

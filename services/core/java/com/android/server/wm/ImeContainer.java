@@ -17,6 +17,8 @@
 package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
@@ -34,6 +36,8 @@ import android.window.IDisplayAreaOrganizer;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
+
+import java.io.PrintWriter;
 
 /**
  * Container for IME windows, used to keep track of all IME windows and move them in-sync if/when
@@ -65,6 +69,12 @@ final class ImeContainer extends DisplayArea.Tokens {
     /** Whether (relative) layer assignment is needed, or otherwise ignored. */
     private boolean mNeedsLayer = false;
 
+    /**
+     * The current Input Method Window Token for this container.
+     */
+    @Nullable
+    private ImeWindowToken mImeWindowToken;
+
     ImeContainer(@NonNull WindowManagerService wms) {
         super(wms, Type.ABOVE_TASKS, "ImeContainer", FEATURE_IME);
     }
@@ -90,6 +100,52 @@ final class ImeContainer extends DisplayArea.Tokens {
         return super.forAllWindows(callback, traverseTopToBottom);
     }
 
+    /**
+     * Sets the given ImeWindowToken as the current one for this container, sets it as the only
+     * visible token (and sets the others as not visible), and updates the current IME window.
+     *
+     * @param token the token to set, or {@code null} to remove it.
+     */
+    void setImeWindowToken(@Nullable ImeWindowToken token) {
+        if (!android.view.inputmethod.Flags.warmWorkProfileIme()) {
+            return;
+        }
+        if (mImeWindowToken == token) {
+            return;
+        }
+        ProtoLog.i(WM_DEBUG_IME, "setImeWindowToken %s", token);
+        mImeWindowToken = token;
+        for (int i = 0; i < mChildren.size(); i++) {
+            final ImeWindowToken child = mChildren.get(i).asImeToken();
+            if (child != null) {
+                child.setVisible(child == token);
+            }
+        }
+        if (token == null || token.isEmpty()) {
+            mDisplayContent.setImeWindow(null /* win */);
+        } else if (mDisplayContent.getImeWindow() == null) {
+            // Only set when there is no IME window. This is normally reset before switching
+            // users, and set again when starting the next user.
+            token.forAllWindows(w -> {
+                if (w.getWindowType() == TYPE_INPUT_METHOD
+                        // IME window is always touchable.
+                        // Ignore non-touchable windows e.g. Stylus InkWindow.java.
+                        && (w.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0) {
+                    // Set the first IME window found.
+                    mDisplayContent.setImeWindow(w);
+                    return true;
+                }
+                return false;
+            }, true /* traverseTopToBottom */);
+        }
+    }
+
+    /** Gets the current Input Method Window token for this container. */
+    @Nullable
+    ImeWindowToken getImeWindowToken() {
+        return mImeWindowToken;
+    }
+
     @Override
     @ActivityInfo.ScreenOrientation
     int getOrientation(@ActivityInfo.ScreenOrientation int candidate) {
@@ -99,7 +155,7 @@ final class ImeContainer extends DisplayArea.Tokens {
 
     @Override
     void updateAboveInsetsState(@NonNull InsetsState aboveInsetsState,
-            @NonNull SparseArray<InsetsSource> localInsetsSourcesFromParent,
+            @Nullable SparseArray<InsetsSource> localInsetsSourcesFromParent,
             @NonNull ArraySet<WindowState> insetsChangedWindows) {
         if (skipImeContainerDuringTraversal(mDisplayContent)) {
             return;
@@ -157,6 +213,13 @@ final class ImeContainer extends DisplayArea.Tokens {
                         mSurfaceControl, parentWindowSurface);
             }
         }
+    }
+
+    void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
+        pw.println(prefix + "ImeContainer");
+        prefix += "  ";
+        pw.println(prefix + "mNeedsLayer=" +  mNeedsLayer);
+        pw.println(prefix + "mImeWindowToken=" + mImeWindowToken);
     }
 
     /**

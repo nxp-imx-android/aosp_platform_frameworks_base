@@ -21,14 +21,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,6 +43,7 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediainput.ui.viewmodel.MediaInputViewModel
+import com.android.systemui.volume.panel.component.mediastream.ui.composable.MediaStreamStyle
 import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
 import javax.inject.Inject
@@ -64,63 +63,71 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
             return
         }
 
+        val style = MediaStreamStyle.style(isExpandedAudioTileDetailsView = true)
+
         Expandable(
             modifier =
-                Modifier.fillMaxWidth().height(80.dp).semantics {
+                Modifier.fillMaxWidth().height(56.dp).semantics {
                     liveRegion = LiveRegionMode.Polite
                     this.onClick(label = clickLabel) {
                         viewModel.onBarClick(null)
                         true
                     }
                 },
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(28.dp),
+            color = style.backgroundColor,
+            shape = RoundedCornerShape(12.dp),
             useModifierBasedImplementation = true,
             onClick = { viewModel.onBarClick(it) },
         ) { _ ->
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 viewModel.connectedDeviceName?.let {
-                    ConnectedDeviceText(checkNotNull(viewModel.connectedDeviceName))
+                    ConnectedDeviceText(
+                        checkNotNull(viewModel.connectedDeviceName),
+                        Modifier.weight(1f).padding(start = style.paddingStart),
+                        style,
+                    )
                 }
 
-                ConnectedDeviceIcon(viewModel.connectedDeviceIcon)
+                ConnectedDeviceIcon(icon = viewModel.connectedDeviceIcon, style = style)
             }
         }
     }
 
     @Composable
-    private fun RowScope.ConnectedDeviceText(deviceName: String) {
+    private fun ConnectedDeviceText(
+        deviceName: String,
+        modifier: Modifier = Modifier,
+        style: MediaStreamStyle,
+    ) {
         val currentDeviceLabel = stringResource(R.string.quick_settings_audio_current_input)
 
-        Column(
-            modifier = Modifier.weight(1f).padding(start = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.basicMarquee(),
                 text = currentDeviceLabel,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = style.labelTextStyle,
                 maxLines = 1,
             )
             Text(
                 modifier = Modifier.basicMarquee(),
                 text = deviceName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = style.deviceNameTextStyle,
                 maxLines = 1,
             )
         }
     }
 
     @Composable
-    private fun ConnectedDeviceIcon(icon: Icon) {
-        Box(modifier = Modifier.aspectRatio(1f), contentAlignment = Alignment.Center) {
-            Icon(
-                icon = icon,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(28.dp).fillMaxSize(),
-            )
+    private fun ConnectedDeviceIcon(
+        icon: Icon,
+        modifier: Modifier = Modifier,
+        style: MediaStreamStyle,
+    ) {
+        Box(modifier = modifier.size(56.dp), contentAlignment = Alignment.Center) {
+            Icon(icon = icon, tint = style.deviceIconColor, modifier = Modifier.size(24.dp))
         }
     }
 }

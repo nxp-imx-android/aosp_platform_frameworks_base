@@ -45,7 +45,7 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_FIRST
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_SECOND_DIGIT
 import kotlin.math.ceil
 
-interface DigitalClockViewGroupAdapter : DigitalClockViewAdapter {
+interface IDigitalClockViewGroup : IDigitalClockView {
     fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean
 
     fun updateMeasuredSize()
@@ -55,8 +55,8 @@ interface DigitalClockViewGroupAdapter : DigitalClockViewAdapter {
 
 @SuppressLint("ViewConstructor")
 abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
-    ViewGroup(clockCtx.context), DigitalClockViewGroupAdapter
-    where TChild : DigitalClockTextViewAdapter, TChild : View {
+    ViewGroup(clockCtx.context), IDigitalClockViewGroup
+    where TChild : IDigitalClockTextView, TChild : View {
     val logger = ClockLogger(this, clockCtx.messageBuffer, this::class.simpleName!!)
         get() = field ?: ClockLogger.INIT_LOGGER
 

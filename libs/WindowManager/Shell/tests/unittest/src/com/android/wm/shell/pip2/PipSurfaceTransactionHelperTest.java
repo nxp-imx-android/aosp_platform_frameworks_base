@@ -109,7 +109,7 @@ public class PipSurfaceTransactionHelperTest {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS);
+                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2);
     }
 
     public PipSurfaceTransactionHelperTest(FlagsParameterization flags) {
@@ -181,7 +181,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2)
     public void shadow_doNotApply_setZeroShadowRadius() {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, false /* apply */);
 
@@ -189,7 +189,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2)
     public void shadow_doApply_setExactShadowRadius() {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, true /* apply */);
 
@@ -197,7 +197,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2)
     public void shadow_flagEnabled_applyFalse_setsEmptyBoxShadowAndBorder() {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, false /* apply */);
 
@@ -216,7 +216,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2)
     public void onThemeChanged_switchToDarkTheme_usesDarkSettingsOnShadow() {
         when(PipUtils.isDarkSystemTheme(mMockContext)).thenReturn(true);
 
@@ -233,7 +233,7 @@ public class PipSurfaceTransactionHelperTest {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2)
     public void onThemeChanged_switchToLightTheme_usesLightSettingsOnShadow() {
         when(PipUtils.isDarkSystemTheme(mMockContext)).thenReturn(false);
 

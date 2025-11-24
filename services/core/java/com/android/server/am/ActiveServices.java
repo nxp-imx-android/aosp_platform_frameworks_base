@@ -252,6 +252,7 @@ import com.android.server.am.ServiceRecord.ShortFgsInfo;
 import com.android.server.am.ServiceRecord.TimeLimitedFgsInfo;
 import com.android.server.am.psc.SyncBatchSession;
 import com.android.server.pm.KnownPackages;
+import com.android.server.privatecompute.PccSandboxManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.utils.AnrTimer;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -507,6 +508,8 @@ public final class ActiveServices {
     String mLastAnrDump;
 
     AppWidgetManagerInternal mAppWidgetManagerInternal;
+
+    private PccSandboxManagerInternal mPccSandboxManagerInternal;
 
     /**
      * The available ANR timers.
@@ -810,6 +813,7 @@ public final class ActiveServices {
         setAllowListWhileInUsePermissionInFgs();
         initSystemExemptedFgsTypePermission();
         initMediaProjectFgsTypeCustomPermission();
+        mPccSandboxManagerInternal = LocalServices.getService(PccSandboxManagerInternal.class);
     }
 
     private AppStateTracker getAppStateTracker() {
@@ -1824,7 +1828,12 @@ public final class ActiveServices {
             }
             IntentBindRecord ib = r.record.bindings.get(r.record.intent);
             if (ib != null) {
-                ret = ib.binder;
+                if (r.record.serviceInfo.shouldRunInPccSandbox()) {
+                    ret = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(ib.binder,
+                            mAm.mInjector.getCallingUid());
+                } else {
+                    ret = ib.binder;
+                }
             }
         }
 
@@ -4472,7 +4481,9 @@ public final class ActiveServices {
                 final IBinderSession session =
                         mAm.mProcessStateController.getBoundServiceSessionFor(c);
                 try {
-                    c.conn.connected(clientSideComponentName, b.intent.binder, session, false);
+                    IBinder serviceBinder = createPccProxyIfNeeded(c, b.intent.binder);
+
+                    c.conn.connected(clientSideComponentName, serviceBinder, session, false);
                 } catch (Exception e) {
                     Slog.w(TAG, "Failure sending service " + s.shortInstanceName
                             + " to connection " + c.conn.asBinder()
@@ -4561,7 +4572,10 @@ public final class ActiveServices {
                             final IBinderSession session =
                                     mAm.mProcessStateController.getBoundServiceSessionFor(c);
                             try {
-                                c.conn.connected(clientSideComponentName, service, session, false);
+                                IBinder serviceBinder = createPccProxyIfNeeded(c, service);
+
+                                c.conn.connected(clientSideComponentName, serviceBinder, session,
+                                        false);
                             } catch (Exception e) {
                                 Slog.w(TAG, "Failure sending service " + r.shortInstanceName
                                       + " to connection " + c.conn.asBinder()
@@ -4713,6 +4727,21 @@ public final class ActiveServices {
             }
         }
         return needOomAdj;
+    }
+
+    private IBinder createPccProxyIfNeeded(ConnectionRecord cr, IBinder binder) {
+        if (cr.binding.service.serviceInfo.shouldRunInPccSandbox()) {
+            return mPccSandboxManagerInternal
+                    .createPccProxyIfNeeded(
+                            cr.binding.service.name,
+                            cr.binding.client.userId,
+                            cr.binding.intent.intent.getIntent(),
+                            binder,
+                            cr.binding.client.uid
+                    );
+        } else {
+            return binder;
+        }
     }
 
     private boolean updateServiceBindingsSingleUnbindLocked(IBinder binder,
@@ -6600,6 +6629,9 @@ public final class ActiveServices {
                 ArrayList<ConnectionRecord> c = connections.valueAt(conni);
                 for (int i = 0; i < c.size(); i++) {
                     ConnectionRecord cr = c.get(i);
+
+                    removePccProxyIfNeeded(cr);
+
                     // There is still a connection to the service that is
                     // being brought down.  Mark it as dead.
                     cr.serviceDead = true;
@@ -6894,9 +6926,12 @@ public final class ActiveServices {
     @ServiceBindingOomAdjPolicy
     int removeConnectionLocked(ConnectionRecord c, ProcessRecord skipApp,
             ActivityServiceConnectionsHolder skipAct, boolean enqueueOomAdj) {
+        removePccProxyIfNeeded(c);
+
         IBinder binder = c.conn.asBinder();
         AppBindRecord b = c.binding;
         ServiceRecord s = b.service;
+
         @ServiceBindingOomAdjPolicy int serviceBindingOomAdjPolicy =
                 SERVICE_BIND_OOMADJ_POLICY_LEGACY;
         ArrayList<ConnectionRecord> clist = s.getConnections().get(binder);
@@ -7118,6 +7153,18 @@ public final class ActiveServices {
         }
     }
 
+    private void removePccProxyIfNeeded(ConnectionRecord cr) {
+        if (cr.binding.service.serviceInfo.shouldRunInPccSandbox()) {
+            mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                    cr.binding.service.name,
+                    cr.binding.client.userId,
+                    cr.binding.intent.intent.getIntent(),
+                    cr.binding.intent.binder,
+                    cr.binding.client.uid
+            );
+        }
+    }
+
     private void serviceProcessGoneLocked(ServiceRecord r, boolean enqueueOomAdj) {
         if (r.tracker != null) {
             synchronized (mAm.mProcessStats.mLock) {
@@ -7202,7 +7249,7 @@ public final class ActiveServices {
     // Returns whether the process should be used for hosting the passed in ServiceRecord
     private boolean processMatchesServiceRecord(ProcessRecord proc, String processName,
             ServiceRecord sr) {
-        final int srUid = Process.isPccUid(proc.uid) ? sr.appInfo.pccUid
+        final int srUid = Process.isPrivateComputeCoreUid(proc.uid) ? sr.appInfo.pccUid
                 : sr.appInfo.uid;
         if (proc == sr.isolationHostProc || (proc.uid == srUid
                 && processName.equals(sr.processName))) {

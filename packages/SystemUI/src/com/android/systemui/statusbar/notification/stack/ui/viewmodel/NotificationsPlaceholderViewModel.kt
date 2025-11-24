@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -219,6 +220,10 @@ constructor(
             is ShadeMode.Split -> Scenes.Shade
             is ShadeMode.Dual -> Overlays.QuickSettingsShade
         }
+    }
+
+    fun setPlaceholderScale(scale: Scale) {
+        interactor.setPlaceholderScale(scale)
     }
 
     @AssistedFactory

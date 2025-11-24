@@ -534,6 +534,7 @@ public final class WMShell implements
     }
 
     @VisibleForTesting
+    // TODO(b/461749621): Adjust for scene container or deprecate
     void initRecentTasks(RecentTasks recentTasks) {
         recentTasks.addAnimationStateListener(mSysUiMainExecutor,
                 mCommandQueue::onRecentsAnimationStateChanged);

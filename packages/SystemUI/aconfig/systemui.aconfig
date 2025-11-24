@@ -169,16 +169,6 @@ flag {
 }
 
 flag {
-    name: "notification_fix_hun_shadows"
-    namespace: "systemui"
-    description: "Fix HUN shadows when the shade is collapsed."
-    bug: "440572084"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "scene_container"
     namespace: "systemui"
     description: "Enables the scene container framework go/flexiglass."
@@ -234,10 +224,30 @@ flag {
 }
 
 flag {
+    name: "global_actions_feedback_action"
+    namespace: "systemui"
+    description: "When enabled at build-time, the feedback global action will be available on "
+        "builds, provided a feedback handler application is installed."
+    bug: "449911065"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "brightness_icons_refresh"
     namespace: "systemui"
     description: "Replaces the brightness slider icon for the rounded ones"
     bug: "456222699"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "qs_power_icon_refresh"
+    namespace: "systemui"
+    description: "Replaces the footer power icon with a heavier weight"
+    bug: "452644748"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX
@@ -729,13 +739,6 @@ flag {
 }
 
 flag {
-    name: "hearing_aids_qs_tile_dialog"
-    namespace: "systemui"
-    description: "Show a dialog when clicking on hearing aids quick settings tile."
-    bug: "291423171"
-}
-
-flag {
    name: "get_connected_device_name_unsynchronized"
    namespace: "systemui"
    description: "Decide whether to fetch the connected bluetooth device name outside a synchronized block."
@@ -763,13 +766,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "qs_tile_focus_state"
-    namespace: "systemui"
-    description: "enables new focus outline for qs tiles when focused on with physical keyboard"
-    bug: "312899524"
 }
 
 flag {
@@ -1247,10 +1243,10 @@ flag {
 }
 
 flag {
-  name: "notes_role_qs_tile"
-  namespace: "systemui"
-  description: "Enables notes role qs tile which opens default notes role app in app bubbles"
-  bug: "357863750"
+  name: "enable_note_qs_tile"
+  namespace: "note"
+  description: "Enables note qs tile which opens default notes role app"
+  bug: "451901620"
 }
 
 flag {
@@ -1388,6 +1384,13 @@ flag {
     namespace: "systemui"
     description: "Larger privacy indicators on large screen"
     bug: "381864715"
+}
+
+flag {
+    name: "grouped_privacy_chip"
+    namespace: "systemui"
+    description: "New UI for privacy chips with grouped indicator and caret"
+    bug: "446923994"
 }
 
 flag {
@@ -1613,16 +1616,6 @@ flag {
 }
 
 flag {
-   name: "hub_edit_mode_transition"
-   namespace: "systemui"
-   description: "Fix hub to edit mode transition issues"
-   bug: "411422599"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "large_screen_screencapture"
     namespace: "systemui"
     description: "Enables the pre and post capture UI and the Quick Settings button for the Large Screen screen capture feature."
@@ -1693,13 +1686,17 @@ flag {
 }
 
 flag {
-   name: "allow_doze_touches_for_lock_icon"
-   namespace: "systemui"
-   description: "Allow touches for device entry lock icon during aod deferment."
-   bug: "433400058"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
+    name: "large_screen_screencapture_show_clicks_and_keys"
+    namespace: "systemui"
+    description: "Enables showing clicks and keys while screen recording and sharing."
+    bug: "461565040"
+}
+
+flag {
+    name: "large_screen_screencapture_front_camera"
+    namespace: "systemui"
+    description: "Enables the front camera while screen recording and sharing."
+    bug: "461564264"
 }
 
 flag {
@@ -2000,6 +1997,16 @@ flag {
 }
 
 flag {
+    name: "fix_canceled_notification_launch_animation"
+    namespace: "systemui"
+    description: "Fix an issue where the Shade ends up in the wrong state if a launch animation controller receives the intent started callback after the animation is cancelled."
+    bug: "461158751"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_shade_header_wrong_dnd_icon_size"
     namespace: "lse_desktop_experience"
     description: "Fix DnD icon size in shade header on connected displays"
@@ -2034,8 +2041,15 @@ flag {
 }
 
 flag {
-  name: "use_systemui_views_for_system_toolbar"
-  namespace: "permissions"
-  description: "Use the views moved into system ui from the framework for the system selection toolbar."
-  bug: "450977221"
+    name: "use_systemui_views_for_system_toolbar"
+    namespace: "permissions"
+    description: "Use the views moved into system ui from the framework for the system selection toolbar."
+    bug: "450977221"
+}
+
+flag {
+    name: "enable_note_in_action_corner"
+    namespace: "note"
+    description: "Enables note as a selectable option in the action corner customization."
+    bug: "451913526"
 }

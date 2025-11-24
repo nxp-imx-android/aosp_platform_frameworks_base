@@ -274,12 +274,13 @@ public class UserControllerTest {
 
     @Test
     public void testStartUser_foreground() {
+        mInjector.mHandler.mRunCallbacksImmediately = false;
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         verify(mInjector, never()).dismissUserSwitchingDialog(any());
-        verify(mInjector.getWindowManager(), times(1)).setSwitchingUser(anyBoolean());
-        verify(mInjector.getWindowManager()).setSwitchingUser(true);
         verify(mInjector).clearAllLockedTasks(anyString());
         startForegroundUserAssertions();
+        verify(mInjector.getWindowManager(), times(1)).setSwitchingUser(anyBoolean());
+        verify(mInjector.getWindowManager()).setSwitchingUser(true);
         verifyUserAssignedToDisplay(TEST_USER_ID, Display.DEFAULT_DISPLAY);
     }
 
@@ -393,7 +394,7 @@ public class UserControllerTest {
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
                 -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
-
+        mInjector.mHandler.mRunCallbacksImmediately = false;
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         verify(mInjector, never()).showUserSwitchingDialog(
                 any(), any(), anyString(), anyString(), any());
@@ -447,6 +448,20 @@ public class UserControllerTest {
     }
 
     private void startForegroundUserAssertions() {
+        // startUserInternal assertions (these need to be done synchronously)
+        assertEquals("Unexpected current user", TEST_USER_ID, mUserController.getCurrentUserId());
+        assertTrue("User has not started", mUserController.hasStartedUserState(TEST_USER_ID));
+        assertEquals("User state is not STATE_BOOTING", UserState.STATE_BOOTING,
+                mUserController.getStartedUserState(TEST_USER_ID).state);
+
+        // runPendingCallbacks to move from startUserInternal to continueStartUserInternal
+
+        // run mHandler.post(() -> dispatchOnBeforeUserSwitching(userId, onComplete)
+        mInjector.mHandler.runPendingCallbacks();
+        // run mHandler.post(continueStartUserInternal) [the onComplete param from 2 lines above]
+        mInjector.mHandler.runPendingCallbacks();
+
+        // continueStartUserInternal assertions (they are done asynchronously)
         startUserAssertions(START_FOREGROUND_USER_ACTIONS, START_FOREGROUND_USER_MESSAGE_CODES);
         Message reportMsg = mInjector.mHandler.getMessageForCode(REPORT_USER_SWITCH_MSG);
         assertNotNull(reportMsg);
@@ -3112,6 +3127,7 @@ public class UserControllerTest {
          */
         private final List<Message> mMessages = new ArrayList<>();
         private final List<Runnable> mPendingCallbacks = new ArrayList<>();
+        boolean mRunCallbacksImmediately = true;
 
         TestHandler(Looper looper) {
             super(looper);
@@ -3154,7 +3170,7 @@ public class UserControllerTest {
                 copy.when = uptimeMillis;
                 mMessages.add(copy);
             } else {
-                if (SystemClock.uptimeMillis() >= uptimeMillis) {
+                if (mRunCallbacksImmediately && SystemClock.uptimeMillis() >= uptimeMillis) {
                     msg.getCallback().run();
                 } else {
                     mPendingCallbacks.add(msg.getCallback());
@@ -3162,6 +3178,13 @@ public class UserControllerTest {
                 msg.setCallback(null);
             }
             return super.sendMessageAtTime(msg, uptimeMillis);
+        }
+
+        public void runPendingCallbacks() {
+            // make a copy, otherwise a callback run might add a new callback to the list
+            List<Runnable> callbacks = new ArrayList<>(mPendingCallbacks);
+            mPendingCallbacks.clear();
+            callbacks.forEach(Runnable::run);
         }
 
         /** Hackily removes the soonest Message (of the given what and, optionally, object). */

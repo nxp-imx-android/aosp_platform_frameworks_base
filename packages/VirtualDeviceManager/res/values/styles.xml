@@ -54,43 +54,23 @@
     <style name="RequestComputerControlAccessDialogDescription">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_small4</item>
         <item name="android:gravity">start</item>
         <item name="android:lineSpacingMultiplier">1.2</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.BodyMedium</item>
         <item name="android:textSize">14sp</item>
     </style>
 
-    <style name="RequestComputerControlAccessDialogAllowButton">
+    <style name="RequestComputerControlAccessDialogButton"
+           parent="@android:style/Widget.DeviceDefault.Button.Borderless.Colored">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">28dp</item>
-        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
+        <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_none</item>
+        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_small1</item>
         <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
         <item name="android:background">@drawable/settingslib_expressive_button_background_filled</item>
-        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
+        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge.Emphasized</item>
         <item name="android:textColor">@color/settingslib_materialColorOnPrimary</item>
-    </style>
-
-    <style name="RequestComputerControlAccessDialogDontAllowButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_small1</item>
-        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
-        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
-        <item name="android:background">@drawable/settingslib_expressive_button_background_filled</item>
-        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
-        <item name="android:textColor">@color/settingslib_materialColorOnPrimary</item>
-    </style>
-
-    <style name="RequestComputerControlAccessDialogAlwaysAllowButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_small1</item>
-        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
-        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
-        <item name="android:background">@drawable/settingslib_expressive_button_background_outline</item>
-        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
-        <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
     </style>
 
     <!-- END REQUEST COMPUTER CONTROL ACCESS DIALOG -->

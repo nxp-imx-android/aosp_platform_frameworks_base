@@ -443,7 +443,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
         }
 
         @Override
-        public void onOverviewShown(boolean fromHome) {
+        public void onOverviewShown() {
             // If the overview has fixed orientation that may change display to natural rotation,
             // we don't want the user rotation to be reset. So after user returns to application,
             // it can keep in the original rotation.

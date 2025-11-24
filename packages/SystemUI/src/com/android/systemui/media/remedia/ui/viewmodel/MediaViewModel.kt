@@ -112,7 +112,28 @@ constructor(
 
                     override val navigation: MediaNavigationViewModel
                         get() {
-                            return if (session.canBeScrubbed) {
+                            val onScrubChange = { progress: Float ->
+                                check(selectedCardIndex == sessionIndex) {
+                                    "Can't seek on a card that's not the selected card!"
+                                }
+                                isScrubbing = true
+                                seekProgress = progress
+                            }
+
+                            val onScrubFinished = { dragDelta: Offset ->
+                                if (
+                                    dragDelta.isHorizontal() &&
+                                        !falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)
+                                ) {
+                                    interactor.seek(
+                                        sessionKey = session.key,
+                                        to = (seekProgress * session.durationMs).roundToLong(),
+                                    )
+                                }
+                                isScrubbing = false
+                            }
+
+                            return if (session.canShowSeekbar) {
                                 MediaNavigationViewModel.Showing(
                                     progress =
                                         if (!isCurrentSessionAndScrubbing) {
@@ -126,29 +147,10 @@ constructor(
                                         session.state != MediaSessionState.Paused &&
                                             !isCurrentSessionAndScrubbing,
                                     isScrubbing = isCurrentSessionAndScrubbing,
-                                    onScrubChange = { progress ->
-                                        check(selectedCardIndex == sessionIndex) {
-                                            "Can't seek on a card that's not the selected card!"
-                                        }
-                                        isScrubbing = true
-                                        seekProgress = progress
-                                    },
-                                    onScrubFinished = { dragDelta ->
-                                        if (
-                                            dragDelta.isHorizontal() &&
-                                                !falsingSystem.isFalseTouch(
-                                                    Classifier.MEDIA_SEEKBAR
-                                                )
-                                        ) {
-                                            interactor.seek(
-                                                sessionKey = session.key,
-                                                to =
-                                                    (seekProgress * session.durationMs)
-                                                        .roundToLong(),
-                                            )
-                                        }
-                                        isScrubbing = false
-                                    },
+                                    onScrubChange =
+                                        if (session.canBeScrubbed) onScrubChange else null,
+                                    onScrubFinished =
+                                        if (session.canBeScrubbed) onScrubFinished else null,
                                     contentDescription =
                                         context.getString(
                                             R.string.controls_media_seekbar_description,
@@ -157,7 +159,10 @@ constructor(
                                         ),
                                 )
                             } else {
-                                MediaNavigationViewModel.Hidden
+                                MediaNavigationViewModel.Hidden(
+                                    left = session.leftAction.toSecondaryActionViewModel(),
+                                    right = session.rightAction.toSecondaryActionViewModel(),
+                                )
                             }
                         }
 
@@ -288,8 +293,7 @@ constructor(
                                     falsingSystem.runIfNotFalseTap(
                                         FalsingManager.MODERATE_PENALTY
                                     ) {
-                                        // TODO(b/397989775): tell the UI to show the output
-                                        // switcher.
+                                        session.outputDevice.onClick(null)
                                     }
                                 },
                             )

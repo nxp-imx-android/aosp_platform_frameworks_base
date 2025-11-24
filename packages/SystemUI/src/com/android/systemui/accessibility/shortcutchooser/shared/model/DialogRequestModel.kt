@@ -22,6 +22,4 @@ import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutT
 data class DialogRequestModel(
     @param:UserShortcutType val shortcutType: Int,
     val displayId: Int,
-    /** True if on Login screen. */
-    val isHeadlessSystemUser: Boolean,
 )

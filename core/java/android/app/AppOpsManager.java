@@ -536,7 +536,7 @@ public class AppOpsManager {
      * This uid state is a counterpart to PROCESS_STATE_FOREGROUND_SERVICE_LOCATION which has been
      * deprecated.
      * @hide
-     * @deprecated
+     * @deprecated Unusable as PROCESS_STATE_FOREGROUND_SERVICE_LOCATION has been removed.
      */
     @SystemApi
     @Deprecated
@@ -1788,9 +1788,17 @@ public class AppOpsManager {
     public static final int OP_CONTINUE_ACROSS_DEVICES =
             AppOpEnums.APP_OP_CONTINUE_ACROSS_DEVICES;
 
+    /**
+     * Access to screen and app context as voice interaction service.
+     *
+     * @hide
+     */
+    public static final int OP_VOICE_INTERACTION_ASSIST_STRUCTURE =
+            AppOpEnums.APP_OP_VOICE_INTERACTION_ASSIST_STRUCTURE;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 175;
+    public static final int _NUM_OP = 176;
 
     /**
      * All app ops represented as strings.
@@ -1969,6 +1977,7 @@ public class AppOpsManager {
             OPSTR_READ_RESPIRATORY_RATE,
             OPSTR_READ_VO2_MAX,
             OPSTR_CONTINUE_ACROSS_DEVICES,
+            OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
     })
     public @interface AppOpString {}
 
@@ -2836,6 +2845,17 @@ public class AppOpsManager {
     @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public static final String OPSTR_CONTINUE_ACROSS_DEVICES = "android:continue_across_devices";
 
+    /**
+     * Access to screen and app context as voice interaction service.
+     *
+     * @hide
+     */
+    @SuppressLint("IntentName")
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
+    public static final String OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE =
+            "android:voice_interaction_assist_structure";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -3518,7 +3538,7 @@ public class AppOpsManager {
         // computer control session at all, while the op mode determines whether explicit user
         // consent is required when requesting a computer control session.
         new AppOpInfo.Builder(OP_COMPUTER_CONTROL, OPSTR_COMPUTER_CONTROL, "COMPUTER_CONTROL")
-                .setDefaultMode(AppOpsManager.MODE_IGNORED)
+                .setDefaultMode(AppOpsManager.MODE_DEFAULT)
                 .build(),
         new AppOpInfo.Builder(OP_READ_OTP_SMS, OPSTR_READ_OTP_SMS, "READ_OTP_SMS")
                 .build(),
@@ -3550,6 +3570,9 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_CONTINUE_ACROSS_DEVICES, OPSTR_CONTINUE_ACROSS_DEVICES,
                 "CONTINUE_ACROSS_DEVICES")
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE, "VOICE_INTERACTION_ASSIST_STRUCTURE")
+                .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
     };
 
     // The number of longs needed to form a full bitmask of app ops

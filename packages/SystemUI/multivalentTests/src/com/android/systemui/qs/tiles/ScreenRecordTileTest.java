@@ -64,7 +64,9 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState;
+import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepositoryKosmosKt;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractorKosmosKt;
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
@@ -166,10 +168,18 @@ public class ScreenRecordTileTest extends SysuiTestCase {
                 mPanelInteractor,
                 mMediaProjectionMetricsLogger,
                 ScreenCaptureUiInteractorKosmosKt.getScreenCaptureUiInteractor(mKosmos),
-                mUserContextProvider
+                mUserContextProvider,
+                new ScreenCaptureRecordFeaturesInteractor(
+                        ScreenCaptureDeviceStateRepositoryKosmosKt
+                                .getScreenCaptureDeviceStateRepository(mKosmos)
+                )
         );
 
         mTile.initialize();
+        ScreenCaptureDeviceStateRepositoryKosmosKt
+                .getFakeScreenCaptureDeviceStateRepository(mKosmos)
+                .setLargeScreen(false);
+
         mTestableLooper.processAllMessages();
     }
 
@@ -251,6 +261,10 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     @Test
     @EnableFlags({Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR})
     public void testClickFromLargeScreen() {
+        ScreenCaptureDeviceStateRepositoryKosmosKt
+                .getFakeScreenCaptureDeviceStateRepository(mKosmos)
+                .setLargeScreen(true);
+
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
 

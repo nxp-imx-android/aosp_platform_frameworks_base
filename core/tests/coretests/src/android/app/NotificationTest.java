@@ -136,6 +136,7 @@ public class NotificationTest {
     private Context mContext;
 
     private RemoteViews mRemoteViews;
+    private Notification.Colors mDefaultColors;
 
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
@@ -146,6 +147,11 @@ public class NotificationTest {
         mContext = InstrumentationRegistry.getContext();
         mRemoteViews = new RemoteViews(
                 mContext.getPackageName(), R.layout.notification_template_header);
+
+        mDefaultColors = new Notification.Colors();
+        boolean nightMode = (mContext.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        mDefaultColors.resolvePalette(mContext, Notification.COLOR_DEFAULT, false, nightMode);
     }
 
     @Test
@@ -964,7 +970,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS)
     public void testBuilder_setBridgedNotificationMetadata() {
         Icon icon = Icon.createWithBitmap(
                 Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
@@ -989,7 +995,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS)
     public void testBuilder_dontSetBridgedMetadata() {
         Notification notification = new Notification.Builder(mContext, "whatever")
                 .build();
@@ -1022,7 +1028,7 @@ public class NotificationTest {
 
     @Test
     public void testBuilder_getFullLengthSpanColor_returnsNullForString() {
-        assertThat(Notification.Builder.getFullLengthSpanColor("String")).isNull();
+        assertThat(Notification.Builder.getFullLengthSpanColor("String", null)).isNull();
     }
 
     @Test
@@ -1031,7 +1037,7 @@ public class NotificationTest {
                 .append("text with ")
                 .append("some red", new ForegroundColorSpan(Color.RED),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        assertThat(Notification.Builder.getFullLengthSpanColor(text)).isNull();
+        assertThat(Notification.Builder.getFullLengthSpanColor(text, null)).isNull();
     }
 
     @Test
@@ -1039,7 +1045,7 @@ public class NotificationTest {
         CharSequence text = new SpannableStringBuilder()
                 .append("text that is all red", new ForegroundColorSpan(Color.RED),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        assertThat(Notification.Builder.getFullLengthSpanColor(text)).isEqualTo(Color.RED);
+        assertThat(Notification.Builder.getFullLengthSpanColor(text, null)).isEqualTo(Color.RED);
     }
 
     @Test
@@ -1051,7 +1057,7 @@ public class NotificationTest {
                 Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         text.setSpan(new ForegroundColorSpan(Color.GREEN), 26, 31,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        assertThat(Notification.Builder.getFullLengthSpanColor(text)).isEqualTo(Color.BLUE);
+        assertThat(Notification.Builder.getFullLengthSpanColor(text, null)).isEqualTo(Color.BLUE);
     }
 
     @Test
@@ -1066,10 +1072,22 @@ public class NotificationTest {
                 Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         text.setSpan(new ForegroundColorSpan(Color.GREEN), 26, 31,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        assertThat(Notification.Builder.getFullLengthSpanColor(text)).isEqualTo(expectedTextColor);
+        assertThat(Notification.Builder.getFullLengthSpanColor(text, null)).isEqualTo(
+                expectedTextColor);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public void testBuilder_getFullLengthSpanColor_worksWithSemanticStyle() {
+        Spannable text = new SpannableString("text with semantic color");
+        text.setSpan(Notification.createSemanticStyleAnnotation(SEMANTIC_STYLE_DANGER), 0,
+                text.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 
+        Integer fullLengthColor = Notification.Builder.getFullLengthSpanColor(text, mDefaultColors);
+
+        assertThat(fullLengthColor)
+                .isEqualTo(mDefaultColors.getSemanticColor(SEMANTIC_STYLE_DANGER));
+    }
 
     @Test
     public void testBuilder_ensureButtonFillContrast_adjustsDarker() {

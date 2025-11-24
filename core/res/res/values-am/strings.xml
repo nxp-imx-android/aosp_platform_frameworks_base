@@ -824,6 +824,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የቪዲዮ ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ከጋራ ማከማቻ የምስል ፋይሎችን አንብብ"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የምስል ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"የሰነድ ፋይሎችን ከተጋራ ማከማቻ ያንብቡ"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የሰነድ ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ከተጋራ ማከማቻው ውስጥ በተጠቃሚ የተመረጡ የምስል እና የቪድዮ ፋይሎችን አንብብ"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ከእርስዎ የተጋራ ማከማቻ እርስዎ የሚመርጧቸው የምስል እና የቪድዮ ፋይሎችን መተግበሪያው እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"የተጋራ ማከማቻዎን ይዘቶች ይቀይሩ ወይም ይሰርዙ"</string>
@@ -1028,7 +1030,7 @@
     <string name="relationTypeMother" msgid="2331762740982699460">"እናት"</string>
     <string name="relationTypeParent" msgid="4177920938333039882">"ወላጅ"</string>
     <string name="relationTypePartner" msgid="4018017075116766194">"አጋር"</string>
-    <string name="relationTypeReferredBy" msgid="5285082289602849400">"በ ተጠቅሷል"</string>
+    <string name="relationTypeReferredBy" msgid="5285082289602849400">"የተጠቀሰው"</string>
     <string name="relationTypeRelative" msgid="3396498519818009134">"ዘመድ"</string>
     <string name="relationTypeSister" msgid="3721676005094140671">"እህት"</string>
     <string name="relationTypeSpouse" msgid="6916682664436031703">"የትዳር ጓደኛ"</string>

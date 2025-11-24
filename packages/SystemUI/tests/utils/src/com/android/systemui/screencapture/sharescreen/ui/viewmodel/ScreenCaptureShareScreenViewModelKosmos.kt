@@ -23,7 +23,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.displaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
-import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
+import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 
 val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
     object : ScreenCaptureShareScreenViewModel.Factory {

@@ -37,6 +37,7 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase() {
 
     @Before
     fun setup() {
+        Assume.assumeTrue(maxNum > 0)
         Assume.assumeTrue(
             DesktopState.fromContext(instrumentation.context)
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)

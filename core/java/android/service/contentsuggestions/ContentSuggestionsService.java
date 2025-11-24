@@ -31,7 +31,6 @@ import android.app.contentsuggestions.SelectionsRequest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
-import android.hardware.HardwareBuffer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -84,14 +83,8 @@ public abstract class ContentSuggestionsService extends Service {
                     if (colorSpaceId >= 0 && colorSpaceId < ColorSpace.Named.values().length) {
                         colorSpace = ColorSpace.get(ColorSpace.Named.values()[colorSpaceId]);
                     }
-                    if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                        wrappedBuffer = snapshot.wrapToBitmap(colorSpace);
-                        snapshot.closeBuffer();
-                    } else {
-                        final HardwareBuffer snapshotBuffer = snapshot.getHardwareBuffer();
-                        wrappedBuffer = Bitmap.wrapHardwareBuffer(snapshotBuffer, colorSpace);
-                        snapshotBuffer.close();
-                    }
+                    wrappedBuffer = snapshot.wrapToBitmap(colorSpace);
+                    snapshot.closeBuffer();
                 }
             }
 

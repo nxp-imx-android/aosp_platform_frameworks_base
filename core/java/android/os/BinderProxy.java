@@ -690,7 +690,12 @@ public final class BinderProxy implements IBinder {
             throws RemoteException {
         if (sUseExecutorForFrozenStateChangeCallback) {
             mFrozenStateChangeCallbackExecutors.put(callback, executor);
-            addFrozenStateChangeCallbackNative(callback);
+            try {
+                addFrozenStateChangeCallbackNative(callback);
+            } catch (Throwable e) {
+                mFrozenStateChangeCallbackExecutors.remove(callback);
+                throw e;
+            }
             return;
         }
         FrozenStateChangeCallback wrappedCallback = (who, state) ->

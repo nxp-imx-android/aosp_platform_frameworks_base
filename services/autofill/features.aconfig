@@ -72,14 +72,14 @@ flag {
   name: "expressive_fill_dialog"
   namespace: "autofill"
   description: "Supports expressive style for fill dialog"
-  bug: "438420320"
+  bug: "433824891"
 }
 
 flag {
   name: "expressive_save_dialog"
   namespace: "autofill"
   description: "Supports expressive style for save dialog"
-  bug: "438420324"
+  bug: "433824891"
 }
 
 flag {
@@ -87,4 +87,11 @@ flag {
   namespace: "autofill"
   description: "Make autofill service name in context a public API"
   bug: "390180715"
+}
+
+flag {
+  name: "string_rebuild_api"
+  namespace: "autofill"
+  description: "API to provide noise-injected text for server side string rebuild"
+  bug: "441075073"
 }

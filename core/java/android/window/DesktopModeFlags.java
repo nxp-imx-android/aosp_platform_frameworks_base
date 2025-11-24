@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 
 import com.android.window.flags.Flags;
@@ -38,6 +39,7 @@ import java.util.function.BooleanSupplier;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
@@ -62,8 +64,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING(
             Flags::enableDesktopWindowingImmersiveHandleHiding, true),
     ENABLE_DESKTOP_WINDOWING_MODE(Flags::enableDesktopWindowingMode, true),
-    ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES(
-            Flags::enableDesktopWindowingMultiInstanceFeatures, true),
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, true),
     ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),

@@ -37,6 +37,7 @@ import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
 import android.app.admin.MultiUserDeviceProvisioningParamsTransport;
+import android.app.admin.MultiUserManagedUserProvisioningParamsTransport;
 import android.app.admin.WifiSsidPolicy;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -586,6 +587,7 @@ interface IDevicePolicyManager {
     void provisionFullyManagedDevice(in FullyManagedDeviceProvisioningParams provisioningParams, in String callerPackage);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)")
     void provisionMultiUserDevice(in MultiUserDeviceProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
+    void provisionMultiUserManagedUser(in MultiUserManagedUserProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
 
     void finalizeWorkProfileProvisioning(in UserHandle managedProfileUser, in Account migratedAccount);
 

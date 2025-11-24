@@ -166,6 +166,8 @@ public abstract class BaseBroadcastQueueTest {
     SparseArray<ReceiverList> mRegisteredReceivers = new SparseArray<>();
 
     public void setUp() throws Exception {
+        System.loadLibrary("mockingservicestestjni");
+
         MockitoAnnotations.initMocks(this);
 
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();

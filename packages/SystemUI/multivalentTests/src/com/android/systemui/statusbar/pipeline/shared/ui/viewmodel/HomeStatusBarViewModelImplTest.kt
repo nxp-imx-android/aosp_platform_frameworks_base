@@ -108,6 +108,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeS
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.configurationController
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -1676,7 +1677,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 ObservableTransitionState.Idle(
                     sceneInteractor.currentScene.value,
                     checkNotNull(currentOverlays),
-                )
+                ),
+                skipChangeScene = true,
             )
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
 
@@ -1711,7 +1713,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 ObservableTransitionState.Idle(
                     checkNotNull(currentScene),
                     checkNotNull(currentOverlays),
-                )
+                ),
+                skipChangeScene = true,
             )
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 
@@ -1757,6 +1760,38 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             underTest.onShadeExpansionIntent(eventX, statusBarWidth)
             assertThat(displayId).isEqualTo(EXTERNAL_DISPLAY)
+        }
+
+    @Test
+    fun deviceNotProvisioned_quickSettingsChipNotClickable() =
+        kosmos.runTest {
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
+
+            assertThat(underTest.isQuickSettingsChipClickable).isFalse()
+        }
+
+    @Test
+    fun deviceProvisioned_quickSettingsChipClickable() =
+        kosmos.runTest {
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
+
+            assertThat(underTest.isQuickSettingsChipClickable).isTrue()
+        }
+
+    @Test
+    fun deviceNotProvisioned_notificationsChipNotClickable() =
+        kosmos.runTest {
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
+
+            assertThat(underTest.isNotificationsChipClickable).isFalse()
+        }
+
+    @Test
+    fun deviceProvisioned_notificationsChipClickable() =
+        kosmos.runTest {
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
+
+            assertThat(underTest.isNotificationsChipClickable).isTrue()
         }
 
     private fun activeNotificationsStore(notifications: List<ActiveNotificationModel>) =

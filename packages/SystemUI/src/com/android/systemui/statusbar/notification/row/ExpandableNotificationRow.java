@@ -23,7 +23,6 @@ import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
 
 import static com.android.systemui.Flags.notificationRowTransparency;
-import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
@@ -94,7 +93,6 @@ import com.android.internal.widget.CallLayout;
 import com.android.internal.widget.ConversationLayout;
 import com.android.internal.widget.MessagingLayout;
 import com.android.systemui.Flags;
-import com.android.systemui.flags.RefactorFlag;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.PluginListener;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
@@ -111,7 +109,6 @@ import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
-import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
@@ -322,16 +319,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private ExpandableNotificationRow mNotificationParent;
     private OnExpandClickListener mOnExpandClickListener;
     private Path mExpandingClipPath;
-
-    private static boolean shouldSimulateSlowMeasure() {
-        return Compile.IS_DEBUG && RefactorFlag.forView(
-                ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE).isEnabled();
-    }
-
-    private static final String SLOW_MEASURE_SIMULATE_DELAY_PROPERTY =
-            "persist.notifications.extra_measure_delay_ms";
-    private static final int SLOW_MEASURE_SIMULATE_DELAY_MS =
-            SystemProperties.getInt(SLOW_MEASURE_SIMULATE_DELAY_PROPERTY, 150);
 
     // Listener will be called when receiving a long click event.
     // Use #setLongPressPosition to optionally assign positional data with the long press.
@@ -1558,9 +1545,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void updateClickAndFocus() {
-        boolean normalChild = !isChildInGroup() || isGroupExpanded();
-        boolean clickable = mOnClickListener != null
-                && (normalChild || isBundledSummaryClickable());
+        boolean normalChild = !isChildInGroup() || isGroupExpanded() ||
+                (NotificationBundleUi.isEnabled()
+                        && getEntryAdapter().isBundled() && isParentGroupExpanded());
+        boolean clickable = mOnClickListener != null && normalChild;
         if (isFocusable() != normalChild) {
             setFocusable(normalChild);
         }
@@ -2464,23 +2452,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (shouldSimulateSlowMeasure()) {
-            simulateExtraMeasureDelay();
-        }
         Trace.endSection();
-    }
-
-    private void simulateExtraMeasureDelay() {
-        // Add extra delay in a notification row instead of NotificationStackScrollLayout
-        // to make sure that when the measure cache is used we won't add this delay
-        try {
-            Trace.beginSection("ExtraDebugMeasureDelay");
-            Thread.sleep(SLOW_MEASURE_SIMULATE_DELAY_MS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            Trace.endSection();
-        }
     }
 
     /**
@@ -3766,6 +3738,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mChildrenExpanded = expanded;
         if (mChildrenContainer != null) {
             mChildrenContainer.setChildrenExpanded(expanded);
+            if (isBundle()) {
+                // bundles are groups that can contain groups. reset the click state of the children
+                // so that inner groups can be clicked
+                for (ExpandableNotificationRow child : mChildrenContainer.getAttachedChildren()) {
+                    child.updateClickAndFocus();
+                }
+            }
         }
         updateBackgroundForGroupState();
         updateClickAndFocus();
@@ -4299,6 +4278,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public void setOnExpansionChangedListener(@Nullable OnExpansionChangedListener listener) {
         mExpansionChangedListener = listener;
+    }
+
+    public void setOnBundleHeaderClickedListener(@Nullable OnClickListener listener) {
+        mChildrenContainer.setBundleHeaderOnClickListener(listener);
     }
 
     /**

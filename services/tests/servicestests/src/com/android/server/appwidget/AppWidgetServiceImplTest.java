@@ -303,12 +303,12 @@ public class AppWidgetServiceImplTest {
     @Test
     public void testIsRequestPinAppWidgetSupported() {
         // Set up users.
-        when(mMockShortcutService.isRequestPinItemSupported(anyInt(), anyInt()))
+        when(mMockShortcutService.isRequestPinItemSupported(anyString(), anyInt(), anyInt()))
                 .thenReturn(true, false);
         assertTrue(mManager.isRequestPinAppWidgetSupported());
         assertFalse(mManager.isRequestPinAppWidgetSupported());
 
-        verify(mMockShortcutService, times(2)).isRequestPinItemSupported(anyInt(),
+        verify(mMockShortcutService, times(2)).isRequestPinItemSupported(anyString(), anyInt(),
                 eq(LauncherApps.PinItemRequest.REQUEST_TYPE_APPWIDGET));
     }
 

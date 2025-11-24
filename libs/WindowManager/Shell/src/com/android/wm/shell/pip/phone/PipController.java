@@ -778,7 +778,7 @@ public class PipController implements PipTransitionController.PipTransitionCallb
         onDisplayChanged(new DisplayLayout(mContext, mContext.getDisplay()),
                 false /* saveRestoreSnapFraction */);
 
-        if (Flags.enablePipBoxShadows()) {
+        if (Flags.enablePipBoxShadowsV2()) {
             mPipTaskOrganizer.onThemeChanged(mContext);
         }
     }

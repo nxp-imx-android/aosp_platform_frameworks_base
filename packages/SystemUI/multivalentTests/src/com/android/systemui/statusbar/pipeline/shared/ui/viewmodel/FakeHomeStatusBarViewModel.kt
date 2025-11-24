@@ -29,7 +29,6 @@ import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
-import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
@@ -39,6 +38,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.Clock
+import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -181,6 +181,12 @@ class FakeHomeStatusBarViewModel(
 
     val isNotificationsChipHighlightedSource = mutableStateOf(false)
     override val isNotificationsChipHighlighted: Boolean by isNotificationsChipHighlightedSource
+
+    val isNotificationsChipClickableSource = mutableStateOf(false)
+    override val isNotificationsChipClickable: Boolean by isNotificationsChipClickableSource
+
+    val isQuickSettingsChipClickableSource = mutableStateOf(false)
+    override val isQuickSettingsChipClickable: Boolean by isQuickSettingsChipClickableSource
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

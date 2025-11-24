@@ -22,7 +22,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
-import com.android.systemui.Flags.FLAG_HUB_EDIT_MODE_TRANSITION
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
@@ -225,9 +224,8 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
         }
 
     @Test
-    @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
     @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testPrimaryBouncerToGone_whenEnteringHubEditMode_flagOn_doNothing() =
+    fun testPrimaryBouncerToGone_whenEnteringHubEditMode_doNothing() =
         kosmos.runTest {
             underTest.start()
 
@@ -243,24 +241,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
             runCurrent()
 
             assertThat(transitionRepository).noTransitionsStarted()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION, FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testPrimaryBouncerToGone_whenEnteringHubEditMode_flagOff_transitionToGone() =
-        kosmos.runTest {
-            underTest.start()
-
-            transitionRepository.transitionTo(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.PRIMARY_BOUNCER,
-            )
-            communalSceneInteractor.setEditModeState(EditModeState.STARTING)
-            fakeKeyguardRepository.setKeyguardGoingAway(true)
-            runCurrent()
-
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.PRIMARY_BOUNCER, to = KeyguardState.GONE)
         }
 
     @Test

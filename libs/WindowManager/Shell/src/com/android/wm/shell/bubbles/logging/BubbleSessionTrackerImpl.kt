@@ -43,7 +43,7 @@ class BubbleSessionTrackerImpl
 @Inject
 constructor(
     @param:Bubbles private val instanceIdSequence: InstanceIdSequence,
-    private val logger: BubbleLogger
+    private val logger: BubbleLogger,
 ) : BubbleSessionTracker {
 
     private var currentSession: Session? = null
@@ -69,16 +69,15 @@ constructor(
             ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: starting to track a new session. " +
-                    "previous session still active"
+                    "previous session still active",
             )
         }
 
-        val uiEvent =
-            if (event.forBubbleBar) BUBBLE_BAR_SESSION_STARTED else BUBBLE_SESSION_STARTED
+        val uiEvent = if (event.forBubbleBar) BUBBLE_BAR_SESSION_STARTED else BUBBLE_SESSION_STARTED
         val session =
             Session(
                 id = instanceIdSequence.newInstanceId(),
-                appPackage = event.selectedBubblePackage
+                appPackage = event.selectedBubblePackage,
             )
         logger.logWithSessionId(uiEvent, session.appPackage, session.id)
         currentSession = session
@@ -89,13 +88,12 @@ constructor(
         if (session == null) {
             ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
-                "BubbleSessionTracker: session tracking stopped but current session is null"
+                "BubbleSessionTracker: session tracking stopped but current session is null",
             )
             return
         }
 
-        val uiEvent =
-            if (event.forBubbleBar) BUBBLE_BAR_SESSION_ENDED else BUBBLE_SESSION_ENDED
+        val uiEvent = if (event.forBubbleBar) BUBBLE_BAR_SESSION_ENDED else BUBBLE_SESSION_ENDED
         logger.logWithSessionId(uiEvent, session.appPackage, session.id)
         currentSession = null
     }
@@ -105,7 +103,7 @@ constructor(
         if (session == null) {
             ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
-                "BubbleSessionTracker: tracking bubble switch but current session is null"
+                "BubbleSessionTracker: tracking bubble switch but current session is null",
             )
             return
         }

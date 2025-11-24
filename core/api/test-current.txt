@@ -864,6 +864,10 @@ package android.app.prediction {
 
 package android.app.supervision {
 
+  public class SupervisionAppService extends android.app.Service {
+    method public void onServiceBound(@Nullable android.content.Intent);
+  }
+
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
     method public void setSupervisionEnabled(boolean);
   }
@@ -1611,7 +1615,6 @@ package android.graphics.fonts {
 
   public class FontManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public android.text.FontConfig getFontConfig();
-    method @FlaggedApi("com.android.text.flags.insert_font_family") @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int insertFontFamilyBefore(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @NonNull String, @IntRange(from=0) int);
     method @FlaggedApi("com.android.text.flags.insert_font_family") @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int updateFontFallbacks(@NonNull java.util.List<android.graphics.fonts.FallbackFontUpdateRequest>);
     method @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int updateFontFamily(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @IntRange(from=0) int);
     field public static final int RESULT_ERROR_DOWNGRADING = -5; // 0xfffffffb
@@ -1732,6 +1735,7 @@ package android.hardware.camera2 {
     method @NonNull public android.hardware.camera2.CameraCharacteristics getCameraCharacteristics(@NonNull String, boolean) throws android.hardware.camera2.CameraAccessException;
     method public String[] getCameraIdListNoLazy() throws android.hardware.camera2.CameraAccessException;
     method public static android.content.res.CameraCompatibilityInfo getRotationOverride(@Nullable android.content.Context, @Nullable android.content.pm.PackageManager, @Nullable String);
+    method public boolean isDefaultAppSocialMediaParityEnabled() throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(android.Manifest.permission.CAMERA) public void openCamera(@NonNull String, boolean, @Nullable android.os.Handler, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(allOf={android.Manifest.permission.SYSTEM_CAMERA, android.Manifest.permission.CAMERA}) public void openCamera(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
     field public static final String LANDSCAPE_TO_PORTRAIT_PROP = "camera.enable_landscape_to_portrait";
@@ -1753,6 +1757,10 @@ package android.hardware.camera2.params {
 
   public final class ColorSpaceProfiles {
     method @NonNull public java.util.Map<android.graphics.ColorSpace.Named,java.util.Map<java.lang.Integer,java.util.Set<java.lang.Long>>> getProfileMap();
+  }
+
+  public final class DynamicRangeProfiles {
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long CURRENT_MAX = 33554432L; // 0x2000000L
   }
 
   public final class OutputConfiguration implements android.os.Parcelable {
@@ -3648,6 +3656,10 @@ package android.telephony {
     ctor public ModemActivityInfo(long, int, int, @NonNull int[], int);
     method public boolean isEmpty();
     method public boolean isValid();
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") public final class NetworkSecurityEvent implements android.os.Parcelable {
+    ctor public NetworkSecurityEvent(int, int, @NonNull int[], int, int, int, @NonNull String, int, boolean);
   }
 
   public class PhoneNumberUtils {

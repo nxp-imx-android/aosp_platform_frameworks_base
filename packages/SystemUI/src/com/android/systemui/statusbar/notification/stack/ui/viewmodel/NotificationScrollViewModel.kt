@@ -26,6 +26,7 @@ import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ChangeScene
 import com.android.compose.animation.scene.OverlayKey
+import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.dump.DumpManager
@@ -403,6 +404,9 @@ constructor(
         combine(stackAppearanceInteractor.qsPanelShapeInWindow, viewLeft) { shapeInWindow, left ->
             shapeInWindow?.copy(bounds = shapeInWindow.bounds.minus(leftOffset = left))
         }
+
+    /** Draw scale requested by the placeholder composable. */
+    val placeholderScale: ObservableState<Scale> = stackAppearanceInteractor.placeholderScale
 
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.

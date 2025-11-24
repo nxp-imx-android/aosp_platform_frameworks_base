@@ -41,7 +41,7 @@ import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
-import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
+import com.android.internal.widget.remotecompose.player.RemoteDocument;
 
 import java.time.Clock;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
 
     Clock mClock;
 
-    RemoteComposeDocument mDocument = null;
+    RemoteDocument mDocument = null;
     int mTheme = Theme.LIGHT;
     boolean mInActionDown = false;
     int mDebug = 0;
@@ -176,13 +176,13 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     }
 
     /**
-     * Sets the {@link RemoteComposeDocument} for the view to render. This will also reset the clock
-     * and frame rate, initialize the context, and update click areas.
+     * Sets the {@link RemoteDocument} for the view to render. This will also reset the clock and
+     * frame rate, initialize the context, and update click areas.
      *
-     * @param value The {@link RemoteComposeDocument} to set.
+     * @param value The {@link RemoteDocument} to set.
      */
     @SuppressWarnings("ReferenceEquality") // newClock != mClock
-    public void setDocument(@NonNull RemoteComposeDocument value) {
+    public void setDocument(@NonNull RemoteDocument value) {
         Clock newClock = value.getClock();
         if (newClock != mClock) {
             mClock = newClock;
@@ -331,7 +331,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
      *
      * @return the document
      */
-    public RemoteComposeDocument getDocument() {
+    public RemoteDocument getDocument() {
         return mDocument;
     }
 
@@ -524,7 +524,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
      *
      * @param document document containing updates
      */
-    public void applyUpdate(RemoteComposeDocument document) {
+    public void applyUpdate(RemoteDocument document) {
         mDocument.getDocument().applyUpdate(document.getDocument());
     }
 
@@ -701,7 +701,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     private boolean mDisable = false;
 
     /**
-     * This returns the amount of time in ms the player used to evalueate a pass it is averaged over
+     * This returns the amount of time in ms the player used to evaluate a pass it is averaged over
      * a number of evaluations.
      *
      * @return time in ms

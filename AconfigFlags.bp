@@ -25,6 +25,7 @@ aconfig_declarations_group {
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
         "anomaly-detector-exported-aconfig-flags-lib",
+        "android.aiseal.flags-aconfig-java",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contentrestriction.flags-aconfig-java",
@@ -97,6 +98,7 @@ aconfig_declarations_group {
         "art_exported_aconfig_flags_lib",
         "backstage_power_flags_lib",
         "backup_flags_lib",
+        "bluetooth_exported_flags_java_lib",
         "camera_platform_flags_core_java_lib",
         "com.android.bettertogether.d2d_connectivity_aconfig_exported",
         "com.android.eyedropper.flags-aconfig-java",
@@ -112,6 +114,7 @@ aconfig_declarations_group {
         "com.android.media.flags.editing-aconfig-java",
         "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
+        "com.android.media.mediadrm.flags-aconfig-java",
         "com.android.nfc.module.flags-aconfig-exported-java",
         "com.android.net.http.flags-aconfig-exported-java",
         "com.android.net.thread.platform.flags-aconfig-java",
@@ -994,6 +997,20 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+// MediaDrm
+aconfig_declarations {
+    name: "com.android.media.mediadrm.flags-aconfig",
+    package: "com.android.media.mediadrm.flags",
+    container: "system",
+    srcs: ["media/java/android/media/flags/mediadrm.aconfig"],
+}
+
+java_aconfig_library {
+    name: "com.android.media.mediadrm.flags-aconfig-java",
+    aconfig_declarations: "com.android.media.mediadrm.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 // Media TV
 aconfig_declarations {
     name: "android.media.tv.flags-aconfig",
@@ -1244,6 +1261,7 @@ aconfig_declarations {
     name: "android.app.flags-aconfig",
     package: "android.app",
     container: "system",
+    exportable: true,
     srcs: ["core/java/android/app/*.aconfig"],
 }
 
@@ -1254,6 +1272,18 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.nfcservices",
+    ],
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "android.app.flags-aconfig-java-export",
+    aconfig_declarations: "android.app.flags-aconfig",
+    min_sdk_version: "30",
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
     ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
@@ -1960,6 +1990,7 @@ java_aconfig_library {
     name: "android.content.flags-aconfig-java",
     aconfig_declarations: "android.content.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
 }
 
 // AppFunctions
@@ -2328,6 +2359,21 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.app.privatecompute.flags-aconfig-java",
     aconfig_declarations: "android.app.privatecompute.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// AiSeal
+aconfig_declarations {
+    name: "android.aiseal.flags-aconfig",
+    exportable: true,
+    package: "android.aiseal",
+    container: "system",
+    srcs: ["core/java/android/aiseal/aiseal.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.aiseal.flags-aconfig-java",
+    aconfig_declarations: "android.aiseal.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

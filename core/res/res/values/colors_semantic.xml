@@ -53,4 +53,17 @@
     <color name="semanticRedSurfaceContainer">#FFE9E6</color>
     <color name="semanticRedSurfaceContainerHigh">#FFE2DE</color>
     <color name="semanticRedSurfaceContainerHighest">#FFDAD6</color>
+    <color name="semanticBlueContainerLow">#D5E3FF</color>
+    <color name="semanticBlueOnContainerLow">#00429B</color>
+    <color name="semanticBlueContainer">#4E8FF8</color>
+    <color name="semanticBlueOnContainer">#001945</color>
+    <color name="semanticBlueOnContainerVariant">#FFFFFF</color>
+    <color name="semanticBlueContainerHigh">#2972E9</color>
+    <color name="semanticBlueOnContainerHigh">#FFFFFF</color>
+    <color name="semanticBlueOnSurface">#001945</color>
+    <color name="semanticBlueOnSurfaceVariant">#0A5DD1</color>
+    <color name="semanticBlueSurfaceContainerLow">#DEE8FF</color>
+    <color name="semanticBlueSurfaceContainer">#E7EEFF</color>
+    <color name="semanticBlueSurfaceContainerHigh">#DEE8FF</color>
+    <color name="semanticBlueSurfaceContainerHighest">#D5E3FF</color>
 </resources>

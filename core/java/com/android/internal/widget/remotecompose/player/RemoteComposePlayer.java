@@ -207,7 +207,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     /** Returns the document */
-    public @NonNull RemoteComposeDocument getDocument() {
+    public @NonNull RemoteDocument getDocument() {
         return mInner.getDocument();
     }
 
@@ -216,7 +216,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param value the document to update variables in the current document width
      */
-    public void updateDocument(RemoteComposeDocument value) {
+    public void updateDocument(RemoteDocument value) {
         AndroidRemoteContext tmpContext = new AndroidRemoteContext(value.getClock());
         tmpContext.setAccessibilityAnimationEnabled(
                 SettingsRetriever.animationsEnabled(getContext()));
@@ -235,24 +235,24 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param buffer the document to update variables in the current document width
      */
     public void updateDocument(byte[] buffer) {
-        RemoteComposeDocument document = new RemoteComposeDocument(buffer);
+        RemoteDocument document = new RemoteDocument(buffer);
         updateDocument(document);
     }
 
     /** Set a document on the player */
     public void setDocument(byte[] buffer) {
-        RemoteComposeDocument document = new RemoteComposeDocument(buffer);
+        RemoteDocument document = new RemoteDocument(buffer);
         setDocument(document);
     }
 
     /** Set a document on the player */
     public void setDocument(InputStream inputStream) {
-        RemoteComposeDocument document = new RemoteComposeDocument(inputStream);
+        RemoteDocument document = new RemoteDocument(inputStream);
         setDocument(document);
     }
 
     /** Set a document on the player */
-    public void setDocument(@NonNull RemoteComposeDocument value) {
+    public void setDocument(@NonNull RemoteDocument value) {
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
@@ -637,7 +637,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
          * @return the original document
          */
         @NonNull
-        RemoteComposeDocument getOriginalDoc();
+        RemoteDocument getOriginalDoc();
     }
 
     /**
@@ -646,12 +646,12 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param doc the document to prepare
      * @return true if the document needs to be prepared
      */
-    public boolean shouldPrepare(@NonNull RemoteComposeDocument doc) {
+    public boolean shouldPrepare(@NonNull RemoteDocument doc) {
         int size_small_enough_to_inline = 1_000;
         return doc.getDocument().getDocInfo().getSizeOfImages() > size_small_enough_to_inline;
     }
 
-    private boolean isCompatible(@NonNull RemoteComposeDocument doc) {
+    private boolean isCompatible(@NonNull RemoteDocument doc) {
         if (doc.canBeDisplayed(MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
             return true;
         } else {
@@ -666,7 +666,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param doc the document to prepare
      * @return the prepared document
      */
-    public @Nullable PreparedDocument prepareDocument(@NonNull RemoteComposeDocument doc) {
+    public @Nullable PreparedDocument prepareDocument(@NonNull RemoteDocument doc) {
         if (isCompatible(doc)) {
             return new RemotePreparedDocument(doc);
         }

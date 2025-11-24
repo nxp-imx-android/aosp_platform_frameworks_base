@@ -74,7 +74,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.compose.gestures.dragSpy
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveTileCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeIconSize
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeSize
@@ -132,7 +132,7 @@ fun InteractiveTileContainer(
         modifier.resizable(tileState == Selected, resizingState).selectionBorder(
             selectionColor = MaterialTheme.colorScheme.primary,
             selectionBorderWidth = SelectedBorderWidth,
-            cornerRadius = InactiveCornerRadius,
+            cornerRadius = InactiveTileCornerRadius,
         ) {
             selectionBorderAlpha
         }

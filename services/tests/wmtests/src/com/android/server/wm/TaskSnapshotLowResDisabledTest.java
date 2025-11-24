@@ -30,8 +30,6 @@ import android.window.TaskSnapshot;
 
 import androidx.test.filters.MediumTest;
 
-import com.android.window.flags.Flags;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,11 +76,6 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
         assertNotNull(snapshot);
         assertEquals(MOCK_SNAPSHOT_ID, snapshot.getId());
         assertEquals(TEST_INSETS, snapshot.getContentInsets());
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            assertNull(snapshot.getSnapshot());
-        } else {
-            assertNotNull(snapshot.getSnapshot());
-        }
         assertEquals(Configuration.ORIENTATION_PORTRAIT, snapshot.getOrientation());
         assertNull(mLoader.loadTask(1, mTestUserId, true /* isLowResolution */));
     }

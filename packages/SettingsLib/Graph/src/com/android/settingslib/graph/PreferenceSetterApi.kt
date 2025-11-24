@@ -27,6 +27,7 @@ import com.android.settingslib.ipc.ApiHandler
 import com.android.settingslib.ipc.ApiPermissionChecker
 import com.android.settingslib.ipc.IntMessageCodec
 import com.android.settingslib.ipc.MessageCodec
+import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
@@ -36,15 +37,33 @@ import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.UnvalidatedKeyParameters
+import com.android.settingslib.metadata.toMap
 import com.android.settingslib.metadata.usePreferenceHierarchyScope
 
 /** Request to set preference value. */
-class PreferenceSetterRequest(
-    screenKey: String,
-    args: Bundle?,
-    key: String,
-    val value: PreferenceValueProto,
-) : PreferenceCoordinate(screenKey, args, key)
+class PreferenceSetterRequest : PreferenceCoordinate {
+    val value: PreferenceValueProto
+
+    @Deprecated("This constructor will be removed once the catalyst framework stops passing the arguments as a bundle. Use the other constructor instead.")
+    constructor(
+        screenKey: String,
+        args: Bundle?,
+        key: String,
+        value: PreferenceValueProto,
+    ) : super(screenKey, args, key) {
+        this.value = value
+    }
+
+    constructor(
+        screenKey: String,
+        keyParameters: UnvalidatedKeyParameters?,
+        key: String,
+        value: PreferenceValueProto,
+    ) : super(screenKey, keyParameters, key) {
+        this.value = value
+    }
+}
 
 /** Result of preference setter request. */
 @IntDef(
@@ -228,22 +247,41 @@ class PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
     override fun encode(data: PreferenceSetterRequest) =
         Bundle(3).apply {
             putString(SCREEN_KEY, data.screenKey)
-            putBundle(ARGS, data.args)
+            if (CatalystFlags.catalystUseKeyParameters()) {
+                putBundle(KEY_PARAMETERS, data.keyParameters?.toBundle())
+            } else {
+                putBundle(ARGS, data.args)
+            }
             putString(KEY, data.key)
             putByteArray(null, data.value.toByteArray())
         }
 
-    override fun decode(data: Bundle) =
-        PreferenceSetterRequest(
-            data.getString(SCREEN_KEY)!!,
-            data.getBundle(ARGS),
-            data.getString(KEY)!!,
-            PreferenceValueProto.parseFrom(data.getByteArray(null)!!),
-        )
+    override fun decode(data: Bundle): PreferenceSetterRequest {
+        val screenKey = data.getString(SCREEN_KEY)!!
+        val key = data.getString(KEY)!!
+        val value = PreferenceValueProto.parseFrom(data.getByteArray(null)!!)
+
+        return if (CatalystFlags.catalystUseKeyParameters()) {
+            PreferenceSetterRequest(
+                screenKey,
+                data.getBundle(KEY_PARAMETERS)?.let { UnvalidatedKeyParameters(it.toMap()) },
+                key,
+                value
+            )
+        } else {
+            PreferenceSetterRequest(
+                screenKey,
+                data.getBundle(ARGS),
+                key,
+                value
+            )
+        }
+    }
 
     companion object {
         private const val SCREEN_KEY = "s"
         private const val KEY = "k"
         private const val ARGS = "a"
+        private const val KEY_PARAMETERS = "p"
     }
 }

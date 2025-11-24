@@ -488,6 +488,15 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     /** Called whenever AM force stops a package. */
     public abstract boolean onForceStopPackage(String packageName, boolean doit,
             boolean evenPersistent, int userId);
+
+    /**
+     * Stop and kill the given app's process for update. This guarantees that the app's eligible
+     * activities will be stopped before app process is killed. The stop part of this will
+     * synchronous whereas thekill part will happen async when all activities that are meant to be
+     * stopped are stopped.
+     */
+    public abstract void stopAndKillAppForUpdate(String packageName, int userId, int appId);
+
     /**
      * Resumes all top activities in the system if they aren't resumed already.
      * @param scheduleIdle If the idle message should be schedule after the top activities are

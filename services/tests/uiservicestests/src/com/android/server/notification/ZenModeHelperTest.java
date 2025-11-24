@@ -4968,7 +4968,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         final int[] actualStatus = new int[1];
         ZenModeHelper.Callback callback = new ZenModeHelper.Callback() {
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 if (Objects.equals(createdId, id)) {
                     actualStatus[0] = status;
                     latch.countDown();
@@ -5003,7 +5004,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         final int[] actualStatus = new int[1];
         ZenModeHelper.Callback callback = new ZenModeHelper.Callback() {
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 if (Objects.equals(createdId, id)) {
                     actualStatus[0] = status;
                     latch.countDown();
@@ -5038,7 +5040,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         final int[] actualStatus = new int[1];
         ZenModeHelper.Callback callback = new ZenModeHelper.Callback() {
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 if (Objects.equals(createdId, id)) {
                     actualStatus[0] = status;
                     latch.countDown();
@@ -5079,7 +5082,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
             int i = 0;
 
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 if (Objects.equals(createdId, id)) {
                     actualStatus[i++] = status;
                     latch.countDown();
@@ -5122,7 +5126,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
             int i = 0;
 
             @Override
-            void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {
+            public void onAutomaticRuleStatusChanged(
+                    int userId, String pkg, String id, int status) {
                 if (Objects.equals(createdId, id)) {
                     actualStatus[i++] = status;
                     latch.countDown();
@@ -5336,6 +5341,107 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 CUSTOM_PKG_UID);
         assertThat(result).isNotNull();
         assertThat(result.getOwner().getClassName()).isEqualTo("old.third.party.cps");
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void addAutomaticZenRule_backgroundUser_receivedChangeCallback() {
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        mZenModeHelper.onUserSwitched(10);
+        AutomaticZenRule rule =
+                new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build();
+        ZenModeHelper.Callback callback = mock(ZenModeHelper.Callback.class);
+        mZenModeHelper.addCallback(callback);
+
+        // Add zen rule for background user (USER_SYSTEM)
+        mZenModeHelper.addAutomaticZenRule(UserHandle.SYSTEM, mPkg, rule,
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+
+        verify(callback).onConfigChanged(UserHandle.SYSTEM);
+        verify(callback, never()).onConfigApplied();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void updateAutomaticZenRule_backgroundUser_receivedChangeCallback() {
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        mZenModeHelper.onUserSwitched(10);
+        AutomaticZenRule rule =
+                new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build();
+        // Add zen rule for background user (USER_SYSTEM)
+        String id = mZenModeHelper.addAutomaticZenRule(UserHandle.SYSTEM, mPkg, rule,
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+        // Add callback
+        ZenModeHelper.Callback callback = mock(ZenModeHelper.Callback.class);
+        mZenModeHelper.addCallback(callback);
+        // Update that rule.
+        rule.setEnabled(false);
+        mZenModeHelper.updateAutomaticZenRule(UserHandle.SYSTEM, id, rule, ORIGIN_APP, "reason",
+                CUSTOM_PKG_UID);
+
+        verify(callback).onConfigChanged(UserHandle.SYSTEM);
+        verify(callback, never()).onConfigApplied();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void removeAutomaticZenRule_backgroundUser_receivedChangeCallback() {
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        mZenModeHelper.onUserSwitched(10);
+        AutomaticZenRule rule =
+                new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build();
+        // Add zen rule for background user (USER_SYSTEM)
+        String id = mZenModeHelper.addAutomaticZenRule(UserHandle.SYSTEM, mPkg, rule,
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+        // Add callback
+        ZenModeHelper.Callback callback = mock(ZenModeHelper.Callback.class);
+        mZenModeHelper.addCallback(callback);
+        // Delete the rule.
+        mZenModeHelper.removeAutomaticZenRule(UserHandle.SYSTEM, id, ORIGIN_APP, "reason",
+                CUSTOM_PKG_UID);
+
+        verify(callback).onConfigChanged(UserHandle.SYSTEM);
+        verify(callback, never()).onConfigApplied();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void setManualZenMode_backgroundUser_receivedChangeCallback() {
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        mZenModeHelper.onUserSwitched(10);
+        ZenModeHelper.Callback callback = mock(ZenModeHelper.Callback.class);
+        mZenModeHelper.addCallback(callback);
+
+        // Change manual zen rule
+        mZenModeHelper.setManualZenMode(UserHandle.SYSTEM, ZEN_MODE_IMPORTANT_INTERRUPTIONS,
+                Uri.EMPTY, ORIGIN_APP, "reason", "caller", CUSTOM_PKG_UID);
+
+        verify(callback).onConfigChanged(UserHandle.SYSTEM);
+        verify(callback, never()).onConfigApplied();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void removeBackgroundUser_receivedChangeCallback() {
+        mZenModeHelper.onUserSwitched(10);
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        ZenModeHelper.Callback callback = mock(ZenModeHelper.Callback.class);
+        mZenModeHelper.addCallback(callback);
+
+        // Remove user 10.
+        mZenModeHelper.onUserRemoved(10);
+
+        verify(callback).onConfigChanged(UserHandle.of(10));
+        verify(callback, never()).onConfigApplied();
     }
 
     @Test
@@ -6262,7 +6368,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         SettableFuture<Policy> futurePolicy = SettableFuture.create();
         mZenModeHelper.addCallback(new ZenModeHelper.Callback() {
             @Override
-            void onPolicyChanged(Policy newPolicy) {
+            public void onPolicyChanged(Policy newPolicy) {
                 futurePolicy.set(newPolicy);
             }
         });
@@ -6281,7 +6387,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         SettableFuture<Policy> futureConsolidatedPolicy = SettableFuture.create();
         mZenModeHelper.addCallback(new ZenModeHelper.Callback() {
             @Override
-            void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {
+            public void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {
                 futureConsolidatedPolicy.set(newConsolidatedPolicy);
             }
         });
@@ -7358,6 +7464,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
 
         assertThat(mZenModeHelper.mConfig.isManualActive()).isTrue();
         assertThat(mZenModeHelper.mConfigs.get(1).isManualActive()).isFalse();
+        assertThat(mZenModeHelper.getManualZenMode(currentUser)).isEqualTo(ZEN_MODE_ALARMS);
 
         // And we sent the broadcast announcing the change.
         mTestableLooper.processAllMessages();
@@ -7379,6 +7486,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
 
         assertThat(mZenModeHelper.mConfig.isManualActive()).isFalse();
         assertThat(mZenModeHelper.mConfigs.get(1).isManualActive()).isTrue();
+        assertThat(mZenModeHelper.getManualZenMode(backgroundUser)).isEqualTo(ZEN_MODE_ALARMS);
 
         // And no broadcasts is sent for "background" changes (they were not evaluated).
         mTestableLooper.processAllMessages();
@@ -7783,6 +7891,18 @@ public class ZenModeHelperTest extends UiServiceTestCase {
 
         verifyExemptedPackages(mutedHintsExemptedUsages, listenerHintsExempted);
         verifyExemptedPackages(mutedOtherUsages.toArray(), null);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void testHasZenModeConfig() {
+        mZenModeHelper.onUserSwitched(UserHandle.USER_SYSTEM);
+        mZenModeHelper.onUserSwitched(10);
+
+        assertThat(mZenModeHelper.hasZenModeConfig(UserHandle.SYSTEM)).isTrue();
+        assertThat(mZenModeHelper.hasZenModeConfig(UserHandle.of(10))).isTrue();
+        assertThat(mZenModeHelper.hasZenModeConfig(UserHandle.CURRENT)).isTrue();
+        assertThat(mZenModeHelper.hasZenModeConfig(UserHandle.of(14))).isFalse();
     }
 
     private void verifyExemptedPackages(ArgumentCaptor<String[]> exemptPkgCaptor,

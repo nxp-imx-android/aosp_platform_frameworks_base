@@ -44,11 +44,9 @@ import android.media.AudioFormat;
 import android.media.AudioManagerInternal;
 import android.media.permission.Identity;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.IRemoteCallback;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
@@ -510,10 +508,13 @@ final class HotwordDetectionConnection {
         }
         DetectorSession trustedSession = getDspTrustedHotwordDetectorSessionLocked();
         if (trustedSession == null) {
-            callback.onError(
+            trustedSession = getSoftwareTrustedHotwordDetectorSessionLocked();
+            if (trustedSession == null) {
+                callback.onError(
                     "Unable to start listening from wearable because the trusted hotword detection"
-                            + " session is not available.");
-            return;
+                        + " session is not available.");
+                return;
+            }
         }
         trustedSession.startListeningFromWearableLocked(
                 audioStream, audioFormat, options, callback);
@@ -1007,6 +1008,7 @@ final class HotwordDetectionConnection {
                 // ServiceType will not be SERVICE_TYPE_UNRESTRICTED at this stage due to checks in
                 // {@link VoiceInteractionManagerServiceImpl}
                 if (mServiceType == SERVICE_TYPE_PCC) {
+                    Slog.d(TAG, "Binding as a PCC service");
                     bindResult =
                             mContext.bindService(
                                     mIntent,
@@ -1015,6 +1017,7 @@ final class HotwordDetectionConnection {
                                             | Context.BIND_FOREGROUND_SERVICE
                                             | mBindingFlags);
                 } else if (mServiceType == SERVICE_TYPE_ISOLATED) {
+                    Slog.d(TAG, "Binding as an Isolated service");
                     bindResult =
                             mContext.bindIsolatedService(
                                     mIntent,

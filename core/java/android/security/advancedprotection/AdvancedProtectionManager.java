@@ -25,6 +25,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -45,6 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Advanced Protection is a mode that users can enroll their device into, that enhances security by
@@ -163,7 +165,8 @@ public final class AdvancedProtectionManager {
     public @interface FeatureId {}
 
     private static final ArrayMap<Integer, String> FEATURE_ID_TO_NAME = buildFeatureIdToNameMap();
-    private static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
+    /** @hide */
+    public static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
 
     private static ArrayMap<Integer, String> buildFeatureIdToNameMap() {
         final ArrayMap<Integer, String> map = new ArrayMap<>();
@@ -304,6 +307,9 @@ public final class AdvancedProtectionManager {
 
     private final ConcurrentHashMap<Callback, IAdvancedProtectionCallback> mCallbackMap =
             new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<
+                    Consumer<List<AdvancedProtectionFeature>>, IAdvancedProtectionFeatureCallback>
+            mFeatureCallbackMap = new ConcurrentHashMap<>();
 
     @NonNull private final IAdvancedProtectionService mService;
 
@@ -413,10 +419,129 @@ public final class AdvancedProtectionManager {
     @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
     public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures() {
         try {
-            return mService.getAdvancedProtectionFeatures();
+            return mService.getAdvancedProtectionFeatures(null);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Returns the list of advanced protection features which are available on this device for the
+     * given feature IDs.
+     *
+     * @param featureIds The list of feature identifiers to query.
+     * @hide
+     */
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    @SystemApi
+    @NonNull
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures(
+            @NonNull @FeatureId int[] featureIds) {
+        try {
+            if (featureIds == null) {
+                throw new IllegalArgumentException("featureIds must be non-null");
+            }
+            return mService.getAdvancedProtectionFeatures(featureIds);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Updates the provisioning state of advanced protection features.
+     *
+     * @param featuresToProvision The list of features to provision.
+     * @param featuresToDeprovision The list of features to deprovision.
+     * @return The list of advanced protection features passed in, with updated provisioning state.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    @NonNull
+    public List<AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(
+            @Nullable @FeatureId int[] featuresToProvision,
+            @Nullable @FeatureId int[] featuresToDeprovision) {
+        try {
+            return mService.updateAdvancedProtectionFeaturesProvisioning(
+                    featuresToProvision, featuresToDeprovision);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a {@link Consumer} to be notified of changes to the Advanced Protection state of the
+     * given features.
+     *
+     * <p>The provided callback will be called on the specified executor with the updated state.
+     * Methods are called when the state changes, as well as once on initial registration.
+     *
+     * @param featureIds The list of feature identifiers to register the callback for.
+     * @param executor The executor of where the callback will execute.
+     * @param callback The {@link Consumer} object to register.
+     * @hide
+     */
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void registerAdvancedProtectionFeatureCallback(
+            @NonNull @FeatureId int[] featureIds,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<List<AdvancedProtectionFeature>> callback) {
+        if (mFeatureCallbackMap.get(callback) != null) {
+            Log.d(TAG, "registerAdvancedProtectionFeatureCallback callback already present");
+            return;
+        }
+
+        IAdvancedProtectionFeatureCallback delegate =
+                new IAdvancedProtectionFeatureCallback.Stub() {
+                    @Override
+                    public void onFeatureEnabledChanged(
+                            @NonNull List<AdvancedProtectionFeature> features) {
+                        final long identity = Binder.clearCallingIdentity();
+                        try {
+                            executor.execute(() -> callback.accept(features));
+                        } finally {
+                            Binder.restoreCallingIdentity(identity);
+                        }
+                    }
+                };
+
+        try {
+            mService.registerAdvancedProtectionFeatureCallback(delegate);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+
+        mFeatureCallbackMap.put(callback, delegate);
+    }
+
+    /**
+     * Unregister an existing {@link Consumer}.
+     *
+     * @param callback The {@link Consumer} object to unregister.
+     * @hide
+     */
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void unregisterAdvancedProtectionFeatureCallback(
+            @NonNull Consumer<List<AdvancedProtectionFeature>> callback) {
+        IAdvancedProtectionFeatureCallback delegate = mFeatureCallbackMap.get(callback);
+        if (delegate == null) {
+            Log.d(TAG, "unregisterAdvancedProtectionFeatureCallback callback not present");
+            return;
+        }
+
+        try {
+            mService.unregisterAdvancedProtectionFeatureCallback(delegate);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+
+        mFeatureCallbackMap.remove(callback);
     }
 
     /**
@@ -528,4 +653,5 @@ public final class AdvancedProtectionManager {
          */
         void onAdvancedProtectionChanged(boolean enabled);
     }
+
 }

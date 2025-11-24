@@ -269,3 +269,10 @@ flag {
   bug: "443854916"
   is_exported: true
 }
+
+flag {
+  name: "warm_work_profile_ime"
+  namespace: "input_method"
+  description: "Maintain a binding to the IME of all active users, to enable a warm restart when switching across user profile apps"
+  bug: "293644773"
+}

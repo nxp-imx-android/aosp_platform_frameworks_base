@@ -1120,7 +1120,7 @@ public class PackageInfoUtils {
         String packageName = input.getPackageName();
         output.uid = UserHandle.getUid(userId, UserHandle.getAppId(input.getUid()));
         int pccId = pkgSetting.getPccId();
-        if (Process.isPccUid(pccId)) {
+        if (Process.isPrivateComputeCoreUid(pccId)) {
             output.pccUid = UserHandle.getUid(userId, pccId);
         } else {
             // The only other expected value is INVALID_UID

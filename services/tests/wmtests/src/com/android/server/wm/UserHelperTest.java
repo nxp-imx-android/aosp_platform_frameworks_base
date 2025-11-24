@@ -158,12 +158,12 @@ public final class UserHelperTest {
     }
 
     @Test
-    public void testCheckRequest_notAllowlisted_failureButDontLogWhenDeviceIsNotHsum() {
-        var userHelper = createUserHelper(/*hsum= */ false);
+    public void testCheckRequest_notAllowlisted_successWhenDeviceIsNotHsum() {
+        var userHelper = createUserHelper(/* hsum= */ false);
 
         expect.withMessage("checkRequest()")
                 .that(userHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
-                .isEqualTo(START_NOT_ALLOWED_FOR_USER);
+                .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
     }
@@ -200,7 +200,7 @@ public final class UserHelperTest {
 
     @Test
     public void testLogStarted_started_dontLogWhenNotHsum() {
-        var userHelper = createUserHelper(/*hsum= */ false);
+        var userHelper = createUserHelper(/* hsum= */ false);
 
         userHelper.logActivityStarted(mActivityRecord, STARTED);
 
@@ -251,12 +251,13 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
+                      ...  mActivityLaunchIntegrationStatus=1 (ENABLED)
                       """);
     }
 
     @Test
     public void testDump_nonHsum() throws Exception {
-        var userHelper = createUserHelper(/*hsum= */ false);
+        var userHelper = createUserHelper(/* hsum= */ false);
 
         String dump = dump(userHelper, "...");
 
@@ -265,8 +266,11 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=false
+                      ...  mActivityLaunchIntegrationStatus=-1 (DISABLED_NOT_HSUM)
                       """);
     }
+
+    // TODO(b/455582152): test dump with other statuses
 
     private void setUserIdOnRequest(@UserIdInt int userId) {
         setUserId(mRequest.activityInfo.applicationInfo, userId);

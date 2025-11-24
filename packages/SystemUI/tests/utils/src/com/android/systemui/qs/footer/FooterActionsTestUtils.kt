@@ -65,7 +65,6 @@ import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.data.repository.UserSwitcherRepository
 import com.android.systemui.user.data.repository.UserSwitcherRepositoryImpl
-import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor
 import com.android.systemui.util.settings.FakeGlobalSettings
@@ -104,7 +103,6 @@ class FooterActionsTestUtils(
         globalActionsDialogLite: GlobalActionsDialogLite = mock(),
         showPowerButton: Boolean = true,
         selectedUserInteractor: SelectedUserInteractor = mock(),
-        hsum: HeadlessSystemUserMode = mock(),
     ): FooterActionsViewModel {
         return createFooterActionsViewModel(
             context,
@@ -115,7 +113,6 @@ class FooterActionsTestUtils(
             mockActivityStarter,
             showPowerButton,
             selectedUserInteractor,
-            hsum,
         )
     }
 

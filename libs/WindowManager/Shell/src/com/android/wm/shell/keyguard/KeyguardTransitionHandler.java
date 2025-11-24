@@ -198,13 +198,12 @@ public class KeyguardTransitionHandler
         }
 
         // Choose a transition applicable for the changes and keyguard state.
-        if ((info.getFlags() & TRANSIT_FLAG_KEYGUARD_GOING_AWAY) != 0) {
+        if (isKeyguardGoingAway(info)) {
             return startAnimation(mExitTransition, "going-away",
                     transition, info, startTransaction, finishTransaction, finishCallback);
         }
 
-        if ((info.getFlags() & TRANSIT_FLAG_KEYGUARD_APPEARING) != 0
-                || (info.getFlags() & TRANSIT_FLAG_AOD_APPEARING) != 0) {
+        if (isKeyguardAppearing(info)) {
             return startAnimation(mAppearTransition, "appearing",
                     transition, info, startTransaction, finishTransaction, finishCallback);
         }
@@ -390,6 +389,17 @@ public class KeyguardTransitionHandler
             }
         }
         return false;
+    }
+
+    /** Returns whether this transition is for the keyguard appearing. */
+    public static boolean isKeyguardAppearing(@NonNull TransitionInfo info) {
+        return (info.getFlags() & TRANSIT_FLAG_KEYGUARD_APPEARING) != 0
+                || (info.getFlags() & TRANSIT_FLAG_AOD_APPEARING) != 0;
+    }
+
+    /** Returns whether this transition is for the keyguard going away. */
+    public static boolean isKeyguardGoingAway(@NonNull TransitionInfo info) {
+        return (info.getFlags() & TRANSIT_FLAG_KEYGUARD_GOING_AWAY) != 0;
     }
 
     private void finishAnimationImmediately(IBinder transition, StartedTransition playing) {

@@ -114,7 +114,7 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
-     * Sends a tap event to the computer control session at the given location.
+     * Sends a tap event to the computer control session for the given coordinates.
      */
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
         mSession.tap(x, y);

@@ -66,6 +66,8 @@ public enum DesktopExperienceFlags {
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
     DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW(Flags::deferResumeFocusInNonFocusedWindow, false,
             Flags.FLAG_DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW),
+    DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED(Flags::dimmingWallpaperForMaximizedAndTiled, true,
+            Flags.FLAG_DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
             com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
@@ -127,9 +129,6 @@ public enum DesktopExperienceFlags {
             false, Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX),
     ENABLE_DESKTOP_IME_BUGFIX(Flags::enableDesktopImeBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX),
-    ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
-            Flags::enableDesktopTabTearingLaunchAnimation, true,
-            Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
     ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS(Flags::enableDesktopTaskbarOnFreeformDisplays,
             true, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
@@ -173,8 +172,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
     ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX(Flags::enableFilterRemovingDisplayBugfix, false,
             Flags.FLAG_ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX),
-    ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
-            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
+    ENABLE_FREEFORM_BOX_SHADOWS_V2(Flags::enableFreeformBoxShadowsV2, false,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2),
     ENABLE_FULLSCREEN_WINDOW_CONTROLS(Flags::enableFullscreenWindowControls, false,
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
     ENABLE_INDEPENDENT_BACK_IN_PROJECTED(Flags::enableIndependentBackInProjected, true,
@@ -256,8 +255,6 @@ public enum DesktopExperienceFlags {
             true, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
-    ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX(Flags::enableTaskbarRecentTasksThrottleBugfix,
-            true, Flags.FLAG_ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX),
     ENABLE_TASK_MOVE_ALLOWED_LISTENER_API(Flags::enableTaskMoveAllowedListenerApi, false,
             Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),

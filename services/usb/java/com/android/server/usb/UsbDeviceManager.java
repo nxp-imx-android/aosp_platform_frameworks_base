@@ -577,11 +577,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         int operationId = sUsbOperationCount.incrementAndGet();
 
-        if (mEnableAoaUserspaceImplementation) {
-            mAccessoryStrings = nativeGetAccessoryStringsFromFfs();
-        } else {
-            mAccessoryStrings = nativeGetAccessoryStrings();
-        }
+        mAccessoryStrings = nativeGetAccessoryStrings();
 
         // don't start accessory mode if our mandatory strings have not been set
         boolean enableAccessory = (mAccessoryStrings != null &&
@@ -2878,8 +2874,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     }
 
     private native String[] nativeGetAccessoryStrings();
-
-    private native String[] nativeGetAccessoryStringsFromFfs();
 
     private native int nativeGetMaxPacketSize();
 

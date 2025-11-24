@@ -49,6 +49,13 @@ flag {
 }
 
 flag {
+    name: "press_any_key_to_access_bouncer"
+    namespace: "desktop_users_and_accounts"
+    description: "Allow user to press any key to get from keyguard to bouncer"
+    bug: "427646658"
+}
+
+flag {
     name: "sign_out_button_on_keyguard_status_bar"
     namespace: "desktop_users_and_accounts"
     description: "Add a 'Sign out' button on keyguard's status bar"
@@ -61,3 +68,4 @@ flag {
     description: "Add a sign out option to the user switcher menu if sign out is possible"
     bug: "381478261"
 }
+

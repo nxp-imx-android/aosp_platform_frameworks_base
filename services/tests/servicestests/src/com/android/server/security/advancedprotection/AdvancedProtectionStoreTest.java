@@ -25,7 +25,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,6 +57,8 @@ public class AdvancedProtectionStoreTest {
             AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
     private static final int DIALOG_TYPE =
             AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
+    private static final String ADMIN_PREFIX = "feature_admin_provisioned_";
+    private static final String ADB_PREFIX = "feature_adb_provisioned_";
 
     private Context mContext;
     private Context mDeviceContext;
@@ -78,6 +82,7 @@ public class AdvancedProtectionStoreTest {
         when(mEditor.putLong(anyString(), anyLong())).thenReturn(mEditor);
         when(mEditor.putInt(anyString(), anyInt())).thenReturn(mEditor);
         when(mEditor.putBoolean(anyString(), anyBoolean())).thenReturn(mEditor);
+        when(mEditor.remove(anyString())).thenReturn(mEditor);
         mStore = new AdvancedProtectionStore(mContext);
     }
 
@@ -117,6 +122,120 @@ public class AdvancedProtectionStoreTest {
         mStore.saveUsbDataProtectionEnabled(true);
 
         assertThat(mStore.retrieveUsbDataProtectionEnabled()).isTrue();
+    }
+
+    @Test
+    public void saveFeatureAdminProvisioningMode_savesToSharedPreferences() {
+        mStore.saveFeatureAdminProvisioned(FEATURE_ID, true);
+
+        verify(mEditor).putBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(true));
+        verify(mEditor).apply();
+    }
+
+    @Test
+    public void retrieveFeatureAdminProvisioningMode_retrievesFromSharedPreferences() {
+        when(mSharedPreferences.contains(eq(ADMIN_PREFIX + FEATURE_ID))).thenReturn(true);
+        when(mSharedPreferences.getBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(false)))
+                .thenReturn(true);
+
+        Boolean provisioningMode = mStore.retrieveFeatureAdminProvisioned(FEATURE_ID);
+
+        verify(mSharedPreferences).getBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(false));
+        assertThat(provisioningMode).isTrue();
+    }
+
+    @Test
+    public void saveFeatureAdminProvisioningMode_savesToCache() {
+        when(mSharedPreferences.contains(eq(ADMIN_PREFIX + FEATURE_ID))).thenReturn(true);
+
+        mStore.saveFeatureAdminProvisioned(FEATURE_ID, true);
+
+        assertThat(mStore.retrieveFeatureAdminProvisioned(FEATURE_ID)).isTrue();
+        verify(mSharedPreferences, never()).getBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(true));
+    }
+
+    @Test
+    public void retrieveFeatureAdminProvisioningMode_retrievesFromCache() {
+        when(mSharedPreferences.contains(eq(ADMIN_PREFIX + FEATURE_ID))).thenReturn(true);
+        when(mSharedPreferences.getBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(false)))
+                .thenReturn(true);
+
+        Boolean isProvisioned = mStore.retrieveFeatureAdminProvisioned(FEATURE_ID);
+        Boolean isProvisioned2 = mStore.retrieveFeatureAdminProvisioned(FEATURE_ID);
+
+        assertThat(isProvisioned).isTrue();
+        assertThat(isProvisioned2).isTrue();
+        verify(mSharedPreferences, times(1)).getBoolean(eq(ADMIN_PREFIX + FEATURE_ID), eq(false));
+    }
+
+    @Test
+    public void retrieveFeatureAdminProvisioningMode_returnsNullIfSharedPreferencesNotSet() {
+        when(mSharedPreferences.contains(eq(ADMIN_PREFIX + FEATURE_ID))).thenReturn(false);
+
+        Boolean provisioningMode = mStore.retrieveFeatureAdminProvisioned(FEATURE_ID);
+
+        assertThat(provisioningMode).isNull();
+    }
+
+    @Test
+    public void saveFeatureAdbProvisioningMode_savesToSharedPreferences() {
+        mStore.saveFeatureAdbProvisioned(FEATURE_ID, true);
+
+        verify(mEditor).putBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(true));
+        verify(mEditor).apply();
+    }
+
+    @Test
+    public void retrieveFeatureAdbProvisioningMode_retrievesFromSharedPreferences() {
+        when(mSharedPreferences.contains(eq(ADB_PREFIX + FEATURE_ID))).thenReturn(true);
+        when(mSharedPreferences.getBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(false)))
+                .thenReturn(true);
+
+        Boolean provisioningMode = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID);
+
+        verify(mSharedPreferences).getBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(false));
+        assertThat(provisioningMode).isTrue();
+    }
+
+    @Test
+    public void retrieveFeatureAdbProvisioningMode_returnsNullIfSharedPreferencesNotSet() {
+        when(mSharedPreferences.contains(eq(ADB_PREFIX + FEATURE_ID))).thenReturn(false);
+
+        Boolean provisioningMode = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID);
+
+        assertThat(provisioningMode).isNull();
+    }
+
+    @Test
+    public void saveFeatureAdbProvisioningMode_savesToCache() {
+        when(mSharedPreferences.contains(eq(ADB_PREFIX + FEATURE_ID))).thenReturn(true);
+
+        mStore.saveFeatureAdbProvisioned(FEATURE_ID, true);
+
+        assertThat(mStore.retrieveFeatureAdbProvisioned(FEATURE_ID)).isTrue();
+        verify(mSharedPreferences, never()).getBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(false));
+    }
+
+    @Test
+    public void retrieveFeatureAdbProvisioningMode_retrievesFromCache() {
+        when(mSharedPreferences.contains(eq(ADB_PREFIX + FEATURE_ID))).thenReturn(true);
+        when(mSharedPreferences.getBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(false)))
+                .thenReturn(true);
+
+        Boolean isProvisioned = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID);
+        Boolean isProvisioned2 = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID);
+
+        assertThat(isProvisioned).isTrue();
+        assertThat(isProvisioned2).isTrue();
+        verify(mSharedPreferences, times(1)).getBoolean(eq(ADB_PREFIX + FEATURE_ID), eq(false));
+    }
+
+    @Test
+    public void removeFeatureAdbProvisioning_removesFromSharedPreferences() {
+        mStore.removeFeatureAdbProvisioning(FEATURE_ID);
+
+        verify(mEditor).remove(eq(ADB_PREFIX + FEATURE_ID));
+        verify(mEditor).apply();
     }
 
     @Test

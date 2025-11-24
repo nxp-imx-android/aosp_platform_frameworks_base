@@ -29,6 +29,7 @@ import static android.companion.virtual.computercontrol.ComputerControlSession.C
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.LONG_PRESS_TIMEOUT_MULTIPLIER;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
@@ -103,6 +104,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -136,7 +138,6 @@ import java.util.function.Consumer;
 @Presubmit
 @RunWith(JUnitParamsRunner.class)
 public class ComputerControlSessionImplTest {
-    private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
     private static final int USER_ID = UserHandle.USER_SYSTEM;
     private static final int MAIN_DISPLAY_ID = 41;
     private static final int VIRTUAL_DISPLAY_ID = 42;
@@ -172,8 +173,6 @@ public class ComputerControlSessionImplTest {
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private IDisplayManager mDisplayManager;
-    @Mock
-    private PackageManager mPackageManager;
     @Mock
     private PackageManager mOwnerPackageManager;
     @Mock
@@ -256,6 +255,8 @@ public class ComputerControlSessionImplTest {
             spy(new ContextWrapper(
                     InstrumentationRegistry.getInstrumentation().getTargetContext()));
 
+    private final EditorInfo mEditorInfo = new EditorInfo();
+
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
@@ -263,7 +264,6 @@ public class ComputerControlSessionImplTest {
 
         when(mContext.createContextAsUser(UserHandle.of(USER_ID), /* flags = */ 0))
                 .thenReturn(mOwnerContext);
-        when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mOwnerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
 
         LocalServices.removeAllServicesForTest();
@@ -277,8 +277,9 @@ public class ComputerControlSessionImplTest {
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
                 .thenReturn(MAIN_DISPLAY_ID);
         when(mInputMethodManagerInternal
-                .getComputerControlInputConnection(anyInt(), eq(VIRTUAL_DISPLAY_ID)))
-                .thenReturn(mRemoteComputerControlInputConnection);
+                .getComputerControlInputConnectionData(anyInt(), eq(VIRTUAL_DISPLAY_ID)))
+                .thenReturn(new InputMethodManagerInternal.ComputerControlInputConnectionData(
+                        mRemoteComputerControlInputConnection, mEditorInfo));
 
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
@@ -288,8 +289,6 @@ public class ComputerControlSessionImplTest {
         when(mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID)).thenReturn(displayInfo);
         when(mDisplayManager.getDisplayInfo(VIRTUAL_DISPLAY_ID)).thenReturn(displayInfo);
 
-        when(mPackageManager.getPermissionControllerPackageName())
-                .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
 
@@ -304,7 +303,8 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
+                .thenReturn(true);
     }
 
     @After
@@ -515,7 +515,8 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(false);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
+                .thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
@@ -607,16 +608,31 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void insertTextWithCommit_sendEnterKeyOnAvailableInputConnection()
+    public void insertTextWithCommit_ifNoDefaultEditorAction_sendsEnterKeyOnInputConnection()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
+        mEditorInfo.imeOptions = EditorInfo.IME_ACTION_NONE;
 
         mSession.insertText("text", false /* replaceExisting */, true /* commit */);
         verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
-        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
-                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_DOWN)));
-        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
-                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_UP)));
+        verify(mRemoteComputerControlInputConnection, timeout(2 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                any(), argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_DOWN)));
+        verify(mRemoteComputerControlInputConnection, timeout(2 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                any(), argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void insertTextWithCommit_performsDefaultEditorAction()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        mEditorInfo.imeOptions = EditorInfo.IME_ACTION_DONE;
+
+        mSession.insertText("text", false /* replaceExisting */, true /* commit */);
+        verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
+        verify(mRemoteComputerControlInputConnection,
+                timeout(2 * KEY_EVENT_DELAY_MS)).performEditorAction(any(),
+                eq(EditorInfo.IME_ACTION_DONE));
+        verify(mRemoteComputerControlInputConnection, never()).sendKeyEvent(any(), any());
     }
 
     @Test

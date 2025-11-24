@@ -18,6 +18,7 @@ package android.view;
 
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
+import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
@@ -3847,11 +3848,22 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     @Override
     public void addExtraDataToAccessibilityNodeInfo(@NonNull AccessibilityNodeInfo info,
             @NonNull String extraDataKey, @Nullable Bundle arguments) {
+        super.addExtraDataToAccessibilityNodeInfo(info, extraDataKey, arguments);
         if (extraDataKey.equals(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY)) {
-            final AccessibilityNodeInfo.ExtraRenderingInfo extraRenderingInfo =
-                    AccessibilityNodeInfo.ExtraRenderingInfo.obtain();
-            extraRenderingInfo.setLayoutSize(getLayoutParams().width, getLayoutParams().height);
-            info.setExtraRenderingInfo(extraRenderingInfo);
+            if (a11yExtraRenderingInfoColorAdditions()) {
+                AccessibilityNodeInfo.ExtraRenderingInfo original = info.getExtraRenderingInfo();
+                final AccessibilityNodeInfo.ExtraRenderingInfo.Builder builder =
+                        original == null
+                                ? new AccessibilityNodeInfo.ExtraRenderingInfo.Builder()
+                                : new AccessibilityNodeInfo.ExtraRenderingInfo.Builder(original);
+                builder.setLayoutSize(getLayoutParams().width, getLayoutParams().height);
+                info.setExtraRenderingInfo(builder.build());
+            } else {
+                final AccessibilityNodeInfo.ExtraRenderingInfo extraRenderingInfo =
+                        AccessibilityNodeInfo.ExtraRenderingInfo.obtain();
+                extraRenderingInfo.setLayoutSize(getLayoutParams().width, getLayoutParams().height);
+                info.setExtraRenderingInfo(extraRenderingInfo);
+            }
         }
     }
 

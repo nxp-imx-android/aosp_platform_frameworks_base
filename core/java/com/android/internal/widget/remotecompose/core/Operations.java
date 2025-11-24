@@ -15,6 +15,12 @@
  */
 package com.android.internal.widget.remotecompose.core;
 
+import static com.android.internal.widget.remotecompose.core.RcProfiles.PROFILE_ANDROIDX;
+import static com.android.internal.widget.remotecompose.core.RcProfiles.PROFILE_ANDROID_NATIVE;
+import static com.android.internal.widget.remotecompose.core.RcProfiles.PROFILE_DEPRECATED;
+import static com.android.internal.widget.remotecompose.core.RcProfiles.PROFILE_EXPERIMENTAL;
+import static com.android.internal.widget.remotecompose.core.RcProfiles.PROFILE_WIDGETS;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -125,6 +131,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.AlignByModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BackgroundModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BorderModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
@@ -137,6 +144,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostActionMetadataOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostNamedActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.LayoutComputeOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.MarqueeModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.OffsetModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.PaddingModifierOperation;
@@ -211,6 +219,7 @@ public class Operations {
     public static final int DRAW_ROUND_RECT = 51;
     public static final int DRAW_SECTOR = 52;
     public static final int DRAW_TEXT_ON_PATH = 53;
+    public static final int DRAW_TEXT_ON_CIRCLE = 57;
     public static final int DRAW_OVAL = 56;
     public static final int DATA_PATH = 123;
     public static final int DRAW_PATH = 124;
@@ -329,6 +338,7 @@ public class Operations {
     public static final int MODIFIER_SCROLL = 226;
     public static final int MODIFIER_MARQUEE = 228;
     public static final int MODIFIER_RIPPLE = 229;
+    public static final int MODIFIER_ALIGN_BY = 237;
 
     public static final int LOOP_START = 215;
 
@@ -337,6 +347,7 @@ public class Operations {
     public static final int HOST_METADATA_ACTION = 216;
     public static final int HOST_NAMED_ACTION = 210;
     public static final int RUN_ACTION = 236;
+    public static final int LAYOUT_COMPUTE = 238;
 
     public static final int VALUE_INTEGER_CHANGE_ACTION = 212;
     public static final int VALUE_STRING_CHANGE_ACTION = 213;
@@ -362,24 +373,6 @@ public class Operations {
     static UniqueIntMap<CompanionOperation> sMapV7Widgets;
     static UniqueIntMap<CompanionOperation> sMapV7WidgetsExperimental;
     static UniqueIntMap<CompanionOperation> sMapV7WidgetsDeprecated;
-
-    ////////////////////////////////////////
-    // Available profiles
-    ////////////////////////////////////////
-
-    public static final int PROFILE_BASELINE = 0x0;
-
-    // Additive profiles
-    public static final int PROFILE_EXPERIMENTAL = 0x1;
-    public static final int PROFILE_DEPRECATED = 0x2;
-    public static final int PROFILE_OEM = 0x4;
-    public static final int PROFILE_LOW_POWER = 0x8;
-
-    // Intersected profiles
-    public static final int PROFILE_WIDGETS = 0x100;
-    public static final int PROFILE_ANDROIDX = 0x200;
-    public static final int PROFILE_ANDROID_NATIVE = 0x400;
-    public static final int PROFILE_WEAR_WIDGETS = 0x800;
 
     /**
      * Returns true if the operation exists for the given api level
@@ -467,6 +460,8 @@ public class Operations {
         if (sMapV7AndroidXExperimental == null) {
             sMapV7AndroidXExperimental = new UniqueIntMap<>();
             // add experimental operations for this profile here
+            sMapV7AndroidXExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
+            sMapV7AndroidXExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
         }
         return sMapV7AndroidXExperimental;
     }
@@ -494,7 +489,6 @@ public class Operations {
             sMapV7Widgets.put(PARTICLE_COMPARE, ParticlesCompare::read);
             sMapV7Widgets.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
             sMapV7Widgets.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
-
         }
         return sMapV7Widgets;
     }
@@ -503,6 +497,8 @@ public class Operations {
         if (sMapV7WidgetsExperimental == null) {
             sMapV7WidgetsExperimental = new UniqueIntMap<>();
             // add experimental operations for this profile here
+            sMapV7WidgetsExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
+            sMapV7WidgetsExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
         }
         return sMapV7WidgetsExperimental;
     }
@@ -541,7 +537,7 @@ public class Operations {
                 if ((profiles & PROFILE_EXPERIMENTAL) != 0) {
                     androidx.putAll(createMapV7_Androidx_Experimental());
                 }
-                if ((profiles & Operations.PROFILE_DEPRECATED) != 0) {
+                if ((profiles & PROFILE_DEPRECATED) != 0) {
                     androidx.putAll(createMapV7_Androidx_Deprecated());
                 }
                 listProfiles.add(androidx);
@@ -553,7 +549,7 @@ public class Operations {
                 if ((profiles & PROFILE_EXPERIMENTAL) != 0) {
                     widgets.putAll(createMapV7_Widgets_Experimental());
                 }
-                if ((profiles & Operations.PROFILE_DEPRECATED) != 0) {
+                if ((profiles & PROFILE_DEPRECATED) != 0) {
                     widgets.putAll(createMapV7_Widgets_Deprecated());
                 }
                 listProfiles.add(widgets);

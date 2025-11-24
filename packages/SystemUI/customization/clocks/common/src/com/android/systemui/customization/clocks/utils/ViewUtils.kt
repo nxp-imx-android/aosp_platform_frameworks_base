@@ -17,7 +17,7 @@
 package com.android.systemui.customization.clocks.utils
 
 import android.view.View
-import com.android.systemui.customization.clocks.view.DigitalClockViewAdapter
+import com.android.systemui.customization.clocks.view.IDigitalClockView
 import com.android.systemui.plugins.keyguard.VMeasurePoint
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRect
@@ -62,7 +62,7 @@ object ViewUtils {
             .start()
     }
 
-    fun DigitalClockViewAdapter.setLeftTopRightBottom(rect: VRectF) {
+    fun IDigitalClockView.setLeftTopRightBottom(rect: VRectF) {
         (this as View).setLeftTopRightBottom(
             floor(rect.left).toInt(),
             floor(rect.top).toInt(),
@@ -71,7 +71,7 @@ object ViewUtils {
         )
     }
 
-    fun DigitalClockViewAdapter.layout(rect: VRectF) {
+    fun IDigitalClockView.layout(rect: VRectF) {
         (this as View).layout(
             floor(rect.left).toInt(),
             floor(rect.top).toInt(),

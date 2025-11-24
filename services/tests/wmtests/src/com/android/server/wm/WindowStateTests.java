@@ -1583,6 +1583,10 @@ public class WindowStateTests extends WindowTestsBase {
         WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).setWindowToken(
                 mAppWindow.mToken).build();
 
+        mDisplayContent.getInsetsStateController().updateAboveInsetsState(
+                false /* notifyInsetsChange */);
+        assertNull("Initially no merged local insets", app.mMergedLocalInsetsSources);
+
         Binder owner = new Binder();
         final Insets attachedInsets = Insets.of(0, 10, 0, 0);
         app.addLocalInsetsFrameProvider(

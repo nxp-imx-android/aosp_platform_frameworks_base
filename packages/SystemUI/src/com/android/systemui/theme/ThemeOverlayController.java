@@ -53,7 +53,6 @@ import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -272,12 +271,18 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private boolean shouldForceReloadForVersion() {
         String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
                 KEY_COLOR_PALETTE_VERSION);
+        String currentVersion = mSystemPropertiesHelper.get("ro.build.date.utc", null);
 
-        if (storedVersion != null && storedVersion.equals(Build.ID)) return false;
+        if (TextUtils.isEmpty(currentVersion)) {
+            Log.i(TAG, "Palette version missing. Refreshing overlays");
+            return true;
+        }
 
-        Log.i(TAG, "Palette version bumped from " + storedVersion + " to " + Build.ID);
+        if (storedVersion != null && Objects.equals(storedVersion, currentVersion)) return false;
+
+        Log.i(TAG, "Palette version bumped from " + storedVersion + " to " + currentVersion);
         Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
-                Build.ID);
+                currentVersion);
         return true;
     }
 
@@ -409,7 +414,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                         mUserManager.isManagedProfile(newUserHandle.getIdentifier());
                 if (!mDeviceProvisionedController.isUserSetup(newUserHandle.getIdentifier())
                         && isManagedProfile) {
-                    Log.i(TAG, "User setup not finished when " + intent.getAction()
+                    Log.i(TAG, "User setup not finished when " + intent.getAction() 
                             + " was received. Deferring... Managed profile? " + isManagedProfile);
                     return;
                 }
@@ -661,7 +666,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             }
         }
 
-        updateThemeOverlays();
+        updateThemeOverlays(forceReload);
     }
 
     /**
@@ -773,7 +778,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     }
 
     @SuppressWarnings("StringCaseLocaleUsage") // Package name is not localized
-    private void updateThemeOverlays() {
+    private void updateThemeOverlays(boolean forceUpdate) {
         final int currentUser = mUserTracker.getUserId();
         final String overlayPackageJson = mSecureSettings.getStringForUser(
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
@@ -854,7 +859,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             mActivityManager.setThemeOverlayReady(currentUser);
         };
 
-        if (colorSchemeIsApplied(managedProfiles)) {
+        if (!forceUpdate && colorSchemeIsApplied(managedProfiles)) {
             Log.d(TAG, "Skipping overlay creation. Theme was already: " + mColorScheme);
             onCompleteCallback.run();
             return;

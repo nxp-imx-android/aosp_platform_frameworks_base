@@ -2387,6 +2387,43 @@ public class BiometricServiceTest {
         assertFalse(settingObserver.getEnabledOnKeyguard(context.getUserId(), TYPE_FACE));
     }
 
+    @Test
+    public void testAuthenticate_setsSystemCaller_forSystemApp() throws Exception {
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        mBiometricService.mImpl.authenticate(
+                new Binder(),
+                0 /* operationId */,
+                0 /* userId */,
+                mReceiver1,
+                "com.android.systemui",
+                createTestPromptInfo(false, Authenticators.BIOMETRIC_STRONG, false, false, false)
+        );
+        waitForIdle();
+
+        assertNotNull(mBiometricService.mAuthSession);
+        assertTrue(mBiometricService.mAuthSession.mPromptInfo.isSystemCaller());
+    }
+
+    @Test
+    public void testAuthenticate_doesNotSetSystemCaller_forThirdPartyApps() throws Exception {
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        // Authenticate as a random third party app
+        mBiometricService.mImpl.authenticate(
+                new Binder(),
+                0 /* operationId */,
+                0 /* userId */,
+                mReceiver1,
+                "com.random.app",
+                createTestPromptInfo(false, Authenticators.BIOMETRIC_STRONG, false, false, false)
+        );
+        waitForIdle();
+
+        assertNotNull(mBiometricService.mAuthSession);
+        assertFalse(mBiometricService.mAuthSession.mPromptInfo.isSystemCaller());
+    }
+
     // Helper methods
 
     private int invokeCanAuthenticate(BiometricService service, int authenticators)

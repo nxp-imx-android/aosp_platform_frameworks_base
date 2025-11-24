@@ -23,10 +23,13 @@ import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.CATEGORY_REMINDER;
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.app.NotificationChannel.NEWS_ID;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifyRanking;
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifySbn;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_DYNAMIC_BUNDLE;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -60,6 +63,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
 import com.android.systemui.util.time.FakeSystemClock;
 
 import org.junit.Before;
@@ -465,6 +469,38 @@ public class NotificationEntryTest extends SysuiTestCase {
             return builder.done();
         });
         assertThat(entry.getSummarization()).isEqualTo("nas");
+    }
+
+    @Test
+    @EnableFlags(NmContextualDisplay.FLAG_NAME)
+    public void getLoggingBucket_notBundled() {
+        NotificationEntry entry = mKosmos.createPeopleNotification();
+
+        assertThat(entry.getBucketForLogging()).isEqualTo(entry.getBucket());
+    }
+
+    @Test
+    @EnableFlags(NmContextualDisplay.FLAG_NAME)
+    public void getLoggingBucket_staticBundle() {
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.setChannel(new NotificationChannel(NEWS_ID, "news", 2));
+            return builder.done();
+        });
+
+        assertThat(entry.getBucketForLogging()).isEqualTo(BUCKET_NEWS);
+    }
+
+    @Test
+    @EnableFlags(NmContextualDisplay.FLAG_NAME)
+    public void getLoggingBucket_dynamicBundle() {
+        NotificationChannel channel = new NotificationChannel("dynamic", "news", 2);
+        channel.setIsBundleChannel(true);
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.setChannel(channel);
+            return builder.done();
+        });
+
+        assertThat(entry.getBucketForLogging()).isEqualTo(BUCKET_DYNAMIC_BUNDLE);
     }
 
     private Notification.Action createContextualAction(String title) {

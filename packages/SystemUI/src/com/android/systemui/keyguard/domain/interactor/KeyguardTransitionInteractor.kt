@@ -130,6 +130,7 @@ constructor(
      * from when we were canceled.
      */
     @SuppressLint("SharedFlowCreation")
+    @Deprecated("Use scene container aware alternatives in this class.")
     val startedStepWithPrecedingStep =
         repository.transitions
             .pairwise()
@@ -452,13 +453,15 @@ constructor(
      */
     fun transitionValue(state: KeyguardState): Flow<Float> {
         if (SceneContainerFlag.isEnabled && state != state.mapToSceneContainerState()) {
-            Log.e(TAG, "SceneContainer is enabled but a deprecated state $state is used.")
-            return transitionValue(state.mapToSceneContainerContent()!!, state)
+            throw IllegalStateException(
+                "SceneContainer is enabled but a deprecated state $state is used."
+            )
         }
         return getTransitionValueFlow(state)
     }
 
     /** The last [TransitionStep] with a [TransitionState] of STARTED */
+    @Deprecated("Use scene container aware alternatives in this class")
     val startedKeyguardTransitionStep: StateFlow<TransitionStep> =
         repository.transitions
             .filter { step -> step.transitionState == TransitionState.STARTED }
@@ -524,6 +527,7 @@ constructor(
      * 5. LOCKSCREEN -> GONE is allowed to FINISH. currentKeyguardState=GONE;
      *    finishedKeyguardState=GONE.
      */
+    @Deprecated("Use scene container aware alternatives in this class")
     val currentKeyguardState: StateFlow<KeyguardState> =
         repository.transitions
             .mapLatest {
@@ -581,6 +585,7 @@ constructor(
      * If you only care about a single state for both from and to, instead use the optimized
      * [isInTransition].
      */
+    @Deprecated("Use scene container aware alternatives in this class")
     fun isInTransitionWhere(
         fromStatePredicate: (KeyguardState) -> Boolean = { true },
         toStatePredicate: (KeyguardState) -> Boolean = { true },
@@ -619,6 +624,7 @@ constructor(
     }
 
     /** Whether we've FINISHED a transition to a state that matches the given predicate. */
+    @Deprecated("Use scene container aware alternatives in this class")
     fun isFinishedInStateWhere(stateMatcher: (KeyguardState) -> Boolean): Flow<Boolean> {
         return finishedKeyguardState.map { stateMatcher(it) }.distinctUntilChanged()
     }
@@ -668,14 +674,17 @@ constructor(
             .distinctUntilChanged()
     }
 
+    @Deprecated("Use scene container aware alternatives in this class")
     fun getCurrentState(): KeyguardState {
         return currentKeyguardState.replayCache.last()
     }
 
+    @Deprecated("Use scene container aware alternatives in this class")
     fun getStartedState(): KeyguardState {
         return startedKeyguardTransitionStep.value.to
     }
 
+    @Deprecated("Use scene container aware alternatives in this class")
     val finishedKeyguardState: StateFlow<KeyguardState> =
         repository.transitions
             .filter { it.transitionState == TransitionState.FINISHED }

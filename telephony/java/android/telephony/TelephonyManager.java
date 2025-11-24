@@ -101,6 +101,7 @@ import android.telephony.Annotation.TtyMode;
 import android.telephony.Annotation.UiccAppType;
 import android.telephony.Annotation.UiccAppTypeExt;
 import android.telephony.CallForwardingInfo.CallForwardingReason;
+import android.telephony.NetworkSecurityEvent.AlertCategory;
 import android.telephony.VisualVoicemailService.VisualVoicemailTask;
 import android.telephony.data.ApnSetting;
 import android.telephony.data.ApnSetting.MvnoType;
@@ -218,6 +219,14 @@ public class TelephonyManager {
      * @hide
      */
     public static final String PHONE_PROCESS_NAME = "com.android.phone";
+
+    /**
+     * The AOSP activity responsible for placing emergency calls from, for example, a locked
+     * keyguard.
+     * @hide
+     */
+    public static final ComponentName EMERGENCY_DIALER_COMPONENT =
+            ComponentName.createRelative(PHONE_PROCESS_NAME, ".EmergencyDialer");
 
     /**
      * The allowed states of Wi-Fi calling.
@@ -434,6 +443,16 @@ public class TelephonyManager {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long ENABLE_FEATURE_MAPPING = 297989574L;
+
+    /**
+     * Enable READ_PHONE_STATE protection on APIs querying and notifying call state, such as
+     * {@code TelecomManager#getCallState}, {@link TelephonyManager#getCallStateForSubscription()},
+     * and {@link android.telephony.TelephonyCallback.CallStateListener}.
+     * @hide
+     */
+    // this magic number is a bug ID
+    // if removing this ChangeId, remove this constant in TelecomManager as well
+    public static final long ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION = 157233955L;
 
     private final Context mContext;
     private final int mSubId;
@@ -1886,6 +1905,22 @@ public class TelephonyManager {
             "android.telephony.extra.SIM_COMBINATION_NAMES";
 
     /**
+     * A string value for {@link TelecomManager#EXTRA_CALL_DISCONNECT_MESSAGE}, indicates the call
+     * was dropped by lower layers
+     * @hide
+     */
+    public static final String CALL_AUTO_DISCONNECT_MESSAGE_STRING =
+            "Call dropped by lower layers";
+
+    /**
+     * Optional extra for incoming and outgoing calls containing a long which specifies the Epoch
+     * time the call was created.
+     * @hide
+     */
+    public static final String EXTRA_CALL_CREATED_EPOCH_TIME_MILLIS =
+            "android.telephony.extra.CALL_CREATED_EPOCH_TIME_MILLIS";
+
+    /**
      * <p>Broadcast Action: The emergency callback mode is changed.
      * <ul>
      *   <li><em>EXTRA_PHONE_IN_ECM_STATE</em> - A boolean value,true=phone in ECM,
@@ -2922,10 +2957,6 @@ public class TelephonyManager {
     /**
      * Returns the ISO-3166-1 alpha-2 country code equivalent of the MCC (Mobile Country Code) of
      * the current registered operator or the cell nearby, if available.
-     *
-     * <p>If the calling app's target SDK is API level 37 or higher, this method requires
-     * {@code android.permission.QUERY_NETWORK_COUNTRY}.</p>
-     *
      * <p>
      * @return the lowercase 2 character ISO-3166-1 alpha-2 country code, or empty string if not
      * available.
@@ -2933,9 +2964,6 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
      */
-    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-    @RequiresPermission(value = android.Manifest.permission.QUERY_NETWORK_COUNTRY,
-            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkCountryIso() {
         return getNetworkCountryIso(getSlotIndex());
@@ -2947,9 +2975,6 @@ public class TelephonyManager {
      * {@link #getNetworkCountryIso()} but allowing specifying the SIM slot index. This is used for
      * accessing network country info from the SIM slot that does not have SIM inserted.
      *
-     * <p>If the calling app's target SDK is API level 37 or higher, this method requires
-     * {@code android.permission.QUERY_NETWORK_COUNTRY}.</p>
-     *
      * @param slotIndex the SIM slot index to get network country ISO.
      *
      * @return the lowercase 2 character ISO-3166-1 alpha-2 country code, or empty string if not
@@ -2960,9 +2985,6 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
      *
      */
-    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-    @RequiresPermission(value = android.Manifest.permission.QUERY_NETWORK_COUNTRY,
-            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     @NonNull
     public String getNetworkCountryIso(int slotIndex) {
@@ -4579,10 +4601,7 @@ public class TelephonyManager {
      *
      * <p>Starting with API level 29, persistent device identifiers are guarded behind additional
      * restrictions, and apps are recommended to use resettable identifiers (see <a
-     * href="/training/articles/user-data-ids">Best practices for unique identifiers</a>).
-     *
-     * <p> Starting with targetSdkVersion 37, the calling app must *also* hold the
-     * {@code android.permission.QUERY_NETWORK_IDENTIFIERS} permission. This
+     * href="/training/articles/user-data-ids">Best practices for unique identifiers</a>). This
      * method can be invoked if one of the following requirements is met:
      * <ul>
      *     <li>If the calling app has been granted the READ_PRIVILEGED_PHONE_STATE permission; this
@@ -4612,9 +4631,7 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
-    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-    @RequiresPermission(allOf = {android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
-            android.Manifest.permission.QUERY_NETWORK_IDENTIFIERS}, conditional = true)
+    @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSubscriberId() {
         return getSubscriberId(getSubId());
@@ -18639,7 +18656,7 @@ public class TelephonyManager {
      * identity. If the device goes out of service the previous cell identity is cached and
      * will be returned. If the cache age of the Cell identity is more than 24 hours
      * it will be cleared and null will be returned.
-     * @return last known cell identity {@CellIdentity}.
+     * @return last known cell identity {@link CellIdentity}.
      * @hide
      */
     @SystemApi
@@ -19146,6 +19163,34 @@ public class TelephonyManager {
         return false;
     }
 
+    /**
+     * Get the supported network alert categories for the modem.
+     *
+     * @throws IllegalStateException if the Telephony process is not currently available
+     * @throws SecurityException if the caller does not have the required privileges
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_NETWORK_SECURITY_EVENT_INDICATIONS)
+    @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @SystemApi
+    public @NonNull @AlertCategory int[] getSupportedNetworkAlertCategories() {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getSupportedNetworkAlertCategories();
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (UnsupportedOperationException ex) {
+            Rlog.e(TAG, "getSupportedNetworkAlertCategories UnsupportedOperationException", ex);
+            return new int[0];
+        }
+         catch (RemoteException ex) {
+            Rlog.e(TAG, "getSupportedNetworkAlertCategories RemoteException", ex);
+            ex.rethrowFromSystemServer();
+        }
+        return new int[0];
+    }
 
     /**
      * Get current cell broadcast message identifier ranges.

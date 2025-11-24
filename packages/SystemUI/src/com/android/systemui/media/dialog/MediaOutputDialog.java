@@ -23,7 +23,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Dialog;
 import android.app.WallpaperColors;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -32,6 +34,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,6 +100,8 @@ public class MediaOutputDialog extends SystemUIDialog
     private Button mDoneButton;
     private ViewGroup mDialogFooter;
     private Button mStopButton;
+    private ViewGroup mWarningSection;
+    private Button mWarningFixButton;
     private WallpaperColors mWallpaperColors;
     private boolean mDismissing;
 
@@ -181,6 +186,8 @@ public class MediaOutputDialog extends SystemUIDialog
         mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
         mDoneButton = mDialogView.requireViewById(R.id.done);
         mStopButton = mDialogView.requireViewById(R.id.stop);
+        mWarningSection = mDialogView.requireViewById(R.id.warning_section);
+        mWarningFixButton = mDialogView.requireViewById(R.id.warning_fix_button);
 
         updateAppResourceIcon();
         mMediaMetadataSectionLayout.setVisibility(isSmallScreenHeight() ? View.GONE : View.VISIBLE);
@@ -329,6 +336,8 @@ public class MediaOutputDialog extends SystemUIDialog
         mStopButton.setText(mContext.getString(mMediaSwitchingController.getStopButtonStringRes()));
         mStopButton.setOnClickListener(v -> onStopButtonClick());
 
+        refreshWarningSection();
+
         if (!mAdapter.isDragging()) {
             int currentActivePosition = mAdapter.getCurrentActivePosition();
             if (!colorSetUpdated && !deviceSetChanged && currentActivePosition >= 0
@@ -444,6 +453,27 @@ public class MediaOutputDialog extends SystemUIDialog
 
     private boolean isSmallScreenHeight() {
         return mContext.getResources().getConfiguration().screenHeightDp <= SMALL_SCREEN_HEIGHT_DP;
+    }
+
+    private void refreshWarningSection() {
+        Intent intent = mMediaSwitchingController.getMissingPermissionsResolveIntent();
+        if (intent == null) {
+            mWarningSection.setVisibility(View.GONE);
+            return;
+        }
+        mWarningSection.setVisibility(View.VISIBLE);
+        mWarningFixButton.setOnClickListener(v -> {
+            dismiss();
+            try {
+                mContext.startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                // Checks for the intent to match an activity in the calling app are done at
+                // registration time, but in theory the app could be uninstalled just before this
+                // code runs.
+                Log.e(TAG, "No activity found to handle intent " + intent);
+            }
+        });
+
     }
 
     @VisibleForTesting

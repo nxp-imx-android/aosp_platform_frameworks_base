@@ -206,7 +206,7 @@ interface IWallpaperManager {
      * Check whether wallpapers are supported for the calling user.
      */
     boolean isWallpaperSupported(in String callingPackage);
-    
+
     /**
      * Check whether setting of wallpapers are allowed for the calling user.
      */
@@ -272,11 +272,15 @@ interface IWallpaperManager {
     /**
      * Sets the wallpaper dim amount between [0f, 1f] which would be blended with the system default
      * dimming. 0f doesn't add any additional dimming and 1f makes the wallpaper fully black.
+     * The dim amount will apply to the display specified by the displayId. If a negative id is
+     * provided, the dim amount will apply to all displays.
+     * If temporary is set to true, the dim amount will not be persisted. Also, if the lockscreen
+     * has a different wallpaper, the temporary dim amount will not apply to the lockscreen.
      *
      * @hide
      */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT)")
-    oneway void setWallpaperDimAmount(float dimAmount);
+    oneway void setWallpaperDimAmount(float dimAmount, int displayId, boolean temporary);
 
     /**
      * Gets the current additional dim amount set on the wallpaper. 0f means no application has

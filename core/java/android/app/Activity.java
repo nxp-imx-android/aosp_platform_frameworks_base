@@ -3117,6 +3117,11 @@ public class Activity extends ContextThemeWrapper
 
     /**
      * Returns true if the activity is currently in multi-window mode.
+     *
+     * <p>See <a href="{@docRoot}develop/ui/compose/layouts/adaptive/support-multi-window-mode">
+     * Support multi-window mode</a> for recommendations on how to handle different multi-window
+     * scenarios such as split-screen.</p>
+     *
      * @see android.R.attr#resizeableActivity
      *
      * @return True if the activity is in multi-window mode.

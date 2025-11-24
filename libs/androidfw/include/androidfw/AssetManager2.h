@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef ANDROIDFW_ASSETMANAGER2_H_
+#define ANDROIDFW_ASSETMANAGER2_H_
 
 #include <utils/RefBase.h>
 
@@ -43,9 +44,10 @@ enum : ApkAssetsCookie {
   kInvalidCookie = -1,
 };
 
-// Right now we have to load the whole XML file into memory, and only then parse the whole thing.
-// Let's limit the maximum allowed file size here to minimize the chances of running out of memory.
-constexpr auto kMaxXmlAssetSize = 1024 * 1024 * 1024;
+// Right now we have to load the whole XML file into memory, then memcpy it
+// into another buffer, and then parse the whole thing. Let's limit the maximum allowed
+// file size here to minimize the chances of running out of memory.
+constexpr auto kMaxXmlAssetSize = 16 * 1024 * 1024;
 
 // Holds a bag that has been merged with its parent, if one exists.
 struct ResolvedBag {
@@ -650,3 +652,5 @@ inline const ResolvedBag::Entry* end(const ResolvedBag* bag) {
 }
 
 }  // namespace android
+
+#endif /* ANDROIDFW_ASSETMANAGER2_H_ */

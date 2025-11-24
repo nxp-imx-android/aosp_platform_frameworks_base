@@ -61,7 +61,6 @@ class TaskChangeNotificationController {
     private static final int NOTIFY_ACTIVITY_ROTATED_MSG = 26;
     private static final int NOTIFY_TASK_MOVED_TO_BACK_LISTENERS_MSG = 27;
     private static final int NOTIFY_LOCK_TASK_MODE_CHANGED_MSG = 28;
-    private static final int NOTIFY_TASK_SNAPSHOT_INVALIDATED_LISTENERS_MSG = 29;
     private static final int NOTIFY_RECENT_TASK_REMOVED_FOR_ADD_TASK_LISTENERS_MSG = 30;
 
     // Delay in notifying task stack change listeners (in millis)
@@ -148,18 +147,10 @@ class TaskChangeNotificationController {
         l.onTaskProfileLocked((RunningTaskInfo) m.obj, m.arg1);
     };
 
-    private final TaskStackConsumer mNotifyTaskSnapshotChanged = (l, m) -> {
-        l.onTaskSnapshotChanged(m.arg1, (TaskSnapshot) m.obj);
-    };
-
     private final TaskStackConsumer mNotifyTaskSnapshotChangedRemote = (l, m) -> {
         final TaskSnapshot taskSnapshot = (TaskSnapshot) m.obj;
         taskSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
         l.onTaskSnapshotChanged(m.arg1, taskSnapshot);
-    };
-
-    private final TaskStackConsumer mNotifyTaskSnapshotInvalidated = (l, m) -> {
-        l.onTaskSnapshotInvalidated(m.arg1);
     };
 
     private final TaskStackConsumer mNotifyTaskDisplayChanged = (l, m) -> {
@@ -289,9 +280,6 @@ class TaskChangeNotificationController {
                     break;
                 case NOTIFY_LOCK_TASK_MODE_CHANGED_MSG:
                     forAllRemoteListeners(mNotifyLockTaskModeChanged, msg);
-                    break;
-                case NOTIFY_TASK_SNAPSHOT_INVALIDATED_LISTENERS_MSG:
-                    forAllRemoteListeners(mNotifyTaskSnapshotInvalidated, msg);
                     break;
             }
             if (msg.obj instanceof SomeArgs) {
@@ -487,27 +475,6 @@ class TaskChangeNotificationController {
         final Message msg = mHandler.obtainMessage(NOTIFY_TASK_PROFILE_LOCKED_LISTENERS_MSG,
                 userId, 0, taskInfo);
         forAllLocalListeners(mNotifyTaskProfileLocked, msg);
-        msg.sendToTarget();
-    }
-
-    /**
-     * Notify listeners that the snapshot of a task has changed.
-     */
-    void notifyTaskSnapshotChanged(int taskId, TaskSnapshot snapshot) {
-        snapshot.addReference(TaskSnapshot.REFERENCE_BROADCAST);
-        final Message msg = mHandler.obtainMessage(NOTIFY_TASK_SNAPSHOT_CHANGED_LISTENERS_MSG,
-                taskId, 0, snapshot);
-        forAllLocalListeners(mNotifyTaskSnapshotChanged, msg);
-        msg.sendToTarget();
-    }
-
-    /**
-     * Notify listeners that the snapshot of a task is invalidated.
-     */
-    void notifyTaskSnapshotInvalidated(int taskId) {
-        final Message msg = mHandler.obtainMessage(NOTIFY_TASK_SNAPSHOT_INVALIDATED_LISTENERS_MSG,
-                taskId, 0 /* unused */);
-        forAllLocalListeners(mNotifyTaskSnapshotInvalidated, msg);
         msg.sendToTarget();
     }
 

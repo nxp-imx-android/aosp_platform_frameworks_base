@@ -1930,7 +1930,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
-            // Only a presentation window needs a transition because its visibility affets the
+            // Only a presentation window needs a transition because its visibility affects the
             // lifecycle of apps below (b/390481865).
             if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && win.isPresentation()) {
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("addPresoWin");
@@ -2731,8 +2731,14 @@ public class WindowManagerService extends IWindowManager.Stub
                 if ((result & WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME) != 0) {
                     focusMayChange = true;
                 }
+                final var imeWindowToken = win.mToken.asImeToken();
                 if (win.mAttrs.type == TYPE_INPUT_METHOD
-                        && displayContent.getImeWindow() == null) {
+                        && displayContent.getImeWindow() == null
+                        && (!android.view.inputmethod.Flags.warmWorkProfileIme()
+                            // IME window is always touchable.
+                            // Ignore non-touchable windows e.g. Stylus InkWindow.java.
+                            || ((win.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0
+                                && imeWindowToken != null && imeWindowToken.isVisible()))) {
                     displayContent.setImeWindow(win);
                     imMayMove = true;
                 }
@@ -3048,7 +3054,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final DisplayContent dc = getDisplayContentOrCreate(displayId, null /* token */);
             if (dc == null) {
                 ProtoLog.w(WM_ERROR, "addWindowToken: Attempted to add token: %s"
-                        + " for non-exiting displayId=%d", binder, displayId);
+                        + " for non-existing displayId=%d", binder, displayId);
                 return;
             }
 
@@ -3069,6 +3075,45 @@ public class WindowManagerService extends IWindowManager.Stub
                         .build();
             }
             dc.addWindowToken(token);
+        }
+    }
+
+    /**
+     * Adds an IME window token for a given display. This differs from {@link #addWindowToken} with
+     * the addition of {@code targetUserId}.
+     *
+     * @param binder The token to add.
+     * @param displayId The display to add the token to.
+     * @param targetUserId The user whose windows can be added to this token.
+     * @param options A bundle used to pass window-related options.
+     */
+    public void addImeWindowToken(@NonNull IBinder binder, int displayId,
+            @UserIdInt int targetUserId, @Nullable Bundle options) {
+        if (!android.view.inputmethod.Flags.warmWorkProfileIme()) {
+            return;
+        }
+        if (!checkCallingPermission(MANAGE_APP_TOKENS, "addImeWindowToken()")) {
+            throw new SecurityException("Requires MANAGE_APP_TOKENS permission");
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent dc = mRoot.getDisplayContent(displayId);
+            if (dc == null) {
+                ProtoLog.w(WM_ERROR, "addImeWindowToken: Attempted to add token: %s"
+                        + " for non-existing displayId=%d", binder, displayId);
+                return;
+            }
+
+            final WindowToken token = dc.getWindowToken(binder);
+            if (token != null) {
+                ProtoLog.w(WM_ERROR, "addImeWindowToken: Attempted to add binder token: %s"
+                        + " for already created window token: %s"
+                        + " displayId=%d", binder, token, displayId);
+                return;
+            }
+            final var imeToken = new ImeWindowToken(this /* service */, binder, targetUserId,
+                    options);
+            dc.addWindowToken(imeToken);
         }
     }
 
@@ -3352,7 +3397,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (dc == null) {
                 ProtoLog.w(WM_ERROR, "removeWindowToken: Attempted to remove token: %s"
-                        + " for non-exiting displayId=%d", binder, displayId);
+                        + " for non-existing displayId=%d", binder, displayId);
                 return;
             }
             final WindowToken token = dc.removeWindowToken(binder, animateExit);
@@ -3383,13 +3428,51 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
+    void setImeWindowToken(@Nullable IBinder binder, int displayId) {
+        if (!android.view.inputmethod.Flags.warmWorkProfileIme()) {
+            return;
+        }
+        if (!checkCallingPermission(MANAGE_APP_TOKENS, "setImeWindowToken()")) {
+            throw new SecurityException("Requires MANAGE_APP_TOKENS permission");
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent dc = mRoot.getDisplayContent(displayId);
+            if (dc == null) {
+                ProtoLog.e(WM_ERROR, "setImeWindowToken: Attempted to set token: %s"
+                                + " for non-existing displayId=%d", binder, displayId);
+                return;
+            }
+            final ImeWindowToken imeToken;
+            if (binder == null) {
+                imeToken = null;
+            } else {
+                final WindowToken token = dc.getWindowToken(binder);
+                if (token == null) {
+                    ProtoLog.w(WM_ERROR,
+                            "setImeWindowToken: Attempted to set non-existing token: %s", binder);
+                    return;
+                }
+                imeToken = token.asImeToken();
+                if (imeToken == null) {
+                    ProtoLog.w(WM_ERROR,
+                            "setImeWindowToken: Attempted to set non-ImeWindowToken: %s", token);
+                    return;
+                }
+            }
+            dc.getImeContainer().setImeWindowToken(imeToken);
+            dc.setLayoutNeeded();
+            dc.mWmService.mWindowPlacerLocked.requestTraversal();
+        }
+    }
+
     /** @see WindowManagerInternal#moveWindowTokenToDisplay(IBinder, int)  */
     public void moveWindowTokenToDisplay(IBinder binder, int displayId) {
         synchronized (mGlobalLock) {
             final DisplayContent dc = mRoot.getDisplayContentOrCreate(displayId);
             if (dc == null) {
                 ProtoLog.w(WM_ERROR, "moveWindowTokenToDisplay: Attempted to move token: %s"
-                        + " to non-exiting displayId=%d", binder, displayId);
+                        + " to non-existing displayId=%d", binder, displayId);
                 return;
             }
             final WindowToken token = mRoot.getWindowToken(binder);
@@ -8297,10 +8380,21 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void addImeWindowToken(@NonNull IBinder token, int displayId,
+                @UserIdInt int targetUserId, @Nullable Bundle options) {
+            WindowManagerService.this.addImeWindowToken(token, displayId, targetUserId, options);
+        }
+
+        @Override
         public void removeWindowToken(IBinder binder, boolean removeWindows, boolean animateExit,
                 int displayId) {
             WindowManagerService.this.removeWindowToken(binder, removeWindows, animateExit,
                     displayId);
+        }
+
+        @Override
+        public void setImeWindowToken(@Nullable IBinder token, int displayId) {
+            WindowManagerService.this.setImeWindowToken(token, displayId);
         }
 
         @Override
@@ -10388,14 +10482,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     return true;
                 }
             }
-            final TaskSnapshot snapshot;
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
-                        TaskSnapshotManager.RESOLUTION_ANY);
-            } else {
-                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
-                        false /* isLowResolution */);
-            }
+            final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
+                    imeTargetWindowTask.mTaskId, TaskSnapshotManager.RESOLUTION_ANY);
             return snapshot != null && snapshot.hasImeSurface();
         }
     }
@@ -10482,15 +10570,7 @@ public class WindowManagerService extends IWindowManager.Stub
         if (taskSnapshot == null) {
             return null;
         }
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            return taskSnapshot.wrapToBitmap();
-        } else {
-            if (taskSnapshot.getHardwareBuffer() == null) {
-                return null;
-            }
-            return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
-                    taskSnapshot.getColorSpace());
-        }
+        return taskSnapshot.wrapToBitmap();
     }
 
     @Override

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -195,16 +196,18 @@ object SceneWindowRootViewBinder {
                                 )
                             ),
                     ) {
-                        SceneContainer(
-                            viewModel = viewModel,
-                            sceneByKey = sceneByKey,
-                            overlayByKey = overlayByKey,
-                            initialSceneKey = containerConfig.initialSceneKey,
-                            transitionsBuilder = containerConfig.transitionsBuilder,
-                            dataSourceDelegator = dataSourceDelegator,
-                            sceneJankMonitorFactory = sceneJankMonitorFactory,
-                            modifier = Modifier.sysUiResTagContainer(),
-                        )
+                        ObserveReadsRoot {
+                            SceneContainer(
+                                viewModel = viewModel,
+                                sceneByKey = sceneByKey,
+                                overlayByKey = overlayByKey,
+                                initialSceneKey = containerConfig.initialSceneKey,
+                                transitionsBuilder = containerConfig.transitionsBuilder,
+                                dataSourceDelegator = dataSourceDelegator,
+                                sceneJankMonitorFactory = sceneJankMonitorFactory,
+                                modifier = Modifier.sysUiResTagContainer(),
+                            )
+                        }
                     }
                 }
             }

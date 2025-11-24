@@ -366,7 +366,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
         if (settingBroadcastName == null || settingBroadcastName.isEmpty()) {
             int postfix = ThreadLocalRandom.current().nextInt(DEFAULT_CODE_MIN, DEFAULT_CODE_MAX);
-            String name = BluetoothAdapter.getDefaultAdapter().getName();
+            String name = mBluetoothAdapter.getName();
             if (name == null || name.isEmpty()) {
                 name = DEFAULT_BROADCAST_NAME_PREFIX;
             }

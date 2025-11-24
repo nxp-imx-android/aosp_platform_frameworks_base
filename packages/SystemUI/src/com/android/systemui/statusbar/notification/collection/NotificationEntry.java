@@ -22,6 +22,10 @@ import static android.app.Notification.CATEGORY_EVENT;
 import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.CATEGORY_REMINDER;
 import static android.app.Notification.FLAG_BUBBLE;
+import static android.app.NotificationChannel.NEWS_ID;
+import static android.app.NotificationChannel.PROMOTIONS_ID;
+import static android.app.NotificationChannel.RECS_ID;
+import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_BADGE;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
@@ -30,6 +34,11 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
 
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_NOT_CANCELED;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_DYNAMIC_BUNDLE;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_RECS;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SOCIAL;
 
 import static java.util.Objects.requireNonNull;
 
@@ -79,6 +88,7 @@ import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarMo
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel;
 import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
+import com.android.systemui.statusbar.notification.stack.PriorityBucket;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
 import kotlinx.coroutines.flow.StateFlow;
@@ -486,6 +496,20 @@ public final class NotificationEntry extends ListEntry {
             return false;
         }
         return getRanking().getChannel().isBundleChannel();
+    }
+
+    @Override
+    public @PriorityBucket int getBucketForLogging() {
+        if (isBundled()) {
+            return switch (getChannel().getId()) {
+                case NEWS_ID -> BUCKET_NEWS;
+                case PROMOTIONS_ID ->  BUCKET_PROMO;
+                case SOCIAL_MEDIA_ID -> BUCKET_SOCIAL;
+                case RECS_ID -> BUCKET_RECS;
+                default -> BUCKET_DYNAMIC_BUNDLE;
+            };
+        }
+        return getBucket();
     }
 
     /*
@@ -1017,7 +1041,7 @@ public final class NotificationEntry extends ListEntry {
         getRow().setSensitive(sensitive, deviceSensitive);
         if (sensitive != mSensitive.getValue()) {
             mSensitive.setValue(sensitive);
-            for (PipelineEntry.OnSensitivityChangedListener listener :
+            for (OnSensitivityChangedListener listener :
                     mOnSensitivityChangedListeners) {
                 listener.onSensitivityChanged(this);
             }

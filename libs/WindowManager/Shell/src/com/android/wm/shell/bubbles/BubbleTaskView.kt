@@ -36,25 +36,28 @@ import java.util.concurrent.Executor
  *
  * [delegateListener] allows callers to change listeners after a task has been created.
  */
-class BubbleTaskView @JvmOverloads constructor(
+class BubbleTaskView
+@JvmOverloads
+constructor(
     val taskView: TaskView,
     executor: Executor,
     val bubbleController: BubbleController,
-    private val splitScreenController: Lazy<Optional<SplitScreenController>> =
-        Lazy { Optional.empty() },
+    private val splitScreenController: Lazy<Optional<SplitScreenController>> = Lazy {
+        Optional.empty()
+    },
 ) {
 
     /** Whether the task is already created. */
     var isCreated = false
-      private set
+        private set
 
     /** The task id. */
     var taskId = INVALID_TASK_ID
-      private set
+        private set
 
     /** The component name of the application running in the task. */
     var componentName: ComponentName? = null
-      private set
+        private set
 
     /**
      * Whether the task view is visible and has a surface. Note that this does not check the alpha
@@ -62,54 +65,56 @@ class BubbleTaskView @JvmOverloads constructor(
      *
      * When this is `true` it is safe to start showing the task view. Otherwise if this is `false`
      * callers should wait for it to be visible which will be indicated either by a call to
-     * [TaskView.Listener.onTaskCreated] or [TaskView.Listener.onTaskVisibilityChanged]. */
+     * [TaskView.Listener.onTaskCreated] or [TaskView.Listener.onTaskVisibilityChanged].
+     */
     var isVisible = false
-      private set
+        private set
 
     /** [TaskView.Listener] for users of this class. */
     var delegateListener: TaskView.Listener? = null
 
     /** A [TaskView.Listener] that delegates to [delegateListener]. */
     @get:VisibleForTesting
-    val listener = object : TaskView.Listener {
-        override fun onInitialized() {
-            delegateListener?.onInitialized()
-        }
+    val listener =
+        object : TaskView.Listener {
+            override fun onInitialized() {
+                delegateListener?.onInitialized()
+            }
 
-        override fun onSurfaceAlreadyCreated() {
-            delegateListener?.onSurfaceAlreadyCreated()
-        }
+            override fun onSurfaceAlreadyCreated() {
+                delegateListener?.onSurfaceAlreadyCreated()
+            }
 
-        override fun onReleased() {
-            delegateListener?.onReleased()
-        }
+            override fun onReleased() {
+                delegateListener?.onReleased()
+            }
 
-        override fun onTaskCreated(taskId: Int, name: ComponentName) {
-            delegateListener?.onTaskCreated(taskId, name)
-            this@BubbleTaskView.taskId = taskId
-            isCreated = true
-            componentName = name
-            // when the task is created it is visible
-            isVisible = true
-        }
+            override fun onTaskCreated(taskId: Int, name: ComponentName) {
+                delegateListener?.onTaskCreated(taskId, name)
+                this@BubbleTaskView.taskId = taskId
+                isCreated = true
+                componentName = name
+                // when the task is created it is visible
+                isVisible = true
+            }
 
-        override fun onTaskVisibilityChanged(taskId: Int, visible: Boolean) {
-            this@BubbleTaskView.isVisible = visible
-            delegateListener?.onTaskVisibilityChanged(taskId, visible)
-        }
+            override fun onTaskVisibilityChanged(taskId: Int, visible: Boolean) {
+                this@BubbleTaskView.isVisible = visible
+                delegateListener?.onTaskVisibilityChanged(taskId, visible)
+            }
 
-        override fun onTaskRemovalStarted(taskId: Int) {
-            delegateListener?.onTaskRemovalStarted(taskId)
-        }
+            override fun onTaskRemovalStarted(taskId: Int) {
+                delegateListener?.onTaskRemovalStarted(taskId)
+            }
 
-        override fun onTaskInfoChanged(taskInfo: RunningTaskInfo?) {
-            delegateListener?.onTaskInfoChanged(taskInfo)
-        }
+            override fun onTaskInfoChanged(taskInfo: RunningTaskInfo?) {
+                delegateListener?.onTaskInfoChanged(taskInfo)
+            }
 
-        override fun onBackPressedOnTaskRoot(taskId: Int) {
-            delegateListener?.onBackPressedOnTaskRoot(taskId)
+            override fun onBackPressedOnTaskRoot(taskId: Int) {
+                delegateListener?.onBackPressedOnTaskRoot(taskId)
+            }
         }
-    }
 
     init {
         taskView.setListener(executor, listener)
@@ -126,7 +131,9 @@ class BubbleTaskView @JvmOverloads constructor(
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
                 if (bubble == null || bubble.isChat || bubbleController.shouldBeAppBubble(t)) {
-                    if (Flags.bugDontRemoveTaskBubble()) {
+                    if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
+                        taskView.unregisterTask()
+                    } else if (Flags.bugDontRemoveTaskBubble()) {
                         taskView.unregisterTask()
                         taskView.release()
                         processExitBubbleTransaction(taskView)
@@ -154,10 +161,7 @@ class BubbleTaskView @JvmOverloads constructor(
         val taskViewController = taskView.controller
         val taskInfo: RunningTaskInfo = taskViewController.taskInfo ?: return
         if (taskInfo.isRunning) {
-            val wct = getExitBubbleTransaction(
-                taskInfo.token,
-                taskView.captionInsetsOwner
-            )
+            val wct = getExitBubbleTransaction(taskInfo.token, taskView.captionInsetsOwner)
             taskViewController.taskOrganizer.applyTransaction(wct)
         }
     }

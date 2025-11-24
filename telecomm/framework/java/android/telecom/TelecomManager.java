@@ -217,6 +217,33 @@ public class TelecomManager {
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_CALL_BACK = "android.telecom.action.CALL_BACK";
 
+    /**
+     * Activity Action: Show the settings for configuring call log integration.
+     * <p>
+     * This activity allows the user to view and turn off/on the system call logs
+     * for available VoIP applications that have integrated with the system's
+     * call log.
+     * <p>
+     * This activity must be present on a device that supports call log integration.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_CONFIGURE_CALL_LOG_INTEGRATION =
+            "android.telecom.action.CONFIGURE_CALL_LOG_INTEGRATION";
+
+    /**
+     * Broadcast intent action indicating that the call log preference is updated
+     * by the user.
+     * <p>The intent is sent to VoIP applications whose preferences have been affected
+     * by the user's choice. Upon receiving this broadcast, the application may
+     * re-evaluate its behavior regarding call log entries.
+     * <p>To receive this broadcast, applications must declare a receiver in
+     * their manifest file with an intent filter for this action.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public static final String ACTION_VOIP_CALL_LOG_PREFERENCE =
+            "android.telecom.action.VOIP_CALL_LOG_PREFERENCE";
+
     private static final String ACTION_MANAGE_BLOCKED_NUMBERS =
             "android.telecom.action.MANAGE_BLOCKED_NUMBERS";
 
@@ -340,6 +367,24 @@ public class TelecomManager {
      */
     @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
     public static final String EXTRA_UUID = "android.telecom.extra.UUID";
+
+    /**
+     * Extra used with {@link #ACTION_VOIP_CALL_LOG_PREFERENCE} to specify the value of the
+     * VoIP call log preference for the app receiving the broadcast.
+     *
+     * <p>This extra is required when using {@link #ACTION_VOIP_CALL_LOG_PREFERENCE} to signal
+     * what the preference for an app was changed to.</p>
+     *
+     * <p>Type: boolean</p>
+     *
+     * <p> Applications that support the {@link #ACTION_VOIP_CALL_LOG_PREFERENCE} will receive
+     * broadcast updates for their app when the VoIP call log preference changes. They can use this
+     * to determine if their VoIP call log will be logged to the system call log so that caching
+     * mechanisms to store call information can be conditionally enforced.</p>
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public static final String EXTRA_VOIP_CALL_LOG_PREFERENCE_STATUS =
+            "android.telecom.extra.VOIP_CALL_LOG_PREFERENCE_STATUS";
 
     /**
      * An optional {@link Intent} extra used with {@link #ACTION_CALL_BACK} to specify
@@ -1008,14 +1053,6 @@ public class TelecomManager {
             "android.telecom.extra.CALL_BACK_INTENT";
 
     /**
-     * The dialer activity responsible for placing emergency calls from, for example, a locked
-     * keyguard.
-     * @hide
-     */
-    public static final ComponentName EMERGENCY_DIALER_COMPONENT =
-            ComponentName.createRelative("com.android.phone", ".EmergencyDialer");
-
-    /**
      * The boolean indicated by this extra controls whether or not a call is eligible to undergo
      * assisted dialing. This extra is stored under {@link #EXTRA_OUTGOING_CALL_EXTRAS}.
      * <p>
@@ -1147,6 +1184,7 @@ public class TelecomManager {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.S)
     // this magic number is a bug ID
+    // if removing this ChangeId, remove this constant in TelephonyManager as well
     public static final long ENABLE_GET_CALL_STATE_PERMISSION_PROTECTION = 157233955L;
 
     /**

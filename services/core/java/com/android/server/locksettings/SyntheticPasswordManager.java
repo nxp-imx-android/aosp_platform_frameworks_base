@@ -1463,6 +1463,43 @@ class SyntheticPasswordManager {
     }
 
     /**
+     * Calls Weaver's warmUp() method if the given protector uses Weaver. This warms up the secure
+     * element to reduce the latency of an upcoming credential verification operation.
+     */
+    public void prepareToUnlockLskfBasedProtector(long protectorId, int userId) {
+        if (!hasState(WEAVER_SLOT_NAME, protectorId, userId)) {
+            Slogf.d(
+                    TAG,
+                    "No weaver slot found for protector %016x, user %d. Skipping Weaver warm-up.",
+                    protectorId,
+                    userId);
+            return;
+        }
+        final IWeaver weaver = getWeaverService();
+        if (weaver == null) {
+            Slog.d(TAG, "Weaver service unavailable. Skipping Weaver warm-up.");
+            return;
+        }
+        try {
+            final int version = weaver.getInterfaceVersion();
+            if (version < 3) {
+                Slogf.d(TAG, "Weaver v%d does not support warm-up", version);
+                return;
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Error getting Weaver version", e);
+            return;
+        }
+        try {
+            weaver.warmUp();
+        } catch (RemoteException | ServiceSpecificException e) {
+            // warmUp() is just a hint to start an asynchronous warm-up if one is supported and
+            // needed. It should never throw an exception.
+            Slog.w(TAG, "Weaver warm-up unexpectedly threw exception", e);
+        }
+    }
+
+    /**
      * Tries to unlock a user's LSKF-based SP protector, given its ID and the claimed LSKF (which
      * may be empty).  On success, returns the user's synthetic password, and also does a Gatekeeper
      * verification to refresh the SID and HardwareAuthToken maintained by the system.

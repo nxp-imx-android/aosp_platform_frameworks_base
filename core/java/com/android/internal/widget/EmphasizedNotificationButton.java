@@ -39,6 +39,7 @@ import android.text.style.MetricAffectingSpan;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.RemotableViewMethod;
 import android.widget.Button;
 import android.widget.RemoteViews;
@@ -109,6 +110,24 @@ public class EmphasizedNotificationButton extends Button {
     @RemotableViewMethod
     public void setButtonBackground(ColorStateList color) {
         mBackground.setColor(color);
+        invalidate();
+    }
+
+    /**
+     * Sets the color of the button's border (or {@code null} for no border). Can be combined with
+     * supplying {@link android.graphics.Color#TRANSPARENT} to {@link #setButtonBackground} to get
+     * an "outlined" button.
+     */
+    @RemotableViewMethod
+    public void setButtonBorder(@Nullable ColorStateList color) {
+        if (color != null) {
+            int strokeWidthPx = Math.round(
+                    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1,
+                            getResources().getDisplayMetrics()));
+            mBackground.setStroke(strokeWidthPx, color);
+        } else {
+            mBackground.setStroke(0, 0);
+        }
         invalidate();
     }
 

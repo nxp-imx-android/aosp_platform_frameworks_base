@@ -57,8 +57,8 @@ public class ActivityStartControllerTests extends WindowTestsBase {
     public void setUp() throws Exception {
         mFactory = mock(Factory.class);
         mController = new ActivityStartController(mAtm, mAtm.mTaskSupervisor, mFactory);
-        mStarter = spy(new ActivityStarter(mController, mAtm,
-                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class)));
+        mStarter = spy(new ActivityStarter(mController, mAtm, mAtm.mTaskSupervisor,
+                mock(ActivityStartInterceptor.class), mock(UserHelper.class)));
         doReturn(mStarter).when(mFactory).obtain();
     }
 
@@ -91,7 +91,7 @@ public class ActivityStartControllerTests extends WindowTestsBase {
     public void testRecycling() {
         final Intent intent = new Intent();
         final ActivityStarter optionStarter = new ActivityStarter(mController, mAtm,
-                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class));
+                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class), mock(UserHelper.class));
         optionStarter
                 .setIntent(intent)
                 .setReason("Test")

@@ -64,22 +64,24 @@ fun ContentScope.QuickSettingsContent(
                             .filterNotNull()
                             .collect { isBrightnessSliderInteractable = it >= .5f }
                     }
-                    BrightnessSliderContainer(
-                        viewModel.brightnessSliderViewModel,
-                        containerColors =
-                            ContainerColors(
-                                Color.Transparent,
-                                ContainerColors.defaultContainerColor,
-                            ),
-                        modifier =
-                            Modifier.padding(
-                                    vertical =
-                                        dimensionResource(id = R.dimen.qs_brightness_margin_top)
-                                )
-                                .thenIf(!isBrightnessSliderInteractable) {
-                                    Modifier.gesturesDisabled()
-                                },
-                    )
+                    Element(modifier = Modifier, key = Elements.BrightnessSlider) {
+                        BrightnessSliderContainer(
+                            viewModel.brightnessSliderViewModel,
+                            containerColors =
+                                ContainerColors(
+                                    Color.Transparent,
+                                    ContainerColors.defaultContainerColor,
+                                ),
+                            modifier =
+                                Modifier.padding(
+                                        vertical =
+                                            dimensionResource(id = R.dimen.qs_brightness_margin_top)
+                                    )
+                                    .thenIf(!isBrightnessSliderInteractable) {
+                                        Modifier.gesturesDisabled()
+                                    },
+                        )
+                    }
                 }
             },
         tiles =
@@ -93,7 +95,11 @@ fun ContentScope.QuickSettingsContent(
 
                 Box {
                     GridAnchor()
-                    TileGrid(viewModel.tileGridViewModel, listening = { listening })
+                    TileGrid(
+                        viewModel.tileGridViewModel,
+                        listening = { listening },
+                        modifier = Modifier.element(Elements.QuickSettingsTiles),
+                    )
                 }
             },
         media =

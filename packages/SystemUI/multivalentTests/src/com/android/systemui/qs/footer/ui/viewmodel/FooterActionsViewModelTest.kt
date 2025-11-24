@@ -55,7 +55,6 @@ import com.android.systemui.statusbar.policy.FakeUserInfoController
 import com.android.systemui.statusbar.policy.FakeUserInfoController.FakeInfo
 import com.android.systemui.statusbar.policy.MockUserSwitcherControllerWrapper
 import com.android.systemui.user.data.repository.FakeUserRepository
-import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.nullable
@@ -128,12 +127,10 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
     fun settingsButton_hideForHeadlessSystemUser() = runTest {
-        val fakeHsum = HeadlessSystemUserModeFake()
-        fakeHsum.setIsHeadlessSystemUser(true)
+        userRepository.setIsCurrentUserHeadlessSystemUser(true)
         val underTest =
             utils.footerActionsViewModel(
                 showPowerButton = false,
-                hsum = fakeHsum,
                 selectedUserInteractor = selectedUserInteractor,
             )
         runBlocking { userRepository.setSelectedUserInfo(USER) }
@@ -146,12 +143,10 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
     fun settingsButton_showWhenNotHeadlessSystemUser() = runTest {
-        val fakeHsum = HeadlessSystemUserModeFake()
-        fakeHsum.setIsHeadlessSystemUser(false)
+        userRepository.setIsCurrentUserHeadlessSystemUser(false)
         val underTest =
             utils.footerActionsViewModel(
                 showPowerButton = false,
-                hsum = fakeHsum,
                 selectedUserInteractor = selectedUserInteractor,
             )
         runBlocking { userRepository.setSelectedUserInfo(USER) }
@@ -297,8 +292,8 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         securityController.updateState {}
         var security = currentSecurity()
         assertThat(security).isNotNull()
-        assertThat(security!!.icon).isEqualTo(buttonConfig.icon)
-        assertThat(security.text).isEqualTo(buttonConfig.text)
+        assertThat(security!!.model.icon).isEqualTo(buttonConfig.icon)
+        assertThat(security.model.text).isEqualTo(buttonConfig.text)
         assertThat(security.onClick).isNotNull()
 
         // If the config.clickable = false, then onClick should be null.
@@ -346,28 +341,28 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         fgsManagerController.numRunningPackages = 1
         val foregroundServices = currentForegroundServices()
         assertThat(foregroundServices).isNotNull()
-        assertThat(foregroundServices!!.foregroundServicesCount).isEqualTo(1)
-        assertThat(foregroundServices.text).isEqualTo("1 app is active")
-        assertThat(foregroundServices.displayText).isTrue()
+        assertThat(foregroundServices!!.model.foregroundServicesCount).isEqualTo(1)
+        assertThat(foregroundServices.model.text).isEqualTo("1 app is active")
+        assertThat(foregroundServices.model.displayText).isTrue()
         assertThat(foregroundServices.onClick).isNotNull()
 
         // We handle plurals correctly.
         fgsManagerController.numRunningPackages = 3
-        assertThat(currentForegroundServices()?.text).isEqualTo("3 apps are active")
+        assertThat(currentForegroundServices()?.model?.text).isEqualTo("3 apps are active")
 
         // Showing new changes (the footer dot) is currently disabled.
-        assertThat(foregroundServices.hasNewChanges).isFalse()
+        assertThat(foregroundServices.model.hasNewChanges).isFalse()
 
         // Enabling it will show the new changes.
         fgsManagerController.showFooterDot.value = true
-        assertThat(currentForegroundServices()?.hasNewChanges).isTrue()
+        assertThat(currentForegroundServices()?.model?.hasNewChanges).isTrue()
 
         // Dismissing the dialog should remove the new changes dot.
         fgsManagerController.simulateDialogDismiss()
-        assertThat(currentForegroundServices()?.hasNewChanges).isFalse()
+        assertThat(currentForegroundServices()?.model?.hasNewChanges).isFalse()
 
         // Showing the security button will make this show as a simple button without text.
-        assertThat(foregroundServices.displayText).isTrue()
+        assertThat(foregroundServices.model.displayText).isTrue()
         mockButtonConfig(
             qsSecurityFooterUtils,
             securityToConfig = {
@@ -379,7 +374,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
             },
         )
         securityController.updateState {}
-        assertThat(currentForegroundServices()?.displayText).isFalse()
+        assertThat(currentForegroundServices()?.model?.displayText).isFalse()
     }
 
     @Test
@@ -530,7 +525,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         val foregroundServices by collectLastValue(underTest.foregroundServices)
 
         assertThat(textFeedback).isEqualTo(TextFeedbackViewModel.NoFeedback)
-        assertThat(foregroundServices!!.displayText).isTrue()
+        assertThat(foregroundServices!!.model.displayText).isTrue()
 
         textFeedbackInteractor.requestShowFeedback(AIRPLANE_MODE_TILE_SPEC)
 
@@ -547,7 +542,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
                         ),
                 )
             )
-        assertThat(foregroundServices!!.displayText).isFalse()
+        assertThat(foregroundServices!!.model.displayText).isFalse()
     }
 
     private fun mockButtonConfig(

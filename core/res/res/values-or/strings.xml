@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ଷ୍ଟୋରେଜରୁ ଭିଡିଓ ଫାଇଲଗୁଡ଼ିକୁ ପଢ଼ିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ସେୟାର କରାଯାଇଥିବା ଷ୍ଟୋରେଜରୁ ଇମେଜ ଫାଇଲଗୁଡ଼ିକୁ ପଢ଼ନ୍ତୁ"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ଷ୍ଟୋରେଜରୁ ଇମେଜ ଫାଇଲଗୁଡ଼ିକୁ ପଢ଼ିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ସେୟାର କରାଯାଇଥିବା ଷ୍ଟୋରେଜରୁ ୟୁଜରଙ୍କ ଦ୍ୱାରା ଚୟନିତ ଇମେଜ ଏବଂ ଭିଡିଓ ଫାଇଲଗୁଡ଼ିକୁ ପଢ଼ିବା"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ଆପଣ ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ଷ୍ଟୋରେଜରୁ ଚୟନ କରିଥିବା ଇମେଜ ଏବଂ ଭିଡିଓ ଫାଇଲଗୁଡ଼ିକୁ ପଢ଼ିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"ଆପଣଙ୍କତ ସେୟାର୍‍ ହୋଇଥିବା ଷ୍ଟୋରେଜ୍‍ର ବିଷୟବସ୍ତୁ ସଂଶୋଧନ କିମ୍ବା ଡିଲିଟ୍‍ କରନ୍ତୁ"</string>

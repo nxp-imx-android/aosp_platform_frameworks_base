@@ -24,21 +24,34 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 interface BubbleExpandedViewManager {
 
     val overflowBubbles: List<Bubble>
+
     fun setOverflowListener(listener: BubbleData.Listener)
+
     fun collapseStack()
+
     fun updateWindowFlagsForBackpress(intercept: Boolean)
+
     fun promoteBubbleFromOverflow(bubble: Bubble)
+
     fun removeBubble(key: String, reason: Int)
+
     fun dismissBubble(bubble: Bubble, reason: Int)
+
     fun setNoteBubbleTaskId(key: String, taskId: Int)
+
     fun isStackExpanded(): Boolean
+
     fun isShowingAsBubbleBar(): Boolean
+
     fun hideCurrentInputMethod()
+
     fun updateBubbleBarLocation(
         location: BubbleBarLocation,
         @BubbleBarLocation.UpdateSource source: Int,
     )
+
     fun getAppBubbleRootTaskToken(): WindowContainerToken?
+
     fun shouldBeAppBubble(taskInfo: ActivityManager.RunningTaskInfo): Boolean
 
     companion object {

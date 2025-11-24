@@ -563,6 +563,7 @@ android.util.NoSuchPropertyException
 android.util.Pair
 android.util.PathParser
 android.util.Patterns
+android.util.PluralsMessageFormatter
 android.util.Pools
 android.util.PrefixPrintWriter
 android.util.PrefixPrinter
@@ -620,6 +621,7 @@ android.view.animation.AnimationUtils
 android.view.inputmethod.InputBinding
 
 android.window.DesktopExperienceFlags
+android.window.DesktopModeFlags
 
 com.android.internal.display.BrightnessSynchronizer
 
@@ -722,12 +724,12 @@ com.android.server.SystemService
 com.android.server.SystemServiceManager
 
 com.android.server.am.ConnectionRecord
-com.android.server.am.OomAdjuster
 
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
 com.android.server.am.psc.BinderSession
 com.android.server.am.psc.ConnectionRecordInternal
+com.android.server.am.psc.OomAdjuster
 com.android.server.am.psc.SyncBatchSession
 
 com.android.server.utils.TimingsTraceAndSlog

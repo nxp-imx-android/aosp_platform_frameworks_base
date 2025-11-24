@@ -30,6 +30,7 @@ import static android.media.RoutingChangeInfo.SUGGESTION_PROVIDER_DEVICE_SUGGEST
 import static android.media.RoutingChangeInfo.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER;
 import static android.media.RoutingChangeInfo.SUGGESTION_PROVIDER_RLP;
 import static android.media.RoutingChangeInfo.SuggestionProviderFlags;
+import static android.permission.flags.Flags.accessLocalNetworkPermissionEnabled;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_CREATE_SESSION;
@@ -59,6 +60,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.PermissionChecker;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.AppId;
 import android.media.AudioManager;
@@ -451,6 +453,13 @@ class MediaRouter2ServiceImpl {
                         : null;
         verifyActivityComponentName(
                 linkedItemLandingComponent, RouteListingPreference.ACTION_TRANSFER_MEDIA);
+        ComponentName resolveMissingPermissionsComponent =
+                routeListingPreference != null
+                        ? routeListingPreference.getMissingPermissionsComponentName()
+                        : null;
+        verifyActivityComponentName(
+                resolveMissingPermissionsComponent,
+                RouteListingPreference.ACTION_RESOLVE_MISSING_PERMISSIONS);
 
         final long token = Binder.clearCallingIdentity();
         try {
@@ -3082,6 +3091,8 @@ class MediaRouter2ServiceImpl {
 
         public @ScanningState int mScanningState = SCANNING_STATE_NOT_SCANNING;
 
+        @Nullable private final PackageManager mTargetPkgPm;
+
         ManagerRecord(
                 @NonNull UserRecord userRecord,
                 @NonNull IMediaRouter2Manager manager,
@@ -3102,6 +3113,23 @@ class MediaRouter2ServiceImpl {
             mManagerId = mNextRouterOrManagerId.getAndIncrement();
             mHasMediaRoutingControl = hasMediaRoutingControl;
             mHasMediaContentControl = hasMediaContentControl;
+            mTargetPkgPm = getTargetPackageManager();
+        }
+
+        @Nullable
+        private PackageManager getTargetPackageManager() {
+            if (mTargetPackageName == null) {
+                return null;
+            }
+            Context userContext;
+            try {
+                userContext = mContext.createContextAsUser(
+                        UserHandle.getUserHandleForUid(mTargetUid), 0);
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "User or package removed while ManagerRecord is registered");
+                return null;
+            }
+            return userContext.getPackageManager();
         }
 
         public void dispose() {
@@ -3167,10 +3195,47 @@ class MediaRouter2ServiceImpl {
          * @param routes The routes available to the manager that corresponds to this record.
          */
         public void notifyRoutesUpdated(List<MediaRoute2Info> routes) {
+            List<MediaRoute2Info> visibleRoutes = getVisibleRoutes(routes);
+            ArraySet<String> missingPermissions = new ArraySet<>();
+            for (MediaRoute2Info route : visibleRoutes) {
+                if (mTargetPkgPm != null && accessLocalNetworkPermissionEnabled()) {
+                    missingPermissions.addAll(getTargetPkgMissingPermissions(route, mTargetPkgPm));
+                }
+            }
+            if (!missingPermissions.isEmpty()) {
+                Set<String> declaredPermissions = getTargetPackageDeclaredPermissions(mTargetPkgPm);
+                missingPermissions.removeIf(p -> !declaredPermissions.contains(p));
+            }
             try {
-                mManager.notifyRoutesUpdated(getVisibleRoutes(routes));
+                mManager.notifyRoutesUpdated(visibleRoutes, new ArrayList<>(missingPermissions));
             } catch (RemoteException ex) {
                 logRemoteException("notifyRoutesUpdated", ex);
+            }
+        }
+
+        /**
+         * @return whether this RouterRecord has the required permissions to see the given route.
+         */
+        private Set<String> getTargetPkgMissingPermissions(
+                MediaRoute2Info route, PackageManager pm) {
+            Predicate<String> permissionChecker = p ->
+                    pm.checkPermission(p, mTargetPackageName) == PackageManager.PERMISSION_GRANTED;
+            return MediaRouter2ServiceImpl.this.getMissingPermissions(route,
+                    mTargetUid, mTargetPackageName, permissionChecker);
+        }
+
+        /**
+         * @return whether this RouterRecord has requested the required permissions to see the given
+         *         route, although they may not be granted.
+         */
+        private Set<String> getTargetPackageDeclaredPermissions(PackageManager pm) {
+            try {
+                PackageInfo packageInfo = pm.getPackageInfo(
+                        mTargetPackageName, PackageManager.GET_PERMISSIONS);
+                return new ArraySet<>(packageInfo.requestedPermissions);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e(TAG, "Package not found: " + mTargetPackageName, e);
+                return Collections.emptySet();
             }
         }
 

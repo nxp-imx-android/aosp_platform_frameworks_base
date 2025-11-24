@@ -32,11 +32,15 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 /**
- * {@link KeyFactorySpi} backed by Android KeyStore.
+ * {@link KeyFactorySpi} backed by Android Keystore.
  *
  * @hide
  */
-public class AndroidKeyStoreKeyFactorySpi extends KeyFactorySpi {
+public abstract class AndroidKeyStoreKeyFactorySpi extends KeyFactorySpi {
+    public static class RSA extends AndroidKeyStoreKeyFactorySpi {}
+    public static class EC extends AndroidKeyStoreKeyFactorySpi {}
+    public static class XDH extends AndroidKeyStoreKeyFactorySpi {}
+    public static class ED25519 extends AndroidKeyStoreKeyFactorySpi {}
 
     @Override
     protected <T extends KeySpec> T engineGetKeySpec(Key key, Class<T> keySpecClass)

@@ -17,6 +17,8 @@
 package com.android.externalstorage;
 
 
+import static android.provider.Flags.enableDocumentsTrashApi;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.usage.StorageStatsManager;
@@ -30,6 +32,7 @@ import android.database.MatrixCursor.RowBuilder;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Environment;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -274,6 +277,11 @@ public class ExternalStorageProvider extends FileSystemProvider {
             }
             if (volume.isVisibleForUser(userId)) {
                 root.visiblePath = volume.getPathForUser(userId);
+
+                // Enable trash support only for volumes visible to the user.
+                if (enableDocumentsTrashApi()) {
+                    root.flags |= Root.FLAG_SUPPORTS_QUERY_TRASH;
+                }
             } else {
                 root.visiblePath = null;
             }
@@ -443,7 +451,25 @@ public class ExternalStorageProvider extends FileSystemProvider {
     private String getDocIdForFileMaybeCreate(@NonNull File file, boolean createNewDir)
             throws FileNotFoundException {
         String path = file.getAbsolutePath();
+        final Pair<RootInfo, String> rootAndPath = getRootAndRelativePath(path);
+        final RootInfo root = rootAndPath.first;
+        final String relativePathFromRoot = rootAndPath.second;
 
+        if (!file.exists() && createNewDir) {
+            Log.i(TAG, "Creating new directory " + file);
+            if (!file.mkdir()) {
+                Log.e(TAG, "Could not create directory " + file);
+            }
+        }
+
+        return root.rootId + ':' + relativePathFromRoot;
+    }
+
+    /**
+     * @return a pair of the root and the relative path of the file from the root.
+     */
+    private Pair<RootInfo, String> getRootAndRelativePath(@NonNull String path)
+            throws FileNotFoundException {
         // Find the most-specific root path
         boolean visiblePath = false;
         RootInfo mostSpecificRoot = getMostSpecificRootForPath(path, false);
@@ -462,22 +488,16 @@ public class ExternalStorageProvider extends FileSystemProvider {
         final String rootPath = visiblePath
                 ? mostSpecificRoot.visiblePath.getAbsolutePath()
                 : mostSpecificRoot.path.getAbsolutePath();
+
+        String relativePath;
         if (rootPath.equals(path)) {
-            path = "";
+            relativePath = "";
         } else if (rootPath.endsWith("/")) {
-            path = path.substring(rootPath.length());
+            relativePath = path.substring(rootPath.length());
         } else {
-            path = path.substring(rootPath.length() + 1);
+            relativePath = path.substring(rootPath.length() + 1);
         }
-
-        if (!file.exists() && createNewDir) {
-            Log.i(TAG, "Creating new directory " + file);
-            if (!file.mkdir()) {
-                Log.e(TAG, "Could not create directory " + file);
-            }
-        }
-
-        return mostSpecificRoot.rootId + ':' + path;
+        return Pair.create(mostSpecificRoot, relativePath);
     }
 
     private RootInfo getMostSpecificRootForPath(String path, boolean visible) {
@@ -656,15 +676,28 @@ public class ExternalStorageProvider extends FileSystemProvider {
         }
     }
 
+    @Override
+    protected String getRelativePathFromRoot(@NonNull String path)
+            throws FileNotFoundException {
+        final Pair<RootInfo, String> rootAndPath = getRootAndRelativePath(path);
+        return rootAndPath.second;
+    }
+
     @Nullable
     @Override
-    public Cursor queryTrashDocuments(String[] projection) throws FileNotFoundException {
-        if (!mRoots.containsKey(ROOT_ID_PRIMARY_EMULATED)) {
+    public Cursor queryTrashDocuments(@NonNull String rootId, @Nullable String[] projection,
+            @Nullable Bundle queryArgs, @Nullable CancellationSignal signal)
+            throws FileNotFoundException {
+        if (!mRoots.containsKey(rootId)) {
             return null;
         }
 
-        RootInfo rootInfo = mRoots.get(ROOT_ID_PRIMARY_EMULATED);
-        File trashDir = new File(rootInfo.path, DIRECTORY_TRASH_STORAGE);
+        RootInfo rootInfo = mRoots.get(rootId);
+        if (rootInfo == null || rootInfo.visiblePath == null) {
+            return null;
+        }
+
+        File trashDir = new File(rootInfo.visiblePath, DIRECTORY_TRASH_STORAGE);
         return queryTrashDocuments(trashDir, projection);
     }
 

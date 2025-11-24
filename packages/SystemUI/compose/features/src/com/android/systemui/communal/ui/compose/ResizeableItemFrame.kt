@@ -55,7 +55,6 @@ import androidx.compose.ui.util.fastIsFinite
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
 import com.android.internal.R.dimen.system_app_widget_background_radius
-import com.android.systemui.Flags.hubEditModeTransition
 import com.android.systemui.communal.ui.viewmodel.DragHandle
 import com.android.systemui.communal.ui.viewmodel.ResizeInfo
 import com.android.systemui.communal.ui.viewmodel.ResizeableItemFrameViewModel
@@ -188,12 +187,10 @@ fun ResizableItemFrame(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     dragHandleRadius: Dp = 8.dp,
-    outlinePadding: Dp = if (hubEditModeTransition()) 0.dp else 8.dp,
+    outlinePadding: Dp = 0.dp,
     outlineColor: Color = MaterialTheme.colorScheme.primary,
-    cornerRadius: Dp =
-        if (hubEditModeTransition()) dimensionResource(system_app_widget_background_radius)
-        else 37.dp,
-    strokeWidth: Dp = if (hubEditModeTransition()) 4.dp else 3.dp,
+    cornerRadius: Dp = dimensionResource(system_app_widget_background_radius),
+    strokeWidth: Dp = 4.dp,
     minHeightPx: Int = 0,
     maxHeightPx: Int = Int.MAX_VALUE,
     resizeMultiple: Int = 1,
@@ -204,9 +201,7 @@ fun ResizableItemFrame(
 ) {
     val brush = SolidColor(outlineColor)
     val onResizeUpdated by rememberUpdatedState(onResize)
-    val dragHandleHeight =
-        if (hubEditModeTransition()) dragHandleRadius * 2
-        else verticalArrangement.spacing - outlinePadding * 2
+    val dragHandleHeight = dragHandleRadius * 2
     val isDragging by
         remember(viewModel) {
             derivedStateOf {

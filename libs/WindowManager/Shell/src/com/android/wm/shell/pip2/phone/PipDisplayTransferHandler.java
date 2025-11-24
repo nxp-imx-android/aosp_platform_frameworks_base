@@ -29,6 +29,7 @@ import android.os.Trace;
 import android.util.ArrayMap;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
+import android.window.TransitionInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -44,6 +45,7 @@ import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.TransitionUtil;
 
 /**
  * Handler for moving PiP window to another display when the device is connected to external
@@ -69,6 +71,7 @@ public class PipDisplayTransferHandler implements
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
 
     @VisibleForTesting boolean mWaitingForDisplayTransfer;
+    @VisibleForTesting boolean mPipRemovedMidDisplayTransfer = false;
     @VisibleForTesting
     ArrayMap<Integer, SurfaceControl> mOnDragMirrorPerDisplayId = new ArrayMap<>();
     @VisibleForTesting int mTargetDisplayId;
@@ -215,6 +218,24 @@ public class PipDisplayTransferHandler implements
                         duration, 0);
 
                 animator.setAnimationEndCallback(() -> {
+                    // If a request came in to remove PiP mid-display-transfer, reset all states
+                    // and finish the transition
+                    if (mPipRemovedMidDisplayTransfer) {
+                        ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                                "%s Request to remove PiP received in the middle of PiP "
+                                        + "display change to id=%d, finishing the transition and "
+                                        + "resetting states",
+                                TAG,
+                                mTargetDisplayId);
+                        // Pass in the previous cached bounds in PipBoundsState here to force a
+                        // no-op in PipScheduler#onFinishingPipBoundsChange
+                        mPipScheduler.scheduleFinishPipBoundsChange(mPipBoundsState.getBounds());
+                        mPipBoundsState.setHasUserResizedPip(false);
+                        mWaitingForDisplayTransfer = false;
+                        mPipRemovedMidDisplayTransfer = false;
+                        return;
+                    }
+
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                             "%s Finished animating PiP display change to=%d", TAG,
                             mTargetDisplayId);
@@ -232,6 +253,23 @@ public class PipDisplayTransferHandler implements
                 removeMirrors();
                 break;
         }
+    }
+
+    /** Returns whether PiP is removed in the middle of a display transfer for PiP. */
+    public boolean isPipRemovedMidDisplayTransfer(TransitionInfo info) {
+        if (TransitionUtil.isClosingType(info.getType())
+                && mWaitingForDisplayTransfer && mPipTransitionState.getPipTaskInfo() != null) {
+            final int pipTaskId = mPipTransitionState.getPipTaskInfo().taskId;
+            for (TransitionInfo.Change change : info.getChanges()) {
+                if (change.getTaskInfo() != null
+                        && change.getTaskInfo().taskId == pipTaskId
+                        && TransitionUtil.isClosingMode(change.getMode())) {
+                    mPipRemovedMidDisplayTransfer = true;
+                    break;
+                }
+            }
+        }
+        return mPipRemovedMidDisplayTransfer;
     }
 
     /**

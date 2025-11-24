@@ -20,7 +20,6 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.KeyguardSecurityModel
-import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -262,7 +261,7 @@ constructor(
                 .filterRelevantKeyguardStateAnd { isKeyguardGoingAway -> isKeyguardGoingAway }
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
-                    if (Flags.hubEditModeTransition() && editModeState != null) {
+                    if (editModeState != null) {
                         Log.i(
                             TAG,
                             "Ignoring isKeyguardGoingAway due to editModeState: $editModeState",

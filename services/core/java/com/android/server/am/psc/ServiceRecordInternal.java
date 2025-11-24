@@ -20,14 +20,12 @@ import android.content.ComponentName;
 import android.content.pm.ServiceInfo;
 import android.os.Binder;
 
-import com.android.server.am.OomAdjuster;
-
 import java.util.ArrayList;
 
 /**
  * Abstract base class for service records in the Activity Manager.
  * This class centralizes common service state fields that are essential for
- * process state management, particularly utilized by {@link com.android.server.am.OomAdjuster}.
+ * process state management, particularly utilized by {@link OomAdjuster}.
  * TODO(b/425766486): Make setter methods package-private once OomAdjuster is migrated to psc.
  */
 public abstract class ServiceRecordInternal extends Binder {

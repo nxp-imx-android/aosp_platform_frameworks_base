@@ -62,6 +62,7 @@ import android.os.strictmode.DiskWriteViolation;
 import android.os.strictmode.ExplicitGcViolation;
 import android.os.strictmode.FileUriExposedViolation;
 import android.os.strictmode.ImplicitDirectBootViolation;
+import android.os.strictmode.ImplicitUriPermissionGrantViolation;
 import android.os.strictmode.IncorrectContextUseViolation;
 import android.os.strictmode.InstanceCountViolation;
 import android.os.strictmode.IntentReceiverLeakedViolation;
@@ -281,6 +282,7 @@ public final class StrictMode {
             DETECT_VM_INCORRECT_CONTEXT_USE,
             DETECT_VM_UNSAFE_INTENT_LAUNCH,
             DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED,
+            DETECT_VM_IMPLICIT_URI_PERMISSION_GRANT,
             PENALTY_GATHER,
             PENALTY_LOG,
             PENALTY_DIALOG,
@@ -326,6 +328,8 @@ public final class StrictMode {
     private static final int DETECT_VM_UNSAFE_INTENT_LAUNCH = 1 << 13;
     /** @hide */
     private static final int DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED = 1 << 14;
+    /** @hide */
+    private static final int DETECT_VM_IMPLICIT_URI_PERMISSION_GRANT = 1 << 15;
 
     /** @hide */
     private static final int DETECT_VM_ALL = 0x0000ffff;
@@ -385,6 +389,19 @@ public final class StrictMode {
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
     static final long DETECT_INSTANCE_COUNT_VIOLATIONS_WHEN_LISTENER_SET = 333566037L;
+
+    /**
+     * Detect when URI permissions are implicitly granted to your app, a behavior that will be
+     * discontinued in Android 18.
+     *
+     * <p>Implicit URI permission grants can occur when an app receives an {@link Intent} containing
+     * a {@link Uri} but without the {@link Intent#FLAG_GRANT_READ_URI_PERMISSION} or
+     * {@link Intent#FLAG_GRANT_WRITE_URI_PERMISSION} flags, yet the system still grant access to
+     * the URI on behalf of app.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    private static final long DETECT_IMPLICIT_URI_PERMISSION_GRANT = 460838111L;
 
     // TODO: wrap in some ImmutableHashMap thing.
     // Note: must be before static initialization of sVmPolicy.
@@ -931,6 +948,10 @@ public final class StrictMode {
                 if (balStrictModeRo() && targetSdk > Build.VERSION_CODES.VANILLA_ICE_CREAM) {
                     detectBlockedBackgroundActivityLaunch();
                 }
+                if (android.security.Flags.strictModeViolationForImplicitUriGrantsEnabled()
+                        && CompatChanges.isChangeEnabled(DETECT_IMPLICIT_URI_PERMISSION_GRANT)) {
+                    detectImplicitUriPermissionGrant();
+                }
 
                 // TODO: Decide whether to detect non SDK API usage beyond a certain API level.
                 // TODO: enable detectImplicitDirectBoot() once system is less noisy
@@ -1199,6 +1220,42 @@ public final class StrictMode {
             @FlaggedApi(Flags.FLAG_BAL_STRICT_MODE_RO)
             public @NonNull Builder ignoreBlockedBackgroundActivityLaunch() {
                 return disable(DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED);
+            }
+
+            /**
+             * Detects when URI permissions are implicitly granted to your app, a behavior that
+             * will be discontinued in Android 18.
+             *
+             * <p>Implicit URI permission grants can occur when an app receives an {@link Intent}
+             * containing a {@link Uri} but without the
+             * {@link Intent#FLAG_GRANT_READ_URI_PERMISSION} or
+             * {@link Intent#FLAG_GRANT_WRITE_URI_PERMISSION} flags, yet the system still grant
+             * access to the URI on behalf of app.
+             *
+             * <p>Since implicit URI grants are being discontinued, developers must address this to
+             * prevent future app breakage. When sending intents with Uris, ensure that the
+             * appropriate grant flags are explicitly set if permission is intended to be granted.
+             * If no permission grant is intended, do not include Uris that could trigger implicit
+             * grants.
+             *
+             * @see Intent#FLAG_GRANT_READ_URI_PERMISSION
+             * @see Intent#FLAG_GRANT_WRITE_URI_PERMISSION
+             */
+            @FlaggedApi(android.security.Flags
+                    .FLAG_STRICT_MODE_VIOLATION_FOR_IMPLICIT_URI_GRANTS_ENABLED)
+            @SuppressWarnings("BuilderSetStyle")
+            public @NonNull Builder detectImplicitUriPermissionGrant() {
+                return enable(DETECT_VM_IMPLICIT_URI_PERMISSION_GRANT);
+            }
+
+            /**
+             * Disables detection when implicit URI permissions are granted to the app.
+             */
+            @FlaggedApi(android.security.Flags
+                    .FLAG_STRICT_MODE_VIOLATION_FOR_IMPLICIT_URI_GRANTS_ENABLED)
+            @SuppressWarnings("BuilderSetStyle")
+            public @NonNull Builder permitImplicitUriPermissionGrant() {
+                return disable(DETECT_VM_IMPLICIT_URI_PERMISSION_GRANT);
             }
 
             /**
@@ -2440,6 +2497,16 @@ public final class StrictMode {
         return (sVmPolicy.mask & DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED) != 0;
     }
 
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
+    public static boolean vmImplicitUriPermissionGrantEnabled() {
+        return (sVmPolicy.mask & DETECT_VM_IMPLICIT_URI_PERMISSION_GRANT) != 0;
+    }
+
     /** @hide */
     public static void onSqliteObjectLeaked(String message, Throwable originStack) {
         onVmPolicyViolation(new SqliteObjectLeakedViolation(message, originStack));
@@ -2612,6 +2679,11 @@ public final class StrictMode {
     /** @hide */
     public static void onBackgroundActivityLaunchAborted(String message) {
         onVmPolicyViolation(new BackgroundActivityLaunchViolation(message));
+    }
+
+    /** @hide */
+    public static void onImplicitUriPermissionGrant(String message) {
+        onVmPolicyViolation(new ImplicitUriPermissionGrantViolation(message));
     }
 
     /** Assume locked until we hear otherwise */

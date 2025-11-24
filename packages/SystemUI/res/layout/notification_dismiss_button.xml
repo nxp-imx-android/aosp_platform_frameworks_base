@@ -15,7 +15,7 @@
   ~ limitations under the License
   -->
 
-<ImageView
+<com.android.systemui.statusbar.notification.row.NotificationDismissButton
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/dismiss_button"
     android:background="@drawable/dismiss_button_bg"
@@ -29,4 +29,4 @@
     android:scaleType="fitCenter"
     android:importantForAccessibility="no"
     android:tint="@color/notification_dismiss_button_icon_state_tint">
-</ImageView>
+</com.android.systemui.statusbar.notification.row.NotificationDismissButton>

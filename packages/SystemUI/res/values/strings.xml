@@ -247,6 +247,8 @@
         your organization</string>
     <!-- Notification text displayed when screenshots are blocked by an IT admin. [CHAR LIMIT=100] -->
     <string name="screenshot_blocked_by_admin">Taking screenshots is blocked by your IT admin</string>
+    <!-- Content description indicating that tapping the element will allow copying the screenshot to clipboard [CHAR LIMIT=NONE] -->
+    <string name="screenshot_copy_description">Copy screenshot to clipboard</string>
     <!-- Label for UI element which allows editing the screenshot [CHAR LIMIT=30] -->
     <string name="screenshot_edit_label">Edit</string>
     <!-- Content description indicating that tapping the element will allow editing the screenshot [CHAR LIMIT=NONE] -->
@@ -2352,6 +2354,24 @@
     <!-- Notification inline controls: button to show block screen [CHAR_LIMIT=35] -->
     <string name="inline_turn_off_notifications">Turn off</string>
 
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_phone">phone</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_tablet">tablet</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_laptop">laptop</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_watch">watch</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_tv">TV</string>
+
+    <!-- Notification inline controls: button to open bridged notification settings on associated device [CHAR_LIMIT=35] -->
+    <string name="inline_bridged_open_associated_device_settings">Open <xliff:g id="device_type" example="phone">%1$s</xliff:g> settings</string>
+
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_silence_title">Silent</string>
 
@@ -2360,6 +2380,9 @@
 
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_automatic_title">Automatic</string>
+
+    <!-- [CHAR LIMIT=100] Notification Importance title -->
+    <string name="notification_bridged_title">This notification is from your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
 
     <!-- [CHAR LIMIT=150] Notification Importance title: low importance level summary -->
     <string name="notification_channel_summary_low">No sound or vibration</string>
@@ -2378,6 +2401,9 @@
 
     <!-- [CHAR LIMIT=150] Notification Importance title: automatic importance level summary (alerted) -->
     <string name="notification_channel_summary_automatic_alerted">&lt;b>Status:&lt;/b> Promoted to Default</string>
+
+    <!-- [CHAR LIMIT=150] Notification Importance title: bridged importance level summary -->
+    <string name="notification_channel_summary_bridged">Synced notification priority and settings can be adjusted on your <xliff:g id="device_name" example="Jane's Phone">%1$s</xliff:g></string>
 
     <!-- [CHAR LIMIT=150] Notification Importance title: automatic importance level summary (silenced) -->
     <string name="notification_channel_summary_automatic_silenced">&lt;b>Status:&lt;/b> Demoted to Silent</string>
@@ -3320,6 +3346,9 @@
     <!-- Text for media projection privacy type [CHAR LIMIT=20]-->
     <string name="privacy_type_media_projection">screen recording</string>
 
+    <!-- Text showing leading the privacy chips container in some screen configurations [CHAR LIMIT=12] -->
+    <string name="privacy_chip_container_leading_title">Privacy</string>
+
     <!-- What to show on the ambient display player when song doesn't have a title. [CHAR LIMIT=20] -->
     <string name="music_controls_no_title">No title</string>
 
@@ -3665,6 +3694,14 @@
     <string name="media_output_dialog_accessibility_seekbar">Volume</string>
     <!-- Summary for media output volume of a device in percentage [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_volume_percentage"><xliff:g id="percentage" example="10">%1$d</xliff:g>%%</string>
+    <!-- Warning text shown below the list of devices in a dialog letting users choose devices to
+         use as media outputs, when some devices cannot be shown because permissions are missing.
+         [CHAR LIMIT=NONE] -->
+    <string name="media_output_dialog_missing_permissions_warning">Some devices are not visible. Update your app permissions</string>
+    <!-- Text of a button displayed below a warning text indicating that some media output devices
+         are not shown because permissions are missing. Tapping the button triggers a flow for the
+         user to grant the missing permissions to the app. [CHAR LIMIT=NONE] -->
+    <string name="media_output_dialog_warning_button_fix">Fix</string>
     <!-- Title for Connected speakers expandable group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_connected_speakers">Connected speakers</string>
     <!-- Title for Speakers and Displays group. [CHAR LIMIT=NONE] -->

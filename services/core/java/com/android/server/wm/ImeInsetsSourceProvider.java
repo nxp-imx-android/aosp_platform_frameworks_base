@@ -552,7 +552,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         }
     }
 
-    private void reportImeDrawnForOrganizerIfNeeded(@NonNull InsetsControlTarget caller) {
+    void reportImeDrawnForOrganizerIfNeeded(@NonNull InsetsControlTarget caller) {
         final WindowState callerWindow = caller.getWindow();
         if (callerWindow == null) {
             return;
@@ -573,6 +573,14 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         final Task callerTask = caller.getWindow() != null ? caller.getWindow().getTask() : null;
         if (callerTask == null) {
             return;
+        }
+        if (com.android.window.flags.Flags.deferSnapshotRemovalForPredictiveBackWithIme()) {
+            final WindowContainer<?> imeParent = mDisplayContent.getImeParent();
+            // The Shell is only interested in when the IME is attached to a task, as this triggers
+            // the removal of the snapshot's starting window.
+            if (imeParent == null || !imeParent.isDescendantOf(callerTask)) {
+                return;
+            }
         }
         if (callerTask.isOrganized()) {
             mWin.mWmService.mAtmService.mTaskOrganizerController.reportImeDrawnOnTask(callerTask);

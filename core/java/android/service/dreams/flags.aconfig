@@ -122,16 +122,6 @@ flag {
 }
 
 flag {
-    name: "allow_dream_attach_failure"
-    namespace: "systemui"
-    description: "Fails starting dream when attaching to a service that is already attached"
-    bug: "434674824"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "wake_on_stopping_doze"
     namespace: "systemui"
     description: "Sends a wakeUp when explicitly stopping the doze dream"

@@ -69,3 +69,10 @@ flag {
     description: "Feature flag to fix content capture event data in chat apps."
     bug: "453529467"
 }
+
+flag {
+  name: "deprecate_set_content_capture_enabled"
+  namespace: "private_compute"
+  description: "Controls the deprecation of the ContentCaptureManager#setContentCaptureEnabled method."
+  bug: "454307959"
+}

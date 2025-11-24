@@ -294,7 +294,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
         assertWithMessage("Handler should have consumed transition")
                 .that(handled).isTrue();
-        verify(mTaskViewTaskController).prepareCloseAnimation();
+        verify(mTaskViewTaskController).prepareCloseAnimation(mTaskLeash, mStartTransaction);
     }
 
     @Test
@@ -506,7 +506,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
         assertWithMessage("Handler should have consumed transition")
                 .that(handled).isTrue();
-        verify(mTaskViewTaskController, never()).prepareCloseAnimation();
+        verify(mTaskViewTaskController, never()).prepareCloseAnimation(any(), any());
     }
 
     @Test

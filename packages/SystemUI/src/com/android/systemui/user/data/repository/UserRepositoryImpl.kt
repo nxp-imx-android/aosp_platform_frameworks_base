@@ -58,6 +58,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -239,6 +240,16 @@ constructor(
             }
             .stateIn(applicationScope, SharingStarted.Eagerly, false)
 
+    override val isCurrentUserHeadlessSystemUser: StateFlow<Boolean> =
+        selectedUser
+            .map { selectedUser -> selectedUser.isHeadlessSystemUser() }
+            .distinctUntilChanged()
+            .stateIn(
+                applicationScope,
+                SharingStarted.Lazily,
+                selectedUser.value.isHeadlessSystemUser(),
+            )
+
     @SuppressLint("MissingPermission")
     override suspend fun logOutWithPolicyManager() {
         if (isPolicyManagerLogoutEnabled.value) {
@@ -351,6 +362,10 @@ constructor(
             selectionStatus == SelectionStatus.SELECTION_COMPLETE &&
                 devicePolicyManager.logoutUser != null
         }
+    }
+
+    private fun SelectedUserModel.isHeadlessSystemUser(): Boolean {
+        return userInfo.id == UserHandle.USER_SYSTEM && !userInfo.isFull
     }
 
     companion object {

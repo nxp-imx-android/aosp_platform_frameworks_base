@@ -18,8 +18,8 @@ package com.android.systemui.bouncer.data.repository
 
 import android.content.Context
 import android.provider.Settings.Global.ONE_HANDED_KEYGUARD_SIDE
-import com.android.systemui.authentication.shared.model.BouncerInputSide
-import com.android.systemui.authentication.shared.model.toBouncerInputSide
+import com.android.systemui.bouncer.shared.model.BouncerInputSide
+import com.android.systemui.bouncer.shared.model.toBouncerInputSide
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.flags.FeatureFlagsClassic

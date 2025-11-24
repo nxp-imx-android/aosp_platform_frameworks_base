@@ -40,10 +40,13 @@ import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthR
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
+import com.android.systemui.keyguard.shared.model.DozeStateModel
+import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
@@ -66,7 +69,9 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -379,6 +384,25 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun showOrUnlockDevice_authMethodNotSecure_switchesToGoneSceneWhenOnCommunal() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
+            switchToScene(Scenes.Lockscreen)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            switchToScene(Scenes.Communal)
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+
+            fakeAuthenticationRepository.setAuthenticationMethod(None)
+
+            underTest.attemptDeviceEntry("test")
+
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(backStack!!.asIterable().toList()).isEmpty()
+        }
+
+    @Test
     fun showOrUnlockDevice_dismissActionAnimates_runsTransitionToGone() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -581,6 +605,34 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun lockNow_swipeAuthMethod_whenDreamingRemainsDreamingAndAddsLockscreenToBackstack() =
+        kosmos.runTest {
+            val isUnlocked by collectLastValue(underTest.isUnlocked)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
+            setupSwipeDeviceEntryMethod() // sets auth to None and lockscreen enabled
+            switchToScene(Scenes.Gone)
+
+            // Simulate dreaming
+            fakeKeyguardRepository.setDreaming(true)
+            fakeKeyguardRepository.setDreamingWithOverlay(true)
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+            )
+            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L)
+            switchToScene(Scenes.Dream)
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            underTest.lockNow("test")
+
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
         }
 
     @Test

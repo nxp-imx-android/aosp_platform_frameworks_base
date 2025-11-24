@@ -204,11 +204,6 @@ constructor(
         }
     }
 
-    override fun onHidden() {
-        super.onHidden()
-        isTextFieldFocused.value = false
-    }
-
     override fun clearInput() {
         textFieldState.clearText()
         _isPasswordRevealed.value = false
@@ -268,6 +263,10 @@ constructor(
 
     fun determineIsReadyToAuthenticate(): Boolean {
         return !textFieldState.text.isEmpty()
+    }
+
+    fun resetTextFieldFocus() {
+        isTextFieldFocused.value = false
     }
 
     @AssistedFactory

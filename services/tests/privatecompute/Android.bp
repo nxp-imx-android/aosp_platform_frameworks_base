@@ -28,6 +28,8 @@ android_test {
     srcs: ["src/**/*.java"],
     static_libs: [
         "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "androidx.test.runner",
         "frameworks-base-testutils",
         "flag-junit",
         "services.core",

@@ -27,6 +27,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
@@ -35,6 +36,7 @@ import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBa
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
+import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.QuickSettingsShadeOverlay
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayActionsViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayContentViewModel
@@ -51,6 +53,7 @@ import com.android.systemui.scene.ui.composable.GoneScene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -128,7 +131,9 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
     fun goneSceneToQuickSettingsShadeOverlayTest() {
 
         motionTestRule.runTest(60.seconds) {
-            kosmos.setupQuickSettingsShadeOverlayTransition(numTiles = 7)
+            kosmos.enableDualShade(wideLayout = false)
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
             kosmos.enableUsingDesktopStatusBar()
             val motion =
                 recordMotion(
@@ -167,7 +172,9 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
     @EnableSceneContainer
     fun recordEditIconButtonPosition_duringSwipeDownToOpenQS() {
         motionTestRule.runTest(60.seconds) {
-            kosmos.setupQuickSettingsShadeOverlayTransition(numTiles = 1)
+            kosmos.enableDualShade(wideLayout = false)
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 1)
             kosmos.enableUsingDesktopStatusBar()
             val motion =
                 recordMotion(
@@ -210,15 +217,18 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                         kosmos.sceneContainerViewModelFactory.create {}
                     }
 
-                SceneContainer(
-                    viewModel = vm,
-                    sceneByKey = mapOf(Scenes.Gone to goneScene),
-                    initialSceneKey = Scenes.Gone,
-                    transitionsBuilder = kosmos.sceneContainerTransitions,
-                    overlayByKey = mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
-                    dataSourceDelegator = kosmos.sceneDataSourceDelegator,
-                    sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
-                )
+                ObserveReadsRoot {
+                    SceneContainer(
+                        viewModel = vm,
+                        sceneByKey = mapOf(Scenes.Gone to goneScene),
+                        initialSceneKey = Scenes.Gone,
+                        transitionsBuilder = kosmos.sceneContainerTransitions,
+                        overlayByKey =
+                            mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
+                        dataSourceDelegator = kosmos.sceneDataSourceDelegator,
+                        sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                    )
+                }
             }
         }
     }

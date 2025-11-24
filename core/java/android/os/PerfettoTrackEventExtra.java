@@ -25,7 +25,6 @@ import libcore.util.NativeAllocationRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -46,6 +45,7 @@ public final class PerfettoTrackEventExtra {
     private static final Supplier<FieldDouble> sFieldDoubleSupplier = FieldDouble::new;
     private static final Supplier<FieldString> sFieldStringSupplier = FieldString::new;
     private static final Supplier<FieldNested> sFieldNestedSupplier = FieldNested::new;
+    private static final Supplier<Flow> sFlowSupplier = Flow::new;
 
     // This is to ensure that every pointer passed to the native layer has a java root. For objects
     // in the cache it's fine, but for objects that aren't in the cache, they could be garbage
@@ -55,8 +55,8 @@ public final class PerfettoTrackEventExtra {
     private CounterInt64 mCounterInt64;
     private CounterDouble mCounterDouble;
     private Proto mProto;
-    private Flow mFlow;
-    private Flow mTerminatingFlow;
+    private final Pool<Flow> mFlowCache = new Pool<>(DEFAULT_EXTRA_CACHE_SIZE);
+    private final Pool<Flow> mTerminatingFlowCache = new Pool<>(DEFAULT_EXTRA_CACHE_SIZE);
 
     /**
      * Represents a native pointer to a Perfetto C SDK struct. E.g. PerfettoTeHlExtra.
@@ -157,8 +157,8 @@ public final class PerfettoTrackEventExtra {
         private final CounterInt64 mCounterInt64;
         private final CounterDouble mCounterDouble;
         private final Proto mProto;
-        private final Flow mFlow;
-        private final Flow mTerminatingFlow;
+        private final Pool<Flow> mFlowCache;
+        private final Pool<Flow> mTerminatingFlowCache;
 
         private final RingBuffer<NamedTrack> mNamedTrackCache;
         private final RingBuffer<CounterTrack> mCounterTrackCache;
@@ -195,8 +195,8 @@ public final class PerfettoTrackEventExtra {
             mCounterInt64 = mExtra == null ? null : mExtra.getCounterInt64();
             mCounterDouble = mExtra == null ? null : mExtra.getCounterDouble();
             mProto = mExtra == null ? null : mExtra.getProto();
-            mFlow = mExtra == null ? null : mExtra.getFlow();
-            mTerminatingFlow = mExtra == null ? null : mExtra.getTerminatingFlow();
+            mFlowCache = mExtra == null ? null : mExtra.mFlowCache;
+            mTerminatingFlowCache = mExtra == null ? null : mExtra.mTerminatingFlowCache;
         }
 
         /**
@@ -230,6 +230,8 @@ public final class PerfettoTrackEventExtra {
             mFieldStringCache.reset();
             mFieldNestedCache.reset();
             mBuilderCache.reset();
+            mFlowCache.reset();
+            mTerminatingFlowCache.reset();
 
             mExtra.reset();
             // Reset after on init in case the thread created builders without calling emit
@@ -324,33 +326,45 @@ public final class PerfettoTrackEventExtra {
             return this;
         }
 
-        /**
-         * Adds a flow with {@code id}.
-         */
+        /** Deprecated: use {@link addFlow}*/
         public Builder setFlow(long id) {
-            if (!mIsCategoryEnabled) {
-                return this;
-            }
-            if (DEBUG) {
-                checkParent();
-            }
-            mFlow.setProcessFlow(id);
-            mExtra.addPerfettoPointer(mFlow);
-            return this;
+           return addFlow(id);
         }
 
         /**
-         * Adds a terminating flow with {@code id}.
+         * Adds a flow with {@code id}.
          */
-        public Builder setTerminatingFlow(long id) {
+        public Builder addFlow(long id) {
             if (!mIsCategoryEnabled) {
                 return this;
             }
             if (DEBUG) {
                 checkParent();
             }
-            mTerminatingFlow.setProcessTerminatingFlow(id);
-            mExtra.addPerfettoPointer(mTerminatingFlow);
+            Flow flow = mFlowCache.get(sFlowSupplier);
+            flow.setProcessFlow(id);
+            mExtra.addPerfettoPointer(flow);
+            return this;
+        }
+
+        /** Deprecated: use {@link addTerminatingFlow}*/
+        public Builder setTerminatingFlow(long id) {
+            return addTerminatingFlow(id);
+        }
+
+       /**
+        * Adds a terminating flow with {@code id}.
+        */
+        public Builder addTerminatingFlow(long id) {
+            if (!mIsCategoryEnabled) {
+                return this;
+            }
+            if (DEBUG) {
+                checkParent();
+            }
+            Flow flow = mTerminatingFlowCache.get(sFlowSupplier);
+            flow.setProcessTerminatingFlow(id);
+            mExtra.addPerfettoPointer(flow);
             return this;
         }
 
@@ -710,22 +724,6 @@ public final class PerfettoTrackEventExtra {
             mProto = new Proto();
         }
         return mProto;
-    }
-
-    @android.ravenwood.annotation.RavenwoodReplace
-    private Flow getFlow() {
-        if (mFlow == null) {
-            mFlow = new Flow();
-        }
-        return mFlow;
-    }
-
-    @android.ravenwood.annotation.RavenwoodReplace
-    private Flow getTerminatingFlow() {
-        if (mTerminatingFlow == null) {
-            mTerminatingFlow = new Flow();
-        }
-        return mTerminatingFlow;
     }
 
     private static final class Flow implements PerfettoPointer {
@@ -1348,16 +1346,6 @@ public final class PerfettoTrackEventExtra {
     }
 
     private Proto getProto$ravenwood() {
-        // Tracing currently completely disabled under Ravenwood
-        return null;
-    }
-
-    private Flow getFlow$ravenwood() {
-        // Tracing currently completely disabled under Ravenwood
-        return null;
-    }
-
-    private Flow getTerminatingFlow$ravenwood() {
         // Tracing currently completely disabled under Ravenwood
         return null;
     }

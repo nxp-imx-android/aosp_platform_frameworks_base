@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
+import android.view.View
+import androidx.compose.runtime.getValue
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
@@ -24,15 +26,23 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.domain.interactor.KeyguardStatusBarInteractor
-import com.android.systemui.statusbar.policy.BatteryController
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
+import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
+import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
-import javax.inject.Inject
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -44,7 +54,7 @@ import kotlinx.coroutines.flow.stateIn
  * [com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel].
  */
 class KeyguardStatusBarViewModel
-@Inject
+@AssistedInject
 constructor(
     @Application scope: CoroutineScope,
     desktopInteractor: DesktopInteractor,
@@ -52,7 +62,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
     private val userLogoutInteractor: UserLogoutInteractor,
-    batteryController: BatteryController,
+    shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
@@ -71,6 +81,39 @@ constructor(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
+    private val systemEventAnimationState: Flow<SystemEventAnimationState> =
+        shadeStatusBarComponentsInteractor.systemStatusEventAnimationInteractor.flatMapLatest {
+            it.animationState
+        }
+
+    private val isSystemInfoVisible: Flow<Boolean> =
+        shadeStatusBarComponentsInteractor.disableFlags.map { it.isSystemInfoEnabled }
+
+    /**
+     * Pair of (system info visibility, event animation state). The animation state can be used to
+     * respond to the system event chip animations. In all cases, system info visibility correctly
+     * models the View.visibility for the system info area
+     */
+    val systemInfoCombinedVis: SystemInfoCombinedVisibilityModel by
+        combine(isSystemInfoVisible, systemEventAnimationState) { sysInfoVisible, animationState ->
+                val model =
+                    VisibilityModel(
+                        if (sysInfoVisible) {
+                            View.VISIBLE
+                        } else {
+                            View.INVISIBLE
+                        },
+                        animationState == Idle,
+                    )
+                SystemInfoCombinedVisibilityModel(model, animationState)
+            }
+            .distinctUntilChanged()
+            .hydratedStateOf(
+                traceName = "systemInfoCombinedVis",
+                initialValue =
+                    SystemInfoCombinedVisibilityModel(VisibilityModel(View.INVISIBLE, false), Idle),
+            )
+
     /** True if we can show the user switcher on keyguard and false otherwise. */
     val isKeyguardUserSwitcherEnabled: Flow<Boolean> =
         keyguardStatusBarInteractor.isKeyguardUserSwitcherEnabled
@@ -85,5 +128,10 @@ constructor(
 
     fun onSignOut() {
         enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): KeyguardStatusBarViewModel
     }
 }

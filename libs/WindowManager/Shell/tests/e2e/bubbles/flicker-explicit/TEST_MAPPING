@@ -115,6 +115,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTwiceTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchFullscreenToBubbleTest",
       "keywords": ["device"]
     },

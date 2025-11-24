@@ -17,7 +17,6 @@
 package com.android.systemui.shade
 
 import android.content.Context
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.flag.junit.FlagsParameterization
@@ -467,33 +466,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         }
 
     @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
-    fun shouldInterceptTouchEvent_dozing_touchNotInLockIconArea_touchIntercepted() {
-        // GIVEN dozing
-        whenever(sysuiStatusBarStateController.isDozing).thenReturn(true)
-        // AND quick settings controller doesn't want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
-            .thenReturn(false)
-
-        // THEN touch should be intercepted by NotificationShade
-        assertThat(interactionEventHandler.shouldInterceptTouchEvent(DOWN_EVENT)).isTrue()
-    }
-
-    @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
-    fun shouldInterceptTouchEvent_dozing_touchInStatusBar_touchIntercepted() {
-        // GIVEN dozing
-        whenever(sysuiStatusBarStateController.isDozing).thenReturn(true)
-        // AND quick settings controller DOES want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
-            .thenReturn(true)
-
-        // THEN touch should be intercepted by NotificationShade
-        assertThat(interactionEventHandler.shouldInterceptTouchEvent(DOWN_EVENT)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
     fun shouldInterceptTouchEvent_aodInterceptingTouches_touchIntercepted() {
         // GIVEN dozing
         kosmos.fakeKeyguardRepository.setDozeTransitionModel(
@@ -508,7 +480,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
     fun shouldInterceptTouchEvent_aod_touchInStatusBar_touchIntercepted() {
         // GIVEN dozing
         kosmos.fakeKeyguardRepository.setDozeTransitionModel(

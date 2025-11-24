@@ -36,8 +36,13 @@ interface SplitMultiDisplayProvider {
      *
      * @param wct The transaction to add the reparent operation to.
      * @param displayId The ID of the target display.
+     * @param onTop Whether the split-screen root should be placed on top of the target display.
      */
-    fun prepareMovingSplitScreenRoot(wct: WindowContainerTransaction?, displayId: Int)
+    fun prepareMovingSplitScreenRoot(
+        wct: WindowContainerTransaction?,
+        displayId: Int,
+        onTop: Boolean,
+    )
 
     /**
      * Add the necessary {@Link WindowContainerTransaction} changes to move the split root from one

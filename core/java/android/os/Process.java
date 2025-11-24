@@ -1061,13 +1061,13 @@ public class Process {
     }
 
     /**
-     * Returns whether the provided UID belongs to components running in a PCC
-     * sandbox process.
+     * Returns whether the provided UID belongs to components running in a
+     * Private Compute Core sandbox process.
      *
      */
     @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     @RavenwoodKeep
-    public static final boolean isPccUid(int uid) {
+    public static final boolean isPrivateComputeCoreUid(int uid) {
         uid = UserHandle.getAppId(uid);
         return uid >= FIRST_PCC_UID && uid <= LAST_PCC_UID;
     }

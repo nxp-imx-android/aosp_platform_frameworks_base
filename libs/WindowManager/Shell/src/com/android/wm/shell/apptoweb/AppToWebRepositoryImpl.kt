@@ -229,7 +229,7 @@ class AppToWebRepositoryImpl(
         if (!Flags.enableEnhancedAppToWebTransition()) {
             return false
         }
-        val packageName = taskInfo.baseActivity?.packageName ?: return false
+        val packageName = taskInfo.topActivity?.packageName ?: return false
         if (taskInfo.capturedLink == null) {
             // No captured link, so no prompt.
             return false

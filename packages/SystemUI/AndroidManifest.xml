@@ -410,6 +410,9 @@
     <!-- To be able to set unrestricted system gesture exclusion rects -->
     <uses-permission android:name="android.permission.SET_UNRESTRICTED_GESTURE_EXCLUSION"/>
 
+    <!-- Motion Cues -->
+    <uses-permission android:name="android.permission.BIND_MOTION_CUES_SERVICE"/>
+
     <protected-broadcast android:name="com.android.settingslib.action.REGISTER_SLICE_RECEIVER" />
     <protected-broadcast android:name="com.android.settingslib.action.UNREGISTER_SLICE_RECEIVER" />
     <protected-broadcast android:name="com.android.settings.flashlight.action.FLASHLIGHT_CHANGED" />
@@ -557,7 +560,13 @@
             android:showForAllUsers="true"
             android:theme="@style/Theme.Transparent" />
 
-        <service android:name=".screenrecord.service.ScreenRecordingService" />
+        <receiver
+            android:name=".screenrecord.service.ActivityStartingReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".screenrecord.service.ScreenRecordingService"
+            android:exported="false" />
 
         <service android:name=".screenrecord.RecordingService"
                  android:foregroundServiceType="systemExempted"/>
@@ -644,15 +653,6 @@
         <activity android:name=".usb.UsbResolverActivity"
             android:exported="true"
             android:permission="android.permission.MANAGE_USB"
-            android:theme="@style/Theme.SystemUI.Dialog.Alert"
-            android:finishOnCloseSystemDialogs="true"
-            android:excludeFromRecents="true">
-        </activity>
-
-        <!-- started from SerialUserAccessManager -->
-        <activity android:name="com.android.serial.accessdialog.AccessDialogActivity"
-            android:exported="true"
-            android:permission="android.permission.MANAGE_SERIAL_PORTS"
             android:theme="@style/Theme.SystemUI.Dialog.Alert"
             android:finishOnCloseSystemDialogs="true"
             android:excludeFromRecents="true">
@@ -845,7 +845,7 @@
             android:exported="true"
             android:permission="android.permission.GET_PEOPLE_TILE_PREVIEW">
         </provider>
-
+        
         <service android:name=".people.PeopleBackupFollowUpJob"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
@@ -1249,6 +1249,7 @@
         <service
             android:name="com.android.systemui.locationbutton.LocationButtonRenderService"
             android:permission="android.permission.USE_LOCATION_BUTTON"
+            android:singleUser="true"
             android:exported="true"
            />
 

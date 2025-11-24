@@ -32,6 +32,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.LayoutCo
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.AlignByModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
@@ -292,6 +293,8 @@ public class RowLayout extends LayoutManager {
 
         childrenWidth = 0f;
         int visibleChildrens = 0;
+        boolean hasAlignBy = false;
+        float alignByValue = 0f;
         for (Component child : mChildrenComponents) {
             ComponentMeasure childMeasure = measure.get(child);
             if (childMeasure.isGone()) {
@@ -300,7 +303,14 @@ public class RowLayout extends LayoutManager {
             childrenWidth += childMeasure.getW();
             childrenHeight = Math.max(childrenHeight, childMeasure.getH());
             visibleChildrens++;
+            AlignByModifierOperation alignByModifier = child.selfOrModifier(
+                    AlignByModifierOperation.class);
+            if (alignByModifier != null) {
+                hasAlignBy = true;
+                alignByValue = Math.max(alignByValue, alignByModifier.getValue(context));
+            }
         }
+
         childrenWidth += mSpacedBy * (visibleChildrens - 1);
 
         float tx = 0f;
@@ -360,15 +370,34 @@ public class RowLayout extends LayoutManager {
 
         for (Component child : mChildrenComponents) {
             ComponentMeasure childMeasure = measure.get(child);
+            float alignByOffset = 0f;
+            if (hasAlignBy) {
+                AlignByModifierOperation alignByModifier = child.selfOrModifier(
+                        AlignByModifierOperation.class);
+                if (alignByModifier != null) {
+                    alignByOffset = alignByModifier.getValue(context);
+                }
+            }
             switch (mVerticalPositioning) {
                 case TOP:
                     ty = 0f;
+                    if (hasAlignBy) {
+                        ty += alignByValue - alignByOffset;
+                    }
                     break;
                 case CENTER:
                     ty = (selfHeight - childMeasure.getH()) / 2f;
+                    if (hasAlignBy) {
+                        ty = (selfHeight - childrenHeight) / 2f;
+                        ty += alignByValue - alignByOffset;
+                    }
                     break;
                 case BOTTOM:
                     ty = selfHeight - childMeasure.getH();
+                    if (hasAlignBy) {
+                        ty = (selfHeight - childrenHeight);
+                        ty += alignByValue - alignByOffset;
+                    }
                     break;
             }
             childMeasure.setX(tx);

@@ -17,6 +17,7 @@
 package com.android.systemui.biometrics.ui.viewmodel
 
 import android.security.Flags.secureLockDevice
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.keyguard.logging.DeviceEntryIconLogger
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel
@@ -25,14 +26,15 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.statusbar.phone.hideAffordancesRequest
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -48,22 +50,40 @@ constructor(
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     systemUIDialogManager: SystemUIDialogManager,
     sceneInteractor: Lazy<SceneInteractor>,
-    shadeInteractor: ShadeInteractor,
     logger: DeviceEntryIconLogger,
 ) : UdfpsTouchOverlayViewModel {
     private val deviceEntryViewAlphaIsMostlyVisible: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
-            combine(
-                deviceEntryIconViewModel.isVisible,
-                sceneInteractor.get().currentScene,
-                sceneInteractor.get().currentOverlays,
-                shadeInteractor.shadeExpansion,
-            ) { isVisible, currentScene, currentOverlays, shadeExpansion ->
-                isVisible &&
-                    currentScene == Scenes.Lockscreen &&
-                    !currentOverlays.contains(Overlays.Bouncer) &&
-                    shadeExpansion < ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD
-            }
+            sceneInteractor
+                .get()
+                .transitionState
+                .flatMapLatestConflated { state ->
+                    when (state) {
+                        is ObservableTransitionState.Idle -> {
+                            if (
+                                state.currentScene == Scenes.Lockscreen &&
+                                    !state.currentOverlays.contains(Overlays.Bouncer)
+                            ) {
+                                flowOf(true)
+                            } else {
+                                flowOf(false)
+                            }
+                        }
+                        is ObservableTransitionState.Transition ->
+                            if (state.toContent == Scenes.Lockscreen) {
+                                state.progress.map { progress ->
+                                    progress > 1 - ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD
+                                }
+                            } else if (state.fromContent == Scenes.Lockscreen) {
+                                state.progress.map { progress ->
+                                    progress < ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD
+                                }
+                            } else {
+                                flowOf(true)
+                            }
+                    }
+                }
+                .distinctUntilChanged()
         } else {
             deviceEntryIconViewModel.deviceEntryViewAlpha
                 .map { it > ALLOW_TOUCH_ALPHA_THRESHOLD }

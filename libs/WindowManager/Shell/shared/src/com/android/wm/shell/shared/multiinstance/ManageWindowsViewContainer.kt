@@ -37,7 +37,6 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.window.TaskSnapshot
-import com.android.window.flags.Flags
 import com.android.wm.shell.shared.R
 
 /**
@@ -58,17 +57,10 @@ abstract class ManageWindowsViewContainer(
         val bitmapList = snapshotList
             .filter { it.second != null }
             .map { (index, snapshot) ->
-                if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                    snapshot.let {
-                        val b: Bitmap? = it!!.wrapToBitmap()
-                        it.closeBuffer()
-                        index to b
-                    }
-                } else {
-                    index to Bitmap.wrapHardwareBuffer(
-                        snapshot!!.hardwareBuffer,
-                        snapshot.colorSpace
-                    )
+                snapshot.let {
+                    val b: Bitmap? = it!!.wrapToBitmap()
+                    it.closeBuffer()
+                    index to b
                 }
             }
         return createAndShowMenuView(

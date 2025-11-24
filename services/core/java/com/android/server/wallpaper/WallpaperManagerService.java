@@ -20,7 +20,6 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -120,6 +119,7 @@ import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -745,6 +745,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         IWallpaperEngine mEngine;
         boolean mDimensionsChanged;
         boolean mPaddingChanged;
+        float mTemporaryDimAmount;
 
         // This field is added for the fallback wallpaper, which may have a different which flag for
         // a different display.
@@ -828,6 +829,24 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 Slog.w(TAG, "connection.mService.destroy() threw a RemoteException", e);
             }
             mEngine = null;
+        }
+
+        void setTemporaryDimAmount(float temporaryDimAmount) {
+            if (DesktopExperienceFlags.DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED.isTrue()) {
+                mTemporaryDimAmount = temporaryDimAmount;
+            }
+        }
+
+        void applyDimming(float nonTemporaryDimAmount) {
+            if (mEngine != null) {
+                try {
+                    mEngine.applyDimming(Math.max(nonTemporaryDimAmount, mTemporaryDimAmount),
+                            nonTemporaryDimAmount);
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Can't apply dimming on wallpaper display "
+                            + "connector", e);
+                }
+            }
         }
     }
 
@@ -1155,18 +1174,20 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
          * @param displayId for which display
          */
         @Override
-        public void onWallpaperColorsChanged(WallpaperColors primaryColors, int displayId) {
+        public void onWallpaperColorsChanged(WallpaperColors primaryColors, int displayId,
+                WallpaperColors persistedColors) {
             synchronized (mLock) {
                 boolean isImageWallpaper = mImageWallpaper.equals(mWallpaper.getComponent());
                 if (isImageWallpaper && primaryColors == null) {
                     return;
                 }
-                mWallpaper.primaryColors = primaryColors;
                 // only save the colors for ImageWallpaper - for live wallpapers, the colors
                 // are always recomputed after a reboot.
                 if (isImageWallpaper) {
+                    mWallpaper.primaryColors = persistedColors;
                     saveSettingsLocked(mWallpaper.userId);
                 }
+                mWallpaper.primaryColors = primaryColors;
             }
             notifyWallpaperColorsChangedOnDisplay(mWallpaper, displayId);
         }
@@ -1208,12 +1229,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     }
                 }
 
-                if (mWallpaper.mWallpaperDimAmount != 0f) {
-                    try {
-                        connector.mEngine.applyDimming(mWallpaper.mWallpaperDimAmount);
-                    } catch (RemoteException e) {
-                        Slog.w(TAG, "Failed to dim wallpaper", e);
-                    }
+                if (connector.mTemporaryDimAmount != 0f || mWallpaper.mWallpaperDimAmount != 0f) {
+                    connector.applyDimming(mWallpaper.mWallpaperDimAmount);
                 }
             }
         }
@@ -1563,9 +1580,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             new ActivityTaskManagerInternal.ScreenObserver() {
                 @Override
                 public void onKeyguardStateChanged(boolean isShowing) {
-                    if (!notifyKeyguardEvents()) {
-                        return;
-                    }
                     if (isShowing) {
                         notifyKeyguardAppearing();
                     } else {
@@ -2727,8 +2741,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     private void dispatchKeyguardCommand(String command) {
         synchronized (mLock) {
             for (WallpaperData data : getActiveWallpapers()) {
-                if (notifyKeyguardEvents() && !hasPermission(
-                        data, android.Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)) {
+                if (!hasPermission(data,
+                        android.Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)) {
                     continue;
                 }
 
@@ -2857,10 +2871,16 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
      * with an active wallpaper engine.
      *
      * @param dimAmount Dim amount which would be blended with the system default dimming.
+     * @param displayId the display to apply the dim amount. If the id is negative, the dim will
+     *                  apply to all displays.
+     * @param temporary {@code true} if this value should not be persisted. Also, when this is
+     *                  {@code true}, the dim will not apply to lockscreen wallpaper if the
+     *                  lockscreen wallpaper is different from the home wallpaper.
      */
     @Override
-    public void setWallpaperDimAmount(float dimAmount) throws RemoteException {
-        setWallpaperDimAmountForUid(Binder.getCallingUid(), dimAmount);
+    public void setWallpaperDimAmount(float dimAmount, int displayId, boolean temporary)
+            throws RemoteException {
+        setWallpaperDimAmountForUid(Binder.getCallingUid(), dimAmount, displayId, temporary);
     }
 
     /**
@@ -2870,9 +2890,19 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
      * @param uid Caller UID that wants to set the wallpaper dim amount
      * @param dimAmount Dim amount where 0f reverts any dimming applied by the caller (fully bright)
      *                  and 1f is fully black
+     * @param displayId The display ID to apply the dimming, use INVALID_DISPLAY to apply to all
+     * @param temporary {@code true} if the value should not be persisted. Also, when this is
+     *                  {@code true}, the dim will not apply to lockscreen wallpaper if the
+     *                  lockscreen wallpaper is different from the home wallpaper.
      * @throws RemoteException
      */
-    public void setWallpaperDimAmountForUid(int uid, float dimAmount) {
+    public void setWallpaperDimAmountForUid(int uid, float dimAmount, int displayId,
+            boolean temporary) {
+        if (!DesktopExperienceFlags.DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED
+                .isTrue() && temporary) {
+            // Ignore the temporary dim request if the flag is not enabled.
+            return;
+        }
         checkPermission(android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT);
         final long ident = Binder.clearCallingIdentity();
         try {
@@ -2881,41 +2911,61 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 int userId = mCurrentUserId != UserHandle.USER_NULL
                         ? mCurrentUserId : UserHandle.USER_SYSTEM;
                 WallpaperData wallpaper = mWallpaperMap.get(userId);
-                WallpaperData lockWallpaper = mLockWallpaperMap.get(userId);
+                if (displayId < 0) {
+                    WallpaperData lockWallpaper = mLockWallpaperMap.get(userId);
 
-                if (dimAmount == 0.0f) {
-                    wallpaper.mUidToDimAmount.remove(uid);
-                } else {
-                    wallpaper.mUidToDimAmount.put(uid, dimAmount);
-                }
-
-                float maxDimAmount = getHighestDimAmountFromMap(wallpaper.mUidToDimAmount);
-                if (wallpaper.mWallpaperDimAmount == maxDimAmount) return;
-                wallpaper.mWallpaperDimAmount = maxDimAmount;
-                // Also set the dim amount to the lock screen wallpaper if the lock and home screen
-                // do not share the same wallpaper
-                if (lockWallpaper != null) {
-                    lockWallpaper.mWallpaperDimAmount = maxDimAmount;
-                }
-
-                boolean changed = false;
-                for (WallpaperData wp : getActiveWallpapers()) {
-                    if (wp != null && wp.connection != null) {
-                        wp.connection.forEachDisplayConnector(connector -> {
-                            if (connector.mEngine != null) {
-                                try {
-                                    connector.mEngine.applyDimming(maxDimAmount);
-                                } catch (RemoteException e) {
-                                    Slog.w(TAG, "Can't apply dimming on wallpaper display "
-                                                    + "connector", e);
-                                }
-                            }
-                        });
-                        changed = true;
+                    if (!temporary) {
+                        if (dimAmount == 0.0f) {
+                            wallpaper.mUidToDimAmount.remove(uid);
+                        } else {
+                            wallpaper.mUidToDimAmount.put(uid, dimAmount);
+                        }
                     }
-                }
-                if (changed) {
-                    saveSettingsLocked(wallpaper.userId);
+
+                    float maxDimAmount = getHighestDimAmountFromMap(wallpaper.mUidToDimAmount);
+                    boolean permanentDimChanged = false;
+                    if (wallpaper.mWallpaperDimAmount != maxDimAmount && !temporary) {
+                        // When the permanent dim caused the dim saved in wallpaper data changed,
+                        // update the value saved.
+                        permanentDimChanged = true;
+                        wallpaper.mWallpaperDimAmount = maxDimAmount;
+                        // Also set the dim amount to the lock screen wallpaper if the lock and home
+                        // screen do not share the same wallpaper
+                        if (lockWallpaper != null) {
+                            lockWallpaper.mWallpaperDimAmount = maxDimAmount;
+                        }
+                    }
+
+                    boolean dimApplied = false;
+                    for (WallpaperData wp : getActiveWallpapers()) {
+                        if (wp != null && wp.connection != null) {
+                            wp.connection.forEachDisplayConnector(connector -> {
+                                if (temporary) {
+                                    connector.setTemporaryDimAmount(dimAmount);
+                                }
+                                connector.applyDimming(maxDimAmount);
+                            });
+                            dimApplied = true;
+                        }
+                    }
+                    if (permanentDimChanged && dimApplied) {
+                        // Save the settings if any active wallpaper is updated for a non-temporary
+                        // dim amount update.
+                        saveSettingsLocked(wallpaper.userId);
+                    }
+                } else {
+                    final DisplayConnector targetConnector =
+                            wallpaper.connection.mDisplayConnector.get(displayId);
+                    if (targetConnector == null) {
+                        return;
+                    }
+                    if (!temporary) {
+                        // TODO: support non-temporary multi-display dimming
+                        throw new UnsupportedOperationException("Currently, display specific "
+                                + "dimming has to be temporary");
+                    }
+                    targetConnector.setTemporaryDimAmount(dimAmount);
+                    targetConnector.applyDimming(wallpaper.mWallpaperDimAmount);
                 }
             }
         } finally {

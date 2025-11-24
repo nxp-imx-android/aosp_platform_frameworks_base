@@ -16,12 +16,16 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import com.android.app.tracing.coroutines.flow.stateInTraced
+import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureMarkupInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -30,11 +34,13 @@ import kotlinx.coroutines.flow.map
 class ScreenCaptureOverlayStateInteractor
 @Inject
 constructor(
+    @ScreenCapture private val scope: CoroutineScope,
     markupInteractor: ScreenCaptureMarkupInteractor,
     parametersInteractor: ScreenCaptureRecordParametersInteractor,
     cameraInteractor: ScreenRecordCameraInteractor,
 ) {
 
+    val isMarkupInUse: Flow<Boolean> = markupInteractor.enabled
     val isCameraInUse: Flow<Boolean> =
         combine(
                 cameraInteractor.isCameraSupported,
@@ -45,7 +51,13 @@ constructor(
             .distinctUntilChanged()
 
     val isVisible: Flow<Boolean> =
-        combine(markupInteractor.enabled, isCameraInUse) { markupEnabled, cameraEnabled ->
-            markupEnabled || cameraEnabled
-        }
+        combine(isMarkupInUse, isCameraInUse) { markupEnabled, cameraEnabled ->
+                markupEnabled || cameraEnabled
+            }
+            .stateInTraced(
+                "ScreenCaptureOverlayStateInteractor#isVisible",
+                scope,
+                SharingStarted.Eagerly,
+                false,
+            )
 }

@@ -130,8 +130,7 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
         mock()
     protected val keyguardStateController = FakeKeyguardStateController(leakCheck)
     protected val mainHandler = FakeHandler(Looper.getMainLooper())
-    protected val newLogger = VisualInterruptionDecisionLogger(fakeLogBuffer)
-    protected val oldLogger = NotificationInterruptLogger(fakeLogBuffer)
+    protected val logger = VisualInterruptionDecisionLogger(fakeLogBuffer)
     protected val powerManager: PowerManager = mock()
     protected val statusBarStateController = FakeStatusBarStateController()
     protected val systemClock = kosmos.fakeSystemClock
@@ -144,7 +143,6 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
     protected val packageManager: PackageManager = mock()
     protected val notificationManager: NotificationManager = mock()
     protected val deviceProvisioningRepository = kosmos.fakeDeviceProvisioningRepository
-    protected val logger: VisualInterruptionDecisionLogger = mock()
     protected abstract val provider: VisualInterruptionDecisionProvider
 
     private val neverSuppresses = object : NotificationInterruptSuppressor {}

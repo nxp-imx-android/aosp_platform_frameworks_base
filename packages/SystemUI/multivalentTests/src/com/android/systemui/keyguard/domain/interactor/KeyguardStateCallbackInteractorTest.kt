@@ -22,10 +22,11 @@ import com.android.internal.policy.IKeyguardDismissCallback
 import com.android.internal.policy.IKeyguardStateCallback
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.keyguardStateCallbackInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.FakeSystemClock
@@ -72,20 +73,12 @@ class KeyguardStateCallbackInteractorTest : SysuiTestCase() {
             kosmos.dismissCallbackRegistry.addCallback(dismissCallback)
             runCurrent()
 
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.GONE,
-                testScope = testScope,
-            )
+            kosmos.setTransition(sceneTransition = Idle(Scenes.Gone), unlockDevice = true)
 
             systemClock.advanceTime(1) // Required for DismissCallbackRegistry's bgExecutor
             verify(dismissCallback).onDismissSucceeded()
 
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.GONE,
-                to = KeyguardState.LOCKSCREEN,
-                testScope = testScope,
-            )
+            kosmos.setTransition(sceneTransition = Idle(Scenes.Lockscreen))
 
             Mockito.verifyNoMoreInteractions(dismissCallback)
         }

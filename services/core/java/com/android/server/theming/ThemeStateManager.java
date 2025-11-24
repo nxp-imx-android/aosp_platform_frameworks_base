@@ -16,7 +16,9 @@
 
 package com.android.server.theming;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.theming.ThemeStyle;
@@ -24,13 +26,15 @@ import android.os.UserHandle;
 import android.util.Slog;
 import android.util.SparseArray;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
-import com.android.systemui.monet.ColorScheme;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -70,7 +74,13 @@ public class ThemeStateManager {
 
     protected static final long DEBOUNCE_MS = 50;
 
+    private final Object mLock = new Object();
+
+    @GuardedBy("mLock")
+    private int mCurrentUserId = UserHandle.USER_NULL;
+
     // We are storing states for users only. Profiles should target their parent users.
+    @GuardedBy("mLock")
     private final SparseArray<ThemeStatePair> mThemeStates = new SparseArray<>();
 
     private final Context mContext;
@@ -100,6 +110,8 @@ public class ThemeStateManager {
         mUserManager = LocalServices.getService(UserManagerInternal.class);
         mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
         mOverlayManager = LocalServices.getService(OverlayManagerInternal.class);
+
+        mCurrentUserId = LocalServices.getService(ActivityManagerInternal.class).getCurrentUserId();
     }
 
     /**
@@ -110,12 +122,18 @@ public class ThemeStateManager {
      * @param fromForegroundApp Boolean indicating if the event came from a foreground app.
      */
     void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
-        if (!fromForegroundApp && mKeyguardManager != null && !mKeyguardManager.isDeviceLocked()) {
-            getState(userId).setDeferUpdatesOnLock(true);
+        ThemeStatePair statePair = getState(userId);
+
+        if (!fromForegroundApp && mKeyguardManager != null
+                && !mKeyguardManager.isDeviceLocked()) {
+            statePair.setDeferUpdatesOnLock(true);
             Slog.w(TAG, "Wallpaper changed from background app, deferring color change");
+        } else if (statePair.areUpdatesDeferredOnLock()) {
+            Slog.d(TAG, "Foreground app explicitly changed color, clearing deferral.");
+            statePair.setDeferUpdatesOnLock(false);
         }
 
-        getState(userId).applySeedColor(seedColor);
+        statePair.applySeedColor(seedColor);
         reevaluateSystemTheme();
     }
 
@@ -126,7 +144,13 @@ public class ThemeStateManager {
      * @param userStyle The {@link ThemeStyle} to be applied.
      */
     void onStyleChange(int userId, @ThemeStyle.Type Integer userStyle) {
-        getState(userId).applyStyle(userStyle);
+        ThemeStatePair statePair = getState(userId);
+
+        if (statePair.areUpdatesDeferredOnLock()) {
+            Slog.d(TAG, "User explicitly changed style, clearing deferral.");
+            statePair.setDeferUpdatesOnLock(false);
+        }
+        statePair.applyStyle(userStyle);
         reevaluateSystemTheme();
     }
 
@@ -137,7 +161,13 @@ public class ThemeStateManager {
      * @param value  The new contrast value.
      */
     void onContrastChange(int userId, float value) {
-        getState(userId).applyContrast(value);
+        ThemeStatePair statePair = getState(userId);
+
+        if (statePair.areUpdatesDeferredOnLock()) {
+            Slog.d(TAG, "User explicitly changed contrast, clearing deferral.");
+            statePair.setDeferUpdatesOnLock(false);
+        }
+        statePair.applyContrast(value);
         reevaluateSystemTheme();
     }
 
@@ -147,7 +177,13 @@ public class ThemeStateManager {
      * @param userId The ID of the user who completed setup.
      */
     void onFinishSetup(int userId) {
-        getState(userId).applySetupComplete();
+        ThemeStatePair statePair = getState(userId);
+
+        if (statePair.areUpdatesDeferredOnLock()) {
+            Slog.d(TAG, "User finished setup, clearing any boot-time deferrals.");
+            statePair.setDeferUpdatesOnLock(false);
+        }
+        statePair.applySetupComplete();
         reevaluateSystemTheme();
     }
 
@@ -165,17 +201,15 @@ public class ThemeStateManager {
     /**
      * Called when the device locks or unlocks.
      *
-     * @param isLocked {@code true} if the device is locked, {@code false} otherwise.
+     * @param isDeviceLocked {@code true} if the device is locked, {@code false} otherwise.
      */
-    void onLockStateChange(boolean isLocked) {
-        if (!isLocked) return;
+    void onLockStateChange(boolean isDeviceLocked) {
+        if (!isDeviceLocked) return;
 
-        for (int i = 0; i < mThemeStates.size(); i++) {
-            int key = mThemeStates.keyAt(i);
-            ThemeStatePair statePair = getState(key);
+        for (ThemeStatePair statePair : getPairsSnapshot()) {
             if (statePair.areUpdatesDeferredOnLock()) {
                 statePair.setDeferUpdatesOnLock(false);
-                Slog.w(TAG, "Applying deferred wallpaper color change");
+                Slog.w(TAG, "Applying deferred wallpaper color change on user " + statePair.userId);
             }
         }
         reevaluateSystemTheme();
@@ -194,20 +228,42 @@ public class ThemeStateManager {
             @ThemeStyle.Type Integer style) {
         int userId = userHandle.getIdentifier();
 
-        if (mThemeStates.contains(userId)) {
-            throw new IllegalStateException("ThemeStatePair already exists for user " + userId);
+        synchronized (mLock) {
+            Integer parentId = parentOf(userId);
+
+            // CASE 1: userId is a profile, not a full user
+            if (parentId != null) {
+                ThemeStatePair parentState = mThemeStates.get(parentId);
+                if (parentState != null) {
+                    Slog.d(TAG,
+                            "Profile " + userId + " started, added to existing parent " + parentId);
+                    parentState.addProfile(userId);
+                } else {
+                    Slog.d(TAG, "Profile " + userId + " started before parent " + parentId
+                            + ". Waiting for parent start.");
+                }
+            } else if (mThemeStates.contains(userId)) {
+                // CASE 2: userId is an existing user
+                Slog.w(TAG, "ThemeStatePair already exists for user " + userId);
+            } else {
+                // CASE 3: userId is a new user
+                ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColor, contrast,
+                        style);
+                int[] profiles = mUserManager.getProfileIds(userId, false);
+
+                if (profiles != null) {
+                    for (int profileId : profiles) {
+                        if (profileId != userId) {
+                            Slog.d(TAG,
+                                    "Full user " + userId + " found existing profile " + profileId);
+                            newState.addProfile(profileId);
+                        }
+                    }
+                }
+                mThemeStates.put(userId, newState);
+            }
         }
-
-        Integer parentId = parentOf(userId);
-
-        if (parentId != null) {
-            Slog.d(TAG, "Skipping State creation for profile '" + userId + "' with parent '"
-                    + parentId + "'. Only states for top-level users are allowed.");
-            getState(parentId).addProfile(userId);
-            return;
-        }
-
-        mThemeStates.put(userId, new ThemeStatePair(userId, isSetup, seedColor, contrast, style));
+        reevaluateSystemTheme();
     }
 
     /**
@@ -218,6 +274,9 @@ public class ThemeStateManager {
      */
     void onUserSwitching(@Nullable Integer from, int to) {
         Slog.d(TAG, "User switching from " + from + " to " + to + ". Re-applying theme.");
+        synchronized (mLock) {
+            mCurrentUserId = to;
+        }
         getState(to).forceUpdate();
         reevaluateSystemTheme();
     }
@@ -227,23 +286,20 @@ public class ThemeStateManager {
      * overlays match the current theme settings and forces an update if necessary.
      *
      * @param isPaletteOutdated A boolean indicating the palette version is outdated and should be
-     *                         recalculated.
+     *                          recalculated.
      */
     void onBootComplete(boolean isPaletteOutdated) {
         boolean shouldEvaluateOnBoot = false;
-        for (int i = 0; i < mThemeStates.size(); i++) {
-            int key = mThemeStates.keyAt(i);
-            ThemeStatePair statePair = getState(key);
 
+        for (ThemeStatePair statePair : getPairsSnapshot()) {
             if (!statePair.isColorSchemeApplied(mContext) || isPaletteOutdated) {
                 Slog.d(TAG, "Color palette does not match user " + statePair.userId
                         + " settings, requesting update.");
                 statePair.forceUpdate();
                 shouldEvaluateOnBoot = true;
             } else {
-                Slog.d(TAG,
-                        "Applied color palette for user " + statePair.userId
-                                + " matches settings.");
+                Slog.d(TAG, "Applied color palette for user " + statePair.userId
+                        + " matches settings.");
             }
         }
 
@@ -253,68 +309,74 @@ public class ThemeStateManager {
         }
     }
 
-
+    @NonNull
     ThemeStatePair getState(int userId) {
-        if (!mThemeStates.contains(userId)) {
-            throw new IllegalStateException(
-                    "State not found for user " + userId);
+        synchronized (mLock) {
+            ThemeStatePair state = mThemeStates.get(userId);
+            if (state == null) {
+                throw new IllegalStateException("State not found for user " + userId);
+            }
+            return state;
         }
-
-        return mThemeStates.get(userId);
     }
 
     /**
      * Re-evaluates the current system theme for all users and updates overlays if necessary.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     void reevaluateSystemTheme() {
-        for (int i = 0; i < mThemeStates.size(); i++) {
-            final int key = mThemeStates.keyAt(i);
-            final ThemeStatePair statePair = getState(key);
-
+        for (ThemeStatePair statePair : getPairsSnapshot()) {
             if (!statePair.shouldUpdate()) {
                 continue;
             }
 
-            if (statePair.getFuture() != null) {
-                statePair.getFuture().cancel(true);
+            ScheduledFuture<?> existingFuture = statePair.getFuture();
+            if (existingFuture != null) {
+                existingFuture.cancel(true);
                 Slog.d(TAG, "Debouncing update for user " + statePair.userId);
             }
 
-            ScheduledFuture<?> scheduled = mSchedulerExecutor.schedule(
-                    () -> {
-                        Slog.d(TAG, "Updating user " + statePair.userId + " with "
-                                + statePair.getPendingState().toString());
+            ScheduledFuture<?> scheduled = mSchedulerExecutor.schedule(() -> {
+                Slog.d(TAG, "Updating user " + statePair.userId);
+                long beginT = System.currentTimeMillis();
 
-                        long beginT = System.currentTimeMillis();
+                ThemeStatePair.OverlaySnapshot overlaySnapshot =
+                        statePair.commitAndGetOverlayData();
 
-                        final ColorScheme newDarkScheme;
-                        final ColorScheme newLightScheme;
+                if (overlaySnapshot == null) {
+                    Slog.d(TAG, "Snapshot aborted for user " + statePair.userId);
+                    statePair.clearTimer();
+                    return;
+                }
 
-                        if (statePair.shouldUpdateOverlays()) {
-                            newDarkScheme = statePair.generatePendingScheme(true);
-                            newLightScheme = statePair.generatePendingScheme(false);
-                            Slog.d(TAG, "User " + statePair.userId + " has new overlays");
-                        } else {
-                            newDarkScheme = statePair.getDarkScheme();
-                            newLightScheme = statePair.getLightScheme();
-                        }
-                        // Always update the state to commit the pending changes.
-                        statePair.update(newDarkScheme, newLightScheme);
+                int currentUserId;
+                synchronized (mLock) {
+                    currentUserId = mCurrentUserId;
+                }
 
-                        // If only profiles changed, we still apply overlays. The helper will get
-                        // the current (and correct) schemes from the statePair.
-                        ThemeOverlayHelper.applyCurrentStateOverlays(mOverlayManager, statePair);
+                ThemeOverlayHelper.applyCurrentStateOverlays(
+                        /*overlayManager*/ mOverlayManager,
+                        /*statePair     */ overlaySnapshot,
+                        /*applyToSystem */ overlaySnapshot.userId() == currentUserId);
 
-                        statePair.clearTimer();
+                statePair.clearTimer();
 
-                        Slog.d(TAG,
-                                "Overlay application for user " + statePair.userId
-                                        + " completed in "
-                                        + (System.currentTimeMillis() - beginT) + "ms");
-                    },
-                    DEBOUNCE_MS, TimeUnit.MILLISECONDS);
+                Slog.d(TAG, "Overlay application for user " + statePair.userId + " completed in "
+                        + (System.currentTimeMillis() - beginT) + "ms");
+
+            }, DEBOUNCE_MS, TimeUnit.MILLISECONDS);
 
             statePair.setFuture(scheduled);
+        }
+    }
+
+    private List<ThemeStatePair> getPairsSnapshot() {
+        synchronized (mLock) {
+            List<ThemeStatePair> snapshot = new ArrayList<>(mThemeStates.size());
+            for (int i = 0; i < mThemeStates.size(); i++) {
+                snapshot.add(mThemeStates.valueAt(i));
+            }
+            return snapshot;
         }
     }
 
@@ -330,12 +392,14 @@ public class ThemeStateManager {
      * @param pw The PrintWriter to dump the state to.
      */
     public void dump(PrintWriter pw) {
-        pw.println("In-Memory Theme States per User:");
-        for (int i = 0; i < mThemeStates.size(); i++) {
-            int userId = mThemeStates.keyAt(i);
-            ThemeStatePair statePair = mThemeStates.valueAt(i);
-            pw.println("  User " + userId + ":");
-            statePair.dump(pw);
+        synchronized (mLock) {
+            pw.println("In-Memory Theme States per User:");
+            for (int i = 0; i < mThemeStates.size(); i++) {
+                int userId = mThemeStates.keyAt(i);
+                ThemeStatePair statePair = mThemeStates.valueAt(i);
+                pw.println("  User " + userId + ":");
+                statePair.dump(pw);
+            }
         }
     }
 }

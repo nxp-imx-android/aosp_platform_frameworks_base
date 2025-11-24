@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ቅጽበታዊ ገፅ ዕይታን ማስቀመጥ አልተቻለም"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"አስቀምጥ ወደ"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"አቃፊ ምረጥ"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ውጫዊ ማሳያ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ቅጽበታዊ ገፅ ዕይታ ከመቀመጡ በፊት መሣሪያ መከፈት አለበት"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ቅጽበታዊ ገፅ ዕይታን እንደገና ማንሳት ይሞክሩ"</string>
@@ -708,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"ሁሉንም አጽዳ"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"ያቀናብሩ"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ታሪክ"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"ዝጋ"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"የማሳወቂያ ቅንብሮች"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"የማሳወቂያ ታሪክ"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"አዲስ"</string>
@@ -905,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"እንኳን ደስ ያለዎት! የስርዓት በይነገጽ መቃኛ ወደ ቅንብሮች ታክሏል"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ከቅንብሮች አስወግድ"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ከቅንብሮች ላይ የስርዓት በይነገጽ መቃኛ ተወግዶ ሁሉም ባህሪዎቹን መጠቀም ይቁም?"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"አስወግድ"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ብሉቱዝ ይብራ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"የቁልፍ ሰሌዳዎን ከእርስዎ ጡባዊ ጋር ለማገናኘት በመጀመሪያ ብሉቱዝን ማብራት አለብዎት።"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"አብራ"</string>
@@ -1261,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"አካባቢ"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"ማይክሮፎን"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"ማያን መቅረጽ"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"ርዕስ የለም"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"ተጠባባቂ"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"የቅርጸ-ቁምፊ መጠን"</string>
@@ -1408,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ለኦዲዮ ውጽዓት ተገኚ የሆኑ መሣሪያዎች"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"የድምጽ መጠን"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"የተገናኙ ድምፅ ማውጫዎች"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ድምፅ ማውጫዎች እና ማሳያዎች"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"በአስተያየት የተጠቆሙ"</string>

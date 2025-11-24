@@ -752,3 +752,10 @@ build = [
     "TestProtoLibraries.bp",
     "Ravenwood.bp",
 ]
+
+filegroup {
+    name: "docs_samples_redirect",
+    srcs: [
+        "docs/docs-samples-redirect.html",
+    ],
+}

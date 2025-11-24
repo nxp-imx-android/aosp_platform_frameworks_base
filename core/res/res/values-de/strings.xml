@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Gewährt der App Lesezugriff auf Videodateien in deinem freigegebenen Speicher."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"Lesezugriff auf Bilddateien im freigegebenen Speicher"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Gewährt der App Lesezugriff auf Bilddateien in deinem freigegebenen Speicher."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"Vom Nutzer ausgewählte Bild- und Videodateien aus dem freigegebenen Speicher lesen"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Die App darf Bild- und Videodateien lesen, die du aus dem freigegebenen Speicher auswählst."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"Inhalte deines freigegebenen Speichers ändern oder löschen"</string>
@@ -1179,9 +1183,9 @@
     <string name="searchview_description_clear" msgid="1989371719192982900">"Anfrage löschen"</string>
     <string name="searchview_description_submit" msgid="6771060386117334686">"Anfrage senden"</string>
     <string name="searchview_description_voice" msgid="42360159504884679">"Sprachsuche"</string>
-    <string name="enable_explore_by_touch_warning_title" msgid="5095399706284943314">"\"Tippen &amp; Entdecken\" aktivieren?"</string>
+    <string name="enable_explore_by_touch_warning_title" msgid="5095399706284943314">"„Bei Berühren vorlesen“ aktivieren?"</string>
     <string name="enable_explore_by_touch_warning_message" product="tablet" msgid="1037295476738940824">"<xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> fordert die Aktivierung von \"Tippen &amp; Entdecken\" an. Wenn \"Tippen &amp; Entdecken\" aktiviert ist, kannst du Beschreibungen dessen hören oder sehen, was sich unter deinen Fingern befindet, oder über Touch-Gesten mit dem Tablet kommunizieren."</string>
-    <string name="enable_explore_by_touch_warning_message" product="default" msgid="4312979647356179250">"<xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> fordert die Aktivierung von \"Tippen &amp; Entdecken\" an. Wenn \"Tippen &amp; Entdecken\" aktiviert ist, kannst du Beschreibungen dessen hören oder sehen, was sich unter deinen Fingern befindet, oder über Touch-Gesten mit dem Telefon kommunizieren."</string>
+    <string name="enable_explore_by_touch_warning_message" product="default" msgid="4312979647356179250">"<xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> fordert die Aktivierung von „Bei Berühren vorlesen“ an. Wenn „Bei Berühren vorlesen“ aktiviert ist, kannst du Beschreibungen dessen hören oder sehen, was sich unter deinen Fingern befindet, oder über Touch-Gesten mit dem Telefon kommunizieren."</string>
     <string name="oneMonthDurationPast" msgid="4538030857114635777">"Vor 1 Monat"</string>
     <string name="beforeOneMonthDurationPast" msgid="8315149541372065392">"Vor mehr als 1 Monat"</string>
     <string name="last_num_days" msgid="2393660431490280537">"{count,plural, =1{Letzter Tag}other{Letzte # Tage}}"</string>

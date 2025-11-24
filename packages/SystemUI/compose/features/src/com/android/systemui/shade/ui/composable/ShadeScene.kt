@@ -478,13 +478,15 @@ private fun ContentScope.SplitShade(
         ShadePanelScrim(viewModel.isTransparencyEnabled)
 
         Column(modifier = Modifier.fillMaxSize()) {
-            val unfoldTranslationXForStartSide = viewModel.unfoldTranslationXForStartSide
-
             CollapsedShadeHeader(
                 viewModel = headerViewModel,
                 isSplitShade = true,
                 modifier =
-                    Modifier.padding(horizontal = { unfoldTranslationXForStartSide.roundToInt() }),
+                    // unfoldTranslationXForStartSide may be updated every frame, so only read value
+                    // in the layout phase by using lambda.
+                    Modifier.padding(
+                        horizontal = { viewModel.unfoldTranslationXForStartSide.roundToInt() }
+                    ),
             )
 
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -493,7 +495,11 @@ private fun ContentScope.SplitShade(
                         Modifier.element(SplitShadeQuickSettings)
                             .overscroll(verticalOverscrollEffect)
                             .weight(1f)
-                            .graphicsLayer { translationX = unfoldTranslationXForStartSide }
+                            // unfoldTranslationXForStartSide may be updated every frame, so only
+                            // read value in the draw phase.
+                            .graphicsLayer {
+                                translationX = viewModel.unfoldTranslationXForStartSide
+                            }
                             .fillMaxSize()
                             .padding(bottom = navBarBottomHeight)
                 ) {

@@ -29,11 +29,13 @@ import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -44,6 +46,12 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
 
     private val underTest: ScreenCaptureKeyboardShortcutInteractor by lazy {
         kosmos.screenCaptureKeyboardShortcutInteractor
+    }
+
+    @Before
+    fun setUp() {
+        // Default to large screen.
+        kosmos.fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
     }
 
     @Test

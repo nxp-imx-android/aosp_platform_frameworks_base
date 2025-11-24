@@ -17,6 +17,7 @@
 package com.android.server.statusbar;
 
 import static android.Manifest.permission.CONTROL_DEVICE_STATE;
+import static android.Manifest.permission.DRAW_MOTION_CUES;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.app.StatusBarManager.DISABLE2_GLOBAL_ACTIONS;
@@ -24,6 +25,8 @@ import static android.app.StatusBarManager.DISABLE2_NOTIFICATION_SHADE;
 import static android.app.StatusBarManager.NAV_BAR_MODE_DEFAULT;
 import static android.app.StatusBarManager.NAV_BAR_MODE_KIDS;
 import static android.app.StatusBarManager.NavBarMode;
+import static android.app.StatusBarManager.SHOW_POWER_MENU_RESULT_DISABLED;
+import static android.app.StatusBarManager.SHOW_POWER_MENU_RESULT_SHOWING;
 import static android.app.StatusBarManager.SessionFlags;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.inputmethodservice.InputMethodService.BACK_DISPOSITION_DEFAULT;
@@ -49,6 +52,8 @@ import android.app.ITransientNotificationCallback;
 import android.app.Notification;
 import android.app.StatusBarManager;
 import android.app.compat.CompatChanges;
+import android.app.motioncues.MotionCuesService;
+import android.app.motioncues.MotionCuesSettings;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
@@ -202,7 +207,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     private GlobalActionsProvider.GlobalActionsListener mGlobalActionListener;
 
     @GuardedBy("mShowPowerMenuCallbacks")
-    private final ArraySet<AndroidFuture<Boolean>> mShowPowerMenuCallbacks = new ArraySet<>();
+    private final ArraySet<AndroidFuture<Integer>> mShowPowerMenuCallbacks = new ArraySet<>();
     private volatile boolean mGlobalActionsShowing = false;
     private final IBinder mSysUiVisToken = new Binder();
 
@@ -1790,6 +1795,10 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 || mContext.checkCallingPermission(INTERACT_ACROSS_USERS) == PERMISSION_GRANTED;
     }
 
+    private void enforceMotionCuesDrawingControl() {
+        mContext.enforceCallingOrSelfPermission(DRAW_MOTION_CUES, "StatusBarManagerService");
+    }
+
     /**
      *  For targetSdk S+ we require STATUS_BAR. For targetSdk < S, we only require EXPAND_STATUS_BAR
      *  but also require that it falls into one of the allowed use-cases to lock down abuse vector.
@@ -2032,12 +2041,12 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     }
 
     private void notifyShowPowerMenuCallbacks() {
-        ArraySet<AndroidFuture<Boolean>> callbacks;
+        ArraySet<AndroidFuture<Integer>> callbacks;
         synchronized (mShowPowerMenuCallbacks) {
             callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
             mShowPowerMenuCallbacks.clear();
         }
-        callbacks.forEach(callback -> callback.complete(true));
+        callbacks.forEach(callback -> callback.complete(SHOW_POWER_MENU_RESULT_SHOWING));
     }
 
     /**
@@ -2060,20 +2069,23 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
      * @param future a {@link Boolean} future for the reply
      */
     @Override
-    @EnforcePermission(Manifest.permission.SHOW_POWER_MENU)
+    @EnforcePermission(anyOf = {
+            Manifest.permission.SHOW_POWER_MENU,
+            Manifest.permission.SHOW_POWER_MENU_PRIVILEGED
+    })
     public void showGlobalActionsFromApp(@NonNull AndroidFuture future) {
         showGlobalActionsFromApp_enforcePermission();
         Objects.requireNonNull(future);
 
 
-        @SuppressWarnings("unchecked") final AndroidFuture<Boolean> typedFuture = future;
+        @SuppressWarnings("unchecked") final AndroidFuture<Integer> typedFuture = future;
 
         if (!android.app.Flags.statusbarApiShowPowerMenu()) {
             typedFuture.completeExceptionally(new RuntimeException("Disabled flag"));
         }
 
         if (mGlobalActionsProvider.isGlobalActionsDisabled()) {
-            typedFuture.complete(false);
+            typedFuture.complete(SHOW_POWER_MENU_RESULT_DISABLED);
             return;
         }
 
@@ -2085,7 +2097,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
 
         if (mGlobalActionsShowing) {
             // We are already showing power menu. Return true immediately
-            typedFuture.complete(true);
+            typedFuture.complete(SHOW_POWER_MENU_RESULT_SHOWING);
         }
 
         synchronized (mShowPowerMenuCallbacks) {
@@ -2111,7 +2123,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
     }
 
-    private void removeGlobalActionFutureOnTimeoutOrError(AndroidFuture<Boolean> future) {
+    private void removeGlobalActionFutureOnTimeoutOrError(AndroidFuture<Integer> future) {
         synchronized (mShowPowerMenuCallbacks) {
             mShowPowerMenuCallbacks.remove(future);
         }
@@ -2930,6 +2942,58 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
     }
 
+    /**
+     * Directs the system to bind to the given component and start a motion cues session.
+     *
+     * <p>A motion cues session is a period during which a designated service provides data
+     * to draw visual cues on the screen. These cues are typically rendered as shapes
+     * overlaying the current application. The primary goal is to help alleviate symptoms of
+     * motion sickness while in a moving vehicle by matching the cues to the vehicle's motion.
+     *
+     * <p>When a session is active, the service specified by {@code componentName} will send
+     * updates through a callback to SystemUI to render these cues.
+     *
+     * @param componentName The ComponentName of the {@link MotionCuesService} implementation for
+     *                      SystemUi to bind to that will provide the motion cue events.
+     * @param motionCuesSettings The initial {@link MotionCuesSettings} to configure the appearance
+     *                           and layout of the motion cues.
+     */
+    @Override
+    public void startMotionCuesSession(
+            @NonNull ComponentName componentName, @NonNull MotionCuesSettings motionCuesSettings) {
+        enforceMotionCuesDrawingControl();
+        IStatusBar bar = mBar;
+        if (bar != null) {
+            try {
+                bar.startMotionCuesSession(componentName, motionCuesSettings);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "startMotionCuesSession", e);
+            }
+        }
+    }
+
+    /**
+     * Terminates the active motion cues session.
+     *
+     * <p>This method stops the rendering of any on-screen visual cues and unbinds the system
+     * from the {@link android.app.motioncues.MotionCuesService} instance that was
+     * previously started with {@link #startMotionCuesSession(ComponentName, MotionCuesSettings)}.
+     *
+     * <p>If no motion cues session is currently active, calling this method has no effect.
+     */
+    @Override
+    public void endMotionCuesSession() {
+        enforceMotionCuesDrawingControl();
+        IStatusBar bar = mBar;
+        if (bar != null) {
+            try {
+                bar.endMotionCuesSession();
+            } catch (RemoteException e) {
+                Slog.e(TAG, "endMotionCuesSession", e);
+            }
+        }
+    }
+
     // ================================================================================
     // Can be called from any thread
     // ================================================================================
@@ -3067,7 +3131,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 pw.println("    " + requests.get(i) + ",");
             }
             pw.println("  ]");
-            ArraySet<AndroidFuture<Boolean>> callbacks;
+            ArraySet<AndroidFuture<Integer>> callbacks;
             synchronized (mShowPowerMenuCallbacks) {
                 callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
             }

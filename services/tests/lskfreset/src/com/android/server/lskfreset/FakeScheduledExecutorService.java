@@ -16,12 +16,14 @@
 
 package com.android.server.lskfreset;
 
-import com.google.common.collect.ImmutableList;
+import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -37,7 +39,32 @@ import java.util.concurrent.TimeoutException;
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
-    private final List<FakeScheduledFuture<?>> mFutures = new ArrayList<>();
+    private final DelayQueue<FakeScheduledFuture<?>> mFutures = new DelayQueue<>();
+
+    // The thread that can run fastForwardMillis.
+    private final Thread mExecutionThread;
+
+    /** Assert that the currently executing thread is the execution thread. */
+    private void assertExecutionThread() {
+        Preconditions.checkState(Thread.currentThread() == mExecutionThread);
+    }
+
+    /** Assert that the currently executing thread is not the execution thread. */
+    private void assertNotExecutionThread() {
+        Preconditions.checkState(Thread.currentThread() != mExecutionThread);
+    }
+
+    /**
+     * Construct a new fake implementation of ScheduledExecutorService.
+     *
+     * @param executionThread The thread that is allowed to call fastForwardMillis. It is an error
+     *     to fast forward time from any other thread. It is also an error to call any operation
+     *     that would wait/block on the execution of a task from this thread, as that would lead to
+     *     a deadlock.
+     */
+    FakeScheduledExecutorService(Thread executionThread) {
+        mExecutionThread = executionThread;
+    }
 
     /**
      * Reports the number of currently queued tasks.
@@ -55,32 +82,28 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      * @return The number of tasks that were executed.
      */
     int fastForwardMillis(long millis) {
+        assertExecutionThread();
         mElapsedMillis += millis;
-        // Make a copy of the futures for us to iterate over, and clear out the existing mFutures.
-        // Otherwise if any tasks were to schedule new tasks you would end up modifying the list
-        // of futures while we're iterating over it.
-        ImmutableList<FakeScheduledFuture<?>> futuresCopy = ImmutableList.copyOf(mFutures);
-        mFutures.clear();
-        for (FakeScheduledFuture<?> future : futuresCopy) {
-            if (future.getDelay(TimeUnit.MILLISECONDS) <= 0) {
-                future.getRunnable().run();
-            } else {
-                mFutures.add(future);
-            }
+        List<FakeScheduledFuture<?>> readyFutures = new ArrayList<>();
+        mFutures.drainTo(readyFutures);
+        for (FakeScheduledFuture<?> future : readyFutures) {
+            future.execute();
         }
-        return futuresCopy.size() - mFutures.size();
+        return readyFutures.size();
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         FakeScheduledFuture<?> future = new FakeScheduledFuture<>(command, unit.toMillis(delay));
-        mFutures.add(future);
+        mFutures.put(future);
         return future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        FakeScheduledFuture<V> future = new FakeScheduledFuture<>(callable, unit.toMillis(delay));
+        mFutures.put(future);
+        return future;
     }
 
     @Override
@@ -112,7 +135,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public boolean isTerminated() {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
@@ -122,17 +145,23 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        throw new UnsupportedOperationException();
+        return schedule(task, 0, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        throw new UnsupportedOperationException();
+        return schedule(
+                () -> {
+                    task.run();
+                    return result;
+                },
+                0,
+                TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public Future<?> submit(Runnable runnable) {
-        throw new UnsupportedOperationException();
+    public Future<?> submit(Runnable task) {
+        return schedule(task, 0, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -162,21 +191,52 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public void execute(Runnable command) {
-        throw new UnsupportedOperationException();
+        schedule(command, 0, TimeUnit.MILLISECONDS);
     }
 
     private class FakeScheduledFuture<V> implements ScheduledFuture<V> {
+        // The underlying object to be called when the scheduled time arrives. Exactly one of these
+        // will be non-null.
         private final Runnable mRunnable;
+        private final Callable<V> mCallable;
+
+        // The result of the callable, if this future is for a callable. After execution if the
+        // callable threw an exception then mResultException will be non-null; otherwise it returned
+        // mResult. Note that callables can return null and so mResult==null does not necessarily
+        // indicate that the callable was not executed.
+        private V mResult = null;
+        private ExecutionException mResultException = null;
+
         private final long mTimeToExecuteAt;
+        private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
         private boolean mCancelled = false;
 
         private FakeScheduledFuture(Runnable runnable, long delay) {
             mRunnable = runnable;
+            mCallable = null;
             mTimeToExecuteAt = mElapsedMillis + delay;
         }
 
-        private Runnable getRunnable() {
-            return mRunnable;
+        private FakeScheduledFuture(Callable<V> callable, long delay) {
+            mRunnable = null;
+            mCallable = callable;
+            mTimeToExecuteAt = mElapsedMillis + delay;
+        }
+
+        private void execute() {
+            try {
+                if (mRunnable != null) {
+                    mRunnable.run();
+                } else {
+                    try {
+                        mResult = mCallable.call();
+                    } catch (Exception e) {
+                        mResultException = new ExecutionException(e);
+                    }
+                }
+            } finally {
+                mCompletionLatch.countDown();
+            }
         }
 
         @Override
@@ -210,13 +270,19 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public V get() throws ExecutionException, InterruptedException {
-            return null;
+            assertNotExecutionThread();
+            mCompletionLatch.await();
+            if (mResultException != null) {
+                throw mResultException;
+            } else {
+                return mResult;
+            }
         }
 
         @Override
         public V get(long timeout, TimeUnit unit)
                 throws ExecutionException, InterruptedException, TimeoutException {
-            return null;
+            throw new UnsupportedOperationException();
         }
     }
 }

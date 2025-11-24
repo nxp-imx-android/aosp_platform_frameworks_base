@@ -201,8 +201,7 @@ public class NotificationHelper {
         }
         if (notification.isStyle(Notification.MessagingStyle.class)
                 && notification.extras != null) {
-            final Bundle[] messages = notification.extras.getParcelableArray(
-                    EXTRA_MESSAGES, Bundle.class);
+            final Parcelable[] messages = notification.extras.getParcelableArray(EXTRA_MESSAGES);
             if (!ArrayUtils.isEmpty(messages)) {
                 List<Notification.MessagingStyle.Message> sortedMessages =
                         Notification.MessagingStyle.Message.getMessagesFromBundleArray(messages);

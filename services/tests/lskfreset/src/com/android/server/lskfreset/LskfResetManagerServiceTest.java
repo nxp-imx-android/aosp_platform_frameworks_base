@@ -32,26 +32,26 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnit4.class)
 public class LskfResetManagerServiceTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final UserHandle TEST_USER_0 = UserHandle.getUserHandleForUid(1000);
     private static final UserHandle TEST_USER_1 = UserHandle.getUserHandleForUid(1001);
 
-    private FakeScheduledExecutorService mExecutor = new FakeScheduledExecutorService();
+    private FakeScheduledExecutorService mExecutor;
 
     private Context mContext;
     private LskfResetManagerService mService;
@@ -65,6 +65,7 @@ public class LskfResetManagerServiceTest {
 
     @Before
     public void setUp() {
+        mExecutor = new FakeScheduledExecutorService(Thread.currentThread());
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mService = new LskfResetManagerService(mContext, new TestInjector());
         mService.onStart();

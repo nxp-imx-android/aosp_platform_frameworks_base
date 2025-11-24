@@ -26,9 +26,6 @@ class BundleUtil {
             pipelineEntry is NotificationEntry && isClassified(pipelineEntry)
 
         fun isClassified(notificationEntry: NotificationEntry): Boolean {
-            if (notificationEntry.channel == null) {
-                return false
-            }
             return notificationEntry.isBundled
         }
     }

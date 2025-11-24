@@ -16,7 +16,6 @@
 
 package com.android.systemui.bouncer.ui.composable
 
-import android.app.AlertDialog
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.activity.BackEventCompat
@@ -42,7 +41,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.isElement
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModel
@@ -63,6 +61,7 @@ import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import kotlin.test.Ignore
 import kotlin.time.Duration.Companion.seconds
@@ -74,7 +73,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
@@ -124,12 +125,8 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
             .apply { setTransitionState(transitionState) }
     }
 
-    private val bouncerDialogFactory =
-        object : BouncerDialogFactory {
-            override fun invoke(): AlertDialog {
-                throw AssertionError()
-            }
-        }
+    @Mock private lateinit var bouncerDialogFactory: SystemUIDialog.Factory
+
     private val bouncerSceneActionsViewModelFactory =
         object : BouncerUserActionsViewModel.Factory {
             override fun create() = BouncerUserActionsViewModel()
@@ -149,6 +146,8 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+
+        whenever(bouncerDialogFactory.create()).thenThrow(AssertionError())
 
         mBouncerOverlayContentViewModel = kosmos.bouncerOverlayContentViewModel
 

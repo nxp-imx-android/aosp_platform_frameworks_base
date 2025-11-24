@@ -23,12 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
@@ -52,39 +49,32 @@ object StackedMobileIconBinder {
             view = view,
             shouldBeVisible = { mobileIconsViewModel.isStackable.value },
         ) { _, tintFlow ->
-            view.repeatWhenAttached {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    view.composeView.apply {
-                        setViewCompositionStrategy(
-                            if (SceneContainerFlag.isEnabled) {
-                                ViewCompositionStrategy.Default
-                            } else {
-                                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            view.composeView.apply {
+                setViewCompositionStrategy(
+                    if (SceneContainerFlag.isEnabled) {
+                        ViewCompositionStrategy.Default
+                    } else {
+                        ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                    }
+                )
+                setContent {
+                    val viewModel: StackedMobileIconViewModel =
+                        if (StatusBarMobileIconKairos.isEnabled) {
+                            rememberKairosActivatable("StackedMobileIconBinder", kairosNetwork) {
+                                kairosViewModelFactory.create()
                             }
-                        )
-                        setContent {
-                            val viewModel: StackedMobileIconViewModel =
-                                if (StatusBarMobileIconKairos.isEnabled) {
-                                    rememberKairosActivatable(
-                                        "StackedMobileIconBinder",
-                                        kairosNetwork,
-                                    ) {
-                                        kairosViewModelFactory.create()
-                                    }
-                                } else {
-                                    rememberViewModel("StackedMobileIconBinder") {
-                                        viewModelFactory.create()
-                                    }
-                                }
-                            val tint by tintFlow.collectAsStateWithLifecycle()
-                            if (viewModel.isIconVisible) {
-                                CompositionLocalProvider(LocalContentColor provides Color(tint)) {
-                                    StackedMobileIcon(
-                                        viewModel,
-                                        modifier = Modifier.onSizeChanged { view.requestLayout() },
-                                    )
-                                }
+                        } else {
+                            rememberViewModel("StackedMobileIconBinder") {
+                                viewModelFactory.create()
                             }
+                        }
+                    val tint by tintFlow.collectAsStateWithLifecycle()
+                    if (viewModel.isIconVisible) {
+                        CompositionLocalProvider(LocalContentColor provides Color(tint)) {
+                            StackedMobileIcon(
+                                viewModel,
+                                modifier = Modifier.onSizeChanged { view.requestLayout() },
+                            )
                         }
                     }
                 }

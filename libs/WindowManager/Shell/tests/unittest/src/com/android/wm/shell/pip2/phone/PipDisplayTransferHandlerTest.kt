@@ -49,6 +49,8 @@ import android.testing.TestableResources
 import android.util.ArrayMap
 import android.view.Display
 import android.view.SurfaceControl
+import android.view.WindowManager
+import android.window.TransitionInfo
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler.ORIGIN_DISPLAY_ID_KEY
@@ -66,9 +68,13 @@ import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm
 import com.android.wm.shell.common.pip.PipSnapAlgorithm
 import com.android.wm.shell.pip2.animation.PipResizeAnimator
+import com.android.wm.shell.pip2.phone.PipTransitionState.ENTERED_PIP
 import com.android.wm.shell.pip2.phone.PipTransitionState.EXITED_PIP
 import com.android.wm.shell.pip2.phone.PipTransitionState.EXITING_PIP
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Rule
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.never
 
@@ -140,6 +146,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         whenever(mockPipSnapAlgorithm.getSnapFraction(any(), any(), any())).thenReturn(0.5f)
         whenever(mockPipBoundsState.minSize).thenReturn(MIN_SIZE)
         whenever(mockPipBoundsState.maxSize).thenReturn(MAX_SIZE)
+        whenever(mockPipTransitionState.pipTaskInfo).thenReturn(PIP_TASK)
         whenever(
             mockSurfaceTransactionHelper.setPipTransformations(
                 any(),
@@ -248,6 +255,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         pipDisplayTransferHandler.mTargetDisplayId = TARGET_DISPLAY_ID
         mockPipTransitionState.pipTaskInfo = mockTaskInfo
         mockPipTransitionState.pipCandidateTaskInfo = mockTaskInfo
+        val animEndCallback = ArgumentCaptor.forClass(Runnable::class.java)
 
         pipDisplayTransferHandler.onPipTransitionStateChanged(
             UNDEFINED,
@@ -261,6 +269,35 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         verify(mockPipTransitionState).pipTaskInfo = eq(mockTaskInfo)
         verify(mockPipTransitionState).pipCandidateTaskInfo = eq(mockTaskInfo)
         verify(mockPipResizeAnimator).start()
+
+        verify(mockPipResizeAnimator).setAnimationEndCallback(animEndCallback.capture())
+        animEndCallback.value.run()
+        verify(mockPipTransitionState).state = eq(ENTERED_PIP)
+        verify(mockPipScheduler).scheduleFinishPipBoundsChange(eq(destinationBounds))
+        assertFalse(pipDisplayTransferHandler.mWaitingForDisplayTransfer)
+    }
+
+    @Test
+    fun onPipTransitionStateChanged_changingPipBounds_pipRemovedMidTransfer_resetStates() {
+        val extra = Bundle()
+        val destinationBounds = Rect(0, 0, 100, 100)
+        extra.putParcelable(PIP_START_TX, SurfaceControl.Transaction())
+        extra.putParcelable(PIP_DESTINATION_BOUNDS, destinationBounds)
+        pipDisplayTransferHandler.mWaitingForDisplayTransfer = true
+        pipDisplayTransferHandler.mPipRemovedMidDisplayTransfer = true
+        val animEndCallback = ArgumentCaptor.forClass(Runnable::class.java)
+
+        pipDisplayTransferHandler.onPipTransitionStateChanged(
+            UNDEFINED,
+            CHANGING_PIP_BOUNDS,
+            extra
+        )
+
+        verify(mockPipResizeAnimator).setAnimationEndCallback(animEndCallback.capture())
+        animEndCallback.value.run()
+        verify(mockPipTransitionState, never()).state = eq(ENTERED_PIP)
+        verify(mockPipScheduler).scheduleFinishPipBoundsChange(eq(mockPipBoundsState.bounds))
+        assertFalse(pipDisplayTransferHandler.mWaitingForDisplayTransfer)
     }
 
     @Test
@@ -486,7 +523,45 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
     }
 
+    @Test
+    fun isPipRemovedMidDisplayTransfer_notClosingType_returnsFalse() {
+        val info = createTransitionInfo(type = WindowManager.TRANSIT_OPEN)
+        pipDisplayTransferHandler.mWaitingForDisplayTransfer = true
+
+        assertFalse(pipDisplayTransferHandler.isPipRemovedMidDisplayTransfer(info))
+    }
+
+    @Test
+    fun isPipRemovedMidDisplayTransfer_notMidDisplayTransfer_returnsFalse() {
+        val info = createTransitionInfo()
+        pipDisplayTransferHandler.mWaitingForDisplayTransfer = false
+
+        assertFalse(pipDisplayTransferHandler.isPipRemovedMidDisplayTransfer(info))
+    }
+
+    @Test
+    fun isPipRemovedMidDisplayTransfer_closingType_midDisplayTransfer_returnsTrue() {
+        val info = createTransitionInfo()
+        pipDisplayTransferHandler.mWaitingForDisplayTransfer = true
+
+        assertTrue(pipDisplayTransferHandler.isPipRemovedMidDisplayTransfer(info))
+    }
+
+    private fun createTransitionInfo(
+        type: Int = WindowManager.TRANSIT_CLOSE,
+        changeMode: Int = WindowManager.TRANSIT_CLOSE,
+    ): TransitionInfo =
+        TransitionInfo(type, /* flags= */ 0).apply {
+            addChange(
+                TransitionInfo.Change(mock(), mock()).apply {
+                    taskInfo = PIP_TASK
+                    mode = changeMode
+                }
+            )
+        }
+
     companion object {
+        const val TASK_ID = 0
         const val ORIGIN_DISPLAY_ID = 0
         const val TARGET_DISPLAY_ID = 1
         const val SECONDARY_DISPLAY_ID = 2
@@ -494,6 +569,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         const val TEST_SHADOW_RADIUS = 5
         val START_DRAG_COORDINATES = PointF(100f, 100f)
         val PIP_BOUNDS = Rect(0, 0, 700, 700)
+        val PIP_TASK = ActivityManager.RunningTaskInfo().apply { taskId = TASK_ID }
         val DESTINATION_BOUNDS = Rect(100, 100, 800, 800)
         val MIN_SIZE = Point(100, 200)
         val MAX_SIZE = Point(300, 400)

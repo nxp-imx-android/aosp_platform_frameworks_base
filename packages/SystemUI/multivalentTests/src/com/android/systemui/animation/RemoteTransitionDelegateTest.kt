@@ -29,6 +29,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -67,7 +68,7 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
         )
 
         verify(firstRemoteTransition)
-            .startAnimation(firstBinder, firstTransitionInfo, firstSct, firstFinishedCallback)
+            .startAnimation(eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), any())
     }
 
     @Test
@@ -89,7 +90,7 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
         remoteTransitionDelegate.onTransitionConsumed(firstBinder, false)
 
         verify(firstRemoteTransition)
-            .startAnimation(firstBinder, firstTransitionInfo, firstSct, firstFinishedCallback)
+            .startAnimation(eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), any())
         verify(firstRemoteTransition)
             .mergeAnimation(
                 secondBinder,
@@ -122,14 +123,42 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
         remoteTransitionDelegate.onTransitionConsumed(secondBinder, false)
 
         verify(firstRemoteTransition)
-            .startAnimation(firstBinder, firstTransitionInfo, firstSct, firstFinishedCallback)
+            .startAnimation(eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), any())
         verify(firstRemoteTransition, never()).startAnimation(eq(secondBinder), any(), any(), any())
         verify(firstRemoteTransition).onTransitionConsumed(firstBinder, false)
         verify(firstRemoteTransition, never()).onTransitionConsumed(eq(secondBinder), anyBoolean())
         verify(secondRemoteTransition)
-            .startAnimation(secondBinder, secondTransitionInfo, secondSct, secondFinishedCallback)
+            .startAnimation(eq(secondBinder), eq(secondTransitionInfo), eq(secondSct), any())
         verify(secondRemoteTransition, never()).startAnimation(eq(firstBinder), any(), any(), any())
         verify(secondRemoteTransition).onTransitionConsumed(secondBinder, false)
         verify(secondRemoteTransition, never()).onTransitionConsumed(eq(firstBinder), anyBoolean())
+    }
+
+    @Test
+    fun finishCallback_clearsRemoteTransitionAndDelegatesFinish() {
+        val callbackCaptor = argumentCaptor<IRemoteTransitionFinishedCallback>()
+        remoteTransitionDelegate.startAnimation(
+            firstBinder,
+            firstTransitionInfo,
+            firstSct,
+            firstFinishedCallback,
+        )
+        verify(firstRemoteTransition)
+            .startAnimation(
+                eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), callbackCaptor.capture())
+
+        // Before finish, the remote is set and should receive calls
+        remoteTransitionDelegate.onTransitionConsumed(firstBinder, false)
+        verify(firstRemoteTransition).onTransitionConsumed(firstBinder, false)
+
+        // WHEN the transition is finished
+        callbackCaptor.firstValue.onTransitionFinished(null, null)
+
+        // THEN the original finish callback is invoked
+        verify(firstFinishedCallback).onTransitionFinished(null, null)
+
+        // AND the remote transition is cleared, so it no longer receives calls
+        remoteTransitionDelegate.onTransitionConsumed(firstBinder, true)
+        verify(firstRemoteTransition, never()).onTransitionConsumed(firstBinder, true)
     }
 }

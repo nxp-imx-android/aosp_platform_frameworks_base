@@ -16,6 +16,7 @@
 
 package com.android.internal.statusbar;
 
+import android.app.motioncues.MotionCuesSettings;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.graphics.drawable.Icon;
@@ -114,8 +115,8 @@ interface IStatusBarService
 
     void onGlobalActionsShown();
     void onGlobalActionsHidden();
-    @EnforcePermission("SHOW_POWER_MENU")
-    void showGlobalActionsFromApp(in AndroidFuture future /* T=Boolean */);
+    @EnforcePermission(anyOf={"SHOW_POWER_MENU", "SHOW_POWER_MENU_PRIVILEGED"})
+    void showGlobalActionsFromApp(in AndroidFuture future /* T=Integer */);
 
     /**
      * These methods are needed for global actions control which the UI is shown in sysui.
@@ -249,4 +250,14 @@ interface IStatusBarService
 
     /** Shows rear display educational dialog */
     void showRearDisplayDialog(int currentBaseState);
+
+    /** Directs the system to bind to the given component and start a motion cues session.
+    *
+    * @param componentName the component to bind to.
+    * @param motionCuesSettings the initial settings for motion cues.
+    */
+    void startMotionCuesSession(in ComponentName componentName, in MotionCuesSettings motionCuesSettings);
+
+    /** Terminates the started motion cues session */
+    void endMotionCuesSession();
 }

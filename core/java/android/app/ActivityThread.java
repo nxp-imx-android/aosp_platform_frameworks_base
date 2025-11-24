@@ -29,6 +29,7 @@ import static android.app.servertransaction.ActivityLifecycleItem.ON_START;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_STOP;
 import static android.app.servertransaction.ActivityLifecycleItem.PRE_ON_CREATE;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
+import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -234,6 +235,7 @@ import android.window.SplashScreenView;
 import android.window.TaskFragmentTransaction;
 import android.window.TaskSnapshotManager;
 import android.window.WindowContextInfo;
+import android.window.WindowExtensionsHelper;
 import android.window.WindowProviderService;
 import android.window.WindowTokenClientController;
 
@@ -1960,10 +1962,8 @@ public final class ActivityThread extends ClientTransactionHandler
             }
 
             // Task Snapshot
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                if (TaskSnapshotManager.isUsed()) {
-                    TaskSnapshotManager.getInstance().dump(pw);
-                }
+            if (TaskSnapshotManager.isUsed()) {
+                TaskSnapshotManager.getInstance().dump(pw);
             }
 
             // Unreachable native memory
@@ -8201,22 +8201,26 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         // Set binder transaction callback after finishing bindApplication
-        Binder.setTransactionCallback(new IBinderCallback() {
-            @Override
-            public void onTransactionError(int pid, int code, int flags, int err) {
-                final long now = SystemClock.uptimeMillis();
-                if (now < mBinderCallbackLast + BINDER_CALLBACK_THROTTLE) {
-                    Slog.d(TAG, "Too many transaction errors, throttling freezer binder callback.");
-                    return;
-                }
-                mBinderCallbackLast = now;
-                try {
-                    mgr.frozenBinderTransactionDetected(pid, code, flags, err);
-                } catch (RemoteException ex) {
-                    throw ex.rethrowFromSystemServer();
-                }
-            }
-        });
+        Binder.setTransactionCallback(
+                new IBinderCallback() {
+                    @Override
+                    public void onTransactionError(int pid, int code, int flags, int err) {
+                        final long now = SystemClock.uptimeMillis();
+                        if (now < mBinderCallbackLast + BINDER_CALLBACK_THROTTLE) {
+                            Slog.d(
+                                    TAG,
+                                    "Too many transaction errors, throttling transaction error"
+                                        + " callback.");
+                            return;
+                        }
+                        mBinderCallbackLast = now;
+                        try {
+                            mgr.frozenBinderTransactionDetected(pid, code, flags, err);
+                        } catch (RemoteException ex) {
+                            throw ex.rethrowFromSystemServer();
+                        }
+                    }
+                });
 
         // Register callback to report native memory metrics post GC cleanup
         // Note: we do not report memory metrics of isolated processes unless
@@ -8229,6 +8233,13 @@ public final class ActivityThread extends ClientTransactionHandler
                     MetricsLoggerWrapper.logPostGcMemorySnapshot();
                 }
             });
+        }
+
+        // Initialize embedding if needed.
+        if (com.android.window.flags.Flags.virtualGamepadOverride()
+                && CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD)
+                && !Process.isIsolated()) {
+            WindowExtensionsHelper.initEmbedding(app);
         }
     }
 

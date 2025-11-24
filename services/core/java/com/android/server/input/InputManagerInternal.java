@@ -57,9 +57,12 @@ public abstract class InputManagerInternal {
     // Backup and restore information for custom input gestures.
     public static final int BACKUP_CATEGORY_INPUT_GESTURES = 0;
 
+    // Backup and restore information for device key and axis remapping
+    public static final int BACKUP_CATEGORY_INPUT_DEVICE_REMAPPING = 1;
+
     // Backup and Restore categories for sending map of data back and forth to backup and restore
     // infrastructure.
-    @IntDef({BACKUP_CATEGORY_INPUT_GESTURES})
+    @IntDef({BACKUP_CATEGORY_INPUT_GESTURES, BACKUP_CATEGORY_INPUT_DEVICE_REMAPPING})
     public @interface BackupCategory {
     }
 
@@ -305,7 +308,7 @@ public abstract class InputManagerInternal {
     public abstract boolean setKernelWakeEnabled(int deviceId, boolean enabled);
 
     /**
-     * Retrieves the input gestures backup payload data.
+     * Retrieves the input backup payload data.
      *
      * @param userId the user ID of the backup data.
      * @return byte array of UTF-8 encoded backup data.

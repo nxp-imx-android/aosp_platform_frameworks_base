@@ -1232,5 +1232,137 @@ public class InfoMediaManagerTest {
                 .asList()
                 .containsExactly(TEST_ID_4, TEST_ID_1, TEST_ID_3)
                 .inOrder();
+
+    }
+
+    @Test
+    public void getMissingPermissionsInfo_noPreference_returnsNull() {
+        when(mRouter2.getRouteListingPreference()).thenReturn(null);
+        Set<String> testPermissions = Set.of("perm1", "perm2");
+        when(mRouter2.getMissingPermissions()).thenReturn(testPermissions);
+
+        mInfoMediaManager.notifyRouteListingPreferenceUpdated(null);
+
+        assertThat(mInfoMediaManager.getMissingPermissionsInfo()).isNull();
+    }
+
+    @Test
+    public void getMissingPermissionsInfo_noComponent_returnsNull() {
+        RouteListingPreference preference = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(null)
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(preference);
+        Set<String> permissions = Set.of("perm1", "perm2");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+
+        mInfoMediaManager.notifyRouteListingPreferenceUpdated(preference);
+
+        assertThat(mInfoMediaManager.getMissingPermissionsInfo()).isNull();
+    }
+
+    @Test
+    public void getMissingPermissionsInfo_withComponentAndPermissions_returnsInfo() {
+        RouteListingPreference pref = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(new ComponentName(TEST_PACKAGE_NAME, "MyClass"))
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(pref);
+        Set<String> permissions = Set.of("perm1", "perm2");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+
+        mInfoMediaManager.notifyRouteListingPreferenceUpdated(pref);
+        MissingPermissionsInfo info = mInfoMediaManager.getMissingPermissionsInfo();
+
+        assertThat(info).isNotNull();
+        assertThat(info.getComponentName()).isEqualTo(pref.getMissingPermissionsComponentName());
+        assertThat(info.getPermissions()).containsExactlyElementsIn(permissions);
+    }
+
+    @Test
+    public void getMissingPermissionsInfo_callbackAddedAfterComponentAndPermsSet_returnsInfo() {
+        RouteListingPreference pref = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(new ComponentName(TEST_PACKAGE_NAME, "MyClass"))
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(pref);
+        Set<String> permissions = Set.of("perm1", "perm2");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+
+        mInfoMediaManager.registerCallback(mCallback);
+        MissingPermissionsInfo info = mInfoMediaManager.getMissingPermissionsInfo();
+
+        assertThat(info).isNotNull();
+        assertThat(info.getComponentName()).isEqualTo(pref.getMissingPermissionsComponentName());
+        assertThat(info.getPermissions()).containsExactlyElementsIn(permissions);
+    }
+
+    @Test
+    public void notifyRouteListingPreferenceUpdated_dispatchesMissingPermissions() {
+        mInfoMediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+
+        RouteListingPreference pref = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(new ComponentName(TEST_PACKAGE_NAME, "Class1"))
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(pref);
+        Set<String> permissions = Set.of("perm1");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+
+        mInfoMediaManager.notifyRouteListingPreferenceUpdated(pref);
+
+        ArgumentCaptor<MissingPermissionsInfo> captor =
+                ArgumentCaptor.forClass(MissingPermissionsInfo.class);
+        verify(mCallback).onMissingPermissionsUpdated(captor.capture());
+        MissingPermissionsInfo info = captor.getValue();
+        assertThat(info).isNotNull();
+        assertThat(info.getComponentName()).isEqualTo(pref.getMissingPermissionsComponentName());
+        assertThat(info.getPermissions()).containsExactlyElementsIn(permissions);
+    }
+
+    @Test
+    public void notifyMissingPermissionsUpdated_dispatchesMissingPermissions() {
+        mInfoMediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+
+        RouteListingPreference pref = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(new ComponentName(TEST_PACKAGE_NAME, "MyClass"))
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(pref);
+
+        Set<String> permissions = Set.of("perm1");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+        mInfoMediaManager.notifyMissingPermissionsUpdated(permissions);
+
+        ArgumentCaptor<MissingPermissionsInfo> captor =
+                ArgumentCaptor.forClass(MissingPermissionsInfo.class);
+        verify(mCallback).onMissingPermissionsUpdated(captor.capture());
+        MissingPermissionsInfo info = captor.getValue();
+        assertThat(info).isNotNull();
+        assertThat(info.getComponentName()).isEqualTo(pref.getMissingPermissionsComponentName());
+        assertThat(info.getPermissions()).containsExactlyElementsIn(permissions);
+    }
+
+    @Test
+    public void refreshMissingPermissionsInfo_onlyDispatchesCallbackOnChanges() {
+        mInfoMediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+
+        RouteListingPreference pref = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setMissingPermissionsComponentName(new ComponentName(TEST_PACKAGE_NAME, "Class1"))
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(pref);
+        Set<String> permissions = Set.of("perm1");
+        when(mRouter2.getMissingPermissions()).thenReturn(permissions);
+
+        // Send 2 callbacks
+        mInfoMediaManager.notifyRouteListingPreferenceUpdated(pref);
+        mInfoMediaManager.notifyMissingPermissionsUpdated(permissions);
+
+        // The update should only happen once
+        verify(mCallback, times(1)).onMissingPermissionsUpdated(any());
     }
 }

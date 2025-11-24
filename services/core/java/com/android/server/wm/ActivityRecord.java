@@ -425,7 +425,7 @@ final class ActivityRecord extends WindowToken {
     // crashes if the UI thread was hung. We put this timeout one second behind
     // the ANR timeout so these situations will generate ANR instead of
     // Surface lost or other errors.
-    private static final int STOP_TIMEOUT = 11 * 1000;
+    static final int STOP_TIMEOUT = 11 * 1000;
 
     // How long we wait until giving up on an activity telling us it has
     // finished destroying itself.
@@ -1864,7 +1864,7 @@ final class ActivityRecord extends WindowToken {
         mAtmService = _service;
         ((Token) token).mActivityRef = new WeakReference<>(this);
         info = aInfo;
-        mUserId = UserHandle.getUserId(info.applicationInfo.uid);
+        mUserId = UserHandle.getUserId(info.getUid());
         packageName = info.applicationInfo.packageName;
         intent = _intent;
 
@@ -1975,9 +1975,9 @@ final class ActivityRecord extends WindowToken {
         hasBeenLaunched = false;
         mTaskSupervisor = supervisor;
 
-        info.taskAffinity = computeTaskAffinity(info.taskAffinity, info.applicationInfo.uid);
+        info.taskAffinity = computeTaskAffinity(info.taskAffinity, info.getUid());
         taskAffinity = info.taskAffinity;
-        final String uid = Integer.toString(info.applicationInfo.uid);
+        final String uid = Integer.toString(info.getUid());
         if (info.windowLayout != null && info.windowLayout.windowLayoutAffinity != null
                 && !info.windowLayout.windowLayoutAffinity.startsWith(uid)) {
             info.windowLayout.windowLayoutAffinity =
@@ -1990,8 +1990,8 @@ final class ActivityRecord extends WindowToken {
         stateNotNeeded = (aInfo.flags & FLAG_STATE_NOT_NEEDED) != 0;
         theme = aInfo.getThemeResource();
         if ((aInfo.flags & FLAG_MULTIPROCESS) != 0 && _caller != null
-                && (aInfo.applicationInfo.uid == SYSTEM_UID
-                    || aInfo.applicationInfo.uid == _caller.mInfo.uid)) {
+                && (aInfo.getUid() == SYSTEM_UID
+                    || aInfo.getUid() == _caller.mUid)) {
             processName = _caller.mName;
         } else {
             processName = aInfo.processName;
@@ -2302,16 +2302,10 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
-        final TaskSnapshot snapshot;
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
-                    Flags.respectRequestedTaskSnapshotResolution()
-                            ? TaskSnapshotManager.RESOLUTION_ANY
-                            : TaskSnapshotManager.RESOLUTION_HIGH);
-        } else {
-            snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
-                    false /* isLowResolution */);
-        }
+        final TaskSnapshot snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
+                Flags.respectRequestedTaskSnapshotResolution()
+                        ? TaskSnapshotManager.RESOLUTION_ANY
+                        : TaskSnapshotManager.RESOLUTION_HIGH);
         final int type = getStartingWindowType(newTask, taskSwitch, processRunning,
                 allowTaskSnapshot, activityCreated, activityAllDrawn, snapshot);
 
@@ -2910,8 +2904,7 @@ final class ActivityRecord extends WindowToken {
                 // We only allow home activities to be resizeable if they explicitly requested it.
                 info.resizeMode = RESIZE_MODE_UNRESIZEABLE;
             }
-        } else if (mAtmService.getRecentTasks().isRecentsComponent(mActivityComponent,
-                info.applicationInfo.uid)) {
+        } else if (mAtmService.getRecentTasks().isRecentsComponent(mActivityComponent, getUid())) {
             activityType = ACTIVITY_TYPE_RECENTS;
         } else if (options != null && options.getLaunchActivityType() == ACTIVITY_TYPE_ASSISTANT
                 && canLaunchAssistActivity(launchedFromPackage)) {
@@ -3378,7 +3371,7 @@ final class ActivityRecord extends WindowToken {
      */
     boolean checkEnterPictureInPictureAppOpsState() {
         return mAtmService.getAppOpsManager().checkOpNoThrow(
-                OP_PICTURE_IN_PICTURE, info.applicationInfo.uid, packageName) == MODE_ALLOWED;
+                OP_PICTURE_IN_PICTURE, getUid(), packageName) == MODE_ALLOWED;
     }
 
     private boolean isAlwaysFocusable() {
@@ -3503,7 +3496,7 @@ final class ActivityRecord extends WindowToken {
                     resultData.prepareToLeaveUser(mUserId);
                 }
             }
-            if (info.applicationInfo.uid > 0) {
+            if (this.getUid() > 0) {
                 mAtmService.mUgmInternal.grantUriPermissionUncheckedFromIntent(resultGrants,
                         resultTo.getUriPermissionsLocked());
             }
@@ -6426,6 +6419,7 @@ final class ActivityRecord extends WindowToken {
             Slog.i(TAG, "Clear pending relaunch count on stopped " + this);
             clearRelaunching();
         }
+        app.onActivityStopped(this);
 
         if (finishing) {
             abortAndClearOptionsAnimation();
@@ -6478,7 +6472,6 @@ final class ActivityRecord extends WindowToken {
         // stop tracking
         mSplashScreenStyleSolidColor = true;
 
-        mAtmService.mBackNavigationController.removePredictiveSurfaceIfNeeded(this);
         if (mStartingWindow != null) {
             ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "Finish starting %s"
                     + ": first real window is shown, no animation", win.mToken);
@@ -6952,11 +6945,11 @@ final class ActivityRecord extends WindowToken {
             return null;
         }
         final WindowProcessController myProcess = app != null
-                ? app : mAtmService.mProcessNames.get(processName, info.applicationInfo.uid);
+                ? app : mAtmService.mProcessNames.get(processName, getUid());
         final WindowProcessController candidateProcess = below.app != null
                         ? below.app
                         : mAtmService.mProcessNames.get(below.processName,
-                                below.info.applicationInfo.uid);
+                                below.getUid());
         // same process or same package
         if (candidateProcess == myProcess
                 || mActivityComponent.getPackageName()
@@ -8956,7 +8949,7 @@ final class ActivityRecord extends WindowToken {
     boolean isProcessRunning() {
         WindowProcessController proc = app;
         if (proc == null) {
-            proc = mAtmService.mProcessNames.get(processName, info.applicationInfo.uid);
+            proc = mAtmService.mProcessNames.get(processName, getUid());
         }
         return proc != null && proc.hasThread();
     }
@@ -9118,11 +9111,11 @@ final class ActivityRecord extends WindowToken {
     }
 
     int getUid() {
-        return info.applicationInfo.uid;
+        return info.getUid();
     }
 
     boolean isUid(int uid) {
-        return info.applicationInfo.uid == uid;
+        return info.getUid() == uid;
     }
 
     int getPid() {
@@ -9144,7 +9137,7 @@ final class ActivityRecord extends WindowToken {
     String getFilteredReferrer(String referrerPackage) {
         if (referrerPackage == null || (!referrerPackage.equals(packageName)
                 && mWmService.mPmInternal.filterAppAccess(
-                        referrerPackage, info.applicationInfo.uid, mUserId))) {
+                        referrerPackage, getUid(), mUserId))) {
             return null;
         }
         return referrerPackage;

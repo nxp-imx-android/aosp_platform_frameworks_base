@@ -30,7 +30,6 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_COMMUNAL_RESPONSIVE_GRID
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_DIRECT_EDIT_MODE
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
-import com.android.systemui.Flags.FLAG_HUB_EDIT_MODE_TRANSITION
 import com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
@@ -744,7 +743,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             // And transitioning to occluded
             kosmos.setTransition(
-                sceneTransition = Transition(from = Scenes.Communal, to = Scenes.Lockscreen),
+                sceneTransition = Transition(from = Scenes.Communal, to = Scenes.Occluded),
                 stateTransition =
                     TransitionStep(
                         from = KeyguardState.GLANCEABLE_HUB,
@@ -1083,8 +1082,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
-    fun showBackgroundForEditModeTransition_flagEnabled() =
+    fun showBackgroundForEditModeTransition() =
         kosmos.runTest {
             val showBackground by collectLastValue(underTest.showBackgroundForEditModeTransition)
 
@@ -1107,25 +1105,6 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // background hides the edit mode activity finish animation below.
             communalSceneInteractor.setEditModeState(EditModeState.SHOWING)
             assertThat(showBackground).isTrue()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
-    fun showBackgroundForEditModeTransition_flagDisabled_alwaysFalse() =
-        kosmos.runTest {
-            val showBackground by collectLastValue(underTest.showBackgroundForEditModeTransition)
-
-            communalSceneInteractor.setEditModeState(null)
-            assertThat(showBackground).isFalse()
-
-            communalSceneInteractor.setEditModeState(EditModeState.STARTING)
-            assertThat(showBackground).isFalse()
-
-            communalSceneInteractor.setEditModeState(EditModeState.CREATED)
-            assertThat(showBackground).isFalse()
-
-            communalSceneInteractor.setEditModeState(EditModeState.SHOWING)
-            assertThat(showBackground).isFalse()
         }
 
     private suspend fun setIsMainUser(isMainUser: Boolean) {

@@ -72,6 +72,11 @@ public class PackageBackwardCompatibility extends PackageSharedLibraryUpdater {
         packageUpdaters.add(new ApexSharedLibraryUpdater(
                 SystemConfig.getInstance().getSharedLibraries()));
 
+        // Add window manager extensions for apps with app compat flags that require extensions.
+        if (WindowManagerExtensionsUpdater.isFlagEnabled()) {
+            packageUpdaters.add(new WindowManagerExtensionsUpdater());
+        }
+
         PackageSharedLibraryUpdater[] updaterArray = packageUpdaters
                 .toArray(new PackageSharedLibraryUpdater[0]);
         INSTANCE = new PackageBackwardCompatibility(

@@ -2184,24 +2184,7 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @DisableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
     public void onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton()
-            throws RemoteException {
-        setMagnificationModeSettings(MODE_FULLSCREEN);
-
-        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
-        mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
-
-        verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
-                eq(MODE_FULLSCREEN));
-        verify(mMagnificationConnectionManager, times(2)).removeMagnificationSettingsPanel(
-                eq(TEST_DISPLAY));
-    }
-
-    @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
-    public void
-            onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton_throttled()
             throws RemoteException {
         setMagnificationModeSettings(MODE_FULLSCREEN);
 
@@ -2295,8 +2278,7 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
-    public void onTouchEvent_withThrottleEnabled_shouldRateLimit() throws RemoteException {
+    public void onTouchEvent_shouldRateLimit() throws RemoteException {
         mMagnificationController.setMagnificationCapabilities(
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
         setMagnificationEnabled(MODE_FULLSCREEN);
@@ -2315,8 +2297,7 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
-    public void onTouchEvent_withThrottleEnabled_shouldNotRateLimitAfterDelay()
+    public void onTouchEvent_shouldNotRateLimitAfterDelay()
             throws RemoteException {
         mMagnificationController.setMagnificationCapabilities(
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
@@ -2331,26 +2312,6 @@ public class MagnificationControllerTest {
 
         // Advance time past the throttle period. The next call should now go through.
         mSystemClock.advanceTime(AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS + 1);
-        mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
-        verify(mMagnificationConnectionManager).showMagnificationButton(
-                TEST_DISPLAY, MODE_FULLSCREEN);
-    }
-
-    @Test
-    @DisableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
-    public void onTouchEvent_withThrottleDisabled_shouldNotRateLimit() throws RemoteException {
-        mMagnificationController.setMagnificationCapabilities(
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
-        setMagnificationEnabled(MODE_FULLSCREEN);
-        clearInvocations(mMagnificationConnectionManager);
-
-        // The first call should go through and trigger a UI update.
-        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
-        verify(mMagnificationConnectionManager).showMagnificationButton(
-                TEST_DISPLAY, MODE_FULLSCREEN);
-        clearInvocations(mMagnificationConnectionManager);
-
-        // Subsequent call within the throttle period should also go through.
         mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
         verify(mMagnificationConnectionManager).showMagnificationButton(
                 TEST_DISPLAY, MODE_FULLSCREEN);

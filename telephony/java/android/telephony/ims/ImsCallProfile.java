@@ -269,7 +269,7 @@ public final class ImsCallProfile implements Parcelable {
     public static final String EXTRA_CALL_SUBJECT = "android.telephony.ims.extra.CALL_SUBJECT";
 
     /**
-     * Extra for the call composer call location, an {@Link android.location.Location} parcelable
+     * Extra for the call composer call location, an {@link android.location.Location} parcelable
      * class to represent the geolocation as a latitude and longitude pair. It can be set via
      * {@link #setCallExtraParcelable(String, Parcelable)}.
      *

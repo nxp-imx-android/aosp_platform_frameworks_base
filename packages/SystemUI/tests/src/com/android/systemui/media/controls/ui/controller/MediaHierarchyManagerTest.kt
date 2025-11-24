@@ -53,11 +53,11 @@ import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
-import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.policy.FakeConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
+import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.testKosmos
 import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.mockito.mock

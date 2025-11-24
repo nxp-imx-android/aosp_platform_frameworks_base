@@ -27,11 +27,9 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.RoutingChangeInfo;
-import android.media.RoutingChangeInfo.EntryPoint;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.os.Build;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -40,7 +38,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.bluetooth.A2dpProfile;
 import com.android.settingslib.bluetooth.BluetoothCallback;
@@ -287,6 +284,13 @@ public class LocalMediaManager implements BluetoothCallback {
     }
 
     /**
+     * Returns missing permission info for routes that the target app is missing permission for.
+     */
+    public MissingPermissionsInfo getMissingPermissionsInfo() {
+        return mInfoMediaManager.getMissingPermissionsInfo();
+    }
+
+    /**
      * Start scan connected MediaDevice
      */
     public void startScan() {
@@ -315,6 +319,12 @@ public class LocalMediaManager implements BluetoothCallback {
     void dispatchDeviceSuggestionsUpdated(List<SuggestedDeviceInfo> deviceSuggestions) {
         for (DeviceCallback callback : getCallbacks()) {
             callback.onDeviceSuggestionsUpdated(deviceSuggestions);
+        }
+    }
+
+    private void dispatchMissingPermissionsUpdated(@Nullable MissingPermissionsInfo info) {
+        for (DeviceCallback callback : getCallbacks()) {
+            callback.onMissingPermissionsUpdated(info);
         }
     }
 
@@ -743,6 +753,11 @@ public class LocalMediaManager implements BluetoothCallback {
                 @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
             dispatchDeviceSuggestionsUpdated(deviceSuggestions);
         }
+
+        @Override
+        public void onMissingPermissionsUpdated(@Nullable MissingPermissionsInfo info) {
+            dispatchMissingPermissionsUpdated(info);
+        }
     }
 
     private void unRegisterDeviceAttributeChangeCallback() {
@@ -824,6 +839,10 @@ public class LocalMediaManager implements BluetoothCallback {
         /** Callback for notifying that the suggested device list has been updated. */
         default void onDeviceSuggestionsUpdated(
                 @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
+        }
+
+        /** Callback for notifying that missing permissions info for the target app was updated. */
+        default void onMissingPermissionsUpdated(@Nullable MissingPermissionsInfo info) {
         }
     }
 

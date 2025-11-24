@@ -184,23 +184,30 @@ constructor(
     }
 
     /** Whether to show communal when exiting the occluded state. */
-    val showCommunalFromOccluded: Flow<Boolean> =
-        keyguardTransitionInteractor.startedKeyguardTransitionStep
-            .filter { step -> step.to == KeyguardState.OCCLUDED }
-            .combine(isCommunalAvailable, ::Pair)
-            .map { (step, available) ->
-                val enteredFromHub = step.from == KeyguardState.GLANCEABLE_HUB
-                val enteredFromDream =
-                    step.from == KeyguardState.DREAMING &&
-                        !communalSettingsInteractor.isV2FlagEnabled()
-                available && (enteredFromHub || enteredFromDream)
-            }
-            .flowOn(bgDispatcher)
-            .stateIn(
-                scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
-            )
+    @Deprecated("SceneContainer uses SceneContainerStartable for this")
+    val showCommunalFromOccluded: Flow<Boolean> by lazy {
+        if (SceneContainerFlag.isEnabled) {
+            // Always return false here.
+            MutableStateFlow(false)
+        } else {
+            keyguardTransitionInteractor.startedKeyguardTransitionStep
+                .filter { step -> step.to == KeyguardState.OCCLUDED }
+                .combine(isCommunalAvailable, ::Pair)
+                .map { (step, available) ->
+                    val enteredFromHub = step.from == KeyguardState.GLANCEABLE_HUB
+                    val enteredFromDream =
+                        step.from == KeyguardState.DREAMING &&
+                            !communalSettingsInteractor.isV2FlagEnabled()
+                    available && (enteredFromHub || enteredFromDream)
+                }
+                .flowOn(bgDispatcher)
+                .stateIn(
+                    scope = applicationScope,
+                    started = SharingStarted.WhileSubscribed(),
+                    initialValue = false,
+                )
+        }
+    }
 
     /** Whether to start dreaming when returning from occluded */
     val dreamFromOccluded: Flow<Boolean> =
@@ -447,44 +454,46 @@ constructor(
     /** A list of widget content to be displayed in the communal hub. */
     val widgetContent: StateFlow<List<WidgetContent>> =
         combine(
-            widgetRepository.communalWidgets
-                .map { filterWidgetsByExistingUsers(it) }
-                .combine(communalSettingsInteractor.workProfileUserDisallowedByDevicePolicy) {
-                    // exclude widgets under work profile if not allowed by device policy
-                    widgets,
-                    disallowedByPolicyUser ->
-                    filterWidgetsAllowedByDevicePolicy(widgets, disallowedByPolicyUser)
-                },
-            updateOnWorkProfileBroadcastReceived,
-        ) { widgets, _ ->
-            widgets.map { widget ->
-                when (widget) {
-                    is CommunalWidgetContentModel.Available -> {
-                        WidgetContent.Widget(
-                            appWidgetId = widget.appWidgetId,
-                            rank = widget.rank,
-                            providerInfo = widget.providerInfo,
-                            inQuietMode = isQuietModeEnabled(widget.providerInfo.profile),
-                            size = CommunalContentSize.toSize(widget.spanY),
-                        )
-                    }
+                widgetRepository.communalWidgets
+                    .map { filterWidgetsByExistingUsers(it) }
+                    .combine(communalSettingsInteractor.workProfileUserDisallowedByDevicePolicy) {
+                        // exclude widgets under work profile if not allowed by device policy
+                        widgets,
+                        disallowedByPolicyUser ->
+                        filterWidgetsAllowedByDevicePolicy(widgets, disallowedByPolicyUser)
+                    },
+                updateOnWorkProfileBroadcastReceived,
+            ) { widgets, _ ->
+                widgets.map { widget ->
+                    when (widget) {
+                        is CommunalWidgetContentModel.Available -> {
+                            WidgetContent.Widget(
+                                appWidgetId = widget.appWidgetId,
+                                rank = widget.rank,
+                                providerInfo = widget.providerInfo,
+                                inQuietMode = isQuietModeEnabled(widget.providerInfo.profile),
+                                size = CommunalContentSize.toSize(widget.spanY),
+                            )
+                        }
 
-                    is CommunalWidgetContentModel.Pending -> {
-                        WidgetContent.PendingWidget(
-                            appWidgetId = widget.appWidgetId,
-                            rank = widget.rank,
-                            componentName = widget.componentName,
-                            icon = widget.icon,
-                            size = CommunalContentSize.toSize(widget.spanY),
-                        )
+                        is CommunalWidgetContentModel.Pending -> {
+                            WidgetContent.PendingWidget(
+                                appWidgetId = widget.appWidgetId,
+                                rank = widget.rank,
+                                componentName = widget.componentName,
+                                icon = widget.icon,
+                                size = CommunalContentSize.toSize(widget.spanY),
+                            )
+                        }
                     }
                 }
             }
-        }.stateIn(
-            scope = bgScope,
-            started = if (doNotUseRunBlocking()) SharingStarted.Eagerly else SharingStarted.Lazily,
-            initialValue = emptyList()
-        )
+            .stateIn(
+                scope = bgScope,
+                started =
+                    if (doNotUseRunBlocking()) SharingStarted.Eagerly else SharingStarted.Lazily,
+                initialValue = emptyList(),
+            )
 
     /** Filter widgets based on whether their associated profile is allowed by device policy. */
     private fun filterWidgetsAllowedByDevicePolicy(

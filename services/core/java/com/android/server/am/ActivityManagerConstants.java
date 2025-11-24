@@ -61,6 +61,7 @@ import android.util.SparseBooleanArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.OomAdjuster;
 
 import dalvik.annotation.optimization.NeverCompile;
 

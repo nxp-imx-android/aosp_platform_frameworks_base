@@ -1618,7 +1618,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         if (DEBUG_SWITCH) Slog.v(TAG_SWITCH, "Resuming " + next);
 
-        mTaskSupervisor.setLaunchSource(next.info.applicationInfo.uid);
+        mTaskSupervisor.setLaunchSource(next.getUid());
 
         ActivityRecord lastResumed = null;
         final Task lastFocusedRootTask = taskDisplayArea.getLastFocusedRootTask();

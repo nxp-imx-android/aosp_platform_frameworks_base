@@ -29,18 +29,25 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import android.app.IActivityManager;
 import android.app.trust.TrustManager;
+import android.content.Intent;
+import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.Display;
@@ -62,10 +69,12 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
+import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesRepository;
 import com.android.systemui.globalactions.data.repository.FakeGlobalActionsRepository;
@@ -105,6 +114,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -119,6 +129,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private AudioManager mAudioManager;
     @Mock private LockPatternUtils mLockPatternUtils;
     @Mock private BroadcastDispatcher mBroadcastDispatcher;
+    @Mock private BroadcastSender mBroadcastSender;
     @Mock private TelephonyListenerManager mTelephonyListenerManager;
     private GlobalSettings mGlobalSettings;
     private SecureSettings mSecureSettings;
@@ -219,8 +230,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mInteractor,
                 () -> new FakeDisplayWindowPropertiesRepository(mContext),
                 mPowerManager,
-                mBlurInteractor
-        );
+                mBlurInteractor,
+                mBroadcastSender);
         mGlobalActionsDialogLite.setZeroDialogPressDelayForTesting();
 
         ColorExtractor.GradientColors backdropColors = new ColorExtractor.GradientColors();
@@ -611,6 +622,140 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mGlobalActionsDialogLite.new RestartAction();
         restartAction.onLongPress();
         verifyLogPosted(GlobalActionsEvent.GA_REBOOT_LONG_PRESS);
+    }
+
+    @Test
+    public void testSendFeedbackAction_onPress_sendsBroadcast() {
+        final android.content.ComponentName testComponent =
+                new ComponentName("com.example", "FeedbackReceiver");
+        mGlobalActionsDialogLite.mFirstFeedbackReceiver = testComponent;
+        GlobalActionsDialogLite.SendFeedbackAction feedbackAction =
+                mGlobalActionsDialogLite.new SendFeedbackAction(testComponent);
+
+        feedbackAction.onPress();
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mBroadcastSender).sendBroadcastAsUser(
+                intentCaptor.capture(), eq(UserHandle.CURRENT));
+        Intent capturedIntent = intentCaptor.getValue();
+        assertThat(capturedIntent.getAction()).isEqualTo(Settings.ACTION_REQUEST_FEEDBACK);
+        assertThat(capturedIntent.getComponent()).isEqualTo(testComponent);
+        verifyLogPosted(GlobalActionsEvent.GA_FEEDBACK_PRESS);
+    }
+
+    @Test
+    @RequiresFlagsEnabled("com.android.systemui.flags.global_actions_feedback_action")
+    public void testCreateActionItems_feedbackAction_hasReceiver_showsAction() {
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+            String[] actions = {
+                    GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK,
+            };
+            doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+            doCallRealMethod()
+                    .when(mGlobalActionsDialogLite)
+                    .shouldShowAction(any(GlobalActionsDialogLite.SendFeedbackAction.class));
+            when(mUserTracker.getUserId()).thenReturn(0);
+
+            ResolveInfo resolveInfo = new ResolveInfo();
+            resolveInfo.activityInfo = new android.content.pm.ActivityInfo();
+            resolveInfo.activityInfo.packageName = "com.example";
+            resolveInfo.activityInfo.name = "FeedbackReceiver";
+            List<ResolveInfo> receivers = new ArrayList<>();
+            receivers.add(resolveInfo);
+            when(mPackageManager.queryBroadcastReceiversAsUser(
+                    any(Intent.class),
+                    eq(PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE),
+                    anyInt()))
+                    .thenAnswer(invocation -> {
+                        Intent intent = invocation.getArgument(0);
+                        if (Settings.ACTION_REQUEST_FEEDBACK.equals(intent.getAction())) {
+                            return receivers;
+                        }
+                        return new ArrayList<>();
+                    });
+
+            mGlobalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+            ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+            verify(mBackgroundExecutor).execute(captor.capture());
+            captor.getValue().run();
+            mTestableLooper.processAllMessages();
+
+            assertOneItemOfType(mGlobalActionsDialogLite.mItems,
+                    GlobalActionsDialogLite.SendFeedbackAction.class);
+    }
+
+    @Test
+    @RequiresFlagsEnabled("com.android.systemui.flags.global_actions_feedback_action")
+    public void testCreateActionItems_feedbackAction_noReceiver_hidesAction() {
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+            String[] actions = {
+                    GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK,
+            };
+            doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+            doCallRealMethod()
+                    .when(mGlobalActionsDialogLite)
+                    .shouldShowAction(any(GlobalActionsDialogLite.SendFeedbackAction.class));
+            when(mUserTracker.getUserId()).thenReturn(0);
+
+            when(mPackageManager.queryBroadcastReceiversAsUser(
+                    any(Intent.class),
+                    eq(PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE),
+                    anyInt()))
+                    .thenReturn(new ArrayList<>());
+
+            mGlobalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+            ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+            verify(mBackgroundExecutor).execute(captor.capture());
+            captor.getValue().run();
+            mTestableLooper.processAllMessages();
+
+            assertNoItemsOfType(mGlobalActionsDialogLite.mItems,
+                    GlobalActionsDialogLite.SendFeedbackAction.class);
+    }
+
+    @Test
+    @RequiresFlagsDisabled("com.android.systemui.flags.global_actions_feedback_action")
+    public void testCreateActionItems_feedbackAction_flagDisabled_hidesAction() {
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+            String[] actions = {
+                    GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK,
+            };
+            doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+            doCallRealMethod()
+                    .when(mGlobalActionsDialogLite)
+                    .shouldShowAction(any(GlobalActionsDialogLite.SendFeedbackAction.class));
+            when(mUserTracker.getUserId()).thenReturn(0);
+
+            ResolveInfo resolveInfo = new ResolveInfo();
+            resolveInfo.activityInfo = new android.content.pm.ActivityInfo();
+            resolveInfo.activityInfo.packageName = "com.example";
+            resolveInfo.activityInfo.name = "FeedbackReceiver";
+            List<ResolveInfo> receivers = new ArrayList<>();
+            receivers.add(resolveInfo);
+            when(mPackageManager.queryBroadcastReceiversAsUser(
+                    any(Intent.class),
+                    eq(PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE),
+                    anyInt()))
+                    .thenAnswer(invocation -> {
+                        Intent intent = invocation.getArgument(0);
+                        if (Settings.ACTION_REQUEST_FEEDBACK.equals(intent.getAction())) {
+                            return receivers;
+                        }
+                        return new ArrayList<>();
+                    });
+
+            mGlobalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+            ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+            verify(mBackgroundExecutor).execute(captor.capture());
+            captor.getValue().run();
+            mTestableLooper.processAllMessages();
+
+            assertNoItemsOfType(mGlobalActionsDialogLite.mItems,
+                    GlobalActionsDialogLite.SendFeedbackAction.class);
     }
 
     @Test

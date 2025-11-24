@@ -112,7 +112,7 @@ public class RecordingControllerTest extends SysuiTestCase {
         Context spiedContext = spy(mContext);
         when(spiedContext.getUserId()).thenReturn(TEST_USER_ID);
 
-        when(mScreenCaptureDisabledDialogDelegate.createSysUIDialog())
+        when(mScreenCaptureDisabledDialogDelegate.createDialog())
                 .thenReturn(mScreenCaptureDisabledDialog);
         when(mScreenRecordPermissionDialogDelegateFactory.create(any(), any(), anyInt(), any()))
                 .thenReturn(mScreenRecordPermissionDialogDelegate);

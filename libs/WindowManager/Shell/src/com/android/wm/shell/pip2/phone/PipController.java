@@ -418,7 +418,7 @@ public class PipController implements ConfigurationChangeListener,
     @Override
     public void onThemeChanged() {
         setDisplayLayout(new DisplayLayout(mContext, mContext.getDisplay()));
-        if (Flags.enablePipBoxShadows()) {
+        if (Flags.enablePipBoxShadowsV2()) {
             if (mPipTransitionState.isInPip()) {
                 SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
                 if (pipLeash == null) {

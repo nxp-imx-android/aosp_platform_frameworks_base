@@ -1,5 +1,6 @@
 package com.android.systemui.scene.ui.composable
 
+import android.content.res.Resources
 import com.android.compose.animation.scene.DefaultInterruptionHandler
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.TransitionKey
@@ -10,6 +11,7 @@ import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
@@ -66,9 +68,13 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
         animateQsTilesViewModel: AnimateQsTilesViewModel,
+        resources: Resources,
     ): SceneTransitions {
         return transitions {
             interruptionHandler = DefaultInterruptionHandler
+
+            val lockscreenToShadeTransitionDistancePx =
+                resources.getDimension(R.dimen.lockscreen_shade_full_transition_distance)
 
             // Scene transitions
 
@@ -140,13 +146,16 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             }
             from(Scenes.Lockscreen, to = Scenes.Dream) { lockscreenToDreamTransition() }
             from(Scenes.Lockscreen, to = Scenes.Occluded) { lockscreenToOccludedTransition() }
+
             from(
                 Scenes.Lockscreen,
                 to = Scenes.Shade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                lockscreenToShadeSceneTransition()
+                lockscreenToShadeSceneTransition(
+                    transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                )
             }
             from(
                 Scenes.Lockscreen,
@@ -155,7 +164,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                lockscreenToSplitShadeTransition()
+                lockscreenToSplitShadeTransition(
+                    transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                )
                 sharedElement(Shade.Elements.BackgroundScrim, enabled = false)
             }
             from(
@@ -165,7 +176,10 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                lockscreenToShadeSceneTransition(durationScale = 0.9)
+                lockscreenToShadeSceneTransition(
+                    transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                    durationScale = 0.9,
+                )
             }
             from(
                 Scenes.Lockscreen,
@@ -239,7 +253,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { lockscreenToShadeSceneTransition() }
+                reversed {
+                    lockscreenToShadeSceneTransition(
+                        transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                    )
+                }
                 sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
                 sharedElement(
                     Notifications.Elements.HeadsUpNotificationPlaceholder,
@@ -253,7 +271,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { lockscreenToSplitShadeTransition() }
+                reversed {
+                    lockscreenToSplitShadeTransition(
+                        transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                    )
+                }
             }
             from(
                 Scenes.Shade,

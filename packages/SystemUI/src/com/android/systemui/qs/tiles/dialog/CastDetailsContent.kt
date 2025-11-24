@@ -27,6 +27,7 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -49,6 +50,7 @@ import com.android.internal.app.MediaRouteControllerContentManager
 import com.android.systemui.res.R as SystemUiR
 
 private val TILE_DETAILS_HORIZONTAL_PADDING = SystemUiR.dimen.tile_details_horizontal_padding
+private val TILE_DETAILS_BOTTOM_PADDING = SystemUiR.dimen.tile_details_bottom_padding
 private val MAX_CAST_LIST_HEIGHT = 5000.dp
 
 @Composable
@@ -65,7 +67,10 @@ fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
         val contentManager: MediaRouteChooserContentManager = remember {
             castDetailsViewModel.createChooserContentManager()
         }
-        CastChooserView(contentManager, castDetailsViewModel)
+
+        Box(modifier = Modifier.padding(bottom = dimensionResource(TILE_DETAILS_BOTTOM_PADDING))) {
+            CastChooserView(contentManager, castDetailsViewModel)
+        }
         return
     }
 
@@ -74,6 +79,7 @@ fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
     }
 
     Column(
+        modifier = Modifier.padding(bottom = dimensionResource(TILE_DETAILS_BOTTOM_PADDING)),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

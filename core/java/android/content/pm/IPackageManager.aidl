@@ -864,5 +864,5 @@ interface IPackageManager {
 
     List<String> getAllApexDirectories();
 
-    int getAppUidForPccUid(int pccUid);
+    int getAppUidForPrivateComputeCoreUid(int pccUid);
 }

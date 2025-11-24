@@ -23,6 +23,7 @@ import static android.os.FileObserver.CLOSE_WRITE;
 import static android.os.UserHandle.MIN_SECONDARY_USER_ID;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
@@ -48,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -622,7 +624,7 @@ public class WallpaperManagerServiceTests {
     public void testSetWallpaperDimAmount() throws RemoteException {
         mService.switchUser(USER_SYSTEM, null);
         float dimAmount = 0.7f;
-        mService.setWallpaperDimAmount(dimAmount);
+        mService.setWallpaperDimAmount(dimAmount, INVALID_DISPLAY, false /* temporary */);
         assertEquals("Getting dim amount should match after setting the dim amount",
                 mService.getWallpaperDimAmount(), dimAmount, 0.0);
     }
@@ -639,7 +641,7 @@ public class WallpaperManagerServiceTests {
         // but not HINT_FROM_BITMAP
         wallpaper.primaryColors = new WallpaperColors(Color.valueOf(Color.WHITE), null, null,
                 WallpaperColors.HINT_SUPPORTS_DARK_TEXT | WallpaperColors.HINT_SUPPORTS_DARK_THEME);
-        mService.setWallpaperDimAmount(0.6f);
+        mService.setWallpaperDimAmount(0.6f, INVALID_DISPLAY, false /* temporary */);
         int colorHints = mService.getAdjustedWallpaperColorsOnDimming(wallpaper).getColorHints();
         // Dimmed wallpaper not extracted from bitmap does not support dark text and dark theme
         assertNotEquals(WallpaperColors.HINT_SUPPORTS_DARK_TEXT,
@@ -648,7 +650,7 @@ public class WallpaperManagerServiceTests {
                 colorHints & WallpaperColors.HINT_SUPPORTS_DARK_THEME);
 
         // Remove dimming
-        mService.setWallpaperDimAmount(0f);
+        mService.setWallpaperDimAmount(0f, INVALID_DISPLAY, false /* temporary */);
         colorHints = mService.getAdjustedWallpaperColorsOnDimming(wallpaper).getColorHints();
         // Undimmed wallpaper not extracted from bitmap does support dark text and dark theme
         assertEquals(WallpaperColors.HINT_SUPPORTS_DARK_TEXT,
@@ -661,13 +663,47 @@ public class WallpaperManagerServiceTests {
         wallpaper.primaryColors = new WallpaperColors(Color.valueOf(Color.WHITE), null, null,
                 WallpaperColors.HINT_SUPPORTS_DARK_TEXT | WallpaperColors.HINT_SUPPORTS_DARK_THEME
                         | WallpaperColors.HINT_FROM_BITMAP);
-        mService.setWallpaperDimAmount(0.6f);
+        mService.setWallpaperDimAmount(0.6f, INVALID_DISPLAY, false /* temporary */);
         colorHints = mService.getAdjustedWallpaperColorsOnDimming(wallpaper).getColorHints();
         // Dimmed wallpaper should still support dark text and dark theme
         assertEquals(WallpaperColors.HINT_SUPPORTS_DARK_TEXT,
                 colorHints & WallpaperColors.HINT_SUPPORTS_DARK_TEXT);
         assertEquals(WallpaperColors.HINT_SUPPORTS_DARK_THEME,
                 colorHints & WallpaperColors.HINT_SUPPORTS_DARK_THEME);
+    }
+
+    @Test
+    public void testSetTemporaryDimming() throws RemoteException {
+        mService.switchUser(USER_SYSTEM, null);
+        mService.mLastWallpaper.connection.attachEngine(mock(IWallpaperEngine.class),
+                DEFAULT_DISPLAY);
+        WallpaperManagerService.DisplayConnector connector =
+                mService.mLastWallpaper.connection.getDisplayConnectorOrCreate(DEFAULT_DISPLAY);
+
+        float dimAmount = 0.5f;
+        float largerTemporaryDimAmount = 0.7f;
+        float smallerTemporaryDimAmount = 0.3f;
+        // Set a non-temporary dim amount
+        mService.setWallpaperDimAmount(dimAmount, INVALID_DISPLAY, false /* temporary */);
+        verify(connector.mEngine).applyDimming(eq(dimAmount), eq(dimAmount));
+
+        // Set a temporary dim amount larget than the non-temporary one, the temporary amount should
+        // be applied
+        mService.setWallpaperDimAmount(largerTemporaryDimAmount, DEFAULT_DISPLAY,
+                true /* temporary */);
+        verify(connector.mEngine).applyDimming(eq(largerTemporaryDimAmount), eq(dimAmount));
+
+        clearInvocations(connector.mEngine);
+        // Set a temporary dim amount smaller than the non-temporary one, the non-temporary amount
+        // should be applied
+        mService.setWallpaperDimAmount(smallerTemporaryDimAmount, DEFAULT_DISPLAY,
+                true /* temporary */);
+        verify(connector.mEngine).applyDimming(eq(dimAmount), eq(dimAmount));
+
+        clearInvocations(connector.mEngine);
+        // Remove the temporary dim amount
+        mService.setWallpaperDimAmount(0, DEFAULT_DISPLAY, true /* temporary */);
+        verify(connector.mEngine).applyDimming(eq(dimAmount), eq(dimAmount));
     }
 
     @Test

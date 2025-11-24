@@ -18,6 +18,7 @@ package com.android.systemui.kosmos
 
 import android.app.Notification
 import android.app.Notification.FLAG_BUBBLE
+import android.app.NotificationChannel
 import android.content.Context
 import android.content.applicationContext
 import android.os.fakeExecutorHandler
@@ -279,6 +280,10 @@ class KosmosJavaAdapter() {
     /** Creates an ExpandableNotificationRow with 4 children */
     fun createRowGroup(): ExpandableNotificationRow {
         return kosmos.createRowGroup()
+    }
+
+    fun createRowGroup(channel: NotificationChannel): ExpandableNotificationRow {
+        return kosmos.createRowGroup(4, channel)
     }
 
     fun createRowBundle(spec: BundleSpec): ExpandableNotificationRow {

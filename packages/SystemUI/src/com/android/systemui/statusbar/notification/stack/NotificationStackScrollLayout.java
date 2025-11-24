@@ -4129,6 +4129,13 @@ public class NotificationStackScrollLayout
         setIsBeingDragged(true);
     }
 
+    // Only when scene container is enabled, mark that we are being dragged so that we start
+    // dispatching the rest of the gesture to scene container.
+    void startDraggingOnLockscreen() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        setIsBeingDragged(true);
+    }
+
     /**
      * @return Whether NSSL should dispatch this event to the SceneContainer Framework. When false,
      * the NSSL will handle the event itself.
@@ -6905,7 +6912,7 @@ public class NotificationStackScrollLayout
                 return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
                 if (NmContextualDisplay.isEnabled()) {
-                    return row.getEntryAdapter().isBundled() || row.getEntryAdapter().isBundle();
+                    return bucket == BUCKET_SILENT;
                 } else if (NotificationBundleUi.isEnabled()) {
                     return bucket == BUCKET_SILENT
                             || bucket == BUCKET_PROMO

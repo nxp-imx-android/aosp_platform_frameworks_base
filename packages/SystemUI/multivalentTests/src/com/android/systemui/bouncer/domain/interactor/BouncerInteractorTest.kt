@@ -29,9 +29,9 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationResul
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
-import com.android.systemui.authentication.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.data.repository.bouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
+import com.android.systemui.bouncer.shared.model.BouncerInputSide
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues

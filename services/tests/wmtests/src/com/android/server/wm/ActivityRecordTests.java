@@ -1071,6 +1071,20 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void onActivityStopped_shouldKillPackageAfterUpdateIsTrue_callsProcessToNotify() {
+        final ActivityRecord activity = createActivityWithTask();
+        final WindowProcessController wpc = mock(WindowProcessController.class);
+        activity.app = wpc;
+
+        // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
+        activity.setState(STOPPING, "test");
+        activity.activityStopped(null, null, null, "desc");
+
+        verify(wpc).onActivityStopped(activity);
+    }
+
+    @Test
     public void testReadWindowStyle() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setActivityTheme(
                 com.android.frameworks.wmtests.R.style.ActivityWindowStyleTest).build();

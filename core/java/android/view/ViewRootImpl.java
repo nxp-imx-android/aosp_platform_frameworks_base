@@ -908,13 +908,51 @@ public final class ViewRootImpl implements ViewParent,
     private int mLastReportedInsetsStateSeq = getInitSeq();
     private int mLastReportedActiveControlsSeq = getInitSeq();
 
+    /**
+     * Whether the scroll position of items in the view hierarchy might change on the next layout.
+     * This is set when a layout is requested (e.g. via {@link #requestLayout()}).
+     */
     boolean mScrollMayChange;
+
+    /**
+     * The soft input mode for this window, as specified by
+     * {@link WindowManager.LayoutParams#softInputMode}.
+     */
     @SoftInputModeFlags
     int mSoftInputMode;
+
+    /**
+     * The last view that was scrolled to avoid being occluded by the soft keyboard. This is a weak
+     * reference to prevent possible memory leaks (if the view is no longer needed). Used in {@link
+     * WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN} mode to avoid unnecessary scrolling if the
+     * focused view has not changed since the last adjustment.
+     *
+     * @see #scrollToRectOrFocus
+     */
     @UnsupportedAppUsage
+    @Nullable
     WeakReference<View> mLastScrolledFocus;
+
+    /**
+     * The Y coordinate that should be at the top of the window. It represents the final target
+     * position. E.g., when the IME appears, this value is used to prevent occluding the focused
+     * view when in {@link WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN} mode.
+     */
     int mScrollY;
+
+    /**
+     * The Y coordinate of the content that is currently at the top of the window. This is the
+     * value actually used to offset the canvas during drawing. It may be an intermediate value
+     * during a scroll animation (provided by {@link #mScroller}).
+     */
     int mCurScrollY;
+
+    /**
+     * The {@link Scroller} instance used to implement smooth scrolling of the window's content.
+     * This is primarily used for the {@link WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN}
+     * behavior to prevent occluding a focused view when the IME is shown.
+     */
+    @Nullable
     Scroller mScroller;
     private ArrayList<LayoutTransition> mPendingTransitions;
 
@@ -7164,7 +7202,7 @@ public final class ViewRootImpl implements ViewParent,
                         event = KeyEvent.changeFlags(event,
                                 event.getFlags() & ~KeyEvent.FLAG_FROM_SYSTEM);
                     }
-                    enqueueInputEvent(event, null, QueuedInputEvent.FLAG_DELIVER_POST_IME, true);
+                    enqueueInputEvent(event, null, QueuedInputEvent.FLAG_SKIP_IME, true);
                 } break;
                 case MSG_DISPATCH_KEY_FROM_AUTOFILL: {
                     if (LOCAL_LOGV) {
@@ -9664,6 +9702,15 @@ public final class ViewRootImpl implements ViewParent,
         return mAccessibilityInteractionController;
     }
 
+    @Nullable
+    private SurfaceControl getSurfaceControlForRelayout(int viewVisibility) {
+        if (mWindowLayout.isLocallyManaged()) {
+            return mSurfaceControl;
+        }
+        // WindowManagerService only attaches visible surface of regular window to WindowState.
+        return viewVisibility == View.VISIBLE && mSurfaceControl.isValid() ? mSurfaceControl : null;
+    }
+
     @NonNull
     private SurfaceControl createSurfaceControl() {
         // The surface is visible by default (replace default HIDDEN flag).
@@ -9701,7 +9748,7 @@ public final class ViewRootImpl implements ViewParent,
     private int relayoutWindow(WindowManager.LayoutParams params, int viewVisibility,
             boolean insetsPending) throws RemoteException {
         int relayoutResult = 0;
-        if (WindowManager.useClientSurface()) {
+        if (WindowManager.useClientSurface() && !mWindowLayout.isLocallyManaged()) {
             relayoutResult = updateSurfaceControl(viewVisibility);
         }
 
@@ -9790,8 +9837,7 @@ public final class ViewRootImpl implements ViewParent,
         final int seqId = NoPreloadHolder.sAlwaysSeqId ? mSeqId : mLastSyncSeqId;
         if (relayoutAsync) {
             if (WindowManager.useClientSurface()) {
-                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
-                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                final SurfaceControl surfaceControl = getSurfaceControlForRelayout(viewVisibility);
                 mWindowSession.relayoutAsync2(mWindow, params,
                         requestedWidth, requestedHeight, viewVisibility,
                         insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
@@ -9807,8 +9853,7 @@ public final class ViewRootImpl implements ViewParent,
             }
         } else {
             if (WindowManager.useClientSurface()) {
-                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
-                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                final SurfaceControl surfaceControl = getSurfaceControlForRelayout(viewVisibility);
                 relayoutResult |= mWindowSession.relayout2(mWindow, params,
                         requestedWidth, requestedHeight, viewVisibility,
                         insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
@@ -10592,7 +10637,7 @@ public final class ViewRootImpl implements ViewParent,
      * needing a queue on the application's side.
      */
     private static final class QueuedInputEvent {
-        public static final int FLAG_DELIVER_POST_IME = 1 << 0;
+        public static final int FLAG_SKIP_IME = 1 << 0;
         public static final int FLAG_DEFERRED = 1 << 1;
         public static final int FLAG_FINISHED = 1 << 2;
         public static final int FLAG_FINISHED_HANDLED = 1 << 3;
@@ -10615,7 +10660,7 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         public boolean shouldSkipIme() {
-            if ((mFlags & FLAG_DELIVER_POST_IME) != 0) {
+            if ((mFlags & FLAG_SKIP_IME) != 0) {
                 return true;
             }
             return mEvent instanceof MotionEvent
@@ -10634,7 +10679,7 @@ public final class ViewRootImpl implements ViewParent,
         public String toString() {
             StringBuilder sb = new StringBuilder("QueuedInputEvent{flags=");
             boolean hasPrevious = false;
-            hasPrevious = flagToString("DELIVER_POST_IME", FLAG_DELIVER_POST_IME, hasPrevious, sb);
+            hasPrevious = flagToString("SKIP_IME", FLAG_SKIP_IME, hasPrevious, sb);
             hasPrevious = flagToString("DEFERRED", FLAG_DEFERRED, hasPrevious, sb);
             hasPrevious = flagToString("FINISHED", FLAG_FINISHED, hasPrevious, sb);
             hasPrevious = flagToString("FINISHED_HANDLED", FLAG_FINISHED_HANDLED, hasPrevious, sb);
@@ -10800,7 +10845,14 @@ public final class ViewRootImpl implements ViewParent,
                 stage = mSyntheticInputStage;
             } else {
                 if (predictiveBackFixImeEventsSkipBackDispatcher()) {
-                    stage = mFirstInputStage;
+                    // Optimization: Skip to Post-IME stage for pointer events (touch), unless the
+                    // SKIP_IME flag is set.
+                    // Why? The flag implies we need to handle Pre-IME logic (for KEYCODE_BACK
+                    // interception) which lives in the NativePreImeStage, so we can't take the
+                    // shortcut.
+                    boolean canSkipToPostIme = q.shouldSkipIme()
+                            && (q.mFlags & QueuedInputEvent.FLAG_SKIP_IME) == 0;
+                    stage = canSkipToPostIme ? mFirstPostImeInputStage : mFirstInputStage;
                 } else {
                     stage = q.shouldSkipIme() ? mFirstPostImeInputStage : mFirstInputStage;
                 }

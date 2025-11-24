@@ -62,6 +62,7 @@ import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_N
 import static com.android.server.wm.ActivityTaskManagerService.TAG_SWITCH;
 import static com.android.server.wm.ActivityTaskManagerService.enforceNotIsolatedCaller;
 import static com.android.window.flags.Flags.allowDisableActivityRecordInputSink;
+import static com.android.window.flags.Flags.alwaysMoveTaskToBackOnBackPressedFeatureFlag;
 
 import android.Manifest;
 import android.annotation.ColorInt;
@@ -70,7 +71,7 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
-import android.app.FullscreenRequestHandler;
+import android.app.FullscreenRequestHandler.RequestResult;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.IActivityClientController;
@@ -87,6 +88,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
@@ -105,6 +107,7 @@ import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.SizeConfigurationBuckets;
 import android.window.TransitionInfo;
+import android.window.TransitionRequestInfo;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.AssistUtils;
@@ -120,6 +123,7 @@ import com.android.server.utils.quota.Categorizer;
 import com.android.server.utils.quota.Category;
 import com.android.server.utils.quota.CountQuotaTracker;
 import com.android.server.vr.VrManagerInternal;
+import com.android.window.flags.Flags;
 
 /**
  * Server side implementation for the client activity to interact with system.
@@ -1295,35 +1299,67 @@ class ActivityClientController extends IActivityClientController.Stub {
         return task;
     }
 
-    private @FullscreenRequestHandler.RequestResult int validateMultiwindowFullscreenRequestLocked(
+    /**
+     * Perform validation prior to executing (or delegating the execution) the request. This is
+     * to avoid start a transition and round trip to shell if possible.
+     *
+     * Note that when {@link Flags.delegateRequestFullscreenHandlingToShell} is enabled, an
+     * approval here only means the request should continue, but may still be rejected by shell.
+     * Therefore, the callback to the client should not be invoked just because an early validation
+     * returned an approval.
+     *
+     * @return a failed result code if validation fails and the request should be aborted, or
+     *         {@link RESULT_APPROVED} if execution should continue.
+     */
+    private @RequestResult int earlyValidateMultiwindowFullscreenRequestLocked(
             Task targetTask, int fullscreenRequest, ActivityRecord requesterActivity) {
         if (!mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_fullscreenRequestSupported)) {
             return RESULT_FAILED_NOT_SUPPORTED;
         }
+        if (requesterActivity != targetTask.getTopMostActivity()) {
+            // If this is not coming from the currently top-most activity, reject the request.
+            return RESULT_FAILED_NOT_TOP_FOCUSED;
+        }
+        final int taskWindowingMode = targetTask.getWindowingMode();
+        if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER
+                && taskWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+            // Requesting fullscreen enter but was already fullscreen, reject the request.
+            return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
+        }
+        if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_EXIT
+                && taskWindowingMode != WINDOWING_MODE_FULLSCREEN) {
+            // Requesting fullscreen exit but was not fullscreen, reject the request.
+            return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
+        }
+        // TODO: b/296268915 - Add early validation through shell-controlled allowed/disallowed
+        //  overrides.
+        return RESULT_APPROVED;
+    }
+
+    private @RequestResult int validateMultiwindowFullscreenRequestLocked(
+            Task targetTask, int fullscreenRequest, ActivityRecord requesterActivity) {
+        final @RequestResult int earlyValidateResult =
+                earlyValidateMultiwindowFullscreenRequestLocked(targetTask, fullscreenRequest,
+                        requesterActivity);
+        if (earlyValidateResult != RESULT_APPROVED
+                // Additional validation is delegated to shell, so stop here.
+                || Flags.delegateRequestFullscreenHandlingToShell()) {
+            return earlyValidateResult;
+        }
+        // Additional validation for server controlled execution.
         if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER
                 && requesterActivity.getWindowingMode() == WINDOWING_MODE_PINNED) {
             return RESULT_APPROVED;
         }
-        // If this is not coming from the currently top-most activity, reject the request.
-        if (requesterActivity != targetTask.getTopMostActivity()) {
-            return RESULT_FAILED_NOT_TOP_FOCUSED;
-        }
         final int taskWindowingMode = targetTask.getWindowingMode();
         if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_EXIT) {
-            if (taskWindowingMode != WINDOWING_MODE_FULLSCREEN) {
-                return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
-            }
             if (targetTask.mMultiWindowRestoreWindowingMode == INVALID_WINDOWING_MODE) {
                 return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
             }
             return RESULT_APPROVED;
         }
-
         if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
-            if (taskWindowingMode == WINDOWING_MODE_FULLSCREEN) {
-                return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
-            }
             if (taskWindowingMode == WINDOWING_MODE_MULTI_WINDOW) {
                 return RESULT_FAILED_NOT_SUPPORTED;
             }
@@ -1348,19 +1384,35 @@ class ActivityClientController extends IActivityClientController.Stub {
             IRemoteCallback callback) {
         final ActivityRecord r = ActivityRecord.forTokenLocked(callingActivity);
         if (r == null) {
+            Slog.w(TAG, "Received fullscreen request but no activity record found");
             return;
         }
+        final ObservedRemoteCallback observedCallback =
+                Flags.delegateRequestFullscreenHandlingToShell() && callback != null
+                ? new ObservedRemoteCallback(callback) : null;
 
-        // If the shell transition is not enabled, just execute and done.
         final TransitionController controller = r.mTransitionController;
         if (!controller.isShellTransitionsEnabled()) {
-            final @FullscreenRequestHandler.RequestResult int validateResult;
             final Task targetTask = getMultiwindowFullscreenTargetTask();
-            validateResult = validateMultiwindowFullscreenRequestLocked(targetTask,
-                    fullscreenRequest, r);
-            reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
-            if (validateResult == RESULT_APPROVED) {
-                executeMultiWindowFullscreenRequest(fullscreenRequest, targetTask);
+            final @RequestResult int validationResult = validateMultiwindowFullscreenRequestLocked(
+                    targetTask, fullscreenRequest, r);
+            if (Flags.delegateRequestFullscreenHandlingToShell()) {
+                Slog.w(TAG, "Received fullscreen request but shell transitions are disabled");
+                // Shell transitions is disabled so the request will be rejected immediately
+                // regardless of the validation result. Report the validation failure result if it
+                // failed, or the fallback failure if it passed.
+                if (validationResult != RESULT_APPROVED) {
+                    reportMultiwindowFullscreenRequestValidatingResult(observedCallback,
+                            validationResult);
+                } else {
+                    reportMultiwindowFullscreenRequestFallbackResult(observedCallback);
+                }
+            } else {
+                // Execute and report result without a transition.
+                reportMultiwindowFullscreenRequestValidatingResult(callback, validationResult);
+                if (validationResult == RESULT_APPROVED) {
+                    executeMultiWindowFullscreenRequest(fullscreenRequest, targetTask);
+                }
             }
             return;
         }
@@ -1369,47 +1421,46 @@ class ActivityClientController extends IActivityClientController.Stub {
                 mService.mWindowManager.mSyncEngine);
         r.mTransitionController.startCollectOrQueue(transition,
                 (deferred) -> {
-                    executeFullscreenRequestTransition(fullscreenRequest, callback, r,
-                            transition, deferred);
+                    if (observedCallback != null) {
+                        transition.addPendingFullscreenRequest(observedCallback);
+                    }
+                    final IRemoteCallback c = observedCallback != null
+                            ? observedCallback : callback;
+                    executeFullscreenRequestTransition(fullscreenRequest, c, r, transition);
                 });
     }
 
     private void executeFullscreenRequestTransition(int fullscreenRequest, IRemoteCallback callback,
-            ActivityRecord r, Transition transition, boolean queued) {
-        final @FullscreenRequestHandler.RequestResult int validateResult;
-        final Task targetTask = getMultiwindowFullscreenTargetTask();
-        validateResult = validateMultiwindowFullscreenRequestLocked(targetTask,
-                fullscreenRequest, r);
-        reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
-        if (validateResult != RESULT_APPROVED) {
-            transition.abort();
-            return;
+            ActivityRecord r, Transition transition) {
+        if (!Flags.delegateRequestFullscreenHandlingToShell()) {
+            final Task targetTask = getMultiwindowFullscreenTargetTask();
+            final @RequestResult int validateResult = validateMultiwindowFullscreenRequestLocked(
+                    targetTask, fullscreenRequest, r);
+            reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
+            if (validateResult != RESULT_APPROVED) {
+                transition.abort();
+                return;
+            }
         }
         final ActionChain chain = mService.mChainTracker.start("reqMWFS", transition);
         final Task requestingTask = r.getTask();
         chain.collect(requestingTask);
-        executeMultiWindowFullscreenRequest(fullscreenRequest, requestingTask);
-        r.mTransitionController.requestStartTransition(transition, requestingTask,
-                null /* remoteTransition */, null /* displayChange */);
+        if (Flags.delegateRequestFullscreenHandlingToShell()) {
+            final TransitionRequestInfo.FullscreenRequestChange change =
+                    new TransitionRequestInfo.FullscreenRequestChange(fullscreenRequest, callback);
+            r.mTransitionController.requestStartFullscreenRequestTransition(transition,
+                    requestingTask, change);
+        } else {
+            executeMultiWindowFullscreenRequest(fullscreenRequest, requestingTask);
+            r.mTransitionController.requestStartTransition(transition, requestingTask,
+                    null /* remoteTransition */, null /* displayChange */);
+        }
         transition.setReady(requestingTask, true);
         mService.mChainTracker.end();
     }
 
-    private static void reportMultiwindowFullscreenRequestValidatingResult(IRemoteCallback callback,
-            @FullscreenRequestHandler.RequestResult int result) {
-        if (callback == null) {
-            return;
-        }
-        Bundle res = new Bundle();
-        res.putInt(REMOTE_CALLBACK_RESULT_KEY, result);
-        try {
-            callback.sendResult(res);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "client throws an exception back to the server, ignore it");
-        }
-    }
-
     private void executeMultiWindowFullscreenRequest(int fullscreenRequest, Task requester) {
+        if (Flags.delegateRequestFullscreenHandlingToShell()) return;
         final int targetWindowingMode;
         if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER) {
             final int restoreWindowingMode = requester.getRequestedOverrideWindowingMode();
@@ -1435,6 +1486,34 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
     }
 
+    private static void reportMultiwindowFullscreenRequestValidatingResult(IRemoteCallback callback,
+            @RequestResult int result) {
+        if (callback == null) {
+            return;
+        }
+        Bundle res = new Bundle();
+        res.putInt(REMOTE_CALLBACK_RESULT_KEY, result);
+        try {
+            callback.sendResult(res);
+        } catch (RemoteException e) {
+            Slog.w(TAG, "client throws an exception back to the server, ignore it");
+        }
+    }
+
+    /** Reports to the callback a result with the fallback error code. */
+    static void reportMultiwindowFullscreenRequestFallbackResult(
+            @Nullable ObservedRemoteCallback callback) {
+        if (callback == null) return;
+        final Bundle res = new Bundle();
+        res.putInt(REMOTE_CALLBACK_RESULT_KEY, RESULT_FAILED_NOT_SUPPORTED);
+        try {
+            callback.sendFallbackResult(res,
+                    () -> Slog.w(TAG, "FullscreenRequestChange not handled properly, rejecting"));
+        } catch (RemoteException e) {
+            // Client thrown an exception back to the server, ignoring it.
+        }
+    }
+
     @Override
     public void startLockTaskModeByToken(IBinder token) {
         synchronized (mGlobalLock) {
@@ -1451,10 +1530,9 @@ class ActivityClientController extends IActivityClientController.Stub {
                             "startLockTaskMode: Can't lock due to auth, task: " + task);
                 }
                 ActionChain chain = mService.mChainTracker.startTransit("startLockTaskModeByToken");
-                Transition newTransition = chain.isCollecting() ? null : new Transition(
-                        TRANSIT_START_LOCK_TASK_MODE,
-                        0 /* flags */,
-                        mService.getTransitionController(), mService.mWindowManager.mSyncEngine);
+                Transition newTransition = chain.isCollecting() ? null
+                        : mService.getTransitionController().createAndStartCollecting(
+                                TRANSIT_START_LOCK_TASK_MODE);
                 if (newTransition != null) {
                     mService.getTransitionController().requestStartTransition(newTransition,
                             task,
@@ -1901,6 +1979,16 @@ class ActivityClientController extends IActivityClientController.Stub {
                 r.getTask().realActivity);
         final Intent baseActivityIntent = isBaseActivity ? rootActivity.intent : null;
 
+        final boolean alwaysMoveTaskToBackOnBackPressed = Resources.getSystem().getBoolean(
+                com.android.internal.R.bool.config_alwaysMoveTaskToBackOnBackPressed);
+
+        if (alwaysMoveTaskToBackOnBackPressedFeatureFlag() && alwaysMoveTaskToBackOnBackPressed) {
+            // Should move the task to back if the config flag is set to true and the activity is
+            // the last running activity in the task and the current activity is the base activity
+            // for the task.
+            return baseActivityIntent != null
+                    && isTopActivityInTaskFragment(r);
+        }
         // If the activity was launched directly from the home screen, then we should
         // refrain from finishing the activity and instead move it to the back to keep it in
         // memory. The requirements for this are:

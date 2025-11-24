@@ -5097,6 +5097,17 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: This device
+     * has protected virtual machine for AI applications processing personal data.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
+    @SystemApi
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_AISEAL = "android.software.aiseal";
+
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: This device
      * has a NPU (Neural Processing Unit) or similar hardware for accelerating AI workloads.
      */
     @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
@@ -12338,8 +12349,8 @@ public abstract class PackageManager {
      *         provided UID is not a valid PCC UID or no mapping exists.
      */
     @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public int getAppUidForPccUid(int pccUid) {
+    public int getAppUidForPrivateComputeCoreUid(int pccUid) {
         throw new UnsupportedOperationException(
-                "getAppUidForPccUid not implemented in subclass");
+                "getAppUidForPrivateComputeCoreUid not implemented in subclass");
     }
 }

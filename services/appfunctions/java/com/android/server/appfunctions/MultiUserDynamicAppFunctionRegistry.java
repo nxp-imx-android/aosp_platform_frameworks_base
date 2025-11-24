@@ -49,11 +49,6 @@ public final class MultiUserDynamicAppFunctionRegistry {
         return sInstance;
     }
 
-    static boolean isDynamicAppFunction(String functionIdentifier) {
-        // TODO(b/438413084): move to check the type in metadata
-        return functionIdentifier.startsWith("context");
-    }
-
     private final Object mCrossUserLock = new Object();
 
     @GuardedBy("mCrossUserLock")
@@ -133,9 +128,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
      */
     public boolean isAppFunctionEnabled(
             String packageName, String functionIdentifier, UserHandle userHandle) {
-        return isDynamicAppFunction(functionIdentifier)
-                && getPerUserRegistry(userHandle)
-                        .isAppFunctionEnabled(packageName, functionIdentifier);
+        return getPerUserRegistry(userHandle).isAppFunctionEnabled(packageName, functionIdentifier);
     }
 
     /**

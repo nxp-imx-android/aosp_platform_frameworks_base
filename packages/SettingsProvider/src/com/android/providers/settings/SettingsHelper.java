@@ -86,6 +86,26 @@ public class SettingsHelper {
         "remote_exception_setting_locale_data";
     private static final String ERROR_FAILED_TO_RESTORE_SETTING = "failed_to_restore_setting";
 
+    /**
+     * Restored status for color inversion settings.
+     */
+    public enum ColorInversionStatus {
+        RESTORED_DISABLED(-2),
+        RESTORED_ENABLED(-1),
+        ENABLED(1),
+        DISABLED(0);
+
+        private final int value;
+
+        ColorInversionStatus(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
     private Context mContext;
     private AudioManager mAudioManager;
     private TelephonyManager mTelephonyManager;
@@ -289,6 +309,29 @@ public class SettingsHelper {
                     return;
                 }
                 // fall through to the ordinary write to settings
+            } else if (Settings.Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED.equals(name)
+                    && isColorInversionInSetupWizardEnabled(context)
+                    && !isUserSetupCompleted(cr)) {
+                Log.i(TAG, "Color inversion setting is restored: " + name + " " + value);
+                // If the value is null, don't restore.
+                if (value == null) {
+                    return;
+                }
+                // Map the restored value to a temporary value to avoid it taking effect
+                // before the Setup Wizard finishes.
+                try {
+                    int intValue = Integer.parseInt(value);
+                    if (intValue == ColorInversionStatus.ENABLED.getValue()) {
+                        value = String.valueOf(ColorInversionStatus.RESTORED_ENABLED.getValue());
+                    } else if (intValue == ColorInversionStatus.DISABLED.getValue()) {
+                        value = String.valueOf(ColorInversionStatus.RESTORED_DISABLED.getValue());
+                    }
+                    // Unrecognized integer values fall through to write the original setting.
+                } catch (NumberFormatException e) {
+                    // Non-integer values also fall through.
+                    Log.w(TAG, "Unexpected non-integer value for color inversion: " + value);
+                }
+                // Fall through to write the setting.
             }
 
             // Default case: write the restored value to settings
@@ -336,6 +379,16 @@ public class SettingsHelper {
                 }
             }
         }
+    }
+
+    private static boolean isColorInversionInSetupWizardEnabled(Context context) {
+        return context.getResources().getBoolean(
+                 com.android.internal.R.bool.config_enableColorInversionInSetupWizard)
+                 && com.android.server.accessibility.Flags.enableColorInversionInSuw();
+    }
+
+    private static boolean isUserSetupCompleted(ContentResolver cr) {
+        return Settings.Secure.getInt(cr, Settings.Secure.USER_SETUP_COMPLETE, 0) == 1;
     }
 
     private boolean shouldSkipAutoRotateRestore() {

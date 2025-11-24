@@ -43,7 +43,7 @@ public class RankingBuilder {
     @Importance private int mImportance = 0;
     private CharSequence mExplanation = "test_explanation";
     private String mOverrideGroupKey = null;
-    private NotificationChannel mChannel = null;
+    private NotificationChannel mChannel = new NotificationChannel("test", "test", 2);
     private ArrayList<SnoozeCriterion> mSnoozeCriteria = null;
     private boolean mCanShowBadge = false;
     private int mUserSentiment = 0;

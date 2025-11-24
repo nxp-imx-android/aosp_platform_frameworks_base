@@ -368,3 +368,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "is_device_upgrading_uses_shared_memory"
+    namespace: "watch_software_performance"
+    description: "ApplicationPackageManager.isDeviceUpgrading() reads the value from shared memory"
+    bug: "452842853"
+}

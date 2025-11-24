@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.audio.Flags.FLAG_SPEAKER_CLEANUP_USAGE;
+import static android.media.audio.Flags.FLAG_VIBRATION_SOUND_USAGE;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -264,6 +265,26 @@ public final class AudioAttributes implements Parcelable {
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
     public static final int USAGE_SPEAKER_CLEANUP = SYSTEM_USAGE_OFFSET + 4;
+
+    /**
+     * @hide
+     * Usage value to use when a system application plays a notification
+     * vibration where the physical vibration is augmented with an auditory cue.
+     */
+    @FlaggedApi(FLAG_VIBRATION_SOUND_USAGE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+    public static final int USAGE_NOTIFICATION_VIBRATION = SYSTEM_USAGE_OFFSET + 5;
+
+    /**
+     * @hide
+     * Usage value to use when a system application plays a ringtone
+     * vibration where the physical vibration is augmented with an auditory cue.
+     */
+    @FlaggedApi(FLAG_VIBRATION_SOUND_USAGE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+    public static final int USAGE_RINGTONE_VIBRATION = SYSTEM_USAGE_OFFSET + 6;
 
     /**
      * IMPORTANT: when adding new usage types, add them to SDK_USAGES and update SUPPRESSIBLE_USAGES
@@ -1637,6 +1658,10 @@ public final class AudioAttributes implements Parcelable {
                 return "USAGE_ANNOUNCEMENT";
             case USAGE_SPEAKER_CLEANUP:
                 return "USAGE_SPEAKER_CLEANUP";
+            case USAGE_NOTIFICATION_VIBRATION:
+                return "USAGE_NOTIFICATION_VIBRATION";
+            case USAGE_RINGTONE_VIBRATION:
+                return "USAGE_RINGTONE_VIBRATION";
             default:
                 return "unknown usage " + usage;
         }
@@ -1792,7 +1817,9 @@ public final class AudioAttributes implements Parcelable {
                 || usage == USAGE_SAFETY
                 || usage == USAGE_VEHICLE_STATUS
                 || usage == USAGE_ANNOUNCEMENT
-                || usage == USAGE_SPEAKER_CLEANUP);
+                || usage == USAGE_SPEAKER_CLEANUP
+                || usage == USAGE_NOTIFICATION_VIBRATION
+                || usage == USAGE_RINGTONE_VIBRATION);
     }
 
     /**
@@ -1895,12 +1922,14 @@ public final class AudioAttributes implements Parcelable {
             case USAGE_ALARM:
                 return AudioSystem.STREAM_ALARM;
             case USAGE_NOTIFICATION_RINGTONE:
+            case USAGE_RINGTONE_VIBRATION:
                 return AudioSystem.STREAM_RING;
             case USAGE_NOTIFICATION:
             case USAGE_NOTIFICATION_COMMUNICATION_REQUEST:
             case USAGE_NOTIFICATION_COMMUNICATION_INSTANT:
             case USAGE_NOTIFICATION_COMMUNICATION_DELAYED:
             case USAGE_NOTIFICATION_EVENT:
+            case USAGE_NOTIFICATION_VIBRATION:
                 return AudioSystem.STREAM_NOTIFICATION;
             case USAGE_ASSISTANCE_ACCESSIBILITY:
                 return AudioSystem.STREAM_ACCESSIBILITY;
@@ -1949,7 +1978,9 @@ public final class AudioAttributes implements Parcelable {
             USAGE_SAFETY,
             USAGE_VEHICLE_STATUS,
             USAGE_ANNOUNCEMENT,
-            USAGE_SPEAKER_CLEANUP
+            USAGE_SPEAKER_CLEANUP,
+            USAGE_NOTIFICATION_VIBRATION,
+            USAGE_RINGTONE_VIBRATION
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AttributeSystemUsage {}
@@ -2000,6 +2031,8 @@ public final class AudioAttributes implements Parcelable {
         USAGE_VEHICLE_STATUS,
         USAGE_ANNOUNCEMENT,
         USAGE_SPEAKER_CLEANUP,
+        USAGE_NOTIFICATION_VIBRATION,
+        USAGE_RINGTONE_VIBRATION,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AttributeUsage {}

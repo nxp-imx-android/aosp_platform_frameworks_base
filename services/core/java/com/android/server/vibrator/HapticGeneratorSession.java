@@ -19,12 +19,14 @@ package com.android.server.vibrator;
 import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
+import android.hardware.vibrator.HapticGeneratorConfig;
+import android.hardware.vibrator.VibrationEffectContent;
 import android.os.IBinder;
 import android.os.VibrationEffect;
-import android.os.vibrator.HapticGeneratorSession.Config;
 import android.os.vibrator.IHapticChannelStream;
 import android.os.vibrator.IHapticGeneratorSession;
 import android.os.vibrator.IHapticGeneratorSessionCallback;
+import android.os.vibrator.VibrationConfig;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.Slog;
 
@@ -47,14 +49,15 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
     /** Calls into VibratorManager to gain access to the haptic generator HAL controls. */
     public interface VibratorManagerHooks {
         /** Starts a new haptic generator session */
-        boolean startHapticGeneratorSession(long sessionId, int vibratorId, Config config);
+        boolean startHapticGeneratorSession(long sessionId, int vibratorId,
+                HapticGeneratorConfig config);
 
         /** Closes a haptic generator session */
         boolean closeHapticGeneratorSession(long sessionId);
 
         /** Starts a new haptic generator stream */
         boolean startHapticGeneratorStream(long sessionId, int vibratorId,
-                VibrationEffectSegment[] segments);
+                VibrationEffectContent[] segments);
 
         /** Reads from a haptic generator stream */
         int readHapticGeneratorStream(long sessionId, int vibratorId, byte[] buffer);
@@ -64,6 +67,7 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
     }
 
     private final VibratorManagerHooks mManagerHooks;
+    private final VibrationConfig mVibrationConfig;
     private final DeviceAdapter mDeviceAdapter;
     private final IHapticGeneratorSessionCallback mCallback;
     private final int mVibratorId;
@@ -90,10 +94,12 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
             @NonNull VibratorManagerHooks managerHooks,
             long sessionId,
             int vibratorId,
+            @NonNull VibrationConfig vibrationConfig,
             @NonNull DeviceAdapter deviceAdapter,
             @NonNull IHapticGeneratorSessionCallback callback) {
         mManagerHooks = managerHooks;
         mSessionId = sessionId;
+        mVibrationConfig = vibrationConfig;
         mDeviceAdapter = deviceAdapter;
         mVibratorId = vibratorId;
         mCallback = callback;
@@ -108,8 +114,11 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
         Preconditions.checkArgument(effect.getDuration() < Long.MAX_VALUE,
                 "Can't generate haptic channel stream for an indefinitely repeating effect.");
         effect.validate();
-
-        VibrationEffect adaptedEffect = mDeviceAdapter.adaptToVibrator(mVibratorId, effect);
+        VibrationEffect resolvedEffect =
+                effect.resolve(mVibrationConfig.getDefaultVibrationAmplitude());
+        VibrationEffect adaptedEffect = mDeviceAdapter.adaptToVibrator(mVibratorId, resolvedEffect);
+        Preconditions.checkArgument(adaptedEffect != null,
+                "Haptic channel stream can only be generated for supported effects.");
 
         //TODO(437846004) create a pathway for VendorEffects
         if (!(adaptedEffect instanceof VibrationEffect.Composed composed)) {
@@ -117,8 +126,13 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
                     "Haptic channel stream can only be generated for Composed effects.");
         }
 
-        VibrationEffectSegment[] segments = composed.getSegments().toArray(
-                new VibrationEffectSegment[0]);
+        VibrationEffectContent[] segments = VintfUtils.toHalVibrationEffectContent(
+                composed.getSegments().toArray(new VibrationEffectSegment[0]));
+
+        if (segments == null) {
+            throw new IllegalArgumentException(
+                    "Haptic channel stream can only be generated for supported effects.");
+        }
 
         if (!mManagerHooks.startHapticGeneratorStream(mSessionId, mVibratorId, segments)) {
             throw new IllegalStateException(

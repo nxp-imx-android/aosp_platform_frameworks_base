@@ -3943,9 +3943,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         pw.print(" ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
         pw.print(prefix); pw.print("mLayoutSeq="); pw.println(mLayoutSeq);
 
+        pw.print(prefix); pw.print("mImeWindow="); pw.println(mImeWindow);
         pw.print(prefix); pw.print("mImeLayeringTarget="); pw.println(mImeLayeringTarget);
         pw.print(prefix); pw.print("mImeInputTarget="); pw.println(mImeInputTarget);
         pw.print(prefix); pw.print("mImeControlTarget="); pw.println(mImeControlTarget);
+        mImeContainer.dump(pw, prefix);
+        pw.print(prefix); pw.print("mImeParent="); pw.println(mImeParent);
         pw.print(prefix); pw.print("mRemoteInsetsControlTarget=");
         pw.println(mRemoteInsetsControlTarget);
         pw.print(prefix); pw.print("mCurrentFocus="); pw.println(mCurrentFocus);
@@ -4998,7 +5001,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // has been settled down after IME control target changed.
         final boolean imeControlChanged = prevImeControlTarget != mImeControlTarget;
         if (imeControlChanged || forceUpdateImeParent) {
+            final WindowContainer originalParent = mImeParent;
             updateImeParent();
+            final ImeInsetsSourceProvider imeInsetsSourceProvider =
+                    mInsetsStateController.getImeSourceProvider();
+            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
+            // proceed with starting window removal after a task or activity switch.
+            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
+                    && mImeControlTarget != null && originalParent != mImeParent
+                    && imeInsetsSourceProvider.getSource().isVisible()) {
+                imeInsetsSourceProvider.reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
+            }
         }
 
         final WindowState win = InsetsControlTarget.asWindowOrNull(mImeControlTarget);
@@ -5786,7 +5799,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     void assignRelativeLayerForImeLayeringTargetChild(SurfaceControl.Transaction t,
             @NonNull WindowContainer child) {
-        child.assignRelativeLayer(t, mImeContainer.getSurfaceControl(), 1);
+        final var imeWindowToken = mImeContainer.getImeWindowToken();
+        final int imeZOrder = imeWindowToken != null ? imeWindowToken.getLastLayer() : 0;
+        child.assignRelativeLayer(t, mImeContainer.getSurfaceControl(), imeZOrder + 1);
     }
 
     @Override

@@ -37,6 +37,7 @@ import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
@@ -131,6 +132,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
         }
 
     @Test
+    @DisableSceneContainer
     fun testTransitionToDreaming() =
         kosmos.runTest {
             // Ensure dozing is off

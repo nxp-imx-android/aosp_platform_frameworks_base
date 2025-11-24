@@ -20,8 +20,6 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.view.accessibility.accessibilityManager
 import android.widget.RemoteViews
@@ -29,7 +27,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLogger
 import com.android.internal.logging.uiEventLoggerFake
-import com.android.systemui.Flags.FLAG_HUB_EDIT_MODE_TRANSITION
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
 import com.android.systemui.communal.data.repository.fakeCommunalMediaRepository
@@ -174,18 +171,8 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
             assertThat(isCommunalContentVisible).isEqualTo(true)
         }
 
-    @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
     @Test
-    fun isCommunalContentVisible_isFalse_whenEditModeNotShowing() =
-        kosmos.runTest {
-            val isCommunalContentVisible by collectLastValue(underTest.isCommunalContentVisible)
-            communalSceneInteractor.setEditModeState(null)
-            assertThat(isCommunalContentVisible).isEqualTo(false)
-        }
-
-    @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
-    @Test
-    fun isCommunalContentVisible_flagEnabled_alwaysTrue() =
+    fun isCommunalContentVisible_alwaysTrue() =
         kosmos.runTest {
             val isCommunalContentVisible by collectLastValue(underTest.isCommunalContentVisible)
 

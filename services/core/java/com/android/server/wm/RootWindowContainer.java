@@ -323,7 +323,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (mInfo.targetActivity != null) {
                 cls = new ComponentName(mInfo.packageName, mInfo.targetActivity);
             }
-            userId = UserHandle.getUserId(mInfo.applicationInfo.uid);
+            userId = UserHandle.getUserId(mInfo.getUid());
             isDocument = mIntent != null & mIntent.isDocument();
             // If documentData is non-null then it must match the existing task data.
             documentData = isDocument ? mIntent.getData() : null;
@@ -1376,7 +1376,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // Update the reason for ANR debugging to verify if the user activity is the one that
         // actually launched.
         final String myReason = reason + ":" + userId + ":" + UserHandle.getUserId(
-                aInfo.applicationInfo.uid) + ":" + taskDisplayArea.getDisplayId();
+                aInfo.getUid()) + ":" + taskDisplayArea.getDisplayId();
         mService.getActivityStartController().startHomeActivity(homeIntent, aInfo, myReason,
                 taskDisplayArea, onTop);
         return true;
@@ -1621,7 +1621,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
 
         final WindowProcessController app =
-                mService.getProcessController(homeInfo.processName, homeInfo.applicationInfo.uid);
+                mService.getProcessController(homeInfo.processName, homeInfo.getUid());
         if (!allowInstrumenting && app != null && app.isInstrumenting()) {
             // Don't do this if the home app is currently being instrumented.
             return false;
@@ -1774,7 +1774,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         boolean hasActivityStarted = false;
         for (int i = activities.size() - 1; i >= 0; i--) {
             final ActivityRecord r = activities.get(i);
-            if (app.mUid != r.info.applicationInfo.uid || !app.mName.equals(r.processName)) {
+            if (app.mUid != r.getUid() || !app.mName.equals(r.processName)) {
                 // The attaching process does not match the starting activity.
                 continue;
             }
@@ -2992,7 +2992,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (info.targetActivity != null) {
             cls = new ComponentName(info.packageName, info.targetActivity);
         }
-        final int userId = UserHandle.getUserId(info.applicationInfo.uid);
+        final int userId = UserHandle.getUserId(info.getUid());
 
         final PooledPredicate p = PooledLambda.obtainPredicate(
                 RootWindowContainer::matchesActivity, PooledLambda.__(ActivityRecord.class),

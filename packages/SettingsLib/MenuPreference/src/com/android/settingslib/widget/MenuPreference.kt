@@ -19,12 +19,11 @@ package com.android.settingslib.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.PopupMenu
+import androidx.core.content.withStyledAttributes
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
-
 import com.android.settingslib.widget.preference.menu.R
 import com.google.android.material.button.MaterialButton
-import androidx.core.content.withStyledAttributes
 
 class MenuPreference @JvmOverloads constructor(
     context: Context,

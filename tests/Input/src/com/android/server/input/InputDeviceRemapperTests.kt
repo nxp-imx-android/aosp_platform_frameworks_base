@@ -108,7 +108,13 @@ class InputDeviceRemapperTests {
     fun testRemapKey_appliesToCorrectDevice() {
         val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
-        val device = createDevice(deviceId, vendorId = 123, productId = 456)
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
         addInputDevice(deviceId, device.descriptor, device)
         inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
@@ -161,7 +167,13 @@ class InputDeviceRemapperTests {
     fun testRemoveKeyRemapping() {
         val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
-        val device = createDevice(deviceId, vendorId = 123, productId = 456)
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
         inputDeviceRemapper.remapKey(
             USER_ID,
             device.identifier,
@@ -185,7 +197,13 @@ class InputDeviceRemapperTests {
     fun testClearAllKeyRemappings() {
         val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
-        val device = createDevice(deviceId, vendorId = 123, productId = 456)
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
         inputDeviceRemapper.remapKey(
             USER_ID,
             device.identifier,
@@ -209,7 +227,13 @@ class InputDeviceRemapperTests {
     fun testDeviceRemoved_removesKeyRemapping() {
         val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
-        val device = createDevice(deviceId, vendorId = 123, productId = 456)
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
         inputDeviceRemapper.remapKey(
             USER_ID,
             device.identifier,
@@ -230,7 +254,13 @@ class InputDeviceRemapperTests {
     fun testSetCurrentUser_appliesKeyRemapping() {
         val inputDeviceRemapper = setupControllerRemapper(userId = USER_ID)
         val deviceId = 1
-        val device = createDevice(deviceId, vendorId = 123, productId = 456)
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
         inputDeviceRemapper.remapKey(
             USER_ID,
             device.identifier,
@@ -527,6 +557,54 @@ class InputDeviceRemapperTests {
         )
     }
 
+    @Test
+    fun testRemappingsCorrectlyRestored_onBackupAndRestore() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val joystickDevice =
+            createDevice(
+                /* deviceId= */ 1,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            joystickDevice.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        val keyboardDevice =
+            createDevice(
+                /* deviceId */ 2,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            keyboardDevice.identifier,
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_2,
+        )
+        TestUtils.flushLoopers(mainLooperManager)
+
+        val backupData = inputDeviceRemapper.getInputDeviceRemappingBackupPayload(USER_ID)
+        // Clear data and create new instance of remapper to simulate fresh install of device */
+        testDataStore.clear()
+        val recreatedInputDeviceRemapper = setupControllerRemapper()
+        recreatedInputDeviceRemapper.applyInputDeviceRemappingBackupPayload(backupData, USER_ID)
+        TestUtils.flushLoopers(mainLooperManager)
+
+        assertEquals(
+            recreatedInputDeviceRemapper.getAxisRemappings(USER_ID, joystickDevice.identifier),
+            mapOf(MotionEvent.AXIS_X to MotionEvent.AXIS_Y),
+        )
+        assertEquals(
+            recreatedInputDeviceRemapper.getKeyRemappings(USER_ID, keyboardDevice.identifier),
+            mapOf(KeyEvent.KEYCODE_1 to KeyEvent.KEYCODE_2),
+        )
+    }
+
     private fun addInputDevice(deviceId: Int, descriptor: String, device: InputDevice) {
         inputDeviceIds.add(deviceId)
         whenever(inputManager.getInputDevice(deviceId)).thenReturn(device)
@@ -543,7 +621,7 @@ class InputDeviceRemapperTests {
         deviceId: Int,
         vendorId: Int,
         productId: Int,
-        sources: Int = InputDevice.SOURCE_KEYBOARD,
+        sources: Int,
     ): InputDevice =
         InputDevice.Builder()
             .setId(deviceId)

@@ -19,18 +19,16 @@ package com.android.systemui.scene.domain.startable
 import android.content.pm.UserInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.policy.IKeyguardStateCallback
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
-import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.lockDevice
 import com.android.systemui.scene.data.repository.setSceneTransition
-import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.data.repository.unlockDevice
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -211,17 +209,13 @@ class KeyguardStateCallbackStartableTest : SysuiTestCase() {
     }
 
     private fun lockDevice() {
-        kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
-        kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "")
+        kosmos.lockDevice()
+        kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
     }
 
     private fun unlockDevice() {
-        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-        )
-        kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Gone))
-        kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
+        kosmos.unlockDevice()
+        kosmos.setSceneTransition(Idle(Scenes.Gone))
     }
 
     private fun mockCallback(): IKeyguardStateCallback {

@@ -196,11 +196,17 @@ flag {
     }
 }
 
-
 flag {
     name: "assist_display_id_public"
     namespace: "windowing_sdk"
     description: "Make the preferred display id extra for launching assistant public."
     bug: "428619705"
     is_exported: true
+}
+
+flag {
+    name: "always_move_task_to_back_on_back_pressed_feature_flag"
+    namespace: "watch_software_performance"
+    description: "Enable the alwaysMoveTaskToBackOnBackPressed feature"
+    bug: "444439703"
 }

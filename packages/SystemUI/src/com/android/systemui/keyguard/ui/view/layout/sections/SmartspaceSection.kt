@@ -59,7 +59,16 @@ constructor(
     private var dateView: LinearLayout? = null
     private var dateViewLargeClock: ViewGroup? = null
 
-    private var smartspaceVisibilityListener: OnGlobalLayoutListener? = null
+    private val smartspaceVisibilityListener = OnGlobalLayoutListener {
+        smartspaceView?.let {
+            val newVisibility = it.visibility
+            if (pastVisibility != newVisibility) {
+                keyguardSmartspaceInteractor.setBcSmartspaceVisibility(newVisibility)
+                pastVisibility = newVisibility
+            }
+        }
+    }
+
     private var pastVisibility: Int = -1
     private var disposableHandle: DisposableHandle? = null
 
@@ -80,15 +89,6 @@ constructor(
                 constraintLayout.addView(it)
 
                 keyguardUnlockAnimationController.lockscreenSmartspace = it
-                smartspaceVisibilityListener = OnGlobalLayoutListener {
-                    it.let {
-                        val newVisibility = it.visibility
-                        if (pastVisibility != newVisibility) {
-                            keyguardSmartspaceInteractor.setBcSmartspaceVisibility(newVisibility)
-                            pastVisibility = newVisibility
-                        }
-                    }
-                }
                 it.viewTreeObserver.addOnGlobalLayoutListener(smartspaceVisibilityListener)
             }
 
@@ -316,6 +316,10 @@ constructor(
     override fun removeViews(constraintLayout: ConstraintLayout) {
         if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) return
 
+        // The viewTreeObserver listener need to be removed before the view is detached, because the
+        // viewTreeObserver is reset when the view is detached. See [View::getViewTreeObserver].
+        smartspaceView?.viewTreeObserver?.removeOnGlobalLayoutListener(smartspaceVisibilityListener)
+
         val list = listOf(smartspaceView, dateView, dateViewLargeClock)
         list.forEach {
             it?.let {
@@ -324,8 +328,6 @@ constructor(
                 }
             }
         }
-        smartspaceView?.viewTreeObserver?.removeOnGlobalLayoutListener(smartspaceVisibilityListener)
-        smartspaceVisibilityListener = null
         keyguardUnlockAnimationController.lockscreenSmartspace = null
 
         disposableHandle?.dispose()

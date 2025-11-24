@@ -163,6 +163,12 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
 
         if (!isEnteringDesktopMode(task, source, options, suggestedDisplayArea)) {
             appendLog("not entering desktop mode, skipping");
+            if (Flags.enableDesktopFirstPersistedLaunchParamsBugfix()
+                    && currentParams.mWindowingMode == WINDOWING_MODE_FREEFORM) {
+                appendLog("clearing freeform windowing mode from current params");
+                outParams.mWindowingMode = WINDOWING_MODE_UNDEFINED;
+                return RESULT_CONTINUE;
+            }
             return RESULT_SKIP;
         }
 

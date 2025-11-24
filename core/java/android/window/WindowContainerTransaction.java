@@ -631,6 +631,31 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Sets whether package update should be handled for the task.
+     *
+     * <p>When {@code true}, the system will call Shell to do gatekeeping during the package update
+     * process. This means that when the task is going through the package update process and
+     * before the process is killed, shell will get a signal to prepare the task if needed.
+     *
+     * @param taskContainer          The window container of the task.
+     * @param handlePackageUpdate {@code true} to allow package update for task to be handled
+     *                               for the task, {@code false} otherwise.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setHandlePackageUpdateForTask(
+            @NonNull WindowContainerToken taskContainer,
+            boolean handlePackageUpdate) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return this;
+        }
+        final Change change = getOrCreateChange(taskContainer.asBinder());
+        change.mChangeMask |= Change.CHANGE_HANDLE_PACKAGE_UPDATE;
+        change.mHandlePackageUpdate = handlePackageUpdate;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * Hierarchy updates (create/destroy/reorder/reparent containers)
@@ -1586,6 +1611,8 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_DISABLE_LAUNCH_ADJACENT = 1 << 12;
         public static final int CHANGE_IS_TASK_MOVE_ALLOWED = 1 << 13;
         public static final int CHANGE_INTERCEPT_BACK_PRESSED = 1 << 14;
+        public static final int CHANGE_HANDLE_PACKAGE_UPDATE = 1 << 15;
+
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1602,7 +1629,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_DISABLE_PIP,
                 CHANGE_DISABLE_LAUNCH_ADJACENT,
                 CHANGE_IS_TASK_MOVE_ALLOWED,
-                CHANGE_INTERCEPT_BACK_PRESSED
+                CHANGE_INTERCEPT_BACK_PRESSED,
+                CHANGE_HANDLE_PACKAGE_UPDATE
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1618,6 +1646,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mDisableLaunchAdjacent = false;
         private boolean mIsTaskMoveAllowed = false;
         private boolean mInterceptBackPressed = false;
+        private boolean mHandlePackageUpdate = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1649,6 +1678,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mDisableLaunchAdjacent = in.readBoolean();
             mIsTaskMoveAllowed = in.readBoolean();
             mInterceptBackPressed = in.readBoolean();
+            mHandlePackageUpdate = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1712,6 +1742,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
                 mInterceptBackPressed = other.mInterceptBackPressed;
+            }
+            if ((other.mChangeMask & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
+                mHandlePackageUpdate = other.mHandlePackageUpdate;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -1824,6 +1857,11 @@ public final class WindowContainerTransaction implements Parcelable {
             return mInterceptBackPressed;
         }
 
+        /** Gets the handle package update state. */
+        public boolean gethandlePackageUpdate() {
+            return mHandlePackageUpdate;
+        }
+
         /** Gets whether the config should be sent to the client at the end of the transition. */
         public boolean getConfigAtTransitionEnd() {
             return mConfigAtTransitionEnd;
@@ -1933,6 +1971,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
                 sb.append("interceptBack:" + mInterceptBackPressed + ",");
             }
+            if ((mChangeMask & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
+                sb.append("handlePackageUpdate:" + mHandlePackageUpdate + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1967,6 +2008,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mDisableLaunchAdjacent);
             dest.writeBoolean(mIsTaskMoveAllowed);
             dest.writeBoolean(mInterceptBackPressed);
+            dest.writeBoolean(mHandlePackageUpdate);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);

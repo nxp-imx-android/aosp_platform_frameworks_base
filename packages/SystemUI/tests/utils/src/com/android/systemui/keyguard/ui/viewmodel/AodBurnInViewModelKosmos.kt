@@ -27,6 +27,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 var Kosmos.aodBurnInViewModel by Fixture {
     AodBurnInViewModel(
         applicationScope = applicationCoroutineScope,
+        bgScope = applicationCoroutineScope,
         burnInInteractor = burnInInteractor,
         configurationInteractor = configurationInteractor,
         keyguardInteractor = keyguardInteractor,

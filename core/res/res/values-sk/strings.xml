@@ -826,6 +826,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Umožňuje aplikácii čítať videosúbory z vášho zdieľaného priestoru."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"čítať súbory obrázka zo zdieľaného priestoru"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Umožňuje aplikácii čítať súbory obrázka z vášho zdieľaného priestoru."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"čítanie obrázkových súborov a videosúborov vybraných používateľom v zdieľanom ukladacom priestore"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Umožňuje aplikácii čítať obrázkové súbory a videosúbory, ktoré vyberiete vo svojom zdieľanom ukladacom priestore."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"upravovanie alebo odstraňovanie obsahu zdieľaného úložiska"</string>
@@ -1746,7 +1750,7 @@
     <string name="media_route_status_scanning" msgid="8045156315309594482">"Prebieha vyhľadávanie..."</string>
     <string name="media_route_status_connecting" msgid="5845597961412010540">"Prebieha pripájanie…"</string>
     <string name="media_route_status_available" msgid="1477537663492007608">"K dispozícii"</string>
-    <string name="media_route_status_not_available" msgid="480912417977515261">"Nie je k dispozícii"</string>
+    <string name="media_route_status_not_available" msgid="480912417977515261">"Nie je k dispozícii"</string>
     <string name="media_route_status_in_use" msgid="6684112905244944724">"Používa sa"</string>
     <string name="display_manager_built_in_display_name" msgid="1015775198829722440">"Vstavaná obrazovka"</string>
     <string name="display_manager_hdmi_display_name" msgid="1022758026251534975">"Obrazovka HDMI"</string>

@@ -50,12 +50,6 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.server.am.MockingOomAdjusterTests.ProcessStateAssert.assertThatProcess;
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED;
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_LEGACY;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
 import static com.android.server.am.ProcessStateController.FOLLOW_UP_UPDATE_MSG;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
@@ -85,6 +79,13 @@ import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_MAX_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_TRANSMITTED;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_LEGACY;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
@@ -139,7 +140,9 @@ import android.util.SparseIntArray;
 import com.android.server.LocalServices;
 import com.android.server.am.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.tests.assertutils.FlagAssert;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 import com.android.server.wm.ActivityTaskManagerService;
@@ -164,7 +167,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
- * Test class for {@link OomAdjuster}.
+ * Test class for {@link com.android.server.am.psc.OomAdjuster}.
  *
  * Build/Install/Run:
  * atest MockingOomAdjusterTests
@@ -319,7 +322,7 @@ public class MockingOomAdjusterTests {
                 mActivityStateHandlerThread.getLooper());
         mService.mProcessStateController = mProcessStateController;
         mService.mOomAdjuster = mService.mProcessStateController.getOomAdjuster();
-        mService.mOomAdjuster.mAdjSeq = 10000;
+        setFieldValue(OomAdjuster.class, mService.mOomAdjuster, "mAdjSeq", 10000);
         setFieldValue(OomAdjuster.class, mService.mOomAdjuster, "mUpdateHandler", mUpdateHandler);
         mService.mWakefulness = new AtomicInteger(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
@@ -3142,18 +3145,21 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME + "/.TestService");
         final ServiceRecord s1 = bindService(app1, client1, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s1, "name", cn1);
+        setFieldValue(ServiceRecord.class, s1, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s1, true);
 
         final ComponentName cn2 = ComponentName.unflattenFromString(
                 MOCKAPP2_PACKAGENAME + "/.TestService");
         final ServiceRecord s2 = bindService(app2, client2, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s2, "name", cn2);
+        setFieldValue(ServiceRecord.class, s2, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s2, true);
 
         final ComponentName cn3 = ComponentName.unflattenFromString(
                 MOCKAPP5_PACKAGENAME + "/.TestService");
         final ServiceRecord s3 = bindService(app3, client1, null, null, 0, mock(IBinder.class));
         setFieldValue(ServiceRecord.class, s3, "name", cn3);
+        setFieldValue(ServiceRecord.class, s3, "serviceInfo", new ServiceInfo());
         mProcessStateController.setStartRequested(s3, true);
 
         final ComponentName cn4 = ComponentName.unflattenFromString(
@@ -3589,7 +3595,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setServiceLastActivityTime(s, now);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
-        mService.mOomAdjuster.mNumServiceProcs = 3;
+        setFieldValue(OomAdjuster.class, mService.mOomAdjuster, "mNumServiceProcs", 3);
         updateOomAdj(app3, app2, app);
 
         assertEquals(SERVICE_B_ADJ, app3.getSetAdj());
@@ -3793,7 +3799,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setServiceLastActivityTime(s, now);
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
-        mService.mOomAdjuster.mNumServiceProcs = 3;
+        setFieldValue(OomAdjuster.class, mService.mOomAdjuster, "mNumServiceProcs", 3);
         updateOomAdj(app, app2, app3);
 
         assertEquals(SERVICE_ADJ, app.getSetAdj());
@@ -4545,6 +4551,40 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
 
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_addToAllowList() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+
+        // trigger an update that will freeze app.
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+
+        // add to the allow list
+        final UidRecordInternal uidRec = app.getUidRecord();
+        uidRec.setCurAllowListed(true);
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, false);
+        assertThatProcess(app).hasCpuTimeCapability().withExactReasons(CPU_TIME_REASON_ALLOW_LIST);
+
+        // remove from the allow list
+        uidRec.setCurAllowListed(false);
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+    }
+
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
         final ProcessRecord proc = new ProcessRecordBuilder(pid, uid, processName,
@@ -4743,13 +4783,13 @@ public class MockingOomAdjusterTests {
             boolean hasExternalProviders) {
         ContentProviderRecord record = mock(ContentProviderRecord.class);
         mProcessStateController.addPublishedProvider(publisher, name, record);
-        record.proc = publisher;
-        setFieldValue(ContentProviderRecord.class, record, "connections",
+        record.mProc = publisher;
+        setFieldValue(ContentProviderRecord.class, record, "mConnections",
                 new ArrayList<ContentProviderConnection>());
         doCallRealMethod().when(record).getHostProcess();
         doCallRealMethod().when(record).numberOfConnections();
         doCallRealMethod().when(record).getConnectionsAt(any(int.class));
-        doReturn(hasExternalProviders).when(record).hasExternalProcessHandles();
+        doReturn(hasExternalProviders).when(record).getHasExternalProcessHandles();
         return record;
     }
 
@@ -4757,14 +4797,14 @@ public class MockingOomAdjusterTests {
             ContentProviderRecord record) {
         ContentProviderConnection conn = spy(new ContentProviderConnection(record, client,
                 client.info.packageName, UserHandle.getUserId(client.uid)));
-        record.connections.add(conn);
+        record.mConnections.add(conn);
         mProcessStateController.addProviderConnection(client, conn);
         return conn;
     }
 
     private void unbindProvider(ProcessRecord client, ContentProviderRecord record,
             ContentProviderConnection conn) {
-        record.connections.remove(conn);
+        record.mConnections.remove(conn);
         mProcessStateController.removeProviderConnection(client, conn);
     }
 
@@ -5057,17 +5097,17 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        long getUptimeMillis() {
+        public long getUptimeMillis() {
             return SystemClock.uptimeMillis() + mTimeOffsetMillis;
         }
 
         @Override
-        long getElapsedRealtimeMillis() {
+        public long getElapsedRealtimeMillis() {
             return SystemClock.elapsedRealtime() + mTimeOffsetMillis;
         }
 
         @Override
-        void batchSetOomAdj(ArrayList<ProcessRecordInternal> procsToOomAdj) {
+        public void batchSetOomAdj(ArrayList<ProcessRecordInternal> procsToOomAdj) {
             for (ProcessRecordInternal proc : procsToOomAdj) {
                 final int pid = proc.getPid();
                 if (pid <= 0) continue;
@@ -5077,14 +5117,14 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        void setOomAdj(int pid, int uid, int adj) {
+        public void setOomAdj(int pid, int uid, int adj) {
             if (pid <= 0) return;
             mLastSetOomAdj.put(pid, adj);
             mSetOomAdjAppliedAt.put(pid, mLastAppliedAt++);
         }
 
         @Override
-        void setThreadPriority(int tid, int priority) {
+        public void setThreadPriority(int tid, int priority) {
             // do nothing
         }
     }

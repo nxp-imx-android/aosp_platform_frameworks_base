@@ -474,7 +474,6 @@ public class AidlTest {
 
     @Test
     @SmallTest
-    @EnableFlags({Flags.FLAG_BINDER_CACHE_TRANSACTION_TRACE_NAMES})
     public void testGetTransactionNameReusedAcrossInstances() throws Exception {
         for (int transactionId = IBinder.FIRST_CALL_TRANSACTION;
                 transactionId <= mLocal.getMaxTransactionId();

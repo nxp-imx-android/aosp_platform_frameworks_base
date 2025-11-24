@@ -22,6 +22,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelableException
 import android.os.RemoteException
+import android.os.UserHandle
 import android.util.Slog
 import android.widget.flags.Flags
 import android.widget.location.ILocationButtonClient
@@ -161,7 +162,8 @@ constructor(
 
             fun isValidHostPackage(packageName: String, callerUid: Int): Boolean {
                 try {
-                    val packageUid = packageManager.getPackageUid(packageName, 0)
+                    val userId = UserHandle.getUserId(callerUid)
+                    val packageUid = packageManager.getPackageUidAsUser(packageName, userId)
                     return callerUid == packageUid
                 } catch (e: PackageManager.NameNotFoundException) {
                     Slog.e(TAG, "Package name not found." + e.message)

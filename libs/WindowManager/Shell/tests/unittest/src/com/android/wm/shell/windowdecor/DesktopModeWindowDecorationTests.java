@@ -117,6 +117,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
 import com.android.wm.shell.windowdecor.caption.OccludingElement;
@@ -270,6 +271,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private Transitions mTransitions;
     @Mock
     private LockTaskChangeListener mLockTaskChangeListener;
+    @Mock
+    private FocusTransitionObserver mFocusTransitionObserver;
     private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
     @Captor
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
@@ -328,7 +331,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(),
+                        any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(), any()))
@@ -365,7 +369,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -377,7 +381,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -389,7 +393,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -401,7 +405,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -413,7 +417,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_windowBoxShadowsAreSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -430,7 +434,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForFullscreen() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -443,7 +447,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForSplit() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -1946,7 +1950,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mMockWindowDecorViewHostSupplier, maximizeMenuFactory, mMockHandleMenuFactory,
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
-                mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener);
+                mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener,
+                mFocusTransitionObserver);
         windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);

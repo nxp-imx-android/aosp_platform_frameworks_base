@@ -210,7 +210,8 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
                         mController,
                         service,
                         service.mTaskSupervisor,
-                        mock(ActivityStartInterceptor.class));
+                        mock(ActivityStartInterceptor.class),
+                        mock(UserHelper.class));
         prepareStarter(launchFlags);
         final IApplicationThread caller = mock(IApplicationThread.class);
         final WindowProcessListener listener = mock(WindowProcessListener.class);
@@ -300,7 +301,8 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         // Ensure that {@link ActivityOptions} are aborted with unsuccessful result.
         if (expectedResult != START_SUCCESS) {
             final ActivityStarter optionStarter = new ActivityStarter(mController, mAtm,
-                    mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class));
+                    mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class),
+                    mock(UserHelper.class));
             final ActivityOptions options = spy(ActivityOptions.makeBasic());
 
             final int optionResult = optionStarter.setCaller(caller)

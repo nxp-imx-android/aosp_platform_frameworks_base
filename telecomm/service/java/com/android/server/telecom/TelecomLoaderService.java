@@ -28,7 +28,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
-import android.telecom.DefaultDialerManager;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.CarrierConfigManager;
@@ -187,7 +186,8 @@ public class TelecomLoaderService extends SystemService {
                     return null;
                 }
             }
-            String packageName = DefaultDialerManager.getDefaultDialerApplication(mContext);
+            TelecomManager telecomManager = mContext.getSystemService(TelecomManager.class);
+            String packageName = telecomManager.getDefaultDialerPackage();
             if (packageName != null) {
                 return new String[]{packageName};
             }

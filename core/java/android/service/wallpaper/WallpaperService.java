@@ -106,6 +106,7 @@ import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.WindowRelayoutResult;
 import android.window.ClientWindowFrames;
+import android.window.DesktopExperienceFlags;
 import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
@@ -374,6 +375,7 @@ public abstract class WallpaperService extends Service {
         private int mDisplayState;
 
         private float mCustomDimAmount = 0f;
+        private float mCustomPersistedDimAmount = 0f;
         private float mWallpaperDimAmount = 0f;
         private float mPreviousWallpaperDimAmount = mWallpaperDimAmount;
         private float mDefaultDimAmount = 0.05f;
@@ -980,8 +982,15 @@ public abstract class WallpaperService extends Service {
 
             try {
                 final WallpaperColors newColors = onComputeColors();
+                final WallpaperColors persistedColors;
+                if (DesktopExperienceFlags.DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED.isTrue()) {
+                    persistedColors = computeColorsWithDim(mCustomPersistedDimAmount);
+                } else {
+                    persistedColors = newColors;
+                }
                 if (mConnection != null) {
-                    mConnection.onWallpaperColorsChanged(newColors, mDisplay.getDisplayId());
+                    mConnection.onWallpaperColorsChanged(newColors, mDisplay.getDisplayId(),
+                            persistedColors);
                 } else {
                     Log.w(TAG, "Can't notify system because wallpaper connection "
                             + "was not established.");
@@ -1008,6 +1017,19 @@ public abstract class WallpaperService extends Service {
          */
         @MainThread
         public @Nullable WallpaperColors onComputeColors() {
+            return null;
+        }
+
+        /**
+         * Compute the colors the wallpaper would have if a dim of {@link dimAmount} was applied to
+         * it. This is only meant to be implemented by ImageWallpaper, which has its colors
+         * persisted by WallpaperManagerService.
+         *
+         * @return Wallpaper colors to be persisted.
+         * @hide
+         */
+        @MainThread
+        public @Nullable WallpaperColors computeColorsWithDim(float dimAmount) {
             return null;
         }
 
@@ -1054,16 +1076,21 @@ public abstract class WallpaperService extends Service {
                     && (colorHints & WallpaperColors.HINT_SUPPORTS_DARK_THEME) == 0);
 
             // Recompute dim in case it changed compared to the previous WallpaperService
-            updateWallpaperDimming(mCustomDimAmount);
+            updateWallpaperDimming(mCustomDimAmount, mCustomPersistedDimAmount);
         }
 
         /**
          * Update the dim amount of the wallpaper by updating the surface.
          *
-         * @param dimAmount Float amount between [0.0, 1.0] to dim the wallpaper.
+         * @param resolvedDimAmount Float amount between [0.0, 1.0] to dim the wallpaper.
+         * @param persistedDimAmount Float amount between [0.0, 1.0] to be saved in wallpaper data
+         *                           and persisted with the user settings. This can be different
+         *                           because there can be temporary dim amount to only apply but not
+         *                           persist.
          */
-        private void updateWallpaperDimming(float dimAmount) {
-            mCustomDimAmount = Math.min(1f, dimAmount);
+        private void updateWallpaperDimming(float resolvedDimAmount, float persistedDimAmount) {
+            mCustomDimAmount = Math.min(1f, resolvedDimAmount);
+            mCustomPersistedDimAmount = Math.min(1f, persistedDimAmount);
 
             // If default dim is enabled, the actual dim amount is at least the default dim amount
             mWallpaperDimAmount = (!mShouldDimByDefault) ? mCustomDimAmount
@@ -2668,9 +2695,11 @@ public abstract class WallpaperService extends Service {
             mEngine.removeLocalColorsAreas(regions);
         }
 
-        public void applyDimming(float dimAmount) throws RemoteException {
-            Message msg = mCaller.obtainMessageI(MSG_UPDATE_DIMMING,
-                    Float.floatToIntBits(dimAmount));
+        public void applyDimming(float resolvedDimAmount, float persistedDimAmount)
+                throws RemoteException {
+            Message msg = mCaller.obtainMessageII(MSG_UPDATE_DIMMING,
+                    Float.floatToIntBits(resolvedDimAmount),
+                    Float.floatToIntBits(persistedDimAmount));
             mCaller.sendMessage(msg);
         }
 
@@ -2801,7 +2830,8 @@ public abstract class WallpaperService extends Service {
                     mEngine.setZoom(Float.intBitsToFloat(message.arg1));
                     break;
                 case MSG_UPDATE_DIMMING:
-                    mEngine.updateWallpaperDimming(Float.intBitsToFloat(message.arg1));
+                    mEngine.updateWallpaperDimming(Float.intBitsToFloat(message.arg1),
+                            Float.intBitsToFloat(message.arg2));
                     break;
                 case MSG_RESIZE_PREVIEW:
                     mEngine.resizePreview((Rect) message.obj);
@@ -2859,7 +2889,7 @@ public abstract class WallpaperService extends Service {
                     try {
                         WallpaperColors colors = mEngine.onComputeColors();
                         mEngine.setPrimaryWallpaperColors(colors);
-                        mConnection.onWallpaperColorsChanged(colors, mDisplayId);
+                        mConnection.onWallpaperColorsChanged(colors, mDisplayId, colors);
                     } catch (RemoteException e) {
                         // Connection went away, nothing to do in here.
                     }

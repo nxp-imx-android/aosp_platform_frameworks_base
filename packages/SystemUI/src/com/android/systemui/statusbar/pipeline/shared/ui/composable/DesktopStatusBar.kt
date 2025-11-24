@@ -28,9 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -56,8 +54,6 @@ import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
-import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
@@ -67,6 +63,8 @@ import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
+import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
+import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopupChipsContainer
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
@@ -209,6 +207,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
                     Alignment.Start,
                 ),
+            isClickable = viewModel.isNotificationsChipClickable,
         ) {
             Icon(
                 icon =
@@ -265,6 +264,7 @@ private fun QuickSettingsChip(
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
                     Alignment.Start,
                 ),
+            isClickable = viewModel.isQuickSettingsChipClickable,
         ) {
             if (SystemStatusIconsInCompose.isEnabled) {
                 SystemStatusIcons(

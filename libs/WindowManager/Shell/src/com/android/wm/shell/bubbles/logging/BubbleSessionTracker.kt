@@ -33,10 +33,8 @@ fun interface BubbleSessionTracker {
 
     /** Session events that are tracked. */
     sealed class SessionEvent {
-        data class Started(
-            val forBubbleBar: Boolean,
-            val selectedBubblePackage: String,
-        ) : SessionEvent() {
+        data class Started(val forBubbleBar: Boolean, val selectedBubblePackage: String) :
+            SessionEvent() {
 
             companion object {
 
@@ -60,10 +58,8 @@ fun interface BubbleSessionTracker {
             }
         }
 
-        data class SwitchedBubble(
-            val forBubbleBar: Boolean,
-            val toBubblePackage: String,
-        ) : SessionEvent() {
+        data class SwitchedBubble(val forBubbleBar: Boolean, val toBubblePackage: String) :
+            SessionEvent() {
 
             companion object {
 
@@ -92,9 +88,9 @@ fun interface BubbleSessionTracker {
                 }
                 else -> {
                     BubbleLog.w(
-                        "BubbleSessionTracker.getBubblePackageForLogging: "
-                                + "Unsupported type of BubbleViewProvider with key %s",
-                        key
+                        "BubbleSessionTracker.getBubblePackageForLogging: " +
+                            "Unsupported type of BubbleViewProvider with key %s",
+                        key,
                     )
                     "unknown"
                 }

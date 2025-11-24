@@ -34,6 +34,7 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
@@ -259,12 +260,15 @@ constructor(
             } else {
                 val willAnimateToGone =
                     keyguardDismissActionInteractor.get().willAnimateDismissActionOnLockscreen.value
+                val currentScene = sceneInteractor.get().currentScene.value
                 if (
-                    !willAnimateToGone && sceneBackInteractor.get().backStack.value.peek() != null
+                    !willAnimateToGone &&
+                        (currentScene == Scenes.Shade || currentScene == Scenes.QuickSettings) &&
+                        sceneBackInteractor.get().backStack.value.peek() != null
                 ) {
-                    // If we don't need to animate to Scenes.Gone, and there's a back stack,
-                    // replacing the Lockscreen scene at the bottom of the stack triggers device
-                    // entry without animating a transition away from the current scene.
+                    // If we don't need to animate to Gone, the current scene is Shade or Quick
+                    // Settings, and the back stack is not empty, replacing the Lockscreen scene at
+                    // the bottom of the stack triggers device entry without dismissing the Shade.
                     sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
                 } else {
                     val transitionKey =
@@ -326,10 +330,25 @@ constructor(
             if (isLockscreenEnabled() && !isAuthenticationRequired()) {
                 sceneInteractor
                     .get()
-                    .changeScene(
-                        toScene = Scenes.Lockscreen,
-                        loggingReason = "lock now with SWIPE auth method, reason: $debuggingReason",
-                    )
+                    .resolveSceneFamilyOrNull(SceneFamilies.Home)?.value?.let {
+                        resolvedScene ->
+                            // If the resolved scene is Gone, we should always show the lockscreen.
+                            val toScene =
+                                resolvedScene
+                                    .takeIf { it != Scenes.Gone } ?: Scenes.Lockscreen
+                            if (toScene != Scenes.Lockscreen) {
+                                // We should never be in a state where the current scene is the
+                                // [Scenes.Lockscreen] and the lockscreen is also on the back stack.
+                                sceneBackInteractor.get().addLockscreenToBackStack()
+                            }
+                            sceneInteractor
+                                .get()
+                                .changeScene(
+                                    toScene = toScene,
+                                    loggingReason =
+                                        "lock now with SWIPE auth method, reason: $debuggingReason",
+                                )
+                            }
             }
         }
     }

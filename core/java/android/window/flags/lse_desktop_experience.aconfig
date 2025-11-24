@@ -445,6 +445,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_persisted_launch_params_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where freeform windowing mode is unexpectedly persisted across launches."
+    bug: "461305925"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_first_policy_fullscreen_decision_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix desktop-first policy bug for fullscreen tasks."
@@ -521,16 +531,6 @@ flag {
     bug: "382238347"
     metadata {
        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_tab_tearing_launch_animation"
-    namespace: "lse_desktop_experience"
-    description: "Enables the animation that occurs when a new window is opened via tab tearing."
-    bug: "376389593"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -670,13 +670,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_desktop_windowing_multi_instance_features"
-    namespace: "lse_desktop_experience"
-    description: "Whether to enable multi-instance support in desktop windowing."
-    bug: "336289597"
 }
 
 flag {
@@ -848,7 +841,7 @@ flag {
 }
 
 flag {
-    name: "enable_freeform_box_shadows"
+    name: "enable_freeform_box_shadows_v2"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
     bug: "367464660"
@@ -1253,16 +1246,6 @@ flag {
 }
 
 flag {
-    name: "enable_taskbar_recent_tasks_throttle_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Throttle recent tasks reload operations for Taskbar."
-    bug: "415090968"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_taskbar_recents_layout_transition"
     namespace: "lse_desktop_experience"
     description: "Enable Taskbar LayoutTransition for Recent Apps"
@@ -1435,10 +1418,30 @@ flag {
 }
 
 flag {
+    name: "keep_desk_active_on_keyguard_appear"
+    namespace: "lse_desktop_experience"
+    description: "Keeps the active desk active if keyguard appears"
+    bug: "428800310"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "keyboard_shortcuts_to_switch_desks"
     namespace: "lse_desktop_experience"
     description: "Enable switching the active desk with keyboard shortcuts"
     bug: "389957556"
+}
+
+flag {
+    name: "make_filling_bounds_change_effect_lifecycle"
+    namespace: "lse_desktop_experience"
+    description: "Flags bounds changes to/from filling as EFFECTS_LIFECYCLE"
+    bug: "452347446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

@@ -38,7 +38,6 @@ import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.Flags
 import com.android.systemui.Flags.communalEditWidgetsActivityFinishFix
 import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -199,13 +198,11 @@ constructor(
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
 
-        if (Flags.hubEditModeTransition()) {
-            communalViewModel.setEditModeState(EditModeState.CREATED)
+        communalViewModel.setEditModeState(EditModeState.CREATED)
 
-            lifecycleScope.launch {
-                delay(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS.milliseconds)
-                lockscreenReadyDeferred.complete(Unit)
-            }
+        lifecycleScope.launch {
+            delay(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS.milliseconds)
+            lockscreenReadyDeferred.complete(Unit)
         }
 
         listenForTransitionAndChangeScene()
@@ -241,17 +238,13 @@ constructor(
     // Handle scene change to show the activity and animate in its content
     private fun listenForTransitionAndChangeScene() {
         lifecycleScope.launch {
-            if (Flags.hubEditModeTransition()) {
-                // Wait for the edit mode activity to be ready underneath the hub before starting
-                // the hub to edit mode transition.
-                readyDeferred.await()
-                // Wait for lock screen background animation to finish.
-                lockscreenReadyDeferred.await()
-                // Edit mode activity now ready to show.
-                communalViewModel.setEditModeState(EditModeState.READY_TO_SHOW)
-            } else {
-                communalViewModel.canShowEditMode.first { it }
-            }
+            // Wait for the edit mode activity to be ready underneath the hub before starting
+            // the hub to edit mode transition.
+            readyDeferred.await()
+            // Wait for lock screen background animation to finish.
+            lockscreenReadyDeferred.await()
+            // Edit mode activity now ready to show.
+            communalViewModel.setEditModeState(EditModeState.READY_TO_SHOW)
 
             if (!SceneContainerFlag.isEnabled) {
                 communalViewModel.changeScene(
@@ -264,10 +257,8 @@ constructor(
                 communalViewModel.currentScene.first { it == CommunalScenes.Blank }
             }
 
-            if (Flags.hubEditModeTransition()) {
-                // Wait for hub to fully transition out.
-                communalViewModel.hubTransitionOut.first { it }
-            }
+            // Wait for hub to fully transition out.
+            communalViewModel.hubTransitionOut.first { it }
 
             // Wait for dream to exit, if we were previously dreaming.
             keyguardInteractor.isDreaming.first { !it }
@@ -304,10 +295,6 @@ constructor(
         // finishes.
         applicationScope.launch {
             communalViewModel.onEditDone()
-
-            if (!Flags.hubEditModeTransition()) {
-                communalViewModel.cleanupEditModeState()
-            }
 
             communalViewModel.changeScene(
                 scene = CommunalScenes.Communal,

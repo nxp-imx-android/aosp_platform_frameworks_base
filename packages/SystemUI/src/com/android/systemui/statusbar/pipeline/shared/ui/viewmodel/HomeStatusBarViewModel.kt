@@ -60,9 +60,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
-import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
-import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
@@ -79,6 +76,10 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStat
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
+import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
+import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -234,6 +235,12 @@ interface HomeStatusBarViewModel : Activatable {
     /** Emits `true` whenever there is at least one status bar notification. */
     val hasStatusBarNotifications: Boolean
 
+    /** True if the user can click on the notifications chip. */
+    val isNotificationsChipClickable: Boolean
+
+    /** True if the user can click on the quick settings chip. */
+    val isQuickSettingsChipClickable: Boolean
+
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
         fun create(): HomeStatusBarViewModel
@@ -274,6 +281,7 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
+    deviceProvisioningInteractor: DeviceProvisioningInteractor,
 ) : HomeStatusBarViewModel, HydratedActivatable() {
 
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
@@ -458,6 +466,18 @@ constructor(
     override val hasStatusBarNotifications: Boolean by
         statusBarNotificationIconsInteractor.hasStatusBarNotifications.hydratedStateOf(
             traceName = "hasStatusBarNotifications",
+            initialValue = false,
+        )
+
+    override val isNotificationsChipClickable: Boolean by
+        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(
+            traceName = "isNotificationsChipClickable",
+            initialValue = false,
+        )
+
+    override val isQuickSettingsChipClickable: Boolean by
+        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(
+            traceName = "isQuickSettingsChipClickable",
             initialValue = false,
         )
 

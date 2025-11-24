@@ -24,6 +24,7 @@ import static android.hardware.biometrics.BiometricManager.Authenticators;
 import static android.hardware.biometrics.Flags.FLAG_ADD_KEY_AGREEMENT_CRYPTO_OBJECT;
 import static android.hardware.biometrics.Flags.FLAG_ADD_FALLBACK;
 import static android.hardware.biometrics.Flags.FLAG_GET_OP_ID_CRYPTO_OBJECT;
+import static android.hardware.biometrics.Flags.FLAG_CLEAR_FALLBACK_OPTION;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 
 import android.annotation.CallbackExecutor;
@@ -33,6 +34,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.content.ComponentName;
 import android.content.Context;
@@ -181,6 +183,28 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
             DISMISSED_REASON_FALLBACK_OPTION_MAX})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DismissedReason {}
+
+    /**
+     * Refers to fallback shown to redirect to Identity Check settings page when Identity Check
+     * disables credential authentication.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_CLEAR_FALLBACK_OPTION)
+    public static final int FALLBACK_TYPE_IDENTITY_CHECK = 1;
+
+    /**
+     * Types of fallback provided by the framework. These can be cleared using
+     * {@link Builder#clearFallbackOption(int)} (int)}. Custom fallback options can be added using
+     * {@link Builder#addFallbackOption(CharSequence, int, Executor,
+     * DialogInterface.OnClickListener)}.
+     *
+     * @hide
+     */
+    @IntDef({FALLBACK_TYPE_IDENTITY_CHECK})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FallbackType {}
 
     static class ButtonInfo {
         Executor executor;
@@ -509,6 +533,35 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
             mPromptInfo.addFallbackOption(new FallbackOption(text, iconType));
             mFallbackOptions[mFallbackOptionCount] = new ButtonInfo(executor, listener);
             mFallbackOptionCount++;
+            return this;
+        }
+
+        /**
+         * Remove system-provided fallback of a specific type.
+         *
+         * <p>This method is useful when the calling surface wants to prevent certain
+         * system-provided fallback options from being displayed to the user.
+         *
+         * <p>For example, if an application has its own mechanism for handling Identity Check,
+         * it can use this method to remove the default Identity Check fallback option
+         * provided by the framework, thus ensuring a consistent user experience
+         *
+         * @throws IllegalArgumentException if fallback option type parameter is invalid
+         * @param fallbackOptionType Type of fallback to clear from the fallback options
+         * @return This builder
+         *
+         * @hide
+         */
+        @NonNull
+        @SystemApi
+        @FlaggedApi(FLAG_CLEAR_FALLBACK_OPTION)
+        @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
+        public Builder clearFallbackOption(@FallbackType int fallbackOptionType) {
+            if (fallbackOptionType == FALLBACK_TYPE_IDENTITY_CHECK) {
+                mPromptInfo.clearIdentityCheckFallbackOption();
+            } else {
+                throw new IllegalArgumentException("Invalid fallback option type");
+            }
             return this;
         }
 

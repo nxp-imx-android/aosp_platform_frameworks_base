@@ -115,6 +115,18 @@ public final class PerfettoTrace {
                 "jobscheduler");
     }
 
+    // For tracing coroutine execution (coroutine creation and coroutine continuations)
+    public static final PerfettoTrace.Category CC_CATEGORY = new PerfettoTrace.Category("cc");
+
+    // The same as a previous CC_CATEGORY, but to be used with a V3 API.
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            CC_CATEGORY_V3 = getCcCategoryV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category getCcCategoryV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("cc");
+    }
+
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -139,6 +151,19 @@ public final class PerfettoTrace {
             return PerfettoTrace.JOB_SCHEDULER_CATEGORY_V3.isEnabled();
         }
         return PerfettoTrace.JOB_SCHEDULER_CATEGORY.isEnabled();
+    }
+
+    /**
+     * This is temporary wrapper to check if either new or old APIs "cc" category is enabled, should
+     * be called only from TraceContextElement.kt in frameworks/libs/systemui/tracinglib
+     */
+    // Tracing currently completely disabled under Ravenwood, just return false.
+    @RavenwoodIgnore
+    public static boolean isCcCategoryEnabled() {
+        if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+            return PerfettoTrace.CC_CATEGORY_V3.isEnabled();
+        }
+        return PerfettoTrace.CC_CATEGORY.isEnabled();
     }
 
     /**
@@ -465,10 +490,12 @@ public final class PerfettoTrace {
             MQ_CATEGORY_V3.register();
             GFX_CATEGORY_V3.register();
             JOB_SCHEDULER_CATEGORY_V3.register();
+            CC_CATEGORY_V3.register();
         } else {
             MQ_CATEGORY.register();
             GFX_CATEGORY.register();
             JOB_SCHEDULER_CATEGORY.register();
+            CC_CATEGORY.register();
         }
     }
 

@@ -20,6 +20,7 @@ import com.android.settingslib.graph.proto.BundleProto
 import com.android.settingslib.graph.proto.BundleProto.BundleValue
 import com.android.settingslib.graph.proto.BundleProtoOrBuilder
 import com.android.settingslib.graph.proto.IntentProto
+import com.android.settingslib.graph.proto.KeyParametersProto
 import com.android.settingslib.graph.proto.ParameterizedPreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.graph.proto.PreferenceGroupProto
@@ -36,6 +37,7 @@ import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.PreferenceValueProto
 import com.android.settingslib.graph.proto.RangeValueProto
 import com.android.settingslib.graph.proto.TextProto
+import com.android.settingslib.metadata.UnvalidatedKeyParameters
 
 /** Returns root or null. */
 val PreferenceScreenProtoOrBuilder.rootOrNull
@@ -96,6 +98,10 @@ val ActionTargetOrBuilder.keyOrNull
 /** Returns args or null. */
 val ActionTargetOrBuilder.argsOrNull
     get() = if (hasArgs()) args else null
+
+/** Returns keyParameters or null. */
+val ActionTargetOrBuilder.keyParametersOrNull
+    get() = if (hasKeyParameters()) keyParameters else null
 
 /** Kotlin DSL-style builder for [PreferenceProto]. */
 @JvmSynthetic
@@ -166,3 +172,45 @@ fun PreferenceGraphProto.Builder.mergeForLazyMode(
     }
     putScreens(screenKey, screenBuilder.build())
 }
+
+/**
+ * Merges a [PreferenceScreenProto] into this graph builder, with behavior tailored for lazy
+ * loading scenarios.
+ *
+ * If no screen exists for the given [screenKey], the new [screen] is added to the graph.
+ *
+ * If a screen already exists, the merge strategy depends on [keyParameters]:
+ * - If [keyParameters] is `null`, a full merge of the [screen] proto is performed, updating all
+ *   fields of the existing screen.
+ * - If [keyParameters] is not `null`, only the `parameterized_screens` list from the new [screen]
+ *   is added to the existing screen. This is used to add data for a specific set of parameters
+ *   without re-fetching the base screen information.
+ *
+ * @param screen The new [PreferenceScreenProto] data to merge.
+ * @param screenKey The key identifying the screen within the preference graph.
+ * @param keyParameters A map of parameters that dictates the merge strategy. If null, a full
+ *     merge is performed.
+ */
+fun PreferenceGraphProto.Builder.mergeForLazyMode(
+    screen: PreferenceScreenProto,
+    screenKey: String,
+    keyParameters: UnvalidatedKeyParameters?,
+) {
+    val oldScreen = getScreensOrDefault(screenKey, null)
+    if (oldScreen == null) {
+        putScreens(screenKey, screen)
+        return
+    }
+    val screenBuilder = oldScreen.toBuilder()
+    if (keyParameters == null) {
+        screenBuilder.mergeFrom(screen)
+    } else {
+        screenBuilder.addAllParameterizedScreens(screen.parameterizedScreensList)
+    }
+    putScreens(screenKey, screenBuilder.build())
+}
+
+/** Kotlin DSL-style builder for [com.android.settingslib.graph.proto.KeyParametersProto]. */
+@JvmSynthetic
+inline fun keyParametersProto(init: KeyParametersProto.Builder.() -> Unit): KeyParametersProto =
+    KeyParametersProto.newBuilder().also(init).build()

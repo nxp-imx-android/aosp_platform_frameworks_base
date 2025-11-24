@@ -135,7 +135,8 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
         boolean isFirstFrame;
         boolean hwuiCallbackFired;
         boolean surfaceControlCallbackFired;
-        @JankType int jankType;
+        @JankType int jankTypeLegacy;
+        @JankType int jankTypeExperimental;
         long frameInterval;
         long presentDelay;
         @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
@@ -153,7 +154,8 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
             this.frameVsyncId = frameVsyncId;
             this.hwuiCallbackFired = false;
             this.surfaceControlCallbackFired = false;
-            this.jankType = JANK_NONE;
+            this.jankTypeLegacy = JANK_NONE;
+            this.jankTypeExperimental = JANK_NONE;
             this.frameInterval = 0;
             this.totalDurationNanos = 0;
             this.isFirstFrame = false;
@@ -162,7 +164,8 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
 
         private JankInfo update(SurfaceControl.JankData jankStat) {
             this.surfaceControlCallbackFired = true;
-            this.jankType = jankStat.getJankType();
+            this.jankTypeLegacy = jankStat.getJankTypeLegacy();
+            this.jankTypeExperimental = jankStat.getJankTypeExperimental();
             this.frameInterval = jankStat.getFrameIntervalNanos();
             if (this.frameInterval <= 0) {
                 Trace.instant(
@@ -188,9 +191,7 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
             return this;
         }
 
-        @Override
-        public String toString() {
-            StringBuilder str = new StringBuilder();
+        private static void appendJankType(StringBuilder str, int jankType) {
             switch (jankType) {
                 case JANK_NONE:
                     str.append("JANK_NONE");
@@ -205,8 +206,17 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
                     str.append("UNKNOWN: ").append(jankType);
                     break;
             }
-            str.append(", ").append(frameVsyncId);
-            str.append(", ").append(totalDurationNanos);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder str = new StringBuilder();
+            str.append("jankTypeLegacy: ");
+            appendJankType(str, jankTypeLegacy);
+            str.append(", jankTypeExperimental: ");
+            appendJankType(str, jankTypeExperimental);
+            str.append(", vsyncId: ").append(frameVsyncId);
+            str.append(", totalDuration: ").append(totalDurationNanos);
             return str.toString();
         }
     }
@@ -629,12 +639,12 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
             if (info.surfaceControlCallbackFired) {
                 totalFramesCount++;
                 boolean missedFrame = false;
-                if ((info.jankType & JANK_APPLICATION) != 0) {
+                if ((info.jankTypeLegacy & JANK_APPLICATION) != 0) {
                     Log.w(TAG, "Missed App frame:" + info + ", CUJ=" + name);
                     missedAppFramesCount++;
                     missedFrame = true;
                 }
-                if ((info.jankType & JANK_COMPOSER) != 0) {
+                if ((info.jankTypeLegacy & JANK_COMPOSER) != 0) {
                     Log.w(TAG, "Missed SF frame:" + info + ", CUJ=" + name);
                     missedSfFramesCount++;
                     missedFrame = true;
@@ -646,10 +656,10 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
                     totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
 
                     float weightedJank = computeWeightedJank(info);
-                    if ((info.jankType & JANK_APPLICATION) != 0) {
+                    if ((info.jankTypeLegacy & JANK_APPLICATION) != 0) {
                         appWeightedJank += weightedJank;
                     }
-                    if ((info.jankType & JANK_COMPOSER) != 0) {
+                    if ((info.jankTypeLegacy & JANK_COMPOSER) != 0) {
                         sfWeightedJank += weightedJank;
                     }
                 } else {

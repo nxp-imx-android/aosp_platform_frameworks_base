@@ -16,6 +16,8 @@
 
 package com.android.virtualdevicemanager;
 
+import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,6 +31,7 @@ public class RequestComputerControlAccessActivity extends FragmentActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addSystemFlags(SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
 
         ResultReceiver resultReceiver = getIntent().getParcelableExtra(
                 Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);

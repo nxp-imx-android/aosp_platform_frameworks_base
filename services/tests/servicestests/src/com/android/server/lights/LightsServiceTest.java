@@ -27,8 +27,11 @@ import static android.hardware.lights.LightsRequest.Builder;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,23 +51,29 @@ import android.hardware.lights.LightsManager;
 import android.hardware.lights.LightsRequest;
 import android.hardware.lights.MultiLightEffect;
 import android.hardware.lights.SystemLightsManager;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Message;
 import android.os.PermissionEnforcer;
+import android.os.TestLooperManager;
 import android.os.test.FakePermissionEnforcer;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.lights.feature.flags.Flags;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -132,6 +141,8 @@ public class LightsServiceTest {
 
     @Mock
     Context mContext;
+    private HandlerThread mServiceThread;
+    private TestLooperManager mTestLooperManager;
 
     @Before
     public void setUp() {
@@ -143,6 +154,26 @@ public class LightsServiceTest {
                 eq(PermissionEnforcer.class));
         doReturn(permissionEnforcer).when(mContext).getSystemService(
                 eq(Context.PERMISSION_ENFORCER_SERVICE));
+
+        mServiceThread = new HandlerThread("MockUiThread");
+        mServiceThread.start();
+        mTestLooperManager =
+                InstrumentationRegistry.getInstrumentation()
+                        .acquireLooperManager(mServiceThread.getLooper());
+    }
+
+    @After
+    public void tearDown() {
+        mTestLooperManager.release();
+        mServiceThread.quit();
+    }
+
+    private void consumeAllTasks() {
+        Message m = mTestLooperManager.poll();
+        while (m != null) {
+            mTestLooperManager.execute(m);
+            m = mTestLooperManager.poll();
+        }
     }
 
     @Test
@@ -444,7 +475,7 @@ public class LightsServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
     public void testControlLights_setSimpleEffect() throws Exception {
-        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
         LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
         Light light = manager.getLights().get(ANIMATED_LIGHT_INDEX);
         ArgumentCaptor<HwLightEffect[]> effectCaptor =
@@ -462,6 +493,8 @@ public class LightsServiceTest {
 
             // Request the color sequence within the session.
             sequence = manager.getLightSequence(light);
+
+            consumeAllTasks();
         }
 
         // Validate the internal state of the service.
@@ -529,7 +562,7 @@ public class LightsServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
     public void testControlLights_setEffect_preemptPreviousEffect() throws Exception {
-        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
         LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
         Light light = manager.getLights().get(ANIMATED_LIGHT_INDEX);
         ArgumentCaptor<HwLightEffect[]> effectCaptor =
@@ -554,11 +587,13 @@ public class LightsServiceTest {
             ColorSequence sequence = manager.getLightSequence(light);
             assertThat(sequence.getColors()[0]).isEqualTo(BLUE);
 
-            // Set effect2 and validate that the effect was applied immediatelly.
+            // Set effect2 and validate that the effect was applied immediately.
             session.requestLights(new LightsRequest.Builder().setEffect(effect2).build());
 
             sequence = manager.getLightSequence(light);
             assertThat(sequence.getColors()[0]).isEqualTo(YELLOW);
+
+            consumeAllTasks();
         }
 
         // Validate that the service sent the hal the expected content.
@@ -591,7 +626,8 @@ public class LightsServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
     public void testControlLights_setEffect_appendEffect() throws Exception {
-        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        InOrder inOrder = inOrder(mHal);
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
         LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
         Light light = manager.getLights().get(ANIMATED_LIGHT_INDEX);
         ArgumentCaptor<HwLightEffect[]> effectCaptor =
@@ -621,28 +657,37 @@ public class LightsServiceTest {
 
             sequence = manager.getLightSequence(light);
             assertThat(sequence.getColors()[0]).isEqualTo(BLUE);
+
+            // Validate that the service sent the hal the expected content.
+            inOrder.verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
+            HwLightEffect[] effectInteractions = effectCaptor.getValue();
+
+            assertThat(effectInteractions.length).isEqualTo(1);
+            assertThat(effectInteractions[0].lightId).isEqualTo(light.getId());
+            assertThat(effectInteractions[0].frames).asList().containsExactly(3);
+            assertThat(effectInteractions[0].colors).asList().containsExactly(BLUE);
+            assertThat(effectInteractions[0].preemptive).isTrue();
+            assertThat(effectInteractions[0].iterations).isEqualTo(1);
+            assertThat(effectInteractions[0].interpolationType)
+                    .isEqualTo(InterpolationType.LINEAR);
+            assertThat(effectInteractions[0].framePeriodMillis)
+                    .isEqualTo(light.getMinUpdatePeriodMillis());
+
+            consumeAllTasks();
+
+            inOrder.verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
+            effectInteractions = effectCaptor.getValue();
+
+            assertThat(effectInteractions.length).isEqualTo(1);
+            assertThat(effectInteractions[0].lightId).isEqualTo(light.getId());
+            assertThat(effectInteractions[0].colors).asList().containsExactly(YELLOW);
         }
-
-        // Validate that the service sent the hal the expected content.
-        verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
-        HwLightEffect[] effectInteractions = effectCaptor.getValue();
-
-        assertThat(effectInteractions.length).isEqualTo(1);
-        assertThat(effectInteractions[0].lightId).isEqualTo(light.getId());
-        assertThat(effectInteractions[0].frames).asList().containsExactly(3);
-        assertThat(effectInteractions[0].colors).asList().containsExactly(BLUE);
-        assertThat(effectInteractions[0].preemptive).isTrue();
-        assertThat(effectInteractions[0].iterations).isEqualTo(1);
-        assertThat(effectInteractions[0].interpolationType)
-                .isEqualTo(InterpolationType.LINEAR);
-        assertThat(effectInteractions[0].framePeriodMillis)
-                .isEqualTo(light.getMinUpdatePeriodMillis());
     }
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
     public void testControlLights_setState_cancelsSameSessionEffect() throws Exception {
-        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
         LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
         Light light1 = manager.getLights().get(ANIMATED_LIGHT_INDEX);
         Light light2 = manager.getLights().get(2);
@@ -677,38 +722,38 @@ public class LightsServiceTest {
 
             assertThat(manager.getLightState(light1).getColor()).isEqualTo(RED);
             assertThat(manager.getLightState(light2).getColor()).isEqualTo(TRANSPARENT);
+
+            // Validate that the service sent the hal the expected content.
+            verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
+            HwLightEffect[] effectInteractions = effectCaptor.getValue();
+
+            assertThat(effectInteractions.length).isEqualTo(2);
+            assertThat(effectInteractions[0].lightId).isEqualTo(light1.getId());
+            assertThat(effectInteractions[0].frames).asList().containsExactly(3);
+            assertThat(effectInteractions[0].colors).asList().containsExactly(BLUE);
+            assertThat(effectInteractions[0].preemptive).isTrue();
+            assertThat(effectInteractions[0].iterations).isEqualTo(1);
+            assertThat(effectInteractions[0].interpolationType)
+                    .isEqualTo(InterpolationType.LINEAR);
+            assertThat(effectInteractions[0].framePeriodMillis)
+                    .isEqualTo(light1.getMinUpdatePeriodMillis());
+
+            assertThat(effectInteractions[1].lightId).isEqualTo(light2.getId());
+            assertThat(effectInteractions[1].frames).asList().containsExactly(3);
+            assertThat(effectInteractions[1].colors).asList().containsExactly(YELLOW);
+            assertThat(effectInteractions[1].preemptive).isTrue();
+            assertThat(effectInteractions[1].iterations).isEqualTo(1);
+            assertThat(effectInteractions[1].interpolationType)
+                    .isEqualTo(InterpolationType.LINEAR);
+            assertThat(effectInteractions[1].framePeriodMillis)
+                    .isEqualTo(light2.getMinUpdatePeriodMillis());
         }
-
-        // Validate that the service sent the hal the expected content.
-        verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
-        HwLightEffect[] effectInteractions = effectCaptor.getValue();
-
-        assertThat(effectInteractions.length).isEqualTo(2);
-        assertThat(effectInteractions[0].lightId).isEqualTo(light1.getId());
-        assertThat(effectInteractions[0].frames).asList().containsExactly(3);
-        assertThat(effectInteractions[0].colors).asList().containsExactly(BLUE);
-        assertThat(effectInteractions[0].preemptive).isTrue();
-        assertThat(effectInteractions[0].iterations).isEqualTo(1);
-        assertThat(effectInteractions[0].interpolationType)
-                .isEqualTo(InterpolationType.LINEAR);
-        assertThat(effectInteractions[0].framePeriodMillis)
-                .isEqualTo(light1.getMinUpdatePeriodMillis());
-
-        assertThat(effectInteractions[1].lightId).isEqualTo(light2.getId());
-        assertThat(effectInteractions[1].frames).asList().containsExactly(3);
-        assertThat(effectInteractions[1].colors).asList().containsExactly(YELLOW);
-        assertThat(effectInteractions[1].preemptive).isTrue();
-        assertThat(effectInteractions[1].iterations).isEqualTo(1);
-        assertThat(effectInteractions[1].interpolationType)
-                .isEqualTo(InterpolationType.LINEAR);
-        assertThat(effectInteractions[1].framePeriodMillis)
-                .isEqualTo(light2.getMinUpdatePeriodMillis());
     }
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
     public void testControlLights_effectAndStatePriorityInteractions() throws Exception {
-        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
         LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
         Light light1 = manager.getLights().get(1);
         Light light2 = manager.getLights().get(2);
@@ -801,5 +846,80 @@ public class LightsServiceTest {
         assertThat(manager.getLightSequence(light2)).isNull();
         assertThat(manager.getLightState(light3).getColor()).isEqualTo(TRANSPARENT);
         assertThat(manager.getLightSequence(light3)).isNull();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
+    public void testControlLights_effectRequest_scheduleAContinuation() throws Exception {
+        InOrder inOrder = inOrder(mHal);
+        LightsService service = new LightsService(mContext, () -> mHal, mServiceThread.getLooper());
+        LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
+        Light light = manager.getLights().get(1);
+        ArgumentCaptor<HwLightEffect[]> effectCaptor =
+                ArgumentCaptor.forClass(HwLightEffect[].class);
+
+
+        MultiLightEffect effect = new MultiLightEffect.Builder()
+                .addLightSequence(
+                        manager.getLights().get(1),
+                        new ColorSequence.Builder().addControlPoint(500, BLUE).build())
+                .setPreemptive(false)
+                .build();
+        MultiLightEffect continuation = new MultiLightEffect.Builder()
+                .addLightSequence(
+                        manager.getLights().get(1),
+                        new ColorSequence.Builder().addControlPoint(500, GREEN).build())
+                .setPreemptive(false)
+                .build();
+
+        try (LightsManager.LightsSession session = manager.openSession()) {
+            session.requestLights(new LightsRequest.Builder().setEffect(effect).build());
+
+            // Light effect is immediately applied:
+            //  - Light sequence color is matches the effect.
+            //  - One tansition task scheduled.
+            //  - Hal received the configuration for 'effect'.
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(BLUE);
+            Message message = mTestLooperManager.poll();
+            assertThat(message).isNotNull();
+            assertThat(mTestLooperManager.poll()).isNull();
+
+            inOrder.verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
+            HwLightEffect[] effectInteractions = effectCaptor.getValue();
+            assertThat(effectInteractions.length).isEqualTo(1);
+            assertThat(effectInteractions[0].colors).asList().containsExactly(BLUE);
+
+            // Request the continuation effect.
+            session.requestLights(new LightsRequest.Builder().setEffect(continuation).build());
+
+            // Continuation is queued and the state of the light remains the same. No new hal
+            // requests and no new scheduled tasks.
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(BLUE);
+            inOrder.verify(mHal, never()).setLightEffects(any());
+
+            assertThat(mTestLooperManager.poll()).isNull();
+
+            // Execute the transition task and validate that a new state is sent to hal, and the
+            // light changes configuration to the continuation effect.
+            mTestLooperManager.execute(message);
+
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(GREEN);
+            message = mTestLooperManager.poll();
+            assertThat(message).isNotNull();
+            assertThat(mTestLooperManager.poll()).isNull();
+
+            inOrder.verify(mHal, times(1)).setLightEffects(effectCaptor.capture());
+            effectInteractions = effectCaptor.getValue();
+            assertThat(effectInteractions.length).isEqualTo(1);
+            assertThat(effectInteractions[0].colors).asList().containsExactly(GREEN);
+
+            // Execute the transition for the continuation.
+            mTestLooperManager.execute(message);
+            assertThat(mTestLooperManager.poll()).isNull();
+            inOrder.verify(mHal, never()).setLightEffects(any());
+        }
     }
 }

@@ -141,6 +141,7 @@ constructor(
             )
 
     /** Whether to show communal when exiting the occluded state. */
+    @Deprecated("SceneContainer uses SceneContainerStartable for this")
     val showCommunalFromOccluded: Flow<Boolean> = communalInteractor.showCommunalFromOccluded
 
     val transitionFromOccludedEnded =
@@ -151,6 +152,7 @@ constructor(
                     step.transitionState == TransitionState.CANCELED
             }
 
+    // TODO(b/461749621): Adjust for scene container or deprecate
     val recentsBackgroundColor: Flow<Color?> =
         combine(
                 showCommunalFromOccluded,

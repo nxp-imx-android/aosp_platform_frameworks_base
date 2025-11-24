@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import android.platform.test.ravenwood.RavenwoodEnablementChecker;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker.PolicyChecker;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunMode;
 
 import org.junit.After;
 import org.junit.Test;
@@ -110,6 +111,19 @@ x@ # Invalid char, but this file should be ignored.
         // In "also disabled" mode, disabled tests should run.
         RavenwoodEnablementChecker.overrideInstance(
                 RavenwoodEnablementChecker.RunMode.AlsoDisabledTests, /* policyText= */ null,
+                /* overridingPattern= */ null);
+        assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
+    }
+
+    /**
+     * Verifies that wouldRunDisabledTests() returns true when the checker is in
+     * AlsoDisabledTests run mode.
+     */
+    @Test
+    public void testWouldRunDisabledTests_DisabledOnly() {
+        // In "also disabled" mode, disabled tests should run.
+        RavenwoodEnablementChecker.overrideInstance(
+                RunMode.DisabledOnly, /* policyText= */ null,
                 /* overridingPattern= */ null);
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
     }

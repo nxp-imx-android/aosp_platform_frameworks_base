@@ -40,6 +40,16 @@ open class MediaControllerFactory @Inject constructor(private val context: Conte
     }
 
     /**
+     * Creates a new [MediaController] from the framework session token.
+     *
+     * @param context A context for the session
+     * @param token The token for the session. This value must never be null.
+     */
+    open fun create(context: Context, token: MediaSession.Token): MediaController {
+        return MediaController(context, token)
+    }
+
+    /**
      * Creates a new [Media3Controller] from the media3 [SessionToken].
      *
      * @param token The token for the session

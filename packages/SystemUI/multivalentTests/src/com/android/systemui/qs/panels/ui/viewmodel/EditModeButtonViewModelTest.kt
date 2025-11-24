@@ -41,8 +41,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.testKosmos
-import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
-import com.android.systemui.user.domain.interactor.headlessSystemUserMode
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -209,8 +208,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
     private fun Kosmos.createEditModeButtonViewModel(
         isHeadlessSystemUser: Boolean = false
     ): EditModeButtonViewModel {
-        headlessSystemUserMode = fakeHeadlessSystemUserMode
-        fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(isHeadlessSystemUser)
+        fakeUserRepository.setIsCurrentUserHeadlessSystemUser(isHeadlessSystemUser)
         return editModeButtonViewModelFactory.create(ignoreTestHarness = true).apply {
             activateIn(testScope)
         }

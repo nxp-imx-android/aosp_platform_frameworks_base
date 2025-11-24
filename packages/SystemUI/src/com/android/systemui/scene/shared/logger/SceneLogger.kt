@@ -99,6 +99,39 @@ constructor(
         )
     }
 
+    fun falsingCheckForContentChange(
+        from: ContentKey?,
+        to: ContentKey?,
+        isAllowedByFalsing: Boolean,
+    ) {
+        logBuffer.log(
+            tag = TAG,
+            level = LogLevel.DEBUG,
+            messageInitializer = {
+                str1 = "${from?.debugName ?: "<none>"} → ${to?.debugName ?: "<none>"}"
+                bool1 = to is OverlayKey
+                bool2 = isAllowedByFalsing
+            },
+            messagePrinter = {
+                buildString {
+                    if (bool2) {
+                        append("Falsing allows (don't REJECT) ")
+                    } else {
+                        append("Falsing does not allow (should REJECT in the future) ")
+                    }
+                    append(
+                        if (bool1) {
+                            "overlay "
+                        } else {
+                            "scene "
+                        }
+                    )
+                    append("change $str1")
+                }
+            },
+        )
+    }
+
     fun logContentChangeRejection(
         from: ContentKey?,
         to: ContentKey?,

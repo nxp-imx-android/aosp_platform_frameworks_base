@@ -87,6 +87,7 @@ import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEV
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
 import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
@@ -181,11 +182,13 @@ import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
+import static android.app.admin.DevicePolicyManager.STATUS_NOT_FULL_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_OK;
 import static android.app.admin.DevicePolicyManager.STATUS_OTHER_PROVISIONING_ERROR;
 import static android.app.admin.DevicePolicyManager.STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
 import static android.app.admin.DevicePolicyManager.STATUS_SYSTEM_USER;
+import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_NOT_RUNNING;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
@@ -344,6 +347,8 @@ import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
 import android.app.admin.MultiUserDeviceProvisioningParams;
 import android.app.admin.MultiUserDeviceProvisioningParamsTransport;
+import android.app.admin.MultiUserManagedUserProvisioningParams;
+import android.app.admin.MultiUserManagedUserProvisioningParamsTransport;
 import android.app.admin.NetworkEvent;
 import android.app.admin.PackagePolicy;
 import android.app.admin.PackageSetPolicyValue;
@@ -11635,6 +11640,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     + userId + " because it's not the first \"human\" user";
             case STATUS_OTHER_PROVISIONING_ERROR:
                 return "Cannot provision DPC";
+            case STATUS_NOT_FULL_USER:
+                return "Cannot provision DPC on user " + userId + " because it's not supported";
+            case STATUS_USER_HAS_PROFILE:
+                return "Cannot provision DPC on user " + userId + " because it has a profile";
             default:
                 return "Unexpected @ProvisioningPreCondition: " + code;
         }
@@ -17912,6 +17921,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 && DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE.equals(action)) {
             return checkMultiUserDeviceProvisioningPreCondition(userId);
         }
+        if (Flags.multiUserManagementUserProvisioning()
+                && DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER.equals(action)) {
+            return checkMultiUserManagedUserProvisioningPreCondition(userId);
+        }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
             logMissingFeatureAction("Cannot check provisioning for action " + action);
             return STATUS_DEVICE_ADMIN_NOT_SUPPORTED;
@@ -18223,6 +18236,56 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         } finally {
             mInjector.binderRestoreCallingIdentity(ident);
         }
+        return STATUS_OK;
+    }
+
+    private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
+        if (!Flags.multiUserManagementUserProvisioning()) {
+            return STATUS_MANAGED_USERS_NOT_SUPPORTED;
+        }
+
+        // Cannot provision non-HSUM.
+        if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
+            return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
+        }
+
+        // The user is not running, i.e. not the current user.
+        if (!mUserManager.isUserRunning(new UserHandle(userId))) {
+            return STATUS_USER_NOT_RUNNING;
+        }
+
+        // Cannot make the system user a MUM managed user.
+        if (userId == UserHandle.USER_SYSTEM) {
+            return STATUS_SYSTEM_USER;
+        }
+
+        // The device is already set to DO.
+        if (mOwners.hasDeviceOwner()) {
+            return STATUS_HAS_DEVICE_OWNER;
+        }
+
+        // User already has PO.
+        if (mOwners.hasProfileOwner(userId)) {
+            return STATUS_USER_HAS_PROFILE_OWNER;
+        }
+
+        UserInfo userInfo = mUserManager.getUserInfo(userId);
+
+        // The current user is not a full user.
+        if (!userInfo.isFull()) {
+            return STATUS_NOT_FULL_USER;
+        }
+
+        // The user already has a profile or is a profile.
+        if (mUserManager.getProfileIds(userId, /* enabledOnly= */ false).length > 1) {
+            return STATUS_USER_HAS_PROFILE;
+        }
+
+        // The user has already completed the setup.
+        if (hasUserSetupCompleted(userId)) {
+            return STATUS_USER_SETUP_COMPLETED;
+        }
+
         return STATUS_OK;
     }
 
@@ -23088,6 +23151,64 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    @Override
+    public void provisionMultiUserManagedUser(
+            @NonNull MultiUserManagedUserProvisioningParamsTransport provisioningParamsTransport,
+            @NonNull String callerPackage) {
+        MultiUserManagedUserProvisioningParams provisioningParams =
+                new MultiUserManagedUserProvisioningParams(provisioningParamsTransport);
+
+        Slogf.d(LOG_TAG, "provisionMultiUserManagedUser(pkg=%s, params=%s)", callerPackage,
+                provisioningParams);
+
+        Objects.requireNonNull(provisioningParams, "provisioningParams is null");
+        Objects.requireNonNull(callerPackage, "callerPackage is null");
+        Objects.requireNonNull(provisioningParams.getProfileAdminComponentName(), "admin is null");
+
+        final ComponentName admin = provisioningParams.getProfileAdminComponentName();
+        // TODO(b/456080404): Enable removing system apps based on provisioningParams.
+        final CallerIdentity caller = getCallerIdentity(callerPackage);
+        final int userId = caller.getUserId();
+
+        mPermissions.enforce(MANAGE_PROFILE_AND_DEVICE_OWNERS, caller);
+
+        mInjector.binderWithCleanCallingIdentity(() -> {
+            final int preconditionResult = checkProvisioningPreconditionSkipPermission(
+                    ACTION_PROVISION_MULTI_USER_MANAGED_USER, admin, userId);
+            if (preconditionResult != STATUS_OK) {
+                throw new ServiceSpecificException(ERROR_PRE_CONDITION_FAILED,
+                        "Provisioning preconditions failed with result: " + preconditionResult);
+            }
+
+            provisioningParams.logParams(callerPackage);
+
+            provisionMultiUserManagedUserInternal(
+                    /* profileAdmin= */ admin,
+                    /* userId= */ userId,
+                    /* adminExtras= */ provisioningParams.getAdminExtras());
+        });
+    }
+
+    private void provisionMultiUserManagedUserInternal(@NonNull ComponentName profileAdmin,
+            @UserIdInt int userId, @NonNull PersistableBundle adminExtras) {
+        if (VERBOSE_LOG) {
+            Slogf.v(LOG_TAG, "provisionMultiUserManagedUserInternal(): profileAdmin=" + profileAdmin
+                    + ", userId=" + userId);
+        }
+
+        // Set admin.
+        setActiveAdmin(profileAdmin, /* refreshing= */ true, userId, null);
+        setProfileOwner(profileAdmin, userId);
+
+        synchronized (getLockObject()) {
+            DevicePolicyData policyData = getUserData(userId);
+            policyData.mInitBundle = adminExtras;
+            policyData.mAdminBroadcastPending = true;
+            policyData.mNewUserDisclaimer = DevicePolicyData.NEW_USER_DISCLAIMER_NEEDED;
+            saveSettingsLocked(userId);
+        }
+    }
+
     /**
      * Callback called at the beginning of {@link #provisionFullyManagedDevice(
      * FullyManagedDeviceProvisioningParams, String)} after the relevant prechecks have passed.
@@ -23795,6 +23916,46 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 /* currentRoleHolder= */ null, /* allowBypass= */ false);
     }
 
+    /**
+     * Returns whether the qualification check for the
+     * {@link RoleManager#ROLE_DEVICE_POLICY_MANAGEMENT} role holder can be bypassed.
+     *
+     * <p>By default, this role can only be held by a specific pre-defined application
+     * ({@link DevicePolicyManager#getDevicePolicyManagementRoleHolderPackage}). However, for
+     * testing purposes (such as CTS), it's necessary to set a different application as the role
+     * holder. This method provides the mechanism to allow that bypass.
+     *
+     * <p>To prevent compromising user privacy, the bypass is only permitted on a device considered
+     * to be without user data. This "clean" state is determined by
+     * {@link #shouldAllowBypassingDevicePolicyManagementRoleQualificationInternal()}, which checks
+     * for two conditions:
+     * <ol>
+     *     <li>There are no existing users other than the initial system user(s).</li>
+     *     <li>There are no user accounts on the device that are incompatible with device or profile
+     *         owner provisioning.</li>
+     * </ol>
+     *
+     * <p>A challenge arises during testing: a test might set a test app as the role holder and then
+     * create additional users or accounts. This action would cause the device to no longer be
+     * "clean", and a naive check against the internal method would return {@code false}, leading
+     * the {@code PermissionController} to reset the role to its default.
+     *
+     * <p>To address this, a persisted flag,
+     * {@link DevicePolicyData#mBypassDevicePolicyManagementRoleQualifications}, is used. This flag
+     * is set to {@code true} by {@code handleDevicePolicyManagementRoleChange()} the first
+     * time the role is successfully overridden on a "clean" device. Once set, this method will
+     * continue to return {@code true}, allowing the bypass to persist for the duration of the test,
+     * even if users or accounts are added.
+     *
+     * <p>While this bypass flag is active, {@code handleDevicePolicyManagementRoleChange()}
+     * also ensures that the role holder cannot be changed to a *different* non-default application,
+     * when the device is no longer "clean".
+     *
+     * <p>The bypass state is cleared by calling the test API
+     * {@link #resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState()}.
+     *
+     * @return {@code true} if the role qualification can be bypassed, {@code false} otherwise.
+     */
     @Override
     public boolean shouldAllowBypassingDevicePolicyManagementRoleQualification() {
         Preconditions.checkCallAuthorization(hasCallingOrSelfPermission(
@@ -23913,6 +24074,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
         }
 
+        /**
+         * @see #shouldAllowBypassingDevicePolicyManagementRoleQualification
+         */
         private void handleDevicePolicyManagementRoleChange(UserHandle user) {
             String newRoleHolder = getDeviceManagementRoleHolder(user);
             if (isDefaultRoleHolder(newRoleHolder)) {
@@ -25527,7 +25691,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         Binder.withCleanCallingIdentity(() -> {
-            handler.setPolicy(caller, scope, value);
+            handler.checkPermissions(caller, scope);
+            handler.setPolicyUnchecked(caller, scope, value);
         });
     }
 
@@ -25557,8 +25722,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         return Binder.withCleanCallingIdentity(() -> {
-            return handler.getPolicy(caller, scope);
+            handler.checkPermissions(caller, scope);
+            return handler.getPolicyUnchecked(caller, scope);
         });
     }
-
 }

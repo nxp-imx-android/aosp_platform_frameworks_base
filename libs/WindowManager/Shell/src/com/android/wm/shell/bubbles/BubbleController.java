@@ -3899,7 +3899,7 @@ public class BubbleController implements ConfigurationChangeListener,
             boolean hideRootTask = false;
             if (!mBubbleData.isExpanded()) {
                 hideRootTask = true;
-            } else if (!mLayerView.isExpanded()) {
+            } else if (mLayerView != null && !mLayerView.isExpanded()) {
                 // When bubble is being dragged in launcher, layerView is collapsed while
                 // bubbleData is not
                 hideRootTask = true;

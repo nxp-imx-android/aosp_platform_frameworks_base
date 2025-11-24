@@ -107,6 +107,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private final PhonePipMenuController mMenuController;
     @VisibleForTesting AccessibilityManager mAccessibilityManager;
     private final DisplayController mDisplayController;
+    private final PipInteractionHandler mPipInteractionHandler;
 
     /**
      * Whether PIP stash is enabled or not. When enabled, if the user flings toward the edge of the
@@ -118,6 +119,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     // us to send stale bounds
     private int mDeferResizeToNormalBoundsUntilRotation = -1;
     private int mDisplayRotation;
+
+    private final PipAccessibilityInteractionConnection mConnection;
 
     // Behaviour states
     private int mMenuState = MENU_STATE_NONE;
@@ -227,6 +230,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mGesture = new DefaultPipTouchGesture();
         mMotionHelper = pipMotionHelper;
         mPipDisplayTransferHandler = pipDisplayTransferHandler;
+        mPipInteractionHandler = pipInteractionHandler;
         mPipScheduler.setUpdateMovementBoundsRunnable(this::updateMovementBounds);
         mPipDismissTargetHandler = new PipDismissTargetHandler(context, pipUiEventLogger,
                 mMotionHelper, mPipDisplayLayoutState, mainExecutor);
@@ -244,6 +248,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
                 mainExecutor, mPipPerfHintController, pipInteractionHandler);
+        mConnection = new PipAccessibilityInteractionConnection(mContext, pipBoundsState,
+                mMotionHelper, mPipBoundsAlgorithm.getSnapAlgorithm(), mPipTransitionState,
+                mPipScheduler, mSurfaceTransactionHelper,
+                this::onAccessibilityShowMenu, this::animateToUnStashedState, mainExecutor);
         mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> onAspectRatioChanged());
 
         mMoveOnShelVisibilityChanged = () -> {
@@ -476,6 +484,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mDisplayRotation = displayRotation;
         updateMovementBounds();
         mMovementBoundsExtraOffsets = extraOffset;
+        mConnection.onMovementBoundsChanged(normalBounds, mPipBoundsState.getExpandedBounds(),
+                mPipBoundsState.getNormalMovementBounds(),
+                mPipBoundsState.getExpandedMovementBounds());
 
         // If we have a deferred resize, apply it now
         if (mDeferResizeToNormalBoundsUntilRotation == displayRotation) {
@@ -492,7 +503,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      */
     public void onRegistrationChanged(boolean isRegistered) {
         if (isRegistered) {
-            // Register the accessibility connection.
+            mConnection.register(mAccessibilityManager);
         } else {
             mAccessibilityManager.setPictureInPictureActionReplacingConnection(null);
         }
@@ -546,6 +557,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             // events it'll receive if the object is dragged out of the magnetic field.
             if (ev.getAction() == MotionEvent.ACTION_DOWN) {
                 mTouchState.onTouchEvent(ev);
+            } else if (ev.getAction() == MotionEvent.ACTION_UP && mTouchState.isDragging()) {
+                mPipInteractionHandler.end();
             }
 
             // Continue tracking velocity when the object is in the magnetic field, since we want to
@@ -554,15 +567,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
             return true;
         }
-
-        /*
-        // Ignore the motion event When the entry animation is waiting to be started
-        if (!mTouchState.isUserInteracting() && mPipTaskOrganizer.isEntryScheduled()) {
-            ProtoLog.wtf(WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: Waiting to start the entry animation, skip the motion event.", TAG);
-            return true;
-        }
-         */
 
         // Update the touch state
         mTouchState.onTouchEvent(ev);
@@ -576,6 +580,11 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
+                if (mTouchState.startedDragging()) {
+                    // Start jank cuj tag for dragging upon the first ACTION_MOVE that starts it.
+                    mPipInteractionHandler.begin(mPipTransitionState.getPinnedTaskLeash(),
+                            PipInteractionHandler.INTERACTION_DRAG_PIP);
+                }
                 if (mGesture.onMove(mTouchState)) {
                     break;
                 }
@@ -584,6 +593,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 break;
             }
             case MotionEvent.ACTION_UP: {
+                if (mTouchState.isDragging()) {
+                    mPipInteractionHandler.end();
+                }
                 // Update the movement bounds again if the state has changed since the user started
                 // dragging (ie. when the IME shows)
                 updateMovementBounds();

@@ -16,6 +16,9 @@
 
 package com.android.server.am;
 
+import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -178,4 +181,16 @@ public interface ActivityManagerLocal {
      *        {@link Context#getProcessToken()}.
      */
     void killSdkSandboxClientAppProcess(@NonNull IBinder clientAppProcessToken);
+
+    /**
+     * Get all the package names associated with a process id.
+     *
+     * @param pid The process id of the process to be checked.
+     * @param uid The UID of the app to be checked.
+     * @return The package names associated with the provided PID and UID, or an empty array if the
+     *         process is not found or doesn't match the UID provided.
+     */
+    @FlaggedApi(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
+    @NonNull
+    String[] getPackageNamesForPid(int pid, int uid);
 }

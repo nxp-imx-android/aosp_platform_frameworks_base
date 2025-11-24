@@ -32,7 +32,6 @@ import android.app.ActivityManagerInternal.OomAdjReason;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManagerInternal;
@@ -47,7 +46,12 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.BoundServiceSession;
 import com.android.server.am.psc.ConnectionRecordInternal;
+import com.android.server.am.psc.ContentProviderConnectionInternal;
+import com.android.server.am.psc.ContentProviderRecordInternal;
+import com.android.server.am.psc.OomAdjuster;
+import com.android.server.am.psc.OomAdjusterImpl;
 import com.android.server.am.psc.ProcessListInternal;
+import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.SyncBatchSession;
@@ -113,8 +117,9 @@ public class ProcessStateController {
             }
         };
         mOomConstants = oomConstants;
-        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter, updateHandler);
+        mOomAdjuster = new OomAdjusterImpl(ams, ams.mProcLock, processList, activeUids,
+                handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
+                updateHandler);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
@@ -763,9 +768,9 @@ public class ProcessStateController {
      * Note that a process is hosting a content provider.
      */
     @GuardedBy("mLock")
-    public boolean addPublishedProvider(@NonNull ProcessRecord proc, String name,
-            ContentProviderRecord cpr) {
-        final ProcessProviderRecord providers = proc.mProviders;
+    public boolean addPublishedProvider(@NonNull ProcessRecordInternal proc, String name,
+            ContentProviderRecordInternal cpr) {
+        final ProcessProviderRecordInternal providers = proc.getProviders();
         if (providers.hasProvider(name)) return false;
         providers.installProvider(name, cpr);
         return true;
@@ -775,27 +780,19 @@ public class ProcessStateController {
      * Remove a published content provider from a process.
      */
     @GuardedBy("mLock")
-    public void removePublishedProvider(@NonNull ProcessRecord proc, String name) {
-        final ProcessProviderRecord providers = proc.mProviders;
+    public void removePublishedProvider(@NonNull ProcessRecordInternal proc, String name) {
+        final ProcessProviderRecordInternal providers = proc.getProviders();
         providers.removeProvider(name);
     }
 
     /**
-     * Note that a content provider has an external client.
+     * Sets the state indicating whether the given content provider has clients from external
+     * processes.
      */
     @GuardedBy("mLock")
-    public void addExternalProviderClient(@NonNull ContentProviderRecord cpr,
-            IBinder externalProcessToken, int callingUid, String callingTag) {
-        cpr.addExternalProcessHandleLocked(externalProcessToken, callingUid, callingTag);
-    }
-
-    /**
-     * Remove an external client from a conetnt provider.
-     */
-    @GuardedBy("mLock")
-    public boolean removeExternalProviderClient(@NonNull ContentProviderRecord cpr,
-            IBinder externalProcessToken) {
-        return cpr.removeExternalProcessHandleLocked(externalProcessToken);
+    public void setHasExternalProcessHandles(@NonNull ContentProviderRecordInternal cpr,
+            boolean value) {
+        cpr.setHasExternalProcessHandles(value);
     }
 
     /**
@@ -810,18 +807,18 @@ public class ProcessStateController {
      * Note that a process has connected to a content provider.
      */
     @GuardedBy("mLock")
-    public void addProviderConnection(@NonNull ProcessRecord client,
-            ContentProviderConnection cpc) {
-        client.mProviders.addProviderConnection(cpc);
+    public void addProviderConnection(@NonNull ProcessRecordInternal client,
+            ContentProviderConnectionInternal cpc) {
+        client.getProviders().addProviderConnection(cpc);
     }
 
     /**
      * Note that a process is no longer connected to a content provider.
      */
     @GuardedBy("mLock")
-    public void removeProviderConnection(@NonNull ProcessRecord client,
-            ContentProviderConnection cpc) {
-        client.mProviders.removeProviderConnection(cpc);
+    public void removeProviderConnection(@NonNull ProcessRecordInternal client,
+            ContentProviderConnectionInternal cpc) {
+        client.getProviders().removeProviderConnection(cpc);
     }
 
     /*************************** Service State Events **************************/

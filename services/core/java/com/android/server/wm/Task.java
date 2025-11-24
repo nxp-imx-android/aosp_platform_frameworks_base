@@ -358,6 +358,13 @@ class Task extends TaskFragment {
     boolean isPersistable = false;
     int maxRecents;
 
+    /**
+     * Whether the package update for this task is handled outside of the system. When a package
+     * update is initiated system can either let the task to be handled by Shell or handle it.
+     * By default it is set to false and the task is handled by the system during the process.
+     */
+    boolean mHandlePackageUpdate = false;
+
     /** Only used for persistable tasks, otherwise 0. The last time this task was moved. Used for
      *  determining the order when restoring. */
     long mLastTimeMoved;
@@ -582,12 +589,12 @@ class Task extends TaskFragment {
                 mRoot = r;
             }
 
-            final int uid = mRoot == r ? effectiveUid : r.info.applicationInfo.uid;
+            final int uid = mRoot == r ? effectiveUid : r.info.getUid();
             if (mIgnoreRelinquishIdentity
                     || (mRoot.info.flags & FLAG_RELINQUISH_TASK_IDENTITY) == 0
-                    || (mRoot.info.applicationInfo.uid != Process.SYSTEM_UID
+                    || (mRoot.info.getUid() != Process.SYSTEM_UID
                     && !mRoot.info.applicationInfo.isSystemApp()
-                    && mRoot.info.applicationInfo.uid != uid)) {
+                    && mRoot.info.getUid() != uid)) {
                 // No need to relinquish identity, end search.
                 return true;
             }
@@ -955,7 +962,7 @@ class Task extends TaskFragment {
         } else if (!mNeverRelinquishIdentity) {
             final ActivityInfo activityInfo = info != null ? info : r.info;
             updateIdentity = (effectiveUid == Process.SYSTEM_UID || mIsEffectivelySystemApp
-                    || effectiveUid == activityInfo.applicationInfo.uid);
+                    || effectiveUid == activityInfo.getUid());
         }
         if (updateIdentity) {
             mCallingUid = r.launchedFromUid;
@@ -980,7 +987,7 @@ class Task extends TaskFragment {
             rootAffinity = affinity;
             mRequiredDisplayCategory = info.requiredDisplayCategory;
         }
-        effectiveUid = info.applicationInfo.uid;
+        effectiveUid = info.getUid();
         mIsEffectivelySystemApp = info.applicationInfo.isSystemApp();
 
         if (info.targetActivity == null) {
@@ -1024,7 +1031,7 @@ class Task extends TaskFragment {
             // task as having a true root activity.
             rootWasReset = true;
         }
-        mUserId = UserHandle.getUserId(info.applicationInfo.uid);
+        mUserId = UserHandle.getUserId(info.getUid());
         mUserSetupComplete = Settings.Secure.getIntForUser(
                 mAtmService.mContext.getContentResolver(), USER_SETUP_COMPLETE, 0, mUserId) != 0;
         if ((info.flags & ActivityInfo.FLAG_AUTO_REMOVE_FROM_RECENTS) != 0) {
@@ -3191,23 +3198,13 @@ class Task extends TaskFragment {
     }
 
     void onSnapshotChanged(TaskSnapshot snapshot) {
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            // No local listener.
-            mWmService.mSnapshotController.notifySnapshotChanged(mTaskId, snapshot);
-        } else {
-            mAtmService.getTaskChangeNotificationController().notifyTaskSnapshotChanged(
-                    mTaskId, snapshot);
-        }
+        // No local listener.
+        mWmService.mSnapshotController.notifySnapshotChanged(mTaskId, snapshot);
     }
 
     void onSnapshotInvalidated() {
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            // No local listener.
-            mWmService.mSnapshotController.notifySnapshotInvalidate(mTaskId);
-        } else {
-            mAtmService.getTaskChangeNotificationController()
-                    .notifyTaskSnapshotInvalidated(mTaskId);
-        }
+        // No local listener.
+        mWmService.mSnapshotController.notifySnapshotInvalidate(mTaskId);
     }
 
 
@@ -3484,7 +3481,7 @@ class Task extends TaskFragment {
                 baseActivity != null ? baseActivity.getUid() : task.effectiveUid;
 
         if (info.topActivityInfo != null
-                && task.effectiveUid != info.topActivityInfo.applicationInfo.uid) {
+                && task.effectiveUid != info.topActivityInfo.getUid()) {
             // Making a copy to prevent eliminating the info in the original ActivityRecord.
             info.topActivityInfo = new ActivityInfo(info.topActivityInfo);
             info.topActivityInfo.applicationInfo =
@@ -4870,12 +4867,7 @@ class Task extends TaskFragment {
                     if (!isPip2ExperimentEnabled) {
                         final ActivityRecord ar = mAtmService.mLastResumedActivity;
                         if (ar != null && ar.getTask() != null) {
-                            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                                mWmService.mTaskSnapshotController.recordSnapshot(ar.getTask());
-                            } else {
-                                mAtmService.takeTaskSnapshot(ar.getTask().mTaskId,
-                                        true /* updateCache */);
-                            }
+                            mWmService.mTaskSnapshotController.recordSnapshot(ar.getTask());
                         }
                     }
                 }
@@ -5792,7 +5784,7 @@ class Task extends TaskFragment {
         resultData = resultDataHolder[0];
 
         if (parent != null && foundParentInTask) {
-            final int callingUid = srec.info.applicationInfo.uid;
+            final int callingUid = srec.info.getUid();
             // TODO(b/64750076): Check if calling pid should really be -1.
             final int res = mAtmService.getActivityStartController()
                     .obtainStarter(destIntent, "navigateUpTo")
@@ -6881,8 +6873,8 @@ class Task extends TaskFragment {
             mLastTimeMoved = System.currentTimeMillis();
             mNeverRelinquishIdentity = true;
             if (mActivityInfo != null) {
-                mUserId = UserHandle.getUserId(mActivityInfo.applicationInfo.uid);
-                mCallingUid = mActivityInfo.applicationInfo.uid;
+                mUserId = UserHandle.getUserId(mActivityInfo.getUid());
+                mCallingUid = mActivityInfo.getUid();
                 mCallingPackage = mActivityInfo.packageName;
                 mResizeMode = mActivityInfo.resizeMode;
                 mSupportsPictureInPicture = mActivityInfo.supportsPictureInPicture();

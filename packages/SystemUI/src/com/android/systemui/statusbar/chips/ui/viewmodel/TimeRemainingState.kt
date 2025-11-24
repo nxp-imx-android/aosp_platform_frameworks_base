@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.annotation.CurrentTimeMillisLong
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.systemui.util.time.SystemClock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -37,12 +39,15 @@ import kotlinx.coroutines.delay
 /**
  * Manages state and updates for the duration remaining between now and a given time in the future.
  */
-class TimeRemainingState(private val timeSource: TimeSource, private val futureTimeMillis: Long) {
+class TimeRemainingState(
+    private val timeSource: SystemClock,
+    @CurrentTimeMillisLong private val futureTimeMillis: Long,
+) {
     // Start with the right duration from the outset so we don't use "now" as an initial value.
     private var durationRemaining by
         mutableStateOf(
             calculateDurationRemaining(
-                currentTimeMillis = timeSource.getCurrentTime(),
+                currentTimeMillis = timeSource.currentTimeMillis(),
                 futureTimeMillis = futureTimeMillis,
             )
         )
@@ -58,9 +63,9 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
     val timeRemainingData by derivedStateOf { getTimeRemainingData(durationRemaining) }
 
     suspend fun run() {
-        startTimeMillis = timeSource.getCurrentTime()
+        startTimeMillis = timeSource.currentTimeMillis()
         while (true) {
-            val currentTime = timeSource.getCurrentTime()
+            val currentTime = timeSource.currentTimeMillis()
             durationRemaining =
                 calculateDurationRemaining(
                     currentTimeMillis = currentTime,
@@ -100,7 +105,10 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
 
 /** Remember and manage the TimeRemainingState */
 @Composable
-fun rememberTimeRemainingState(futureTimeMillis: Long, timeSource: TimeSource): TimeRemainingState {
+fun rememberTimeRemainingState(
+    @CurrentTimeMillisLong futureTimeMillis: Long,
+    timeSource: SystemClock,
+): TimeRemainingState {
 
     val state =
         remember(timeSource, futureTimeMillis) { TimeRemainingState(timeSource, futureTimeMillis) }

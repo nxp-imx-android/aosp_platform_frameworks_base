@@ -365,6 +365,20 @@ public class ApplicationSharedMemory implements AutoCloseable {
         return nativeGetCurrentAnimatorScale(mPtr);
     }
 
+    /** Sets the device upgrading state from PackageManagerService.
+     */
+    public void setIsDeviceUpgrading(boolean upgrading) {
+        checkMutable();
+        nativeSetIsDeviceUpgrading(mPtr, upgrading);
+    }
+
+     /** Returns the device upgrading state set by PackageManagerService.
+      */
+    public boolean getIsDeviceUpgrading() {
+        checkMapped();
+        return nativeGetIsDeviceUpgrading(mPtr);
+    }
+
     @FastNative
     private static native void nativeWriteSystemFeaturesCache(long ptr, int[] cache);
 
@@ -376,4 +390,11 @@ public class ApplicationSharedMemory implements AutoCloseable {
 
     @FastNative
     private static native float nativeGetCurrentAnimatorScale(long ptr);
+
+    @FastNative
+    private static native void nativeSetIsDeviceUpgrading(long ptr, boolean upgrading);
+
+    @FastNative
+    private static native boolean nativeGetIsDeviceUpgrading(long ptr);
+
 }

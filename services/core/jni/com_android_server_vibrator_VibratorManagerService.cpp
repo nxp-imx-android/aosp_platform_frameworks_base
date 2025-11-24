@@ -705,10 +705,9 @@ static void nativeClearSessions(JNIEnv* env, jclass /* clazz */, jlong servicePt
     service->clearSessions();
 }
 
-// TODO(434631745) Add HapticGeneratorSession.Config param
 static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclass /* clazz */,
                                                               jlong servicePtr, jlong sessionId,
-                                                              jint vibratorId) {
+                                                              jint vibratorId, jobject config) {
     if (DEBUG) {
         ALOGD("%s(vibratorId=%d, sessionId=%lld)", __func__, static_cast<int32_t>(vibratorId),
               static_cast<long long>(sessionId));
@@ -719,23 +718,15 @@ static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclas
         return JNI_FALSE;
     }
 
-    std::vector<int32_t> ids = {vibratorId};
-    // TODO(434631745) setup config properly, using default for now.
-    HapticGeneratorConfig nativeConfig;
-    nativeConfig.audioFormat.sampleRate = 48000;
-    nativeConfig.audioFormat.channelMask = audio_common::AudioChannelLayout::make<
-            audio_common::AudioChannelLayout::Tag::layoutMask>(
-            audio_common::AudioChannelLayout::CHANNEL_HAPTIC_A);
-    nativeConfig.audioFormat.format.type = audio_common::AudioFormatType::PCM;
-    nativeConfig.audioFormat.format.pcm = audio_common::PcmType::INT_16_BIT;
-
-    auto callback =
+    std::vector<int32_t> halIds = {vibratorId};
+    auto halConfig = fromJavaParcel<HapticGeneratorConfig>(env, config);
+    auto halCallback =
             ndk::SharedRefBase::make<VibratorCallback>(sJvm, service->managerCallbacks(),
                                                        sMethodIdOnHapticGeneratorSessionComplete,
                                                        sessionId);
 
     HapticGeneratorSession halSession;
-    auto status = hal->startHapticGeneratorSession(ids, nativeConfig, callback, &halSession);
+    auto status = hal->startHapticGeneratorSession(halIds, halConfig, halCallback, &halSession);
     service->processManagerStatus(status, __func__);
     if (!status.isOk()) {
         return JNI_FALSE;
@@ -745,7 +736,7 @@ static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclas
     // the destructor if we return early on validation failure.
     auto session = std::make_shared<vibrator::HapticGeneratorSession>(std::move(halSession));
 
-    if (!session->isValidForVibrators(ids)) {
+    if (!session->isValidForVibrators(halIds)) {
         ALOGE("%s: Haptic generator session validation failed for vibrator %d", __func__,
               static_cast<int32_t>(vibratorId));
         return JNI_FALSE;
@@ -946,7 +937,7 @@ static const JNINativeMethod method_table[] = {
          (void*)nativeVibratorComposePwleEffectWithCallback},
         {"nativeVibratorComposePwleV2EffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
          (void*)nativeVibratorComposePwleV2EffectWithCallback},
-        {"nativeStartHapticGeneratorSessionWithCallback", "(JJI)Z",
+        {"nativeStartHapticGeneratorSessionWithCallback", "(JJILandroid/os/Parcel;)Z",
          (void*)nativeStartHapticGeneratorSessionWithCallback},
         {"nativeCloseHapticGeneratorSession", "(JJ)Z", (void*)nativeCloseHapticGeneratorSession},
         {"nativeClearHapticGeneratorSession", "(JJ)V", (void*)nativeClearHapticGeneratorSession},

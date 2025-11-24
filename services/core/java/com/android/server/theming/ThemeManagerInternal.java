@@ -34,6 +34,8 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.systemui.monet.ColorScheme;
 
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
+
 import java.io.PrintWriter;
 import java.util.Optional;
 
@@ -87,7 +89,8 @@ public class ThemeManagerInternal {
             ThemeInfo options) {
         ThemeState state = mStateManager.getState(userId).getCurrentState();
 
-        int newSeed = Optional.ofNullable(options.seedColor).orElse(state.seedColor());
+        int newSeed = Optional.ofNullable(options.seedColor).map(Color::toArgb).orElse(
+                state.seedColor());
         @ThemeStyle.Type int newStyle = Optional.ofNullable(options.style).orElse(state.style());
         float newContrast = Optional.ofNullable(options.contrast).orElse(state.contrast());
 
@@ -105,7 +108,12 @@ public class ThemeManagerInternal {
      */
     public ThemeInfo getUserThemeInfo(int userId) {
         ThemeState state = mStateManager.getState(userId).getCurrentState();
-        return ThemeInfo.build(Color.valueOf(state.seedColor()), state.style(), state.contrast());
+        return new ThemeInfo(
+                Color.valueOf(state.seedColor()),
+                state.style(),
+                state.contrast(),
+                DynamicScheme.DEFAULT_SPEC_VERSION.name(),
+                DynamicScheme.DEFAULT_PLATFORM.name());
     }
 
     void notifySettingsChange(@UserIdInt int userId, ThemeSettings newSettings) {

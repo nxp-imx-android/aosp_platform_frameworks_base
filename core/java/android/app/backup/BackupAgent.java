@@ -1522,9 +1522,7 @@ public abstract class BackupAgent extends ContextWrapper {
                 // consume all the data for this file from the pipe. We need to clear the pipe,
                 // otherwise the framework can get stuck trying to write to a full pipe or
                 // onRestoreFile could be called with the previous file's data left in the pipe.
-                if (Flags.enableClearPipeAfterRestoreFile()) {
-                    clearUnconsumedDataFromPipe(data, size);
-                }
+                clearUnconsumedDataFromPipe(data, size);
 
                 Binder.restoreCallingIdentity(ident);
                 try {

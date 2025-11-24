@@ -43,7 +43,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.keyguard.ui.binder.DeviceEntryIconViewBinder
-import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryBackgroundViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryForegroundViewModel
@@ -157,7 +156,7 @@ constructor(
      * the same as the bounds of the sensor.
      *
      * The bounds will have new values as the UDFPS location changes (something that definitely
-     * happens shortly after device boot).
+     * happens shortly after device boot) or the window view bounds change.
      */
     @Composable
     private fun rememberLockIconBounds(): IntRect {
@@ -171,11 +170,11 @@ constructor(
             with(LocalDensity.current) {
                 dimensionResource(clocksR.dimen.lock_icon_margin_bottom).roundToPx()
             }
+        val windowViewBounds = windowManager.currentWindowMetrics.bounds
 
         val bounds: IntRect by
-            remember(context, isUdfpsSupported, udfpsLocation) {
+            remember(context, isUdfpsSupported, udfpsLocation, windowViewBounds) {
                 derivedStateOf {
-                    val windowViewBounds = windowManager.currentWindowMetrics.bounds
                     var widthPx = windowViewBounds.right.toFloat()
                     if (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE)) {
                         val insets = windowManager.currentWindowMetrics.windowInsets

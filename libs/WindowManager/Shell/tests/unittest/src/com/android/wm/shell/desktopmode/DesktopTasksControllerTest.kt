@@ -145,7 +145,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
-import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
@@ -187,6 +187,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitMultiDisplayProvider
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.sysui.OverviewVisibilityChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -277,8 +278,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     lateinit var toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler
     @Mock lateinit var dragToDesktopTransitionHandler: DragToDesktopTransitionHandler
     @Mock lateinit var mMockDesktopImmersiveController: DesktopImmersiveController
-    @Mock
-    lateinit var clientFullscreenRequestTransitionHandler: ClientFullscreenRequestTransitionHandler
+    @Mock lateinit var mDesktopFullscreenRequestHandler: DesktopFullscreenRequestHandler
     @Mock lateinit var splitScreenController: SplitScreenController
     @Mock lateinit var splitMultiDisplayProvider: SplitMultiDisplayProvider
     @Mock lateinit var recentsTransitionHandler: RecentsTransitionHandler
@@ -553,7 +553,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             toggleResizeDesktopTaskTransitionHandler,
             dragToDesktopTransitionHandler,
             mMockDesktopImmersiveController,
-            clientFullscreenRequestTransitionHandler,
+            mDesktopFullscreenRequestHandler,
             userRepositories,
             repositoryInitializer,
             recentsTransitionHandler,
@@ -875,10 +875,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     /** TODO: b/353948437 - add a same test for when the multi-desk flag is enabled. */
     fun showDesktopApps_allAppsInvisible_bringNewTaskInFront_ExceedLimit_tasksAreInCorrectOrder() {
@@ -2939,61 +2936,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun moveRunningTaskToDesktop_desktopWallpaperDisabled_bringsTasksOver_dontShowBackTask() {
-        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        val newTask = setUpFullscreenTask()
-        val homeTask = setUpHomeTask()
-
-        controller.moveTaskToDefaultDeskAndActivate(newTask.taskId, transitionSource = UNKNOWN)
-
-        val wct = getLatestEnterDesktopWct()
-        verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
-        assertThat(wct.hierarchyOps.size).isEqualTo(MAX_TASK_LIMIT + 1) // visible tasks + home
-        wct.assertReorderAt(0, homeTask)
-        wct.assertReorderSequenceInRange(
-            range = 1..<(MAX_TASK_LIMIT + 1),
-            *freeformTasks.drop(1).toTypedArray(), // Skipping freeformTasks[0]
-            newTask,
-        )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun moveRunningTaskToDesktop_desktopWallpaperEnabled_bringsTasksOverLimit_dontShowBackTask() {
-        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
-        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        val newTask = setUpFullscreenTask()
-        val homeTask = setUpHomeTask()
-
-        controller.moveTaskToDefaultDeskAndActivate(newTask.taskId, transitionSource = UNKNOWN)
-
-        val wct = getLatestEnterDesktopWct()
-        verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
-        assertThat(wct.hierarchyOps.size).isEqualTo(MAX_TASK_LIMIT + 2) // tasks + home + wallpaper
-        // Move home to front
-        wct.assertReorderAt(0, homeTask)
-        // Add desktop wallpaper activity
-        wct.assertPendingIntentAt(1, desktopWallpaperIntent)
-        // Bring freeform tasks to front
-        wct.assertReorderSequenceInRange(
-            range = 2..<(MAX_TASK_LIMIT + 2),
-            *freeformTasks.drop(1).toTypedArray(), // Skipping freeformTasks[0]
-            newTask,
-        )
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_fromDesk_reparentsToTaskDisplayArea() {
         val task = setUpFreeformTask()
@@ -3591,67 +3533,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun moveTaskToFront_bringsTasksOverLimit_multiDesksDisabled_minimizesBackTask() {
-        setUpHomeTask()
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT + 1).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
-            }
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_TO_FRONT),
-                    any(),
-                    eq(freeformTasks[0].taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(Binder())
-
-        controller.moveTaskToFront(freeformTasks[0], remoteTransition = null)
-
-        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
-        assertThat(wct.hierarchyOps.size).isEqualTo(2) // move-to-front + minimize
-        wct.assertReorderAt(0, freeformTasks[0], toTop = true)
-        wct.assertReorderAt(1, freeformTasks[1], toTop = false)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun moveTaskToFront_bringsTasksOverLimit_multiDesksEnabled_minimizesBackTask() {
-        val deskId = 0
-        setUpHomeTask()
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT + 1).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_TO_FRONT),
-                    any(),
-                    eq(freeformTasks[0].taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(Binder())
-
-        controller.moveTaskToFront(freeformTasks[0], remoteTransition = null)
-
-        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[1])
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun moveTaskToFront_bringsTasksOverLimit_separateTaskLimitTransition_minimizeSeparately() {
         val deskId = 0
@@ -3734,21 +3615,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveTaskToFront(freeformTasks[0], RemoteTransition(TestRemoteTransition()))
 
         assertIs<OneShotRemoteHandler>(transitionHandlerArgCaptor.firstValue)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun moveTaskToFront_bringsTasksOverLimit_remoteTransition_usesWindowLimitHandler() {
-        setUpHomeTask()
-        val freeformTasks = List(MAX_TASK_LIMIT + 1) { setUpFreeformTask() }
-        val transitionHandlerArgCaptor = argumentCaptor<TransitionHandler>()
-        whenever(transitions.startTransition(anyInt(), any(), transitionHandlerArgCaptor.capture()))
-            .thenReturn(Binder())
-
-        controller.moveTaskToFront(freeformTasks[0], RemoteTransition(TestRemoteTransition()))
-
-        assertThat(transitionHandlerArgCaptor.firstValue)
-            .isInstanceOf(DesktopWindowLimitRemoteHandler::class.java)
     }
 
     @Test
@@ -3922,40 +3788,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun moveTaskToFront_backgroundTaskBringsTasksOverLimit_multiDesksDisabled_minimizesBackTask() {
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        val task = createRecentTaskInfo(freeformTasks.maxOf { it.taskId } + 10)
-        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_OPEN),
-                    any(),
-                    eq(task.taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(Binder())
-
-        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
-
-        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
-        assertThat(wct.hierarchyOps.size).isEqualTo(2) // launch + minimize
-        wct.assertLaunchTaskAt(0, task.taskId, WINDOWING_MODE_FREEFORM)
-        wct.assertReorderAt(1, freeformTasks[0], toTop = false)
-    }
-
-    @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun moveTaskToFront_backgroundTaskBringsTasksOverLimit_multiDesksDisabled_separateMinimize() {
@@ -3986,36 +3818,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wct.hierarchyOps.size).isEqualTo(1)
         wct.assertLaunchTaskAt(0, task.taskId, WINDOWING_MODE_FREEFORM)
         assertThat(desktopTasksLimiter.hasTaskLimitTransitionForTesting(transition)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun moveTaskToFront_backgroundTaskBringsTasksOverLimit_multiDesksEnabled_minimizesBackTask() {
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        val task = createRecentTaskInfo(freeformTasks.maxOf { it.taskId } + 10)
-        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_OPEN),
-                    any(),
-                    eq(task.taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(Binder())
-
-        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
-
-        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[0])
     }
 
     @Test
@@ -4384,33 +4186,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestTransition()
         assertNotNull(wct)
         verify(desksOrganizer).reorderTaskToFront(wct, targetDeskId, task2)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun moveToNextDisplay_toDesktopInOtherDisplay_appliesTaskLimit() {
-        val transition = Binder()
-        val sourceDeskId = 0
-        val targetDeskId = 2
-        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
-        taskRepository.setDeskInactive(deskId = targetDeskId)
-        val targetDeskTasks =
-            (1..MAX_TASK_LIMIT + 1).map { _ ->
-                setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = targetDeskId)
-            }
-        // Set up two display ids
-        whenever(rootTaskDisplayAreaOrganizer.displayIds)
-            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
-        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
-            .thenReturn(transition)
-        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = sourceDeskId)
-
-        controller.moveToNextDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
-
-        val wct = getLatestTransition()
-        assertNotNull(wct)
-        verify(desksOrganizer).minimizeTask(wct, targetDeskId, targetDeskTasks[0])
     }
 
     @Test
@@ -5974,24 +5749,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_multiDesksDisabled_otherTaskIsMinimized() {
-        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val fullscreenTask = createFullscreenTask()
-
-        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
-
-        // Make sure we reorder the new task to top, and the back task to the bottom
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(2)
-        wct.assertReorderAt(0, fullscreenTask, toTop = true)
-        wct.assertReorderAt(1, freeformTasks[0], toTop = false)
-    }
-
-    @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_multiDesksDisabled_separateMinimize() {
@@ -6009,82 +5766,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_multiDesksEnabled_otherTaskIsMinimized() {
-        val deskId = 5
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId).also {
-                    markTaskVisible(it)
-                }
-            }
-
-        // Launch a fullscreen task while in the desk.
-        setUpHomeTask()
-        val fullscreenTask = createFullscreenTask()
-        val transition = Binder()
-        val wct = controller.handleRequest(transition, createTransition(fullscreenTask))
-
-        assertNotNull(wct)
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[0])
-        val minimizingTask =
-            assertNotNull(desktopTasksLimiter.getMinimizingTask(transition)?.taskId)
-        assertThat(minimizingTask).isEqualTo(freeformTasks[0].taskId)
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun handleRequest_fullscreenTaskWithTaskOnHome_bringsTasksOverLimit_multiDesksDisabled_otherTaskIsMinimized() {
-        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val fullscreenTask = createFullscreenTask()
-        fullscreenTask.baseIntent.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME)
-
-        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
-
-        // Make sure we reorder the new task to top, and the back task to the bottom
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(8)
-        wct.assertReorderAt(0, fullscreenTask, toTop = true)
-        // Oldest task that needs to minimized is never reordered to top over Home.
-        val taskToMinimize = freeformTasks[0]
-        wct.assertWithoutHop { hop ->
-            hop.container == taskToMinimize.token &&
-                hop.type == HIERARCHY_OP_TYPE_REORDER &&
-                hop.toTop == true
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun handleRequest_fullscreenTaskWithTaskOnHome_bringsTasksOverLimit_multiDesksEnabled_otherTaskIsMinimized() {
-        val deskId = 5
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val fullscreenTask = createFullscreenTask()
-        fullscreenTask.baseIntent.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME)
-
-        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
-
-        assertNotNull(wct)
-        // The launching task is moved to the desk.
-        verify(desksOrganizer).moveTaskToDesk(wct, deskId, fullscreenTask)
-        // The bottom-most task is minimized.
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[0])
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_separateMinimizeFlagEnabled_minimizeSeparately() {
         val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
@@ -6096,36 +5777,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertThat(wct!!.hierarchyOps.size).isAtMost(1)
         assertThat(desktopTasksLimiter.hasTaskLimitTransitionForTesting(transition)).isTrue()
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun handleRequest_fullscreenTaskWithTaskOnHome_beyondLimit_multiDesksDisabled_existingAndNewTasksAreMinimized() {
-        val minimizedTask = setUpFreeformTask()
-        taskRepository.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = minimizedTask.taskId)
-        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val homeTask = setUpHomeTask()
-        val fullscreenTask = createFullscreenTask()
-        fullscreenTask.baseIntent.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME)
-
-        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
-
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(9)
-        wct.assertReorderAt(0, fullscreenTask, toTop = true)
-        // Make sure we reorder the home task to the top, desktop tasks to top of them and minimized
-        // task is under the home task.
-        wct.assertReorderAt(1, homeTask, toTop = true)
-        // Oldest task that needs to minimized is never reordered to top over Home.
-        val taskToMinimize = freeformTasks[0]
-        wct.assertWithoutHop { hop ->
-            hop.container == taskToMinimize.token &&
-                hop.type == HIERARCHY_OP_TYPE_REORDER &&
-                hop.toTop == true
-        }
     }
 
     @Test
@@ -6149,37 +5800,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         wct.assertReorderAt(1, homeTask, toTop = true)
         val taskToMinimize = freeformTasks[0]
         wct.assertReorder(taskToMinimize.token, toTop = true)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun handleRequest_fullscreenTaskWithTaskOnHome_beyondLimit_multiDesksEnabled_existingAndNewTasksAreMinimized() {
-        // A desk with a minimized tasks, and non-minimized tasks already at the task limit.
-        val deskId = 5
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        val minimizedTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        taskRepository.minimizeTaskInDesk(
-            displayId = DEFAULT_DISPLAY,
-            deskId = deskId,
-            taskId = minimizedTask.taskId,
-        )
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId).also {
-                    markTaskVisible(it)
-                }
-            }
-
-        // Launch a fullscreen task that brings Home to front with it.
-        setUpHomeTask()
-        val fullscreenTask = createFullscreenTask()
-        fullscreenTask.baseIntent.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME)
-        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
-
-        assertNotNull(wct)
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[0])
     }
 
     @Test
@@ -6435,46 +6055,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             controller.handleRequest(Binder(), createTransition(fullscreenTaskDefaultDisplay))
 
         assertThat(result).isNull()
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun handleRequest_freeformTask_freeformVisible_aboveTaskLimit_multiDesksDisabled_minimize() {
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val newFreeformTask = createFreeformTask()
-
-        val wct =
-            controller.handleRequest(Binder(), createTransition(newFreeformTask, TRANSIT_OPEN))
-
-        assertThat(wct?.hierarchyOps?.size).isEqualTo(1)
-        wct!!.assertReorderAt(0, freeformTasks[0], toTop = false) // Reorder to the bottom
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun handleRequest_freeformTask_freeformVisible_aboveTaskLimit_multiDesksEnabled_minimize() {
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        freeformTasks.forEach { markTaskVisible(it) }
-        val newFreeformTask = createFreeformTask()
-
-        val wct =
-            controller.handleRequest(Binder(), createTransition(newFreeformTask, TRANSIT_OPEN))
-
-        assertNotNull(wct)
-        verify(desksOrganizer).minimizeTask(wct, deskId, freeformTasks[0])
     }
 
     @Test
@@ -9915,7 +9495,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromFullscreenOpensInSplit() {
         setUpLandscapeDisplay()
         val task = setUpFullscreenTask()
@@ -9939,7 +9518,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromSplitOpensInSplit() {
         setUpLandscapeDisplay()
         val task = setUpSplitScreenTask()
@@ -9963,7 +9541,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromFreeformAddsNewWindow() {
         setUpLandscapeDisplay()
         val task = setUpFreeformTask()
@@ -10012,7 +9589,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
     )
@@ -10062,7 +9638,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromFreeform_exitsImmersiveIfNeeded() {
         setUpLandscapeDisplay()
         val immersiveTask = setUpFreeformTask()
@@ -10105,7 +9680,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun openInstance_fromFullscreenOpensInSplit() {
         setUpLandscapeDisplay()
         val task = setUpFullscreenTask()
@@ -10119,7 +9693,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun openInstance_fromSplitOpensInSplit() {
         setUpLandscapeDisplay()
         val task = setUpSplitScreenTask()
@@ -10133,7 +9706,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun openInstance_fromFreeformAddsNewWindow_multiDesksDisabled() {
         setUpLandscapeDisplay()
@@ -10170,10 +9742,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun openInstance_fromFreeformAddsNewWindow_multiDesksEnabled() {
         setUpLandscapeDisplay()
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
@@ -10207,84 +9776,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
-    fun openInstance_fromFreeform_multiDesksDisabled_minimizesIfNeeded() {
-        setUpLandscapeDisplay()
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT + 1).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        val oldestTask = freeformTasks.first()
-        val newestTask = freeformTasks.last()
-
-        val transition = Binder()
-        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    anyInt(),
-                    wctCaptor.capture(),
-                    anyInt(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(transition)
-
-        runOpenInstance(newestTask, freeformTasks[1].taskId)
-
-        val wct = wctCaptor.firstValue
-        assertThat(wct.hierarchyOps.size).isEqualTo(2) // move-to-front + minimize
-        wct.assertReorderAt(0, freeformTasks[1], toTop = true)
-        wct.assertReorderAt(1, oldestTask, toTop = false)
-    }
-
-    @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
-    fun openInstance_fromFreeform_multiDesksEnabled_minimizesIfNeeded() {
-        setUpLandscapeDisplay()
-        val deskId = 0
-        val freeformTasks =
-            (1..MAX_TASK_LIMIT + 1).map { _ ->
-                setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-            }
-        val oldestTask = freeformTasks.first()
-        val newestTask = freeformTasks.last()
-
-        val transition = Binder()
-        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    anyInt(),
-                    wctCaptor.capture(),
-                    anyInt(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
-            .thenReturn(transition)
-
-        runOpenInstance(newestTask, freeformTasks[1].taskId)
-
-        val wct = wctCaptor.firstValue
-        verify(desksOrganizer).minimizeTask(wct, deskId, oldestTask)
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
     )
@@ -10321,7 +9813,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun openInstance_fromFreeform_exitsImmersiveIfNeeded() {
         setUpLandscapeDisplay()
         val freeformTask = setUpFreeformTask()
@@ -10844,7 +10335,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900)
+            Rect(1100, 700, 1300, 900),
         )
     }
 
@@ -10853,7 +10344,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
             PointF(50f, 700f),
-            Rect(0, 0, 500, 1000)
+            Rect(0, 0, 500, 1000),
         )
     }
 
@@ -10862,7 +10353,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
             PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000)
+            Rect(500, 0, 1000, 1000),
         )
     }
 
@@ -10871,13 +10362,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
             PointF(1200f, 50f),
-            Rect()
+            Rect(),
         )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
@@ -10895,7 +10385,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
@@ -10915,10 +10404,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
-    )
+    @EnableFlags(Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS)
     fun onUnhandledDrag_crossDisplayDrag_noOpOnFocusedNonDesktopTask() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
@@ -11999,8 +11485,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wallpaperReorderIndex).isEqualTo(-1)
     }
 
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -12020,6 +11508,37 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = true,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_BACK), any(), any())
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId), any())
+        verify(desksTransitionsObserver, never())
+            .addPendingTransition(argThat { t -> t is DeskTransition.DeactivateDesk })
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onRecentsInDesktopAnimationFinishing_returningToApp_snapEventHandlerNotified() {
         val deskId = 0
@@ -12039,7 +11558,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
 
@@ -12060,8 +11580,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setDeskInactive(deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_BACK), any(), any())
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId), any())
+        verify(desksTransitionsObserver, never())
+            .addPendingTransition(argThat { t -> t is DeskTransition.DeactivateDesk })
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -12089,8 +11640,47 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        val wct = getLatestWct(TRANSIT_TO_BACK)
+        verify(desksOrganizer).deactivateDesk(wct, deskId)
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat { t ->
+                    t is DeskTransition.DeactivateDesk &&
+                        t.userId == taskRepository.userId &&
+                        t.deskId == deskId &&
+                        t.displayId == DEFAULT_DISPLAY &&
+                        t.exitReason == ExitReason.RETURN_HOME_OR_OVERVIEW
+                }
+            )
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
+    @DisableFlags(Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION)
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -12109,6 +11699,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 !hop.toTop
         }
         finishWct.assertWithoutHop { hop -> hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
+        val deskId = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(DEFAULT_DISPLAY)
+
+        val wct = getLatestWct(TRANSIT_TO_BACK)
+        wct.assertWithoutHop { hop ->
+            hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.container == wallpaperToken.asBinder() &&
+                !hop.toTop
+        }
+        wct.assertWithoutHop { hop -> hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT }
     }
 
     @Test
@@ -12684,15 +12307,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         } else {
             expectedWindowingMode = WINDOWING_MODE_FREEFORM
             verify(desktopMixedTransitionHandler, times)
-                    .startLaunchTransition(
-                        eq(TRANSIT_OPEN),
-                        arg.capture(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        anyOrNull(),
-                        eq(mockDragEvent),
-                    )
+                .startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    arg.capture(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    eq(mockDragEvent),
+                )
         }
         if (verifyNoOp) return
         assertThat(

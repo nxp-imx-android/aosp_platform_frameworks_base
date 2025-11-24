@@ -215,6 +215,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             sceneTransition = Idle(Scenes.Gone),
             stateTransition =
                 TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE),
+            unlockDevice = true,
         )
         actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
 
@@ -227,6 +228,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
                 sceneTransition = Idle(Scenes.Gone),
                 stateTransition =
                     TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE),
+                unlockDevice = true,
             )
             testBody()
         }

@@ -19,6 +19,7 @@ package com.android.settingslib.metadata
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import org.json.JSONException
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.Assert.assertThrows
@@ -82,16 +83,17 @@ class KeyParametersTest {
     }
 
     @Test
-    fun prepare_unknownParameter_throwsException() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            testSchema.prepare(
-                mapOf(
-                    "required_param" to "value1",
-                    "unknown_param" to "value3"
-                )
+    fun prepare_unknownParameter_isIgnored() {
+        val params = testSchema.prepare(
+            mapOf(
+                "required_param" to "value1",
+                "unknown_param" to "value3"
             )
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            // The unknown parameter is ignored during prepare, but trying to access it throws.
+            params.get("unknown_param")
         }
-        assertThat(exception.message).isEqualTo("Unknown parameter 'unknown_param' provided.")
     }
 
     @Test
@@ -137,15 +139,15 @@ class KeyParametersTest {
     }
 
     @Test
-    fun prepareFromBundle_unknownParameter_throwsException() {
+    fun prepareFromBundle_unknownParameter_isIgnored() {
         val bundle = Bundle().apply {
             putString("required_param", "bundle_value1")
             putString("unknown_param", "unknown")
         }
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            testSchema.prepare(bundle)
+        val params = testSchema.prepare(bundle)
+        assertThrows(IllegalArgumentException::class.java) {
+            params.get("unknown_param")
         }
-        assertThat(exception.message).isEqualTo("Unknown parameter 'unknown_param' provided.")
     }
 
     @Test
@@ -221,58 +223,6 @@ class KeyParametersTest {
             params.getRequired("optional_param")
         }
         assertThat(exception.message).isEqualTo("Parameter 'optional_param' is not defined as required in the schema.")
-    }
-
-    @Test
-    fun toParametersString_multipleParams() {
-        val params = testSchema.prepare(
-            "required_param" to "val1",
-            "optional_param" to "val2"
-        )
-        assertThat(params.toParametersString()).isEqualTo("[required_param=val1,optional_param=val2]")
-    }
-
-    @Test
-    fun toParametersString_onlyRequired() {
-        val params = testSchema.prepare("required_param" to "val1")
-        assertThat(params.toParametersString()).isEqualTo("[required_param=val1]")
-    }
-
-    @Test
-    fun toParametersString_noParamsInOptionalSchema() {
-        val params = optionalSchema.prepare(emptyMap())
-        assertThat(params.toParametersString()).isEqualTo("[]")
-    }
-
-    @Test
-    fun toParametersString_specialChars() {
-        val params = testSchema.prepare(
-            "required_param" to "value with spaces, and=equals",
-            "optional_param" to "another"
-        )
-        assertThat(params.toParametersString()).isEqualTo("[required_param=value with spaces, and=equals,optional_param=another]")
-    }
-
-    @Test
-    fun toBundle_returnsCorrectBundle() {
-        val map = mapOf(
-            "required_param" to "value1",
-            "optional_param" to "value2"
-        )
-        val params = testSchema.prepare(map)
-        val bundle = params.toBundle()
-        assertThat(bundle.getString("required_param")).isEqualTo("value1")
-        assertThat(bundle.getString("optional_param")).isEqualTo("value2")
-        assertThat(bundle.size()).isEqualTo(2)
-    }
-
-    @Test
-    fun toBundle_onlyRequired() {
-        val params = testSchema.prepare("required_param" to "value1")
-        val bundle = params.toBundle()
-        assertThat(bundle.getString("required_param")).isEqualTo("value1")
-        assertThat(bundle.containsKey("optional_param")).isFalse()
-        assertThat(bundle.size()).isEqualTo(1)
     }
 
     @Test
@@ -359,18 +309,6 @@ class KeyParametersTest {
     }
 
     @Test
-    fun isEmpty_whenEmpty_isTrue() {
-        val params = optionalSchema.prepare(emptyMap())
-        assertThat(params.isEmpty).isTrue()
-    }
-
-    @Test
-    fun isEmpty_whenNotEmpty_isFalse() {
-        val params = testSchema.prepare("required_param" to "value1")
-        assertThat(params.isEmpty).isFalse()
-    }
-
-    @Test
     fun equals_sameSchemaAndValues_isTrue() {
         val params1 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
         val params2 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
@@ -444,15 +382,55 @@ class KeyParametersTest {
     }
 
     @Test
-    fun toParametersSchemaString_returnsCorrectJson() {
-        val schemaString = testSchema.toParametersSchemaString()
+    fun toJsonString_returnsCorrectJson() {
+        val schemaString = testSchema.toJsonString()
         val expectedString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true},\"optional_param\":{\"description\":\"An optional parameter\",\"required\":false}}"
         assertThat(schemaString).isEqualTo(expectedString)
     }
 
     @Test
+    fun fromJsonString_validJson_parsesCorrectly() {
+        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true},\"optional_param\":{\"description\":\"An optional parameter\",\"required\":false}}"
+        val schema = KeyParametersSchema.fromJsonString(jsonString)
+        assertThat(schema.containsKey("required_param")).isTrue()
+        assertThat(schema.isRequiredParameter("required_param")).isTrue()
+        assertThat(schema.containsKey("optional_param")).isTrue()
+        assertThat(schema.isRequiredParameter("optional_param")).isFalse()
+    }
+
+    @Test
+    fun fromJsonString_emptyJson_returnsEmptySchema() {
+        val schema = KeyParametersSchema.fromJsonString("{}")
+        assertThat(schema.toString()).isEqualTo("KeyParametersSchema(schema={})")
+    }
+
+    @Test
+    fun fromJsonString_missingDescription_throwsException() {
+        val jsonString = "{\"required_param\":{\"required\":true}}"
+        assertThrows(JSONException::class.java) {
+            KeyParametersSchema.fromJsonString(jsonString)
+        }
+    }
+
+    @Test
+    fun fromJsonString_missingRequired_throwsException() {
+        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\"}}"
+        assertThrows(JSONException::class.java) {
+            KeyParametersSchema.fromJsonString(jsonString)
+        }
+    }
+
+    @Test
+    fun fromJsonString_malformedJson_throwsException() {
+        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true"
+        assertThrows(JSONException::class.java) {
+            KeyParametersSchema.fromJsonString(jsonString)
+        }
+    }
+
+    @Test
     fun emptyObject_isEmpty() {
-        assertThat(testSchema.prepareEmpty().isEmpty).isTrue()
+        assertThat(optionalSchema.prepareEmpty().isEmpty).isTrue()
     }
 
     @Test

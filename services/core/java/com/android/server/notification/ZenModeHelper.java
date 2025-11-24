@@ -347,8 +347,13 @@ public class ZenModeHelper {
     public void onUserRemoved(int user) {
         if (user < UserHandle.USER_SYSTEM) return;
         if (DEBUG) Log.d(TAG, "onUserRemoved u=" + user);
+        boolean changed;
         synchronized (mConfigLock) {
+            changed = mConfigs.contains(user);
             mConfigs.remove(user);
+        }
+        if (changed) {
+            dispatchOnConfigChanged(user);
         }
     }
 
@@ -1602,6 +1607,22 @@ public class ZenModeHelper {
         }
     }
 
+    boolean hasZenModeConfig(UserHandle user) {
+        synchronized (mConfigLock) {
+            return getConfigLocked(user) != null;
+        }
+    }
+
+    int getManualZenMode(UserHandle user) {
+        synchronized (mConfigLock) {
+            ZenModeConfig config = getConfigLocked(user);
+            if (config == null) {
+                return Global.ZEN_MODE_OFF;
+            }
+            return config.isManualActive() ? config.manualRule.zenMode : Global.ZEN_MODE_OFF;
+        }
+    }
+
     public void setManualZenRuleDeviceEffects(UserHandle user, ZenDeviceEffects deviceEffects,
             @ConfigOrigin int origin, String reason, int callingUid) {
         synchronized (mConfigLock) {
@@ -1973,8 +1994,13 @@ public class ZenModeHelper {
             }
             if (config.user != mUser) {
                 // simply store away for background users
+                ZenModeConfig prevConfig;
                 synchronized (mConfigLock) {
+                    prevConfig = mConfigs.get(config.user);
                     mConfigs.put(config.user, config);
+                }
+                if (!config.equals(prevConfig)) {
+                    dispatchOnConfigChanged(config.user);
                 }
                 if (DEBUG) Log.d(TAG, "setConfigLocked: store config for user " + config.user);
                 return true;
@@ -2066,7 +2092,8 @@ public class ZenModeHelper {
             }
 
             mConfig = config;
-            dispatchOnConfigChanged();
+            dispatchOnConfigChanged(config.user);
+            dispatchOnConfigApplied();
             updateAndApplyConsolidatedPolicyAndDeviceEffects(origin, reason);
         }
         final String val = Integer.toString(config.hashCode());
@@ -2456,9 +2483,19 @@ public class ZenModeHelper {
         }
     }
 
-    private void dispatchOnConfigChanged() {
+    private void dispatchOnConfigApplied() {
         for (Callback callback : mCallbacks) {
-            callback.onConfigChanged();
+            callback.onConfigApplied();
+        }
+    }
+
+    private void dispatchOnConfigChanged(int userId) {
+        if (!android.service.notification.Flags.enableDndSync()) {
+            return;
+        }
+        UserHandle user = UserHandle.of(userId);
+        for (Callback callback : mCallbacks) {
+            callback.onConfigChanged(user);
         }
     }
 
@@ -2823,12 +2860,12 @@ public class ZenModeHelper {
         private long mTypeLogTimeMs = 0L;
 
         @Override
-        void onZenModeChanged() {
+        public void onZenModeChanged() {
             emit();
         }
 
         @Override
-        void onConfigChanged() {
+        public void onConfigApplied() {
             emit();
         }
 
@@ -2952,10 +2989,16 @@ public class ZenModeHelper {
     }
 
     public static class Callback {
-        void onConfigChanged() {}
-        void onZenModeChanged() {}
-        void onPolicyChanged(Policy newPolicy) {}
-        void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {}
-        void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {}
+        /** Called when a config has been applied. */
+        public void onConfigApplied() {}
+        /**
+         * Called when a config has changed, regardless of if it's applied. A config may change
+         * without being applied if its user is in the background.
+         */
+        public void onConfigChanged(UserHandle user) {}
+        public void onZenModeChanged() {}
+        public void onPolicyChanged(Policy newPolicy) {}
+        public void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {}
+        public void onAutomaticRuleStatusChanged(int userId, String pkg, String id, int status) {}
     }
 }

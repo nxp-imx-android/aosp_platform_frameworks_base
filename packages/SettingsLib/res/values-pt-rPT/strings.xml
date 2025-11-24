@@ -549,7 +549,7 @@
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Indisponível durante as chamadas"</string>
     <string name="disabled" msgid="8017887509554714950">"Desativada"</string>
     <string name="enabled" msgid="3997122818554810678">"Ativado"</string>
-    <string name="external_source_trusted" msgid="1146522036773132905">"Autorizada"</string>
+    <string name="external_source_trusted" msgid="1146522036773132905">"Permitida"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Não autorizada"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"Instalar apps desconhecidas"</string>
     <string name="home" msgid="973834627243661438">"Página inicial de definições"</string>

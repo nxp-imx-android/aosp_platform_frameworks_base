@@ -32,6 +32,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -312,6 +313,22 @@ public final class CameraManager {
     public String[] getCameraIdListNoLazy() throws CameraAccessException {
         return CameraManagerGlobal.get().getCameraIdListNoLazy(mContext.getDeviceId(),
                 getDevicePolicyFromContext(mContext));
+    }
+
+    /**
+     * Returns whether the default app social media parity is enabled for the given device.
+     *
+     * <p>When enabled, the default app image captures will be in parity with social media apps
+     * capture as per the requirements listed in section 7.5.4 of the CDD.
+     * These checks are only applicable for primary cameras only i.e.
+     * first rear facing or front facing camera returned by getCameraIdList.</p>
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    public boolean isDefaultAppSocialMediaParityEnabled() throws CameraAccessException {
+        return CameraManagerGlobal.get().isDefaultAppSocialMediaParityEnabled();
     }
 
     /**
@@ -2135,6 +2152,31 @@ public final class CameraManager {
         }
     }
 
+
+    /**
+     * Send a hint to the camera sub-system to warm up the given camera id in expectation
+     * of an imminent {@link CameraManager#openCamera} call.
+     *
+     * This call is only legal to call from a client with system uid.
+     *
+     * @param cameraId       The camera id of client to inject session params into.
+     *                       If no such client exists for cameraId, no warm up hint is sent.
+     *
+     * @throws CameraAccessException    {@link CameraAccessException#CAMERA_DISCONNECTED} will be
+     *                                  thrown if camera service is not available. Further, if
+     *                                  if no such client exists for cameraId,
+     *                                  {@link CameraAccessException#CAMERA_ERROR} will be thrown.
+     * @throws SecurityException        If the caller does not have permission to send
+     *                                  the warm up hint.
+     * @hide
+     */
+    public void warmUp(@NonNull String cameraId)
+            throws CameraAccessException, SecurityException {
+        CameraManagerGlobal.get().warmUp(cameraId,
+                getClientAttribution(),
+                getDevicePolicyFromContext(mContext));
+    }
+
     /**
      * Injects session params into existing clients in the CameraService.
      *
@@ -2413,6 +2455,33 @@ public final class CameraManager {
             }
         }
 
+        /** Sends notification to warm up camera pipelines for cameraId. */
+        public void warmUp(@NonNull String cameraId,
+                AttributionSourceState clientAttribution,
+                int devicePolicy)
+                throws CameraAccessException, SecurityException {
+            synchronized (mLock) {
+                ICameraService cameraService = getCameraService();
+                if (cameraService == null) {
+                    throw new CameraAccessException(
+                            CameraAccessException.CAMERA_DISCONNECTED,
+                            "Camera service is currently unavailable.");
+                }
+
+                try {
+                    // Virtual camera warm ups not allowed, cameraserver verifies
+                    // for cameraId -> default device id mapping
+                    cameraService.warmUp(cameraId, clientAttribution, devicePolicy);
+                } catch (ServiceSpecificException e) {
+                    throw ExceptionUtils.throwAsPublicException(e);
+                } catch (RemoteException e) {
+                    throw new CameraAccessException(
+                            CameraAccessException.CAMERA_DISCONNECTED,
+                            "Camera service is currently unavailable.");
+                }
+            }
+        }
+
         /** Injects session params into an existing client for cameraid. */
         public void injectSessionParams(@NonNull String cameraId,
                 @NonNull CaptureRequest sessionParams)
@@ -2546,6 +2615,11 @@ public final class CameraManager {
                 }
             }
             return false;
+        }
+
+        public boolean isDefaultAppSocialMediaParityEnabled() {
+            return SystemProperties.getBoolean("ro.camera.default_app_social_media_parity_enabled",
+                    false);
         }
 
         public String[] getCameraIdListNoLazy(int deviceId, int devicePolicy) {
@@ -3085,7 +3159,15 @@ public final class CameraManager {
             // Translate all the statuses to either 'available' or 'not available'
             //  available -> available         => no new update
             //  not available -> not available => no new update
-            if (oldStatus != null && isAvailable(status) == isAvailable(oldStatus)) {
+            boolean minimizeNotPresent = true;
+            if (Flags.deviceRemovedCallback() && (status == STATUS_NOT_PRESENT)) {
+                // STATUS_NOT_PRESENT is relatively uncommon compared to STATUS_NOT_AVAILABLE
+                // and we may not want to always group it together with STATUS_NOT_AVAILABLE
+                // when minimizing state transition notifications.
+                minimizeNotPresent = false;
+            }
+            if (oldStatus != null && isAvailable(status) == isAvailable(oldStatus) &&
+                    minimizeNotPresent) {
                 if (DEBUG) {
                     Log.v(TAG,
                             String.format(

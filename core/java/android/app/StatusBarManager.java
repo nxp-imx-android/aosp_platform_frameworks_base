@@ -30,6 +30,8 @@ import android.annotation.TestApi;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
 import android.app.compat.CompatChanges;
+import android.app.motioncues.MotionCuesService;
+import android.app.motioncues.MotionCuesSettings;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.LoggingOnly;
@@ -47,6 +49,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
@@ -75,7 +78,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 /**
@@ -601,6 +603,36 @@ public class StatusBarManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface MediaTransferReceiverState {}
+
+    /**
+     * Unknwown result of calling {@link #showPowerMenu}. Used for compatibility purposes.
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_UNKNOWN = -1;
+
+    /**
+     * Result returned in a callback when a call to {@link #showPowerMenu} has succeeded and the
+     * Power Menu is currently showing.
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_SHOWING = 0;
+
+    /**
+     * Result returned in a callback when a call to {@link #showPowerMenu} cannot be completed due
+     * to the Power Menu being currently disabled.
+     * @see DevicePolicyManager#LOCK_TASK_FEATURE_GLOBAL_ACTIONS
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_DISABLED = 1;
+
+    /** @hide */
+    @IntDef(prefix = {"SHOW_POWER_MENU_RESULT_"}, value = {
+            SHOW_POWER_MENU_RESULT_UNKNOWN,
+            SHOW_POWER_MENU_RESULT_SHOWING,
+            SHOW_POWER_MENU_RESULT_DISABLED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ShowPowerMenuResult {}
 
     /**
      * A map from a provider registered in
@@ -1418,34 +1450,42 @@ public class StatusBarManager {
      * {@link DevicePolicyManager}, if {@link DevicePolicyManager#LOCK_TASK_FEATURE_GLOBAL_ACTIONS}
      * is set.
      * <p>
-     * The {@code callback} will indicate when the Power Menu is visible (if possible), or may time
-     * out after a few seconds if the request doesn't complete. This callback can be reused
-     * for multiple requests.
+     * The {@code receiver} will indicate when the Power Menu is visible (if possible) in its
+     * result, or whether the Power Menu is currently disabled. If the Power Menu is currently
+     * visible when the request is made, {@link #SHOW_POWER_MENU_RESULT_SHOWING} will be returned
+     * through the callback immediately.
+     * <p>
+     * Alternatively, if the request could not be completed due to an error, it will be returned
+     * with {@link OutcomeReceiver#onError}. This error can be
+     * {@link java.util.concurrent.TimeoutException} if the request times out after a few seconds
+     * without a response, or a different {@link Exception}. In these error cases, it usually means
+     * that there's an underlying issue with the system and retrying will not succeed.
+     * <p>
+     * This callback can be reused for multiple requests.
      * @param executor an {@link Executor} in which the methods of {@code callback} will be called
-     * @param callback will call back with the result of the request
+     * @param receiver will call back with the result of the request, or a possible error
      */
     @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
-    @RequiresPermission(Manifest.permission.SHOW_POWER_MENU)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.SHOW_POWER_MENU,
+            Manifest.permission.SHOW_POWER_MENU_PRIVILEGED
+    })
     public void showPowerMenu(
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull ShowPowerMenuCallback callback
+            @NonNull @ShowPowerMenuResult OutcomeReceiver<Integer, Throwable> receiver
     ) {
         Objects.requireNonNull(executor);
-        Objects.requireNonNull(callback);
-        AndroidFuture<Boolean> future = new AndroidFuture<Boolean>()
+        Objects.requireNonNull(receiver);
+        AndroidFuture<Integer> future = new AndroidFuture<Integer>()
                 .whenComplete((result, throwable) -> {
                     final long identity = Binder.clearCallingIdentity();
                     try {
-                        if (throwable instanceof TimeoutException) {
+                        if (throwable != null) {
                             executor.execute(
-                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_TIMEOUT)
-                            );
-                        } else if (throwable != null) {
-                            executor.execute(
-                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_UNKNOWN)
+                                    () -> receiver.onError(throwable)
                             );
                         } else {
-                            executor.execute(() -> callback.onPowerMenuShown(result));
+                            executor.execute(() -> receiver.onResult(result));
                         }
                     } finally {
                         Binder.restoreCallingIdentity(identity);
@@ -1457,6 +1497,57 @@ public class StatusBarManager {
             getService().showGlobalActionsFromApp(future);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Directs the system to bind to the given component and start a motion cues session.
+     *
+     * <p>A motion cues session is a period during which a designated service provides data
+     * to draw visual cues on the screen. These cues are typically rendered as shapes
+     * overlaying the current application. The primary goal is to help alleviate symptoms of
+     * motion sickness while in a moving vehicle by matching the cues to the vehicle's motion.
+     *
+     * <p>When a session is active, the service specified by {@code componentName} will send
+     * updates through a callback to SystemUI to render these cues.
+     *
+     * @param componentName The ComponentName of the {@link MotionCuesService} implementation for
+     *                      SystemUi to bind to that will provide the motion cue events.
+     * @param motionCuesSettings The initial {@link MotionCuesSettings} to configure the appearance
+     *                           and layout of the motion cues.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES)
+    @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
+    public void startMotionCuesSession(
+            @NonNull ComponentName componentName, @NonNull MotionCuesSettings motionCuesSettings) {
+        IStatusBarService svc = getService();
+        try {
+            svc.startMotionCuesSession(componentName, motionCuesSettings);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Terminates the active motion cues session.
+     *
+     * <p>This method stops the rendering of any on-screen visual cues and unbinds the system
+     * from the {@link android.app.motioncues.MotionCuesService} instance that was
+     * previously started with {@link #startMotionCuesSession(ComponentName, MotionCuesSettings)}.
+     *
+     * <p>If no motion cues session is currently active, calling this method has no effect.
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES)
+    @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
+    public void endMotionCuesSession() {
+        IStatusBarService svc = getService();
+        try {
+            svc.endMotionCuesSession();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
         }
     }
 

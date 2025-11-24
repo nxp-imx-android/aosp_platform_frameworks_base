@@ -286,14 +286,12 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
 
     // region Interaction Helpers
     private fun swipeScrimUp() {
-        rule.onNodeWithTag(TAG_SCRIM).performTouchInput { swipeUp(startY = centerY, endY = top) }
+        rule.onNodeWithTag(TAG_SCRIM).performTouchInput { swipeUp(startY = bottom, endY = top) }
         rule.waitForIdle()
     }
 
     private fun swipeScrimDown() {
-        rule.onNodeWithTag(TAG_SCRIM).performTouchInput {
-            swipeDown(startY = centerY, endY = bottom)
-        }
+        rule.onNodeWithTag(TAG_SCRIM).performTouchInput { swipeDown(startY = top, endY = bottom) }
         rule.waitForIdle()
     }
 
@@ -307,7 +305,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
             .assertTopPositionInRootIsEqualTo(StatusBarHeight + HeaderHeight)
             // And fills the layout size
             .assertWidthIsEqualTo(LayoutSize)
-            .assertHeightIsEqualTo(LayoutSize)
+            .assertHeightIsEqualTo(LayoutSize - StatusBarHeight - HeaderHeight)
     }
 
     private fun assertScrimScrolledToTop() {
@@ -317,7 +315,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
             .assertTopPositionInRootIsEqualTo(StatusBarHeight)
             // And fills the layout size
             .assertWidthIsEqualTo(LayoutSize)
-            .assertHeightIsEqualTo(LayoutSize)
+            .assertHeightIsEqualTo(LayoutSize - StatusBarHeight)
     }
 
     @Suppress("SameParameterValue") // it's a test let's be explicit about asserted values

@@ -49,6 +49,7 @@ constructor(
     private val dialogFactory: SystemUIDialogFactory,
     private val drawableViewModel: DrawableLoaderViewModel,
     private val activityStarter: ActivityStarter,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) {
 
     fun showVideoSaved() {
@@ -69,7 +70,7 @@ constructor(
                     actionLabel = context.getString(R.string.screen_record_undo),
                 ),
             onActionPerformed = {
-                if (!ScreenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) {
+                if (!screenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) {
                     activityStarter.startActivity(
                         SmallScreenPostRecordingActivity.showRecording(context, uri),
                         true,
@@ -90,7 +91,10 @@ constructor(
         dialogFactory
             .create(
                 theme = R.style.ScreenCapture_PostRecord_SnackbarDialog,
-                dialogDelegate = SnackbarDialogDelegate { actionHandler.notifyDismiss() },
+                dialogDelegate =
+                    SnackbarDialogDelegate(screenCaptureRecordFeaturesInteractor) {
+                        actionHandler.notifyDismiss()
+                    },
             ) { dialog ->
                 val snackbarHostState = remember { SnackbarHostState() }
                 LaunchedEffect(visuals, onActionPerformed) {
@@ -130,15 +134,17 @@ private class ActionHandler(
     }
 }
 
-private class SnackbarDialogDelegate(private val onDismissed: () -> Unit) :
-    DialogDelegate<SystemUIDialog> {
+private class SnackbarDialogDelegate(
+    private val featuresInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val onDismissed: () -> Unit,
+) : DialogDelegate<SystemUIDialog> {
 
     override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
         super.onCreate(dialog, savedInstanceState)
         dialog.setOnDismissListener { onDismissed() }
         with(dialog.window!!) {
             val windowGravity =
-                if (ScreenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) {
+                if (featuresInteractor.isLargeScreenRecordingEnabled) {
                     Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
                 } else {
                     Gravity.TOP or Gravity.CENTER_HORIZONTAL

@@ -18,11 +18,14 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
-import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.ui.composable.elements.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -34,6 +37,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.map
 
 class LockscreenUpperRegionViewModel
 @AssistedInject
@@ -45,6 +49,8 @@ constructor(
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     private val keyguardMediaViewModelFactory: KeyguardMediaViewModel.Factory,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
+    private val desktopInteractor: DesktopInteractor,
+    private val transitionInteractor: KeyguardTransitionInteractor,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("LockscreenUpperRegionViewModel.hydrator")
     private val keyguardMediaViewModel: KeyguardMediaViewModel by lazy {
@@ -98,6 +104,13 @@ constructor(
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
 
+    val useDesktopStatusBar: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "useDesktopStatusBar",
+            initialValue = desktopInteractor.useDesktopStatusBar.value,
+            source = desktopInteractor.useDesktopStatusBar,
+        )
+
     private val forcedClockSize: ClockSize? by
         hydrator.hydratedStateOf(
             traceName = "forcedClockSize",
@@ -109,6 +122,16 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "clockSizeSetting",
             source = clockInteractor.selectedClockSize,
+        )
+
+    val shouldSkipTransition: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "shouldSkipTransition",
+            source =
+                transitionInteractor.transitionState.map { state ->
+                    state.from == KeyguardState.OFF || state.from == KeyguardState.DOZING
+                },
+            initialValue = false,
         )
 
     fun evaluateClockSize(evaluateDynamicSize: () -> ClockSize): ClockSize {

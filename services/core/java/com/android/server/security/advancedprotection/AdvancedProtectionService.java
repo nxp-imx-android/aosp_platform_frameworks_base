@@ -40,13 +40,16 @@ import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.security.advancedprotection.AdvancedProtectionFeature;
+import android.security.advancedprotection.AdvancedProtectionFeature.ProvisioningMode;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import android.security.advancedprotection.AdvancedProtectionManager.SupportDialogType;
 import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
+import android.security.advancedprotection.IAdvancedProtectionFeatureCallback;
 import android.security.advancedprotection.IAdvancedProtectionService;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.StatsEvent;
 
@@ -68,7 +71,10 @@ import com.android.server.security.advancedprotection.features.UsbDataAdvancedPr
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** @hide */
 public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
@@ -76,6 +82,15 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private static final int MODE_CHANGED = 0;
     private static final int CALLBACK_ADDED = 1;
     private static final long MILLIS_PER_HOUR = 60 * 60 * 1000;
+
+    // Features which were launched before the provisioning API was introduced and are thus
+    // provisioned by default
+    private static final @FeatureId Set<Integer> PROVISIONED_BY_DEFAULT =
+            Set.of(
+                    AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G,
+                    AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
+                    AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB,
+                    AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE);
 
     private final Context mContext;
     private final Handler mHandler;
@@ -89,6 +104,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private final ArrayMap<IBinder, IAdvancedProtectionCallback> mCallbacks = new ArrayMap<>();
     // For tracking only - not called on state change
     private final ArrayList<AdvancedProtectionProvider> mProviders = new ArrayList<>();
+    private final ArrayMap<IBinder, IAdvancedProtectionFeatureCallback> mFeatureCallbacks =
+            new ArrayMap<>();
 
     // Used to disable logging in tests
     private boolean mEmitLogs = true;
@@ -229,7 +246,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             throws RemoteException {
         registerAdvancedProtectionCallback_enforcePermission();
         IBinder b = callback.asBinder();
-        b.linkToDeath(new DeathRecipient(b), 0);
+        b.linkToDeath(new DeathRecipient(b, mCallbacks), 0);
         synchronized (mCallbacks) {
             mCallbacks.put(b, callback);
             sendCallbackAdded(isAdvancedProtectionEnabledInternal(), callback);
@@ -264,6 +281,107 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
+    }
+
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public List<AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(
+            @Nullable @FeatureId int[] featuresToProvision,
+            @Nullable @FeatureId int[] featuresToDeprovision) {
+        updateAdvancedProtectionFeaturesProvisioning_enforcePermission();
+        final UserHandle user = Binder.getCallingUserHandle();
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            enforceAdminUser(user);
+            Set<Integer> featureIdsSet = new ArraySet<>();
+            if (featuresToProvision != null) {
+                for (int featureId : featuresToProvision) {
+                    if (!AdvancedProtectionManager.ALL_FEATURE_IDS.contains(featureId)) {
+                        throw new IllegalArgumentException(
+                                "Feature " + featureId + " is not a valid feature ID.");
+                    }
+                    featureIdsSet.add(featureId);
+                }
+            }
+            if (featuresToDeprovision != null) {
+                for (int featureId : featuresToDeprovision) {
+                    if (!AdvancedProtectionManager.ALL_FEATURE_IDS.contains(featureId)) {
+                        throw new IllegalArgumentException(
+                                "Feature " + featureId + " is not a valid feature ID.");
+                    }
+                    if (featureIdsSet.contains(featureId)) {
+                        throw new IllegalArgumentException(
+                                "Feature "
+                                        + featureId
+                                        + " cannot be both provisioned and deprovisioned");
+                    }
+                    featureIdsSet.add(featureId);
+                }
+            }
+
+            if (featuresToProvision != null) {
+                for (int featureId : featuresToProvision) {
+                    mStore.saveFeatureAdminProvisioned(featureId, true);
+                }
+            }
+            if (featuresToDeprovision != null) {
+                for (int featureId : featuresToDeprovision) {
+                    mStore.saveFeatureAdminProvisioned(featureId, false);
+                }
+            }
+
+            List<AdvancedProtectionFeature> updatedFeatures = new ArrayList<>();
+            for (int featureId : featureIdsSet) {
+                updatedFeatures.add(createAdvancedProtectionFeature(featureId));
+            }
+            return updatedFeatures;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    /**
+     * Returns the provisioning mode for a given feature.
+     *
+     * <p>The provisioning mode is determined by the following order of precedence:
+     *
+     * <ol>
+     *   <li>ADB provisioning
+     *   <li>Feature admin provisioning
+     *   <li>Default provisioning
+     * </ol>
+     *
+     * <p>Note: This method has a side-effect. If the provisioning is determined by the default
+     * value, it will be persisted in the store to avoid repeated queries to the store.
+     */
+    private @ProvisioningMode int getProvisioningMode(@FeatureId int featureId) {
+        Boolean isProvisionedByAdb = mStore.retrieveFeatureAdbProvisioned(featureId);
+        if (isProvisionedByAdb != null) {
+            return isProvisionedByAdb
+                    ? AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB
+                    : AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_ADB;
+        }
+
+        Boolean isProvisionedByFeatureAdmin = mStore.retrieveFeatureAdminProvisioned(featureId);
+        if (isProvisionedByFeatureAdmin != null) {
+            return isProvisionedByFeatureAdmin
+                    ? AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN
+                    : AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN;
+        }
+
+        boolean isProvisionedByDefault = PROVISIONED_BY_DEFAULT.contains(featureId);
+        mStore.saveFeatureAdminProvisioned(featureId, isProvisionedByDefault);
+        return isProvisionedByDefault
+                ? AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
+                : AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT;
+    }
+
+    public void setAdbProvisioned(int featureId, boolean isProvisioned) {
+        mStore.saveFeatureAdbProvisioned(featureId, isProvisioned);
+    }
+
+    public void removeAdbProvisioning(int featureId) {
+        mStore.removeFeatureAdbProvisioning(featureId);
     }
 
     public void setUsbDataProtectionEnabled(boolean enabled) {
@@ -368,23 +486,58 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     @Override
     @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
-    public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures() {
+    public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures(
+            @Nullable @FeatureId int[] featureIds) {
         getAdvancedProtectionFeatures_enforcePermission();
 
-        @FeatureId List<Integer> featureIds = getAvailableFeatureIds();
+        if (featureIds == null) {
+            featureIds = getAvailableFeatureIds();
+        }
+
         List<AdvancedProtectionFeature> features = new ArrayList<>();
-        for (int i = 0; i < featureIds.size(); i++) {
-            @FeatureId int featureId = featureIds.get(i);
+        for (int i = 0; i < featureIds.length; i++) {
+            @FeatureId int featureId = featureIds[i];
+            if (!AdvancedProtectionManager.ALL_FEATURE_IDS.contains(featureId)) {
+                throw new IllegalArgumentException("Invalid feature ID: " + featureId);
+            }
             features.add(createAdvancedProtectionFeature(featureId));
         }
         return features;
     }
 
-    private AdvancedProtectionFeature createAdvancedProtectionFeature(@FeatureId int featureId) {
-        return new AdvancedProtectionFeature(featureId);
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void registerAdvancedProtectionFeatureCallback(
+            @NonNull IAdvancedProtectionFeatureCallback callback) throws RemoteException {
+        registerAdvancedProtectionFeatureCallback_enforcePermission();
+
+        IBinder b = callback.asBinder();
+        b.linkToDeath(new DeathRecipient(b, mFeatureCallbacks), 0);
+        synchronized (mFeatureCallbacks) {
+            mFeatureCallbacks.put(b, callback);
+        }
     }
 
-    private @FeatureId List<Integer> getAvailableFeatureIds() {
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void unregisterAdvancedProtectionFeatureCallback(
+            @NonNull IAdvancedProtectionFeatureCallback callback) {
+        unregisterAdvancedProtectionFeatureCallback_enforcePermission();
+
+        synchronized (mFeatureCallbacks) {
+            mFeatureCallbacks.remove(callback.asBinder());
+        }
+    }
+
+    private AdvancedProtectionFeature createAdvancedProtectionFeature(@FeatureId int featureId) {
+        if (android.security.Flags.aapmApiV2()) {
+            return new AdvancedProtectionFeature(featureId, getProvisioningMode(featureId));
+        } else {
+            return new AdvancedProtectionFeature(featureId);
+        }
+    }
+
+    private @FeatureId int[] getAvailableFeatureIds() {
         ArrayList<Integer> featureIds = new ArrayList<>();
         for (int i = 0; i < mProviders.size(); i++) {
             // TODO (b/438957900): Remove filtering of providers in getAdvancedProtectionFeatures
@@ -408,7 +561,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 featureIds.add(hook.getFeatureId());
             }
         }
-        return featureIds;
+        return featureIds.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void enforceAdminUser(UserHandle user) {
@@ -584,17 +737,20 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
     }
 
-    private final class DeathRecipient implements IBinder.DeathRecipient {
+    private final class DeathRecipient<T extends android.os.IInterface>
+            implements IBinder.DeathRecipient {
         private final IBinder mBinder;
+        private final ArrayMap<IBinder, T> mMap;
 
-        DeathRecipient(IBinder binder) {
+        DeathRecipient(IBinder binder, ArrayMap<IBinder, T> map) {
             mBinder = binder;
+            mMap = map;
         }
 
         @Override
         public void binderDied() {
-            synchronized (mCallbacks) {
-                mCallbacks.remove(mBinder);
+            synchronized (mMap) {
+                mMap.remove(mBinder);
             }
         }
     }

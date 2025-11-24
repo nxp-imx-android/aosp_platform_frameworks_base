@@ -25,7 +25,6 @@ import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
-import android.graphics.GraphicBuffer;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
@@ -197,34 +196,13 @@ public class TaskSnapshot implements Parcelable {
     }
 
     /**
-     * @return The graphic buffer representing the screenshot.
-     *
-     * Note: Prefer {@link #getHardwareBuffer}, which returns the internal object. This version
-     * creates a new object.
-     *
-     * @deprecated Do not access hardware buffer directly.
-     */
-    @UnsupportedAppUsage
-    @Deprecated
-    public GraphicBuffer getSnapshot() {
-        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-            Log.e(TAG, "getSnapshot is deprecated!");
-            return null;
-        }
-        return GraphicBuffer.createFromHardwareBuffer(mSnapshot);
-    }
-
-    /**
      * @return The hardware buffer representing the screenshot.
      * @deprecated Do not access hardware buffer directly.
      */
     @Deprecated
     public HardwareBuffer getHardwareBuffer() {
-        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-            Log.e(TAG, "getHardwareBuffer is deprecated!");
-            return null;
-        }
-        return mSnapshot;
+        Log.e(TAG, "getHardwareBuffer is deprecated!");
+        return null;
     }
 
     /**

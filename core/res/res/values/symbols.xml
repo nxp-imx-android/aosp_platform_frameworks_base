@@ -329,7 +329,7 @@
   <java-symbol type="bool" name="config_enableBurnInProtection" />
   <java-symbol type="bool" name="config_hotswapCapable" />
   <java-symbol type="integer" name="config_hsumBootStrategy" />
-  <java-symbol type="array" name="config_hsu_allowlist_activities" />
+  <java-symbol type="array" name="hsu_allowlist_activities" />
   <java-symbol type="bool" name="config_mms_content_disposition_support" />
   <java-symbol type="bool" name="config_networkSamplingWakesDevice" />
   <java-symbol type="bool" name="config_showMenuShortcutsWhenKeyboardPresent" />
@@ -382,7 +382,7 @@
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
   <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
-  <java-symbol type="bool" name="config_createInitialUser"/>
+  <java-symbol type="bool" name="config_createInitialAdminUserOnHsum"/>
   <java-symbol type="bool" name="config_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
@@ -2015,6 +2015,7 @@
   <java-symbol type="string" name="global_actions_airplane_mode_on_status" />
   <java-symbol type="string" name="global_actions_toggle_airplane_mode" />
   <java-symbol type="string" name="global_action_bug_report" />
+  <java-symbol type="string" name="global_action_feedback" />
   <java-symbol type="string" name="global_action_settings" />
   <java-symbol type="string" name="global_action_silent_mode_off_status" />
   <java-symbol type="string" name="global_action_silent_mode_on_status" />
@@ -4042,16 +4043,24 @@
   <java-symbol type="string" name="autofill" />
   <java-symbol type="string" name="autofill_picker_accessibility_title " />
   <java-symbol type="string" name="autofill_update_title" />
+  <java-symbol type="string" name="autofill_update_title_expressive" />
   <java-symbol type="string" name="autofill_update_title_with_type" />
+  <java-symbol type="string" name="autofill_update_title_with_type_expressive" />
   <java-symbol type="string" name="autofill_update_title_with_2types" />
+  <java-symbol type="string" name="autofill_update_title_with_2types_expressive" />
   <java-symbol type="string" name="autofill_update_title_with_3types" />
+  <java-symbol type="string" name="autofill_update_title_with_3types_expressive" />
   <java-symbol type="string" name="autofill_update_yes" />
   <java-symbol type="string" name="autofill_continue_yes" />
   <java-symbol type="string" name="autofill_save_accessibility_title " />
   <java-symbol type="string" name="autofill_save_title" />
+  <java-symbol type="string" name="autofill_save_title_expressive" />
   <java-symbol type="string" name="autofill_save_title_with_type" />
+  <java-symbol type="string" name="autofill_save_title_with_type_expressive" />
   <java-symbol type="string" name="autofill_save_title_with_2types" />
+  <java-symbol type="string" name="autofill_save_title_with_2types_expressive" />
   <java-symbol type="string" name="autofill_save_title_with_3types" />
+  <java-symbol type="string" name="autofill_save_title_with_3types_expressive" />
   <java-symbol type="string" name="autofill_save_yes" />
   <java-symbol type="string" name="autofill_save_no" />
   <java-symbol type="string" name="autofill_save_notnow" />
@@ -5038,6 +5047,8 @@
 
   <java-symbol type="dimen" name="default_background_blur_radius" />
   <java-symbol type="array" name="config_keep_warming_services" />
+  <java-symbol type="string" name="config_virtual_gamepad_package_name" />
+  <java-symbol type="string" name="config_virtual_gamepad_activity_name" />
   <java-symbol type="string" name="config_display_features" />
   <java-symbol type="array" name="config_device_state_postures" />
   <java-symbol type="array" name="config_deviceTabletopRotations" />
@@ -5955,6 +5966,19 @@
   <java-symbol name="semanticRedSurfaceContainer" type="color"/>
   <java-symbol name="semanticRedSurfaceContainerHigh" type="color"/>
   <java-symbol name="semanticRedSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticBlueContainerLow" type="color"/>
+  <java-symbol name="semanticBlueOnContainerLow" type="color"/>
+  <java-symbol name="semanticBlueContainer" type="color"/>
+  <java-symbol name="semanticBlueOnContainer" type="color"/>
+  <java-symbol name="semanticBlueOnContainerVariant" type="color"/>
+  <java-symbol name="semanticBlueContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueOnContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueOnSurface" type="color"/>
+  <java-symbol name="semanticBlueOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainer" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerHighest" type="color"/>
 
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
@@ -6466,4 +6490,13 @@
 
   <!-- Whether user information setup is enabled in SuW. -->
   <java-symbol type="bool" name="config_enableUserInfoSetupInSuw" />
+
+  <!-- Whether to keep the task on back pressed. -->
+  <java-symbol type="bool" name="config_alwaysMoveTaskToBackOnBackPressed" />
+
+  <!-- Whether to override wfc roaming mode while using ntn. -->
+  <java-symbol type="bool" name="config_override_wfc_roaming_mode_while_using_ntn" />
+
+  <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
+  <java-symbol type="integer" name="config_defaultFreezerDebounceTimeout" />
 </resources>

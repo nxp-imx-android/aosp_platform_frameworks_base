@@ -816,8 +816,9 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(MANAGE_COMPANION_DEVICES)
         public void setLocalMetadata(int userId, String key, PersistableBundle value) {
-            enforceCallerIsSystem();
+            setLocalMetadata_enforcePermission();
 
             mDataSyncProcessor.setLocalMetadata(userId, key, value);
         }

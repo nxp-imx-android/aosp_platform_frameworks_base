@@ -1,15 +1,5 @@
 {
   "presubmit": [
-    // Non-ravenwood host side tests.
-
-    { "name": "tiny-framework-dump-test" },
-    { "name": "hoststubgentest" },
-    { "name": "ravenhelpertest" },
-    { "name": "hoststubgen-test-tiny-test" },
-    { "name": "hoststubgen-invoke-test" },
-
-    { "name": "ravenwood-scripts-sh-golden-test" },
-
     // Device side tests for the bivalent tests.
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
@@ -81,6 +71,10 @@
     },
     {
       "name": "android.test.mock.ravenwood.tests",
+      "host": true
+    },
+    {
+      "name": "AudioServiceTestsRavenwood",
       "host": true
     },
     {
@@ -238,7 +232,10 @@
     }
     // AUTO-GENERATED-END
   ],
-  // LINT.ThenChange(test-mapping-frameworks/TEST_MAPPING)
+  // When adding high-priority tests here, consider adding it to the following file,
+  // which is included by frameworks/base/TEST_MAPPING.
+  // (But do not add low-priority tests.)
+  // LINT.ThenChange(/ravenwood-framework-test-mapping/TEST_MAPPING)
   "ravenwood-postsubmit": [
     // We haven't maintained SystemUiRavenTests, and as a result, it's been demoted already.
     // Disable it until we fix the issues: b/319647875

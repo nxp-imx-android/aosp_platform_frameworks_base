@@ -77,6 +77,10 @@ class FakeUserRepository @Inject constructor() : UserRepository {
     override val isUserManagerLogoutEnabled: StateFlow<Boolean> =
         _isUserManagerLogoutEnabled.asStateFlow()
 
+    private val _isCurrentUserHeadlessSystemUser = MutableStateFlow<Boolean>(false)
+    override val isCurrentUserHeadlessSystemUser: StateFlow<Boolean> =
+        _isCurrentUserHeadlessSystemUser.asStateFlow()
+
     private val _userUnlockedState = MutableStateFlow(emptyMap<UserHandle, Boolean>())
 
     override fun isUserUnlocked(userHandle: UserHandle?): Flow<Boolean> =
@@ -201,6 +205,10 @@ class FakeUserRepository @Inject constructor() : UserRepository {
 
     fun getMainUser(): UserInfo {
         return MAIN_USER
+    }
+
+    fun setIsCurrentUserHeadlessSystemUser(value: Boolean) {
+        _isCurrentUserHeadlessSystemUser.value = value
     }
 }
 

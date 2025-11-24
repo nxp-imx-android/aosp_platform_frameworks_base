@@ -31,6 +31,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -177,6 +178,18 @@ import java.util.concurrent.Executor;
     @Override
     protected List<MediaRoute2Info> getAvailableRoutesFromRouter() {
         return Collections.emptyList();
+    }
+
+    @NonNull
+    @Override
+    protected Set<String> getMissingPermissions() {
+        return Collections.emptySet();
+    }
+
+    @Nullable
+    @Override
+    protected MissingPermissionsInfo getMissingPermissionsInfo() {
+        return null;
     }
 
     @NonNull

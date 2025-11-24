@@ -627,10 +627,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
     fun exitDesktopModeToFullScreenViaKeyboard(
         wmHelper: WindowManagerStateHelper,
+        displayId: Int = DEFAULT_DISPLAY
     ) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_DPAD_UP, META_META_ON or META_CTRL_ON)
-        waitForTransitionToFullscreen(wmHelper)
+        waitForTransitionToFullscreen(wmHelper, displayId)
     }
 
     private fun clickAppHandle(wmHelper: WindowManagerStateHelper, device: UiDevice) {
@@ -846,23 +847,28 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.currentState.wmState.getDefaultDisplay()?.displayRect
             ?: throw IllegalStateException("Default display is null")
 
-
     /** Wait for transition to full screen to finish. */
-    fun waitForTransitionToFullscreen(wmHelper: WindowManagerStateHelper) {
+    fun waitForTransitionToFullscreen(
+        wmHelper: WindowManagerStateHelper,
+        displayId: Int = DEFAULT_DISPLAY,
+    ) {
         wmHelper
             .StateSyncBuilder()
-            .withFullScreenApp(innerHelper)
-            .withAppTransitionIdle()
+            .withFullScreenApp(innerHelper, displayId)
+            .withAppTransitionIdle(displayId)
             .waitForAndVerify()
     }
 
     /** Wait for transition to freeform to finish. */
-    fun waitForTransitionToFreeform(wmHelper: WindowManagerStateHelper) {
+    fun waitForTransitionToFreeform(
+        wmHelper: WindowManagerStateHelper,
+        displayId: Int = DEFAULT_DISPLAY,
+    ) {
         wmHelper
             .StateSyncBuilder()
-            .withWindowSurfaceAppeared(innerHelper)
-            .withFreeformApp(innerHelper)
-            .withAppTransitionIdle()
+            .withWindowSurfaceAppeared(innerHelper, displayId)
+            .withFreeformApp(innerHelper, displayId)
+            .withAppTransitionIdle(displayId)
             .waitForAndVerify()
     }
 

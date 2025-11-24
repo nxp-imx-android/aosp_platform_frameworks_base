@@ -57,6 +57,7 @@ import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
@@ -809,9 +810,15 @@ constructor(
 
                 override fun onTransitionAnimationStart(isExpandingFullyAbove: Boolean) {
                     super.onTransitionAnimationStart(isExpandingFullyAbove)
-                    if (Flags.communalHub() && !SceneContainerFlag.isEnabled) {
+                    if (Flags.communalHub()) {
+                        val newScene =
+                            if (SceneContainerFlag.isEnabled) {
+                                Scenes.Occluded
+                            } else {
+                                CommunalScenes.Blank
+                            }
                         communalSceneInteractor.snapToScene(
-                            newScene = CommunalScenes.Blank,
+                            newScene = newScene,
                             loggingReason = "ActivityStarterInternalImpl",
                             delayMillis = ActivityTransitionAnimator.TIMINGS.totalDuration,
                         )

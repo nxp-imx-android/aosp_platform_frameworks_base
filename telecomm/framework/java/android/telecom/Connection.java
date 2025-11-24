@@ -874,14 +874,6 @@ public abstract class Connection extends Conferenceable {
             "android.telecom.extra.LAST_KNOWN_CELL_IDENTITY";
 
     /**
-     * Boolean connection extra key used to indicate whether device to device communication is
-     * available for the current call.
-     * @hide
-     */
-    public static final String EXTRA_IS_DEVICE_TO_DEVICE_COMMUNICATION_AVAILABLE =
-            "android.telecom.extra.IS_DEVICE_TO_DEVICE_COMMUNICATION_AVAILABLE";
-
-    /**
      * Connection event used to inform Telecom that it should play the on hold tone.  This is used
      * to play a tone when the peer puts the current call on hold.  Sent to Telecom via
      * {@link #sendConnectionEvent(String, Bundle)}.
@@ -4174,5 +4166,8 @@ public abstract class Connection extends Conferenceable {
     public final void setCallerNumberVerificationStatus(
             @Annotation.VerificationStatus int callerNumberVerificationStatus) {
         mCallerNumberVerificationStatus = callerNumberVerificationStatus;
+        Bundle b = new Bundle();
+        b.putInt(EXTRA_CALLER_NUMBER_VERIFICATION_STATUS, callerNumberVerificationStatus);
+        putExtras(b);
     }
 }

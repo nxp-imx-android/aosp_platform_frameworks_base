@@ -192,6 +192,21 @@
                 <xs:element type="nonNegativeDecimal" name="defaultDozeBrightness">
                     <xs:annotation name="final"/>
                 </xs:element>
+                <!-- The frame rate / velocity mapping -->
+                <!-- Format: first = frame rate per second,
+                    second = pixels per second. E.g. :
+                    <frameRateVelocityData>
+                        <point>
+                            <first>120</first>   // frame rate per second
+                            <second>300</second> // pixels per second
+                        </point>
+                        ....
+                    </frameRateVelocityData>
+                -->
+                <xs:element type="nonNegativeFloatToFloatMap" name="frameRateVelocityMapping" minOccurs="0" maxOccurs="1">
+                    <xs:annotation name="nullable"/>
+                    <xs:annotation name="final"/>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

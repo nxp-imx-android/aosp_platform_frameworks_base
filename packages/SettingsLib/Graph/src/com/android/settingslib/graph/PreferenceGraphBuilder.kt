@@ -99,7 +99,12 @@ private constructor(
         for (screen in request.screens) {
             val screenKey = screen.screenKey
             val factory = factories[screenKey] ?: continue
-            if (screen.args == null && factory is PreferenceScreenMetadataParameterizedFactory) {
+            val hasParameters = if (CatalystFlags.catalystUseKeyParameters()) {
+                screen.keyParameters != null
+            } else {
+                screen.args != null
+            }
+            if (!hasParameters && factory is PreferenceScreenMetadataParameterizedFactory) {
                 addPreferenceScreen(screenKey, factory)
             } else {
                 PreferenceScreenRegistry.create(context, screen)?.let { addPreferenceScreen(it) }
@@ -234,6 +239,7 @@ private constructor(
         }
     }
 
+    @CanIgnoreReturnValue
     suspend fun addPreferenceScreen(
         screenKey: String,
         factory: PreferenceScreenMetadataFactory,
@@ -245,15 +251,13 @@ private constructor(
             val screen = screens.getOrPut(screenKey) { PreferenceScreenProto.newBuilder() }
             screen.root = preferenceGroupProto { preference = preferenceProto { key = screenKey } }
             screen.parameterized = true
+            if (CatalystFlags.catalystUseKeyParameters()) {
+                screen.parametersSchema = factory.parametersSchema.toJsonString()
+            }
             if (includeParameters) {
                 if (CatalystFlags.catalystUseKeyParameters()) {
-                    // TODO (b/452555836): make screen.addParameters(KeyParametersProto). For now use toBundle().toProto()
                     factory.keyParameters(context).collect {
-                        val bundle = it.toBundle().apply {
-                            // TODO (b/452555836): remove this line since it isn't necessary anymore
-                            putString("schemaDevtool", factory.parametersSchema.toParametersSchemaString())
-                        }
-                        screen.addParameters(bundle.toProto())
+                        screen.addKeyParameters(it.toProto())
                     }
                 } else {
                     factory.parameters(context).collect { screen.addParameters(it.toProto()) }
@@ -281,6 +285,7 @@ private constructor(
         return true
     }
 
+    @CanIgnoreReturnValue
     private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean {
         if (!checkScreenFlag(metadata)) return false
 
@@ -316,6 +321,7 @@ private constructor(
         return true
     }
 
+    @CanIgnoreReturnValue
     private suspend fun addPreferenceScreen(
         key: String,
         args: Bundle?,
@@ -348,10 +354,13 @@ private constructor(
     ): Boolean {
         if (!visitedScreens.add(PreferenceScreenCoordinate(key, keyParameters))) return false
 
-        val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(key)
-
         fun newParameterizedScreenBuilder() =
-            PreferenceScreenProto.newBuilder().also { it.parameterized = true }
+            PreferenceScreenProto.newBuilder().also {
+                it.parameterized = true
+                PreferenceScreenRegistry.getScreenParametersSchema(key)?.let { schema ->
+                    it.parametersSchema = schema.toJsonString()
+                }
+            }
 
         if (keyParameters == null) { // normal screen
             screens[key] = PreferenceScreenProto.newBuilder().also { init(it) }
@@ -361,12 +370,7 @@ private constructor(
         } else { // parameterized screen with non-empty arguments
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             val parameterizedScreen = parameterizedPreferenceScreenProto {
-                // TODO (b/452555836): make screen.addParameters(KeyParametersProto). For now use toBundle().toProto()
-                val bundle = keyParameters.toBundle().apply {
-                    // TODO (b/452555836): remove this line since it isn't necessary anymore
-                    putString("schemaDevtool", parametersSchema?.toParametersSchemaString())
-                }
-                setArgs(bundle.toProto())
+                setKeyParameters(keyParameters.toProto())
                 setScreen(newParameterizedScreenBuilder().also { init(it) })
             }
             builder.addParameterizedScreens(parameterizedScreen)
@@ -567,8 +571,7 @@ fun PreferenceMetadata.toProto(
             actionTarget = actionTargetProto {
                 key = metadata.key
                 if (CatalystFlags.catalystUseKeyParameters()) {
-                    // TODO (b/452555836): Introduce KeyParameterProto for type-safe screen parameterization. Introduce keyParameters to ActionTarget message
-                    metadata.keyParameters?.let { args = it.toBundle().toProto() }
+                    metadata.keyParameters?.let { keyParameters = it.toProto() }
                 } else {
                     metadata.arguments?.let { args = it.toProto() }
                 }

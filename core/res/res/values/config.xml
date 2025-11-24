@@ -3322,17 +3322,19 @@
          since then the main user is a permanent admin. -->
     <bool name="config_disallowRemovingLastAdminUser">true</bool>
 
-    <!-- Whether all secondary users (and the system user) are eligible to have profiles.
+    <!-- Whether all secondary users (and a full system user) are eligible to have profiles.
          If false, only the MainUser is eligible to have profiles.
           NOTE: this feature not supported yet, and CTS will fail if it's set to
           true.
     -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
-    <!-- Whether the system should create the initial full user on boot.
-         Notice that if config_isMainUserPermanentAdmin is true, this config is
-         ignored (as the initial user is the main user). -->
-    <bool name="config_createInitialUser">false</bool>
+    <!-- Whether to automatically create a full Admin user on boot if none currently exists.
+         If false, the system will not automatically create an initial secondary user.
+         This config is only relevant on Headless System User Mode (HSUM) devices.
+         Note that if config_isMainUserPermanentAdmin is true, then this config is
+         ignored, since an initial Admin MainUser will necessarily be created regardless. -->
+    <bool name="config_createInitialAdminUserOnHsum">true</bool>
 
     <!-- Whether the system should "designate" the main user on boot:
          - If it's true and the device doesn't have a main user (meaning it's the first boot or it
@@ -3355,11 +3357,13 @@
          This config is only relevant on Headless System User Mode (HSUM) devices. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
 
-    <!-- Whether UI for multi user should be shown.
+    <!-- Whether this device supports multiple switchable users.
+         Note that, even if false, multiple users such as profiles can still be supported since
+         they are not switchable.
          Note: If true, it is expected that secondary users are supported on the device (at least
          for testing purposes, even if in practice the UI really only allows other switchable
          types, such as restricted profiles or guests, to be created).
-         @deprecated  Use config_multiuserMaximumUsers instead.
+         @deprecated  Rely on config_multiuserMaximumUsers instead. For now, OEMs must set both.
          This config will likely be removed in the future; config_multiuserMaximumUsers, which now
          only applies to full users, not profiles, should be updated accordingly as needed.
          TODO(b/435521983): Remove this since it's now made redundant by config_multiuserMaximumUsers
@@ -3373,11 +3377,6 @@
          1 : boot to the headless system user, except on the initial boot (unprovisioned device),
              in which case, boot to the first full user. -->
     <integer name="config_hsumBootStrategy">0</integer>
-
-    <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
-    <string-array name="config_hsu_allowlist_activities" translatable="false">
-       <!-- default empty (meaning all activities will be allowed) -->
-    </string-array>
 
     <!-- Whether multiple admins are allowed on the device. If set to true, new users can be created
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
@@ -3975,6 +3974,7 @@
          "settings" = An action to launch settings
          "airplane" = Airplane mode toggle
          "bugreport" = Take bug report, if available
+         "feedback" = Send feedback, if available
          "silent" = silent mode
          "users" = list of users
          "restart" = restart device
@@ -6471,6 +6471,12 @@
     <!-- Component names of the services which will keep critical code path warm -->
     <string-array name="config_keep_warming_services" translatable="false" />
 
+    <!-- The system virtual gamepad app package name. Empty if not supported on this device. -->
+    <string name="config_virtual_gamepad_package_name" translatable="false" />
+
+    <!-- The system virtual gamepad app activity name. Empty if not supported on this device. -->
+    <string name="config_virtual_gamepad_activity_name" translatable="false" />
+
     <!-- WindowsManager JetPack display features -->
     <string name="config_display_features" translatable="false" />
 
@@ -7857,4 +7863,17 @@
 
      <!-- Whether user information setup is enabled in SuW. -->
     <bool name="config_enableUserInfoSetupInSuw">false</bool>
+
+     <!-- Adapt the default WindowManager behavior onBackPressed so that root activities are
+     not finished, regardless of the startup source or whether the intent was ACTION_MAIN.
+     This is particularly useful for Wear OS to better suit the wearable user experience and
+     improve performance. If the application overrides onBackPressed, this configuration will
+     be ignored. -->
+     <bool name="config_alwaysMoveTaskToBackOnBackPressed">false</bool>
+
+    <!-- Whether to override wfc roaming mode while using ntn. -->
+    <bool name="config_override_wfc_roaming_mode_while_using_ntn">true</bool>
+
+    <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
+    <integer name="config_defaultFreezerDebounceTimeout">10000</integer>
 </resources>

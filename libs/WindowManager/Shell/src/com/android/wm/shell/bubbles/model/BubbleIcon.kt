@@ -26,6 +26,7 @@ import com.android.launcher3.icons.BitmapInfo
  */
 sealed class BubbleIcon {
     data class AppIcon(val bitmapInfo: BitmapInfo) : BubbleIcon()
+
     data class Custom(val bitmap: Bitmap) : BubbleIcon()
 
     /** Sets this [BubbleIcon] as the image for the given [imageView]. */

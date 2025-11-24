@@ -521,8 +521,7 @@ public class WindowlessWindowManager implements IWindowSession {
             int lastSyncSeqId, SurfaceControl surfaceControl) {
         relayoutInner(window, inAttrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
                 lastSyncSeqId, null /* outFrames */, null /* outMergedConfiguration */,
-                null /* outSurfaceControl */, null /* outInsetsState */,
-                null /* outActiveControls */);
+                surfaceControl, null /* outInsetsState */, null /* outActiveControls */);
     }
 
     @Override

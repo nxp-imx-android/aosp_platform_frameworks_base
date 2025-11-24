@@ -71,6 +71,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge
@@ -97,6 +98,7 @@ import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppeara
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
+import kotlinx.coroutines.launch
 
 /**
  * Default window decoration implementation that controls both the app handle and the app header
@@ -134,6 +136,7 @@ constructor(
     private val windowDecorationActions: WindowDecorationActions,
     private val appToWebRepository: AppToWebRepository,
     private val captionVisibilityHelper: CaptionVisibilityHelper,
+    private val focusTransitionObserver: FocusTransitionObserver,
     private val windowManagerWrapper: WindowManagerWrapper =
         WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -588,7 +591,7 @@ constructor(
         hasGlobalFocus: Boolean,
     ): IntArray? =
         if (
-            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue ||
                 !shouldDecorateBorders(captionType) ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
@@ -605,7 +608,7 @@ constructor(
         hasGlobalFocus: Boolean,
     ): Int =
         if (
-            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue ||
                 !shouldDecorateBorders(captionType) ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
@@ -625,7 +628,7 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue) {
             ID_NULL
         } else if (
             !shouldDecorateBorders(captionType) ||
@@ -810,7 +813,7 @@ constructor(
     }
 
     private fun getCornerRadius(): Int {
-        val shouldIgnoreCornerRadius =isRecentsTransitionRunning
+        val shouldIgnoreCornerRadius = isRecentsTransitionRunning
         return decorWindowContext.resources.getDimensionPixelSize(
             getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
             defaultValue = 0,
@@ -983,6 +986,14 @@ constructor(
                     }
                 },
                 { appToWebRepository.onFirstRunPromptAcked(taskInfo) },
+                {
+                    mainScope.launch {
+                        val intent =
+                            appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp = false)
+                                ?: return@launch
+                        windowDecorationActions.onSwitchToBrowser(taskInfo, intent)
+                    }
+                },
             )
     }
 
@@ -1053,6 +1064,7 @@ constructor(
                     onLongClickListener = onLongClickListener,
                     onCaptionGenericMotionListener = onGenericMotionListener,
                     appToWebRepository = appToWebRepository,
+                    focusTransitionObserver = focusTransitionObserver,
                     appHeaderViewHolderFactory = appHeaderViewHolderFactory,
                 )
             }

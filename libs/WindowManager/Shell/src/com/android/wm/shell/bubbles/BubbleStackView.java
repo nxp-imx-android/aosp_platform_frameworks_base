@@ -2605,6 +2605,7 @@ public class BubbleStackView extends FrameLayout
                         + " mIsExpanded=%b", newlySelectedKey, previouslySelectedKey, mIsExpanded);
         if (mIsExpanded) {
             final boolean isJumpcutBubbleSwitching = isJumpcutBubbleSwitching();
+            // TODO: b/424812643 - clean up the onImeHidden runnable
             final Runnable onImeHidden = () -> {
                 // Make the container of the expanded view transparent before removing the expanded
                 // view from it. Otherwise a punch hole created by {@link android.view.SurfaceView}
@@ -2638,7 +2639,12 @@ public class BubbleStackView extends FrameLayout
                 });
             };
             if (mPositioner.isImeVisible()) {
-                hideCurrentInputMethod(onImeHidden);
+                if (Flags.fixBubbleSwipeUpGesture()) {
+                    hideCurrentInputMethod();
+                    onImeHidden.run();
+                } else {
+                    hideCurrentInputMethod(onImeHidden);
+                }
             } else {
                 onImeHidden.run();
             }
@@ -2731,8 +2737,13 @@ public class BubbleStackView extends FrameLayout
         };
 
         if (mPositioner.isImeVisible()) {
-            BubbleLog.d("BubbleStackView.setExpanded IME is visible, delaying animation");
-            hideCurrentInputMethod(onImeHidden);
+            if (Flags.fixBubbleSwipeUpGesture()) {
+                hideCurrentInputMethod();
+                onImeHidden.run();
+            } else {
+                BubbleLog.d("BubbleStackView.setExpanded IME is visible, delaying animation");
+                hideCurrentInputMethod(onImeHidden);
+            }
         } else {
             // Clear out the existing runnable if one was scheduled to run after IME was hidden.
             // IME hide action can take time or in some cases not trigger at all. And we can

@@ -32,9 +32,9 @@ import org.mockito.kotlin.mock
  * - **Kotlin (legacy):** `MockToken().token()`
  * - **Kotlin (modern):** `MockToken.token()`
  */
-class MockToken {
+class MockToken(val name: String? = null) {
     /** A mocked token instance for legacy, instance-based access. */
-    private val token = createMockToken()
+    private val token = createMockToken(name)
 
     /** Returns the mocked [WindowContainerToken]. */
     fun token(): WindowContainerToken = this.token
@@ -45,11 +45,12 @@ class MockToken {
          * This is the recommended accessor for modern code.
          * It can be called from Kotlin as `MockToken.token()`.
          */
-        fun token(): WindowContainerToken = createMockToken()
+        fun token(name: String? = null): WindowContainerToken = createMockToken(name)
 
         /** Creates a mock [WindowContainerToken] backed by a mocked binder interface. */
-        private fun createMockToken() = WindowContainerToken(mock<IWindowContainerToken> {
-            on { asBinder() } doReturn mock<IBinder>()
-        })
+        private fun createMockToken(myName: String? = null) =
+                WindowContainerToken(mock<IWindowContainerToken>(name = myName) {
+                    on { asBinder() } doReturn mock<IBinder>(name = myName)
+                })
     }
 }

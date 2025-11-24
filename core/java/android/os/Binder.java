@@ -1003,33 +1003,26 @@ public class Binder implements IBinder {
         final boolean isInterfaceUserDefined = getMaxTransactionId() == -1;
         if (mTransactionTraceNames == null) {
             mSimpleDescriptor = getSimpleDescriptor();
-            if (Flags.binderCacheTransactionTraceNames()) {
-                // Prefer the full descriptor to avoid mixing up the method names for different
-                // interfaces with the same simple descriptor.
-                String key = mDescriptor != null ? mDescriptor : getClass().getName();
-                // Check if we have it in the static cache already.
-                var transactionTraceNames = TransactionTraceNamesCacheHolder.sNamesCache.get(key);
-                if (transactionTraceNames == null) {
-                    // Not in the static cache. Create a new array.
-                    final int highestId = isInterfaceUserDefined ? TRANSACTION_TRACE_NAME_ID_LIMIT
-                            : Math.min(getMaxTransactionId(), TRANSACTION_TRACE_NAME_ID_LIMIT);
-                    transactionTraceNames = new AtomicReferenceArray(highestId + 1);
-                    // Try to put it in the static cache.
-                    var oldTransactionTraceNames =
-                            TransactionTraceNamesCacheHolder.sNamesCache.putIfAbsent(
-                                    key, transactionTraceNames);
-                    if (oldTransactionTraceNames != null) {
-                        // Another thread must have added an entry to the static cache in the mean
-                        // time. Use the one already in the cache.
-                        transactionTraceNames = oldTransactionTraceNames;
-                    }
-                }
-                mTransactionTraceNames = transactionTraceNames;
-            } else {
+            // Prefer the full descriptor to avoid mixing up the method names for different
+            // interfaces with the same simple descriptor.
+            String key = mDescriptor != null ? mDescriptor : getClass().getName();
+            // Check if we have it in the static cache already.
+            var transactionTraceNames = TransactionTraceNamesCacheHolder.sNamesCache.get(key);
+            if (transactionTraceNames == null) {
+                // Not in the static cache. Create a new array.
                 final int highestId = isInterfaceUserDefined ? TRANSACTION_TRACE_NAME_ID_LIMIT
                         : Math.min(getMaxTransactionId(), TRANSACTION_TRACE_NAME_ID_LIMIT);
-                mTransactionTraceNames = new AtomicReferenceArray(highestId + 1);
+                transactionTraceNames = new AtomicReferenceArray(highestId + 1);
+                // Try to put it in the static cache.
+                var oldTransactionTraceNames = TransactionTraceNamesCacheHolder.sNamesCache
+                        .putIfAbsent(key, transactionTraceNames);
+                if (oldTransactionTraceNames != null) {
+                    // Another thread must have added an entry to the static cache in the mean
+                    // time. Use the one already in the cache.
+                    transactionTraceNames = oldTransactionTraceNames;
+                }
             }
+            mTransactionTraceNames = transactionTraceNames;
         }
 
         final int index = isInterfaceUserDefined
