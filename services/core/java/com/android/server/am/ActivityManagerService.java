@@ -136,8 +136,6 @@ import static android.provider.Settings.Global.WAIT_FOR_DEBUGGER;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.security.Flags.preventIntentRedirect;
 import static android.security.Flags.preventIntentRedirectCollectNestedKeysOnServerIfNotCollected;
-import static android.security.Flags.preventIntentRedirectShowToastIfNestedKeysNotCollectedRW;
-import static android.security.Flags.preventIntentRedirectThrowExceptionIfNestedKeysNotCollected;
 import static android.server.Flags.enableThemeService;
 import static android.util.FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -20306,19 +20304,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                             + "preparation for creating intent creator tokens. Intent: "
                             + intent + "; creatorPackage: " + creatorPackage);
             FrameworkStatsLog.write(EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER, callingUid);
-            if (preventIntentRedirectShowToastIfNestedKeysNotCollectedRW()) {
-                UiThread.getHandler().post(
-                        () -> Toast.makeText(mContext,
-                                "Nested keys not collected, activity launch won't be blocked. go/report-bug-intentRedir to report a"
-                                        + " bug", Toast.LENGTH_LONG).show());
-            }
-            if (preventIntentRedirectThrowExceptionIfNestedKeysNotCollected()) {
-                // this flag will be internal only, not ramped to public.
-                throw new SecurityException(
-                        "The intent does not have its nested keys collected as a preparation for "
-                                + "creating intent creator tokens. Intent: "
-                                + intent + "; creatorPackage: " + creatorPackage);
-            }
+
             if (preventIntentRedirectCollectNestedKeysOnServerIfNotCollected()) {
                 // this flag will be ramped to public.
                 intent.collectExtraIntentKeys(true);
