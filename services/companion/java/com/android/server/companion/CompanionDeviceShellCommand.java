@@ -503,6 +503,16 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     break;
                 }
 
+                case "get-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    String feature = getNextArgRequired();
+                    String key = getNextArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId)
+                            .getPersistableBundle(feature);
+                    out.println(bundle.getString(key, "null"));
+                    break;
+                }
+
                 case "clear-local-metadata": {
                     int userId = getNextIntArgRequired();
                     PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId);
