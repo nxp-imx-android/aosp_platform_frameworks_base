@@ -51,8 +51,10 @@ import kotlinx.coroutines.delay
  *   event that will occur in the future, like a future meeting. [Chronometer.Running.eventTime]
  *   represents the time the event will occur and the timer will tick down: 04:00, 03:59, ... No
  *   timer is shown if [Chronometer.Running.eventTime] is in the past and
- *   [Chronometer.Running.isCountdown] is true. If [chronometer] is [Chronometer.Paused], then this
- *   represents a "paused" chronometer. The duration specified will be shown, unless it is negative.
+ *   [Chronometer.Running.isCountdown] is true.
+ *
+ * If [chronometer] is [Chronometer.Paused], then this represents a "paused" chronometer. The
+ * duration specified will be shown, unless it is negative.
  */
 class ChronometerState(
     private val timeSource: SystemClock,
@@ -112,7 +114,7 @@ class ChronometerState(
 
             if (areChronometerFixesEnabled) {
                 // This should exactly match the implementation in the framework Chronometer.java.
-                val periodInMillis = formatter.period(currentValue).toMillis()
+                val periodInMillis = formatter.updatePeriod(currentValue).toMillis()
                 val delayMillis =
                     if (chronometer.isCountdown) {
                         val delay = currentValue.toMillis() % periodInMillis
@@ -159,20 +161,20 @@ sealed interface Formatter {
      * Period between ticks in the chronometer. Can depend on the current value, if the precision of
      * the formatting is dynamic (e.g. "3h 12m" vs "3:12:03").
      */
-    fun period(currentValue: Duration): Duration
+    fun updatePeriod(currentValue: Duration): Duration
 
     /** "Standard" chronometer formater (e.g. H:MM:SS) with second precision. Ticks every second. */
     object Chronometer : Formatter {
         override fun format(value: Duration): String = DateUtils.formatElapsedTime(value.seconds)
 
-        override fun period(currentValue: Duration): Duration = Duration.ofSeconds(1)
+        override fun updatePeriod(currentValue: Duration): Duration = Duration.ofSeconds(1)
     }
 
     @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     object Adaptive : Formatter {
         override fun format(value: Duration): String = ChronometerAdaptiveFormat.format(value)
 
-        override fun period(currentValue: Duration): Duration =
+        override fun updatePeriod(currentValue: Duration): Duration =
             ChronometerAdaptiveFormat.getTickPeriod(currentValue)
     }
 }
