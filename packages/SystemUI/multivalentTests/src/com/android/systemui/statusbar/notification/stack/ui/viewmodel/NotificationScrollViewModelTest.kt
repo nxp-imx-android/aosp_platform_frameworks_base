@@ -21,7 +21,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
-import com.android.compose.animation.scene.Scale
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
@@ -555,29 +554,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                 .isEqualTo(NotificationScrollViewModel.HeightSuppressionState.None)
         }
     }
-
-    @Test
-    fun drawScaleUpdates() =
-        kosmos.runTest {
-            var lastScale: Scale? = null
-            val disposable = underTest.placeholderScale.observe { lastScale = it }
-
-            assertThat(lastScale).isEqualTo(Scale.Default)
-
-            notificationsPlaceholderViewModel.setPlaceholderScale(Scale(1f, 1f))
-            assertThat(lastScale).isEqualTo(Scale(1f, 1f))
-
-            notificationsPlaceholderViewModel.setPlaceholderScale(Scale(.6f, .8f))
-            assertThat(lastScale).isEqualTo(Scale(.6f, .8f))
-
-            notificationsPlaceholderViewModel.setPlaceholderScale(Scale(.3f, .4f))
-            assertThat(lastScale).isEqualTo(Scale(.3f, .4f))
-
-            notificationsPlaceholderViewModel.setPlaceholderScale(Scale(0f, 0f))
-            assertThat(lastScale).isEqualTo(Scale(0f, 0f))
-
-            disposable.dispose()
-        }
 
     private fun Kosmos.setBlur(isBlurred: Boolean) {
         val expansion = if (isBlurred) 1f else 0f

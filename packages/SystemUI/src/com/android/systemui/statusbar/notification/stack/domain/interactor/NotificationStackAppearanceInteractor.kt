@@ -17,7 +17,6 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
-import com.android.compose.animation.scene.Scale
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -79,10 +78,6 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn: StateFlow<Float> =
         placeholderRepository.alphaForLockscreenFadeIn.asStateFlow()
-
-    /** The draw scale requested by the placeholder composable. */
-    val placeholderScale: ObservableState<Scale>
-        get() = placeholderRepository.drawScale
 
     /** The height of the keyguard's available space bounds */
     val constrainedAvailableSpace: StateFlow<Int> =
@@ -177,10 +172,6 @@ constructor(
 
     fun setConstrainedAvailableSpace(height: Int) {
         placeholderRepository.constrainedAvailableSpace.value = height
-    }
-
-    fun setPlaceholderScale(scale: Scale) {
-        placeholderRepository.drawScale.value = scale
     }
 
     private fun checkValidBounds(bounds: ShadeScrimBounds?) {
