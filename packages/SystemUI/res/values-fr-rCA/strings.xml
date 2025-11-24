@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Impossible d\'enregistrer la capture d\'écran"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Enregistrer dans"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Sélectionner le dossier"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"Enregistré dans le dossier %1$s"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"Un problème est survenu. Impossible d\'enregistrer dans le dossier « %1$s »."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Écran externe"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"L\'appareil doit être déverrouillé avant qu\'une capture d\'écran puisse être enregistrée"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Essayez de faire une autre capture d\'écran"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Impossible d\'enregistrer la capture d\'écran"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"L\'appli ou votre organisation n\'autorise pas les saisies d\'écran"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"La prise de captures d\'écran est bloquée par votre administrateur informatique"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Modifier"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Bouton de modification de la capture d\'écran"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Partager"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Terminé"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Appliquer"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Désactiver"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Mode Silencieux"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Par défaut"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatique"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Aucun son ni vibration"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Pas de son ni de vibration, mais s\'affiche tout de même dans la section « conversations »"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Peut sonner ou vibrer, selon les paramètres de l\'appareil"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Peut sonner ou vibrer, selon les paramètres de l\'appareil. Conversations des bulles de <xliff:g id="APP_NAME">%1$s</xliff:g> par défaut."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Faire en sorte que le système détermine si cette notification devrait émettre un son ou vibrer"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;État :&lt;/b&gt; élevé à la catégorie Par défaut"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;État :&lt;/b&gt; abaissé à la catégorie Silencieux"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;État :&lt;/b&gt; élevé d\'un niveau"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;État :&lt;/b&gt; abaissé d\'un niveau"</string>
@@ -1265,8 +1281,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"position"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"microphone"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"enregistrement d\'écran"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"Confidentialité"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"Sans titre"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"Veille"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"Taille de la police"</string>
@@ -1414,10 +1429,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Appareils disponibles pour la sortie audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Certains appareils ne sont pas visibles. Mettez à jour les autorisations de votre appli."</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Solution"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Haut-parleurs connectés"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Haut-parleurs et écrans"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggestions"</string>
