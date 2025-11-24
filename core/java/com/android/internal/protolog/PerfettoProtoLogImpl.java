@@ -89,6 +89,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -135,9 +137,6 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @NonNull
     private final ReadWriteLock mConfigUpdaterLock = new ReentrantReadWriteLock();
 
-    @NonNull
-    private final Queue<Runnable> mQueuedAsyncLogs = new ArrayDeque<>();
-
     /**
      * This set tracks active tracing instances from the perspective of the {@code
      * mSingleThreadedExecutor}. It contains instance indexes, added when a tracing session starts
@@ -165,8 +164,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     // This is crucial for operations like connecting to the configuration service before other
     // logging activities, and synchronizing queued logging tasks on tracing start and stop.
     @VisibleForTesting
-    public final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor(
-            (r) -> new Thread(r, "ProtoLogBackground"));
+    public final ExecutorService mSingleThreadedExecutor;
+    private final LinkedBlockingDeque<Runnable> mExecutorQueue = new LinkedBlockingDeque<>();
 
     // Set to true once this is ready to accept protolog to logcat requests.
     private boolean mLogcatReady = false;
@@ -175,6 +174,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             @NonNull ProtoLogDataSource dataSource,
             @NonNull ProtoLogCacheUpdater cacheUpdater,
             @NonNull IProtoLogGroup[] groups) {
+        mSingleThreadedExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+                mExecutorQueue, (r) -> new Thread(r, "ProtoLogBackground"));
         mDataSource = dataSource;
         mCacheUpdater = cacheUpdater;
         mConfigurationService = null;
@@ -261,8 +262,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 }
             }
 
-            if (mAsyncInitInProgress) {
-                // A datasource instance has 5 seconds to report starting before we just process the
+            if (async) {
+                // A datasource instance has 5 seconds to report starting before we process the
                 // rest of the queue. We block here because it's possible that a datasource instance
                 // is already running and takes a bit of time to report the onTracingInstanceStart,
                 // in which case we want to block here before executed queued protolog messages in
@@ -280,23 +281,13 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                                 + "running then this will likely lead to a loss of some ProtoLog "
                                 + "messages.");
                     }
-
-                    // We need to queue these so they execute after the instance set up which is
-                    // also processed in the background.
-                    mSingleThreadedExecutor.execute(() -> {
-                        synchronized (mAsyncInitLock) {
-                            mAsyncInitInProgress = false;
-                        }
-
-                        var executeLog = mQueuedAsyncLogs.poll();
-                        while (executeLog != null) {
-                            executeLog.run();
-                            executeLog = mQueuedAsyncLogs.poll();
-                        }
-                    });
                 } catch (InterruptedException e) {
                     Log.wtf(LOG_TAG,
                             "Interrupted while waiting for first tracing instance start", e);
+                } finally {
+                    synchronized (mAsyncInitLock) {
+                        mAsyncInitInProgress = false;
+                    }
                 }
             }
         };
@@ -604,18 +595,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 }
             };
 
-            if (mAsyncInitInProgress) {
-                synchronized (mAsyncInitLock) {
-                    if (mAsyncInitInProgress) {
-                        mQueuedAsyncLogs.add(traceInBackground);
-                    } else {
-                        mSingleThreadedExecutor.execute(traceInBackground);
-                    }
-                }
-            } else {
-                // Common path after initialization: no locking.
-                mSingleThreadedExecutor.execute(traceInBackground);
-            }
+            mSingleThreadedExecutor.execute(traceInBackground);
         }
         if (group.isLogToLogcat()) {
             logToLogcat(group.getTag(), logLevel, message, args);
@@ -1021,7 +1001,14 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private void queueTracingInstanceAddition(int instanceIdx) {
-        mSingleThreadedExecutor.execute(() -> mActiveTracingInstances.add(instanceIdx));
+        final Runnable r = () -> mActiveTracingInstances.add(instanceIdx);
+        if (mAsyncInitInProgress) {
+            // Push to the front of the queue to make sure this is executes immediately
+            // before any queued up tracing. To make sure we don't miss any logs.
+            mExecutorQueue.addFirst(r);
+        } else {
+            mSingleThreadedExecutor.execute(r);
+        }
     }
 
     private void onTracingInstanceStartLocked(@NonNull ProtoLogDataSource.ProtoLogConfig config) {
