@@ -273,3 +273,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "virtual_camera_support_api"
+    namespace: "virtual_devices"
+    description: "API for checking if virtual camera is supported on the device"
+    bug: "462710537"
+    is_exported: true
+}
