@@ -61,10 +61,10 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.HoverBehavior
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip
@@ -73,7 +73,7 @@ import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipMode
  */
 @Composable
 fun StatusBarPopupChip(
-    viewModel: PopupChipModel.Shown,
+    viewModel: QuickActionChipUiState.Shown,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {

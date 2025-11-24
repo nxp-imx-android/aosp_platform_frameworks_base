@@ -38,7 +38,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.Clock
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -67,7 +67,7 @@ class FakeHomeStatusBarViewModel(
 
     override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
 
-    override val popupChips = emptyList<PopupChipModel.Shown>()
+    override val popupChips = emptyList<QuickActionChipUiState.Shown>()
 
     override val mediaProjectionStopDialogDueToCallEndedState =
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)

@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.popups.ui.model
+package com.android.systemui.statusbar.quickactions.ui.viewmodel
 
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 
 /**
  * Ids used to track different types of popup chips. Will be used to ensure only one chip is
  * displaying its popup at a time.
  */
-sealed class PopupChipId(val value: String) {
-    data object MediaControl : PopupChipId("MediaControl")
+sealed class QuickActionChipId(val value: String) {
+    data object MediaControl : QuickActionChipId("MediaControl")
 
-    data object AvControlsIndicator : PopupChipId("AvControlsIndicator")
+    data object AvControlsIndicator : QuickActionChipId("AvControlsIndicator")
 
-    data object ShareScreenPrivacyIndicator : PopupChipId("ShareScreenPrivacyIndicator")
+    data object ShareScreenPrivacyIndicator : QuickActionChipId("ShareScreenPrivacyIndicator")
 
-    data object AssistantIcon : PopupChipId("AssistantIcon")
+    data object AssistantIcon : QuickActionChipId("AssistantIcon")
 
-    data object ImeIndicator : PopupChipId("ImeIndicator")
+    data object ImeIndicator : QuickActionChipId("ImeIndicator")
 }
 
 /** Model for an optionally clickable icon that is displayed on the chip. */
@@ -48,19 +49,18 @@ sealed interface HoverBehavior {
     data class Buttons(val icons: List<ChipIcon>) : HoverBehavior
 }
 
-/** Model for individual status bar popup chips. */
-// TODO(b/433589833): rename PopupChipModel to something more appropriate.
-sealed class PopupChipModel {
+/** Model for individual status bar quick action chips. */
+sealed class QuickActionChipUiState {
     abstract val logName: String
-    abstract val chipId: PopupChipId
+    abstract val chipId: QuickActionChipId
 
-    data class Hidden(override val chipId: PopupChipId, val shouldAnimate: Boolean = true) :
-        PopupChipModel() {
+    data class Hidden(override val chipId: QuickActionChipId, val shouldAnimate: Boolean = true) :
+        QuickActionChipUiState() {
         override val logName = "Hidden(id=$chipId, anim=$shouldAnimate)"
     }
 
     data class Shown(
-        override val chipId: PopupChipId,
+        override val chipId: QuickActionChipId,
         /** Icons shown on the chip when no specific hover behavior. */
         val icons: List<ChipIcon>,
         val chipText: String?,
@@ -72,7 +72,7 @@ sealed class PopupChipModel {
         val hoverBehavior: HoverBehavior = HoverBehavior.None,
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
-    ) : PopupChipModel() {
+    ) : QuickActionChipUiState() {
         override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
     }
 }

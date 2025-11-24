@@ -25,12 +25,12 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivityModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.HoverBehavior
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -47,10 +47,10 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
 
     private val hydrator: Hydrator = Hydrator("AvControlsChipViewModel.hydrator")
 
-    override val chip: PopupChipModel by
+    override val chip: QuickActionChipUiState by
         hydrator.hydratedStateOf(
             traceName = "chip",
-            initialValue = PopupChipModel.Hidden(PopupChipId.AvControlsIndicator),
+            initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.AvControlsIndicator),
             source = avControlsChipInteractor.model.map { toPopupChipModel(it) },
         )
 
@@ -58,13 +58,12 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
         hydrator.activate()
     }
 
-    private fun toPopupChipModel(avControlsChipModel: AvControlsChipModel): PopupChipModel {
-        val chipId = PopupChipId.AvControlsIndicator
+    private fun toPopupChipModel(avControlsChipModel: AvControlsChipModel): QuickActionChipUiState {
+        val chipId = QuickActionChipId.AvControlsIndicator
         return when (val sensorActivityModel = avControlsChipModel.sensorActivityModel) {
-            is SensorActivityModel.Inactive -> PopupChipModel.Hidden(chipId)
-
+            is SensorActivityModel.Inactive -> QuickActionChipUiState.Hidden(chipId)
             is SensorActivityModel.Active ->
-                PopupChipModel.Shown(
+                QuickActionChipUiState.Shown(
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
                     chipText = null,

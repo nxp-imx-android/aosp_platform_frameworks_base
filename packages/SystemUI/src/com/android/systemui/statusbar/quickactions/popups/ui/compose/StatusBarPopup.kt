@@ -41,10 +41,10 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.ui.compose.AvControlsChipPopup
 import com.android.systemui.statusbar.quickactions.media.ui.compose.MediaControlPopup
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.compose.ShareScreenPrivacyIndicatorPopup
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /**
  * Displays a popup in the status bar area. The offset is calculated to draw the popup below the
@@ -52,7 +52,7 @@ import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.Shar
  */
 @Composable
 fun StatusBarPopup(
-    viewModel: PopupChipModel.Shown,
+    viewModel: QuickActionChipUiState.Shown,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
 ) {
@@ -75,7 +75,7 @@ fun StatusBarPopup(
     ) {
         Box(modifier = Modifier.padding(8.dp).wrapContentSize()) {
             when (viewModel.chipId) {
-                is PopupChipId.MediaControl -> {
+                is QuickActionChipId.MediaControl -> {
                     val viewRootImpl = LocalView.current.viewRootImpl
                     val lifecycle = LocalLifecycleOwner.current.lifecycle
                     val owner =
@@ -95,11 +95,11 @@ fun StatusBarPopup(
                     }
                 }
 
-                is PopupChipId.AvControlsIndicator -> {
+                is QuickActionChipId.AvControlsIndicator -> {
                     AvControlsChipPopup()
                 }
 
-                is PopupChipId.ShareScreenPrivacyIndicator -> {
+                is QuickActionChipId.ShareScreenPrivacyIndicator -> {
                     ShareScreenPrivacyIndicatorPopup(
                         viewModelFactory =
                             viewModel.popupViewModelFactory
@@ -108,11 +108,11 @@ fun StatusBarPopup(
                 }
                 /**
                  * Some chip ids (e.g. AssistantIcon, ImeIndicator) have custom
-                 * [PopupChipModel.Shown.showPopup] and don't rely on this Composable.
+                 * [QuickActionChipUiState.Shown.showPopup] and don't rely on this Composable.
                  */
-                is PopupChipId.AssistantIcon -> {}
+                is QuickActionChipId.AssistantIcon -> {}
 
-                is PopupChipId.ImeIndicator -> {}
+                is QuickActionChipId.ImeIndicator -> {}
             }
             // Future popup types will be handled here.
         }

@@ -30,8 +30,8 @@ import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -66,7 +66,8 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             updateMedia(userMedia)
 
             assertThat(underTest.shownPopupChips).hasSize(1)
-            assertThat(underTest.shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
+            assertThat(underTest.shownPopupChips.first().chipId)
+                .isEqualTo(QuickActionChipId.MediaControl)
         }
 
     @Test

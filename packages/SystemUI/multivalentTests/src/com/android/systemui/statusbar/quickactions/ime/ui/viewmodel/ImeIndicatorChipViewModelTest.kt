@@ -27,7 +27,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,21 +50,23 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagDisabled_isHidden() =
         kosmos.runTest {
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Hidden::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagEnabled_isShown() =
-        kosmos.runTest { assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java) }
+        kosmos.runTest {
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_showPopup_callsShowInputMethodPicker() =
         kosmos.runTest {
             val chip = underTest.chip
-            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
-            val shownChip = chip as PopupChipModel.Shown
+            assertThat(chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+            val shownChip = chip as QuickActionChipUiState.Shown
 
             shownChip.showPopup()
             testScope.runCurrent()
