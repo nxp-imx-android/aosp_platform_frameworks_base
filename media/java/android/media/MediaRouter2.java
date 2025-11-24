@@ -663,12 +663,19 @@ public final class MediaRouter2 {
 
         loadSystemRoutes(/* isProxyRouter */ true);
 
-        mSystemController =
-                new SystemRoutingController(
-                        ProxyMediaRouter2Impl.getSystemSessionInfoImpl(
-                                mMediaRouterService, mContext.getPackageName(), clientPackageName));
+        if (Flags.reduceTwoWayBinderCallsInMediaRouter2()) {
+            mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
+            mSystemController = new SystemRoutingController(mImpl.getSystemSessionInfo());
+        } else {
+            mSystemController =
+                    new SystemRoutingController(
+                            ProxyMediaRouter2Impl.getSystemSessionInfoImpl(
+                                    mMediaRouterService,
+                                    mContext.getPackageName(),
+                                    clientPackageName));
 
-        mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
+            mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
+        }
     }
 
     @GuardedBy("mLock")
@@ -3786,15 +3793,17 @@ public final class MediaRouter2 {
 
         /**
          * Returns the {@linkplain RoutingSessionInfo routing sessions} associated with {@link
-         * #mClientPackageName}. The first element of the returned list is the {@linkplain
-         * #getSystemSessionInfo() system routing session}.
-         *
-         * @see #getSystemSessionInfo()
+         * #mClientPackageName}. The first element of the returned list is the system routing
+         * session.
          */
         @NonNull
         private List<RoutingSessionInfo> getRoutingSessions() {
             List<RoutingSessionInfo> sessions = new ArrayList<>();
-            sessions.add(getSystemSessionInfo());
+            if (Flags.reduceTwoWayBinderCallsInMediaRouter2()) {
+                sessions.add(mSystemController.getRoutingSessionInfo());
+            } else {
+                sessions.add(getSystemSessionInfo());
+            }
 
             List<RoutingSessionInfo> remoteSessions;
             try {
