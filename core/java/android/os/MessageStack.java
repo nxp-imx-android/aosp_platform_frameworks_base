@@ -168,6 +168,33 @@ public final class MessageStack {
     }
 
     /**
+     * Moves the sync barrier with the matching token to the freelist.
+     * This is a special case of {@link #moveMatchingToFreelist()} that only removes a single sync
+     * barrier with a matching token.
+     */
+    public boolean moveSyncBarrierToFreelist(int token) {
+        Message current = (Message) sTop.getAcquire(this);
+        while (current != null) {
+            if (current.target == null && current.arg1 == token && current.markRemoved()) {
+                break;
+            }
+            current = current.next;
+        }
+
+        // We didn't find a sync barrier with a matching token.
+        if (current == null) {
+            return false;
+        }
+
+        Message freelist;
+        do {
+            freelist = mFreelistHeadValue;
+            current.nextFree = freelist;
+        } while (!sFreelistHead.compareAndSet(this, freelist, current));
+        return true;
+    }
+
+    /**
      * Search our stack for a given set of messages.
      * @return true if matching messages are found, false otherwise.
      */

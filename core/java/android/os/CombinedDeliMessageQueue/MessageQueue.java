@@ -1320,11 +1320,8 @@ public final class MessageQueue {
     }
 
     private void removeSyncBarrierDeliQueue(int token) {
-        final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
-
-        final int removed = mStack.moveMatchingToFreelist(matchBarrierToken, null, -1, null,
-                null, 0);
-        if (removed == 0) {
+        final boolean removed = mStack.moveSyncBarrierToFreelist(token);
+        if (!removed) {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
         }

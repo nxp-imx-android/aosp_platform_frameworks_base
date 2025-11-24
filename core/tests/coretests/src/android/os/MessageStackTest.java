@@ -386,4 +386,32 @@ public final class MessageStackTest {
                 + stack.combinedHeapCapacitiesForTest(),
                 grownHeapCapacity > stack.combinedHeapCapacitiesForTest());
     }
+
+    /*
+     * Add two messages to stack and check that removing messages with MatchAllMessages only removes
+     * one message if firstMatchOnly is true.
+     */
+    @Test
+    public void testMoveSyncBarrierToFreelist() {
+        MessageStack stack = new MessageStack();
+        int token1 = 123;
+        int token2 = 456;
+
+
+        Message msg1 = Message.obtain();
+        Message msg2 = Message.obtain();
+        msg1.arg1 = token1;
+        msg2.arg1 = token1;
+
+        Message msg3 = Message.obtain();
+        msg3.arg1 = token2;
+
+        stack.pushMessage(msg1);
+        stack.pushMessage(msg2);
+        stack.pushMessage(msg3);
+
+        assertTrue(stack.moveSyncBarrierToFreelist(token1));
+        assertEquals(2, stack.sizeForTest());
+        assertEquals(1, stack.freelistSizeForTest());
+    }
 }
