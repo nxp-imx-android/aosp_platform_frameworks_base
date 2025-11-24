@@ -17,7 +17,7 @@
 package com.android.internal.pm.pkg.component;
 
 import android.annotation.NonNull;
-import android.content.pm.SignedPackageParcel;
+import android.content.pm.SignedPackage;
 import android.processor.immutability.Immutable;
 
 import java.util.List;
@@ -33,10 +33,10 @@ import java.util.List;
 public interface ParsedAllowComponentAccessPolicy {
 
     /**
-     * The immutable list of {@link SignedPackageParcel} objects that this application
+     * The immutable list of {@link SignedPackage} objects that this application
      * is explicitly permitted to associate with, based on manifest rules.
      */
     @Immutable.Ignore
     @NonNull
-    List<SignedPackageParcel> getParsedAllowlistedSignedPackages();
+    List<SignedPackage> getParsedAllowlistedSignedPackages();
 }

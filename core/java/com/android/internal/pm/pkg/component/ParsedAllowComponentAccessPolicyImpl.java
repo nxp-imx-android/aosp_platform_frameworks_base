@@ -16,6 +16,7 @@
 package com.android.internal.pm.pkg.component;
 
 import android.annotation.NonNull;
+import android.content.pm.SignedPackage;
 import android.content.pm.SignedPackageParcel;
 import android.os.Parcelable;
 
@@ -38,11 +39,20 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
         Parcelable {
 
     @NonNull
-    private List<SignedPackageParcel> mParsedAllowlistedSignedPackages;
+    private List<SignedPackage> mParsedAllowlistedSignedPackages;
 
     @Override
     public void writeToParcel(@NonNull android.os.Parcel dest, int flags) {
-        dest.writeTypedList(mParsedAllowlistedSignedPackages);
+        if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+            dest.writeTypedList(mParsedAllowlistedSignedPackages);
+        } else {
+            List<SignedPackageParcel> parcels =
+                    new ArrayList<>(mParsedAllowlistedSignedPackages.size());
+            for (int i = 0; i < mParsedAllowlistedSignedPackages.size(); i++) {
+                parcels.add(mParsedAllowlistedSignedPackages.get(i).toSignedPackageParcel());
+            }
+            dest.writeTypedList(parcels);
+        }
     }
 
     @Override
@@ -51,7 +61,17 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
     }
 
     private ParsedAllowComponentAccessPolicyImpl(@NonNull android.os.Parcel in) {
-        java.util.ArrayList<SignedPackageParcel> list = in.createTypedArrayList(SignedPackageParcel.CREATOR);
+        ArrayList<SignedPackage> list;
+        if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+            list = in.createTypedArrayList(SignedPackage.CREATOR);
+        } else {
+            ArrayList<SignedPackageParcel> parcelList =
+                    in.createTypedArrayList(SignedPackageParcel.CREATOR);
+            list = new ArrayList<>(parcelList.size());
+            for (int i = 0; i < parcelList.size(); i++) {
+                list.add(new SignedPackage(parcelList.get(i)));
+            }
+        }
         this.mParsedAllowlistedSignedPackages = Objects.requireNonNullElseGet(list, ArrayList::new);
     }
 
@@ -86,7 +106,7 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
 
     @DataClass.Generated.Member
     public ParsedAllowComponentAccessPolicyImpl(
-            @NonNull List<SignedPackageParcel> parsedAllowlistedSignedPackages) {
+            @NonNull List<SignedPackage> parsedAllowlistedSignedPackages) {
         this.mParsedAllowlistedSignedPackages = parsedAllowlistedSignedPackages;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mParsedAllowlistedSignedPackages);
@@ -95,12 +115,12 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
     }
 
     @DataClass.Generated.Member
-    public @NonNull List<SignedPackageParcel> getParsedAllowlistedSignedPackages() {
+    public @NonNull List<SignedPackage> getParsedAllowlistedSignedPackages() {
         return mParsedAllowlistedSignedPackages;
     }
 
     @DataClass.Generated.Member
-    public @NonNull ParsedAllowComponentAccessPolicyImpl setParsedAllowlistedSignedPackages(@NonNull List<SignedPackageParcel> value) {
+    public @NonNull ParsedAllowComponentAccessPolicyImpl setParsedAllowlistedSignedPackages(@NonNull List<SignedPackage> value) {
         mParsedAllowlistedSignedPackages = value;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mParsedAllowlistedSignedPackages);
@@ -108,10 +128,10 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
     }
 
     @DataClass.Generated(
-            time = 1765286990783L,
+            time = 1765828326804L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/com/android/internal/pm/pkg/component/ParsedAllowComponentAccessPolicyImpl.java",
-            inputSignatures = "private @android.annotation.NonNull java.util.List<android.content.pm.SignedPackageParcel> mParsedAllowlistedSignedPackages\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyImpl> CREATOR\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\npublic @java.lang.Override int describeContents()\nclass ParsedAllowComponentAccessPolicyImpl extends java.lang.Object implements [com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy, android.os.Parcelable]\n@com.android.internal.util.DataClass(genSetters=true)")
+            inputSignatures = "private @android.annotation.NonNull java.util.List<android.content.pm.SignedPackage> mParsedAllowlistedSignedPackages\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyImpl> CREATOR\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\npublic @java.lang.Override int describeContents()\nclass ParsedAllowComponentAccessPolicyImpl extends java.lang.Object implements [com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy, android.os.Parcelable]\n@com.android.internal.util.DataClass(genSetters=true)")
     @Deprecated
     private void __metadata() {}
 

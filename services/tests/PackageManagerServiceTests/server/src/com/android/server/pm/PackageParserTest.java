@@ -63,7 +63,7 @@ import android.content.pm.PackageManager.Property;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
-import android.content.pm.SignedPackageParcel;
+import android.content.pm.SignedPackage;
 import android.content.pm.SigningDetails;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -1201,22 +1201,25 @@ public class PackageParserTest {
             ParsedAllowComponentAccessPolicy policy = pkg.getParsedAllowComponentAccessPolicy();
             assertNotNull("Policy should not be null", policy);
 
-            List<SignedPackageParcel> rules = policy.getParsedAllowlistedSignedPackages();
+            List<SignedPackage> rules = policy.getParsedAllowlistedSignedPackages();
             assertEquals("Should have parsed exactly 2 rules", 2, rules.size());
 
             // 2. Verify Rule 1 (Name Only)
-            SignedPackageParcel rule1 = rules.get(0);
-            assertEquals("com.example.partner", rule1.packageName);
-            assertNull("Cert digest should be null for name-only rule", rule1.certificateDigest);
+            SignedPackage rule1 = rules.get(0);
+            assertEquals("com.example.partner", rule1.getPackageName());
+            assertFalse("Cert digest should be null for name-only rule",
+                    rule1.hasCertificateDigest());
 
             // 3. Verify Rule 2 (Name + Cert)
-            SignedPackageParcel rule2 = rules.get(1);
-            assertEquals("com.example.signed", rule2.packageName);
+            SignedPackage rule2 = rules.get(1);
+            assertEquals("com.example.signed", rule2.getPackageName());
 
             // Verify Hex Parsing (AA:BB:CC:DD -> 0xAABBCCDD)
             byte[] expectedCert = new byte[] {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC, (byte) 0xDD};
             assertArrayEquals(
-                    "Cert digest did not parse correctly", expectedCert, rule2.certificateDigest);
+                    "Cert digest did not parse correctly",
+                    expectedCert,
+                    rule2.getCertificateDigest());
 
         } finally {
             testFile.delete();

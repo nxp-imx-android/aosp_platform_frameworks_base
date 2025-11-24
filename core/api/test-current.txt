@@ -1275,12 +1275,6 @@ package android.content.pm {
     ctor public ShortcutManager(android.content.Context);
   }
 
-  @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
-    method @NonNull public byte[] getCertificateDigest();
-    method @NonNull public String getPackageName();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
-  }
-
   public class UserInfo implements android.os.Parcelable {
     ctor public UserInfo(int, String, int);
     ctor public UserInfo(int, String, String, int);

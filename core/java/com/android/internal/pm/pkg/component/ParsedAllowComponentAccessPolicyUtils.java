@@ -17,7 +17,7 @@
 package com.android.internal.pm.pkg.component;
 
 import android.content.pm.PackageManager;
-import android.content.pm.SignedPackageParcel;
+import android.content.pm.SignedPackage;
 import android.content.pm.parsing.result.ParseInput;
 import android.content.pm.parsing.result.ParseResult;
 import android.content.res.Resources;
@@ -49,7 +49,7 @@ public class ParsedAllowComponentAccessPolicyUtils {
             ParseInput input, ParsingPackage pkg, Resources res, XmlResourceParser parser)
             throws XmlPullParserException, IOException {
 
-        final List<SignedPackageParcel> allowedPackages = new ArrayList<>();
+        final List<SignedPackage> allowedPackages = new ArrayList<>();
         final int depth = parser.getDepth();
         int type;
 
@@ -101,10 +101,7 @@ public class ParsedAllowComponentAccessPolicyUtils {
                         }
                     }
 
-                    SignedPackageParcel signedPackage = new SignedPackageParcel();
-                    signedPackage.packageName = packageName;
-                    signedPackage.certificateDigest = certDigest;
-
+                    SignedPackage signedPackage = new SignedPackage(packageName, certDigest);
                     allowedPackages.add(signedPackage);
                 } finally {
                     sa.recycle();
