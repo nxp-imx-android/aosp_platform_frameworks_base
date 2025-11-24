@@ -40,7 +40,6 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.ShowOverlay
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
-import com.android.systemui.scene.initialSceneKey
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -436,94 +435,6 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
                     isUserInputOngoing = flowOf(false),
                 )
             assertThat(isCommunalVisible).isEqualTo(true)
-        }
-
-    @EnableSceneContainer
-    @Test
-    fun changeScene_legacyCommunalScene_mapToStfScene() =
-        testScope.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-
-            // Verify that the current scene is the initial scene
-            assertThat(currentScene).isEqualTo(kosmos.initialSceneKey)
-
-            // Change to legacy communal scene
-            underTest.changeScene(CommunalScenes.Communal, loggingReason = "test")
-
-            // Verify that scene changed to communal scene in STF
-            assertThat(currentScene).isEqualTo(Scenes.Communal)
-
-            // Now change to legacy blank scene
-            underTest.changeScene(CommunalScenes.Blank, loggingReason = "test")
-
-            // Verify that scene changed to lock screen scene in STF
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-        }
-
-    @EnableSceneContainer
-    @Test
-    fun changeScene_stfScenes() =
-        testScope.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-
-            // Verify that the current scene is the initial scene
-            assertThat(currentScene).isEqualTo(kosmos.initialSceneKey)
-
-            // Change to communal scene
-            underTest.changeScene(Scenes.Communal, loggingReason = "test")
-
-            // Verify changed to communal scene
-            assertThat(currentScene).isEqualTo(Scenes.Communal)
-
-            // Now change to lockscreen scene
-            underTest.changeScene(Scenes.Lockscreen, loggingReason = "test")
-
-            // Verify changed to lockscreen scene
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-        }
-
-    @EnableSceneContainer
-    @Test
-    fun snapToScene_legacyCommunalScene_mapToStfScene() =
-        testScope.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-
-            // Verify that the current scene is the initial scene
-            assertThat(currentScene).isEqualTo(kosmos.initialSceneKey)
-
-            // Snap to legacy communal scene
-            underTest.snapToScene(CommunalScenes.Communal, loggingReason = "test")
-
-            // Verify that scene changed to communal scene in STF
-            assertThat(currentScene).isEqualTo(Scenes.Communal)
-
-            // Now snap to legacy blank scene
-            underTest.snapToScene(CommunalScenes.Blank, loggingReason = "test")
-
-            // Verify that scene changed to lock screen scene in STF
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-        }
-
-    @EnableSceneContainer
-    @Test
-    fun snapToScene_stfScenes() =
-        testScope.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-
-            // Verify that the current scene is the initial scene
-            assertThat(currentScene).isEqualTo(kosmos.initialSceneKey)
-
-            // Snap to communal scene
-            underTest.snapToScene(Scenes.Communal, loggingReason = "test")
-
-            // Verify changed to communal scene
-            assertThat(currentScene).isEqualTo(Scenes.Communal)
-
-            // Now snap to lockscreen scene
-            underTest.snapToScene(Scenes.Lockscreen, loggingReason = "test")
-
-            // Verify changed to lockscreen scene
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }
 
     @EnableSceneContainer

@@ -121,6 +121,10 @@ constructor(
      * Asks for an asynchronous scene witch to [newScene], which will use the corresponding
      * installed transition or the one specified by [transitionKey], if provided.
      */
+    @Deprecated(
+        "Use SceneInteractor when SceneContainerFlag is enabled",
+        replaceWith = ReplaceWith("sceneInteractor.changeScene"),
+    )
     fun changeScene(
         newScene: SceneKey,
         loggingReason: String,
@@ -158,6 +162,10 @@ constructor(
     }
 
     /** Immediately snaps to the new scene. */
+    @Deprecated(
+        "Use SceneInteractor when SceneContainerFlag is enabled",
+        replaceWith = ReplaceWith("sceneInteractor.snapToScene"),
+    )
     fun snapToScene(
         newScene: SceneKey,
         loggingReason: String,
