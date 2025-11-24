@@ -1882,12 +1882,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 && dreamManagerInternal.isDreaming()
                 && !skipDreamWakeForInteractiveDoze()) {
             dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
-            if (mHasFeatureLeanback) {
-                if (localLOGV) Log.v(TAG, "TV will launch home after stopping dream");
+
+            final boolean launchHomeAfterDreamStopForWear =
+                    mHasFeatureWatch && com.android.server.policy.Flags.wearKeyGestureHandling();
+            if (mHasFeatureLeanback || launchHomeAfterDreamStopForWear) {
+                if (localLOGV) Log.v(TAG, "TV and Wear will launch home after stopping dream");
             } else {
                 return;
             }
-
         }
 
         // Go home!
