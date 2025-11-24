@@ -48,7 +48,7 @@ class SizeTest {
             toSceneContent = {
                 // Don't resize the parent of Foo during transitions so that it's always the same
                 // size as when there is no transition (200dp).
-                Box(Modifier.noResizeDuringTransitions().testTag(parentTag)) {
+                Box(Modifier.testTag(parentTag).noResizeDuringTransitions()) {
                     Box(Modifier.element(TestElements.Foo).size(200.dp))
                 }
             },
