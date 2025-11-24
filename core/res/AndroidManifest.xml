@@ -32,6 +32,7 @@
     <protected-broadcast android:name="android.intent.action.TIME_SET" />
     <protected-broadcast android:name="android.intent.action.TIME_TICK" />
     <protected-broadcast android:name="android.intent.action.TIMEZONE_CHANGED" />
+    <protected-broadcast android:name="android.intent.action.TIMEZONE_OFFSET_CHANGED" />
     <protected-broadcast android:name="android.intent.action.DATE_CHANGED" />
     <protected-broadcast android:name="android.intent.action.PRE_BOOT_COMPLETED" />
     <protected-broadcast android:name="android.intent.action.BOOT_COMPLETED" />
