@@ -2382,6 +2382,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // clear the bounds if it is not allowed from its ancestors.
             resolvedConfig.windowConfiguration.setBounds(new Rect());
         }
+        if (resolvedConfig.windowConfiguration.getWindowingMode() != WINDOWING_MODE_UNDEFINED
+                && thisTask != null && !thisTask.isOverrideWindowingModeAllowed()) {
+            // clear the windowingMode if it is not allowed from its ancestors.
+            resolvedConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+        }
 
         if (mRelativeEmbeddedBounds != null && !mRelativeEmbeddedBounds.isEmpty()) {
             // For embedded TaskFragment, make sure the bounds is set based on the relative bounds.

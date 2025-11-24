@@ -597,6 +597,32 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetDisallowOverrideWindowingModeForChildren() {
+        final Task parentTask = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        final Task childTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(parentTask.getTaskDisplayArea())
+                .setParentTask(parentTask)
+                .build();
+        parentTask.mCreatedByOrganizer = true;
+
+        // Verifies the override windowing mode once set.
+        childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        assertEquals(WINDOWING_MODE_MULTI_WINDOW, childTask.getRequestedOverrideWindowingMode());
+
+        // Verifies the override windowing mode are cleared if the ancestor disallowed.
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setDisallowOverrideWindowingModeForChildren(parentTask.getTaskInfo().token, true);
+        applyTransaction(wct);
+        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+
+        // Verifies the override windowing mode cannot be set if the ancestor disallowed.
+        childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+    }
+
+    @Test
     public void testReparentTasks_clearWindowingMode() {
         final Task parentTask1 = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)

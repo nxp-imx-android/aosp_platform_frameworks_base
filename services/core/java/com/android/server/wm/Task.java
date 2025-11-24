@@ -529,6 +529,11 @@ class Task extends TaskFragment {
      */
     private boolean mDisallowOverrideBoundsForChildren;
 
+    /**
+     * Whether the child tasks can have override windowing modes.
+     */
+    private boolean mDisallowOverrideWindowingModeForChildren;
+
     SurfaceControl[] mExcludeLayersFromTaskSnapshot;
 
     /**
@@ -1240,6 +1245,11 @@ class Task extends TaskFragment {
             setBounds(null);
         }
 
+        // Clear the override windowingMode if any ancestor requested to.
+        if (!isOverrideWindowingModeAllowed()) {
+            setWindowingMode(WINDOWING_MODE_UNDEFINED);
+        }
+
         mRootWindowContainer.updateUIDsPresentOnDisplay();
     }
 
@@ -1247,6 +1257,17 @@ class Task extends TaskFragment {
         Task parentTask = getParent() != null ? getParent().asTask() : null;
         while (parentTask != null) {
             if (parentTask.mDisallowOverrideBoundsForChildren) {
+                return false;
+            }
+            parentTask = parentTask.getParent().asTask();
+        }
+        return true;
+    }
+
+    boolean isOverrideWindowingModeAllowed() {
+        Task parentTask = getParent() != null ? getParent().asTask() : null;
+        while (parentTask != null) {
+            if (parentTask.mDisallowOverrideWindowingModeForChildren) {
                 return false;
             }
             parentTask = parentTask.getParent().asTask();
@@ -4704,6 +4725,12 @@ class Task extends TaskFragment {
 
     @Override
     public void setWindowingMode(int windowingMode) {
+        if (!isOverrideWindowingModeAllowed()
+                && windowingMode != WINDOWING_MODE_UNDEFINED) {
+            Slog.w(TAG, "Not allowed to set override windowing mode "
+                    + windowingModeToString(windowingMode) + " for " + this);
+            return;
+        }
         // Calling Task#setWindowingMode() for leaf task since this is a specialization of
         // {@link #setWindowingMode(int)} for root task.
         if (!isRootTask()) {
@@ -6494,10 +6521,48 @@ class Task extends TaskFragment {
                 if (task == this) {
                     return;
                 }
+                mTransitionController.collect(task);
                 boundsChange[0] |= task.setBounds(null);
             });
         }
         return boundsChange[0];
+    }
+
+    /**
+     * Sets whether the child tasks can have override windowing modes. That is, this method will
+     * clear the override windowing mode for all child tasks if {@code
+     * disallowOverrideWindowingModeForChildren} is {@code true}.
+     *
+     * @return {@code true} if any of the child task's windowing mode is changed.
+     */
+    boolean setDisallowOverrideWindowingModeForChildren(
+            boolean disallowOverrideWindowingModeForChildren) {
+        if (!mCreatedByOrganizer) {
+            Slog.w(TAG, "Can only disable child windowing mode override on tasks created by"
+                    + " organizer");
+            return false;
+        }
+        mDisallowOverrideWindowingModeForChildren = disallowOverrideWindowingModeForChildren;
+        if (!disallowOverrideWindowingModeForChildren) {
+            return false;
+        }
+
+        final boolean[] windowingModeChanged = {false};
+        forAllTasks(task -> {
+            if (task == this) {
+                return;
+            }
+
+            final int prevWinMode = task.getWindowingMode();
+            if (task.getRequestedOverrideWindowingMode() != WINDOWING_MODE_UNDEFINED) {
+                mTransitionController.collect(task);
+                task.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                if (prevWinMode != task.getWindowingMode()) {
+                    windowingModeChanged[0] = true;
+                }
+            }
+        });
+        return windowingModeChanged[0];
     }
 
     @CallSuper
