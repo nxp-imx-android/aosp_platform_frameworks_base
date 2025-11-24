@@ -407,7 +407,7 @@ private fun ContentScope.QuickSettingsLayout(
             if (volumeSliderViewModel != null) {
                 val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
 
-                VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
+                VerticalSeparator(QuickSettingsShade.Dimensions.VolumeSliderExtraPadding)
                 Box(
                     Modifier.systemGestureExclusionInShade(
                         enabled = { layoutState.transitionState is TransitionState.Idle }
@@ -431,14 +431,13 @@ private fun ContentScope.QuickSettingsLayout(
                             sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
                             hapticsViewModelFactory =
                                 volumeSliderViewModel.getSliderHapticsViewModelFactory(),
-                            dimensions = QuickSettingsShade.Dimensions.volumeSliderDimensions,
+                            dimensions = QuickSettingsShade.Dimensions.VolumeSliderDimensions,
                         )
                         Spacer(Modifier.width(8.dp))
                         IconButton(
-                            modifier =
-                                Modifier.size(
-                                    QuickSettingsShade.Dimensions.volumeSliderDimensions.trackHeight
-                                ),
+                            modifier = Modifier.size(
+                                QuickSettingsShade.Dimensions.VolumeSliderDimensions.trackHeight
+                            ),
                             colors =
                                 IconButtonDefaults.iconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
@@ -523,7 +522,7 @@ object QuickSettingsShade {
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.overlay_qs_layout_vertical_padding)
 
-        val volumeSliderDimensions: VolumeSliderDimensions
+        val VolumeSliderDimensions: VolumeSliderDimensions
             @Composable
             @ReadOnlyComposable
             get() =
@@ -538,6 +537,11 @@ object QuickSettingsShade {
             @Composable
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.toolbar_bottom_padding)
+
+        val VolumeSliderExtraPadding: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_volume_extra_padding)
 
         val ToolbarHeight: Dp
             @Composable

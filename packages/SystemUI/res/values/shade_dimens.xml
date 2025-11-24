@@ -52,6 +52,7 @@
     <dimen name="overlay_qs_layout_vertical_padding">16dp</dimen>
 
     <!-- QS shade overlay volume bar -->
+    <dimen name="overlay_qs_layout_volume_extra_padding">16dp</dimen>
     <dimen name="overlay_qs_layout_volume_vertical_padding">4dp</dimen>
     <dimen name="overlay_qs_layout_volume_thumb_height">
         @dimen/overlay_qs_layout_brightness_thumb_height

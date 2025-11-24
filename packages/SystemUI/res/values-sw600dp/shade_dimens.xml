@@ -83,4 +83,9 @@
     <dimen
         name="toolbar_button_size"
         android:featureFlag="com.android.systemui.desktop_sizing">36dp</dimen>
+
+    <!-- QS shade overlay volume bar -->
+    <dimen
+        name="overlay_qs_layout_volume_extra_padding"
+        android:featureFlag="com.android.systemui.desktop_sizing">0dp</dimen>
 </resources>
