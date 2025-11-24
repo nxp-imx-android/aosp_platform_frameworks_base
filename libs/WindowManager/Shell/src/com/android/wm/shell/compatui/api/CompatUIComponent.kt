@@ -88,7 +88,7 @@ class CompatUIComponent(
             val localLeash: SurfaceControl = this
             syncQueue.runInSync { t: SurfaceControl.Transaction -> t.remove(localLeash) }
             leash = null
-            spec.log("$tag leash removed")
+            spec.log("${this@CompatUIComponent.tag} leash removed")
         }
         spec.log("$tag released")
     }
@@ -126,7 +126,7 @@ class CompatUIComponent(
         spec.log("$tag layout: $layout")
         viewHost =
             createSurfaceViewHost().apply {
-                spec.log("$tag adding view $layout to host $this")
+                spec.log("${this@CompatUIComponent.tag} adding view $layout to host $this")
                 setView(layout!!, getWindowLayoutParams())
             }
         updateSurfacePosition()
@@ -137,7 +137,7 @@ class CompatUIComponent(
         SurfaceControlViewHost(context, context.display, this, javaClass.simpleName)
 
     fun relayout() {
-        spec.log("$tag relayout...")
+        spec.log("$tag relayout... ob viewHost $viewHost")
         viewHost?.run {
             relayout(getWindowLayoutParams())
             updateSurfacePosition()
@@ -184,7 +184,10 @@ class CompatUIComponent(
     protected fun getWindowLayoutParams(): WindowManager.LayoutParams =
         layout?.run {
             measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-            spec.log("$tag getWindowLayoutParams size: ${measuredWidth}x$measuredHeight")
+            spec.log(
+                "${this@CompatUIComponent.tag} getWindowLayoutParams" +
+                    " size: ${measuredWidth}x$measuredHeight"
+            )
             return getWindowLayoutParams(measuredWidth, measuredHeight)
         } ?: WindowManager.LayoutParams()
 
@@ -193,10 +196,10 @@ class CompatUIComponent(
         leash?.run {
             syncQueue.runInSync { t: SurfaceControl.Transaction ->
                 if (!isValid) {
-                    spec.log("$tag The leash has been released.")
+                    spec.log("${this@CompatUIComponent.tag} The leash has been released.")
                     return@runInSync
                 }
-                spec.log("$tag settings position  $position")
+                spec.log("${this@CompatUIComponent.tag} settings position  $position")
                 t.setPosition(this, position.x.toFloat(), position.y.toFloat())
             }
         }
@@ -216,7 +219,7 @@ class CompatUIComponent(
         val componentState: CompatUIComponentState? =
             componentUIComponentRepository.stateForComponent(id)
         layout?.run {
-            spec.log("$tag viewBinder execution...")
+            spec.log("${this@CompatUIComponent.tag} viewBinder execution...")
             sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
                 spec.layout.viewBinder(this, compatUIInfo, sharedState, componentState)
                 relayout()
@@ -227,7 +230,7 @@ class CompatUIComponent(
     private fun initSurface(leash: SurfaceControl?) {
         syncQueue.runInSync { t: SurfaceControl.Transaction ->
             if (leash == null || !leash.isValid) {
-                spec.log("$tag The leash has been released.")
+                spec.log("${this@CompatUIComponent.tag} The leash has been released.")
                 return@runInSync
             }
             t.setLayer(leash, spec.layout.zOrder)
