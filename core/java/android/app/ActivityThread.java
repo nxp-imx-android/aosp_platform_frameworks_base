@@ -4832,8 +4832,11 @@ public final class ActivityThread extends ClientTransactionHandler
                 r.activity.onProvideAssistData(data);
                 referrer = r.activity.onProvideReferrer();
             }
-            if (cmd.requestType == ActivityManager.ASSIST_CONTEXT_FULL || forAutofill
-                    || requestedOnlyContent) {
+            boolean requiresData =
+                    cmd.requestType == ActivityManager.ASSIST_CONTEXT_FULL
+                            || cmd.requestType
+                                    == ActivityManager.ASSIST_CONTEXT_SKIP_SCREEN_CONTENT;
+            if (requiresData || forAutofill || requestedOnlyContent) {
                 if (!requestedOnlyContent) {
                     structure = new AssistStructure(r.activity, forAutofill, cmd.flags);
                 }

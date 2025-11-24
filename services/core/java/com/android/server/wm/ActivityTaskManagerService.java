@@ -31,6 +31,7 @@ import static android.Manifest.permission.READ_FRAME_BUFFER;
 import static android.Manifest.permission.REMOVE_TASKS;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.Manifest.permission.STOP_APP_SWITCHES;
+import static android.app.ActivityManager.ASSIST_CONTEXT_SKIP_SCREEN_CONTENT;
 import static android.app.ActivityManager.DROP_CLOSE_SYSTEM_DIALOGS;
 import static android.app.ActivityManager.LOCK_DOWN_CLOSE_SYSTEM_DIALOGS;
 import static android.app.ActivityManager.LOCK_TASK_MODE_NONE;
@@ -3595,9 +3596,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     public boolean requestAssistContextExtras(int requestType, IAssistDataReceiver receiver,
             Bundle receiverExtras, IBinder activityToken, boolean checkActivityIsTop,
             boolean newSessionId) {
+
+        int flags = 0;
+        if (android.service.voice.flags.Flags.enableAssistResourceAttributes()
+                && requestType == ASSIST_CONTEXT_SKIP_SCREEN_CONTENT) {
+            flags |= AssistStructure.FLAG_OMIT_SCREEN_CONTENT;
+        }
+
         return enqueueAssistContext(requestType, null, null, receiver, receiverExtras,
                 activityToken, checkActivityIsTop, newSessionId, UserHandle.getCallingUserId(),
-                null, PENDING_ASSIST_EXTRAS_LONG_TIMEOUT, 0) != null;
+                null, PENDING_ASSIST_EXTRAS_LONG_TIMEOUT, flags) != null;
     }
 
     /**
@@ -3640,10 +3648,19 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         List<IBinder> topActivityToken = new ArrayList<>();
         topActivityToken.add(tokens.getActivityToken());
-        requester.requestAssistData(topActivityToken, true /* fetchData */,
-                false /* fetchScreenshot */, fetchStructure, true /* allowFetchData */,
-                false /* allowFetchScreenshot*/, true /* ignoreFocusCheck */,
-                Binder.getCallingUid(), callingPackageName, callingAttributionTag);
+        requester.requestAssistData(
+                topActivityToken,
+                true /* fetchData */,
+                false /* fetchScreenshot */,
+                fetchStructure,
+                true /* fetchAssistStructureScreenContent */,
+                true /* allowFetchData */,
+                false /* allowFetchScreenshot*/,
+                true /* allowFetchAssistStructureScreenContent */,
+                true /* ignoreFocusCheck */,
+                Binder.getCallingUid(),
+                callingPackageName,
+                callingAttributionTag);
 
         return true;
     }
