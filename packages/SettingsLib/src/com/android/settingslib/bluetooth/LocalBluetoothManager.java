@@ -58,7 +58,8 @@ public class LocalBluetoothManager {
     public static synchronized LocalBluetoothManager getInstance(Context context,
             BluetoothManagerCallback onInitCallback) {
         if (sInstance == null) {
-            LocalBluetoothAdapter adapter = LocalBluetoothAdapter.getInstance(context);
+            LocalBluetoothAdapter adapter =
+                    LocalBluetoothAdapter.getInstance(context, context.getUser());
             if (adapter == null) {
                 return null;
             }
