@@ -35,6 +35,7 @@
     },
     {
       "name": "SystemUIComposeGalleryTests",
+      "keywords": ["internal"],
       "options": [
         {
           "exclude-annotation": "org.junit.Ignore"
