@@ -40,6 +40,7 @@ import java.util.Objects;
  * @hide
  */
 @TestApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class StepSegment extends VibrationEffectSegment {
     private final float mAmplitude;
     private final float mFrequencyHz;

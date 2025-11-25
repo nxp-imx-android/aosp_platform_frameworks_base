@@ -45,6 +45,7 @@ import java.util.TreeMap;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class VibratorInfo implements Parcelable {
     private static final String TAG = "VibratorInfo";
 

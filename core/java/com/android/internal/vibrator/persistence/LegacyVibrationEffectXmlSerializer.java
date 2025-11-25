@@ -53,6 +53,7 @@ import java.util.List;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class LegacyVibrationEffectXmlSerializer {
 
     /**

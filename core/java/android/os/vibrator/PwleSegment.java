@@ -39,6 +39,7 @@ import java.util.Objects;
  */
 @TestApi
 @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class PwleSegment extends VibrationEffectSegment {
     private final float mStartAmplitude;
     private final float mStartFrequencyHz;

@@ -40,6 +40,7 @@ import java.util.function.Function;
  * @see VibrationEffect
  */
 @SuppressWarnings({"ParcelNotFinal", "ParcelCreator"}) // Parcel only extended here.
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public abstract class CombinedVibration implements Parcelable {
     private static final int PARCEL_TOKEN_MONO = 1;
     private static final int PARCEL_TOKEN_STEREO = 2;

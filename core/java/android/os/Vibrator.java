@@ -54,6 +54,7 @@ import java.util.concurrent.Executor;
  * </p>
  */
 @SystemService(Context.VIBRATOR_SERVICE)
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
 public abstract class Vibrator {
     private static final String TAG = "Vibrator";
 
@@ -147,6 +148,7 @@ public abstract class Vibrator {
      * @hide to prevent subclassing from outside of the framework
      */
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodKeep
     public Vibrator() {
         mPackageName = ActivityThread.currentPackageName();
         mResources = null;
