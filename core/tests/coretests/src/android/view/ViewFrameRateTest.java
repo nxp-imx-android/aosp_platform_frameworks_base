@@ -32,11 +32,23 @@ import static android.view.flags.Flags.toolkitDisableCategoryOnMrr;
 import static junit.framework.Assert.assertEquals;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import android.annotation.NonNull;
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.graphics.drawable.AnimatedImageDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -49,6 +61,7 @@ import android.util.DisplayMetrics;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import androidx.test.annotation.UiThreadTest;
@@ -58,12 +71,16 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.android.frameworks.coretests.R;
+import com.android.graphics.hwui.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
+import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -83,6 +100,9 @@ public class ViewFrameRateTest {
     private ViewRootImpl mViewRoot;
     private CountDownLatch mAfterDrawLatch;
     private Throwable mAfterDrawThrowable;
+
+    private AnimatedImageDrawable mDrawable;
+    private Drawable.Callback mMockCallback;
 
     @Before
     public void setUp() throws Throwable {
@@ -1316,6 +1336,123 @@ public class ViewFrameRateTest {
                     mViewRoot.getLastPreferredFrameRateCategory());
         });
         waitForAfterDraw();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ANIMATED_IMAGE_FRAME_RATE_HINT)
+    public void frameRateHintListenerRegistered() throws Throwable {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        // Load a real animated image
+        InputStream is = instrumentation.getContext().getResources()
+                .openRawResource(R.drawable.animated);
+        mDrawable = (AnimatedImageDrawable) Drawable.createFromStream(is, "test");
+        assertNotNull(mDrawable);
+        mMockCallback = mock(Drawable.Callback.class);
+
+        instrumentation.runOnMainSync(() -> {
+            mDrawable.setCallback(mMockCallback);
+            mDrawable.start();
+        });
+
+        // Wait for the frame rate hint to be called
+        verify(mMockCallback, timeout(1000)).onFrameRateHint(eq(mDrawable), anyFloat());
+        instrumentation.runOnMainSync(() -> mDrawable.stop());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ANIMATED_IMAGE_FRAME_RATE_HINT)
+    public void frameRateHintListenerUnregistered() throws Throwable {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        // Load a real animated image
+        InputStream is = instrumentation.getContext().getResources()
+                .openRawResource(R.drawable.animated);
+        mDrawable = (AnimatedImageDrawable) Drawable.createFromStream(is, "test");
+        assertNotNull(mDrawable);
+        mMockCallback = mock(Drawable.Callback.class);
+
+        instrumentation.runOnMainSync(() -> {
+            mDrawable.setCallback(mMockCallback);
+            mDrawable.start();
+        });
+        verify(mMockCallback, timeout(500).atLeastOnce())
+                .onFrameRateHint(eq(mDrawable), anyFloat());
+        instrumentation.runOnMainSync(() -> mDrawable.stop());
+        instrumentation.waitForIdleSync();
+        Mockito.reset(mMockCallback);
+
+        instrumentation.runOnMainSync(() -> {
+            mDrawable.setCallback(null);
+            mDrawable.start();
+        });
+        // Wait to see if any calls happen - they should not
+        Thread.sleep(500);
+        verify(mMockCallback, never()).onFrameRateHint(any(), anyFloat());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ANIMATED_IMAGE_FRAME_RATE_HINT)
+    public void frameRateHintListenerCalledOnStop() {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        // Load a real animated image
+        InputStream is = instrumentation.getContext().getResources()
+                .openRawResource(R.drawable.animated);
+        mDrawable = (AnimatedImageDrawable) Drawable.createFromStream(is, "test");
+        assertNotNull(mDrawable);
+        mMockCallback = mock(Drawable.Callback.class);
+
+        instrumentation.runOnMainSync(() -> {
+            mDrawable.setCallback(mMockCallback);
+            mDrawable.start();
+        });
+        verify(mMockCallback, timeout(500).atLeastOnce())
+                .onFrameRateHint(eq(mDrawable), anyFloat());
+        instrumentation.runOnMainSync(() -> mDrawable.stop());
+
+        // The stop() method in native side should trigger a 0.0f hint
+        verify(mMockCallback, timeout(500)).onFrameRateHint(eq(mDrawable), eq(0.0f));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ANIMATED_IMAGE_FRAME_RATE_HINT)
+    public void imageViewSetsFrameRateHint() throws Throwable {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ImageView imageView = spy(new ImageView(mActivity));
+        InputStream is = instrumentation.getContext().getResources()
+                .openRawResource(R.drawable.animated);
+        mDrawable = (AnimatedImageDrawable) Drawable.createFromStream(is, "test");
+        assertNotNull(mDrawable);
+        AnimatedImageDrawable spyDrawable = spy(mDrawable);
+        instrumentation.runOnMainSync(() -> imageView.setImageDrawable(spyDrawable));
+
+        ArgumentCaptor<Float> fpsCaptor = ArgumentCaptor.forClass(Float.class);
+
+        // Trigger the hint from the drawable side
+        mActivityRule.runOnUiThread(() -> {
+            imageView.onFrameRateHint(spyDrawable, 15.0f);
+        });
+
+        // Verify ImageView's setRequestedFrameRate was called
+        verify(imageView).setRequestedFrameRate(eq(15.0f));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ANIMATED_IMAGE_FRAME_RATE_HINT)
+    public void imageViewListenerClearedOnDrawableChange() throws Throwable {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ImageView imageView = spy(new ImageView(mActivity));
+        InputStream is = instrumentation.getContext().getResources()
+                .openRawResource(R.drawable.animated);
+        mDrawable = (AnimatedImageDrawable) Drawable.createFromStream(is, "test");
+        assertNotNull(mDrawable);
+        AnimatedImageDrawable spyDrawable = spy(mDrawable);
+
+        instrumentation.runOnMainSync(() -> imageView.setImageDrawable(spyDrawable));
+
+        // Set a different drawable
+        instrumentation.runOnMainSync(() -> imageView.setImageDrawable(new ColorDrawable()));
+
+        // Verify the listener on the old drawable was cleared
+        verify(spyDrawable).setCallback(eq(null));
     }
 
     @Test

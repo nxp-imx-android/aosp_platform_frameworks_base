@@ -4629,7 +4629,11 @@ public final class ViewRootImpl implements ViewParent,
         if (shouldEnableDvrr()) {
             boolean wasPosted;
             synchronized (mThreadedRendererViews) {
-                wasPosted = mInvalidationIdleMessagePosted;
+                if (com.android.graphics.hwui.flags.Flags.animatedImageFrameRateHint()) {
+                    wasPosted = mInvalidationIdleMessagePosted || mThreadedRendererViews.size() > 0;
+                } else {
+                    wasPosted = mInvalidationIdleMessagePosted;
+                }
                 mInvalidationIdleMessagePosted = true;
             }
             if (!wasPosted) {
@@ -7273,10 +7277,12 @@ public final class ViewRootImpl implements ViewParent,
                         mFrameRateCategoryHighHintCount = 0;
                         mFrameRateCategoryNormalCount = 0;
                         mFrameRateCategoryLowCount = 0;
-                        mPreferredFrameRate = 0;
                         mPreferredFrameRateCategory = FRAME_RATE_CATEGORY_NO_PREFERENCE;
                         updateFrameRateFromThreadedRendererViews();
-                        setPreferredFrameRate(mPreferredFrameRate);
+                        if (mThreadedRendererViews.size() == 0) {
+                            mPreferredFrameRate = 0;
+                            setPreferredFrameRate(mPreferredFrameRate);
+                        }
                         setPreferredFrameRateCategory(mPreferredFrameRateCategory);
                         mInvalidationIdleMessagePosted = false;
                         mIsPressedGesture = false;
@@ -7315,8 +7321,10 @@ public final class ViewRootImpl implements ViewParent,
                     updatePointerIcon(mPointerIconEvent);
                     break;
                 case MSG_FRAME_RATE_SETTING:
-                    mPreferredFrameRate = 0;
-                    mFrameRateCompatibility = FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
+                    if (mThreadedRendererViews.size() == 0) {
+                        mPreferredFrameRate = 0;
+                        mFrameRateCompatibility = FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
+                    }
                     break;
                 case MSG_SURFACE_REPLACED_TIMEOUT:
                     mSurfaceReplaced = false;
