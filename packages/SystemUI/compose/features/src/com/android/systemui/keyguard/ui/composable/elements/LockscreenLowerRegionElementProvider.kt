@@ -126,23 +126,27 @@ constructor(
                 return
             }
 
-            val unfoldTranslations =
-                when (key) {
-                    Shortcuts.Start -> {
-                        viewModel.unfoldTranslations.start
-                    }
-
-                    Shortcuts.End -> {
-                        viewModel.unfoldTranslations.end
-                    }
-                    else -> {
-                        throw IllegalArgumentException("Invalid keyguard shortcut key: $key")
-                    }
-                }
-
             LockscreenElement(
                 key,
-                Modifier.graphicsLayer { translationX = unfoldTranslations }
+                Modifier.graphicsLayer {
+                        translationX =
+                            // unfoldTranslations may be updated every frame, so only read value
+                            // in the draw phase.
+                            when (key) {
+                                Shortcuts.Start -> {
+                                    viewModel.unfoldTranslations.start
+                                }
+
+                                Shortcuts.End -> {
+                                    viewModel.unfoldTranslations.end
+                                }
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "Invalid keyguard shortcut key: $key"
+                                    )
+                                }
+                            }
+                    }
                     .wrapContentHeight(Alignment.Bottom, unbounded = true)
                     .size(
                         height = dimensionResource(R.dimen.keyguard_affordance_fixed_height),
