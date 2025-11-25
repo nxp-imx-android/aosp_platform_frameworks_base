@@ -1733,7 +1733,7 @@ final class UiModeManagerService extends SystemService {
     @GuardedBy("mLock")
     private boolean updateContrastLocked(int userId) {
         float contrast = Settings.Secure.getFloatForUser(getContext().getContentResolver(),
-                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, mCurrentUser);
+                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, userId);
         if (Math.abs(mContrasts.get(userId, Float.MAX_VALUE) - contrast) >= 1e-10) {
             mContrasts.put(userId, contrast);
             return true;
