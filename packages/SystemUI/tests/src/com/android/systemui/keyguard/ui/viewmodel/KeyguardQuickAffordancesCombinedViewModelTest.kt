@@ -358,7 +358,6 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_CLEAR_SHORTCUT_ICON_TINT)
     fun nonTintedIcon_clearsTintFromIcon() =
         testScope.runTest {
             val icon: Icon.Loaded = mock()
@@ -368,19 +367,6 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
             underTest.nonTintedIcon(icon)
 
             verify(drawable).setTintList(isNull())
-        }
-
-    @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_CLEAR_SHORTCUT_ICON_TINT)
-    fun nonTintedIcon_noInteractionWithDrawable() =
-        testScope.runTest {
-            val icon: Icon.Loaded = mock()
-            val drawable: Drawable = mock()
-            whenever(icon.drawable).thenReturn(drawable)
-
-            underTest.nonTintedIcon(icon)
-
-            verifyNoInteractions(drawable)
         }
 
     @Test
