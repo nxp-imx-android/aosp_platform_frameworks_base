@@ -87,18 +87,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
-    @Test
-    fun testSqueezeEffectDisabled_FlagDisabled() =
-        kosmos.runTest {
-            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
-
-            val isEffectEnabled by collectLastValue(underTest.isEffectEnabled)
-
-            assertThat(isEffectEnabled).isFalse()
-        }
-
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectEnabled_DisabledFromPhoneWindowManager() =
         kosmos.runTest {
@@ -114,7 +102,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(isPowerButtonPressedAsSingleGesture).isFalse()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectDisabled_AssistantSettingDisabled() =
         kosmos.runTest {
@@ -140,7 +127,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(isPowerButtonPressedAsSingleGesture).isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectEnabled_AllSettingsEnabled() =
         kosmos.runTest {
@@ -166,7 +152,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(isPowerButtonPressedAsSingleGesture).isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testInvocationEffectInwardsAnimationDelay() =
         kosmos.runTest {
@@ -182,7 +167,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(underTest.getLppInvocationEffectInAnimationDurationMillis()).isEqualTo(800)
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testInvocationEffectOutwardsAnimationDelay() =
         kosmos.runTest {
@@ -198,7 +182,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(underTest.getInvocationEffectOutAnimationDurationMillis()).isEqualTo(400)
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSetUiHints_whenSuppliedAllConfigs_allUpdatedInPreferences() =
         kosmos.runTest {
@@ -226,7 +209,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSetUiHints_whenSuppliedPartialConfig() =
         kosmos.runTest {
@@ -265,7 +247,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSetUiHints_whenSuppliedNoConfig_shouldSetDefaults() =
         kosmos.runTest {
@@ -287,7 +268,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSetUiHints_whenSuppliedWrongConfigType_setsDefault() =
         kosmos.runTest {
@@ -323,10 +303,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isEqualTo(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
         }
 
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
-        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testGestureEffectEnabled_flagEnabled_preferenceEnabled() =
         kosmos.runTest {
@@ -342,18 +319,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(underTest.isGestureEffectEnabled()).isFalse()
         }
 
-    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
-    @Test
-    fun testGestureEffectEnabled_lppFlagDisabled() =
-        kosmos.runTest {
-            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
-            assertThat(underTest.isGestureEffectEnabled()).isFalse()
-        }
-
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
-        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testGestureEffectEnabled_preferenceDisabled() =
         kosmos.runTest {
@@ -361,10 +327,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(underTest.isGestureEffectEnabled()).isFalse()
         }
 
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
-        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun onGestureProgress_updatesGestureProgressStateFlow() =
         kosmos.runTest {
@@ -378,10 +341,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(gestureProgress?.progress).isEqualTo(0.5f)
         }
 
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
-        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun onGestureCompletion_updatesGestureProgressStateFlow() =
         kosmos.runTest {
@@ -394,10 +354,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isEqualTo(SqueezeEffectRepository.GestureStatus.COMPLETED)
         }
 
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
-        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun hideGestureEffect_updatesGestureProgressStateFlow() =
         kosmos.runTest {
