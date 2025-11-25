@@ -21,6 +21,7 @@ import android.app.UiAutomation
 import android.content.Context
 import android.graphics.Point
 import android.os.SystemClock
+import android.platform.systemui_tapl.ui.Root;
 import android.tools.Rotation
 import android.tools.device.apphelpers.IStandardAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
@@ -130,7 +131,7 @@ object SplitScreenUtils {
         primaryApp.launchViaIntent(wmHelper)
         secondaryApp.launchViaIntent(wmHelper)
         ChangeDisplayOrientationRule.setRotation(rotation)
-        device.pressHome()
+        Root.get().goHomeViaKeycode();
         wmHelper.StateSyncBuilder().withHomeActivityVisible().waitForAndVerify()
         splitFromOverview(tapl, device, rotation)
         waitForSplitComplete(wmHelper, primaryApp, secondaryApp)

@@ -43,6 +43,7 @@ android_library {
         "flickerlib-helpers",
         "flickertestapplib",
         "launcher-aosp-tapl",
+        "systemui-tapl",
         "launcher-helper-lib",
         "platform-test-annotations",
         "wm-flicker-common-app-helpers",
