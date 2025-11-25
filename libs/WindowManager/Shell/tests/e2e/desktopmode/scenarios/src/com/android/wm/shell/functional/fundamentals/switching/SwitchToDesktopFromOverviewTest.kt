@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.fundamentals.switching
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.DragAppWindowMultiWindowAndPip
+import com.android.wm.shell.scenarios.EnterDesktopViaStaticDesktopOverviewTask
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [DragAppWindowMultiWindowAndPip]. */
+/* Functional test for [SwitchToDesktopFromOverview]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class DragAppWindowMultiWindowAndPipTest : DragAppWindowMultiWindowAndPip()
+class SwitchToDesktopFromOverviewTest : EnterDesktopViaStaticDesktopOverviewTask()
