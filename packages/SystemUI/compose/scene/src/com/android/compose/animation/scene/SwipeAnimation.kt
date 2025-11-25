@@ -552,7 +552,11 @@ internal fun willDecayFasterThanAnimating(
 
 /** Returns the lowest timeMs >= 0 for which [f] is true. */
 private fun binarySearch(f: (timeMs: Long) -> Boolean): Long {
-    check(!f(0)) { "f should return false for timeMillis=0" }
+    if (f(0)) {
+        // If the target is reached at t = 0 (due to floating point inaccuracies), return 0.
+        return 0L
+    }
+
     var low = 0L
     var high = 128L // common duration that is also a power of 2.
     while (!f(high)) {

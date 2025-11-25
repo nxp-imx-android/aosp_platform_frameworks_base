@@ -18,6 +18,7 @@ package com.android.compose.animation.scene
 
 import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.generateDecayAnimationSpec
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -76,5 +77,28 @@ class SwipeAnimationTest {
                 )
             )
             .isTrue()
+    }
+
+    @Test
+    // Regression test for b/439715141.
+    fun smallDeltaToTarget() {
+        val density = Density(1f, 1f)
+
+        // The exact same values as in b/439715141.
+        val initialOffset = 0.049804688f
+        val targetOffset = 0f
+        val initialVelocity = -8528.837f
+
+        val decaySpec =
+            SplineBasedFloatDecayAnimationSpec(density).generateDecayAnimationSpec<Float>()
+        val animationSpec = spring<Float>()
+
+        willDecayFasterThanAnimating(
+            animationSpec,
+            decaySpec,
+            initialOffset,
+            targetOffset,
+            initialVelocity,
+        )
     }
 }
