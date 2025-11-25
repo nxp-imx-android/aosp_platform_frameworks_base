@@ -588,7 +588,7 @@ flag {
   is_exported: true
   namespace: "enterprise"
   description: "Enable the multi user management user provisioning APIs."
-  bug: "425840472"
+  bug: "390162247"
 }
 
 flag {
