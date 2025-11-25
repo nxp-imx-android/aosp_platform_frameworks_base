@@ -16,7 +16,7 @@
 
 package com.android.server.am;
 
-import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
+import static com.android.server.am.Flags.FLAG_GET_PACKAGE_NAMES_FOR_PID_API;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -112,7 +112,7 @@ public class ActivityManagerInternalTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
+    @RequiresFlagsEnabled(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
     public void testGetPackageNamesForPid() {
         String[] expected = new String[]{TEST_PKG1, TEST_PKG2};
         doReturn(expected).when(mProc).getProcessPackageNames();
@@ -129,7 +129,7 @@ public class ActivityManagerInternalTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
+    @RequiresFlagsEnabled(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
     public void testGetPackageNamesForPid_differentUid_returnsEmptyArray() {
         String[] expected = new String[]{TEST_PKG1, TEST_PKG2};
         doReturn(expected).when(mProc).getProcessPackageNames();

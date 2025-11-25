@@ -16,7 +16,7 @@
 
 package com.android.server.am;
 
-import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
+import static com.android.server.am.Flags.FLAG_GET_PACKAGE_NAMES_FOR_PID_API;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -190,7 +190,7 @@ public interface ActivityManagerLocal {
      * @return The package names associated with the provided PID and UID, or an empty array if the
      *         process is not found or doesn't match the UID provided.
      */
-    @FlaggedApi(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
+    @FlaggedApi(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
     @NonNull
     String[] getPackageNamesForPid(int pid, int uid);
 

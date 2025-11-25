@@ -311,8 +311,8 @@ flag {
 }
 
 flag {
-    name: "enable_get_package_names_for_pid"
-    namespace: "system_performance"
+    name: "get_package_names_for_pid_api"
+    namespace: "backstage_power"
     description: "Enable getting package names for a PID."
     is_exported: true
     bug: "456466241"
