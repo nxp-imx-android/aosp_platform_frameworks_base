@@ -435,6 +435,25 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void createSession_virtualDeviceCreationFails_throwsException() {
+        // Setup: Configure the virtual device factory to throw a RuntimeException upon creation.
+        // This simulates a failure during virtual device creation, for example, due to invalid
+        // parameters or a system service issue. The change being tested wraps this call in
+        // Binder.withCleanCallingIdentity() to prevent SecurityExceptions, so testing general
+        // exception propagation is important.
+        final RuntimeException expectedException = new RuntimeException("Creation failed");
+        when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
+                .thenThrow(expectedException);
+
+        // Action & Verification: Assert that creating the session throws the same exception,
+        // ensuring that creation failures are propagated to the caller.
+        final RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> createComputerControlSessionWithoutInitializing(
+                        mDefaultParams, GLOBAL_TIMEOUT_MILLIS));
+        assertThat(thrown).isEqualTo(expectedException);
+    }
+
+    @Test
     public void createSession_noActivityPolicy() throws Exception {
         createComputerControlSession(mDefaultParams);
 
