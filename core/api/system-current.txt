@@ -15733,7 +15733,7 @@ package android.telephony {
     method public int getAlertStatus();
     method public int getArfcn();
     method public int getCellId();
-    method public int getPhysCellId();
+    method public int getPhysicalCellId();
     method @NonNull public String getPlmn();
     method public int getRat();
     method @NonNull public int[] getReasonCodes();
