@@ -56,6 +56,7 @@ public final class VirtualCameraConversionUtil {
      * @return The converted configuration to be sent to the {@link IVirtualCameraService}.
      * @throws RemoteException If there was an issue fetching the configuration from the client.
      */
+    @SuppressWarnings("NullAway") // code generated for aidl files is not properly annotated
     @NonNull
     public static VirtualCameraConfiguration
             getServiceCameraConfiguration(@NonNull VirtualCameraConfig cameraConfig) {
@@ -163,8 +164,9 @@ public final class VirtualCameraConversionUtil {
         };
     }
 
+    @Nullable
     private static VirtualCameraMetadata convertToVirtualCameraMetadata(
-            CameraCharacteristics cameraCharacteristics) {
+            @Nullable CameraCharacteristics cameraCharacteristics) {
         if (cameraCharacteristics == null) {
             return null;
         }
@@ -172,8 +174,9 @@ public final class VirtualCameraConversionUtil {
         return convertToVirtualCameraMetadata(cameraCharacteristics.getNativeMetadata());
     }
 
+    @Nullable
     private static VirtualCameraMetadata convertToVirtualCameraMetadata(
-            CameraMetadataNative metadataNative) {
+            @Nullable CameraMetadataNative metadataNative) {
         if (metadataNative == null) {
             return null;
         }
@@ -193,6 +196,7 @@ public final class VirtualCameraConversionUtil {
         return virtualCameraMetadata;
     }
 
+    @Nullable
     private static CameraMetadataNative convertToCameraMetadataNative(
             @NonNull VirtualCameraMetadata virtualCameraMetadata) {
         CameraMetadataNative cameraMetadataNative = null;
@@ -210,7 +214,8 @@ public final class VirtualCameraConversionUtil {
         return cameraMetadataNative;
     }
 
-    private static @Nullable CaptureRequest convertToCaptureRequest(
+    @Nullable
+    private static CaptureRequest convertToCaptureRequest(
             @NonNull VirtualCameraMetadata virtualCameraMetadata) {
         CameraMetadataNative metadataNative = convertToCameraMetadataNative(virtualCameraMetadata);
         if (metadataNative != null) {
@@ -223,7 +228,8 @@ public final class VirtualCameraConversionUtil {
         return null;
     }
 
-    private static @Nullable android.companion.virtual.camera.ICaptureResultConsumer
+    @Nullable
+    private static android.companion.virtual.camera.ICaptureResultConsumer
             convertToVdmCaptureResultConsumer(
                 @Nullable ICaptureResultConsumer serviceCaptureResultConsumer) {
         if (serviceCaptureResultConsumer != null) {

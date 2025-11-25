@@ -35,6 +35,15 @@ java_library_static {
     lint: {
         baseline_filename: "lint-baseline.xml",
     },
+    errorprone: {
+        extra_check_modules: ["//external/nullaway:nullaway_plugin"],
+        javacflags: [
+            "-XepOpt:NullAway:AnnotatedPackages=com.android.server.companion.virtual",
+            "-Xep:NullAway:ERROR",
+            // Exclude @AutoValue generated code.
+            "-XepExcludedPaths:.*/virtual/.*AutoValue_.*",
+        ],
+    },
 }
 
 genrule {

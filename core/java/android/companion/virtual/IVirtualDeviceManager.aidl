@@ -70,7 +70,7 @@ interface IVirtualDeviceManager {
     /**
      * Returns the details of the virtual device with the given ID, if any.
      */
-    VirtualDevice getVirtualDevice(int deviceId);
+    @nullable VirtualDevice getVirtualDevice(int deviceId);
 
     /**
      * Registers a virtual device listener to receive notifications for virtual device events.
@@ -112,8 +112,8 @@ interface IVirtualDeviceManager {
      * {@link VirtualDeviceManager#DEVICE_ID_DEFAULT} is not valid as it is the ID of the default
      * device which is not a virtual device. {@code deviceId} must correspond to a virtual device
      * created by {@link VirtualDeviceManager#createVirtualDevice(int, VirtualDeviceParams)}.
-    */
-   boolean isValidVirtualDeviceId(int deviceId);
+     */
+    boolean isValidVirtualDeviceId(int deviceId);
 
     /**
      * Returns the device policy for the given virtual device and policy type.

@@ -91,7 +91,9 @@ public class ComputerControlSessionProcessor {
 
     private final Object mHandlerThreadLock = new Object();
     @GuardedBy("mHandlerThreadLock")
+    @Nullable
     private ServiceThread mHandlerThread;
+    @SuppressWarnings("NullAway") // Session lifecycle makes this @NonNull, though hard to enforce
     private Handler mHandler;
 
     public ComputerControlSessionProcessor(
