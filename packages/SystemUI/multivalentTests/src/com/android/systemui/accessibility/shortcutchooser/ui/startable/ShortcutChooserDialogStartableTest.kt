@@ -17,11 +17,13 @@
 package com.android.systemui.accessibility.shortcutchooser.ui.startable
 
 import android.content.Intent
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.provider.Settings.Secure.USER_SETUP_COMPLETE
 import android.view.Display.DEFAULT_DISPLAY
-import android.view.accessibility.Flags
+import android.view.accessibility.Flags as AccessibilityFlags
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -33,6 +35,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.ShortcutUtils
+import com.android.systemui.Flags as SystemUIFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
@@ -61,7 +64,10 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT)
+@EnableFlags(
+    AccessibilityFlags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT,
+    AccessibilityFlags.FLAG_QUICK_ACCESS_SHORTCUT_TYPE,
+)
 class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     private companion object {
         const val SHORTCUT_TYPE = UserShortcutType.TOP_ROW_KEY
@@ -437,6 +443,98 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             composeTestRule.onEditButton().assertIsDisplayed()
         }
 
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun createDialog_quickAccess_allShortcutsEnabled() =
+        kosmos.runTest {
+            val shortcutType = UserShortcutType.QUICK_ACCESS
+
+            underTest.start()
+
+            assertThat(
+                    accessibilityShortcutsRepository
+                        .getSelectedAccessibilityTargetsInfo(shortcutType)
+                        .map { it.targetName }
+                        .toSet()
+                )
+                .isEmpty()
+
+            sendIntentInMainThreadWaitForIdle(shortcutType)
+
+            assertThat(
+                    accessibilityShortcutsRepository
+                        .getSelectedAccessibilityTargetsInfo(shortcutType)
+                        .map { it.targetName }
+                        .toSet()
+                )
+                .isEqualTo(
+                    accessibilityShortcutsRepository
+                        .getAllAccessibilityTargetsInfo(shortcutType)
+                        .map { it.targetName }
+                        .toSet()
+                )
+        }
+
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun start_quickAccess_noDialogShownByDefault() =
+        kosmos.runTest {
+            underTest.start()
+
+            assertCurrentDialog(DialogType.NONE)
+        }
+
+    @Test
+    @DisableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun createDialog_quickAccess_withFlagDisabled_doesNotShowDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
+            assertCurrentDialog(DialogType.NONE)
+        }
+
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun createDialog_quickAccess_showsQuickAccessDialog_thenClickDoneButton_dismissesDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+
+            composeTestRule.onDoneButton().performClick()
+            composeTestRule.waitForIdle()
+
+            assertCurrentDialog(DialogType.NONE)
+        }
+
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun createDialog_quickAccess_clickTarget_performsShortcut() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+
+            composeTestRule.onNodeWithText("Screen Reader").performClick()
+            composeTestRule.waitForIdle()
+
+            assertThat(
+                    accessibilityShortcutsRepository
+                        .getAllAccessibilityTargetsInfo(UserShortcutType.QUICK_ACCESS)
+                        .filter { it.isToggleOn }
+                        .map { it.targetName }
+                        .toSet()
+                )
+                .isEqualTo(setOf(TALKBACK_TARGET_NAME))
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+        }
+
     private fun Kosmos.sendIntentInMainThreadWaitForIdle(
         @UserShortcutType shortcutType: Int = SHORTCUT_TYPE
     ) {
@@ -445,8 +543,12 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent().apply {
-                    action = ShortcutChooserDialogInteractor.ACTION
-                    putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
+                    if (shortcutType == UserShortcutType.QUICK_ACCESS) {
+                        action = ShortcutChooserDialogInteractor.QUICK_ACCESS_ACTION
+                    } else {
+                        action = ShortcutChooserDialogInteractor.SHORTCUT_CHOOSER_ACTION
+                        putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
+                    }
                     putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, DEFAULT_DISPLAY)
                 },
             )
@@ -508,27 +610,18 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     ) {
         assertThat(viewModel.dialogType.value).isEqualTo(dialogType)
 
-        with(composeTestRule.onTutorialDialogTitle()) {
-            if (dialogType == DialogType.TUTORIAL) {
-                assertIsDisplayed()
-            } else {
-                assertDoesNotExist()
-            }
-        }
-        with(composeTestRule.onEditorDialogTitle(shortcutType)) {
-            if (dialogType == DialogType.EDIT_TARGETS) {
-                assertIsDisplayed()
-            } else {
-                assertDoesNotExist()
-            }
-        }
-        with(composeTestRule.onPickerDialogTitle()) {
-            if (dialogType == DialogType.TOGGLE_TARGETS) {
-                assertIsDisplayed()
-            } else {
-                assertDoesNotExist()
-            }
-        }
+        composeTestRule
+            .onTutorialDialogTitle()
+            .assertDialogVisibility(dialogType, DialogType.TUTORIAL)
+        composeTestRule
+            .onEditorDialogTitle(shortcutType)
+            .assertDialogVisibility(dialogType, DialogType.EDIT_TARGETS)
+        composeTestRule
+            .onPickerDialogTitle()
+            .assertDialogVisibility(dialogType, DialogType.TOGGLE_TARGETS)
+        composeTestRule
+            .onQuickAccessDialogTitle()
+            .assertDialogVisibility(dialogType, DialogType.QUICK_ACCESS)
     }
 
     private fun ComposeTestRule.onAddFeaturesButton() = onNodeWithTag("add_features_button")
@@ -560,4 +653,20 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         onNodeWithText(
             context.resources.getString(R.string.accessibility_shortcutchooser_picker_dialog_title)
         )
+
+    private fun ComposeTestRule.onQuickAccessDialogTitle() =
+        onNodeWithText(
+            context.resources.getString(R.string.accessibility_quick_access_dialog_title)
+        )
+
+    private fun SemanticsNodeInteraction.assertDialogVisibility(
+        expectedDialogType: DialogType,
+        assertDialogType: DialogType,
+    ) {
+        if (expectedDialogType == assertDialogType) {
+            assertIsDisplayed()
+        } else {
+            assertDoesNotExist()
+        }
+    }
 }

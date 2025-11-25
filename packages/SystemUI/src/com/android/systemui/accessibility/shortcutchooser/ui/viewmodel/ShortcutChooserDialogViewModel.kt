@@ -19,6 +19,7 @@ package com.android.systemui.accessibility.shortcutchooser.ui.viewmodel
 import android.content.Context
 import android.util.Log
 import android.view.Display.INVALID_DISPLAY
+import android.view.accessibility.Flags
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
@@ -52,6 +53,7 @@ constructor(
         TUTORIAL,
         EDIT_TARGETS,
         TOGGLE_TARGETS,
+        QUICK_ACCESS,
     }
 
     override suspend fun onActivated() {
@@ -130,6 +132,17 @@ constructor(
 
     private suspend fun onDialogRequest(requestModel: DialogRequestModel) {
         val shortcutType = requestModel.shortcutType
+
+        if (shortcutType == UserShortcutType.QUICK_ACCESS) {
+            if (Flags.quickAccessShortcutType()) {
+                coroutineScope {
+                    launchTraced { interactor.enableShortcutForAllTargets(shortcutType) }
+                }
+                _dialogType.value = DialogType.QUICK_ACCESS
+            }
+            return
+        }
+
         val assignedTargetsCount = interactor.getAssignedAccessibilityTargetsCount(shortcutType)
 
         if (assignedTargetsCount == 1) {
@@ -140,7 +153,7 @@ constructor(
 
         if (shortcutType == UserShortcutType.TOP_ROW_KEY) {
             if (interactor.isHeadlessSystemUser() || isOOBE()) {
-                interactor.sendBroadcastToLaunchQuickAccessDialog(requestModel.displayId)
+                interactor.launchQuickAccessDialog(requestModel.displayId)
                 return
             }
             if (assignedTargetsCount == 0) {
