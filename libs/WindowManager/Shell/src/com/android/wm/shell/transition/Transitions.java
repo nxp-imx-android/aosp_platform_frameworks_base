@@ -70,6 +70,7 @@ import android.window.TransitionInfo;
 import android.window.TransitionMetrics;
 import android.window.TransitionRequestInfo;
 import android.window.WindowAnimationState;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.BinderThread;
@@ -106,6 +107,7 @@ import com.android.wm.shell.transition.tracing.TransitionTracer;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
@@ -230,6 +232,8 @@ public class Transitions implements RemoteCallable<Transitions>,
     private final SleepHandler mSleepHandler = new SleepHandler();
     private final TransitionTracer mTransitionTracer;
 
+    private final TransitionMixpatcher mMixpatcher;
+
     /** List of possible handlers. Ordered by specificity (eg. tapped back to front). */
     private final ArrayList<TransitionHandler> mHandlers = new ArrayList<>();
 
@@ -265,6 +269,9 @@ public class Transitions implements RemoteCallable<Transitions>,
 
         /** Ordered list of transitions which have been merged into this one. */
         private ArrayList<ActiveTransition> mMerged;
+
+        /** When using mixpatcher, this tracks the anim wrapper across multiple plannings. */
+        MixpatchAnimationWrapper mMixpatchWrapper;
 
         ActiveTransition(IBinder token) {
             mToken = token;
@@ -312,6 +319,12 @@ public class Transitions implements RemoteCallable<Transitions>,
     private final ArrayList<ActiveTransition> mReadyDuringSync = new ArrayList<>();
 
     private final ArrayList<Track> mTracks = new ArrayList<>();
+
+    private final MixpatchLegacyPlanner mMixpatchLegacyPlanner = new MixpatchLegacyPlanner(null);
+    final MixpatchLegacyPrePlanner mMixpatchLegacyPrePlanner = new MixpatchLegacyPrePlanner();
+    private final ArrayList<MixpatchAnimationWrapper> mMixpatchAnimations = new ArrayList<>();
+    private final WindowContainerToken mSleepOrKeyguardProxy =
+            WindowContainerToken.createProxy("LegacySleepOrKG");
 
     public Transitions(@NonNull Context context,
             @NonNull ShellInit shellInit,
@@ -373,6 +386,13 @@ public class Transitions implements RemoteCallable<Transitions>,
         mFocusTransitionObserver = focusTransitionObserver;
 
         mTransitionTracer = new PerfettoTransitionTracer();
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            mMixpatcher = new TransitionMixpatcher(mOrganizer, mMainExecutor);
+            mMixpatcher.overridePrePlanner(mMixpatchLegacyPrePlanner);
+            mMixpatcher.mPlanners.add(mMixpatchLegacyPlanner);
+        } else {
+            mMixpatcher = null;
+        }
     }
 
     private void onInit() {
@@ -543,6 +563,10 @@ public class Transitions implements RemoteCallable<Transitions>,
      * will be executed when the last active transition is finished.
      */
     public void runOnIdle(Runnable runnable) {
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            mMixpatcher.runOnIdle(runnable);
+            return;
+        }
         if (isIdle()) {
             runnable.run();
         } else {
@@ -661,6 +685,16 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** @see ITransitionPlayer#onTransitionReady */
     public void onTransitionReady(@NonNull IBinder transitionToken, @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            mMixpatcher.onTransitionReady(transitionToken, info, t, finishT);
+            return;
+        }
+        onTransitionReadyInner(transitionToken, info, t, finishT);
+    }
+
+    private void onTransitionReadyInner(@NonNull IBinder transitionToken,
+            @NonNull TransitionInfo info, @NonNull SurfaceControl.Transaction t,
+            @NonNull SurfaceControl.Transaction finishT) {
         info.setUnreleasedWarningCallSiteForAllSurfaces("Transitions.onTransitionReady");
         ProtoLog.v(WM_SHELL_TRANSITIONS, "onTransitionReady (#%d) %s: %s",
                 info.getDebugId(), transitionToken, info.toString("    " /* prefix */));
@@ -1108,6 +1142,23 @@ public class Transitions implements RemoteCallable<Transitions>,
         info.releaseAnimSurfaces();
     }
 
+    /**
+     * Finds the mixpatcher animation wrapper for `transition` and finishes/cleans it up. Should
+     * only be used when mixpatcher is enabled.
+     */
+    private void finishMixWrapAnim(@NonNull IBinder transition,
+            @Nullable SurfaceControl.Transaction finishT) {
+        for (int i = mMixpatchAnimations.size() - 1; i >= 0; --i) {
+            final MixpatchAnimationWrapper anim = mMixpatchAnimations.get(i);
+            if (anim.mTransition == transition) {
+                anim.mFinishCB.onFinished(finishT);
+                mMixpatchAnimations.remove(i);
+                return;
+            }
+        }
+        Log.wtf(TAG, "Couldn't find mixpatch animation for " + transition);
+    }
+
     private void onFinish(IBinder token, @Nullable WindowContainerTransaction wct) {
         mMainExecutor.assertCurrentThread();
 
@@ -1165,18 +1216,33 @@ public class Transitions implements RemoteCallable<Transitions>,
                 }
             }
         }
-        if (fullFinish != null) {
-            fullFinish.apply();
+        if (mMixpatchAnimations.isEmpty()) {
+            if (fullFinish != null) {
+                fullFinish.apply();
+            }
+            // Now perform all the finish callbacks (starting with the playing one and then all the
+            // transitions merged into it).
+            releaseSurfaces(active.mInfo);
+            mOrganizer.finishTransition(active.mToken, wct);
+        } else {
+            // Note: fullFinish is sent to mixpatcher who will merge/apply it once all animations
+            // have finished.
+            finishMixWrapAnim(active.mToken, fullFinish);
+            if (wct != null && !wct.isEmpty()) {
+                mOrganizer.applyTransaction(wct);
+                Log.w(TAG, "Applying finishWCT out-of-band for #" + active.mInfo.getDebugId());
+            }
         }
-        // Now perform all the finish callbacks (starting with the playing one and then all the
-        // transitions merged into it).
-        releaseSurfaces(active.mInfo);
-        mOrganizer.finishTransition(active.mToken, wct);
         if (active.mMerged != null) {
             for (int iM = 0; iM < active.mMerged.size(); ++iM) {
                 ActiveTransition merged = active.mMerged.get(iM);
-                mOrganizer.finishTransition(merged.mToken, null /* wct */);
-                releaseSurfaces(merged.mInfo);
+                if (mMixpatchAnimations.isEmpty()) {
+                    mOrganizer.finishTransition(merged.mToken, null /* wct */);
+                    releaseSurfaces(merged.mInfo);
+                } else {
+                    // Note: fullFinish is sent to mixpatcher who will merge/apply it.
+                    finishMixWrapAnim(merged.mToken, fullFinish);
+                }
                 mKnownTransitions.remove(merged.mToken);
             }
             active.mMerged.clear();
@@ -1200,7 +1266,6 @@ public class Transitions implements RemoteCallable<Transitions>,
             throw new RuntimeException("Transition already started " + transitionToken);
         }
         final ActiveTransition active = new ActiveTransition(transitionToken);
-        mKnownTransitions.put(transitionToken, active);
         WindowContainerTransaction wct = null;
 
         // If we have sleep, we use a special handler and we try to finish everything ASAP.
@@ -1243,6 +1308,16 @@ public class Transitions implements RemoteCallable<Transitions>,
             wct.setWindowingMode(request.getTriggerTask().token, WINDOWING_MODE_FULLSCREEN);
             wct.setBounds(request.getTriggerTask().token, null);
         }
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            ArrayList<ITransitionPlanner> interest = null;
+            if (active.mHandler != null) {
+                interest = new ArrayList<>();
+                interest.add(new MixpatchLegacyPlanner(active.mHandler));
+            }
+            mMixpatcher.startTransition(transitionToken, request.getType(), wct, interest);
+            return;
+        }
+        mKnownTransitions.put(transitionToken, active);
         mOrganizer.startTransition(transitionToken, wct != null && wct.isEmpty() ? null : wct);
         // Currently, WMCore only does one transition at a time. If it makes a requestStart, it
         // is already collecting that transition on core-side, so it will be the next one to
@@ -1268,6 +1343,15 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (type < 0) {
             throw new IllegalArgumentException("Invalid transition type provided (" + type
                     + "), type must be > 0");
+        }
+
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            ArrayList<ITransitionPlanner> interest = null;
+            if (handler != null) {
+                interest = new ArrayList<>();
+                interest.add(new MixpatchLegacyPlanner(handler));
+            }
+            return mMixpatcher.startTransition(null /* token */, type, wct, interest);
         }
 
         ProtoLog.v(WM_SHELL_TRANSITIONS, "Directly starting a new transition "
@@ -1393,6 +1477,177 @@ public class Transitions implements RemoteCallable<Transitions>,
     public void unregisterOverviewOverlayLeashInvalidationCallback(
             int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
         mOrganizer.unregisterOverviewOverlayLeashInvalidationCallback(displayId, callback);
+    }
+
+    /**
+     * Adapter which presents the handler-based dispatch to the Mixpatcher as if it was a planner.
+     *
+     * It basically "plans" for all animations to be handled by a singular wrapper around handler
+     * dispatch.
+     *
+     * In order to also capture/wrap the {@link #startTransition} flow (where a priority
+     * handler is attached to the transition), an instance of this will be created with `mInterest`
+     * populated and then this planner will, in turn, be add as an `interest` to Mixpatcher's
+     * {@link TransitionMixpatcher#startTransition}.
+     */
+    private class MixpatchLegacyPlanner implements ITransitionPlanner {
+        private final @Nullable TransitionHandler mInterest;
+
+        MixpatchLegacyPlanner(@Nullable TransitionHandler interest) {
+            mInterest = interest;
+        }
+
+        @Override
+        public void plan(@NonNull AnimationPlan plan,
+                @NonNull TransitionInfo fullInfo, @NonNull IBinder transition,
+                @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            if (info.getChanges().isEmpty()) {
+                // This means that something else (in mixpatcher) claimed the animations or the
+                // transition was aborted. Either way, it means we need to forward this information
+                // to any handlers which were expecting a response (with abort=true because there
+                // are no changes)
+                int activeIdx = findByToken(mPendingTransitions, transition);
+                if (activeIdx < 0) {
+                    if (mInterest != null) {
+                        mInterest.onTransitionConsumed(transition, true /* aborted */,
+                                // Mixpatcher expects animators to provide finishT while the legacy
+                                // handlers expect to be given a finishT to populate. Either way,
+                                // in the consume situation, what's important is that we pass in a
+                                // transaction which will be applied later, so using the
+                                // startTransaction here should fulfill that purpose.
+                                startTransaction);
+                    }
+                    return;
+                } else if (mPendingTransitions.get(activeIdx).mMixpatchWrapper == null) {
+                    throw new IllegalStateException("Pending transition registered outside"
+                            + " mixpatch");
+                }
+            }
+            // Since direct transitions go through mixpatcher, we may need to hack-in the state now.
+            final ActiveTransition active = ensureActive(Transitions.this, transition);
+            if (active.mMixpatchWrapper == null) {
+                active.mMixpatchWrapper = new MixpatchAnimationWrapper(transition);
+                active.mStartT = active.mMixpatchWrapper.mStartT;
+                active.mStartT.merge(startTransaction);
+            }
+            for (int i = 0; i < info.getChanges().size(); ++i) {
+                plan.setAnimation(info.getChanges().get(i).getContainer(), active.mMixpatchWrapper);
+            }
+            if (active.mHandler == null) {
+                // If mInterest != null, then it means this is a direct request but has already
+                // been "intercepted" by the PrePlanner (ie. it is sleep/keyguard).
+                active.mHandler = mInterest;
+            }
+        }
+
+        static ActiveTransition ensureActive(@NonNull Transitions ctx,
+                @NonNull IBinder transition) {
+            int activeIdx = findByToken(ctx.mPendingTransitions, transition);
+            if (activeIdx >= 0) {
+                return ctx.mPendingTransitions.get(activeIdx);
+            }
+            final ActiveTransition active = new ActiveTransition(transition);
+            ctx.mKnownTransitions.put(active.mToken, active);
+            ctx.mPendingTransitions.add(active);
+            return active;
+        }
+
+        @NonNull
+        @Override
+        public String getDebugName() {
+            return "LegacyDispatch";
+        }
+    }
+
+    /** Replaces the sleep/keyguard planners so we can route those to legacy dispatching. */
+    private class MixpatchLegacyPrePlanner implements ITransitionPlanner {
+        @Override
+        public void plan(@NonNull AnimationPlan plan,
+                @NonNull TransitionInfo fullInfo, @NonNull IBinder transition,
+                @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            final boolean isSleepOrKeyguard =
+                    (info.getType() == TRANSIT_SLEEP
+                            || (info.getFlags() & TransitionInfo.FLAG_SYNC) != 0)
+                            || KeyguardTransitionHandler.handles(info);
+            if (!isSleepOrKeyguard) {
+                return;
+            }
+            // Synthesize a change for sleep/keyguard (in order to ensure at-least one
+            // animation record so that control returns).
+            final MixpatchAnimationWrapper next = new MixpatchAnimationWrapper(transition);
+            final TransitionInfo.Change sleepKgChg = new TransitionInfo.Change(
+                    mSleepOrKeyguardProxy,
+                    new SurfaceControl.Builder().setName("SleepKeyguardProxy").build());
+            info.addChange(sleepKgChg);
+            plan.setAnimation(sleepKgChg.getContainer(), next);
+            ProtoLog.v(WM_SHELL_TRANSITIONS, "Build sleep/keyguard proxy in transition #%d",
+                    info.getDebugId());
+            // Since direct transitions go through mixpather, we may need to hack-in the state now.
+            final ActiveTransition active = MixpatchLegacyPlanner.ensureActive(Transitions.this,
+                    transition);
+            active.mMixpatchWrapper = next;
+            active.mStartT = next.mStartT;
+            active.mStartT.merge(startTransaction);
+        }
+
+        @Override
+        public String getDebugName() {
+            return "LegacyPreDispatch";
+        }
+    }
+
+    private class MixpatchAnimationWrapper implements ITransitionAnimation {
+        final IBinder mTransition;
+        TransitionInfo mInfo = null;
+        final SurfaceControl.Transaction mStartT = new SurfaceControl.Transaction();
+        final SurfaceControl.Transaction mFinishT = new SurfaceControl.Transaction();
+        ITransitionAnimation.IFinishedCallback mFinishCB = null;
+
+        MixpatchAnimationWrapper(@NonNull IBinder transit) {
+            mTransition = transit;
+        }
+
+        @Override
+        public DetachResult detach(
+                @NonNull List<WindowContainerToken> containers,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            final WindowAnimationState[] states = new WindowAnimationState[containers.size()];
+            for (int i = 0; i < containers.size(); ++i) {
+                final WindowAnimationState state = new WindowAnimationState();
+                states[i] = state;
+                final TransitionInfo.Change chg = mInfo.getChange(containers.get(i));
+                if (chg == null) {
+                    Log.wtf(TAG, "Trying to detach container that was never in animation");
+                    continue;
+                }
+                // The handler system doesn't intrinsically support mid-state handoffs. The common
+                // handling of merge is to "jump to end", so for now we populate the handoff state
+                // based on that.
+                state.bounds = new android.graphics.RectF(chg.getEndAbsBounds());
+                state.scale = 1.f;
+                state.timestamp = System.currentTimeMillis();
+            }
+            return new DetachResult(states);
+        }
+
+        @Override
+        public void start(@NonNull TransitionInfo info,
+                @NonNull List<WindowAnimationState> from,
+                @NonNull ITransitionAnimation.IFinishedCallback onFinished) {
+            mInfo = info;
+            mFinishCB = onFinished;
+            mMixpatchAnimations.add(this);
+            // Remove the proxy (for compatibility)
+            info.getChanges().removeIf(change -> change.getContainer() == mSleepOrKeyguardProxy);
+            onTransitionReadyInner(mTransition, info, mStartT, mFinishT);
+        }
+
+        @Override
+        public String getDebugName() {
+            return "LegacyAnim";
+        }
     }
 
     /**
