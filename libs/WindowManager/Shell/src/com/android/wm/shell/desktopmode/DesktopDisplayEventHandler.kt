@@ -30,7 +30,6 @@ import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
-import android.window.DesktopModeFlags
 import android.window.DisplayAreaInfo
 import android.window.TransitionInfo
 import com.android.app.tracing.traceSection
@@ -379,11 +378,14 @@ class DesktopDisplayEventHandler(
             currentUserRepository.getPreservedTasks(preservedDisplay).toMutableList()
         // Projected mode: Do not move anything focused on the internal display.
         if (!desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
-            val focusedDefaultDisplayTaskIds =
+            val excludedFromRestoreTasks =
                 desktopTasksController
-                    .getFocusedNonDesktopTasks(DEFAULT_DISPLAY, currentUserRepository.userId)
+                    .getExcludedFromProjectedRestoreTasks(
+                        DEFAULT_DISPLAY,
+                        currentUserRepository.userId,
+                    )
                     .map { task -> task.taskId }
-            preservedTasks.removeAll { taskId -> focusedDefaultDisplayTaskIds.contains(taskId) }
+            preservedTasks.removeAll { taskId -> excludedFromRestoreTasks.contains(taskId) }
         }
         if (preservedTasks.isEmpty()) {
             // If we don't restore anything, skip the restoration and return false so we
@@ -484,8 +486,8 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    private fun isUserDesktopEligible(userId: Int): Boolean = !(UserManager.isHeadlessSystemUserMode() &&
-        UserHandle.USER_SYSTEM == userId)
+    private fun isUserDesktopEligible(userId: Int): Boolean =
+        !(UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

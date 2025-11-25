@@ -533,7 +533,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         val preservedFocusedTaskIds = listOf(1)
         whenever(mockDesktopRepository.getPreservedTasks(mockPreservedDisplay))
             .thenReturn(preservedFocusedTaskIds)
-        whenever(mockDesktopTasksController.getFocusedNonDesktopTasks(any(), any()))
+        whenever(mockDesktopTasksController.getExcludedFromProjectedRestoreTasks(any(), any()))
             .thenReturn(emptyList())
 
         onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
@@ -587,7 +587,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         whenever(mockDesktopRepository.getPreservedTasks(mockPreservedDisplay))
             .thenReturn(preservedFocusedTaskIds)
         val task = RunningTaskInfo().apply { this.taskId = 1 }
-        whenever(mockDesktopTasksController.getFocusedNonDesktopTasks(any(), any()))
+        whenever(mockDesktopTasksController.getExcludedFromProjectedRestoreTasks(any(), any()))
             .thenReturn(listOf(task))
 
         addDisplay(SECOND_DISPLAY)
