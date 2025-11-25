@@ -116,10 +116,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR,
-        Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
     fun animatesFromVisibleToInvisible() {
         runVisibilityAnimationTest(
             toVisible = false,
@@ -133,10 +130,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR,
-        Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
     fun animatesFromInvisibleToVisible() {
         runVisibilityAnimationTest(
             toVisible = true,
@@ -150,10 +144,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR,
-        Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
     fun animatesFromVisibleToInvisible_withPathInterpolator() {
         runVisibilityAnimationTest(
             toVisible = false,
@@ -172,10 +163,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR,
-        Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
     fun animatesFromInvisibleToVisible_withPathInterpolator() {
         runVisibilityAnimationTest(
             toVisible = true,
@@ -194,10 +182,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR,
-        Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
     fun continuesAnimationOnRepeatedBindToInvisibleWhileAnimating() {
         // Assumes view is inflated with visibility=VISIBLE
         val appHandle = createAppHandleViewHolder()

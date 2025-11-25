@@ -1326,16 +1326,6 @@ flag {
 }
 
 flag {
-    name: "reenable_app_handle_animations"
-    namespace: "lse_desktop_experience"
-    description: "Re-enables the app handle animations"
-    bug: "412647178"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reenable_app_handle_color_animations"
     namespace: "lse_desktop_experience"
     description: "Re-enables the app handle color animations"
