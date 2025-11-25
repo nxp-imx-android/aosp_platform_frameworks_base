@@ -279,7 +279,12 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         Transitions.TransitionFinishCallback finishCB = (wct) -> {
             --mInFlightSubAnimations;
             joinFinishArgs(wct);
-            if (mInFlightSubAnimations > 0) return;
+            if (mInFlightSubAnimations > 0) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        "Sub-transition for #%d finished, awaiting for %d remaining animation(s)",
+                        info.getDebugId(), mInFlightSubAnimations);
+                return;
+            }
             finishCallback.onTransitionFinished(mFinishWCT);
         };
         if ((!hasPipChange && desktopChange == null)
