@@ -283,7 +283,7 @@ class ActivityMetricsLogger {
          *
          * @see LaunchingState#mAssociatedTransitionInfo
          */
-        final LaunchingState mLaunchingState;
+        @NonNull final LaunchingState mLaunchingState;
 
         /** The type can be cold (new process), warm (new activity), or hot (bring to front). */
         int mTransitionType;
@@ -662,6 +662,7 @@ class ActivityMetricsLogger {
      *
      * @see #notifyActivityLaunching(Intent, ActivityRecord, int)
      */
+    @NonNull
     LaunchingState notifyActivityLaunching(Intent intent) {
         return notifyActivityLaunching(intent, null /* caller */, IGNORE_CALLER);
     }
@@ -672,6 +673,7 @@ class ActivityMetricsLogger {
      * with the returned {@link LaunchingState}. If the caller is found in an active transition,
      * it will be considered as consecutive launch and coalesced into the active transition.
      */
+    @NonNull
     LaunchingState notifyActivityLaunching(Intent intent, @Nullable ActivityRecord caller,
             int callingUid) {
         TransitionInfo existingInfo = null;
