@@ -65,7 +65,7 @@ class Dimmer {
         boolean mAnimateExit = true;
         /** Surface visibility and bounds */
         private boolean mIsVisible = false;
-        // TODO(b/64816140): Remove after confirming dimmer layer always matches its container.
+        /** The bounds in screen coordinates, used for proto dump. */
         @NonNull
         final Rect mDimBounds = new Rect();
 
@@ -293,6 +293,7 @@ class Dimmer {
         return mDimState != null ? mDimState.mDimSurface : null;
     }
 
+    /** Returns the bounds on screen. */
     @Nullable
     Rect getDimBounds() {
         return mDimState != null ? mDimState.mDimBounds : null;
