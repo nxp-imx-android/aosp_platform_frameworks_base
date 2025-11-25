@@ -10261,19 +10261,27 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Enabling jank tracking for this activity but only if certain conditions are met. The
-     * application must have an app category other than undefined and be a non user build.
+     * Determines if jank tracking for this activity should be enabled. Jank tracking will be
+     * enabled if the following criteria are met:
+     *   1. The apps category is not undefined. {@link ApplicationInfo#category}. We are currently
+     *      limiting metric collection for apps categorized as undefined, which includes sensitive
+     *      categories like health and finance.
+     *   2. The device is currently reporting jank metrics. Jank tracking configuration is checked
+     *      to avoid unnecessary work on devices that won't report the metric (only 1% of devices
+     *      will report metrics).
      */
     private boolean shouldStartAppJankTracking() {
-        // TODO remove this check once b/449201648 is closed.
-        if (android.app.jank.Flags.disableUserBuildJankMetrics()
-                && Build.IS_USER) {
+        if (mApplication.getApplicationInfo().category == ApplicationInfo.CATEGORY_UNDEFINED) {
             return false;
         }
+
+        // Android feature flag, will be removed when feature rolled out.
         if (!android.app.jank.Flags.detailedAppJankMetricsLoggingEnabled()) {
             return false;
         }
-        return mApplication.getApplicationInfo().category != ApplicationInfo.CATEGORY_UNDEFINED;
+
+        // Configuration flag, limits work only to devices reporting metrics.
+        return JankTracker.isJankTrackingSupported();
     }
 
     /**
