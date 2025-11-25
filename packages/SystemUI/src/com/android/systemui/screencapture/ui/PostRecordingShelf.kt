@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -115,7 +116,6 @@ constructor(
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-            setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
             setWindowAnimations(-1)
         }
     }
@@ -197,7 +197,8 @@ constructor(
         Box(
             modifier =
                 Modifier.fillMaxSize()
-                    .clickable(onClick = { hide() }, indication = null, interactionSource = null),
+                    .clickable(onClick = { hide() }, indication = null, interactionSource = null)
+                    .safeDrawingPadding(),
             contentAlignment = Alignment.BottomStart,
         ) {
             AnimatedVisibility(
