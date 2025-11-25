@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles.bar
 
 import android.animation.AnimatorTestRule
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.res.Configuration
@@ -39,19 +38,15 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.bubbles.Bubble
-import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubbleOverflow
 import com.android.wm.shell.bubbles.BubblePositioner
-import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
+import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.bubbles.DeviceConfig
-import com.android.wm.shell.taskview.TaskView
-import com.android.wm.shell.taskview.TaskViewController
-import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -61,11 +56,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.clearInvocations
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 /** Tests for [BubbleBarAnimationHelper] */
 @SmallTest
@@ -96,6 +89,7 @@ class BubbleBarAnimationHelperTest {
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
+    private lateinit var bubbleTaskViewFactory: FakeBubbleTaskViewFactory
     private lateinit var container: FrameLayout
 
     @Before
@@ -117,11 +111,12 @@ class BubbleBarAnimationHelperTest {
                 insets = Insets.of(10, 20, 30, 40),
             )
         bubblePositioner.update(deviceConfig)
+        bubblePositioner.updateBubbleBarTopOnScreen(200)
         expandedViewManager = FakeBubbleExpandedViewManager()
         bubbleLogger = BubbleLogger(UiEventLoggerFake())
-
         mainExecutor = TestShellExecutor()
         bgExecutor = TestShellExecutor()
+        bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
 
         animationHelper = BubbleBarAnimationHelper(context, bubblePositioner, mainExecutor)
     }
@@ -227,9 +222,8 @@ class BubbleBarAnimationHelperTest {
     @Test
     fun animateSwitch_bubbleToBubble_handleColorTransferred() {
         val fromBubble = createBubble(key = "from").initialize(container)
-        val uiMode =
-            context.getResources().getConfiguration().uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val isSystemDark = uiMode.toInt() == Configuration.UI_MODE_NIGHT_YES
+        val uiMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val isSystemDark = uiMode == Configuration.UI_MODE_NIGHT_YES
         fromBubble.bubbleBarExpandedView!!
             .handleView
             .updateHandleColor(/* isRegionDark= */ isSystemDark, /* animated= */ false)
@@ -240,7 +234,7 @@ class BubbleBarAnimationHelperTest {
                 fromBubble,
                 toBubble,
                 /* shouldApplyAsJumpcut= */ false,
-                /* afterAnimation= */ null,
+                /* endRunnable= */ null,
             )
             animatorTestRule.advanceTimeBy(1000)
         }
@@ -251,12 +245,9 @@ class BubbleBarAnimationHelperTest {
     }
 
     @Test
-    fun animateSwitch_bubbleToBubble_updateTaskBounds() {
+    fun animateSwitch_bubbleToBubble_triggersTaskViewLayout() {
         val fromBubble = createBubble("from").initialize(container)
-        val toBubbleTaskController = mock<TaskViewTaskController>()
-        val taskController = mock<TaskViewController>()
-        val toBubble =
-            createBubble("to", taskController, toBubbleTaskController).initialize(container)
+        val toBubble = createBubble("to").initialize(container)
 
         activityScenario.onActivity {
             animationHelper.animateSwitch(
@@ -268,12 +259,14 @@ class BubbleBarAnimationHelperTest {
             animatorTestRule.advanceTimeBy(100)
         }
         getInstrumentation().waitForIdleSync()
-        // Clear invocations to ensure that bounds update happens after animation ends
-        clearInvocations(taskController)
+
+        // Clear invocations to ensure that task view layout happens after animation ends
+        val taskView = toBubble.taskView
+        clearInvocations(taskView)
         getInstrumentation().runOnMainSync { animatorTestRule.advanceTimeBy(900) }
         getInstrumentation().waitForIdleSync()
 
-        verify(taskController).setTaskBounds(eq(toBubbleTaskController), any())
+        verify(taskView, atLeastOnce()).layout(any<Int>(), any<Int>(), any<Int>(), any<Int>())
     }
 
     @Test
@@ -333,10 +326,8 @@ class BubbleBarAnimationHelperTest {
     }
 
     @Test
-    fun animateToRestPosition_updateTaskBounds() {
-        val taskView = mock<TaskViewTaskController>()
-        val controller = mock<TaskViewController>()
-        val bubble = createBubble("key", controller, taskView).initialize(container)
+    fun animateToRestPosition_triggersTaskViewLayout() {
+        val bubble = createBubble("key").initialize(container)
 
         val semaphore = Semaphore(0)
         val after = Runnable { semaphore.release() }
@@ -352,12 +343,13 @@ class BubbleBarAnimationHelperTest {
             animationHelper.animateToRestPosition()
             animatorTestRule.advanceTimeBy(100)
         }
-        // Clear invocations to ensure that bounds update happens after animation ends
-        clearInvocations(controller)
+        // Clear invocations to ensure that task view layout happens after animation ends
+        val taskView = bubble.taskView
+        clearInvocations(taskView)
         getInstrumentation().runOnMainSync { animatorTestRule.advanceTimeBy(900) }
         getInstrumentation().waitForIdleSync()
 
-        verify(controller).setTaskBounds(eq(taskView), any())
+        verify(taskView, atLeastOnce()).layout(any<Int>(), any<Int>(), any<Int>(), any<Int>())
     }
 
     @Test
@@ -492,17 +484,9 @@ class BubbleBarAnimationHelperTest {
         assertThat(outline.mRect.bottom).isEqualTo(bbev.height - 10)
     }
 
-    private fun createBubble(
-        key: String,
-        taskViewController: TaskViewController = mock<TaskViewController>(),
-        taskViewTaskController: TaskViewTaskController = mock<TaskViewTaskController>(),
-        bubbleController: BubbleController = mock<BubbleController>(),
-    ): Bubble {
-        val taskView = TaskView(context, taskViewController, taskViewTaskController)
-        val taskInfo = mock<ActivityManager.RunningTaskInfo>()
-        whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
+    private fun createBubble(key: String): Bubble {
         val bubble = FakeBubbleFactory.createChatBubble(context, key)
-        val bubbleTaskView = BubbleTaskView(taskView, mainExecutor, bubbleController)
+        val bubbleTaskView = bubble.getOrCreateBubbleTaskView(bubbleTaskViewFactory)
         bubbleTaskView.listener.onTaskCreated(/* taskId= */ 1, ComponentName("package", "class"))
 
         FakeBubbleFactory.createExpandedView(

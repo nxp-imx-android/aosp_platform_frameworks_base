@@ -536,15 +536,6 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mTaskView.setObscuredTouchRect(obscured ? mLayerBoundsSupplier.get() : null);
     }
 
-    /**
-     * Call when the location or size of the view has changed to update TaskView.
-     */
-    public void updateLocation() {
-        if (mTaskView != null) {
-            mTaskView.onLocationChanged();
-        }
-    }
-
     /** Shows the expanded view for the overflow if it exists. */
     void maybeShowOverflow() {
         if (mOverflowView != null) {

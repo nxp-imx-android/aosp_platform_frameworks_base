@@ -676,6 +676,21 @@ class BubblePositionerTest {
         assertThat(paddings).isEqualTo(intArrayOf(padding - positioner.pointerSize, 0, padding, 0))
     }
 
+    @Test
+    fun update_shouldBePendingBubbleBarTopOnScreen() {
+        positioner.update(defaultDeviceConfig)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isTrue()
+    }
+
+    @Test
+    fun updateBubbleBarTopOnScreen_shouldResetPendingSignal() {
+        positioner.update(defaultDeviceConfig)
+        positioner.updateBubbleBarTopOnScreen(200)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
+    }
+
     private fun verifyGetBubbleBarExpandedViewBounds(onLeft: Boolean, isOverflow: Boolean) {
         positioner.isShowingInBubbleBar = true
         positioner.bubbleBarLocation =
