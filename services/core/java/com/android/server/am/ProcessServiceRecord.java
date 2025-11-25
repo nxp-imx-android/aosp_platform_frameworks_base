@@ -18,7 +18,6 @@ package com.android.server.am;
 
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVICE;
 
-import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
@@ -62,11 +61,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      * All outgoing connections from this process.
      */
     private final ArraySet<ConnectionRecord> mConnections = new ArraySet<>();
-
-    /**
-     * All ConnectionRecord this process holds indirectly to SDK sandbox processes.
-     */
-    private @Nullable ArraySet<ConnectionRecord> mSdkSandboxConnections;
 
     /**
      * A set of UIDs of all bound clients.
@@ -263,36 +257,19 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     private void addSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
         final ProcessRecord attributedClient = connection.binding.attributedClient;
         if (attributedClient != null && connection.binding.service.isSdkSandbox) {
-            if (attributedClient.mServices.mSdkSandboxConnections == null) {
-                attributedClient.mServices.mSdkSandboxConnections = new ArraySet<>();
-            }
-            attributedClient.mServices.mSdkSandboxConnections.add(connection);
+            attributedClient.mServices.addSdkSandboxConnection(connection);
         }
     }
 
     private void removeSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
         final ProcessRecord attributedClient = connection.binding.attributedClient;
         if (attributedClient != null && connection.binding.service.isSdkSandbox) {
-            if (attributedClient.mServices.mSdkSandboxConnections != null) {
-                attributedClient.mServices.mSdkSandboxConnections.remove(connection);
-            }
+            attributedClient.mServices.removeSdkSandboxConnection(connection);
         }
     }
 
-    void removeAllSdkSandboxConnections() {
-        if (mSdkSandboxConnections != null) {
-            mSdkSandboxConnections.clear();
-        }
-    }
-
-    @Override
-    public ConnectionRecord getSdkSandboxConnectionAt(int index) {
-        return mSdkSandboxConnections != null ? mSdkSandboxConnections.valueAt(index) : null;
-    }
-
-    @Override
-    public int numberOfSdkSandboxConnections() {
-        return mSdkSandboxConnections != null ? mSdkSandboxConnections.size() : 0;
+    ConnectionRecord getSdkSandboxConnectionAt(int index) {
+        return (ConnectionRecord) getSdkSandboxConnectionInternalAt(index);
     }
 
     void addBoundClientUid(int clientUid, String clientPackageName, long bindFlags) {

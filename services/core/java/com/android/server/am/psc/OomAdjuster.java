@@ -642,12 +642,6 @@ public abstract class OomAdjuster {
          */
         public volatile int mProcStateDebugSetUidStateDelay;
         /**
-         * If true, the OOM adjuster uses a quick path for updates, skipping further actions if
-         * there are no significant adj/proc state changes for a process.
-         * Otherwise, it uses the traditional slow path, updating all processes in the LRU list.
-         */
-        public volatile boolean mOomadjUpdateQuick;
-        /**
          * If true, enables the proactive killing of cached apps to manage memory.
          */
         public volatile boolean mProactiveKillsEnabled;
@@ -860,7 +854,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mServiceLock", "mProcLock"})
     private boolean updateOomAdjLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason) {
-        if (app == null || !mOomConstants.mOomadjUpdateQuick) {
+        if (app == null) {
             updateOomAdjLSP(oomAdjReason);
             return true;
         }

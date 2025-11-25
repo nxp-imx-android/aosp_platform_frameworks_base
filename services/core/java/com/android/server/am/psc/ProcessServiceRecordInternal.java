@@ -16,9 +16,11 @@
 
 package com.android.server.am.psc;
 
+import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.SystemClock;
+import android.util.ArraySet;
 
 import java.util.ArrayList;
 
@@ -82,6 +84,9 @@ public abstract class ProcessServiceRecordInternal {
      * currently running services.
      */
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
+
+    /** All ConnectionRecord this process holds indirectly to SDK sandbox processes. */
+    private @Nullable ArraySet<ConnectionRecordInternal> mSdkSandboxConnections;
 
     protected ProcessServiceRecordInternal(OomAdjuster.Constants oomConstants, Observer observer) {
         mOomConstants = oomConstants;
@@ -288,13 +293,39 @@ public abstract class ProcessServiceRecordInternal {
     public abstract ConnectionRecordInternal getConnectionAt(int index);
 
     /** Returns the number of active connections to services within SDK sandbox processes. */
-    public abstract int numberOfSdkSandboxConnections();
+    public int numberOfSdkSandboxConnections() {
+        return mSdkSandboxConnections != null ? mSdkSandboxConnections.size() : 0;
+    }
 
     /**
      * Retrieves the {@link ConnectionRecordInternal} for an SDK sandbox process at the
      * specified index.
      */
-    public abstract ConnectionRecordInternal getSdkSandboxConnectionAt(int index);
+    public ConnectionRecordInternal getSdkSandboxConnectionInternalAt(int index) {
+        return mSdkSandboxConnections != null ? mSdkSandboxConnections.valueAt(index) : null;
+    }
+
+    /** Adds a connection record that this process holds indirectly to an SDK sandbox process. */
+    public void addSdkSandboxConnection(ConnectionRecordInternal connection) {
+        if (mSdkSandboxConnections == null) {
+            mSdkSandboxConnections = new ArraySet<>();
+        }
+        mSdkSandboxConnections.add(connection);
+    }
+
+    /** Removes a connection record to a service running in an SDK sandbox. */
+    public void removeSdkSandboxConnection(ConnectionRecordInternal connection) {
+        if (mSdkSandboxConnections != null) {
+            mSdkSandboxConnections.remove(connection);
+        }
+    }
+
+    /** Removes all tracked connection records to services running in SDK sandboxes. */
+    public void removeAllSdkSandboxConnections() {
+        if (mSdkSandboxConnections != null) {
+            mSdkSandboxConnections.clear();
+        }
+    }
 
     /** Checks if there are any services currently executing in this process. */
     public abstract boolean hasExecutingServices();

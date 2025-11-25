@@ -988,19 +988,6 @@ final class ActivityManagerConstants extends ContentObserver {
      */
     volatile long mNetworkAccessTimeoutMs = DEFAULT_NETWORK_ACCESS_TIMEOUT_MS;
 
-    @SuppressWarnings("unused")
-    private static final int OOMADJ_UPDATE_POLICY_SLOW = 0;
-    private static final int OOMADJ_UPDATE_POLICY_QUICK = 1;
-    private static final int DEFAULT_OOMADJ_UPDATE_POLICY = OOMADJ_UPDATE_POLICY_QUICK;
-
-    private static final String KEY_OOMADJ_UPDATE_POLICY = "oomadj_update_policy";
-
-    // Indicate if the oom adjuster should take the quick path to update the oom adj scores,
-    // in which no futher actions will be performed if there are no significant adj/proc state
-    // changes for the specific process; otherwise, use the traditonal slow path which would
-    // keep updating all processes in the LRU list.
-    private boolean mOomadjUpdateQuick = DEFAULT_OOMADJ_UPDATE_POLICY == OOMADJ_UPDATE_POLICY_QUICK;
-
     private static final long MIN_AUTOMATIC_HEAP_DUMP_PSS_THRESHOLD_BYTES = 100 * 1024; // 100 KB
 
     private final boolean mSystemServerAutomaticHeapDumpEnabled;
@@ -1253,9 +1240,6 @@ final class ActivityManagerConstants extends ContentObserver {
                                 break;
                             case KEY_PUSH_MESSAGING_OVER_QUOTA_BEHAVIOR:
                                 updatePushMessagingOverQuotaBehavior();
-                                break;
-                            case KEY_OOMADJ_UPDATE_POLICY:
-                                updateOomAdjUpdatePolicy();
                                 break;
                             case KEY_IMPERCEPTIBLE_KILL_EXEMPT_PACKAGES:
                             case KEY_IMPERCEPTIBLE_KILL_EXEMPT_PROC_STATES:
@@ -1820,15 +1804,6 @@ final class ActivityManagerConstants extends ContentObserver {
             mPushMessagingOverQuotaBehavior =
                     DEFAULT_PUSH_MESSAGING_OVER_QUOTA_BEHAVIOR;
         }
-    }
-
-    private void updateOomAdjUpdatePolicy() {
-        mOomadjUpdateQuick = DeviceConfig.getInt(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                KEY_OOMADJ_UPDATE_POLICY,
-                /* defaultValue */ DEFAULT_OOMADJ_UPDATE_POLICY)
-                == OOMADJ_UPDATE_POLICY_QUICK;
-        mService.mProcessStateController.setOomadjUpdateQuick(mOomadjUpdateQuick);
     }
 
     private void updateForceRestrictedBackgroundCheck() {
@@ -2401,7 +2376,6 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mEnableProcStateStacktrace = mEnableProcStateStacktrace;
         oomConstants.mProcStateDebugSetProcStateDelay = mProcStateDebugSetProcStateDelay;
         oomConstants.mProcStateDebugSetUidStateDelay = mProcStateDebugSetUidStateDelay;
-        oomConstants.mOomadjUpdateQuick = mOomadjUpdateQuick;
         oomConstants.mProactiveKillsEnabled = mProactiveKillsEnabled;
         oomConstants.mLowSwapThresholdPercent = mLowSwapThresholdPercent;
         oomConstants.mNoKillCachedProcessesUntilBootCompleted =
@@ -2635,7 +2609,6 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  CUR_MAX_EMPTY_PROCESSES="); pw.println(CUR_MAX_EMPTY_PROCESSES);
         pw.print("  CUR_TRIM_EMPTY_PROCESSES="); pw.println(CUR_TRIM_EMPTY_PROCESSES);
         pw.print("  CUR_TRIM_CACHED_PROCESSES="); pw.println(CUR_TRIM_CACHED_PROCESSES);
-        pw.print("  OOMADJ_UPDATE_QUICK="); pw.println(mOomadjUpdateQuick);
         pw.print("  ENABLE_WAIT_FOR_FINISH_ATTACH_APPLICATION=");
         pw.println(mEnableWaitForFinishAttachApplication);
 

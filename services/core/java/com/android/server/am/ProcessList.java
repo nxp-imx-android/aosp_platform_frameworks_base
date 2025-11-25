@@ -2837,7 +2837,8 @@ public final class ProcessList extends ProcessListInternal
 
     @GuardedBy("mService")
     @Override
-    public void removeLruProcessLocked(ProcessRecord app) {
+    public void removeLruProcessLocked(ProcessRecordInternal appInternal) {
+        final ProcessRecord app = (ProcessRecord) appInternal;
         int lrui = mLruProcesses.lastIndexOf(app);
         if (lrui >= 0) {
             synchronized (mProcLock) {
@@ -3869,8 +3870,10 @@ public final class ProcessList extends ProcessListInternal
 
     @GuardedBy("mService")
     @Override
-    public void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
-            ProcessRecord client) {
+    public void updateLruProcessLocked(ProcessRecordInternal appInternal, boolean activityChange,
+            ProcessRecordInternal clientInternal) {
+        final ProcessRecord app = (ProcessRecord) appInternal;
+        final ProcessRecord client = (ProcessRecord) clientInternal;
         final ProcessServiceRecord psr = app.mServices;
         final boolean hasActivity = app.hasActivitiesOrRecentTasks() || psr.hasClientActivities()
                 || psr.isTreatLikeActivity();

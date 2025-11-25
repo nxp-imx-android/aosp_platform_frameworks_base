@@ -53,6 +53,7 @@ import com.android.server.am.psc.OomAdjusterImpl;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.SyncBatchSession;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
@@ -208,10 +209,6 @@ public class ProcessStateController {
         mOomConstants.mProcStateDebugSetUidStateDelay = value;
     }
 
-    public void setOomadjUpdateQuick(boolean value) {
-        mOomConstants.mOomadjUpdateQuick = value;
-    }
-
     public void setProactiveKillsEnabled(boolean value) {
         mOomConstants.mProactiveKillsEnabled = value;
     }
@@ -295,7 +292,7 @@ public class ProcessStateController {
      * Remove a process that was added by {@link #enqueueUpdateTarget}.
      */
     @GuardedBy("mLock")
-    public void removeUpdateTarget(@NonNull ProcessRecord proc, boolean procDied) {
+    public void removeUpdateTarget(@NonNull ProcessRecordInternal proc, boolean procDied) {
         mOomAdjuster.removeOomAdjTargetLocked(proc, procDied);
     }
 
@@ -401,7 +398,7 @@ public class ProcessStateController {
         private boolean mIsAwake = true;
         // TODO(b/369300367): Maintaining global state for backup processes is a bit convoluted.
         //  ideally the state gets migrated to ProcessRecordInternal.
-        private final SparseArray<ProcessRecord> mBackupTargets = new SparseArray<>();
+        private final SparseArray<ProcessRecordInternal> mBackupTargets = new SparseArray<>();
         private boolean mIsLastMemoryLevelNormal = true;
 
         @ActivityManager.ProcessState
@@ -533,8 +530,8 @@ public class ProcessStateController {
      * Set for a given user what process is currently running a backup, if any.
      */
     @GuardedBy("mLock")
-    public void setBackupTarget(@NonNull ProcessRecord proc, @UserIdInt int userId) {
-        final ProcessRecord prev = mGlobalState.mBackupTargets.get(userId);
+    public void setBackupTarget(@NonNull ProcessRecordInternal proc, @UserIdInt int userId) {
+        final ProcessRecordInternal prev = mGlobalState.mBackupTargets.get(userId);
         if (prev == proc) return;
         mGlobalState.mBackupTargets.put(userId, proc);
 
@@ -550,7 +547,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void stopBackupTarget(@UserIdInt int userId) {
-        final ProcessRecord prev = mGlobalState.mBackupTargets.removeReturnOld(userId);
+        final ProcessRecordInternal prev = mGlobalState.mBackupTargets.removeReturnOld(userId);
         if (prev == null) return;
 
         if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
@@ -625,7 +622,7 @@ public class ProcessStateController {
      * Initialize a process that is being attached.
      */
     @GuardedBy({"mService", "mProcLock"})
-    public void setAttachingProcessStatesLSP(@NonNull ProcessRecord proc) {
+    public void setAttachingProcessStatesLSP(@NonNull ProcessRecordInternal proc) {
         mOomAdjuster.setAttachingProcessStatesLSP(proc);
     }
 
@@ -647,7 +644,7 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    void forceProcessStateUpTo(@NonNull ProcessRecord proc, int newState) {
+    void forceProcessStateUpTo(@NonNull ProcessRecordInternal proc, int newState) {
         final int prevProcState = proc.getReportedProcState();
         if (prevProcState > newState) {
             synchronized (mProcLock) {
@@ -663,8 +660,8 @@ public class ProcessStateController {
      * Bump a process to the end of the LRU list.
      */
     @GuardedBy("mLock")
-    public void updateLruProcess(@NonNull ProcessRecord proc, boolean activityChange,
-            @Nullable ProcessRecord client) {
+    public void updateLruProcess(@NonNull ProcessRecordInternal proc, boolean activityChange,
+            @Nullable ProcessRecordInternal client) {
         mProcessLruUpdater.updateLruProcessLocked(proc, activityChange, client);
     }
 
@@ -672,7 +669,7 @@ public class ProcessStateController {
      * Remove a process from the LRU list.
      */
     @GuardedBy("mLock")
-    public void removeLruProcess(@NonNull ProcessRecord proc) {
+    public void removeLruProcess(@NonNull ProcessRecordInternal proc) {
         mProcessLruUpdater.removeLruProcessLocked(proc);
     }
 
@@ -683,7 +680,7 @@ public class ProcessStateController {
      * @return true if the state changed, otherwise returns false.
      */
     @GuardedBy("mLock")
-    public boolean setHasTopUi(@NonNull ProcessRecord proc, boolean hasTopUi) {
+    public boolean setHasTopUi(@NonNull ProcessRecordInternal proc, boolean hasTopUi) {
         if (proc.getHasTopUi() == hasTopUi) return false;
         if (DEBUG_OOM_ADJ) {
             Slog.d(TAG, "Setting hasTopUi=" + hasTopUi + " for pid=" + proc.getPid());
@@ -711,7 +708,7 @@ public class ProcessStateController {
      * @return true if the state changed, otherwise returns false.
      */
     @GuardedBy("mLock")
-    public void setRunningRemoteAnimation(@NonNull ProcessRecord proc,
+    public void setRunningRemoteAnimation(@NonNull ProcessRecordInternal proc,
             boolean runningRemoteAnimation) {
         if (proc.isRunningRemoteAnimation() == runningRemoteAnimation) return;
         if (DEBUG_OOM_ADJ) {
@@ -799,8 +796,8 @@ public class ProcessStateController {
      * Note the time a process is no longer hosting any content providers.
      */
     @GuardedBy("mLock")
-    public void setLastProviderTime(@NonNull ProcessRecord proc, long uptimeMs) {
-        proc.mProviders.setLastProviderTime(uptimeMs);
+    public void setLastProviderTime(@NonNull ProcessRecordInternal proc, long uptimeMs) {
+        proc.getProviders().setLastProviderTime(uptimeMs);
     }
 
     /**
@@ -909,7 +906,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void setExecServicesFg(@NonNull ProcessServiceRecord psr, boolean execServicesFg) {
+    public void setExecServicesFg(@NonNull ProcessServiceRecordInternal psr,
+            boolean execServicesFg) {
         psr.setExecServicesFg(execServicesFg);
     }
 
@@ -918,7 +916,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void setHasForegroundServices(@NonNull ProcessServiceRecord psr,
+    public void setHasForegroundServices(@NonNull ProcessServiceRecordInternal psr,
             boolean hasForegroundServices,
             int fgServiceTypes, boolean hasTypeNoneFgs) {
         psr.setHasForegroundServices(hasForegroundServices, fgServiceTypes, hasTypeNoneFgs);
@@ -929,7 +927,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void setHasClientActivities(@NonNull ProcessServiceRecord psr,
+    public void setHasClientActivities(@NonNull ProcessServiceRecordInternal psr,
             boolean hasClientActivities) {
         psr.setHasClientActivities(hasClientActivities);
     }
@@ -939,14 +937,15 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void setTreatLikeActivity(@NonNull ProcessServiceRecord psr, boolean treatLikeActivity) {
+    public void setTreatLikeActivity(@NonNull ProcessServiceRecordInternal psr,
+            boolean treatLikeActivity) {
         psr.setTreatLikeActivity(treatLikeActivity);
     }
 
     /**
      * Update the ongoing binder calls state for a given Connection record.
      */
-    public boolean updateBinderServiceCalls(ConnectionRecord cr, boolean ongoing) {
+    public boolean updateBinderServiceCalls(ConnectionRecordInternal cr, boolean ongoing) {
         return cr.setOngoingCalls(ongoing);
     }
 
@@ -956,7 +955,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void setHasAboveClient(@NonNull ProcessServiceRecord psr, boolean hasAboveClient) {
+    public void setHasAboveClient(@NonNull ProcessServiceRecordInternal psr,
+            boolean hasAboveClient) {
         psr.setHasAboveClient(hasAboveClient);
     }
 
@@ -1052,7 +1052,8 @@ public class ProcessStateController {
      * {@link android.content.Context.BIND_ALMOST_PERCEPTIBLE} or not.
      */
     @GuardedBy("mLock")
-    public void updateHasTopStartedAlmostPerceptibleServices(@NonNull ProcessServiceRecord psr) {
+    public void updateHasTopStartedAlmostPerceptibleServices(
+            @NonNull ProcessServiceRecordInternal psr) {
         psr.updateHasTopStartedAlmostPerceptibleServices();
     }
 
@@ -1193,7 +1194,8 @@ public class ProcessStateController {
          * Set which process is considered the Heavy Weight process, if any.
          */
         public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            final ProcessRecordInternal heavy = wpc != null
+                    ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHeavyWeightProcess(heavy));
         }
 
@@ -1201,7 +1203,8 @@ public class ProcessStateController {
          * Set which process is showing UI while the screen is off, if any.
          */
         public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            final ProcessRecordInternal dozeUi = wpc != null
+                    ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
 
@@ -1251,10 +1254,10 @@ public class ProcessStateController {
      */
     public interface ProcessLruUpdater {
         /** Bump a process to the end of the LRU list */
-        void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
-                ProcessRecord client);
+        void updateLruProcessLocked(ProcessRecordInternal app, boolean activityChange,
+                ProcessRecordInternal client);
         /** Remove a process from the LRU list */
-        void removeLruProcessLocked(ProcessRecord app);
+        void removeLruProcessLocked(ProcessRecordInternal app);
     }
 
     /**
@@ -1301,9 +1304,9 @@ public class ProcessStateController {
             if (mProcessLruUpdater == null) {
                 // Just attach a no-op updater. For Testing that does not care about the LRU.
                 mProcessLruUpdater = new ProcessLruUpdater() {
-                    public void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
-                            ProcessRecord client) {}
-                    public void removeLruProcessLocked(ProcessRecord app) {}
+                    public void updateLruProcessLocked(ProcessRecordInternal app,
+                            boolean activityChange, ProcessRecordInternal client) {}
+                    public void removeLruProcessLocked(ProcessRecordInternal app) {}
                 };
             }
             if (mOomAdjInjector == null) {
