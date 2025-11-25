@@ -8425,7 +8425,7 @@ package android.app.admin {
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method public void acknowledgeDeviceCompliant();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public void addCrossProfileIntentFilter(@Nullable android.content.ComponentName, android.content.IntentFilter, int);
-    method @Deprecated @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
+    method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
     method public int addOverrideApn(@NonNull android.content.ComponentName, @NonNull android.telephony.data.ApnSetting);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK, conditional=true) public void addPersistentPreferredActivity(@Nullable android.content.ComponentName, android.content.IntentFilter, @NonNull android.content.ComponentName);
     method public void addUserRestriction(@Nullable android.content.ComponentName, String);
