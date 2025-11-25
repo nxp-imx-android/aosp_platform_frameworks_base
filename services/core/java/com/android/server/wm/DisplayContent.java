@@ -4503,16 +4503,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     private DisplayContent getUserMainDisplayContent() {
-        final DisplayContent defaultDc;
-        if (android.view.inputmethod.Flags.fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-            final int userId = mWmService.mUmInternal.getUserAssignedToDisplay(mDisplayId);
-            defaultDc = mWmService.getUserMainDisplayContentLocked(userId);
-            if (defaultDc == null) {
-                throw new IllegalStateException(
-                        "No default display was assigned to user " + userId);
-            }
-        } else {
-            defaultDc = mWmService.getDefaultDisplayContentLocked();
+        final int userId = mWmService.mUmInternal.getUserAssignedToDisplay(mDisplayId);
+        final DisplayContent defaultDc = mWmService.getUserMainDisplayContentLocked(userId);
+        if (defaultDc == null) {
+            throw new IllegalStateException(
+                    "No default display was assigned to user " + userId);
         }
         return defaultDc;
     }
@@ -5092,15 +5087,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The control target could be the RemoteInsetsControlTarget if the focussed
             // view is on a virtual display that can not show the IME (and therefore it will
             // be shown on the default display)
-            if (android.view.inputmethod.Flags
-                    .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-                if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
-                    return mRemoteInsetsControlTarget;
-                }
-            } else {
-                if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
-                    return mRemoteInsetsControlTarget;
-                }
+            if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
+                return mRemoteInsetsControlTarget;
             }
             return null;
         }
