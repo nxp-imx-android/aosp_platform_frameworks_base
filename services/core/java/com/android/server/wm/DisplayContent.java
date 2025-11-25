@@ -3941,6 +3941,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         pw.print(prefix); pw.print("mHasSetIgnoreOrientationRequest=");
         pw.print(mHasSetIgnoreOrientationRequest);
         pw.print(" ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
+        pw.print(prefix); pw.print("mSleeping="); pw.print(mSleeping);
+        pw.print(" mAllSleepTokens="); pw.println(mAllSleepTokens);
         pw.print(prefix); pw.print("mLayoutSeq="); pw.println(mLayoutSeq);
 
         pw.print(prefix); pw.print("mImeWindow="); pw.println(mImeWindow);
