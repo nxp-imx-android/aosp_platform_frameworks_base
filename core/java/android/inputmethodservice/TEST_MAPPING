@@ -1,7 +1,7 @@
 {
- "imports": [
+  "presubmit": [
     {
-      "path": "frameworks/base/core/java/android/view/inputmethod"
+      "name": "CtsAutoFillServiceTestCases_cts_inline_ExcludeAppModeFull"
     }
   ]
 }
