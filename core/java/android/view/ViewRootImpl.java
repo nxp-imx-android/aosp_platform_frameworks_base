@@ -3152,9 +3152,7 @@ public final class ViewRootImpl implements ViewParent,
             // View#requestLayout or View#invalidate) is guaranteed to run after
             // the scheduled traversals have occurred unless the message is
             // specifically "asynchronous" - see Message#setAsynchronous
-            // mTraversalBarrier = mQueue.postSyncBarrier();
-            // TODO(b/463114494): revert ag/37168749 after debugging has concluded.
-            mTraversalBarrier = mQueue.postSyncBarrier(this);
+            mTraversalBarrier = mQueue.postSyncBarrier();
             mChoreographer.postCallback(
                     Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
             notifyRendererOfFramePending();
