@@ -31,6 +31,7 @@ filegroup {
     // Exactly one MessageQueue.java will be added to srcs by messagequeue-gen
     exclude_srcs: [
         ":framework-ravenwood-sources",
+        ":aisealhostservice_aidl_sources",
         ":dropboxmanager_aidl_sources",
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
@@ -222,6 +223,22 @@ release_package_messagequeue_implementation_srcs {
     },
     cmd: "mkdir -p android/os/; cp $(in) $(out);",
     out: ["android/os/MessageQueue.java"],
+}
+
+filegroup {
+    name: "aisealhostservice_aidl_sources",
+    srcs: ["android/aiseal/IAiSealHostService.aidl"],
+}
+
+aidl_interface {
+    name: "aisealhostservice_aidl",
+    srcs: [":aisealhostservice_aidl_sources"],
+    unstable: true,
+    backend: {
+        rust: {
+            enabled: true,
+        },
+    },
 }
 
 aidl_interface {

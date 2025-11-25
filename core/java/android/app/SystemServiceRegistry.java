@@ -16,6 +16,7 @@
 
 package android.app;
 
+import static android.aiseal.Flags.aisealHostApis;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
@@ -27,6 +28,8 @@ import static android.service.chooser.Flags.interactiveChooser;
 import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
 import android.adservices.AdServicesFrameworkInitializer;
+import android.aiseal.AiSealManager;
+import android.aiseal.IAiSealHostService;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -2021,6 +2024,19 @@ public final class SystemServiceRegistry {
                         @Override
                         public ChooserManager createService() {
                             return new ChooserManager();
+                        }
+                    });
+        }
+
+        if (aisealHostApis()) {
+            registerService(
+                    Context.AISEAL_HOST_SERVICE,
+                    AiSealManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public AiSealManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            return new AiSealManager(ctx);
                         }
                     });
         }
