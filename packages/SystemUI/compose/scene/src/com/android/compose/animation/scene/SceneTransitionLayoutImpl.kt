@@ -128,6 +128,7 @@ internal class SceneTransitionLayoutImpl(
 
     /** Whether elements and scene should be tagged using `Modifier.testTag`. */
     internal val implicitTestTags: Boolean = false,
+    internal val debugName: String,
     lookaheadScope: LookaheadScope? = null,
     defaultEffectFactory: OverscrollFactory,
 ) {

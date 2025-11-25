@@ -379,7 +379,11 @@ constructor(
             }
         }
 
-        SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
+        SceneTransitionLayout(
+            state = sceneState,
+            modifier = Modifier.fillMaxSize(),
+            debugName = "QuickSettings",
+        ) {
             scene(QuickSettings, alwaysCompose = true) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
                 Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }

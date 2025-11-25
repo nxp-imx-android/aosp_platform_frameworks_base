@@ -214,6 +214,7 @@ constructor(
                     }
                 },
                 modifier = modifier,
+                debugName = "NarrowLayout - Clocks",
             ) {
                 scene(NarrowScenes.LargeClock) { LockscreenElement(Region.Clock.Large) }
                 scene(NarrowScenes.SmallClock) {
@@ -303,6 +304,7 @@ constructor(
                     }
                 },
                 modifier = modifier,
+                debugName = "WideLayout - Clocks",
             ) {
                 scene(WideScenes.CenteredClock) {
                     // Media is unsupported with centered large clock

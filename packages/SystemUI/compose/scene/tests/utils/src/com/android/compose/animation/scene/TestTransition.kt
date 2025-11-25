@@ -149,7 +149,12 @@ fun ComposeContentTestRule.testTransition(
         },
         changeState = changeState,
         transitionLayout = { state ->
-            SceneTransitionLayout(state, layoutModifier, implicitTestTags = true) {
+            SceneTransitionLayout(
+                state,
+                layoutModifier,
+                implicitTestTags = true,
+                debugName = "testTransition",
+            ) {
                 scene(fromScene, content = fromSceneContent)
                 scene(toScene, content = toSceneContent)
             }
@@ -177,7 +182,11 @@ fun ComposeContentTestRule.testShowOverlayTransition(
             )
         },
         transitionLayout = { state ->
-            SceneTransitionLayout(state, implicitTestTags = true) {
+            SceneTransitionLayout(
+                state,
+                implicitTestTags = true,
+                debugName = "testShowOverlayTransition",
+            ) {
                 scene(fromScene) { fromSceneContent() }
                 overlay(overlay) { overlayContent() }
             }
@@ -207,7 +216,11 @@ fun ComposeContentTestRule.testHideOverlayTransition(
             )
         },
         transitionLayout = { state ->
-            SceneTransitionLayout(state, implicitTestTags = true) {
+            SceneTransitionLayout(
+                state,
+                implicitTestTags = true,
+                debugName = "testHideOverlayTransition",
+            ) {
                 scene(toScene) { toSceneContent() }
                 overlay(overlay) { overlayContent() }
             }
@@ -241,7 +254,11 @@ fun ComposeContentTestRule.testReplaceOverlayTransition(
             )
         },
         transitionLayout = { state ->
-            SceneTransitionLayout(state, implicitTestTags = true) {
+            SceneTransitionLayout(
+                state,
+                implicitTestTags = true,
+                debugName = "testReplaceOverlayTransition",
+            ) {
                 scene(currentScene) { currentSceneContent() }
                 overlay(from, alignment = fromAlignment) { fromContent() }
                 overlay(to, alignment = toAlignment) { toContent() }
@@ -291,7 +308,12 @@ fun MotionTestRule<ComposeToolkit>.recordTransition(
                 }
             }
 
-            SceneTransitionLayout(state, layoutModifier, implicitTestTags = true) {
+            SceneTransitionLayout(
+                state,
+                layoutModifier,
+                implicitTestTags = true,
+                debugName = "recordTransition",
+            ) {
                 scene(fromScene, content = fromSceneContent)
                 scene(toScene, content = toSceneContent)
             }

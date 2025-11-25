@@ -235,6 +235,7 @@ fun SceneContainer(
             swipeSourceDetector = viewModel.swipeSourceDetector,
             swipeDetector =
                 remember { PassthroughSwipeDetector(velocityThreshold = swipeVelocityThreshold) },
+            debugName = "SceneContainer",
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
                 scene(

@@ -275,6 +275,7 @@ fun CommunalContainer(
         modifier = modifier.fillMaxSize(),
         swipeSourceDetector = detector,
         swipeDetector = detector,
+        debugName = "Communal UI",
     ) {
         scene(
             CommunalScenes.Blank,

@@ -126,16 +126,24 @@ class NestedSharedElementTest {
         }
 
     private val nestedStlWithSharedElement: @Composable ContentScope.() -> Unit = {
-        NestedSceneTransitionLayout(nestedState, modifier = Modifier) {
+        NestedSceneTransitionLayout(nestedState, modifier = Modifier, debugName = "NestedStl") {
             scene(Scenes.NestedSceneA) { SharedElement(elementVariant2) }
             scene(Scenes.NestedSceneB) { SharedElement(elementVariant3) }
         }
     }
 
     private val nestedNestedStlWithSharedElement: @Composable ContentScope.() -> Unit = {
-        NestedSceneTransitionLayout(nestedState, modifier = Modifier) {
+        NestedSceneTransitionLayout(
+            nestedState,
+            modifier = Modifier,
+            debugName = "NestedNestedStl",
+        ) {
             scene(Scenes.NestedSceneA) {
-                NestedSceneTransitionLayout(state = nestedNestedState, modifier = Modifier) {
+                NestedSceneTransitionLayout(
+                    state = nestedNestedState,
+                    modifier = Modifier,
+                    debugName = "Nested3xStl",
+                ) {
                     scene(Scenes.NestedNestedSceneA) { SharedElement(elementVariant4) }
                     scene(Scenes.NestedNestedSceneB) { SharedElement(elementVariant3) }
                 }
@@ -183,7 +191,11 @@ class NestedSharedElementTest {
         rule.testTransition(
             fromSceneContent = { SharedElement(elementVariant1, TestElements.LowZIndex) },
             toSceneContent = {
-                NestedSceneTransitionLayout(nestedState, modifier = Modifier) {
+                NestedSceneTransitionLayout(
+                    nestedState,
+                    modifier = Modifier,
+                    debugName = "NestedStl",
+                ) {
                     scene(Scenes.NestedSceneA) {
                         SharedElement(elementVariant2, TestElements.LowZIndex)
                     }

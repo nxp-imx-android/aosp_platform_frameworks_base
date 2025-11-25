@@ -390,9 +390,10 @@ internal class ContentScopeImpl(
     override fun NestedSceneTransitionLayout(
         state: SceneTransitionLayoutState,
         modifier: Modifier,
+        debugName: String,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     ) {
-        NestedSceneTransitionLayoutForTesting(state, modifier, null, builder)
+        NestedSceneTransitionLayoutForTesting(state, modifier, null, debugName, builder)
     }
 
     @Composable
@@ -400,6 +401,7 @@ internal class ContentScopeImpl(
         state: SceneTransitionLayoutState,
         modifier: Modifier,
         onLayoutImpl: ((SceneTransitionLayoutImpl) -> Unit)?,
+        debugName: String,
         builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
     ) {
         val ancestors =
@@ -414,6 +416,7 @@ internal class ContentScopeImpl(
             sharedElementMap = layoutImpl.elements,
             ancestors = ancestors,
             lookaheadScope = layoutImpl.lookaheadScope,
+            debugName = debugName,
             implicitTestTags = layoutImpl.implicitTestTags,
         )
     }
