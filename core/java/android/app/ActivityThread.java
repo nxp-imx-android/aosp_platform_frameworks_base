@@ -4700,7 +4700,11 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         if (android.tracing.Flags.surfaceControlRegistryProtolog()) {
-            ProtoLog.init();
+            if (android.tracing.Flags.protologAsyncInit()) {
+                ProtoLog.initAsync();
+            } else {
+                ProtoLog.init();
+            }
         }
 
         WindowManagerGlobal.initialize();
