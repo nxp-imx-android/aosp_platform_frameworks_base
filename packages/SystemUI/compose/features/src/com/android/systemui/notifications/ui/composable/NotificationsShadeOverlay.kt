@@ -99,7 +99,9 @@ constructor(
             }
         val placeholderViewModel =
             rememberViewModel("NotificationsShadeOverlay-notifPlaceholderViewModel") {
-                viewModel.notificationsPlaceholderViewModelFactory.create()
+                viewModel.notificationsPlaceholderViewModelFactory.create(
+                    Overlays.NotificationsShade
+                )
             }
 
         DisposableEffectWithLifecycle(Unit) {

@@ -137,7 +137,7 @@ constructor(
             rememberViewModel("QuickSettingsScene-viewModel") { contentViewModelFactory.create() }
         val notificationsPlaceholderViewModel =
             rememberViewModel("QuickSettingsScene-notifPlaceholderViewModel") {
-                notificationsPlaceholderViewModelFactory.create()
+                notificationsPlaceholderViewModelFactory.create(Scenes.QuickSettings)
             }
 
         val brightnessMirrorShowing =

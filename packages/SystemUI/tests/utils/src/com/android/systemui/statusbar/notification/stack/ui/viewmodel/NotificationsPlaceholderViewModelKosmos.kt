@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import com.android.compose.animation.scene.ContentKey
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.Kosmos
@@ -30,8 +32,9 @@ import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInter
 
 val Kosmos.notificationsPlaceholderViewModelFactory by Fixture {
     object : NotificationsPlaceholderViewModel.Factory {
-        override fun create(): NotificationsPlaceholderViewModel {
+        override fun create(contentKey: ContentKey): NotificationsPlaceholderViewModel {
             return NotificationsPlaceholderViewModel(
+                contentKey = contentKey,
                 interactor = notificationStackAppearanceInteractor,
                 sceneInteractor = sceneInteractor,
                 shadeInteractor = shadeInteractor,
@@ -47,5 +50,5 @@ val Kosmos.notificationsPlaceholderViewModelFactory by Fixture {
 }
 
 val Kosmos.notificationsPlaceholderViewModel by Fixture {
-    notificationsPlaceholderViewModelFactory.create()
+    notificationsPlaceholderViewModelFactory.create(SceneKey("test"))
 }
