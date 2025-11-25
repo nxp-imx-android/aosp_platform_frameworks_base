@@ -89,13 +89,10 @@ import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.res.Configuration.ASSETS_SEQ_UNDEFINED;
-import static android.content.res.Configuration.COLOR_MODE_UNDEFINED;
-import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.content.res.Configuration.EMPTY;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
-import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.ALL_DRAWN;
@@ -145,8 +142,6 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
-import static android.window.DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH;
-import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
@@ -7560,38 +7555,6 @@ final class ActivityRecord extends WindowToken {
         if (requestedOverrideConfig.assetsSeq != ASSETS_SEQ_UNDEFINED
                 && newParentConfiguration.assetsSeq > requestedOverrideConfig.assetsSeq) {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
-        }
-
-        // If the previously resolved full config and new parent activity is in PiP, retain the
-        // following configs so that the activity doesn't get destroyed and recreated on display
-        // transfer while still remaining in PiP mode.
-        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && mLastReportedPictureInPictureMode
-                && newParentConfiguration.windowConfiguration.getWindowingMode()
-                == WINDOWING_MODE_PINNED) {
-            final Configuration lastReportedMergedConfig =
-                    mLastReportedConfiguration.getMergedConfiguration();
-            int configChanges = info.getRealConfigChanged();
-            if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
-                requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
-                requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
-                requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
-            }
-        }
-
-        // Reset density and other configs when launching PiP as a full task on another display
-        // TODO(b/443008096): Remove this override once we find the root cause behind activity
-        // recycling leading to PiP removal
-        if (ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue()
-                && mLastReportedPictureInPictureMode
-                && newParentConfiguration.windowConfiguration.getWindowingMode()
-                != WINDOWING_MODE_PINNED) {
-            requestedOverrideConfig.colorMode = COLOR_MODE_UNDEFINED;
-            requestedOverrideConfig.touchscreen = TOUCHSCREEN_UNDEFINED;
-            requestedOverrideConfig.densityDpi = DENSITY_DPI_UNDEFINED;
         }
 
         super.resolveOverrideConfiguration(newParentConfiguration);

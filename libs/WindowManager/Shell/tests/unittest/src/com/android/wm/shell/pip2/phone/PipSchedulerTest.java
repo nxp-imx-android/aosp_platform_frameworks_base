@@ -16,8 +16,6 @@
 
 package com.android.wm.shell.pip2.phone;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -187,13 +185,14 @@ public class PipSchedulerTest {
         // PiP is in a valid state by default.
         when(mMockPipTransitionState.isInPip()).thenReturn(true);
         when(mMockDisplayLayoutState.getDisplayId()).thenReturn(DEFAULT_DISPLAY_ID);
+        when(mMockPipDesktopState.getCurrentDisplayId()).thenReturn(DEFAULT_DISPLAY_ID);
     }
 
     @Test
     public void scheduleExitPipViaExpand_nullTaskToken_noop() {
         setNullPipTaskToken();
 
-        mPipScheduler.scheduleExitPipViaExpand(true);
+        mPipScheduler.scheduleExitPipViaExpand(true, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
@@ -213,7 +212,7 @@ public class PipSchedulerTest {
         when(mMockSplitScreenController.isTaskInSplitScreen(
                 ArgumentMatchers.eq(1))).thenReturn(false);
 
-        mPipScheduler.scheduleExitPipViaExpand(true);
+        mPipScheduler.scheduleExitPipViaExpand(true, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
@@ -233,7 +232,7 @@ public class PipSchedulerTest {
         when(mMockSplitScreenController.isTaskInSplitScreen(
                 ArgumentMatchers.eq(1))).thenReturn(true);
 
-        mPipScheduler.scheduleExitPipViaExpand(true);
+        mPipScheduler.scheduleExitPipViaExpand(true, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
@@ -253,7 +252,7 @@ public class PipSchedulerTest {
         when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
 
         // Visible.
-        mPipScheduler.scheduleExitPipViaExpand(true);
+        mPipScheduler.scheduleExitPipViaExpand(true, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
@@ -265,7 +264,7 @@ public class PipSchedulerTest {
         reset(mMockMainExecutor);
 
         // Not visible.
-        mPipScheduler.scheduleExitPipViaExpand(false);
+        mPipScheduler.scheduleExitPipViaExpand(false, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
@@ -281,57 +280,14 @@ public class PipSchedulerTest {
         ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
         when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
 
-        mPipScheduler.scheduleExitPipViaExpand(true);
+        mPipScheduler.scheduleExitPipViaExpand(true, DEFAULT_DISPLAY_ID);
 
         verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
         assertNotNull(mRunnableArgumentCaptor.getValue());
         mRunnableArgumentCaptor.getValue().run();
 
         verify(mMockDesktopPipTransitionController, times(1))
-                .updateExpandWctForDesktop(any(), eq(pipTaskInfo));
-        verify(mMockPipTransitionController, times(1))
-                .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
-        assertNotNull(mWctArgumentCaptor.getValue());
-        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
-    }
-
-    @Test
-    public void scheduleExitPipViaExpand_onAnotherDisplay_expandTransitionCalled() {
-        setMockPipTaskToken();
-        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
-        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
-        // Make sure task with the id = 1 isn't in split-screen.
-        when(mMockSplitScreenController.isTaskInSplitScreen(
-                ArgumentMatchers.eq(1))).thenReturn(false);
-
-        mPipScheduler.scheduleExitPipViaExpand(true, SECONDARY_DISPLAY_ID, TEST_BOUNDS,
-                WINDOWING_MODE_FREEFORM);
-
-        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
-        assertNotNull(mRunnableArgumentCaptor.getValue());
-        mRunnableArgumentCaptor.getValue().run();
-
-        verify(mMockPipTransitionController, times(1))
-                .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
-        assertNotNull(mWctArgumentCaptor.getValue());
-        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
-    }
-
-    @Test
-    public void scheduleExitPipViaExpand_onAnotherDisplay_desktopAugmentsWct() {
-        setMockPipTaskToken();
-        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
-        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
-
-        mPipScheduler.scheduleExitPipViaExpand(true, SECONDARY_DISPLAY_ID, TEST_BOUNDS,
-                WINDOWING_MODE_FREEFORM);
-
-        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
-        assertNotNull(mRunnableArgumentCaptor.getValue());
-        mRunnableArgumentCaptor.getValue().run();
-
-        verify(mMockDesktopPipTransitionController, times(1))
-                .updateExpandWctForDesktop(any(), eq(pipTaskInfo));
+                .updateExpandWctForDesktop(any(), eq(pipTaskInfo), eq(DEFAULT_DISPLAY_ID));
         verify(mMockPipTransitionController, times(1))
                 .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
         assertNotNull(mWctArgumentCaptor.getValue());

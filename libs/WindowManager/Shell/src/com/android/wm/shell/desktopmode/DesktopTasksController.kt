@@ -2496,7 +2496,6 @@ class DesktopTasksController(
         userId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
         dragEvent: DragEvent? = null,
-        bounds: Rect? = null,
     ): IBinder {
         logger.v(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
@@ -2574,20 +2573,7 @@ class DesktopTasksController(
                         op.pendingIntent?.intent?.component == pipTaskComponent
                 ) {
                     logger.v("Scheduling exit PiP via expand on app launch for $pipTaskComponent")
-                    mPipScheduler.scheduleExitPipViaExpand(
-                        /* wasVisible= */ true,
-                        displayId,
-                        bounds,
-                        WINDOWING_MODE_FREEFORM,
-                    )
-                    shellTaskOrganizer.getRunningTaskInfo(pipTaskInfo.taskId)?.let {
-                        moveToDisplay(
-                            it,
-                            displayId,
-                            bounds = bounds,
-                            enterReason = EnterReason.EXIT_PIP,
-                        )
-                    }
+                    mPipScheduler.scheduleExitPipViaExpand(/* wasVisible= */ true, displayId)
                     return Binder()
                 }
             }
@@ -2831,7 +2817,6 @@ class DesktopTasksController(
             deskId = deskId,
             displayId = displayId,
             userId = userId,
-            bounds = bounds,
         )
     }
 
@@ -2844,7 +2829,7 @@ class DesktopTasksController(
      *
      * TODO: b/399411604 - split this up into smaller functions.
      */
-    private fun moveToDisplay(
+    fun moveToDisplay(
         task: RunningTaskInfo,
         displayId: Int,
         bounds: Rect? = null,
