@@ -317,7 +317,7 @@ public final class NetworkSecurityEvent implements Parcelable {
     private final @AlertStatus int mAlertStatus;
     private final @NonNull @ReasonCode int[] mReasonCodes;
     private final int mCellId;
-    private final int mPhysCellId;
+    private final int mPhysicalCellId;
     private final int mArfcn;
     private final @NonNull String mPlmn;
     private final @RilRadioTechnology int mRat;
@@ -334,7 +334,7 @@ public final class NetworkSecurityEvent implements Parcelable {
             @AlertStatus int alertStatus,
             @NonNull @ReasonCode int[] reasonCodes,
             int cellId,
-            int physCellId,
+            int physicalCellId,
             int arfcn,
             @NonNull String plmn,
             @RilRadioTechnology int rat,
@@ -343,7 +343,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         mAlertStatus = alertStatus;
         mReasonCodes = reasonCodes;
         mCellId = cellId;
-        mPhysCellId = physCellId;
+        mPhysicalCellId = physicalCellId;
         mArfcn = arfcn;
         mPlmn = plmn;
         mRat = rat;
@@ -355,7 +355,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         mAlertStatus = in.readInt();
         mReasonCodes = in.createIntArray();
         mCellId = in.readInt();
-        mPhysCellId = in.readInt();
+        mPhysicalCellId = in.readInt();
         mArfcn = in.readInt();
         mPlmn = in.readString8();
         mRat = in.readInt();
@@ -393,8 +393,8 @@ public final class NetworkSecurityEvent implements Parcelable {
     /**
      * @return The physical cell ID where the event occurred.
      */
-    public int getPhysCellId() {
-        return mPhysCellId;
+    public int getPhysicalCellId() {
+        return mPhysicalCellId;
     }
 
     /**
@@ -438,7 +438,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         out.writeInt(mAlertStatus);
         out.writeIntArray(mReasonCodes);
         out.writeInt(mCellId);
-        out.writeInt(mPhysCellId);
+        out.writeInt(mPhysicalCellId);
         out.writeInt(mArfcn);
         out.writeString8(mPlmn);
         out.writeInt(mRat);
@@ -477,7 +477,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         return mAlertCategory == that.mAlertCategory
                 && mAlertStatus == that.mAlertStatus
                 && mCellId == that.mCellId
-                && mPhysCellId == that.mPhysCellId
+                && mPhysicalCellId == that.mPhysicalCellId
                 && mArfcn == that.mArfcn
                 && mPlmn.equals(that.mPlmn)
                 && mRat == that.mRat
@@ -492,7 +492,7 @@ public final class NetworkSecurityEvent implements Parcelable {
                         mAlertCategory,
                         mAlertStatus,
                         mCellId,
-                        mPhysCellId,
+                        mPhysicalCellId,
                         mArfcn,
                         mPlmn,
                         mRat,
