@@ -371,16 +371,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_app_launch_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
-    bug: "353651446"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_launch_transitions"
     namespace: "lse_desktop_experience"
     description: "Enables custom transitions for app launches in Desktop Mode."
