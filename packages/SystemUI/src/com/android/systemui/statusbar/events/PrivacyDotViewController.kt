@@ -235,6 +235,7 @@ constructor(
         contentInsetsProvider.removeCallback(insetsChangedListener)
         configurationController.removeCallback(configurationListener)
         stateController.removeCallback(statusBarStateListener)
+        mainExecutor.execute { animationScheduler.removeCallback(systemStatusAnimationCallback) }
     }
 
     @UiThread

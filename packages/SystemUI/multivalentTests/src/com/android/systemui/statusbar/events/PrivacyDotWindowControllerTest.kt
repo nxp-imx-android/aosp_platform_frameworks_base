@@ -280,6 +280,18 @@ class PrivacyDotWindowControllerTest : SysuiTestCase() {
         executor.runAllReady()
     }
 
+    @Test
+    fun onStop_setsViewControllerShowingListenerToNull() {
+        underTest.start()
+        executor.runAllReady()
+        assertThat(viewController.showingListener).isNotNull()
+
+        underTest.stop()
+        executor.runAllReady()
+
+        assertThat(viewController.showingListener).isNull()
+    }
+
     // Helper functions: Note that paramsForView needs to find the *root* view (FrameLayout)
     // that was added to the window manager, not the inner dotView.
     private fun paramsForView(dotView: View): WindowManager.LayoutParams {

@@ -485,6 +485,17 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
 
     @Test
+    fun onStop_removesSystemStatusAnimationCallback() {
+        val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)
+        val controller = createAndInitializeController()
+        Mockito.verify(mockAnimationScheduler).addCallback(captor.capture())
+
+        controller.stop()
+
+        Mockito.verify(mockAnimationScheduler).removeCallback(captor.value)
+    }
+
+    @Test
     @EnableFlags(FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS)
     fun statusBarStateListener_onStateChanged_updatesDotState() =
         kosmos.runTest {

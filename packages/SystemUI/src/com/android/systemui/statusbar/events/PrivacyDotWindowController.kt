@@ -144,6 +144,7 @@ constructor(
 
     fun stop() {
         uiExecutor.execute {
+            privacyDotViewController.showingListener = null
             dotWindowViewsByCorner.forEach { windowManager.removeViewSafely(it.value) }
         }
     }
