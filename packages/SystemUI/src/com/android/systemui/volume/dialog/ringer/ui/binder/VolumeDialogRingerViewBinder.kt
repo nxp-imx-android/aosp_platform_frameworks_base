@@ -22,6 +22,8 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.LayerDrawable
+import android.os.Trace
+import android.os.Trace.TRACE_TAG_APP
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -136,6 +138,10 @@ constructor(
         if (blurOnMoreSurfaces()) {
             launch {
                 windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
+                    if (supported) {
+                        Trace.instantForTrack(TRACE_TAG_APP, TAG, "notifyRendererForGpuLoadUp")
+                        view.viewRootImpl.notifyRendererForGpuLoadUp("open volume dialog")
+                    }
                     volumeDialogBackgroundView.setIsBlurSupported(supported)
                     ringerBackgroundView.setIsBlurSupported(supported)
                 }
@@ -525,6 +531,10 @@ constructor(
         } else {
             background = background.mutate()
         }
+    }
+
+    companion object {
+        private const val TAG = "VolumeDialogRingerViewBinder"
     }
 }
 
