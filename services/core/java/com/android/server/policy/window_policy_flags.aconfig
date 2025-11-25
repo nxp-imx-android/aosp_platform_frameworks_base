@@ -24,3 +24,10 @@ flag {
     description: "Migrate Wear key gestures handling logic to Wear code base."
     bug: "368159846"
 }
+
+flag {
+    name: "wear_keyguard_drawn_timeout_on_boot_config"
+    namespace: "wear_services"
+    description: "Set a timeout for keyguard drawn on boot based on the config value."
+    bug: "446797835"
+}
