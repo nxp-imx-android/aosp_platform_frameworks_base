@@ -279,6 +279,7 @@ class DesktopTasksController(
     private val lockTaskChangeListener: LockTaskChangeListener,
     private val launcherApps: LauncherApps,
     private val transitionStateHolder: TransitionStateHolder,
+    private val desksController: DesksController,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -503,13 +504,23 @@ class DesktopTasksController(
 
     /** Returns whether the given display has an active desk. */
     @JvmOverloads
+    @Deprecated(
+        message = "",
+        replaceWith = ReplaceWith("Use same method on DesksController instead."),
+        level = DeprecationLevel.WARNING,
+    )
     fun isAnyDeskActive(displayId: Int, userId: Int = shellController.currentUserId): Boolean =
-        userRepositories.getProfile(userId).isAnyDeskActive(displayId)
+        desksController.isAnyDeskActive(displayId, userId)
 
     /** Returns the id of the active desk in [displayId]. */
     @JvmOverloads
+    @Deprecated(
+        message = "",
+        replaceWith = ReplaceWith("Use same method on DesksController instead."),
+        level = DeprecationLevel.WARNING,
+    )
     fun getActiveDeskId(displayId: Int, userId: Int = shellController.currentUserId): Int? =
-        userRepositories.getProfile(userId).getActiveDeskId(displayId)
+        desksController.getActiveDeskId(displayId, userId)
 
     /**
      * Moves focused task to desktop mode for given [displayId].
@@ -753,11 +764,14 @@ class DesktopTasksController(
     }
 
     /** Returns whether a new desk can be created. */
-    fun canCreateDesks(userId: Int = shellController.currentUserId): Boolean {
-        val deskLimit = desktopConfig.maxDeskLimit
-        val repository = userRepositories.getProfile(userId)
-        return deskLimit == 0 || repository.getNumberOfDesks() < deskLimit
-    }
+    @JvmOverloads
+    @Deprecated(
+        message = "",
+        replaceWith = ReplaceWith("Use same method on DesksController instead."),
+        level = DeprecationLevel.WARNING,
+    )
+    fun canCreateDesks(userId: Int = shellController.currentUserId): Boolean =
+        desksController.canCreateDesks(userId)
 
     /**
      * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
