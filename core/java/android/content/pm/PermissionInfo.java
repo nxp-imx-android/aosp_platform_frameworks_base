@@ -436,6 +436,14 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
     public static final int FLAG_IMMUTABLY_RESTRICTED = 1<<4;
 
     /**
+     * Flag for {@link #flags}, corresponding to <code>allowedInPrivateComputeCore</code>
+     * Determines whether this permission can be obtained by components
+     * running in the Private Compute Core restricted environment.
+     */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public static final int FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE = 1 << 5;
+
+    /**
      * Flag for {@link #flags}, indicating that this permission has been
      * installed into the system's globally defined permissions.
      */
@@ -448,6 +456,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
             FLAG_HARD_RESTRICTED,
             FLAG_SOFT_RESTRICTED,
             FLAG_IMMUTABLY_RESTRICTED,
+            FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE,
             FLAG_INSTALLED
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -710,6 +719,9 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
                 case PermissionInfo.FLAG_IMMUTABLY_RESTRICTED:
                     sb.append("immutablyRestricted");
                     break;
+                case PermissionInfo.FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE:
+                    sb.append("allowedInPrivateComputeCore");
+                    break;
                 case PermissionInfo.FLAG_INSTALLED:
                     sb.append("installed");
                     break;
@@ -856,6 +868,11 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
     /** @hide */
     public boolean isRestricted() {
         return isHardRestricted() || isSoftRestricted();
+    }
+
+    /** @hide */
+    public boolean isAllowedInPrivateComputeCore() {
+        return (flags & PermissionInfo.FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE) != 0;
     }
 
     /** @hide */

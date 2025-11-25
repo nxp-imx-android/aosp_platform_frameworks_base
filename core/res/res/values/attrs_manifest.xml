@@ -355,11 +355,37 @@
              the app is uninstalled.
         -->
         <flag name="immutablyRestricted" value="0x10" />
-        <!--
-             Modifier for permission restriction. This permission cannot
-             be exempted by the installer.
+
+        <!-- Determines whether this permission can be obtained by components running in the
+             Private Compute Core restricted environment.
+
+             By default, permissions are not permitted in Private Compute Core and must
+             be explicitly allowed via this permission flag.
+
+             The Android system will prevent any Private Compute Core components
+             from obtaining permissions that are not explicitly allowed via this flag.
+
+             In the example below the following is true:
+
+             <ul>
+                 <li>
+                     The "basicpermission" would not be obtainable by any
+                     Private Compute Core components, even if it is requested.
+                 </li>
+                 <li>
+                     The "fancypermission" is allowed to be obtained by a private compute
+                     component, but it still must be requested in the manifest to be obtainable.
+                 </li>
+             </ul>
+
+             <pre>
+                 <permission android:name="android.permission.basicpermission" />
+
+                 <permission android:name="android.permission.fancypermission"
+                     android:permissionFlags="allowedInPrivateComputeCore" />
+             </pre>
         -->
-        <flag name="installerExemptIgnored" value="0x20" />
+        <flag name="allowedInPrivateComputeCore" value="0x20" />
     </attr>
 
     <!-- Specified the name of a group that this permission is associated
