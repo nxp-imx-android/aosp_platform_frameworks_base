@@ -260,8 +260,6 @@ public class TransitionMixpatcherTests extends ShellTestCase {
         testAnim.finishNow();
         assertEquals(transit, mWmFinishedTransitions.get(0));
         assertEquals(transit2, mWmFinishedTransitions.get(1));
-
-
     }
 
     @Test
@@ -344,6 +342,36 @@ public class TransitionMixpatcherTests extends ShellTestCase {
         anim1.finishDetachNow();
         assertEquals(1, d.mCallCount);
         assertEquals(3, anim3.mContainersAnimating.size());
+    }
+
+    @Test
+    public void planInvisible() {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken ctnrA = createTestContainer("CtnrA");
+        final WindowContainerToken ctnrB = createTestContainer("CtnrB");
+        final TestTransitAnim anim1 = new TestTransitAnim(mMainHandler);
+        final TestTransitAnim anim2 = new TestTransitAnim(mMainHandler);
+        final TestPlanner p = new TestPlanner(mMainHandler);
+        final TestPlanner p2 = new TestPlanner(mMainHandler);
+        mMixpatcher.mPlanners.add(p2);
+        mMixpatcher.mPlanners.add(p);
+
+        final IBinder transit = mMixpatcher.startTransition(null /* transit */, TRANSIT_OPEN, wct,
+                List.of(p2));
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(new ChangeBuilder(ctnrA, TRANSIT_OPEN).build())
+                .addChange(new ChangeBuilder(ctnrB, TRANSIT_OPEN)
+                        .setFlags(TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION).build())
+                .build();
+        p2.mAccept = new WindowContainerToken[]{ctnrB};
+        p2.mAcceptAnims = new ITransitionAnimation[]{anim2};
+        p.mAcceptAll = anim1;
+        mMixpatcher.onTransitionReady(transit, info, mStubTx, mStubTx);
+        // Invisible takes priority even over interest so `p2` won't see 'ctnrB' and thus won't
+        // prepare `anim2`.
+        assertNull(anim2.mInfo);
+        // Non-invisibles can still dispatch afterwards
+        assertEquals(1, anim1.mInfo.getChanges().size());
     }
 
     private static WindowContainerToken createTestContainer(@NonNull String name) {
