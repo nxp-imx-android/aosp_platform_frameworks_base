@@ -223,7 +223,11 @@ constructor(
                             Modifier.clip(RoundedCornerShape(12.dp))
                                 .border(3.dp, MaterialTheme.colorScheme.surfaceVariant)
                                 .width(190.dp)
-                                .height(107.dp),
+                                .height(107.dp)
+                                .clickable {
+                                    postRecordingViewModel.edit()
+                                    hide()
+                                },
                     )
                     PostCaptureToastBar(
                         actionButtonGroup = actionButtonItems,
