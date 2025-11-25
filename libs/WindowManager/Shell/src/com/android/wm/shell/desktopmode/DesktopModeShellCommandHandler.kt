@@ -49,6 +49,7 @@ class DesktopModeShellCommandHandler(
             "canCreateDesk" -> runCanCreateDesk(args, pw)
             "getActiveDeskId" -> runGetActiveDeskId(args, pw)
             "clearRememberedBounds" -> runClearRememberedBounds(args, pw)
+            "clearAllRememberedBounds" -> runClearAllRememberedBounds(args, pw)
             else -> {
                 pw.println("Invalid command: ${args[0]}")
                 false
@@ -302,6 +303,15 @@ class DesktopModeShellCommandHandler(
         return true
     }
 
+    private fun runClearAllRememberedBounds(args: Array<String>, pw: PrintWriter): Boolean {
+        if (!Flags.enableRememberedBounds()) {
+            pw.println("Not supported.")
+            return false
+        }
+        userRepositories.getProfile(shellController.currentUserId).clearAllRememberedBoundsRatio()
+        return true
+    }
+
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("$prefix moveTaskToDesk <taskId|0>")
@@ -338,5 +348,7 @@ class DesktopModeShellCommandHandler(
         pw.println("$prefix  Print the id of the active desk in the given display.")
         pw.println("$prefix clearRememberedBounds <packageName>")
         pw.println("$prefix  Clears the remembered bounds for the given package.")
+        pw.println("$prefix clearAllRememberedBounds")
+        pw.println("$prefix  Clears the remembered bounds for all packages.")
     }
 }
