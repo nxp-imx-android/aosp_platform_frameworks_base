@@ -23,7 +23,6 @@ import static com.android.server.power.feature.flags.Flags.FLAG_SHUTDOWN_SYSTEM_
 
 import android.Manifest.permission;
 import android.annotation.CallbackExecutor;
-import android.annotation.CurrentTimeMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.IntDef;
@@ -64,7 +63,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class lets you query and request control of aspects of the device's power state.
@@ -3257,10 +3255,6 @@ public final class PowerManager {
     }
 
 
-    @CurrentTimeMillisLong
-    private final AtomicLong mLastHeadroomUpdate = new AtomicLong(0L);
-    private static final int MINIMUM_HEADROOM_TIME_MILLIS = 500;
-
     /**
      * Provides an estimate of how much thermal headroom the device currently has before hitting
      * severe throttling.
@@ -3293,21 +3287,12 @@ public final class PowerManager {
      *                        future will likely be less accurate than forecasts in the near future.
      * @return a value greater than or equal to 0.0 where 1.0 indicates the SEVERE throttling
      *         threshold, as described above. Returns NaN if the device does not support this
-     *         functionality or if this function is called significantly faster than once per
-     *         second.
+     *         functionality.
      */
     public @FloatRange(from = 0f) float getThermalHeadroom(
             @IntRange(from = 0, to = 60) int forecastSeconds) {
-        // Rate-limit calls into the thermal service
-        long now = SystemClock.elapsedRealtime();
-        long timeSinceLastUpdate = now - mLastHeadroomUpdate.get();
-        if (timeSinceLastUpdate < MINIMUM_HEADROOM_TIME_MILLIS) {
-            return Float.NaN;
-        }
-
         try {
             float forecast = mThermalService.getThermalHeadroom(forecastSeconds);
-            mLastHeadroomUpdate.set(SystemClock.elapsedRealtime());
             return forecast;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
