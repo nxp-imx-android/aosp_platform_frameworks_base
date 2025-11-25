@@ -635,24 +635,24 @@ public final class WindowContainerTransaction implements Parcelable {
      * Sets whether package update should be handled for the task.
      *
      * <p>When {@code true}, the system will call Shell to do gatekeeping during the package update
-     * process. This means that when the task is going through the package update process and
-     * before the process is killed, shell will get a signal to prepare the task if needed. Note
-     * that this needs to be set per leaf task.
+     * process. This means that when any child task is going through the package update
+     * process and before the process is killed, shell will get a signal to prepare the task if
+     * needed. This is currently only supported for rootTasks.
      *
-     * @param taskContainer          The window container of the task.
+     * @param rootContainer       The root window container to set this value.
      * @param handlePackageUpdate {@code true} to allow package update for task to be handled
-     *                               for the task, {@code false} otherwise.
+     *                            for the task, {@code false} otherwise.
      * @hide
      */
     @NonNull
-    public WindowContainerTransaction setHandlePackageUpdateForTask(
-            @NonNull WindowContainerToken taskContainer,
+    public WindowContainerTransaction setHandlePackageUpdateForRootContainer(
+            @NonNull WindowContainerToken rootContainer,
             boolean handlePackageUpdate) {
         // TODO(b/458105923) This should probably only apply to root tasks.
         if (!Flags.enableAppRestartAfterUpdate()) {
             return this;
         }
-        final Change change = getOrCreateChange(taskContainer.asBinder());
+        final Change change = getOrCreateChange(rootContainer.asBinder());
         change.mChangeMask |= Change.CHANGE_HANDLE_PACKAGE_UPDATE;
         change.mHandlePackageUpdate = handlePackageUpdate;
         return this;

@@ -19,8 +19,10 @@ package com.android.server.wm;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID;
@@ -660,6 +662,35 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         // Note that since `onTop` is `true`, children 2 and 1 should preserve their order
         // in `parentTask2`. So `parentTask2` has now children 2, 1 and 3, from top to bottom.
         assertSame(childTask2, parentTask2.getTopChild());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void setHandlePackageUpdateForRootContainer_withRootTaskLeafTask_onlyUpdatesRootTask() {
+        final Task rootTask = createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        final Task leafTask = new TaskBuilder(mSupervisor)
+                .setParentTask(rootTask)
+                .build();
+        leafTask.setParent(rootTask);
+
+        // The default state is false.
+        assertFalse("Leaf task should initially not handle package updates",
+                leafTask.mHandlePackageUpdate);
+        assertFalse("Root task should initially not handle package updates",
+                rootTask.mHandlePackageUpdate);
+
+        // Set handlePackageUpdate to true.
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = rootTask.getTaskInfo().token;
+        wct.setHandlePackageUpdateForRootContainer(token, true /* handlePackageUpdate */);
+        wct.setHandlePackageUpdateForRootContainer(leafTask.getTaskInfo().token,
+                true /* handlePackageUpdate */);
+        applyTransaction(wct);
+
+        assertTrue("Root task should be updated to handle package updates",
+                rootTask.mHandlePackageUpdate);
+        assertFalse("Leaf task should not handle package updates", leafTask.mHandlePackageUpdate);
     }
 
     private Task createTask(int taskId) {
