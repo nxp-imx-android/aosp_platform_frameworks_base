@@ -680,7 +680,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     Task createTaskWithActivity(TaskDisplayArea taskDisplayArea,
             int windowingMode, int activityType, boolean onTop, boolean twoLevelTask) {
         return createTask(taskDisplayArea, windowingMode, activityType,
-                onTop, true /* createActivity */, twoLevelTask);
+                onTop, true /* createActivity */, twoLevelTask,
+                false /* forceOpaque */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link DisplayContent}. */
@@ -695,18 +696,21 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType) {
         return createTask(taskDisplayArea, windowingMode, activityType,
-                true /* onTop */, false /* createActivity */, false /* twoLevelTask */);
+                true /* onTop */, false /* createActivity */, false /* twoLevelTask */,
+                false /* forceOpaque */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link TaskDisplayArea}. */
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType,
-            boolean onTop, boolean createActivity, boolean twoLevelTask) {
+            boolean onTop, boolean createActivity, boolean twoLevelTask,
+            boolean forcepaque) {
         final TaskBuilder builder = new TaskBuilder(mSupervisor)
                 .setTaskDisplayArea(taskDisplayArea)
                 .setWindowingMode(windowingMode)
                 .setActivityType(activityType)
                 .setOnTop(onTop)
-                .setCreateActivity(createActivity);
+                .setCreateActivity(createActivity)
+                .setForceOpaque(forcepaque);
         if (twoLevelTask) {
             return builder
                     .setCreateParentTask(true)
@@ -1556,6 +1560,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
         private boolean mCreateActivity = false;
         private boolean mCreatedByOrganizer = false;
+        private boolean mIsForceOpaque = false;
 
         TaskBuilder(ActivityTaskSupervisor supervisor) {
             mSupervisor = supervisor;
@@ -1652,6 +1657,11 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             return this;
         }
 
+        TaskBuilder setForceOpaque(boolean forceOpaque) {
+            mIsForceOpaque = forceOpaque;
+            return this;
+        }
+
         Task build() {
             SystemServicesTestRule.checkHoldsLock(mSupervisor.mService.mGlobalLock);
 
@@ -1687,7 +1697,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                     .setIntent(mIntent)
                     .setOnTop(mOnTop)
                     .setVoiceSession(mVoiceSession)
-                    .setCreatedByOrganizer(mCreatedByOrganizer);
+                    .setCreatedByOrganizer(mCreatedByOrganizer)
+                    .setForceOpaque(mIsForceOpaque);
             final Task task;
             if (mParentTask == null) {
                 task = builder.setActivityType(mActivityType)

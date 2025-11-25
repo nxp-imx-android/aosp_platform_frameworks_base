@@ -29,6 +29,7 @@ import android.os.RemoteException;
 import android.view.SurfaceControl;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.window.flags.Flags;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -51,32 +52,79 @@ public class TaskOrganizer extends WindowOrganizer {
         public boolean reparentOnDisplayRemoval;
         public @Nullable IBinder launchCookie;
         public @Nullable String name;
+        public boolean isForceOpaque;
 
+        /**
+         * Sets the ID of the display to create the root task on.
+         *
+         * @param displayId The ID of the display.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setDisplayId(int displayId) {
             this.displayId = displayId;
             return this;
         }
 
+        /**
+         * Sets the windowing mode for the new root task.
+         *
+         * @param windowingMode The windowing mode.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setWindowingMode(int windowingMode) {
             this.windowingMode = windowingMode;
             return this;
         }
 
+        /**
+         * Sets whether the root task should be removed when the TaskOrganizer is unregistered.
+         *
+         * @param removeWithTaskOrganizer Whether to remove the task with the TaskOrganizer.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setRemoveWithTaskOrganizer(boolean removeWithTaskOrganizer) {
             this.removeWithTaskOrganizer = removeWithTaskOrganizer;
             return this;
         }
 
+        /**
+         * Sets whether the root task should be reparented to the default display if its current
+         * display is removed.
+         * @param reparentOnDisplayRemoval Whether to reparent the task on display removal.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setReparentOnDisplayRemoval(boolean reparentOnDisplayRemoval) {
             this.reparentOnDisplayRemoval = reparentOnDisplayRemoval;
             return this;
         }
 
+        /**
+         * Sets a launch cookie for the new root task.
+         * @param launchCookie The launch cookie.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setLaunchCookie(@NonNull IBinder launchCookie) {
             this.launchCookie = launchCookie;
             return this;
         }
 
+        /**
+         * If sets to {@code true}, the created Task will be treated as opaque when there's any
+         * running activities. Otherwise, it follows the system policy.
+         */
+        public CreateRootTaskRequest setForceOpaque(boolean forceOpaque) {
+            if (!Flags.enableForceOpaque()) {
+                throw new UnsupportedOperationException("Enabling force opaque is not enabled!");
+            }
+            this.isForceOpaque = forceOpaque;
+            return this;
+        }
+
+        /**
+         * Sets the name of the new root task.
+         * @param name The name of the task.
+         * @return This request object.
+         */
         public CreateRootTaskRequest setName(@NonNull String name) {
             this.name = name;
             return this;
@@ -236,7 +284,8 @@ public class TaskOrganizer extends WindowOrganizer {
         try {
             mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
                     request.launchCookie, request.removeWithTaskOrganizer,
-                    request.reparentOnDisplayRemoval, request.name);
+                    request.reparentOnDisplayRemoval, request.name,
+                    request.isForceOpaque);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

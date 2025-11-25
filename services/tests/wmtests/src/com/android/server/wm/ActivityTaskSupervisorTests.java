@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.app.ActivityManager.START_DELIVERED_TO_TOP;
 import static android.app.ActivityManager.START_TASK_TO_FRONT;
 import static android.app.ITaskStackListener.FORCED_RESIZEABLE_REASON_SECONDARY_DISPLAY;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -729,6 +730,51 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
 
         assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(childTask)).isTrue();
     }
+
+    @Test
+    public void testOpaque_forceOpaque() {
+        final Task forceOpaqueRootTask = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setCreatedByOrganizer(true)
+                .setForceOpaque(true)
+                .build();
+        final Rect leftBounds = new Rect();
+        final Rect rightBounds = new Rect();
+        forceOpaqueRootTask.getBounds().splitVertically(leftBounds, rightBounds);
+        final Task adjacentTask = new TaskBuilder(mSupervisor)
+                .setParentTask(forceOpaqueRootTask)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setCreateActivity(true)
+                .build();
+        final Task adjacentEmptyTask = new TaskBuilder(mSupervisor)
+                .setParentTask(forceOpaqueRootTask)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setCreateActivity(false)
+                .build();
+        adjacentTask.setBounds(leftBounds);
+        adjacentEmptyTask.setBounds(rightBounds);
+        adjacentTask.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentTask, adjacentEmptyTask)
+        );
+
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(forceOpaqueRootTask)).isTrue();
+
+        final Task forceOpaqueTaskWithTranslucentActivity = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .setForceOpaque(true)
+                .setCreateActivity(true)
+                .build();
+        final ActivityRecord activity = forceOpaqueTaskWithTranslucentActivity.getTopMostActivity();
+        activity.setOccludesParent(false);
+
+        assertThat(
+                mSupervisor.mOpaqueContainerHelper.isOpaque(forceOpaqueTaskWithTranslucentActivity)
+        ).isTrue();
+    }
+
 
     @NonNull
     private TaskFragment createChildTaskFragment(@NonNull Task parent,

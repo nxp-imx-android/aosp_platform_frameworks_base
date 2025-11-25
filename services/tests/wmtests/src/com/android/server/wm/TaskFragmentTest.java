@@ -625,6 +625,50 @@ public class TaskFragmentTest extends WindowTestsBase {
     }
 
     @Test
+    public void testVisibility_belowForceOpaqueRootTask_invisible() {
+        final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* createActivity */, false /* twoLevelTask */,
+                false /* forceOpaque */);
+
+        // Create the top task that contains two adjacent tasks.
+        final Task topTask = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setCreatedByOrganizer(true)
+                .setForceOpaque(true)
+                .build();
+        final Rect leftBounds = new Rect();
+        final Rect rightBounds = new Rect();
+        topTask.getBounds().splitVertically(leftBounds, rightBounds);
+        final Task adjacentTask = new TaskBuilder(mSupervisor)
+                .setParentTask(topTask)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setCreateActivity(true)
+                .build();
+        final Task adjacentEmptyTask = new TaskBuilder(mSupervisor)
+                .setParentTask(topTask)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setCreateActivity(false)
+                .build();
+        adjacentTask.setBounds(leftBounds);
+        adjacentEmptyTask.setBounds(rightBounds);
+        adjacentTask.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentTask, adjacentEmptyTask)
+        );
+        // Make the top activity of the adjacent task opaque.
+        final ActivityRecord topActivity = adjacentTask.getTopMostActivity();
+        topActivity.setVisible(true);
+        topActivity.visibleIgnoringKeyguard = true;
+        topActivity.setOccludesParent(true);
+
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                bottomTask.getVisibility(null /* starting */));
+    }
+
+    @Test
     public void testFindTopNonFinishingActivity_ignoresLaunchedFromBubbleActivities() {
         final ActivityOptions opts = ActivityOptions.makeBasic();
         opts.setTaskAlwaysOnTop(true);
