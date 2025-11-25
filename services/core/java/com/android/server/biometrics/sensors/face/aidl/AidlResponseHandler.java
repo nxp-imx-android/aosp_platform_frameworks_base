@@ -19,7 +19,6 @@ package com.android.server.biometrics.sensors.face.aidl;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.hardware.biometrics.face.AuthenticateSuccess;
 import android.hardware.biometrics.face.AuthenticationFrame;
 import android.hardware.biometrics.face.EnrollmentFrame;
 import android.hardware.biometrics.face.Error;
@@ -181,13 +180,6 @@ public class AidlResponseHandler extends ISessionCallback.Stub {
                 mAidlResponseHandlerCallback.onEnrollSuccess();
             }
         });
-    }
-
-    @Override
-    public void onAuthenticationSucceededWithResult(AuthenticateSuccess result) {
-        final int enrollmentId = result.enrollmentId;
-        final HardwareAuthToken hat = result.hat;
-        onAuthenticationSucceeded(enrollmentId, hat);
     }
 
     @Override
