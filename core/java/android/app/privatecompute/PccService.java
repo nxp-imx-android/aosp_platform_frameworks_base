@@ -39,6 +39,9 @@ import java.util.List;
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public abstract class PccService extends Service {
 
+    protected PccService() {
+    }
+
     private static final String TAG = PccService.class.getSimpleName();
 
     private final IPccService.Stub mBinder = new IPccService.Stub() {
