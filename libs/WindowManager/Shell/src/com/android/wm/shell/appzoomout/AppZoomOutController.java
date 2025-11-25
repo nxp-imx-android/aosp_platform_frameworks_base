@@ -19,8 +19,6 @@ package com.android.wm.shell.appzoomout;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
-
 import android.app.ActivityManager;
 import android.app.WindowConfiguration;
 import android.content.Context;
@@ -118,9 +116,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         updateDisplayLayout(mContext.getDisplayId());
 
         mAppDisplayAreaOrganizer.registerOrganizer();
-        if (enableLppAssistInvocationEffect()) {
-            mTopLevelDisplayAreaOrganizer.registerOrganizer();
-        }
+        mTopLevelDisplayAreaOrganizer.registerOrganizer();
     }
 
     public AppZoomOut asAppZoomOut() {
@@ -137,9 +133,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
      * @param sysuiMainHandler The main handler from SystemUI (required for CUJ tracking)
      */
     private void setTopLevelProgress(float progress, long vsyncId, Handler sysuiMainHandler) {
-        if (enableLppAssistInvocationEffect()) {
-            mTopLevelDisplayAreaOrganizer.setProgress(progress, vsyncId, sysuiMainHandler);
-        }
+        mTopLevelDisplayAreaOrganizer.setProgress(progress, vsyncId, sysuiMainHandler);
     }
 
     void updateDisplayLayout(int displayId) {
@@ -149,9 +143,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
             return;
         }
         mAppDisplayAreaOrganizer.setDisplayLayout(newDisplayLayout);
-        if (enableLppAssistInvocationEffect()) {
-            mTopLevelDisplayAreaOrganizer.setDisplayLayout(newDisplayLayout);
-        }
+        mTopLevelDisplayAreaOrganizer.setDisplayLayout(newDisplayLayout);
     }
 
     private void updateIsHomeTaskFocusedIfNeeded(
@@ -189,9 +181,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         // TODO: verify if there is synchronization issues.
         if (toRotation != ROTATION_UNDEFINED) {
             mAppDisplayAreaOrganizer.onRotateDisplay(mContext, toRotation);
-            if (enableLppAssistInvocationEffect()) {
-                mTopLevelDisplayAreaOrganizer.onRotateDisplay(mContext, toRotation);
-            }
+            mTopLevelDisplayAreaOrganizer.onRotateDisplay(mContext, toRotation);
         }
     }
 

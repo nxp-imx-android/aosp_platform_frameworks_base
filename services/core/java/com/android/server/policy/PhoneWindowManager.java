@@ -110,7 +110,6 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
-import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -1508,10 +1507,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case LONG_PRESS_POWER_ASSISTANT:
                 mPowerKeyHandled = true;
-                if (!enableLppAssistInvocationEffect()) {
-                    performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
-                            "Power - Long Press - Go To Assistant");
-                }
                 final int powerKeyDeviceId = INVALID_INPUT_DEVICE_ID;
                 launchAssistAction(null, powerKeyDeviceId, eventTime,
                         AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS);
@@ -2601,12 +2596,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // This is done to allow Assistant launch animation in SysUI. Will extend
             // this to all single key gestures after moving Single key gestures to
             // KeyGestureController.
-            if (enableLppAssistInvocationEffect()) {
-                if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
-                    handleSingleKeyGestureInKeyGestureController(
-                            KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
-                    return;
-                }
+            if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
+                handleSingleKeyGestureInKeyGestureController(
+                        KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
+                return;
             }
             if (event.getAction() == ACTION_COMPLETE) {
                 powerLongPress(event.getStartTime());

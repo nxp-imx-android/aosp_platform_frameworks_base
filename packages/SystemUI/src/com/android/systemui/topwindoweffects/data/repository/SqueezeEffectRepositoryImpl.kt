@@ -52,7 +52,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class SqueezeEffectRepositoryImpl
@@ -192,7 +191,6 @@ constructor(
     override fun isGestureEffectEnabled(): Boolean {
         // The gesture effect requires the lpp effect to be enabled as well
         return preferences.isInvocationEffectEnabledByAssistant.value &&
-            Flags.enableLppAssistInvocationEffect() &&
             Flags.enableGestureAssistInvocationEffect()
     }
 
@@ -204,11 +202,7 @@ constructor(
     private val _gestureProgress = MutableStateFlow(GestureProgress(0f, PARTIAL))
     override val gestureProgress = _gestureProgress.asStateFlow()
 
-    override val isEffectEnabled: Flow<Boolean> =
-        preferences.isInvocationEffectEnabledByAssistant
-            .map { it && Flags.enableLppAssistInvocationEffect() }
-            .flowOn(coroutineContext)
-            .distinctUntilChanged()
+    override val isEffectEnabled: Flow<Boolean> = preferences.isInvocationEffectEnabledByAssistant
 
     @SuppressLint("MissingPermission")
     override val isPowerButtonPressedAsSingleGesture: Flow<Boolean> =
