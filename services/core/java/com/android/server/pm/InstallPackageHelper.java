@@ -4544,6 +4544,7 @@ final class InstallPackageHelper {
 
             // Populate the InitAppScanMetrics object since all the variables are defined now.
             metrics.setIsFsiEnabled(forceCollect)
+                    .setPackageName(parsedPackage.getPackageName())
                     .setNumApkSplits(parsedPackage.getSplitCodePaths() == null
                             ? 0
                             : parsedPackage.getSplitCodePaths().length)
