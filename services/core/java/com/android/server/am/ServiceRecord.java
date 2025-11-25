@@ -138,7 +138,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     final boolean exported; // from ServiceInfo.exported
     final Runnable restarter; // used to schedule retries of starting the service
     final long createRealTime;  // when this service was created
-    final boolean isSdkSandbox; // whether this is a sdk sandbox service
     final int sdkSandboxClientAppUid; // the app uid for which this sdk sandbox service is running
     final String sdkSandboxClientAppPackage; // the app package for which this sdk sandbox service
                                              // is running
@@ -1097,7 +1096,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
     /** Used only for tests */
     private ServiceRecord(ActivityManagerService ams) {
-        super(null, ams == null ? null : ams.mProcessStateController.getOomConstants(), 0);
+        super(null, false, ams == null ? null : ams.mProcessStateController.getOomConstants(), 0);
 
         this.ams = ams;
         name = null;
@@ -1113,7 +1112,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         exported = false;
         restarter = null;
         createRealTime = 0;
-        isSdkSandbox = false;
         sdkSandboxClientAppUid = 0;
         sdkSandboxClientAppPackage = null;
         inSharedIsolatedProcess = false;
@@ -1137,7 +1135,8 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
             Intent.FilterComparison intent, ServiceInfo sInfo, boolean callerIsFg,
             Runnable restarter, String processName, int sdkSandboxClientAppUid,
             String sdkSandboxClientAppPackage, boolean inSharedIsolatedProcess) {
-        super(instanceName, ams.mProcessStateController.getOomConstants(),
+        super(instanceName, sdkSandboxClientAppUid != INVALID_UID,
+                ams.mProcessStateController.getOomConstants(),
                 SystemClock.uptimeMillis());
 
         this.ams = ams;
@@ -1149,7 +1148,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         serviceInfo = sInfo;
         appInfo = sInfo.applicationInfo;
         packageName = sInfo.applicationInfo.packageName;
-        this.isSdkSandbox = sdkSandboxClientAppUid != INVALID_UID;
         this.sdkSandboxClientAppUid = sdkSandboxClientAppUid;
         this.sdkSandboxClientAppPackage = sdkSandboxClientAppPackage;
         this.inSharedIsolatedProcess = inSharedIsolatedProcess;
