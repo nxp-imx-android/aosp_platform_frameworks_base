@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.dialog.ui.composable
+package com.android.compose.dialog
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

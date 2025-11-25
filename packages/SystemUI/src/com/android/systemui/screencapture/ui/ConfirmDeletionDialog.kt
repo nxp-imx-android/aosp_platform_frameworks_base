@@ -22,7 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformTextButton
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
+import com.android.compose.dialog.AlertDialogContent
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
