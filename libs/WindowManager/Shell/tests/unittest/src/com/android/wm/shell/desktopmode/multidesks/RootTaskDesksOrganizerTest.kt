@@ -35,6 +35,7 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_S
 import android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID
 import androidx.core.util.valueIterator
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -280,7 +281,23 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_BACK_NAVIGATION_DESKTOP_APP_NO_MINIMIZE)
+    @EnableFlags(Flags.FLAG_REPARENT_DESK_LEAF_TASKS_IF_RELAUNCHED)
+    fun testCreateDeskRoot_reparentLeafTaskIfRelaunchSet() = runTest {
+        val desk = createDeskSuspending()
+
+        verify(mockShellTaskOrganizer)
+            .applyTransaction(
+                argThat { wct ->
+                    wct.hierarchyOps.any { hop ->
+                        hop.container == desk.deskRoot.token.asBinder() &&
+                            hop.isReparentLeafTaskIfRelaunch
+                    }
+                }
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BACK_NAVIGATION_DESKTOP_APP_NO_MINIMIZE)
     fun testCreateDeskRoot_interceptsBack() = runTest {
         val desk = createDeskSuspending()
 
