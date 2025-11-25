@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.fundamentals.switching
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.SwitchToHomeFromDesktop
+import com.android.wm.shell.scenarios.SwitchToOverviewFromDesktop
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [SwitchToHomeFromDesktop]. */
+/* Functional test for [SwitchToOverviewFromDesktop]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class SwitchToHomeFromDesktopTest : SwitchToHomeFromDesktop()
+class SwitchToOverviewFromDesktopTest : SwitchToOverviewFromDesktop()

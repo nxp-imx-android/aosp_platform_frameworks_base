@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.taskbar
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.SwitchFocusBetweenApps
+import com.android.wm.shell.scenarios.TaskbarInDesktopMode
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [SwitchFocusBetweenApps]. */
+/* Functional test for [TaskbarInDesktopMode]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class SwitchFocusBetweenAppsTest : SwitchFocusBetweenApps()
+class TaskbarInDesktopModeTest : TaskbarInDesktopMode()

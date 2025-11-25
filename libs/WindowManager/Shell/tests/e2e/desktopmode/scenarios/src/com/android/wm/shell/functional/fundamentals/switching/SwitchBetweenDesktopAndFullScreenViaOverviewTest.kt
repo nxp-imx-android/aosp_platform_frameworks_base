@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.fundamentals.switching
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.EnterDesktopViaStaticDesktopOverviewTask
+import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreenViaOverview
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [SwitchToDesktopFromOverview]. */
+/* Functional test for [SwitchBetweenDesktopAndFullScreenViaOverview]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class SwitchToDesktopFromOverviewTest : EnterDesktopViaStaticDesktopOverviewTask()
+class SwitchBetweenDesktopAndFullScreenViaOverviewTest : SwitchBetweenDesktopAndFullScreenViaOverview()

@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.unlock
 
-import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDesktopDevice
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.DragAppWindowSingleWindow
+import com.android.wm.shell.scenarios.UnlockIntoDesktopFromLockScreen
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [DragAppWindowSingleWindow]. */
+/* Functional test for [UnlockIntoDesktopFromLockScreen]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
-@Presubmit
+@Postsubmit
 @ScreenRecordRule.ScreenRecord
-class DragAppWindowSingleWindowTest : DragAppWindowSingleWindow()
+class UnlockIntoDesktopFromLockScreenTest : UnlockIntoDesktopFromLockScreen()
