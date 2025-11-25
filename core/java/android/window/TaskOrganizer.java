@@ -276,13 +276,16 @@ public class TaskOrganizer extends WindowOrganizer {
     /**
      * Creates a persistent root task in WM for a particular windowing-mode.
      * @param request The data for this request
+     * @return the WindowContainerToken of the newly created root task. This can be null if the root
+     * task creation fails in the system server (e.g., due to invalid displayId).
      *
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
-    public void createRootTask(@NonNull CreateRootTaskRequest request) {
+    @Nullable
+    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request) {
         try {
-            mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
+            return mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
                     request.launchCookie, request.removeWithTaskOrganizer,
                     request.reparentOnDisplayRemoval, request.name,
                     request.isForceOpaque);
