@@ -19,7 +19,7 @@ package com.android.server.appfunctions;
 import static com.android.server.appfunctions.AppFunctionExecutors.LOGGING_THREAD_EXECUTOR;
 
 import android.annotation.NonNull;
-import android.app.appfunctions.AppFunctionAttribution;
+import android.app.AppInteractionAttribution;
 import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
@@ -136,19 +136,21 @@ public class AppFunctionsLoggerWrapper {
     }
 
     private int getInteractionType(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
-        if (!accessCheckFlagsEnabled()) {
+        if (!android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
             return INTERACTION_TYPE_UNSPECIFIED;
         }
 
-        final AppFunctionAttribution attribution = aidlRequest.getClientRequest().getAttribution();
+        final AppInteractionAttribution attribution =
+                aidlRequest.getClientRequest().getAttribution();
         if (attribution == null) {
             return INTERACTION_TYPE_UNSPECIFIED;
         }
         final int interactionType = attribution.getInteractionType();
         return switch (interactionType) {
-            case AppFunctionAttribution.INTERACTION_TYPE_OTHER -> INTERACTION_TYPE_OTHER;
-            case AppFunctionAttribution.INTERACTION_TYPE_USER_QUERY -> INTERACTION_TYPE_USER_QUERY;
-            case AppFunctionAttribution.INTERACTION_TYPE_USER_SCHEDULED ->
+            case AppInteractionAttribution.INTERACTION_TYPE_OTHER -> INTERACTION_TYPE_OTHER;
+            case AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY ->
+                    INTERACTION_TYPE_USER_QUERY;
+            case AppInteractionAttribution.INTERACTION_TYPE_USER_SCHEDULED ->
                     INTERACTION_TYPE_USER_SCHEDULED;
             default -> INTERACTION_TYPE_UNSPECIFIED;
         };
@@ -160,11 +162,6 @@ public class AppFunctionsLoggerWrapper {
             case AppFunctionMetadata.FUNCTION_TYPE_DYNAMIC -> FUNCTION_TYPE_DYNAMIC;
             default -> FUNCTION_TYPE_UNSPECIFIED;
         };
-    }
-
-    private boolean accessCheckFlagsEnabled() {
-        return android.permission.flags.Flags.appFunctionAccessApiEnabled()
-                && android.permission.flags.Flags.appFunctionAccessServiceEnabled();
     }
 
     /** Wraps a custom clock for easier testing. */

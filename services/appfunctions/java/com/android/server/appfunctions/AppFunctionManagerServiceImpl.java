@@ -89,6 +89,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -107,6 +108,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 
 import java.io.FileDescriptor;
@@ -190,6 +192,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final AppFunctionAgentAllowlistStorage mAgentAllowlistStorage;
 
+    @Nullable private final AppInteractionService mAppInteractionService;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -199,6 +203,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
             @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
+            @Nullable AppInteractionService appInteractionService,
             @NonNull Executor backgroundExecutor) {
         this(
                 context,
@@ -219,7 +224,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 agentAllowlistStorage,
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
-                new AppFunctionMetadataReader());
+                new AppFunctionMetadataReader(),
+                appInteractionService);
     }
 
     private AppFunctionManagerServiceImpl(
@@ -237,7 +243,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
-            AppFunctionMetadataReader appFunctionMetadataReader) {
+            AppFunctionMetadataReader appFunctionMetadataReader,
+            @Nullable AppInteractionService appInteractionService) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -256,6 +263,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
+        mAppInteractionService = appInteractionService;
     }
 
     /** Called when the user is unlocked. */
@@ -269,6 +277,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(user);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            // TODO(b/459347717): Make AppInteractionService a published system service so that
+            // it can observe user unlocked/stopped internally.
+            Objects.requireNonNull(mAppInteractionService).onUserUnlocked(user);
         }
     }
 
@@ -287,6 +301,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            Objects.requireNonNull(mAppInteractionService).onUserStopping(user);
         }
     }
 
@@ -1260,7 +1278,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 callingUid,
                                 executionStartTimeMillis,
                                 functionType);
-                        recordAppFunctionAccess(requestInternal);
+                        recordAppFunctionInteraction(requestInternal);
                     }
 
                     @Override
@@ -1272,13 +1290,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 callingUid,
                                 executionStartTimeMillis,
                                 functionType);
-                        recordAppFunctionAccess(requestInternal);
+                        recordAppFunctionInteraction(requestInternal);
                     }
                 });
     }
 
-    private void recordAppFunctionAccess(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
-        // TODO(b/459347717): Use AppInteractionService
+    private void recordAppFunctionInteraction(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
+        if (!android.app.appfunctions.flags.Flags.enableAppInteractionApi()) return;
+        Objects.requireNonNull(mAppFunctionAccessService);
+
+        final long duration = SystemClock.elapsedRealtime() - aidlRequest.getRequestTime();
+        final long accessTime = aidlRequest.getRequestWallTime();
+        mAppInteractionService.noteAppInteraction(
+                aidlRequest.getCallingPackage(),
+                aidlRequest.getClientRequest().getTargetPackageName(),
+                aidlRequest.getClientRequest().getAttribution(),
+                accessTime,
+                duration,
+                aidlRequest.getUserHandle().getIdentifier());
     }
 
     private static class AppFunctionMetadataObserver implements ObserverCallback {

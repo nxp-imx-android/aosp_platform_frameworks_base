@@ -21,11 +21,12 @@ import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANA
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.AppInteractionAttribution;
+import android.app.appfunctions.flags.Flags;
 import android.app.appsearch.GenericDocument;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.permission.flags.Flags;
 
 import java.util.Objects;
 
@@ -54,9 +55,9 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
                     Bundle extras =
                             Objects.requireNonNull(
                                     parcel.readBundle(Bundle.class.getClassLoader()));
-                    if (Flags.appFunctionAccessApiEnabled()) {
-                        final AppFunctionAttribution attribution = parcel.readTypedObject(
-                                AppFunctionAttribution.CREATOR);
+                    if (Flags.enableAppInteractionApi()) {
+                        final AppInteractionAttribution attribution =
+                                parcel.readTypedObject(AppInteractionAttribution.CREATOR);
                         return new ExecuteAppFunctionRequest(
                                 targetPackageName,
                                 functionIdentifier,
@@ -97,14 +98,14 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
      */
     @NonNull private final GenericDocumentWrapper mParameters;
 
-    @Nullable private final AppFunctionAttribution mAttribution;
+    @Nullable private final AppInteractionAttribution mAttribution;
 
     private ExecuteAppFunctionRequest(
             @NonNull String targetPackageName,
             @NonNull String functionIdentifier,
             @NonNull Bundle extras,
             @NonNull GenericDocumentWrapper parameters,
-            @Nullable AppFunctionAttribution attribution) {
+            @Nullable AppInteractionAttribution attribution) {
         mTargetPackageName = Objects.requireNonNull(targetPackageName);
         mFunctionIdentifier = Objects.requireNonNull(functionIdentifier);
         mExtras = Objects.requireNonNull(extras);
@@ -157,12 +158,12 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
     }
 
     /**
-     * Returns the {@link AppFunctionAttribution} represents attribution information for the {@link
-     * ExecuteAppFunctionRequest}.
+     * Returns the {@link AppInteractionAttribution} represents attribution information for the
+     * {@link ExecuteAppFunctionRequest}.
      */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @FlaggedApi(Flags.FLAG_ENABLE_APP_INTERACTION_API)
     @Nullable
-    public AppFunctionAttribution getAttribution() {
+    public AppInteractionAttribution getAttribution() {
         return mAttribution;
     }
 
@@ -184,7 +185,7 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         dest.writeString8(mFunctionIdentifier);
         mParameters.writeToParcel(dest, flags);
         dest.writeBundle(mExtras);
-        if (Flags.appFunctionAccessApiEnabled()) {
+        if (Flags.enableAppInteractionApi()) {
             dest.writeTypedObject(mAttribution, flags);
         }
     }
@@ -203,7 +204,7 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         @NonNull
         private GenericDocument mParameters = new GenericDocument.Builder<>("", "", "").build();
 
-        @Nullable private AppFunctionAttribution mAttribution = null;
+        @Nullable private AppInteractionAttribution mAttribution = null;
 
         /**
          * Creates a new instance of this builder class.
@@ -238,20 +239,20 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         }
 
         /**
-         * Sets the {@link AppFunctionAttribution}.
+         * Sets the {@link AppInteractionAttribution}.
          *
          * <p>Provides the attribution information for an {@link ExecuteAppFunctionRequest}. This
          * information can be used by the privacy setting to provide transparency to the user about
          * why an app function was invoked.
          *
-         * <p>This is currently optional,  but may become required for apps targeting a future
+         * <p>This is currently optional, but may become required for apps targeting a future
          * release.
          *
-         * @see AppFunctionAttribution
+         * @see AppInteractionAttribution
          */
-        @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+        @FlaggedApi(Flags.FLAG_ENABLE_APP_INTERACTION_API)
         @NonNull
-        public Builder setAttribution(@NonNull AppFunctionAttribution attribution) {
+        public Builder setAttribution(@NonNull AppInteractionAttribution attribution) {
             mAttribution = Objects.requireNonNull(attribution);
             return this;
         }
