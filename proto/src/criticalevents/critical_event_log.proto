@@ -71,7 +71,11 @@ message CriticalEventProto {
 
   message InstallPackages {}
 
-  message SystemServerStarted {}
+  message SystemServerStarted {
+    // The number of times system server has started since the last reboot.
+    // Equal to the system property "sys.system_server.start_count".
+    optional int32 start_count = 1;
+  }
 
   message Watchdog {
     // The watchdog subject.
