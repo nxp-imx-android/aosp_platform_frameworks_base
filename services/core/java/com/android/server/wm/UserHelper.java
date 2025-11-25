@@ -125,21 +125,9 @@ final class UserHelper {
             return START_SUCCESS;
         }
 
-        // TODO(b/412177078): remove this use case after it's checking if the current user is HSU
-        int userId = getUserId(aInfo);
-        boolean showForAllUsers = (aInfo.flags & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
-        if (showForAllUsers) {
-            if (DEBUG_USER_VISIBILITY) {
-                Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
-                        + "its marked as 'showForAllUsers' (currentUserId=%d)",
-                        intent.getComponent().flattenToShortString(), userId,
-                        getCurrentUserId());
-            }
-            return START_SUCCESS;
-        }
-
         var allowlist = mUmi.getActivitiesAllowlist(USER_SYSTEM);
         if (allowlist != null && !allowlist.isAllowed(compName)) {
+            int userId = getUserId(aInfo);
             if (userId == USER_SYSTEM) {
                 Slogf.w(TAG, "Activity %s not allowed for system user",
                         compName.flattenToShortString());
@@ -157,7 +145,7 @@ final class UserHelper {
 
         if (DEBUG_USER_VISIBILITY) {
             Slogf.d(TAG, "Activity %s (intended for user %d) is allowlisted for USER_SYSTEM (which "
-                    + "is the current user)", compName.flattenToShortString(), userId);
+                    + "is the current user)", compName.flattenToShortString(), getUserId(aInfo));
         }
 
         return START_SUCCESS;
