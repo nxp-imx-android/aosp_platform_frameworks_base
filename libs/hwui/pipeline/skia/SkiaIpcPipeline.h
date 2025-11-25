@@ -21,7 +21,12 @@
 #include <gui/SurfaceComposerClient.h>
 #include <gui/SurfaceControl.h>
 
+#include <android-base/thread_annotations.h>
+
 #include <memory>
+#include <mutex>
+#include <tuple>
+#include <vector>
 
 #include "pipeline/skia/SkiaPipeline.h"
 
@@ -33,7 +38,7 @@ namespace skiapipeline {
 class SkiaIpcPipeline : public SkiaPipeline {
 public:
     SkiaIpcPipeline(renderthread::RenderThread& thread);
-    ~SkiaIpcPipeline() {}
+    ~SkiaIpcPipeline();
 
     bool pinImages(std::vector<SkImage*>& mutableImages) override { return false; }
     bool pinImages(LsaVector<sk_sp<Bitmap>>& images) override { return false; }
@@ -81,10 +86,31 @@ public:
         return sSnapMatrix;
     }
 
+    void mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                  uint64_t frameNumber) override;
+    void applyPendingTransactions(uint64_t frameNumber) override;
+    bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
+                             bool acquireSingleBuffer) override;
+
+    ANativeWindow* getSurface() override { return nullptr; }
+    uint64_t getFrameNumber() override;
+
 private:
+    sp<IBinder> mApplyToken;
+
+    bool mergePendingTransactions(SurfaceComposerClient::Transaction* t,
+                                  uint64_t frameNumber) REQUIRES(mLock);
+
     std::shared_ptr<IPCRecordingCanvas> mIPCRecordingCanvas;
     IPCClientResourceCache mResourceCache;
     sp<SurfaceControl> mSurfaceControl;
+    std::vector<std::tuple<uint64_t /* framenumber */, SurfaceComposerClient::Transaction>>
+            mPendingTransactions GUARDED_BY(mLock);
+    SurfaceComposerClient::Transaction* mSyncTransaction GUARDED_BY(mLock) = nullptr;
+    std::function<void(SurfaceComposerClient::Transaction*)> mTransactionReadyCallback
+            GUARDED_BY(mLock);
+
+    std::mutex mLock;
 };
 
 } /* namespace skiapipeline */

@@ -68,8 +68,11 @@ public:
         return sSnapMatrix;
     }
 
+    ANativeWindow* getSurface() override { return mNativeWindow.get(); }
+
 private:
     sk_sp<SkSurface> mSurface;
+    sp<ANativeWindow> mNativeWindow;
 };
 
 } /* namespace skiapipeline */

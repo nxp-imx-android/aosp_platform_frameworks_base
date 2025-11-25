@@ -99,6 +99,8 @@ public:
     }
 #endif
 
+    uint64_t getFrameNumber() override;
+
 protected:
     renderthread::RenderThread& mRenderThread;
 

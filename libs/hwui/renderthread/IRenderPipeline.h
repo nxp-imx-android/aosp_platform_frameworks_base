@@ -112,6 +112,9 @@ public:
     virtual void setTargetSdrHdrRatio(float ratio) = 0;
     virtual const SkM44& getPixelSnapMatrix() const = 0;
 
+    virtual ANativeWindow* getSurface() = 0;
+    virtual uint64_t getFrameNumber() = 0;
+
     virtual ~IRenderPipeline() {}
 };
 

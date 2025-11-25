@@ -1162,7 +1162,6 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_mergeWithNextTransaction},
         {"nApplyPendingTransactions", "(JJ)V",
          (void*)android_view_ThreadedRenderer_applyPendingTransactions},
-
 };
 
 static JavaVM* mJvm = nullptr;
