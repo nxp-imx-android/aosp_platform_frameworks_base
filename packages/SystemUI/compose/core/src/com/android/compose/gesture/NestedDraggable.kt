@@ -607,7 +607,6 @@ private class NestedDraggableNode(
         source: NestedScrollSource,
     ): Offset {
         if (source == NestedScrollSource.SideEffect) {
-            check(nestedScrollController == null)
             return Offset.Zero
         }
 
