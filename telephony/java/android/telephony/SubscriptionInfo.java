@@ -242,6 +242,26 @@ public class SubscriptionInfo implements Parcelable {
      */
     private final int mTransferStatus;
 
+    /**
+     * The maximum downlink data rate in Kilobits per second (Kbps) for streaming applications
+     * defined in GSMA TS.43 9.1.3.
+     * <p>
+     * This value represents the data rate that the carrier has allocated for streaming
+     * applications. It can be used by streaming apps to select an appropriate media quality
+     * that matches the available bandwidth, helping to avoid buffering.
+     */
+    private final int mStreamingAppMaxDownlinkKbps;
+
+    /**
+     * The maximum uplink data rate in Kilobits per second (Kbps) for streaming applications.
+     * defined in GSMA TS.43 9.1.3.
+     * <p>
+     * This value represents the data rate that the carrier has allocated for streaming
+     * applications to upload data. It can be used by streaming apps to select an appropriate
+     * media quality for outgoing streams, helping to avoid buffering or connection issues.
+     */
+    private final int mStreamingAppMaxUplinkKbps;
+
     // Below are the fields that do not exist in the database.
 
     /**
@@ -412,6 +432,8 @@ public class SubscriptionInfo implements Parcelable {
         this.mTransferStatus = 0;
         this.mIsSatelliteESOSSupported = false;
         this.mIsPrivateNetwork = false;
+        this.mStreamingAppMaxDownlinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
+        this.mStreamingAppMaxUplinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
     }
 
     /**
@@ -455,6 +477,8 @@ public class SubscriptionInfo implements Parcelable {
         this.mTransferStatus = builder.mTransferStatus;
         this.mIsSatelliteESOSSupported = builder.mIsSatelliteESOSSupported;
         this.mIsPrivateNetwork = builder.mIsPrivateNetwork;
+        this.mStreamingAppMaxDownlinkKbps = builder.mStreamingAppMaxDownlinkKbps;
+        this.mStreamingAppMaxUplinkKbps = builder.mStreamingAppMaxUplinkKbps;
     }
 
     /**
@@ -991,6 +1015,42 @@ public class SubscriptionInfo implements Parcelable {
         return mTransferStatus;
     }
 
+    /**
+     * Returns the maximum downstream bitrate for streaming applications on this subscription
+     * plan, in Kilobits per second (Kbps) defined in GSMA TS.43 9.1.3.
+     *
+     * <p>This value represents the data rate that the carrier has allocated for streaming
+     * applications. It can be used by streaming apps to select an appropriate media quality
+     * that matches the available bandwidth, helping to avoid buffering.
+     *
+     * <p>For example, a 2000 Kbps connection would be represented as {@code 2000}.
+     *
+     * @return The maximum downstream bandwidth for streaming in Kbps, or
+     * {@link SubscriptionPlan#BITRATE_UNKNOWN} if unknown or not applicable.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public int getStreamingAppMaxDownlinkKbps() {
+        return mStreamingAppMaxDownlinkKbps;
+    }
+
+    /**
+     * Returns the maximum upstream bitrate for streaming applications on this subscription
+     * plan, in Kilobits per second (Kbps) defined in GSMA TS.43 9.1.3.
+     *
+     * <p>This value represents the data rate that the carrier has allocated for streaming
+     * applications to upload data. It can be used by streaming apps to select an appropriate
+     * media quality for outgoing streams, helping to avoid buffering or connection issues.
+     *
+     * <p>For example, a 1000 Kbps connection would be represented as {@code 1000}.
+     *
+     * @return The maximum upstream bitrate for streaming in Kbps, or
+     * {@link SubscriptionPlan#BITRATE_UNKNOWN} if unknown or not applicable.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public int getStreamingAppMaxUplinkKbps() {
+        return mStreamingAppMaxUplinkKbps;
+    }
+
     @NonNull
     public static final Parcelable.Creator<SubscriptionInfo> CREATOR =
             new Parcelable.Creator<SubscriptionInfo>() {
@@ -1033,6 +1093,8 @@ public class SubscriptionInfo implements Parcelable {
                     .setTransferStatus(source.readInt())
                     .setSatelliteESOSSupported(source.readBoolean())
                     .setIsPrivateNetwork(source.readBoolean())
+                    .setStreamingAppMaxDownlinkKbps(source.readInt())
+                    .setStreamingAppMaxUplinkKbps(source.readInt())
                     .build();
         }
 
@@ -1079,6 +1141,8 @@ public class SubscriptionInfo implements Parcelable {
         dest.writeInt(mTransferStatus);
         dest.writeBoolean(mIsSatelliteESOSSupported);
         dest.writeBoolean(mIsPrivateNetwork);
+        dest.writeInt(mStreamingAppMaxDownlinkKbps);
+        dest.writeInt(mStreamingAppMaxUplinkKbps);
     }
 
     @Override
@@ -1147,6 +1211,8 @@ public class SubscriptionInfo implements Parcelable {
                 + " transferStatus=" + mTransferStatus
                 + " isSatelliteESOSSupported=" + mIsSatelliteESOSSupported
                 + " isPrivateNetwork=" + mIsPrivateNetwork
+                + " streamingAppMaxDownlinkKbps=" + mStreamingAppMaxDownlinkKbps
+                + " streamingAppMaxUplinkKbps=" + mStreamingAppMaxUplinkKbps
                 + "]";
     }
 
@@ -1176,7 +1242,9 @@ public class SubscriptionInfo implements Parcelable {
                 && mServiceCapabilities == that.mServiceCapabilities
                 && mTransferStatus == that.mTransferStatus
                 && mIsSatelliteESOSSupported == that.mIsSatelliteESOSSupported
-                && mIsPrivateNetwork == that.mIsPrivateNetwork;
+                && mIsPrivateNetwork == that.mIsPrivateNetwork
+                && mStreamingAppMaxDownlinkKbps == that.mStreamingAppMaxDownlinkKbps
+                && mStreamingAppMaxUplinkKbps == that.mStreamingAppMaxUplinkKbps;
     }
 
     @Override
@@ -1186,7 +1254,8 @@ public class SubscriptionInfo implements Parcelable {
                 mCardString, mIsOpportunistic, mGroupUuid, mCountryIso, mCarrierId, mProfileClass,
                 mType, mGroupOwner, mAreUiccApplicationsEnabled, mPortIndex, mUsageSetting, mCardId,
                 mIsGroupDisabled, mIsOnlyNonTerrestrialNetwork, mServiceCapabilities,
-                mTransferStatus, mIsSatelliteESOSSupported, mIsPrivateNetwork);
+                mTransferStatus, mIsSatelliteESOSSupported, mIsPrivateNetwork,
+                mStreamingAppMaxDownlinkKbps, mStreamingAppMaxUplinkKbps);
         result = 31 * result + Arrays.hashCode(mEhplmns);
         result = 31 * result + Arrays.hashCode(mHplmns);
         result = 31 * result + Arrays.hashCode(mNativeAccessRules);
@@ -1408,6 +1477,18 @@ public class SubscriptionInfo implements Parcelable {
         private boolean mIsPrivateNetwork = false;
 
         /**
+         * The maximum downlink data rate in Kilobits per second (Kbps) for streaming applications
+         * defined in GSMA TS.43 9.1.3.
+         */
+        private int mStreamingAppMaxDownlinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
+
+        /**
+         * The maximum uplink data rate in Kilobits per second (Kbps) for streaming applications
+         * defined in GSMA TS.43 9.1.3.
+         */
+        private int mStreamingAppMaxUplinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
+
+        /**
          * Default constructor.
          */
         public Builder() {
@@ -1454,6 +1535,8 @@ public class SubscriptionInfo implements Parcelable {
             mTransferStatus = info.mTransferStatus;
             mIsSatelliteESOSSupported = info.mIsSatelliteESOSSupported;
             mIsPrivateNetwork = info.mIsPrivateNetwork;
+            mStreamingAppMaxDownlinkKbps = info.mStreamingAppMaxDownlinkKbps;
+            mStreamingAppMaxUplinkKbps = info.mStreamingAppMaxUplinkKbps;
         }
 
         /**
@@ -1912,6 +1995,42 @@ public class SubscriptionInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_ENABLE_IS_PRIVATE_NETWORK_API)
         public Builder setIsPrivateNetwork(boolean isPrivateNetwork) {
             mIsPrivateNetwork = isPrivateNetwork;
+            return this;
+        }
+
+        /**
+         * Set the maximum downlink data rate in Kilobits per second (Kbps) for streaming
+         * applications defined in GSMA TS.43 9.1.3.
+         *
+         * <p>This value represents the data rate that the carrier has allocated for streaming
+         * applications. It can be used by streaming apps to select an appropriate media quality
+         * that matches the available bandwidth, helping to avoid buffering.
+         *
+         * @param streamingAppMaxDownlinkKbps The maximum downlink data rate in Kbps.
+         * @return The builder.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setStreamingAppMaxDownlinkKbps(int streamingAppMaxDownlinkKbps) {
+            mStreamingAppMaxDownlinkKbps = streamingAppMaxDownlinkKbps;
+            return this;
+        }
+
+        /**
+         * Set the maximum uplink data rate in Kilobits per second (Kbps) for streaming
+         * applications defined in GSMA TS.43 9.1.3.
+         *
+         * <p>This value represents the data rate that the carrier has allocated for streaming
+         * applications to upload data. It can be used by streaming apps to select an appropriate
+         * media quality for outgoing streams, helping to avoid buffering or connection issues.
+         *
+         * @param streamingAppMaxUplinkKbps The maximum uplink data rate in Kbps.
+         * @return The builder.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setStreamingAppMaxUplinkKbps(int streamingAppMaxUplinkKbps) {
+            mStreamingAppMaxUplinkKbps = streamingAppMaxUplinkKbps;
             return this;
         }
 
