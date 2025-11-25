@@ -375,6 +375,21 @@ public final class TransitionInfo implements Parcelable {
     }
 
     /**
+     * Removes the Change describing a particular container.
+     *
+     * @return the Change that was removed or {@code null} if there was no Change.
+     */
+    @Nullable
+    public Change removeChangeFor(@NonNull WindowContainerToken token) {
+        for (int i = mChanges.size() - 1; i >= 0; --i) {
+            if (token.equals(mChanges.get(i).mContainer)) {
+                return mChanges.remove(i);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Whether this transition contains any changes to the window hierarchy,
      * including keyguard visibility.
      */
@@ -867,7 +882,7 @@ public final class TransitionInfo implements Parcelable {
             mTaskFragmentToken = token;
         }
 
-        /** @return the container that is changing. May be null if non-remotable (eg. activity) */
+        /** @return the container that is changing. */
         @Nullable
         public WindowContainerToken getContainer() {
             return mContainer;

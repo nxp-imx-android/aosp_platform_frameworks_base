@@ -478,3 +478,11 @@ flag {
     description: "Improve the performance during fluid resizing."
     bug: "429960813"
 }
+
+flag {
+    name: "transit_mixpatcher_base"
+    namespace: "windowing_frontend"
+    description: "Foundation for shell-side transition Mixpatcher."
+    bug: "469422564"
+}
+

@@ -33,6 +33,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_TASK_ORG(Consts.ENABLE_DEBUG, true, "ShellTaskOrganizer"),
     WM_SHELL_TASK_ORG_NOISY(Consts.ENABLE_DEBUG, false, "ShellTaskOrganizer"),
     WM_SHELL_TRANSITIONS(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
+    WM_SHELL_MIXPATCHER(Consts.ENABLE_DEBUG, true, "TransitionMixpatcher"),
     WM_SHELL_IME_CONTROLLER(Consts.ENABLE_DEBUG, false, "ShellIme"),
     WM_SHELL_RECENTS_TRANSITION(Consts.ENABLE_DEBUG, true, "ShellRecents"),
     WM_SHELL_DRAG_AND_DROP(Consts.ENABLE_DEBUG, true, "ShellDragAndDrop"),

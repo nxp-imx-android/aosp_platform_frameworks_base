@@ -50,7 +50,12 @@ class ChangeBuilder {
 
     constructor(@WindowManager.TransitionType mode: Int) {
         change =
-            TransitionInfo.Change(null, createMockSurface())
+            TransitionInfo.Change(
+                if (com.android.window.flags.Flags.transitMixpatcherBase())
+                    WindowContainerToken.createProxy("Change")
+                else null,
+                createMockSurface(),
+            )
         change.mode = mode
     }
 
