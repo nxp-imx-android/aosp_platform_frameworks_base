@@ -955,6 +955,9 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             @NonNull ITaskFragmentOrganizer organizer, @NonNull Task task) {
         final List<PendingTaskFragmentEvent> events = mPendingTaskFragmentEvents
                 .get(organizer.asBinder());
+        if (events == null) {
+            return null;
+        }
         for (int i = events.size() - 1; i >= 0; i--) {
             final PendingTaskFragmentEvent event = events.get(i);
             if (task == event.mTask
