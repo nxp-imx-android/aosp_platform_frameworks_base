@@ -21,6 +21,7 @@ import android.content.SharedPreferences
 import android.graphics.Rect
 import androidx.core.content.edit
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
+import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -28,7 +29,10 @@ import com.android.systemui.plugins.cuebar.ActionModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.kotlin.SharedPreferencesExt.observeBoolean
 import com.android.systemui.util.kotlin.SharedPreferencesExt.observeLong
+import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import com.google.common.annotations.VisibleForTesting
+import java.time.Duration
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -45,13 +49,25 @@ class AmbientCueInteractor
 @Inject
 constructor(
     private val repository: AmbientCueRepository,
+    private val clock: SystemClock,
     shadeInteractor: ShadeInteractor,
     keyguardInteractor: KeyguardInteractor,
     sharedPreferencesInteractor: SharedPreferencesInteractor,
     @Application scope: CoroutineScope,
 ) {
     val isRootViewAttached: StateFlow<Boolean> = repository.isRootViewAttached
-    val actions: StateFlow<List<ActionModel>> = repository.actions
+    val actions: Flow<List<ActionModel>> =
+        combine(repository.actions, repository.dismissedGroups) { actions, dismissedGroupsMap ->
+            // Filter Dismissed Actions
+            actions.filterNot { action: ActionModel ->
+                val groupId = action.dismissalGroupId
+                if (groupId.isNullOrEmpty() || !AmbientCueFlag.isAmbientCueWithImeVisibleEnabled) {
+                    return@filterNot false
+                }
+                val expiry = dismissedGroupsMap[groupId] ?: return@filterNot false
+                clock.currentTime().isBefore(expiry)
+            }
+        }
     val isImeVisible: StateFlow<Boolean> = repository.isImeVisible
     val isOccludedBySystemUi: Flow<Boolean> =
         combine(shadeInteractor.isShadeFullyCollapsed, keyguardInteractor.isKeyguardVisible) {
@@ -94,6 +110,12 @@ constructor(
         repository.isImeVisible.update { isVisible }
     }
 
+    fun dismissGroupIds(dismissalGroupIds: Set<String>) {
+        val now = clock.currentTime()
+        val expiry = now + DISMISSAL_TTL
+        repository.addDismissedGroups(dismissalGroupIds, expiry)
+    }
+
     fun putSharedPrefsLong(key: String, value: Long) {
         sharedPreferences.value?.edit { putLong(key, value) }
     }
@@ -106,5 +128,7 @@ constructor(
         const val SHARED_PREFERENCES_FILE_NAME = "ambientcue_pref"
         const val KEY_FIRST_TIME_ONBOARDING_SHOWN_AT = "show_first_time_onboarding"
         const val KEY_SHOW_LONG_PRESS_ONBOARDING = "show_long_press_onboarding"
+
+        @VisibleForTesting val DISMISSAL_TTL: Duration = Duration.ofDays(1)
     }
 }

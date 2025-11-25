@@ -23,10 +23,12 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.util.time.fakeSystemClock
 
 val Kosmos.ambientCueInteractor by Fixture {
     AmbientCueInteractor(
         ambientCueRepository,
+        fakeSystemClock,
         shadeInteractor,
         keyguardInteractor,
         sharedPreferencesInteractor,
