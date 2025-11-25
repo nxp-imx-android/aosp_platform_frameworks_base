@@ -138,6 +138,8 @@ java_import {
         ":framework-sdkextensions.impl{.jar}",
         // Adds android.test.mock classes
         ":android.test.mock.impl{.jar}",
+        // Adds android.test classes
+        ":android.test.legacy{.jar}",
     ],
     visibility: ["//visibility:private"],
 }
