@@ -113,8 +113,11 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun handleClick_withNewScreenRecordFlagEnabled_doesNotOpenDialog() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
         overrideResource(R.bool.config_enableLargeScreenScreencapture, true)

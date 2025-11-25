@@ -199,7 +199,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun chip_recordingStoppedFromDialog_screenRecordAndShareToAppChipImmediatelyHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -364,7 +368,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun chip_notProjecting_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -380,7 +388,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun chip_projectingEntireScreen_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -395,7 +407,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun chip_projectingSingleTask_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -416,7 +432,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @EnableFlags(
+        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+        Flags.FLAG_LARGE_SCREEN_RECORDING,
+    )
     fun chip_recording_tapShowsScreenCaptureUi() =
         kosmos.runTest {
             whenever(
