@@ -41656,176 +41656,74 @@ package android.security.advancedprotection {
 
 package android.security.identity {
 
-  public class AccessControlProfile {
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AccessControlProfile {
   }
 
-  public static final class AccessControlProfile.Builder {
-    ctor public AccessControlProfile.Builder(@NonNull android.security.identity.AccessControlProfileId);
-    method @NonNull public android.security.identity.AccessControlProfile build();
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setReaderCertificate(@NonNull java.security.cert.X509Certificate);
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationRequired(boolean);
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationTimeout(long);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class AccessControlProfile.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AccessControlProfile.Builder(@NonNull android.security.identity.AccessControlProfileId);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setReaderCertificate(@NonNull java.security.cert.X509Certificate);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationRequired(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationTimeout(long);
   }
 
-  public class AccessControlProfileId {
-    ctor public AccessControlProfileId(int);
-    method public int getId();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AccessControlProfileId {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AccessControlProfileId(int);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public int getId();
   }
 
-  public class AlreadyPersonalizedException extends android.security.identity.IdentityCredentialException {
-    ctor public AlreadyPersonalizedException(@NonNull String);
-    ctor public AlreadyPersonalizedException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AlreadyPersonalizedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AlreadyPersonalizedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AlreadyPersonalizedException(@NonNull String, @NonNull Throwable);
   }
 
-  public final class AuthenticationKeyMetadata {
-    method @NonNull public java.time.Instant getExpirationDate();
-    method @IntRange(from=0) public int getUsageCount();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public final class AuthenticationKeyMetadata {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.time.Instant getExpirationDate();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @IntRange(from=0) public int getUsageCount();
   }
 
-  public class CipherSuiteNotSupportedException extends android.security.identity.IdentityCredentialException {
-    ctor public CipherSuiteNotSupportedException(@NonNull String);
-    ctor public CipherSuiteNotSupportedException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class CipherSuiteNotSupportedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CipherSuiteNotSupportedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CipherSuiteNotSupportedException(@NonNull String, @NonNull Throwable);
   }
 
-  public class CredentialDataRequest {
-    method @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getDeviceSignedEntriesToRequest();
-    method @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getIssuerSignedEntriesToRequest();
-    method @Nullable public byte[] getReaderSignature();
-    method @Nullable public byte[] getRequestMessage();
-    method public boolean isAllowUsingExhaustedKeys();
-    method public boolean isAllowUsingExpiredKeys();
-    method public boolean isIncrementUseCount();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class CredentialDataRequest {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getDeviceSignedEntriesToRequest();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getIssuerSignedEntriesToRequest();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getReaderSignature();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getRequestMessage();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isAllowUsingExhaustedKeys();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isAllowUsingExpiredKeys();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isIncrementUseCount();
   }
 
-  public static final class CredentialDataRequest.Builder {
-    ctor public CredentialDataRequest.Builder();
-    method @NonNull public android.security.identity.CredentialDataRequest build();
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExhaustedKeys(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExpiredKeys(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setDeviceSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setIncrementUseCount(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setIssuerSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setReaderSignature(@NonNull byte[]);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setRequestMessage(@NonNull byte[]);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class CredentialDataRequest.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CredentialDataRequest.Builder();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExhaustedKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExpiredKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setDeviceSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setIncrementUseCount(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setIssuerSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setReaderSignature(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setRequestMessage(@NonNull byte[]);
   }
 
-  public abstract class CredentialDataResult {
-    method @Nullable public abstract byte[] getDeviceMac();
-    method @NonNull public abstract byte[] getDeviceNameSpaces();
-    method @Nullable public byte[] getDeviceSignature();
-    method @NonNull public abstract android.security.identity.CredentialDataResult.Entries getDeviceSignedEntries();
-    method @NonNull public abstract android.security.identity.CredentialDataResult.Entries getIssuerSignedEntries();
-    method @NonNull public abstract byte[] getStaticAuthenticationData();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class CredentialDataResult {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getDeviceMac();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getDeviceNameSpaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getDeviceSignature();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.CredentialDataResult.Entries getDeviceSignedEntries();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.CredentialDataResult.Entries getIssuerSignedEntries();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getStaticAuthenticationData();
   }
 
-  public static interface CredentialDataResult.Entries {
-    method @Nullable public byte[] getEntry(@NonNull String, @NonNull String);
-    method @NonNull public java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
-    method @NonNull public java.util.Collection<java.lang.String> getNamespaces();
-    method @NonNull public java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
-    method public int getStatus(@NonNull String, @NonNull String);
-    field public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
-    field public static final int STATUS_NOT_REQUESTED = 2; // 0x2
-    field public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
-    field public static final int STATUS_NO_SUCH_ENTRY = 1; // 0x1
-    field public static final int STATUS_OK = 0; // 0x0
-    field public static final int STATUS_READER_AUTHENTICATION_FAILED = 5; // 0x5
-    field public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
-  }
-
-  public class DocTypeNotSupportedException extends android.security.identity.IdentityCredentialException {
-    ctor public DocTypeNotSupportedException(@NonNull String);
-    ctor public DocTypeNotSupportedException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class EphemeralPublicKeyNotFoundException extends android.security.identity.IdentityCredentialException {
-    ctor public EphemeralPublicKeyNotFoundException(@NonNull String);
-    ctor public EphemeralPublicKeyNotFoundException(@NonNull String, @NonNull Throwable);
-  }
-
-  public abstract class IdentityCredential {
-    method @Deprecated @NonNull public abstract java.security.KeyPair createEphemeralKeyPair();
-    method @Deprecated @NonNull public abstract byte[] decryptMessageFromReader(@NonNull byte[]) throws android.security.identity.MessageDecryptionException;
-    method @NonNull public byte[] delete(@NonNull byte[]);
-    method @Deprecated @NonNull public abstract byte[] encryptMessageToReader(@NonNull byte[]);
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getAuthKeysNeedingCertification();
-    method @Deprecated @NonNull public abstract int[] getAuthenticationDataUsageCount();
-    method @NonNull public java.util.List<android.security.identity.AuthenticationKeyMetadata> getAuthenticationKeyMetadata();
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain();
-    method @Deprecated @NonNull public abstract android.security.identity.ResultData getEntries(@Nullable byte[], @NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>, @Nullable byte[], @Nullable byte[]) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException, android.security.identity.SessionTranscriptMismatchException;
-    method @NonNull public byte[] proveOwnership(@NonNull byte[]);
-    method @Deprecated public abstract void setAllowUsingExhaustedKeys(boolean);
-    method @Deprecated public void setAllowUsingExpiredKeys(boolean);
-    method @Deprecated public abstract void setAvailableAuthenticationKeys(int, int);
-    method public void setAvailableAuthenticationKeys(@IntRange(from=0) int, @IntRange(from=1) int, @IntRange(from=0) long);
-    method @Deprecated public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
-    method @Deprecated public abstract void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
-    method public void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull java.time.Instant, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
-    method @NonNull public byte[] update(@NonNull android.security.identity.PersonalizationData);
-  }
-
-  public class IdentityCredentialException extends java.lang.Exception {
-    ctor public IdentityCredentialException(@NonNull String);
-    ctor public IdentityCredentialException(@NonNull String, @NonNull Throwable);
-  }
-
-  public abstract class IdentityCredentialStore {
-    method @NonNull public abstract android.security.identity.WritableIdentityCredential createCredential(@NonNull String, @NonNull String) throws android.security.identity.AlreadyPersonalizedException, android.security.identity.DocTypeNotSupportedException;
-    method @NonNull public android.security.identity.PresentationSession createPresentationSession(int) throws android.security.identity.CipherSuiteNotSupportedException;
-    method @Deprecated @Nullable public abstract byte[] deleteCredentialByName(@NonNull String);
-    method @Nullable public abstract android.security.identity.IdentityCredential getCredentialByName(@NonNull String, int) throws android.security.identity.CipherSuiteNotSupportedException;
-    method @Nullable public static android.security.identity.IdentityCredentialStore getDirectAccessInstance(@NonNull android.content.Context);
-    method @Nullable public static android.security.identity.IdentityCredentialStore getInstance(@NonNull android.content.Context);
-    method @NonNull public abstract String[] getSupportedDocTypes();
-    field public static final int CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256 = 1; // 0x1
-  }
-
-  public class InvalidReaderSignatureException extends android.security.identity.IdentityCredentialException {
-    ctor public InvalidReaderSignatureException(@NonNull String);
-    ctor public InvalidReaderSignatureException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class InvalidRequestMessageException extends android.security.identity.IdentityCredentialException {
-    ctor public InvalidRequestMessageException(@NonNull String);
-    ctor public InvalidRequestMessageException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class MessageDecryptionException extends android.security.identity.IdentityCredentialException {
-    ctor public MessageDecryptionException(@NonNull String);
-    ctor public MessageDecryptionException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class NoAuthenticationKeyAvailableException extends android.security.identity.IdentityCredentialException {
-    ctor public NoAuthenticationKeyAvailableException(@NonNull String);
-    ctor public NoAuthenticationKeyAvailableException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class PersonalizationData {
-  }
-
-  public static final class PersonalizationData.Builder {
-    ctor public PersonalizationData.Builder();
-    method @NonNull public android.security.identity.PersonalizationData.Builder addAccessControlProfile(@NonNull android.security.identity.AccessControlProfile);
-    method @NonNull public android.security.identity.PersonalizationData build();
-    method @NonNull public android.security.identity.PersonalizationData.Builder putEntry(@NonNull String, @NonNull String, @NonNull java.util.Collection<android.security.identity.AccessControlProfileId>, @NonNull byte[]);
-  }
-
-  public abstract class PresentationSession {
-    method @Nullable public abstract android.security.identity.CredentialDataResult getCredentialData(@NonNull String, @NonNull android.security.identity.CredentialDataRequest) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException;
-    method @NonNull public abstract java.security.KeyPair getEphemeralKeyPair();
-    method public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
-    method public abstract void setSessionTranscript(@NonNull byte[]);
-  }
-
-  @Deprecated public abstract class ResultData {
-    method @Deprecated @NonNull public abstract byte[] getAuthenticatedData();
-    method @Deprecated @Nullable public abstract byte[] getEntry(@NonNull String, @NonNull String);
-    method @Deprecated @Nullable public abstract java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
-    method @Deprecated @Nullable public abstract byte[] getMessageAuthenticationCode();
-    method @Deprecated @NonNull public abstract java.util.Collection<java.lang.String> getNamespaces();
-    method @Deprecated @Nullable public abstract java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
-    method @Deprecated @NonNull public abstract byte[] getStaticAuthenticationData();
-    method @Deprecated public abstract int getStatus(@NonNull String, @NonNull String);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static interface CredentialDataResult.Entries {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getEntry(@NonNull String, @NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getNamespaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public int getStatus(@NonNull String, @NonNull String);
     field @Deprecated public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
     field @Deprecated public static final int STATUS_NOT_REQUESTED = 2; // 0x2
     field @Deprecated public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
@@ -41835,19 +41733,121 @@ package android.security.identity {
     field @Deprecated public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
   }
 
-  public class SessionTranscriptMismatchException extends android.security.identity.IdentityCredentialException {
-    ctor public SessionTranscriptMismatchException(@NonNull String);
-    ctor public SessionTranscriptMismatchException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class DocTypeNotSupportedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public DocTypeNotSupportedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public DocTypeNotSupportedException(@NonNull String, @NonNull Throwable);
   }
 
-  public class UnknownAuthenticationKeyException extends android.security.identity.IdentityCredentialException {
-    ctor public UnknownAuthenticationKeyException(@NonNull String);
-    ctor public UnknownAuthenticationKeyException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class EphemeralPublicKeyNotFoundException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public EphemeralPublicKeyNotFoundException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public EphemeralPublicKeyNotFoundException(@NonNull String, @NonNull Throwable);
   }
 
-  public abstract class WritableIdentityCredential {
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain(@NonNull byte[]);
-    method @NonNull public abstract byte[] personalize(@NonNull android.security.identity.PersonalizationData);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class IdentityCredential {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.security.KeyPair createEphemeralKeyPair();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] decryptMessageFromReader(@NonNull byte[]) throws android.security.identity.MessageDecryptionException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] delete(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] encryptMessageToReader(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getAuthKeysNeedingCertification();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract int[] getAuthenticationDataUsageCount();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.List<android.security.identity.AuthenticationKeyMetadata> getAuthenticationKeyMetadata();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.ResultData getEntries(@Nullable byte[], @NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>, @Nullable byte[], @Nullable byte[]) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException, android.security.identity.SessionTranscriptMismatchException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] proveOwnership(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setAllowUsingExhaustedKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void setAllowUsingExpiredKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setAvailableAuthenticationKeys(int, int);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void setAvailableAuthenticationKeys(@IntRange(from=0) int, @IntRange(from=1) int, @IntRange(from=0) long);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull java.time.Instant, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] update(@NonNull android.security.identity.PersonalizationData);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class IdentityCredentialException extends java.lang.Exception {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public IdentityCredentialException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public IdentityCredentialException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class IdentityCredentialStore {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.WritableIdentityCredential createCredential(@NonNull String, @NonNull String) throws android.security.identity.AlreadyPersonalizedException, android.security.identity.DocTypeNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PresentationSession createPresentationSession(int) throws android.security.identity.CipherSuiteNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] deleteCredentialByName(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract android.security.identity.IdentityCredential getCredentialByName(@NonNull String, int) throws android.security.identity.CipherSuiteNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public static android.security.identity.IdentityCredentialStore getDirectAccessInstance(@NonNull android.content.Context);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public static android.security.identity.IdentityCredentialStore getInstance(@NonNull android.content.Context);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract String[] getSupportedDocTypes();
+    field @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final int CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256 = 1; // 0x1
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class InvalidReaderSignatureException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidReaderSignatureException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidReaderSignatureException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class InvalidRequestMessageException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidRequestMessageException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidRequestMessageException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class MessageDecryptionException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public MessageDecryptionException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public MessageDecryptionException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class NoAuthenticationKeyAvailableException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public NoAuthenticationKeyAvailableException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public NoAuthenticationKeyAvailableException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class PersonalizationData {
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class PersonalizationData.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public PersonalizationData.Builder();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData.Builder addAccessControlProfile(@NonNull android.security.identity.AccessControlProfile);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData.Builder putEntry(@NonNull String, @NonNull String, @NonNull java.util.Collection<android.security.identity.AccessControlProfileId>, @NonNull byte[]);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class PresentationSession {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract android.security.identity.CredentialDataResult getCredentialData(@NonNull String, @NonNull android.security.identity.CredentialDataRequest) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.security.KeyPair getEphemeralKeyPair();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setSessionTranscript(@NonNull byte[]);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class ResultData {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getAuthenticatedData();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getEntry(@NonNull String, @NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getMessageAuthenticationCode();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.lang.String> getNamespaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getStaticAuthenticationData();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract int getStatus(@NonNull String, @NonNull String);
+    field @Deprecated public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
+    field @Deprecated public static final int STATUS_NOT_REQUESTED = 2; // 0x2
+    field @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
+    field @Deprecated public static final int STATUS_NO_SUCH_ENTRY = 1; // 0x1
+    field @Deprecated public static final int STATUS_OK = 0; // 0x0
+    field @Deprecated public static final int STATUS_READER_AUTHENTICATION_FAILED = 5; // 0x5
+    field @Deprecated public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class SessionTranscriptMismatchException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public SessionTranscriptMismatchException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public SessionTranscriptMismatchException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class UnknownAuthenticationKeyException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public UnknownAuthenticationKeyException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public UnknownAuthenticationKeyException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class WritableIdentityCredential {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] personalize(@NonNull android.security.identity.PersonalizationData);
   }
 
 }
