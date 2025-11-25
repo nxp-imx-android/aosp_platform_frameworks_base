@@ -53,7 +53,6 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
 
     @Before
     fun setup() {
-        Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
         testApp.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
     }
 

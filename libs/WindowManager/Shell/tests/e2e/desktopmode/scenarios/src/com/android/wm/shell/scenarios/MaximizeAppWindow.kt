@@ -50,9 +50,6 @@ abstract class MaximizeAppWindow(
 
     @Before
     fun setup() {
-        if (trigger == MaximizeDesktopAppTrigger.KEYBOARD_SHORTCUT) {
-            Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
-        }
         testApp.enterDesktopMode(wmHelper, device)
     }
 
