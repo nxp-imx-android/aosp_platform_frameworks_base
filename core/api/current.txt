@@ -43659,10 +43659,11 @@ package android.service.personalcontext.hint {
     method @NonNull public java.util.List<android.service.personalcontext.hint.ChatMessageData> getChatMessages();
     method @NonNull public android.content.ComponentName getComponentName();
     method @NonNull public String getConversationTitle();
-    method @NonNull public android.view.autofill.AutofillId getInputBoxAutofillId();
+    method @Nullable public android.view.autofill.AutofillId getInputBoxAutofillId();
     method @NonNull public String getInputBoxText();
     method @NonNull public java.time.Instant getProcessingEndTimestamp();
     method @NonNull public java.time.Instant getProcessingStartTimestamp();
+    method public boolean hasNewMessage();
     method public boolean isKeyboardShown();
     method public boolean isLastMessageFromTheUser();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -43675,7 +43676,8 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setChatMessages(@NonNull java.util.List<android.service.personalcontext.hint.ChatMessageData>);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setComponentName(@NonNull android.content.ComponentName);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setConversationTitle(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setInputBoxAutofillId(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setHasNewMessage(boolean);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setInputBoxAutofillId(@Nullable android.view.autofill.AutofillId);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setInputBoxText(@NonNull String);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setKeyboardShown(boolean);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setLastMessageFromTheUser(boolean);

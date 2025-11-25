@@ -137,6 +137,7 @@ public class ConversationHintTest {
                         .setInputBoxAutofillId(inputBoxAutofillId)
                         .setInputBoxText("inputBoxText")
                         .setConversationTitle("title")
+                        .setHasNewMessage(true)
                         .setChatMessages(List.of(CHAT_MESSAGE_DATA))
                         .setActivityId(activityId)
                         .build();
@@ -175,6 +176,7 @@ public class ConversationHintTest {
                         .setConversationTitle("title")
                         .setChatMessages(List.of(CHAT_MESSAGE_DATA))
                         .setActivityId(activityId)
+                        .setHasNewMessage(true)
                         .build();
         final ConversationUpdateEvent updateEvent =
                 new ConversationUpdateEvent(
