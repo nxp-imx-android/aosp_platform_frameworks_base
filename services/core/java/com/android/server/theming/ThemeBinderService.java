@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeManager;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
@@ -70,6 +71,16 @@ public class ThemeBinderService extends IThemeManager.Stub {
     @Override
     public boolean unregisterThemeSettingsCallback(@NonNull IThemeSettingsCallback callback) {
         return mLocalService.unregisterThemeSettingsCallback(getCallingUserId(), callback);
+    }
+
+    @Override
+    public void registerThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        mLocalService.registerThemeChangedCallback(getCallingUserId(), callback);
+    }
+
+    @Override
+    public void unregisterThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        mLocalService.unregisterThemeChangedCallback(getCallingUserId(), callback);
     }
 
     @Override

@@ -40,7 +40,6 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
@@ -214,9 +213,11 @@ public class ThemeManagerService extends SystemService {
         ActivityManagerInternal activityManagerInternal = LocalServices.getService(
                 ActivityManagerInternal.class);
 
-        // Profile changes
+        // Profile and overlay changes
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PROFILE_ADDED);
+        filter.addAction(Intent.ACTION_OVERLAY_CHANGED);
+        filter.addDataScheme("package");
 
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -236,9 +237,26 @@ public class ThemeManagerService extends SystemService {
 
                     Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
                     mStateManager.onProfileAdd(parentId, newUserOrProfileId);
+
+                    return;
+                }
+
+                // Overlay Applied
+                if (Intent.ACTION_OVERLAY_CHANGED.equals(action)) {
+                    final Uri data = intent.getData();
+                    if (data == null) {
+                        return;
+                    }
+                    final String changedPackage = data.getSchemeSpecificPart();
+                    if ("android".equals(changedPackage)) {
+                        final int userId = intent.getIntExtra(Intent.EXTRA_USER_ID,
+                                UserHandle.USER_NULL);
+                        Slog.i(TAG, "Theme overlays successfully applied for user " + userId);
+                        mInternal.notifyThemeChanged(userId);
+                    }
                 }
             }
-        }, filter);
+        }, filter, null, bgHandler);
 
         // Wallpaper Color Change
         mWallpaperManagerInternal.addOnColorsChangedListener(
