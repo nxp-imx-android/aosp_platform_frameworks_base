@@ -79,7 +79,10 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
+import com.android.internal.util.Preconditions;
+import com.android.server.FgThread;
 import com.android.server.LocalServices;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -92,6 +95,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -166,6 +170,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ComputerControlAudioInjector mAudioInjector;
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
+    /** Executor for the shared FgThread. */
+    private final Executor mFgThreadExecutor;
 
     private final WindowManagerInternal mWindowManagerInternal;
     private final InputMethodManagerInternal mInputMethodManagerInternal;
@@ -179,6 +185,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ImageReader mBlockedStateImageReader;
     private final ComputerControlAllowlistController mAllowlistController;
     private final ComputerControlStatsController mStatsController;
+    @Nullable private final AppInteractionService mAppInteractionService;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -239,7 +246,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         this(context, DisplayManagerGlobal.getInstance(), allowlistController,
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
                 SurfaceControl.Transaction::new, appToken, params, attributionSource,
-                virtualDeviceFactory, onClosedListener);
+                virtualDeviceFactory, onClosedListener, FgThread.getExecutor());
     }
 
     @VisibleForTesting
@@ -249,8 +256,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Consumer<ComputerControlSessionImpl> onClosedListener) {
+            Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
         mContext = context;
+        mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
         mTransactionSupplier = transactionSupplier;
@@ -274,6 +282,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mDisplayManagerGlobal = displayManagerGlobal;
         mStatsController = new ComputerControlStatsController(
             mContext.getPackageManager(), attributionSource, params);
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            mAppInteractionService = LocalServices.getService(AppInteractionService.class);
+        } else {
+            mAppInteractionService = null;
+        }
+
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
@@ -934,6 +948,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mLifecycle.updateLifecycleState(
                         (config) -> config.mBlockingActivityPackage =
                                 Objects.requireNonNull(componentName.getPackageName()));
+                return;
+            }
+            if (mAppInteractionService != null) {
+                long now = System.currentTimeMillis();
+                mFgThreadExecutor.execute(
+                        () -> {
+                            mAppInteractionService.noteAppInteraction(
+                                    mOwnerPackageName,
+                                    componentName.getPackageName(),
+                                    null, // TODO(b/454891648): get attribution from agent
+                                    now,
+                                    0L, // TODO(b/454891648): remove unused duration
+                                    userId);
+                        });
             }
         }
     }
