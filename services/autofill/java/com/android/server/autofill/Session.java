@@ -43,6 +43,7 @@ import static android.service.autofill.Flags.highlightAutofillSingleField;
 import static android.service.autofill.Flags.improveFillDialogAconfig;
 import static android.service.autofill.Flags.logAugmentedServiceUid;
 import static android.service.autofill.Flags.metricsFixes;
+import static android.service.autofill.Flags.stringRebuildApi;
 import static android.view.autofill.AutofillManager.ACTION_RESPONSE_EXPIRED;
 import static android.view.autofill.AutofillManager.ACTION_START_SESSION;
 import static android.view.autofill.AutofillManager.ACTION_VALUE_CHANGED;
@@ -192,6 +193,7 @@ import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillManager.AutofillCommitReason;
 import android.view.autofill.AutofillManager.SmartSuggestionMode;
+import android.view.autofill.AutofillNoiseInjector;
 import android.view.autofill.AutofillValue;
 import android.view.autofill.IAutoFillManagerClient;
 import android.view.autofill.IAutofillWindowPresenter;
@@ -288,6 +290,7 @@ final class Session
     private static RequestId mRequestId = new RequestId();
 
     private static AtomicInteger sIdCounterForPcc = new AtomicInteger(2);
+    private @Nullable String mNoiseInjectionMasterSeed;
 
     @GuardedBy("mLock")
     private @SessionState int mSessionState = STATE_UNKNOWN;
@@ -981,8 +984,12 @@ final class Session
                     structure.dump(/* showSensitive= */ true);
                 }
 
-                // TODO(b/456535350): implement noise-injection.
-                structure.sanitizeForParceling(true, null);
+                AutofillNoiseInjector autofillNoiseInjector = null;
+                if (stringRebuildApi() && mNoiseInjectionMasterSeed != null) {
+                    autofillNoiseInjector = new AutofillNoiseInjector(
+                            mNoiseInjectionMasterSeed, structure.getActivityComponent());
+                }
+                structure.sanitizeForParceling(true, autofillNoiseInjector);
 
                 if (mContexts == null) {
                     mContexts = new ArrayList<>(1);
@@ -1688,6 +1695,7 @@ final class Session
             @NonNull LocalLog uiLatencyHistory,
             @NonNull LocalLog wtfHistory,
             @Nullable ComponentName serviceComponentName,
+            @Nullable String noiseInjectionMasterSeed,
             @NonNull ComponentName componentName,
             boolean compatMode,
             boolean bindInstantServiceAllowed,
@@ -1707,6 +1715,7 @@ final class Session
         mLock = lock;
         mUi = ui;
         mHandler = handler;
+        mNoiseInjectionMasterSeed = noiseInjectionMasterSeed;
 
         mCredentialAutofillService = getCredentialAutofillService(context);
 

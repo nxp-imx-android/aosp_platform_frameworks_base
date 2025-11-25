@@ -430,7 +430,8 @@ final class AutofillManagerServiceImpl
             @NonNull IBinder clientCallback, @NonNull AutofillId autofillId,
             @NonNull Rect virtualBounds, @Nullable AutofillValue value, boolean hasCallback,
             @NonNull ComponentName clientActivity, boolean compatMode,
-            boolean bindInstantServiceAllowed, int flags) {
+            boolean bindInstantServiceAllowed, @Nullable String noiseInjectionMasterSeed,
+            int flags) {
         // FLAG_AUGMENTED_AUTOFILL_REQUEST is set in the flags when standard autofill is disabled
         // but the package is allowlisted for augmented autofill
         boolean forAugmentedAutofillOnly = (flags
@@ -484,7 +485,7 @@ final class AutofillManagerServiceImpl
         pruneAbandonedSessionsLocked();
 
         final Session newSession = createSessionByTokenLocked(activityToken, taskId, clientUid,
-                clientCallback, hasCallback, clientActivity, compatMode,
+                clientCallback, hasCallback, clientActivity, compatMode, noiseInjectionMasterSeed,
                 bindInstantServiceAllowed, forAugmentedAutofillOnly, flags);
         if (newSession == null) {
             return NO_SESSION;
@@ -690,7 +691,8 @@ final class AutofillManagerServiceImpl
     private Session createSessionByTokenLocked(@NonNull IBinder clientActivityToken, int taskId,
             int clientUid, @NonNull IBinder clientCallback, boolean hasCallback,
             @NonNull ComponentName clientActivity, boolean compatMode,
-            boolean bindInstantServiceAllowed, boolean forAugmentedAutofillOnly, int flags) {
+            @Nullable String noiseInjectionMasterSeed, boolean bindInstantServiceAllowed,
+            boolean forAugmentedAutofillOnly, int flags) {
         // use random ids so that one app cannot know that another app creates sessions
         int sessionId;
         int tries = 0;
@@ -713,7 +715,7 @@ final class AutofillManagerServiceImpl
         final Session newSession = new Session(this, mUi, mDisplayContext,
                 mHandler, mUserId, mLock,
                 sessionId, taskId, clientUid, clientActivityToken, clientCallback, hasCallback,
-                mUiLatencyHistory, mWtfHistory, serviceComponentName,
+                mUiLatencyHistory, mWtfHistory, serviceComponentName, noiseInjectionMasterSeed,
                 clientActivity, compatMode, bindInstantServiceAllowed, forAugmentedAutofillOnly,
                 flags, mInputMethodManagerInternal, isPrimaryCredential);
         mSessions.put(newSession.id, newSession);
