@@ -70,6 +70,13 @@ flag {
 }
 
 flag {
+    name: "memory_limiter_enable"
+    namespace: "system_performance"
+    description: "Enable the memory limiter"
+    bug: "461546255"
+}
+
+flag {
     name: "oomadjuster_cached_app_tiers"
     namespace: "system_performance"
     is_fixed_read_only: true

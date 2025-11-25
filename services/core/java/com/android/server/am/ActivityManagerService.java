@@ -2454,6 +2454,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
+        MemoryLimiter.init();
 
         mIntentFirewall = injector.getIntentFirewall();
         mProcessStats = new ProcessStatsService(this, mContext.getCacheDir());
@@ -2528,6 +2529,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .setProcessLruUpdater(mProcessList)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
+        MemoryLimiter.init();
 
         mBroadcastQueue = mInjector.getBroadcastQueue(this);
         mBroadcastController = new BroadcastController(mContext, this, mBroadcastQueue);
@@ -19672,6 +19674,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     Slog.d(TAG_OOM_ADJ, msg);
                     reportOomAdjMessageLocked(msg);
                 }
+
+                app.onProcStateUpdated();
 
                 final boolean setImportant = app.getSetProcState() < PROCESS_STATE_SERVICE;
                 final boolean curImportant = app.getCurProcState() < PROCESS_STATE_SERVICE;

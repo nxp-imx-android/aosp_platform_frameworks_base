@@ -23,6 +23,7 @@ per-file appexitinfo.proto = file:/ACTIVITY_MANAGER_OWNERS
 per-file UidObserverController* = file:/ACTIVITY_MANAGER_OWNERS
 per-file App*StartInfo* = file:/PERFORMANCE_OWNERS
 per-file appstartinfo.proto = file:/PERFORMANCE_OWNERS
+per-file MemoryLimiter* = file:/PERFORMANCE_OWNERS
 
 # Permissions & Packages
 per-file AccessCheckDelegateHelper.java = file:/core/java/android/permission/OWNERS
