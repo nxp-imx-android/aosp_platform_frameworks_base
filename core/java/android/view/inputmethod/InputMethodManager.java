@@ -3779,9 +3779,7 @@ public final class InputMethodManager {
             // Create a runnable for delayed notification to the app that the InputConnection is
             // initialized and ready for use.
             if (ic != null) {
-                if (Flags.invalidateInputCallsRestart()) {
-                    mLastPendingStartSeqId = startInputSeq;
-                }
+                mLastPendingStartSeqId = startInputSeq;
                 mReportInputConnectionOpenedRunner =
                         new ReportInputConnectionOpenedRunner(startInputSeq) {
                             @Override
