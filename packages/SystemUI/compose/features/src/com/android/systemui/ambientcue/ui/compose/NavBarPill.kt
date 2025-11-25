@@ -418,33 +418,39 @@ fun NavBarPill(
                 )
             }
 
-            // Expand the clickable area.
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                    Modifier.size(closeButtonTouchTargetSize)
-                        .clickable(
-                            onClick = onCloseClick,
-                            interactionSource = null,
-                            indication = null,
-                        ),
-            ) {
-                // Close button
-                FilledIconButton(
-                    onClick = onCloseClick,
-                    modifier = Modifier.size(closeButtonSize),
-                    colors =
-                        IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
+            if (expanded) {
+                Spacer(modifier = Modifier.size(closeButtonTouchTargetSize))
+            } else {
+                // Expand the clickable area.
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        Modifier.size(closeButtonTouchTargetSize)
+                            .clickable(
+                                onClick = onCloseClick,
+                                interactionSource = null,
+                                indication = null,
+                            ),
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_close_white_rounded),
-                        contentDescription =
-                            stringResource(id = R.string.underlay_close_button_content_description),
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(6.dp),
-                    )
+                    // Close button
+                    FilledIconButton(
+                        onClick = onCloseClick,
+                        modifier = Modifier.size(closeButtonSize),
+                        colors =
+                            IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            ),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_close_white_rounded),
+                            contentDescription =
+                                stringResource(
+                                    id = R.string.underlay_close_button_content_description
+                                ),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(6.dp),
+                        )
+                    }
                 }
             }
         }
