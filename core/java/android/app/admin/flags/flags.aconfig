@@ -600,3 +600,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "lockscreen_info_coexistence"
+  namespace: "enterprise"
+  description: "Enables coexistence support for setDeviceOwnerLockScreenInfo"
+  bug: "457343029"
+  is_exported: true
+}

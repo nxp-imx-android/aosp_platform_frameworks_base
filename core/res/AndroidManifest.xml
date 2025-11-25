@@ -4279,6 +4279,16 @@
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application to manage policy related to lock screen info.
+        <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS} is required to call
+        APIs protected by this permission on users different to the calling user.
+        <p>Protection level: internal|role
+        <p>Intended for use by the DEVICE_POLICY_MANAGEMENT role only.
+        @FlaggedApi(android.app.admin.flags.Flags.FLAG_LOCKSCREEN_INFO_COEXISTENCE) -->
+    <permission android:name="android.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.app.admin.flags.lockscreen_info_coexistence" />
+
     <!-- Allows an application to manage policy related to metered data.
         <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL} is required to call
         APIs protected by this permission on users different to the calling user.
