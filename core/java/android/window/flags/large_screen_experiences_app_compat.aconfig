@@ -101,6 +101,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_rounded_corners_on_transparent"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Enables rounded corners only for fully transparent activities."
+  bug: "463679688"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_compat_refactoring_fix_multiwindow_task_hierarchy"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether Task id detection for split screen should be enabled."
