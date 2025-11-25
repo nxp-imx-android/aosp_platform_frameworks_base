@@ -95,6 +95,7 @@ import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.useEventDisplayIdForKeyWakeup;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.server.policy.Flags.wearKeyguardDrawnTimeoutOnBootConfig;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -720,7 +721,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mLockNowPending = false;
 
     // Timeout for showing the keyguard after the screen is on, in case no "ready" is received.
-    private int mKeyguardDrawnTimeout = 1000;
+    private int mKeyguardDrawnTimeoutMs = 1000;
+    // Timeout for showing the keyguard after the device is booted, in case no "ready" is received.
+    private int mKeyguardDrawnTimeoutOnBootMs = 5000;
 
     // Whether or not the device supports interactive doze.
     private boolean mInteractiveDozeEnabled;
@@ -2507,8 +2510,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         };
         mWindowManagerInternal.registerAppTransitionListener(transitionListener);
 
-        mKeyguardDrawnTimeout = mContext.getResources().getInteger(
+        mKeyguardDrawnTimeoutMs = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_keyguardDrawnTimeout);
+        if (wearKeyguardDrawnTimeoutOnBootConfig()) {
+            mKeyguardDrawnTimeoutOnBootMs = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_keyguardDrawnTimeoutOnBoot);
+        }
         mKeyguardDelegate = injector.getKeyguardServiceDelegate();
         mTalkbackShortcutController = injector.getTalkbackShortcutController();
         mWindowWakeUpPolicy = injector.getWindowWakeUpPolicy();
@@ -5629,7 +5636,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final boolean bootCompleted =
                 LocalServices.getService(SystemServiceManager.class).isBootCompleted();
         // Set longer timeout if it has not booted yet to prevent showing empty window.
-        return bootCompleted ? mKeyguardDrawnTimeout : 5000;
+        return bootCompleted ? mKeyguardDrawnTimeoutMs : mKeyguardDrawnTimeoutOnBootMs;
     }
 
     @Nullable
