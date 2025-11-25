@@ -303,6 +303,13 @@ flag {
 }
 
 flag {
+    name: "verification_service_adb"
+    namespace: "package_manager_service"
+    description: "Feature flag to add new ADB related APIs in the verification service"
+    bug: "460818215"
+}
+
+flag {
     name: "cache_query_intent_activities_in_client_side"
     namespace: "package_manager_service"
     description: "Feature flag to implement client side caching for queryIntentActivities."

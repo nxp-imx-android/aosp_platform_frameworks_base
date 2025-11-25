@@ -405,7 +405,7 @@ public class DeveloperVerifierController {
             @PackageInstaller.DeveloperVerificationPolicy int verificationPolicy,
             @Nullable PersistableBundle extensionParams,
             PackageInstallerSession.DeveloperVerifierCallback callback,
-            Runnable onConnectionEstablished, boolean retry) {
+            Runnable onConnectionEstablished, boolean retry, int verificationFlags) {
         // Try connecting to the verifier if not already connected
         if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId, onConnectionEstablished)) {
             return false;
@@ -427,7 +427,8 @@ public class DeveloperVerifierController {
                     /* id= */ verificationId,
                     /* installSessionId= */ installationSessionId,
                     packageName, stagedPackageUri, signingInfo, declaredLibraries, extensionParams,
-                    verificationPolicy, new DeveloperVerificationSessionInterface(callback));
+                    verificationPolicy, new DeveloperVerificationSessionInterface(callback),
+                    verificationFlags);
             AndroidFuture<Void> unusedFuture = remoteService.getService().post(service -> {
                 if (!retry) {
                     if (DEBUG) {
