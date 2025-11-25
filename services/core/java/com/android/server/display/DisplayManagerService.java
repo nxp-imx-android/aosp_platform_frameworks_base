@@ -302,6 +302,7 @@ public final class DisplayManagerService extends SystemService {
     private static final int[] EMPTY_ARRAY = new int[0];
     private static final HdrConversionMode HDR_CONVERSION_MODE_UNSUPPORTED = new HdrConversionMode(
             HDR_CONVERSION_UNSUPPORTED);
+    private static final int[] ARRAY_DEFAULT_DISPLAY_ONLY = new int[] { Display.DEFAULT_DISPLAY };
 
     private final Context mContext;
     private final DisplayManagerHandler mHandler;
@@ -1557,6 +1558,20 @@ public final class DisplayManagerService extends SystemService {
                             .getModeId();
         }
         return overriddenInfo;
+    }
+
+    private int[] getDisplayIdsInternal(int callingUid, boolean includeDisabled) {
+        if (!Flags.displayInfoCopyOnWriteCacheEnabled()) {
+            synchronized (mSyncRoot) {
+                return mLogicalDisplayMapper.getDisplayIdsLocked(callingUid, includeDisabled);
+            }
+        }
+        if (mDisplayInfoCache.size() <= 1) {
+            return ARRAY_DEFAULT_DISPLAY_ONLY;
+        }
+        return mDisplayInfoCache.filteredKeys((Integer key, CachedDisplayInfo value) ->
+                (includeDisabled || value.isEnabled())
+                        && doesCallingUidHaveAccessToDisplay(callingUid, value.info()));
     }
 
     private DisplayInfo getDisplayInfoInternal(int displayId, int callingUid) {
@@ -4710,9 +4725,9 @@ public final class DisplayManagerService extends SystemService {
                 return;
             }
             Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_SNAPSHOT, mUid, 0);
-            int[] connected = (isConnectedRequested) ? mLogicalDisplayMapper.getDisplayIdsLocked(
+            int[] connected = (isConnectedRequested) ? getDisplayIdsInternal(
                     mUid, /* includeDisabled= */ true) : new int[0];
-            int[] added = (isAddedRequested) ?  mLogicalDisplayMapper.getDisplayIdsLocked(
+            int[] added = (isAddedRequested) ?  getDisplayIdsInternal(
                     mUid, /* includeDisabled= */ false) : new int[0];
             msg.obj = new PendingSnapshotEvent(connected, added);
             if (mExtraDisplayEventLogging) {
@@ -5265,9 +5280,7 @@ public final class DisplayManagerService extends SystemService {
             final int callingUid = Binder.getCallingUid();
             final long token = Binder.clearCallingIdentity();
             try {
-                synchronized (mSyncRoot) {
-                    return mLogicalDisplayMapper.getDisplayIdsLocked(callingUid, includeDisabled);
-                }
+                return getDisplayIdsInternal(callingUid, includeDisabled);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
@@ -6717,14 +6730,8 @@ public final class DisplayManagerService extends SystemService {
         }
 
         @Override
-        public IntArray getDisplayIds() {
-            IntArray displayIds = new IntArray();
-            synchronized (mSyncRoot) {
-                mLogicalDisplayMapper.forEachLocked((logicalDisplay -> {
-                    displayIds.add(logicalDisplay.getDisplayIdLocked());
-                }), /* includeDisabled= */ false);
-            }
-            return displayIds;
+        public int[] getDisplayIds(boolean includeDisabled) {
+            return getDisplayIdsInternal(Process.myUid(), includeDisabled);
         }
 
         @Override

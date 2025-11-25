@@ -319,7 +319,8 @@ final class LogicalDisplay {
         copyDisplayInfoFields(info, mBaseDisplayInfo, mOverrideDisplayInfo,
                 WM_OVERRIDE_FIELDS);
         if (Flags.displayInfoCopyOnWriteCacheEnabled() && info.supportedModes.length > 0) {
-            mDisplayInfoCache.put(info.displayId, new CachedDisplayInfo(info, mFrameRateOverrides));
+            mDisplayInfoCache.put(info.displayId,
+                    new CachedDisplayInfo(mIsEnabled, info, mFrameRateOverrides));
         }
         return info;
     }
@@ -1321,6 +1322,7 @@ final class LogicalDisplay {
      */
     @SuppressWarnings("ArrayRecordComponent")
     public record CachedDisplayInfo(
+            boolean isEnabled,
             DisplayInfo info,
-            DisplayEventReceiver.FrameRateOverride[] frameRateOverrides) {}
+            DisplayEventReceiver.FrameRateOverride[] frameRateOverrides) { }
 }

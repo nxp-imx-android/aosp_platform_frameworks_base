@@ -342,6 +342,13 @@ public final class DisplayManagerGlobal {
      * @return An array containing all display ids.
      */
     public int[] getDisplayIds(boolean includeDisabled) {
+        if (mDmInternal != null) {
+            if (DEBUG) {
+                Log.d(TAG, "getDisplayIds: includeDisabled=" + includeDisabled
+                        + ", using internal service");
+            }
+            return mDmInternal.getDisplayIds(includeDisabled);
+        }
         try {
             synchronized (mLock) {
                 if (mDisplayIdsCache != null) {
