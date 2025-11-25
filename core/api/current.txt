@@ -9823,6 +9823,7 @@ package android.app.job {
     method @Nullable public String getNamespace();
     method @Nullable public abstract android.app.job.JobInfo getPendingJob(int);
     method public int getPendingJobReason(int);
+    method @FlaggedApi("android.app.job.get_pending_job_reason_stats_api") @NonNull public java.util.Map<java.lang.Integer,java.time.Duration> getPendingJobReasonStats(int);
     method @FlaggedApi("android.app.job.get_pending_job_reasons_api") @NonNull public int[] getPendingJobReasons(int);
     method @FlaggedApi("android.app.job.get_pending_job_reasons_history_api") @NonNull public java.util.List<android.app.job.PendingJobReasonsInfo> getPendingJobReasonsHistory(int);
     method @NonNull public java.util.Map<java.lang.String,java.util.List<android.app.job.JobInfo>> getPendingJobsInAllNamespaces();
