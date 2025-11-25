@@ -121,6 +121,16 @@ flag {
 }
 
 flag {
+    name: "enable_magnification_rebased_delayed_motion_event"
+    namespace: "accessibility"
+    description: "Whether to dispatch rebased MotionEvents for Magnification delayed events to fix timestamp synchronization issues"
+    bug: "279211403"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_mouse_key_enhancement"
     namespace: "accessibility"
     description: "Whether user can change mouse key acceleration, speed and use numeric keypad."
