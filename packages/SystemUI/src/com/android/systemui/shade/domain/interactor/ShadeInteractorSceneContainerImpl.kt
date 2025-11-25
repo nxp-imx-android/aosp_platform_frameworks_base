@@ -207,7 +207,15 @@ constructor(
                     transitionKey = transitionKey,
                 )
             }
-        } else if (transitionKey == Instant) {
+            return
+        }
+
+        // Do nothing if the shade is not open
+        if (sceneInteractor.currentScene.value != Scenes.Shade) {
+            return
+        }
+
+        if (transitionKey == Instant) {
             // TODO(b/356596436): Define instant transition instead of snapToScene().
             sceneInteractor.snapToScene(
                 toScene = SceneFamilies.Home,
@@ -244,9 +252,15 @@ constructor(
             return
         }
 
+        // Do nothing if the quick settings is not open
+        val currentScene = sceneInteractor.currentScene.value
+        if (currentScene != Scenes.QuickSettings && currentScene != Scenes.Shade) {
+            return
+        }
         val isSplitShade = shadeModeInteractor.isSplitShade
         val targetScene =
             if (bypassNotificationsShade || isSplitShade) SceneFamilies.Home else Scenes.Shade
+
         if (transitionKey == Instant) {
             // TODO(b/356596436): Define instant transition instead of snapToScene().
             sceneInteractor.snapToScene(

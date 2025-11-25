@@ -860,6 +860,26 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun collapseNotificationsShade_singleShade_shadeNotOpen_doesNotSwitchScene() =
+        kosmos.runTest {
+            enableSingleShade()
+            val shadeMode by collectLastValue(shadeMode)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
+
+            // Change scene to Communal. Shade not open.
+            sceneInteractor.changeScene(Scenes.Communal, "reason")
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(currentOverlays).isEmpty()
+
+            // Verify scene does not change.
+            underTest.collapseNotificationsShade("reason")
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
     @EnableFlags(FLAG_DUAL_SHADE)
     fun collapseQuickSettingsShade_dualShade_hidesOverlay() =
         kosmos.runTest {
@@ -915,6 +935,29 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
             )
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun collapseQuickSettingsShadeBypassingShade_quickSettingsNotOpen_doesNotSwitchScene() =
+        kosmos.runTest {
+            enableSingleShade()
+            val shadeMode by collectLastValue(shadeMode)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
+
+            // Change scene to Communal. Quick Settings not open.
+            sceneInteractor.changeScene(Scenes.Communal, "reason")
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(currentOverlays).isEmpty()
+
+            // Verify scene does not change.
+            underTest.collapseQuickSettingsShade(
+                loggingReason = "reason",
+                bypassNotificationsShade = true,
+            )
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
             assertThat(currentOverlays).isEmpty()
         }
 

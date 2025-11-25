@@ -113,14 +113,15 @@ constructor(
     }
 
     companion object {
-        val homeScenes =
+        private val homeScenes =
             setOf(
-                Scenes.Occluded,
-                Scenes.Gone,
-                Scenes.Lockscreen,
+                Scenes.Communal,
                 // Dream is a home scene as the dream activity occludes keyguard and can show the
                 // shade on top.
                 Scenes.Dream,
+                Scenes.Gone,
+                Scenes.Lockscreen,
+                Scenes.Occluded,
             )
     }
 }
