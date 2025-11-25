@@ -16,8 +16,10 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -32,6 +34,11 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(
+    Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
+    Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR_SELFIE,
+    Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR_MARKUP,
+)
 class ScreenCaptureOverlayStateInteractorTest : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmosNew()
