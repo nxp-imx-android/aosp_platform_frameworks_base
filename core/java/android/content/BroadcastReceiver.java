@@ -308,6 +308,9 @@ public abstract class BroadcastReceiver {
 
         /** @hide */
         public void sendFinished(IActivityManager am) {
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordSendFinished(System.identityHashCode(this));
+            }
             synchronized (this) {
                 if (mFinished) {
                     throw new IllegalStateException("Broadcast already finished");
