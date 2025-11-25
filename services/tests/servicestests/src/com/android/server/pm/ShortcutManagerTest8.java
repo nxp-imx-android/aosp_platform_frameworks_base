@@ -21,6 +21,11 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.assertWith;
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.list;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -46,10 +51,13 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.frameworks.servicestests.R;
 
 import org.mockito.ArgumentCaptor;
+import org.junit.runner.RunWith;
+import org.junit.Test;
 
 /**
  * Tests for {@link ShortcutManager#requestPinShortcut} and relevant APIs.
@@ -67,6 +75,7 @@ import org.mockito.ArgumentCaptor;
  */
 @Presubmit
 @SmallTest
+@RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
     private ShortcutRequestPinProcessor mProcessor;
 
@@ -392,6 +401,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testRequestPinShortcut_wrongTargetActivity() {
         setDefaultLauncher(USER_10, LAUNCHER_1);
 
@@ -533,6 +543,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testRequestPinShortcut_manifestExists() {
         setDefaultLauncher(USER_10, LAUNCHER_1);
 
@@ -979,6 +990,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
      * The launcher already has a pinned shortuct.  The new one should be added, not replace
      * the existing one.
      */
+    @Test
     public void testRequestPinShortcut_launcherAlreadyHasPinned() {
         setDefaultLauncher(USER_10, LAUNCHER_1);
 
@@ -1550,6 +1562,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testRequestPinShortcut_wrongLauncherCannotAccept() {
         setDefaultLauncher(USER_10, LAUNCHER_1);
 
