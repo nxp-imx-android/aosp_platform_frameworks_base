@@ -26,6 +26,7 @@
     - DISALLOW_INSTALL_UNKNOWN_SOURCES
     - DISALLOW_USB
     - ENABLE_MTE
+    - DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES
 
     Use the featureFlag attribute to guard protection features with trunk stable flags. The
     featureFlag attribute supports addition and removal of protections features. For example,
@@ -44,5 +45,7 @@
         <protection id="DISALLOW_INSTALL_UNKNOWN_SOURCES" />
         <protection id="DISALLOW_USB" />
         <protection id="ENABLE_MTE" />
+        <protection id="DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES"
+                    featureFlag="android.security.extend_aapm_to_a11y_services" />
     </available-protections>
 </advanced-protection-config>

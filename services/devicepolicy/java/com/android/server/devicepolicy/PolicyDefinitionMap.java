@@ -280,6 +280,9 @@ public class PolicyDefinitionMap {
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_DEFAULT_APPS, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CELLULAR_2G, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(
+                UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE,
+                POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        userRestrictionFlags.put(
                 UserManager.DISALLOW_ULTRA_WIDEBAND_RADIO, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(
                 UserManager.DISALLOW_NEAR_FIELD_COMMUNICATION_RADIO,

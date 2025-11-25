@@ -36,7 +36,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
-import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -52,12 +51,14 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -65,8 +66,10 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -121,6 +124,9 @@ public class AccessibilityUserStateTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     @Mock private AccessibilityServiceInfo mMockServiceInfo;
 
     @Mock private AccessibilityServiceConnection mMockConnection;
@@ -130,6 +136,8 @@ public class AccessibilityUserStateTest {
     @Mock private PackageManager mMockPackageManager;
 
     @Mock private Context mMockContext;
+
+    @Mock private DevicePolicyManager mMockDevicePolicyManager;
 
     private MockContentResolver mMockResolver;
 
@@ -152,7 +160,11 @@ public class AccessibilityUserStateTest {
         when(mMockContext.getResources()).thenReturn(resources);
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
         when(mMockPackageManager.hasSystemFeature(FEATURE_WINDOW_MAGNIFICATION)).thenReturn(true);
-
+        when(mMockServiceInfo.isAccessibilityTool()).thenReturn(false);
+        when(mMockContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(
+                mMockDevicePolicyManager);
+        when(mMockContext.getSystemServiceName(DevicePolicyManager.class)).thenReturn(
+                Context.DEVICE_POLICY_SERVICE);
         mFocusStrokeWidthDefaultValue =
                 resources.getDimensionPixelSize(R.dimen.accessibility_focus_highlight_stroke_width);
         mFocusColorDefaultValue = resources.getColor(R.color.accessibility_focus_highlight_color);
@@ -184,7 +196,6 @@ public class AccessibilityUserStateTest {
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), QUICK_SETTINGS);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), KEY_GESTURE);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), TOP_ROW_KEY);
-        mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), QUICK_ACCESS);
         mUserState.updateA11yTilesInQsPanelLocked(
                 Set.of(AccessibilityShortcutController.COLOR_INVERSION_TILE_COMPONENT_NAME));
         mUserState.setTargetAssignedToAccessibilityButton(componentNameString);
@@ -214,7 +225,6 @@ public class AccessibilityUserStateTest {
         assertTrue(mUserState.getShortcutTargetsLocked(QUICK_SETTINGS).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(KEY_GESTURE).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(TOP_ROW_KEY).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(QUICK_ACCESS).isEmpty());
         assertTrue(mUserState.getA11yQsTilesInQsPanel().isEmpty());
         assertNull(mUserState.getTargetAssignedToAccessibilityButton());
         assertFalse(mUserState.isTouchExplorationEnabledLocked());
@@ -414,10 +424,43 @@ public class AccessibilityUserStateTest {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void isShortcutTargetPermittedLocked_apmOff_returnTrue() {
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
+        when(mMockDevicePolicyManager.getPermittedAccessibilityServices(anyInt())).thenReturn(null);
+
+        boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
+                COMPONENT_NAME.flattenToString(), USER_ID);
+
+        assertTrue(isShortcutTargetPermitted);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void isShortcutTargetPermittedLocked_apmOn_returnFalse() {
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
+        when(mMockDevicePolicyManager.getPermittedAccessibilityServices(anyInt())).thenReturn(
+                new ArrayList<>());
+
+        boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
+                COMPONENT_NAME.flattenToString(), USER_ID);
+
+        assertFalse(isShortcutTargetPermitted);
+    }
+
+
+    @Test
     public void isShortcutTargetInstalledLocked_invalidTarget_returnFalse() {
         final ComponentName invalidTarget =
                 new ComponentName("com.android.server.accessibility", "InvalidTarget");
-        assertFalse(mUserState.isShortcutTargetInstalledLocked(invalidTarget.flattenToString()));
+        assertFalse(
+                mUserState.isShortcutTargetInstalledLocked(invalidTarget.flattenToString()));
     }
 
     @Test

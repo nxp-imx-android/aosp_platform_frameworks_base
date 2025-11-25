@@ -40,6 +40,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATIN
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_GESTURE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
 import static android.provider.Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_NAVBAR_ENABLED;
+import static android.security.advancedprotection.AdvancedProtectionManager.ADVANCED_PROTECTION_SYSTEM_ENTITY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
@@ -105,6 +106,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
@@ -125,6 +127,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
@@ -144,6 +147,7 @@ import android.provider.Settings;
 import android.provider.Settings.Secure.AccessibilityMagnificationCursorFollowingMode;
 import android.provider.SettingsStringUtil.SettingStringHelper;
 import android.safetycenter.SafetyCenterManager;
+import android.security.advancedprotection.AdvancedProtectionManager;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.ArrayMap;
@@ -336,8 +340,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     private final PowerManager mPowerManager;
 
-    private final UserManager mUserManager;
-
     private final WindowManagerInternal mWindowManagerService;
 
     private final AccessibilitySecurityPolicy mSecurityPolicy;
@@ -382,6 +384,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             new RemoteCallbackList<>();
 
     private PackageMonitor mPackageMonitor;
+    private AdvancedProtectionManager mAdvancedProtectionManager;
+    private DevicePolicyManager mDevicePolicyManager;
 
     @VisibleForTesting
     final SparseArray<AccessibilityUserState> mUserStates = new SparseArray<>();
@@ -511,6 +515,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 return mService.getUserStateLocked(userId).isTouchExplorationEnabledLocked();
             }
         }
+
+        @Override
+        public Set<String> getPermittedAccessibilityServicePackages(
+                @Nullable List<String> adminPermittedServices, int userId) {
+            return mService.getPermittedAccessibilityServicePackages(adminPermittedServices,
+                    userId);
+        }
     }
 
     public static final class Lifecycle extends SystemService {
@@ -577,7 +588,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         super(permissionEnforcer);
         mContext = context;
         mPowerManager =  (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-        mUserManager = mContext.getSystemService(UserManager.class);
         mWindowManagerService = LocalServices.getService(WindowManagerInternal.class);
         mTraceManager = AccessibilityTraceManager.getInstance(
                 mWindowManagerService.getAccessibilityController(), this, mLock);
@@ -620,7 +630,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         super(PermissionEnforcer.fromContext(context));
         mContext = context;
         mPowerManager = context.getSystemService(PowerManager.class);
-        mUserManager = context.getSystemService(UserManager.class);
         mWindowManagerService = LocalServices.getService(WindowManagerInternal.class);
         mTraceManager = AccessibilityTraceManager.getInstance(
                 mWindowManagerService.getAccessibilityController(), this, mLock);
@@ -965,7 +974,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
     }
 
-    private void onBootPhase(int phase) {
+    // Called by the system, which holds QUERY_ADVANCED_PROTECTION_MODE.
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    void onBootPhase(int phase) {
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_APP_WIDGETS)) {
                 mSecurityPolicy.setAppWidgetManager(
@@ -977,6 +988,20 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (phase == SystemService.PHASE_THIRD_PARTY_APPS_CAN_START) {
             setNonA11yToolNotificationToMatchSafetyCenter();
         }
+
+        if (android.security.Flags.extendAapmToA11yServices()) {
+            if (phase == SystemService.PHASE_BOOT_COMPLETED) {
+                mAdvancedProtectionManager =
+                        mContext.getSystemService(AdvancedProtectionManager.class);
+                mDevicePolicyManager = mContext.getSystemService(DevicePolicyManager.class);
+                if (mAdvancedProtectionManager != null) {
+                    mAdvancedProtectionManager.registerAdvancedProtectionCallback(
+                            new HandlerExecutor(BackgroundThread.getHandler()),
+                            this::handleAdvancedProtectionModeStateChanged);
+                }
+            }
+        }
+
     }
 
     private void setNonA11yToolNotificationToMatchSafetyCenter() {
@@ -1271,6 +1296,39 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 safetyCenterReceiver, UserHandle.ALL, safetyCenterFilter, null, mMainHandler,
                 Context.RECEIVER_EXPORTED);
         mRegisteredBroadcaseReveivers.add(safetyCenterReceiver);
+    }
+
+    /**
+     * Handles changes to the Advanced Protection Mode (APM) state by applying
+     * a global user restriction on non-tool accessibility services.
+     */
+    void handleAdvancedProtectionModeStateChanged(boolean apmOn) {
+        if (mDevicePolicyManager == null) {
+            Slog.e(LOG_TAG, "DevicePolicyManager is not available when handling APM state change");
+            // if this happen, we need to check the timing when registering the call back to APM
+            return;
+        }
+        if (!apmOn) {
+            mDevicePolicyManager.clearUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
+                    UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);
+            if (DEBUG) {
+                Slog.v(LOG_TAG,
+                        "Cleared user restriction: UserManager"
+                                + ".DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE_GLOBALLY");
+            }
+            return;
+        }
+        mDevicePolicyManager.addUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);
+        if (DEBUG) {
+            Slog.v(LOG_TAG,
+                    "Added user restriction: UserManager"
+                            + ".DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE_GLOBALLY");
+        }
+
+        synchronized (mLock) {
+            onUserStateChangedLocked(getUserStateLocked(mCurrentUserId));
+        }
     }
 
     /**
@@ -3485,7 +3543,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      *
      * @param userState the new user state
      */
-    private void onUserStateChangedLocked(AccessibilityUserState userState) {
+    @VisibleForTesting
+    public void onUserStateChangedLocked(AccessibilityUserState userState) {
         onUserStateChangedLocked(userState, false);
     }
 
@@ -4066,7 +4125,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 userState.getShortcutTargetsLocked(shortcutType);
         currentTargets.removeIf(
                 name -> !userState.isShortcutTargetInstalledLocked(name));
-
+        if (android.security.Flags.extendAapmToA11yServices()) {
+            currentTargets.removeIf(
+                    name -> !userState.isShortcutTargetPermittedLocked(name, mCurrentUserId));
+        }
         if (shortcutType == QUICK_SETTINGS) {
             // Add the target if the a11y service is enabled and the tile exist in QS panel
             Set<ComponentName> enabledServices = userState.getEnabledServicesLocked();
@@ -7245,5 +7307,112 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
         }
         return getMagnificationConnectionManager().isConnected();
+    }
+
+    Set<String> getPermittedAccessibilityServicePackages(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        if (!android.security.Flags.extendAapmToA11yServices()) {
+            return getPermittedServicesLegacy(adminPermittedServices, userId);
+        }
+
+        final boolean apmOn = mUmi.hasUserRestriction(
+                UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE, userId);
+
+        if (!apmOn) {
+            return getPermittedServicesLegacy(adminPermittedServices, userId);
+        }
+
+        return getPermittedServicesStrictApm(adminPermittedServices, userId);
+    }
+
+    private Set<String> getPermittedServicesLegacy(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        // If adminPermittedServices is null, it means no admin policy is set.
+        if (adminPermittedServices == null) {
+            return null;
+        }
+        Set<String> resultSet = new HashSet<>(adminPermittedServices);
+
+        // Find all installed system services
+        List<AccessibilityServiceInfo> installedServices = getInstalledAccessibilityServiceList(
+                userId).getList();
+        if (installedServices != null) {
+            for (AccessibilityServiceInfo service : installedServices) {
+                ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+                if (serviceInfo != null
+                        && (serviceInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
+                    resultSet.add(serviceInfo.packageName);
+                }
+            }
+        }
+        return resultSet;
+    }
+
+    private Set<String> getPermittedServicesStrictApm(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        List<AccessibilityServiceInfo> installedServices = getInstalledAccessibilityServiceList(
+                userId).getList();
+
+        if (installedServices == null || installedServices.isEmpty()) {
+            return (adminPermittedServices != null) ? new HashSet<>(adminPermittedServices)
+                    : new HashSet<>();
+        }
+
+        Set<String> basePermittedSet = (adminPermittedServices != null)
+                ? new HashSet<>(adminPermittedServices) : null;
+
+        // Find all packages that contain at least one non-tool service
+        Set<String> packagesWithNonTools = new HashSet<>();
+        for (AccessibilityServiceInfo service : installedServices) {
+            if (!service.isAccessibilityTool()) {
+                ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+                if (serviceInfo != null) {
+                    if (DEBUG) {
+                        Slog.d(LOG_TAG, "non tool package name: " + serviceInfo.packageName);
+                    }
+                    packagesWithNonTools.add(serviceInfo.packageName);
+                }
+            }
+        }
+
+        /*
+         * Filters installed accessibility services to determine which packages are permitted
+         * to run, particularly when Advanced Protection Mode (APM) is active.
+         * * Packages must satisfy these conditions:
+         * 1. Be a system app OR an explicitly marked accessibility tool (isSystem || isTool).
+         * 2. If a Device Admin policy is set, the package must be explicitly permitted by the
+         * admin policy.
+         * 3. The package must NOT contain any non-tool accessibility service (enforcing the
+         * policy that one non-tool service blocks the entire package).
+         */
+        Set<String> finalAllowedPackageNames = new HashSet<>();
+        for (AccessibilityServiceInfo service : installedServices) {
+            ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+            if (serviceInfo == null || serviceInfo.applicationInfo == null) continue;
+
+            String packageName = serviceInfo.packageName;
+            boolean isSystem =
+                    (serviceInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+            boolean isTool = service.isAccessibilityTool();
+
+            // Must be System OR Tool
+            if (isSystem || isTool) {
+                // Must be Admin Allowed (if admin policy exists)
+                boolean adminAllowed = basePermittedSet == null || basePermittedSet.contains(
+                        packageName);
+
+                // Must NOT contain any non-tool service
+                boolean packageContainsNonToolService = packagesWithNonTools.contains(packageName);
+
+                if (adminAllowed && !packageContainsNonToolService) {
+                    finalAllowedPackageNames.add(packageName);
+                }
+            }
+        }
+
+        return finalAllowedPackageNames;
     }
 }

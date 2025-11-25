@@ -19,6 +19,7 @@ package android.security.advancedprotection;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.os.UserManager.DISALLOW_CELLULAR_2G;
 import static android.os.UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY;
+import static android.os.UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -609,6 +610,8 @@ public final class AdvancedProtectionManager {
         int dialogType = type;
         if (DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
+        } else if (DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE.equals(identifier)) {
+            featureId = FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES;
         } else if (DISALLOW_CELLULAR_2G.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_CELLULAR_2G;
             dialogType =

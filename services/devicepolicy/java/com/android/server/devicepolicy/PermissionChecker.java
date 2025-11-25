@@ -17,6 +17,7 @@
 package com.android.server.devicepolicy;
 
 import static android.Manifest.permission.MANAGE_DEFAULT_APPLICATIONS;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACCESSIBILITY;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL;
@@ -88,15 +89,14 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
 import static android.Manifest.permission.QUERY_ADMIN_POLICY;
 import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
-import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DpcType;
 import static android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
@@ -104,6 +104,7 @@ import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
@@ -605,7 +606,10 @@ public class PermissionChecker implements IPermissionChecker {
                 new String[]{MANAGE_DEVICE_POLICY_INSTALL_UNKNOWN_SOURCES});
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_SIM_GLOBALLY,
                 new String[]{MANAGE_DEVICE_POLICY_MOBILE_NETWORK});
-
+        if (android.security.Flags.extendAapmToA11yServices()) {
+            USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE,
+                    new String[]{MANAGE_DEVICE_POLICY_ACCESSIBILITY});
+        }
         // Restrictions not allowed to be set by admins.
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_RECORD_AUDIO, null);
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_WALLPAPER, null);
