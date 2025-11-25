@@ -543,8 +543,51 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun authenticateDoesNotRunWhenFaceIsDisabled() =
-        testScope.runTest { testGatingCheckForFaceAuth { underTest.setLockedOut(true) } }
+    fun cannotRunFaceAuthWhenLockedOut() =
+        testScope.runTest {
+            initCollectors()
+            allPreconditionsToRunFaceAuthAreTrue(SceneContainerFlag.isEnabled)
+
+            underTest.setLockedOut(true)
+            runCurrent()
+
+            // gating check doesn't allow face auth to run.
+            assertThat(underTest.canRunFaceAuth.value).isFalse()
+
+            underTest.requestAuthenticate(FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER, false)
+
+            faceAuthenticateIsNotCalled()
+        }
+
+    @Test
+    fun authenticationStopsWhenFaceIsLockedOut() =
+        testScope.runTest {
+            initCollectors()
+            allPreconditionsToRunFaceAuthAreTrue(SceneContainerFlag.isEnabled)
+
+            assertThat(underTest.canRunFaceAuth.value).isTrue()
+
+            underTest.requestAuthenticate(FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER, false)
+
+            faceAuthenticateIsCalled()
+            assertThat(authRunning()).isTrue()
+
+            cancellationSignal.value.setOnCancelListener { wasAuthCancelled = true }
+            underTest.setLockedOut(true)
+            runCurrent()
+
+            assertThat(lockedOut())
+            assertThat(wasAuthCancelled).isTrue()
+
+            clearInvocations(faceManager)
+
+            // Try auth again
+            underTest.requestAuthenticate(FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER)
+            runCurrent()
+
+            // Auth can't run again
+            faceAuthenticateIsNotCalled()
+        }
 
     @Test
     @DisableSceneContainer
@@ -1134,12 +1177,12 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             runCurrent()
             initCollectors()
-            assertThat(underTest.isLockedOut.value).isFalse()
+            assertThat(lockedOut()).isFalse()
 
             underTest.setLockedOut(true)
             runCurrent()
 
-            assertThat(underTest.isLockedOut.value).isTrue()
+            assertThat(lockedOut()).isTrue()
         }
 
     @Test
@@ -1480,6 +1523,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             to = KeyguardState.LOCKSCREEN,
             testScope,
         )
+
         runCurrent()
     }
 
