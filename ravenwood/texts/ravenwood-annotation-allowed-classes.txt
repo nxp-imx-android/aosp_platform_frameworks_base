@@ -26,7 +26,9 @@ android.app.Instrumentation
 android.app.LoadedApk
 android.app.LocaleConfig
 android.app.PropertyInvalidatedCache
+android.app.QueuedWork
 android.app.ResourcesManager
+android.app.SharedPreferencesImpl
 android.app.SystemServiceRegistry
 android.app.UiAutomation
 android.app.WindowConfiguration
@@ -48,6 +50,7 @@ android.content.ContextParams
 android.content.ContextWrapper
 android.content.Intent
 android.content.IntentFilter
+android.content.SharedPreferences
 android.content.UriMatcher
 
 android.content.pm.ActivityInfo
@@ -377,6 +380,8 @@ android.os.vibrator.VibratorInfoFactory
 android.os.vibrator.persistence.ParsedVibration
 android.os.vibrator.persistence.VibrationXmlParser
 android.os.vibrator.persistence.VibrationXmlSerializer
+
+android.preference.PreferenceManager
 
 android.provider.Settings
 
@@ -711,6 +716,7 @@ com.android.internal.util.CollectionUtils
 com.android.internal.util.ContrastColorUtil
 com.android.internal.util.DumpUtils
 com.android.internal.util.DumpableContainer
+com.android.internal.util.ExponentiallyBucketedHistogram
 com.android.internal.util.FastMath
 com.android.internal.util.FastPrintWriter
 com.android.internal.util.FileRotator
