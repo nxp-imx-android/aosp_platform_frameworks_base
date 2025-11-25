@@ -226,9 +226,7 @@ constructor(
     /**
      * Invoked each time a chip's on-screen bounds have changed.
      *
-     * @param key if [Flags.statusBarHunAnimationCall()] is enabled, then the key is the raw
-     *   notification key without any prefixes. If the flag is disabled, then the key is the chip's
-     *   full key, possibly including prefixes or non-notification keys.
+     * @param key the raw notification key without any prefixes.
      */
     fun onChipBoundsChanged(key: String, newBounds: RectF) {
         if (!StatusBarChipToHunAnimation.isEnabled) {
@@ -246,12 +244,8 @@ constructor(
 
     /** A flow modeling just the keys for the currently visible notification chips. */
     private val visibleNotificationChipKeys: Flow<List<String>> =
-        if (Flags.statusBarHunAnimationCall()) {
-            activeChips.map { chips ->
-                chips.filter { !it.isHidden }.mapNotNull { it.notificationKey }
-            }
-        } else {
-            activeChips.map { chips -> chips.filter { !it.isHidden }.map { it.key } }
+        activeChips.map { chips ->
+            chips.filter { !it.isHidden }.mapNotNull { it.notificationKey }
         }
 
     /** Placeholder chip bounds to use if {@link StatusBarChipToHunAnimation} is disabled. */
@@ -260,10 +254,8 @@ constructor(
     /**
      * A flow modeling the keys and on-screen bounds for the currently visible chips.
      *
-     * If [Flags.statusBarHunAnimationCall()] is enabled, then this only contains bounds for chips
-     * tied to notifications and other chips, like screen sharing chips, are *NOT* in this list.
-     *
-     * If that flag is disabled, this contains bounds for all chips.
+     * This only contains bounds for chips tied to notifications. Other chips, like screen
+     * sharing chips, are *NOT* in this list.
      */
     val visibleNotificationChipsWithBounds: Flow<Map<String, RectF>> =
         if (StatusBarChipToHunAnimation.isEnabled) {
