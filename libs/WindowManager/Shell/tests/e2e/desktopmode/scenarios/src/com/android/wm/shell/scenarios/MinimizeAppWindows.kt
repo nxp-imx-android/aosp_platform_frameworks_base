@@ -26,7 +26,6 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -54,7 +53,6 @@ constructor(
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableEmptyDeskOnMinimize())
         if (usingKeyboard) {
             Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
         }
