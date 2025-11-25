@@ -41878,6 +41878,9 @@ package android.security.keystore {
     field public static final String KEY_ALGORITHM_HMAC_SHA256 = "HmacSHA256";
     field public static final String KEY_ALGORITHM_HMAC_SHA384 = "HmacSHA384";
     field public static final String KEY_ALGORITHM_HMAC_SHA512 = "HmacSHA512";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA = "ML-DSA";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA_65 = "ML-DSA-65";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA_87 = "ML-DSA-87";
     field public static final String KEY_ALGORITHM_RSA = "RSA";
     field public static final int ORIGIN_GENERATED = 1; // 0x1
     field public static final int ORIGIN_IMPORTED = 2; // 0x2
