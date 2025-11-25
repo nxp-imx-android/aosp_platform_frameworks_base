@@ -235,7 +235,8 @@ public class AuthController implements
             mCurrentDialog = null;
 
             for (Callback cb : mCallbacks) {
-                cb.onBiometricPromptDismissed(reason);
+                cb.onBiometricPromptDismissed(reason,
+                        getCredentialType());
             }
 
             try {
@@ -952,6 +953,7 @@ public class AuthController implements
         args.arg4 = credentialAllowed;
         args.arg5 = requireConfirmation;
         args.argi1 = userId;
+        args.argi2 = mLockPatternUtils.getCredentialTypeForUser(userId);
         args.arg6 = opPackageName;
         args.argl1 = operationId;
         args.argl2 = requestId;
@@ -1175,7 +1177,8 @@ public class AuthController implements
 
         mCurrentDialog.dismissFromSystemServer();
         for (Callback cb : mCallbacks) {
-            cb.onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED);
+            cb.onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED,
+                    getCredentialType());
         }
 
         // BiometricService will have already sent the callback to the client in this case.
@@ -1376,6 +1379,14 @@ public class AuthController implements
         return mWindowManagerProvider.getWindowManager(mContext.createDisplayContext(display));
     }
 
+    private int getCredentialType() {
+        if (mCurrentDialogArgs == null) {
+            return LockPatternUtils.CREDENTIAL_TYPE_NONE;
+        }
+
+        return mCurrentDialogArgs.argi2;
+    }
+
     private void onDialogDismissed(@BiometricPrompt.DismissedReason int reason) {
         if (DEBUG) Log.d(TAG, "onDialogDismissed: " + reason);
         if (mCurrentDialog == null) {
@@ -1383,7 +1394,8 @@ public class AuthController implements
         }
 
         for (Callback cb : mCallbacks) {
-            cb.onBiometricPromptDismissed(reason);
+            cb.onBiometricPromptDismissed(reason,
+                    getCredentialType());
         }
 
         mReceiver = null;
@@ -1510,7 +1522,8 @@ public class AuthController implements
         /**
          * Called when the biometric prompt is no longer showing.
          */
-        default void onBiometricPromptDismissed(@BiometricPrompt.DismissedReason int reason) {
+        default void onBiometricPromptDismissed(@BiometricPrompt.DismissedReason int reason,
+                int credentialType) {
             onBiometricPromptDismissed();
         }
 

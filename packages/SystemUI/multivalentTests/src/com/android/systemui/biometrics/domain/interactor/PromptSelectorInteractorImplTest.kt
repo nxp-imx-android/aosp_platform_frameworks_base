@@ -320,7 +320,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun switchToCredential() =
+    fun switchToCredential_password() =
         testScope.runTest {
             setUserCredentialType(isPassword = true)
 
@@ -338,7 +338,61 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                     eq(instanceId),
                     eq(
                         SysUiStatsLog
-                            .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_VIEW_SHOWN
+                            .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PASSWORD_VIEW_SHOWN
+                    ),
+                )
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
+    fun switchToCredential_pin() =
+        testScope.runTest {
+            setUserCredentialType(isPin = true)
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = false)
+            interactor.onSwitchToCredential()
+
+            assertThat(promptKind).isEqualTo(PromptKind.Pin)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+            verify(biometricPromptLogger)
+                .logPromptEvent(
+                    eq(instanceId),
+                    eq(
+                        SysUiStatsLog
+                            .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PIN_VIEW_SHOWN
+                    ),
+                )
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
+    fun switchToCredential_pattern() =
+        testScope.runTest {
+            setUserCredentialType()
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = false)
+            interactor.onSwitchToCredential()
+
+            assertThat(promptKind).isEqualTo(PromptKind.Pattern)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+            verify(biometricPromptLogger)
+                .logPromptEvent(
+                    eq(instanceId),
+                    eq(
+                        SysUiStatsLog
+                            .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PATTERN_VIEW_SHOWN
                     ),
                 )
 
