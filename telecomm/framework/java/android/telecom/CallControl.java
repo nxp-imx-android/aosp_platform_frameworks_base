@@ -369,7 +369,7 @@ public final class CallControl {
      *                    details why the operation failed.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
-    public void setGroupCallState(boolean isGroupCall, @NonNull Executor executor,
+    public void setGroupCallState(boolean isGroupCall, @CallbackExecutor @NonNull Executor executor,
             @NonNull OutcomeReceiver<Void, CallException> callback) {
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
@@ -416,7 +416,7 @@ public final class CallControl {
      *                                  formatted.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
-    public void setContactUri(@Nullable Uri uri, @NonNull Executor executor,
+    public void setContactUri(@Nullable Uri uri, @CallbackExecutor @NonNull Executor executor,
             @NonNull OutcomeReceiver<Void, CallException> callback) {
         CallAttributes.validateVoipContactUri(uri);
         Objects.requireNonNull(executor);
