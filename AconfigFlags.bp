@@ -68,6 +68,7 @@ aconfig_declarations_group {
         "android.os.flags-aconfig-java",
         "android.os.vibrator.flags-aconfig-java",
         "android.permission.flags-aconfig-java",
+        "android.print.flags-aconfig-java",
         "android.provider.flags-aconfig-java",
         "android.sdk.flags-aconfig-java",
         "android.security.flags-aconfig-java",
@@ -2389,5 +2390,20 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.internal.app.procstats-aconfig-java",
     aconfig_declarations: "com.android.internal.app.procstats-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Printing
+aconfig_declarations {
+    name: "android.print.flags-aconfig",
+    exportable: true,
+    package: "android.print.flags",
+    container: "system",
+    srcs: ["core/java/android/print/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.print.flags-aconfig-java",
+    aconfig_declarations: "android.print.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
