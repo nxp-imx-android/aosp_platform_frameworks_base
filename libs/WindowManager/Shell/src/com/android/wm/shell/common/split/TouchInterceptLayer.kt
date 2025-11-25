@@ -30,12 +30,8 @@ import android.view.WindowManager
 import android.view.WindowManagerGlobal
 import android.window.InputTransferToken
 
-/**
- * Manages a touchable surface that is intended to intercept touches, but does not draw
- */
-class TouchInterceptLayer(
-    val name: String = TAG,
-) {
+/** Manages a touchable surface that is intended to intercept touches, but does not draw */
+class TouchInterceptLayer(val name: String = TAG) {
     private var clientToken: IBinder? = null
     private var inputChannel: InputChannel? = null
     private var inputEventReceiver: InputEventReceiver? = null
@@ -45,73 +41,78 @@ class TouchInterceptLayer(
 
     /**
      * Note: This currently does not support the full drag-and-drop flow, as input only sends
-     *       DRAG_EXIT and DRAG_LOCATION events (see ViewRootImpl's
-     *       WindowInputEventReceiver#onDragEvent()), and the other events (ie. START/ENDED/DROP)
-     *       are either dispatched by WM core to known windows, or internally in the
-     *       view system (ie. ENTERED/EXIT).
+     * DRAG_EXIT and DRAG_LOCATION events (see ViewRootImpl's
+     * WindowInputEventReceiver#onDragEvent()), and the other events (ie. START/ENDED/DROP) are
+     * either dispatched by WM core to known windows, or internally in the view system (ie.
+     * ENTERED/EXIT).
      *
      *       For now, we only simulate the ENTERED/EXIT, and can extend this later as needed.
      */
     var dragListener: View.OnDragListener? = null
 
-    /**
-     * Creates a touch zone.
-     */
-    fun inflate(
-        rootLeash: SurfaceControl,
-        rootTaskInfo: TaskInfo
-    ) {
+    /** Creates a touch zone. */
+    fun inflate(rootLeash: SurfaceControl, rootTaskInfo: TaskInfo) {
         clientToken = Binder()
 
         // Create a new leash under our stage leash.
-        val layer = SurfaceControl.Builder()
-            .setContainerLayer()
-            .setName(name)
-            .setCallsite("$name [TouchInterceptLayer.inflate]")
-            .setParent(rootLeash)
-            .build()
+        val layer =
+            SurfaceControl.Builder()
+                .setContainerLayer()
+                .setName(name)
+                .setCallsite("$name [TouchInterceptLayer.inflate]")
+                .setParent(rootLeash)
+                .build()
         layerLeash = layer
 
         // Create a new input channel to receive input
         val windowSession = WindowManagerGlobal.getWindowSession()
         val inputTransferToken = InputTransferToken()
-        inputChannel = windowSession.grantInputChannel(
-            rootTaskInfo.displayId,
-            layer,
-            clientToken,
-            null,  /* hostInputToken */
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
-            0 /* inputFeatures */,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            null,  /* windowToken */
-            inputTransferToken,
-            name
-        )
+        inputChannel =
+            windowSession.grantInputChannel(
+                rootTaskInfo.displayId,
+                layer,
+                clientToken,
+                null, /* hostInputToken */
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
+                0 /* inputFeatures */,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                null, /* windowToken */
+                inputTransferToken,
+                name,
+            )
 
         // Create an input event receiver and proxy calls to the provided listeners
-        inputEventReceiver = object : InputEventReceiver(inputChannel, Looper.myLooper()) {
-            override fun onInputEvent(event: InputEvent?) {
-                if (event is MotionEvent) {
-                    touchListener?.onTouch(null, event)
+        inputEventReceiver =
+            object : InputEventReceiver(inputChannel, Looper.myLooper()) {
+                override fun onInputEvent(event: InputEvent?) {
+                    if (event is MotionEvent) {
+                        touchListener?.onTouch(null, event)
+                    }
+                    super.onInputEvent(event)
                 }
-                super.onInputEvent(event)
-            }
 
-            override fun onDragEvent(
-                isExiting: Boolean,
-                x: Float,
-                y: Float,
-                displayId: Int
-            ) {
-                val dragEvent = DragEvent.obtain(
-                    if (isExiting) DragEvent.ACTION_DRAG_EXITED else DragEvent.ACTION_DRAG_ENTERED,
-                    x, y, 0f /* offsetX */, 0f /* offsetY */, displayId, 0 /* flags */,
-                    null/* localState */, null/* description */, null /* data */,
-                    null /* dragSurface */, null /* dragAndDropPermissions */, false /* result */)
-                dragListener?.onDrag(null, dragEvent)
+                override fun onDragEvent(isExiting: Boolean, x: Float, y: Float, displayId: Int) {
+                    val dragEvent =
+                        DragEvent.obtain(
+                            if (isExiting) DragEvent.ACTION_DRAG_EXITED
+                            else DragEvent.ACTION_DRAG_ENTERED,
+                            x,
+                            y,
+                            0f /* offsetX */,
+                            0f /* offsetY */,
+                            displayId,
+                            0 /* flags */,
+                            null /* localState */,
+                            null /* description */,
+                            null /* data */,
+                            null /* dragSurface */,
+                            null /* dragAndDropPermissions */,
+                            false, /* result */
+                        )
+                    dragListener?.onDrag(null, dragEvent)
+                }
             }
-        }
 
         // Create a transaction so that we can activate and reposition our surface.
         val t = SurfaceControl.Transaction()
@@ -125,9 +126,7 @@ class TouchInterceptLayer(
         t.apply()
     }
 
-    /**
-     * Releases the touch zone when it's no longer needed.
-     */
+    /** Releases the touch zone when it's no longer needed. */
     fun release() {
         inputEventReceiver?.dispose()
         inputEventReceiver = null
