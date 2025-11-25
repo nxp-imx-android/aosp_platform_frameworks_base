@@ -6739,9 +6739,6 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public DisplayManagerInternal.DisplayOffloadSession registerDisplayOffloader(
                 int displayId, @NonNull DisplayManagerInternal.DisplayOffloader displayOffloader) {
-            if (!mFlags.isDisplayOffloadEnabled()) {
-                return null;
-            }
             synchronized (mSyncRoot) {
                 LogicalDisplay logicalDisplay = mLogicalDisplayMapper.getDisplayLocked(displayId);
                 if (logicalDisplay == null) {

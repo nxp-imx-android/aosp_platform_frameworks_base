@@ -78,8 +78,7 @@ public class DozeBrightnessStrategy implements DisplayBrightnessStrategy {
                     getName(), /* slowChange= */ false);
         }
 
-        if (mFlags.isDisplayOffloadEnabled()
-                && strategyExecutionRequest.getOffloadSession() != null) {
+        if (strategyExecutionRequest.getOffloadSession() != null) {
             BrightnessEvent brightnessEvent = mInjector.getBrightnessEvent(mDisplayId);
             brightnessEvent.setFlags(BrightnessEvent.FLAG_DOZE_SCALE);
             return new DisplayBrightnessState.Builder()

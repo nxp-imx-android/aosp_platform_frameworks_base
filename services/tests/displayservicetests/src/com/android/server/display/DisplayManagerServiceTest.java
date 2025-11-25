@@ -3577,7 +3577,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testRegisterDisplayOffloader_whenEnabled_DisplayHasDisplayOffloadSession() {
-        when(mMockFlags.isDisplayOffloadEnabled()).thenReturn(true);
         // set up DisplayManager
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = mDisplayManager.new LocalService();
@@ -3595,28 +3594,6 @@ public class DisplayManagerServiceTest {
         localService.registerDisplayOffloader(displayId, mockDisplayOffloader);
 
         assertThat(display.getDisplayOffloadSessionLocked()).isNotNull();
-    }
-
-    @Test
-    public void testRegisterDisplayOffloader_whenDisabled_DisplayHasNoDisplayOffloadSession() {
-        when(mMockFlags.isDisplayOffloadEnabled()).thenReturn(false);
-        // set up DisplayManager
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-        DisplayManagerInternal localService = mDisplayManager.new LocalService();
-        // set up display
-        FakeDisplayDevice displayDevice =
-                createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.DEFAULT_DISPLAY);
-        initDisplayPowerController(localService);
-        LogicalDisplayMapper logicalDisplayMapper = mDisplayManager.getLogicalDisplayMapper();
-        LogicalDisplay display =
-                logicalDisplayMapper.getDisplayLocked(displayDevice, /* includeDisabled= */ true);
-        int displayId = display.getDisplayIdLocked();
-
-        // Register DisplayOffloader.
-        DisplayOffloader mockDisplayOffloader = mock(DisplayOffloader.class);
-        localService.registerDisplayOffloader(displayId, mockDisplayOffloader);
-
-        assertThat(display.getDisplayOffloadSessionLocked()).isNull();
     }
 
     @Test

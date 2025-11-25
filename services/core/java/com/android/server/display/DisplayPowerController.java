@@ -1405,8 +1405,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 && (Float.isNaN(brightnessState)
                 || displayBrightnessState.getDisplayBrightnessStrategyName()
                 .equals(DisplayBrightnessStrategyConstants.FALLBACK_BRIGHTNESS_STRATEGY_NAME))) {
-            if (mFlags.isDisplayOffloadEnabled() && mDisplayOffloadSession != null
-                    && (mAutomaticBrightnessController == null
+            if (mDisplayOffloadSession != null && (mAutomaticBrightnessController == null
                     || !mAutomaticBrightnessStrategy.shouldUseAutoBrightness())) {
                 // TODO(b/329676661): Introduce a config property to choose between this brightness
                 //  strategy and DOZE_DEFAULT
