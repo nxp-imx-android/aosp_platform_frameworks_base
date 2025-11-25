@@ -16,13 +16,15 @@
 
 package com.android.systemui.accessibility.shortcutchooser.ui.startable
 
-import android.view.accessibility.Flags
+import android.view.accessibility.Flags as AccessibilityFlags
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags as SystemUIFlags
+import com.android.systemui.accessibility.shortcutchooser.ui.composable.QuickAccessDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ShortcutEditorDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ShortcutPickerDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.TopRowKeyTutorialDialogContent
@@ -50,7 +52,10 @@ constructor(
     private var dialogInstance: ComponentSystemUIDialog? = null
 
     override fun start() {
-        if (!Flags.enableA11yTopRowShortcut()) {
+        if (
+            !AccessibilityFlags.enableA11yTopRowShortcut() &&
+                !SystemUIFlags.launchAccessibilityQuickAccessDialogPermission()
+        ) {
             return
         }
 
@@ -127,6 +132,24 @@ constructor(
                                     )
                                     viewModel.dismissDialog()
                                 },
+                            )
+                        }
+                        DialogType.QUICK_ACCESS -> {
+                            val allTargets by
+                                remember(shortcutType) {
+                                        viewModel.getAllAccessibilityTargets(shortcutType)
+                                    }
+                                    .collectAsStateWithLifecycle(emptyList())
+                            QuickAccessDialogContent(
+                                onDoneClick = { viewModel.dismissDialog() },
+                                onTargetClick = {
+                                    viewModel.performAccessibilityShortcut(
+                                        displayId,
+                                        shortcutType,
+                                        it.targetName,
+                                    )
+                                },
+                                targets = allTargets,
                             )
                         }
                         else -> {}
