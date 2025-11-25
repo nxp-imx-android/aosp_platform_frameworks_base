@@ -894,10 +894,11 @@ private fun ContentScope.Navigation(
                                 var value = Offset.Zero
                             }
                         }
+                        val isEnabled = viewModel.onScrubChange != null
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
-                            enabled = viewModel.onScrubChange != null,
+                            enabled = isEnabled,
                             onValueChange = { progress ->
                                 viewModel.onScrubChange?.invoke(progress)
                             },
@@ -906,14 +907,19 @@ private fun ContentScope.Navigation(
                             },
                             colors = colors,
                             thumb = {
-                                // TODO(b/461759426): Hide thumb if not enabled
-                                SeekBarThumb(interactionSource = interactionSource, colors = colors)
+                                if (isEnabled) {
+                                    SeekBarThumb(
+                                        interactionSource = interactionSource,
+                                        colors = colors,
+                                    )
+                                }
                             },
                             track = { sliderState ->
                                 SeekBarTrack(
                                     sliderState = sliderState,
                                     isSquiggly = viewModel.isSquiggly,
                                     colors = colors,
+                                    isThumbEnabled = isEnabled,
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                             },
@@ -1035,6 +1041,7 @@ private fun SeekBarTrack(
     sliderState: SliderState,
     isSquiggly: Boolean,
     colors: SliderColors,
+    isThumbEnabled: Boolean,
     modifier: Modifier = Modifier,
     waveLength: Dp = 20.dp,
     amplitude: Dp = 3.dp,
@@ -1072,61 +1079,93 @@ private fun SeekBarTrack(
     // Render the track.
     Canvas(modifier = modifier) {
         val thumbPositionPx = size.width * sliderState.value
+        val amplitudePx = amplitude.toPx()
+        val animatedAmplitudePx = animatedAmplitude.toPx()
+        val waveLengthPx = waveLength.toPx()
+        val halfWaveLengthPx = waveLengthPx / 2
 
-        // The squiggly part before the thumb.
-        if (thumbPositionPx > 0) {
-            val amplitudePx = amplitude.toPx()
-            val animatedAmplitudePx = animatedAmplitude.toPx()
-            val waveLengthPx = waveLength.toPx()
+        val offsetPx = waveLengthPx * animatedWaveOffset.value
+        val totalWidth = size.width + waveLengthPx
+        val halfWaveCount = (totalWidth / halfWaveLengthPx).toInt()
 
-            val path =
-                Path().apply {
-                    val halfWaveLengthPx = waveLengthPx / 2
-                    val halfWaveCount = (thumbPositionPx / halfWaveLengthPx).toInt()
+        var currentX = 0f
+        val path =
+            Path().apply {
+                repeat(halfWaveCount + 3) { index ->
+                    // the position of either the peak or the trough.
+                    val centerX = currentX + (halfWaveLengthPx / 2)
 
-                    repeat(halfWaveCount + 3) { index ->
-                        // Draw a half wave (either a hill or a valley shape starting and ending on
-                        // the horizontal center).
-                        relativeQuadraticTo(
-                            // The control point for the bezier curve is on top of the peak of the
-                            // hill or the very center bottom of the valley shape.
-                            dx1 = halfWaveLengthPx / 2,
-                            dy1 = if (index % 2 == 0) -animatedAmplitudePx else animatedAmplitudePx,
-                            // Advance horizontally, half a wave length at a time.
-                            dx2 = halfWaveLengthPx,
-                            dy2 = 0f,
-                        )
-                    }
+                    // We subtract offsetPx because we are shifting the whole path to the left by
+                    // offsetPx, in order to calculate the new point.
+                    val posDiff = centerX - (offsetPx + thumbPositionPx)
+                    val transitionRatio =
+                        when {
+                            posDiff <= 0 -> 1f // Active part
+                            posDiff < waveLengthPx ->
+                                1f - (posDiff / waveLengthPx) // Active -> Inactive
+                            else -> 0f // Inactive part (flat)
+                        }
+                    val calculatedAmplitude = animatedAmplitudePx * transitionRatio
+
+                    // Draw a half wave (either a hill or a valley shape starting and ending on
+                    // the horizontal center).
+                    relativeQuadraticTo(
+                        // The control point for the bezier curve is on top of the peak of the
+                        // hill or the very center bottom of the valley shape.
+                        dx1 = halfWaveLengthPx / 2,
+                        dy1 = if (index % 2 == 0) -calculatedAmplitude else calculatedAmplitude,
+                        // Advance horizontally, half a wave length at a time.
+                        dx2 = halfWaveLengthPx,
+                        dy2 = 0f,
+                    )
+
+                    currentX += halfWaveLengthPx
                 }
+            }
 
-            // Now that the squiggle is rendered a bit past the thumb, clip off the part that passed
-            // the thumb. It's easier to clip the extra squiggle than to figure out the bezier curve
-            // for part of a hill/valley.
-            clipRect(
-                left = 0f,
-                top = -amplitudePx,
-                right = thumbPositionPx,
-                bottom = amplitudePx * 2,
-            ) {
-                translate(left = -waveLengthPx * animatedWaveOffset.value, top = 0f) {
-                    // Actually render the squiggle.
+        // To handle the change in colors, we use the same path twice.
+        // Paths are shifted by offsetPx due to the translation to the left.
+        translate(left = -offsetPx, top = 0f) {
+            // Draw inactive path first.
+            if (isThumbEnabled) {
+                // The flat line after the thumb, if thumb is enabled.
+                drawLine(
+                    color = colors.inactiveTrackColor,
+                    start = Offset(thumbPositionPx + offsetPx, 0f),
+                    end = Offset(size.width + offsetPx, 0f),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+            } else {
+                // Draw the full path (wave -> transition -> flat).
+                clipRect(
+                    left = offsetPx,
+                    top = -amplitudePx * 2,
+                    right = size.width + offsetPx,
+                    bottom = amplitudePx * 2,
+                ) {
                     drawPath(
                         path = path,
-                        color = colors.activeTrackColor,
+                        color = colors.inactiveTrackColor,
                         style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round),
                     )
                 }
             }
-        }
 
-        // The flat line after the thumb.
-        drawLine(
-            color = colors.inactiveTrackColor,
-            start = Offset(thumbPositionPx, 0f),
-            end = Offset(size.width, 0f),
-            strokeWidth = 2.dp.toPx(),
-            cap = StrokeCap.Round,
-        )
+            // Draw the same path with active Color clipped to the thumb.
+            clipRect(
+                left = offsetPx,
+                top = -amplitudePx * 2,
+                right = thumbPositionPx + offsetPx,
+                bottom = amplitudePx * 2,
+            ) {
+                drawPath(
+                    path = path,
+                    color = colors.activeTrackColor,
+                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round),
+                )
+            }
+        }
     }
 }
 
