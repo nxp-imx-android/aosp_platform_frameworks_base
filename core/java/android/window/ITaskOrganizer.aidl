@@ -85,9 +85,15 @@ oneway interface ITaskOrganizer {
      * Called when the task organizer has requested
      * {@link ITaskOrganizerController.setInterceptBackPressedOnTaskRoot} to get notified when the
      * user has pressed back on the root activity of a task controlled by the task organizer.
+     *
+     * @param taskInfo The information about the Task where the back press occurred.
+     * @param isFromMoveActivityTaskToBack True if the back press was triggered by
+     *        {@link Activity#moveTaskToBack}, false if it's triggered by a back press.
+     * @param isOptInOnBackInvoked True if the root activity of the task has opted in to
+     *        {@link android.window.OnBackInvokedCallback}.
      */
     void onBackPressedOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack);
+            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked);
 
     /**
      * Called when the IME has drawn on the organized task.

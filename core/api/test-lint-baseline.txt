@@ -2361,8 +2361,8 @@ UnflaggedApi: android.view.inputmethod.InsertModeGesture:
     New API must be flagged with @FlaggedApi: class android.view.inputmethod.InsertModeGesture
 UnflaggedApi: android.window.TaskOrganizer#getImeLayeringTarget(int):
     New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.getImeLayeringTarget(int)
-UnflaggedApi: android.window.TaskOrganizer#onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean):
-    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean)
+UnflaggedApi: android.window.TaskOrganizer#onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean):
+    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean,boolean)
 UnflaggedApi: android.window.WindowInfosListenerForTest.WindowInfo#displayId:
     New API must be flagged with @FlaggedApi: field android.window.WindowInfosListenerForTest.WindowInfo.displayId
 UnflaggedApi: android.window.WindowInfosListenerForTest.WindowInfo#isVisible:
