@@ -165,7 +165,7 @@ class PinnedLayerController(
      */
     fun closeTask(task: TaskInfo): Boolean {
         if (isNotPinned(task.taskId)) {
-            logW("closeTask: the task in question is not pinned")
+            logV("closeTask: the task=$task is not pinned. Skipping.")
             return false
         }
 
@@ -212,8 +212,6 @@ class PinnedLayerController(
             return false
         }
 
-        // TODO(b/463648549): projection mode?
-
         val finalBounds =
             bounds?.let { newBounds ->
                 presentationController.clampToDisplay(task, newBounds, displayId)
@@ -234,6 +232,25 @@ class PinnedLayerController(
         wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         transitions.startTransition(TRANSIT_CHANGE, wct, null)
         return true
+    }
+
+    /**
+     * Starts a focus change transitions.
+     *
+     * This function will also move the task to front, but since always-on-top task are effectively
+     * in front, that should only cause a focus change.
+     *
+     * @param task a [TaskInfo] that should be focused.
+     */
+    fun requestFocus(task: TaskInfo) {
+        if (isNotPinned(task.taskId)) {
+            logV("requestFocus: the task=$task is not pinned. Skipping.")
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+        transitions.startTransition(TRANSIT_CHANGE, wct, null)
     }
 
     /**
