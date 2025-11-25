@@ -23,7 +23,6 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import com.android.app.animation.Interpolators
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.animation.GSFAxes
@@ -58,6 +57,7 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArg
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
 import com.android.systemui.shared.clocks.FlexClockContext
 import com.android.systemui.shared.clocks.controller.FlexClockController.Companion.getDefaultAxes
 import com.android.systemui.shared.clocks.view.FlexClockViewGroup
@@ -110,24 +110,30 @@ class FlexClockFaceController(
     override val layout: ClockFaceLayout =
         DefaultClockFaceLayout(view).apply {
             (view as? FlexClockViewGroup)?.let { view ->
-                var startX = 0f
                 largeClockModifier = {
                     Modifier.onGloballyPositioned {
-                        val currentX = it.positionInWindow().x
                         when (val state = layoutState.transitionState) {
                             is TransitionState.Transition -> {
-                                view.offsetGlyphsForStepClockAnimation(
-                                    startX = startX,
-                                    currentX = currentX,
-                                    // TODO(b/441506692): Acquire endX from the state
-                                    endX = (currentX - startX) / state.progress + startX,
-                                    progress = state.progress,
-                                )
+                                val start = Clock.Large.targetOffset(state.fromContent)
+                                val end = Clock.Large.targetOffset(state.toContent)
+                                if (start != null && end != null) {
+                                    view.offsetGlyphsForStepClockAnimation(
+                                        startX = start.x,
+                                        endX = end.x,
+                                        progress = state.progress,
+                                    )
+                                } else {
+                                    logger.e({
+                                        "Failed to execute clock-stepping animation: " +
+                                            "progress=$double1; start=$str1; end=$str2"
+                                    }) {
+                                        double1 = state.progress.toDouble()
+                                        str1 = "$start"
+                                        str2 = "$end"
+                                    }
+                                }
                             }
-                            else -> {
-                                startX = currentX
-                                view.resetGlyphsOffsets()
-                            }
+                            else -> view.resetGlyphsOffsets()
                         }
                     }
                 }
