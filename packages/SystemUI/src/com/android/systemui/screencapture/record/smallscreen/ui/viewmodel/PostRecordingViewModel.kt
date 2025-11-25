@@ -19,13 +19,16 @@ package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.ParentUriInteractor
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.service.ActivityStartingReceiver
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
@@ -33,6 +36,7 @@ import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
@@ -47,6 +51,7 @@ constructor(
     private val userTracker: UserTracker,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val parentUriInteractor: ParentUriInteractor,
     screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
@@ -55,6 +60,12 @@ constructor(
             .filter { it.uri == videoUri }
             .map { it is ScreenRecording.Saved }
             .hydratedStateOf("PostRecordingViewModel#screenRecording", false)
+
+    private val parentUri = MutableStateFlow<Uri?>(null)
+
+    override suspend fun onActivated() {
+        parentUri.value = parentUriInteractor.getParentDirectoryUri(videoUri)
+    }
 
     fun retake() {
         screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
@@ -68,6 +79,18 @@ constructor(
         )
     }
 
+    fun openInFolder() {
+        parentUri.value?.let {
+            startVideoActivity(
+                action = Intent.ACTION_VIEW,
+                label = null,
+                shouldShowChooser = false,
+                mimeType = DocumentsContract.Document.MIME_TYPE_DIR,
+                uri = it,
+            )
+        }
+    }
+
     fun share() {
         startVideoActivity(
             action = Intent.ACTION_SEND,
@@ -76,10 +99,16 @@ constructor(
         )
     }
 
-    private fun startVideoActivity(action: String, label: String, shouldShowChooser: Boolean) {
+    private fun startVideoActivity(
+        action: String,
+        label: String?,
+        shouldShowChooser: Boolean,
+        mimeType: String = MIME_TYPE,
+        uri: Uri = videoUri,
+    ) {
         val intent =
             Intent(action)
-                .setDataAndType(videoUri, MIME_TYPE)
+                .setDataAndType(uri, mimeType)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
