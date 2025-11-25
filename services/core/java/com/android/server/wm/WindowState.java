@@ -5420,9 +5420,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             outPoint.offset(-parent.mWindowFrames.mFrame.left, -parent.mWindowFrames.mFrame.top);
             // Undo the scale of window position because the relative coordinates for child are
             // based on the scaled parent.
-            if (mInvGlobalScale != 1f) {
-                outPoint.x = (int) (outPoint.x * mInvGlobalScale + 0.5f);
-                outPoint.y = (int) (outPoint.y * mInvGlobalScale + 0.5f);
+            if (parent.mInvGlobalScale != 1f) {
+                outPoint.x = (int) (outPoint.x * parent.mInvGlobalScale + 0.5f);
+                outPoint.y = (int) (outPoint.y * parent.mInvGlobalScale + 0.5f);
             }
             // Since the parent was outset by its surface insets, we need to undo the outsetting
             // with insetting by the same amount.
