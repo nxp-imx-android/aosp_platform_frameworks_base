@@ -1183,35 +1183,29 @@ public final class ActivityThread extends ClientTransactionHandler
         @Override
         public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
                 throws RemoteException {
-            boolean checkApplicationThreadCalledBySystem =
-                    android.security.Flags.checkApplicationThreadCalledBySystem();
-            if (Build.IS_DEBUGGABLE || checkApplicationThreadCalledBySystem) {
-                int callingUid = Binder.getCallingUid();
-                if (callingUid != Process.ROOT_UID && callingUid != Process.SYSTEM_UID) {
-                    String[] packagesForUid =
-                            getSystemContext().getPackageManager().getPackagesForUid(callingUid);
-                    String packageName;
-                    if (packagesForUid == null || packagesForUid.length == 0) {
-                        packageName = "unknown";
-                    } else if (packagesForUid.length == 1) {
-                        packageName = packagesForUid[0];
-                    } else {
-                        packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
-                                Collectors.joining(", "));
-                    }
-                    Slog.wtf(TAG, "ApplicationThread called by non-system process"
-                            + " (callingUid: " + callingUid
-                            + "; packageName: " + packageName
-                            + "; code: " + code
-                            + "; flags: " + flags
-                            + ")");
-                    if (checkApplicationThreadCalledBySystem) {
-                        throw new SecurityException(
-                                "ApplicationThread called by non-system process"
-                                        + " (callingUid: " + callingUid
-                                        + "; packageName: " + packageName + ")");
-                    }
+            int callingUid = Binder.getCallingUid();
+            if (callingUid != Process.ROOT_UID && callingUid != Process.SYSTEM_UID) {
+                String[] packagesForUid =
+                        getSystemContext().getPackageManager().getPackagesForUid(callingUid);
+                String packageName;
+                if (packagesForUid == null || packagesForUid.length == 0) {
+                    packageName = "unknown";
+                } else if (packagesForUid.length == 1) {
+                    packageName = packagesForUid[0];
+                } else {
+                    packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
+                            Collectors.joining(", "));
                 }
+                Slog.wtf(TAG, "ApplicationThread called by non-system process"
+                        + " (callingUid: " + callingUid
+                        + "; packageName: " + packageName
+                        + "; code: " + code
+                        + "; flags: " + flags
+                        + ")");
+                throw new SecurityException(
+                        "ApplicationThread called by non-system process"
+                                + " (callingUid: " + callingUid
+                                + "; packageName: " + packageName + ")");
             }
             return super.onTransact(code, data, reply, flags);
         }
