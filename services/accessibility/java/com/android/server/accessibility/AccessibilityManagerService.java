@@ -770,12 +770,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         String feature = switch (gestureType) {
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK -> mContext.getString(
-                    R.string.config_defaultSelectToSpeakService);
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> mContext.getString(
-                    R.string.config_defaultVoiceAccessService);
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> mContext.getString(
-                    R.string.config_defaultAccessibilityService);
+            case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK ->
+                    ShortcutUtils.getSelectToSpeakTargetName(mContext);
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS ->
+                    ShortcutUtils.getVoiceAccessTargetName(mContext);
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
+                    ShortcutUtils.getScreenReaderTargetName(mContext);
             default -> "";
         };
 
@@ -797,13 +797,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         String targetName;
         switch (gestureType) {
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION:
-                targetName = MAGNIFICATION_CONTROLLER_NAME;
+                targetName = ShortcutUtils.getTargetFromKeyGestureEvent(mContext, event);
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK:
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER:
-                targetName = getTargetNameFromKeyGestureType(gestureType);
-                if (targetName.isEmpty()) {
+                targetName = ShortcutUtils.getTargetFromKeyGestureEvent(mContext, event);
+                if (targetName == null) {
                     return;
                 }
 
