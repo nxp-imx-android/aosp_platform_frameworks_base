@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -26,8 +28,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
 import android.view.autofill.AutofillId;
-
-import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.List;
@@ -177,6 +177,22 @@ public final class ConversationData implements Parcelable {
     @NonNull
     public List<ChatMessageData> getChatMessages() {
         return mChatMessages;
+    }
+
+    /**
+     * Writes conversation data to the given {@link Parcel} for signing purposes. This method should
+     * only write marshallable data, ie. no binders or FDs. The exact order is not important.
+     */
+    void writeToSignatureParcel(@NonNull Parcel dest) {
+        dest.writeLong(mProcessingStartTimestamp.toEpochMilli());
+        dest.writeLong(mProcessingEndTimestamp.toEpochMilli());
+        dest.writeTypedObject(mComponentName, /*flags=*/ 0);
+        dest.writeTypedObject(mInputBoxAutofillId, /*flags=*/ 0);
+        dest.writeString8(mInputBoxText);
+        dest.writeString8(mConversationTitle);
+        dest.writeBoolean(mIsKeyboardShown);
+        dest.writeBoolean(mIsLastMessageFromTheUser);
+        dest.writeTypedList(mChatMessages);
     }
 
     @Override

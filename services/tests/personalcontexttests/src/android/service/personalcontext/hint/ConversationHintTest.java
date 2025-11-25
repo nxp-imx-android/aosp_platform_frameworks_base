@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.assist.ActivityId;
 import android.content.ComponentName;
+import android.os.Binder;
 import android.service.personalcontext.hint.ConversationEvent.ConversationEnterEvent;
 import android.service.personalcontext.hint.ConversationEvent.ConversationExitEvent;
 import android.service.personalcontext.hint.ConversationEvent.ConversationProcessingEvent;
@@ -29,12 +30,15 @@ import android.view.autofill.AutofillId;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import java.time.temporal.ChronoUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.security.GeneralSecurityException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -150,5 +154,37 @@ public class ConversationHintTest {
         final ConversationUpdateEvent outputUpdateEvent = (ConversationUpdateEvent) outputEvent;
         assertThat(outputUpdateEvent.getConversationData()).isEqualTo(conversationData);
         assertThat(outputUpdateEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
+    }
+
+    @Test
+    public void testHintSignature() throws GeneralSecurityException {
+        final ActivityId activityId = new ActivityId(1, new Binder());
+        final Instant processingStartTimestamp = REFERENCE_TIME;
+        final Instant processingEndTimestamp = REFERENCE_TIME;
+        final ComponentName componentName = new ComponentName("pkg", "cls");
+        final AutofillId inputBoxAutofillId = new AutofillId(1);
+        final ConversationData conversationData =
+                new ConversationData.Builder()
+                        .setKeyboardShown(true)
+                        .setLastMessageFromTheUser(false)
+                        .setProcessingStartTimestamp(processingStartTimestamp)
+                        .setProcessingEndTimestamp(processingEndTimestamp)
+                        .setComponentName(componentName)
+                        .setInputBoxAutofillId(inputBoxAutofillId)
+                        .setInputBoxText("inputBoxText")
+                        .setConversationTitle("title")
+                        .setChatMessages(List.of(CHAT_MESSAGE_DATA))
+                        .setActivityId(activityId)
+                        .build();
+        final ConversationUpdateEvent updateEvent =
+                new ConversationUpdateEvent(
+                        CONVERSATION_SESSION_ID, REFERENCE_TIME, conversationData);
+        final ConversationHint hint = new ConversationHint.Builder(updateEvent).build();
+
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
+        final ContextHintWithSignature hintWithSignature =
+                new ContextHintWithSignature.Builder(hint, key).build();
+
+        assertThat(hintWithSignature.getContextHint()).isEqualTo(hint);
     }
 }
