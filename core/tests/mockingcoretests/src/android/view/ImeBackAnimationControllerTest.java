@@ -21,6 +21,7 @@ import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.window.BackEvent.EDGE_LEFT;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
@@ -32,7 +33,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
 
 import android.app.WindowConfiguration;
 import android.content.Context;
@@ -44,17 +44,21 @@ import android.view.animation.Interpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.window.BackEvent;
+import android.window.ImeBackCallbackProxy;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.modules.utils.testing.ExtendedMockitoRule;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 
@@ -62,10 +66,8 @@ import java.lang.reflect.Field;
  * Tests for {@link ImeBackAnimationController}.
  *
  * <p>Build/Install/Run:
- * atest FrameworksCoreTests:ImeBackAnimationControllerTest
+ * atest FrameworksMockingCoreTests:ImeBackAnimationControllerTest
  *
- * <p>This test class is a part of Window Manager Service tests and specified in
- * {@link com.android.server.wm.test.filters.FrameworksTestsFilter}.
  */
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -76,23 +78,29 @@ public class ImeBackAnimationControllerTest {
     private static final int IME_HEIGHT = 200;
     private static final Insets IME_INSETS = Insets.of(0, 0, 0, IME_HEIGHT);
 
+    @Rule
+    public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule.Builder(this)
+            .setStrictness(Strictness.LENIENT)
+            .build();
+
     @Mock
     private InsetsController mInsetsController;
     @Mock
     private WindowInsetsAnimationController mWindowInsetsAnimationController;
     @Mock
     private ViewRootInsetsControllerHost mViewRootInsetsControllerHost;
+    @Mock
+    private InputMethodManager mInputMethodManager;
+    @Mock
+    private ImeBackCallbackProxy mImeBackCallbackProxy;
 
     private ViewRootImpl mViewRoot;
     private ImeBackAnimationController mBackAnimationController;
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-            InputMethodManager inputMethodManager = context.getSystemService(
-                    InputMethodManager.class);
             // cannot mock ViewRootImpl since it's final.
             mViewRoot = new ViewRootImpl(context, context.getDisplayNoVerify());
             try {
@@ -111,7 +119,8 @@ public class ImeBackAnimationControllerTest {
             when(mWindowInsetsAnimationController.getCurrentInsets()).thenReturn(IME_INSETS);
             when(mInsetsController.getHost()).thenReturn(mViewRootInsetsControllerHost);
             when(mViewRootInsetsControllerHost.getInputMethodManager()).thenReturn(
-                    inputMethodManager);
+                    mInputMethodManager);
+            when(mInputMethodManager.getImeBackCallbackProxy()).thenReturn(mImeBackCallbackProxy);
             try {
                 Field field = InsetsController.class.getDeclaredField("mSourceConsumers");
                 field.setAccessible(true);
@@ -159,9 +168,8 @@ public class ImeBackAnimationControllerTest {
         mBackAnimationController.onBackProgressed(new BackEvent(100f, 0f, 0.5f, EDGE_LEFT));
         // commit back gesture
         mBackAnimationController.onBackInvoked();
-        // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called (which is the case
-        // whenever getInputMethodManager is called from ImeBackAnimationController)
-        verify(mViewRootInsetsControllerHost, times(1)).getInputMethodManager();
+        // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called
+        verify(mImeBackCallbackProxy, times(1)).preliminaryClear();
         // verify that ImeBackAnimationController does not take control over IME insets
         verify(mInsetsController, never()).controlWindowInsetsAnimation(anyInt(), any(), any(),
                 anyLong(), any(), anyInt(), anyBoolean());
@@ -178,9 +186,8 @@ public class ImeBackAnimationControllerTest {
         mBackAnimationController.onBackProgressed(new BackEvent(100f, 0f, 0.5f, EDGE_LEFT));
         // commit back gesture
         mBackAnimationController.onBackInvoked();
-        // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called (which is the case
-        // whenever getInputMethodManager is called from ImeBackAnimationController)
-        verify(mViewRootInsetsControllerHost, times(1)).getInputMethodManager();
+        // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called
+        verify(mImeBackCallbackProxy, times(1)).preliminaryClear();
         // verify that ImeBackAnimationController does not take control over IME insets
         verify(mInsetsController, never()).controlWindowInsetsAnimation(anyInt(), any(), any(),
                 anyLong(), any(), anyInt(), anyBoolean());
@@ -298,9 +305,8 @@ public class ImeBackAnimationControllerTest {
 
             // commit back gesture
             mBackAnimationController.onBackInvoked();
-            // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called (which is the case
-            // whenever getInputMethodManager is called from ImeBackAnimationController)
-            verify(mViewRootInsetsControllerHost, times(1)).getInputMethodManager();
+            // verify that ImeOnBackInvokedDispatcher#preliminaryClear is called
+            verify(mImeBackCallbackProxy, times(1)).preliminaryClear();
         });
     }
 
