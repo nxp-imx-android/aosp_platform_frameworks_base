@@ -27,10 +27,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -44,9 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.external.TileData
 import com.android.systemui.qs.external.ui.viewmodel.TileRequestDialogViewModel
