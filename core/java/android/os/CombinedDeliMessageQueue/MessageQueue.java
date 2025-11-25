@@ -1223,14 +1223,21 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     @TestApi
     public int postSyncBarrier() {
+        return postSyncBarrier(null);
+    }
+
+    /** @hide */
+    // TODO(b/463114494): revert ag/37168749 after debugging has concluded.
+    public int postSyncBarrier(Object obj) {
         if (sUseDeliQueue) {
-            return postSyncBarrierDeliQueue();
+            return postSyncBarrierDeliQueue(obj);
         } else {
-            return postSyncBarrierLegacy();
+            return postSyncBarrierLegacy(obj);
         }
     }
 
-    private int postSyncBarrierDeliQueue() {
+    // TODO(b/463114494): revert ag/37168749 after debugging has concluded.
+    private int postSyncBarrierDeliQueue(Object obj) {
         long when = SystemClock.uptimeMillis();
         final int token = mNextBarrierTokenAtomic.getAndIncrement();
 
@@ -1242,6 +1249,7 @@ public final class MessageQueue {
 
         msg.markInUse();
         msg.arg1 = token;
+        msg.obj = obj;
 
         if (!enqueueMessageUnchecked(msg, when)) {
             Log.wtf(TAG_D, "Unexpected error while adding sync barrier!");
@@ -1251,7 +1259,8 @@ public final class MessageQueue {
         return token;
     }
 
-    private int postSyncBarrierLegacy() {
+    // TODO(b/463114494): revert ag/37168749 after debugging has concluded.
+    private int postSyncBarrierLegacy(Object obj) {
         long when = SystemClock.uptimeMillis();
         synchronized (this) {
             final int token = mNextBarrierToken++;
@@ -1259,6 +1268,7 @@ public final class MessageQueue {
             msg.markInUse();
             msg.when = when;
             msg.arg1 = token;
+            msg.obj = obj;
             incAndTraceMessageCount(msg, when);
 
             if (mLast != null && mLast.when <= when) {
