@@ -139,7 +139,7 @@ public final class MediaRouter2 {
     // The maximum time for the old routing controller available after transfer.
     private static final int TRANSFER_TIMEOUT_MS = 30_000;
     // The manager request ID representing that no manager is involved.
-    private static final long MANAGER_REQUEST_ID_NONE = MediaRoute2ProviderService.REQUEST_ID_NONE;
+    private static final long MANAGER_REQUEST_ID_NONE = MediaRouter2Manager.REQUEST_ID_NONE;
 
     private record InstanceInvalidatedCallbackRecord(Executor executor, Runnable runnable) {}
 
