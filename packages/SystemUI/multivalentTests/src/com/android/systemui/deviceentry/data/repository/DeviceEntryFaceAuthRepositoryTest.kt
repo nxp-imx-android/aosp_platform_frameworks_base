@@ -39,8 +39,10 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.logging.InstanceId.fakeInstanceId
 import com.android.internal.logging.UiEventLogger
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.faceManager
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.bouncerIsNotShowing
@@ -61,11 +63,11 @@ import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
-import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.keyguard.data.repository.BiometricType
+import com.android.systemui.keyguard.data.repository.deviceEntryFaceAuthRepositoryImpl
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -79,10 +81,8 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.log.FaceAuthenticationLogger
 import com.android.systemui.log.SessionTracker
-import com.android.systemui.log.logcatLogBuffer
-import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.log.sessionTracker
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -91,6 +91,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.KeyguardBypassController
+import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -108,6 +109,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -121,20 +123,19 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos()
+    @JvmField @Rule var mockitoRule: MockitoRule = MockitoJUnit.rule()
+
     private lateinit var underTest: DeviceEntryFaceAuthRepositoryImpl
 
-    @Mock private lateinit var faceManager: FaceManager
-    @Mock private lateinit var bypassController: KeyguardBypassController
-    @Mock private lateinit var sessionTracker: SessionTracker
     @Mock private lateinit var uiEventLogger: UiEventLogger
-    @Mock private lateinit var dumpManager: DumpManager
 
     @Captor
     private lateinit var authenticationCallback: ArgumentCaptor<FaceManager.AuthenticationCallback>
@@ -151,7 +152,10 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     private lateinit var faceLockoutResetCallback: ArgumentCaptor<FaceManager.LockoutResetCallback>
     private val testDispatcher by lazy { kosmos.testDispatcher }
 
+    private val bypassController by lazy { kosmos.keyguardBypassController }
+    private val faceManager by lazy { kosmos.faceManager }
     private val keyguardTransitionRepository by lazy { kosmos.fakeKeyguardTransitionRepository }
+    private val sessionTracker: SessionTracker by lazy { kosmos.sessionTracker }
     private val testScope by lazy { kosmos.testScope }
     private val fakeUserRepository by lazy { kosmos.fakeUserRepository }
     private val fakeExecutor by lazy { kosmos.fakeExecutor }
@@ -183,55 +187,21 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
+        kosmos.uiEventLogger = uiEventLogger
+
         fakeUserRepository.setUserInfos(listOf(primaryUser, secondaryUser))
         featureFlags = FakeFeatureFlags()
-
         bypassStateChangedListener =
             KotlinArgumentCaptor(KeyguardBypassController.OnBypassStateChangedListener::class.java)
         whenever(sessionTracker.getSessionId(SESSION_KEYGUARD)).thenReturn(keyguardSessionId)
         whenever(faceManager.sensorPropertiesInternal)
             .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
         whenever(bypassController.bypassEnabled).thenReturn(true)
-        underTest = createDeviceEntryFaceAuthRepositoryImpl(faceManager, bypassController)
+        underTest = kosmos.deviceEntryFaceAuthRepositoryImpl()
 
         if (!SceneContainerFlag.isEnabled) {
             mSetFlagsRule.disableFlags(AConfigFlags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
         }
-    }
-
-    private fun createDeviceEntryFaceAuthRepositoryImpl(
-        fmOverride: FaceManager? = faceManager,
-        bypassControllerOverride: KeyguardBypassController? = bypassController,
-    ): DeviceEntryFaceAuthRepositoryImpl {
-        val faceAuthBuffer = logcatTableLogBuffer(kosmos, "face auth")
-        val faceDetectBuffer = logcatTableLogBuffer(kosmos, "face detect")
-
-        return DeviceEntryFaceAuthRepositoryImpl(
-            mContext,
-            fmOverride,
-            fakeUserRepository,
-            bypassControllerOverride,
-            testScope.backgroundScope,
-            testDispatcher,
-            testDispatcher,
-            fakeExecutor,
-            sessionTracker,
-            uiEventLogger,
-            FaceAuthenticationLogger(logcatLogBuffer("DeviceEntryFaceAuthRepositoryLog")),
-            biometricSettingsRepository,
-            deviceEntryFingerprintAuthRepository,
-            keyguardRepository,
-            powerInteractor,
-            keyguardInteractor,
-            alternateBouncerInteractor,
-            { kosmos.sceneInteractor },
-            faceDetectBuffer,
-            faceAuthBuffer,
-            keyguardTransitionInteractor,
-            displayStateInteractor,
-            dumpManager,
-        )
     }
 
     @Test
@@ -310,16 +280,16 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     fun faceDetectionSupportIsTheCorrectValue() =
         testScope.runTest {
             assertThat(
-                    createDeviceEntryFaceAuthRepositoryImpl(fmOverride = null).isDetectionSupported
+                    kosmos.deviceEntryFaceAuthRepositoryImpl(fmOverride = null).isDetectionSupported
                 )
                 .isFalse()
 
             whenever(faceManager.sensorPropertiesInternal).thenReturn(listOf())
-            assertThat(createDeviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
+            assertThat(kosmos.deviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
 
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = false)))
-            assertThat(createDeviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
+            assertThat(kosmos.deviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
 
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(
@@ -328,7 +298,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
                         createFaceSensorProperties(supportsFaceDetection = true),
                     )
                 )
-            assertThat(createDeviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
+            assertThat(kosmos.deviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isFalse()
 
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(
@@ -337,7 +307,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
                         createFaceSensorProperties(supportsFaceDetection = false),
                     )
                 )
-            assertThat(createDeviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isTrue()
+            assertThat(kosmos.deviceEntryFaceAuthRepositoryImpl().isDetectionSupported).isTrue()
         }
 
     @Test
@@ -365,7 +335,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
 
             underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
@@ -386,7 +355,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
+
             initCollectors()
 
             underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
@@ -402,7 +371,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
 
             underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
@@ -418,11 +386,12 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = false)))
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
             clearInvocations(faceManager)
 
-            underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
+            kosmos
+                .deviceEntryFaceAuthRepositoryImpl()
+                .detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
 
             verify(faceManager, never())
                 .detectFace(any(), any(), any(FaceAuthenticateOptions::class.java))
@@ -510,11 +479,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             fakeUserRepository.setSelectedUserInfo(primaryUser)
             underTest.dump(PrintWriter(StringWriter()), emptyArray())
 
-            underTest =
-                createDeviceEntryFaceAuthRepositoryImpl(
-                    fmOverride = null,
-                    bypassControllerOverride = null,
-                )
+            underTest = kosmos.deviceEntryFaceAuthRepositoryImpl(null, null)
             fakeUserRepository.setSelectedUserInfo(primaryUser)
 
             underTest.dump(PrintWriter(StringWriter()), emptyArray())
@@ -743,7 +708,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
             whenever(bypassController.bypassEnabled).thenReturn(true)
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
             allPreconditionsToRunFaceAuthAreTrue()
 
@@ -765,7 +729,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
             whenever(bypassController.bypassEnabled).thenReturn(true)
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
             allPreconditionsToRunFaceAuthAreTrue()
 
@@ -786,7 +749,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             whenever(faceManager.sensorPropertiesInternal)
                 .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
             whenever(bypassController.bypassEnabled).thenReturn(true)
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
             allPreconditionsToRunFaceAuthAreTrue()
 
@@ -848,7 +810,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     @Test
     fun everythingEmitsADefaultValueAndDoesNotErrorOut() =
         testScope.runTest {
-            underTest = createDeviceEntryFaceAuthRepositoryImpl()
             initCollectors()
 
             // Collecting any flows exposed in the public API doesn't throw any error
