@@ -352,7 +352,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_HEARING_DEVICES_AMBIENT_VOLUME_CONTROL)
     public void showDialog_deviceNotSupportVcp_ambientLayoutGone() {
         when(mCachedDevice.getProfiles()).thenReturn(List.of());
 
@@ -364,7 +363,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_HEARING_DEVICES_AMBIENT_VOLUME_CONTROL)
     public void showDialog_ambientControlNotAvailable_ambientLayoutGone() {
         when(mVolumeControlProfile.getAudioInputControlServices(mDevice)).thenReturn(List.of());
 
@@ -376,7 +374,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_HEARING_DEVICES_AMBIENT_VOLUME_CONTROL)
     public void showDialog_supportVcpAndAmbientControlAvailable_ambientLayoutVisible() {
         when(mCachedDevice.getProfiles()).thenReturn(List.of(mVolumeControlProfile));
         AudioInputControl audioInputControl = prepareAudioInputControl();
