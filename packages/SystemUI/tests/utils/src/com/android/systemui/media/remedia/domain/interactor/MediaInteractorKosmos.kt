@@ -19,6 +19,7 @@ package com.android.systemui.media.remedia.domain.interactor
 import android.content.applicationContext
 import com.android.systemui.activityIntentHelper
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.media.controls.domain.pipeline.mediaDataProcessor
 import com.android.systemui.media.mediaOutputDialogManager
 import com.android.systemui.media.remedia.data.repository.mediaRepository
@@ -30,6 +31,7 @@ val Kosmos.mediaInteractor by
     Kosmos.Fixture {
         MediaInteractorImpl(
             applicationContext = applicationContext,
+            applicationScope = applicationCoroutineScope,
             repository = mediaRepository,
             mediaDataProcessor = mediaDataProcessor,
             keyguardStateController = keyguardStateController,

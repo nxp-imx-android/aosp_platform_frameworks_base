@@ -36,6 +36,8 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.notification.collection.provider.mockVisualStabilityProvider
+import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -70,8 +72,11 @@ class MediaRepositoryTest : SysuiTestCase() {
                 .thenReturn(appInfo)
             whenever(packageManager.getApplicationIcon(any<ApplicationInfo>())).thenReturn(drawable)
             context.setMockPackageManager(packageManager)
+            visualStabilityProvider = mockVisualStabilityProvider
         }
     private val testScope = kosmos.testScope
+    private val mediaResumption =
+        Settings.Secure.getInt(context.contentResolver, Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
     private lateinit var session: MediaSession
 
     private val underTest: MediaRepositoryImpl = kosmos.mediaRepository
@@ -85,6 +90,11 @@ class MediaRepositoryTest : SysuiTestCase() {
     fun tearDown() {
         session.release()
         kosmos.fakeMediaControllerFactory.reset()
+        Settings.Secure.putInt(
+            context.contentResolver,
+            Settings.Secure.MEDIA_CONTROLS_RESUME,
+            mediaResumption,
+        )
     }
 
     @Test
@@ -491,6 +501,83 @@ class MediaRepositoryTest : SysuiTestCase() {
             assertThat(updatedEntry!!.canBeScrubbed).isFalse()
         }
 
+    @Test
+    fun swipeToDismiss_pausedAndResumeOff_userInitiated() {
+        testScope.runTest {
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
+            // When resumption is disabled, paused media should be dismissed after being swiped away
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+
+            addCurrentUserMediaEntry(mediaData)
+
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
+            // Swipe away the media entry
+            val inactiveMedia = mediaData.copy(active = false)
+            underTest.setSwipedAwayState()
+            addCurrentUserMediaEntry(inactiveMedia)
+
+            assertThat(underTest.isUserInitiatedRemovalQueued).isTrue()
+            assertThat(underTest.keysNeedRemoval.contains(instanceId)).isTrue()
+        }
+    }
+
+    @Test
+    fun pausedAndResumeOff_inactive_notUserInitiated() {
+        testScope.runTest {
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
+            // When resumption is disabled, paused media should be dismissed after being swiped away
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+
+            addCurrentUserMediaEntry(mediaData)
+
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
+            // Media becomes inactive
+            val inactiveMedia = mediaData.copy(active = false)
+            addCurrentUserMediaEntry(inactiveMedia)
+
+            assertThat(underTest.isUserInitiatedRemovalQueued).isFalse()
+            assertThat(underTest.keysNeedRemoval.contains(instanceId)).isTrue()
+        }
+    }
+
+    @Test
+    fun pausedAndResumeOff_inactive_orderingAllowed_immediateRemoval() {
+        testScope.runTest {
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
+            // When resumption is disabled, paused media should be dismissed after being swiped away
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+
+            addCurrentUserMediaEntry(mediaData)
+
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(true)
+            // Media becomes inactive
+            val inactiveMedia = mediaData.copy(active = false)
+            addCurrentUserMediaEntry(inactiveMedia)
+
+            assertThat(
+                    underTest.currentMedia
+                        .find { it.instanceId == instanceId }
+                        ?.needsImmediateRemoval
+                )
+                .isTrue()
+        }
+    }
+
     private fun TestScope.addCurrentUserMediaEntry(data: MediaData) {
         underTest.addCurrentUserMediaEntry(data)
         runCurrent()
@@ -542,6 +629,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             isExplicit = isExplicit,
             suggestionData = mediaModel.suggestionData,
             token = session.sessionToken,
+            needsImmediateRemoval = mediaModel.needsImmediateRemoval,
         )
     }
 
