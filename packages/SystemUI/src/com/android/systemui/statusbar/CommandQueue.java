@@ -1299,8 +1299,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         if (displayId == INVALID_DISPLAY) return;
 
         boolean isConcurrentMultiUserModeEnabled = UserManager.isVisibleBackgroundUsersEnabled()
-                && mContext.getResources().getBoolean(android.R.bool.config_perDisplayFocusEnabled)
-                && android.view.inputmethod.Flags.concurrentInputMethods();
+                && mContext.getResources().getBoolean(android.R.bool.config_perDisplayFocusEnabled);
 
         if (!isConcurrentMultiUserModeEnabled
                 && mLastUpdatedImeDisplayId != displayId
