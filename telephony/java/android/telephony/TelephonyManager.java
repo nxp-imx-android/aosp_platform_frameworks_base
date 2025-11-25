@@ -19642,4 +19642,28 @@ public class TelephonyManager {
     @FlaggedApi(Flags.FLAG_SUPPORT_SLOT_SWITCHING_2PSIM_1ESIM_CONFIG)
     @SystemApi
     public static final int SIM_TYPE_EMBEDDED = 2;
+
+    /**
+     * Defines the emergency types of domain selection.
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = {"DOMAIN_SELECTION_EMERGENCY_TYPE_"}, value = {
+            DOMAIN_SELECTION_EMERGENCY_TYPE_CALL,
+            DOMAIN_SELECTION_EMERGENCY_TYPE_SMS})
+    public @interface DomainSelectionEmergencyType {}
+
+    /**
+     * The emergency type of domain selection is for emergency call.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_DOMAIN_SELECTION_EMERGENCY_MODE_NOTIFICATION)
+    public static final int DOMAIN_SELECTION_EMERGENCY_TYPE_CALL = 1;
+
+    /**
+     * The emergency type of domain selection is for emergency SMS.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_DOMAIN_SELECTION_EMERGENCY_MODE_NOTIFICATION)
+    public static final int DOMAIN_SELECTION_EMERGENCY_TYPE_SMS = 2;
 }

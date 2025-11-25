@@ -1216,6 +1216,46 @@ public class TelephonyRegistryManager {
     }
 
     /**
+     * Notify the listeners that emergency mode has been entered
+     * when AP domain selection is enabled.
+     *
+     * @param slotIndex for which the emergency mode changed.
+     * @param subId for which the emergency mode changed.
+     * @param type the emergency type of emergency mode change.
+     *             See {@link TelephonyManager.DomainSelectionEmergencyType}.
+     * @hide
+     */
+    public void notifyDomainSelectionEmergencyModeEntered(int slotIndex, int subId,
+            @TelephonyManager.DomainSelectionEmergencyType int type) {
+        try {
+            sRegistry.notifyDomainSelectionEmergencyModeChanged(slotIndex, subId, type, true);
+        } catch (RemoteException ex) {
+            // system server crash
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify the listeners that emergency mode has been exited
+     * when AP domain selection is enabled.
+     *
+     * @param slotIndex for which the emergency mode changed.
+     * @param subId for which the emergency mode changed.
+     * @param type the emergency type of emergency mode change.
+     *             See {@link TelephonyManager.DomainSelectionEmergencyType}.
+     * @hide
+     */
+    public void notifyDomainSelectionEmergencyModeExited(int slotIndex, int subId,
+            @TelephonyManager.DomainSelectionEmergencyType int type) {
+        try {
+            sRegistry.notifyDomainSelectionEmergencyModeChanged(slotIndex, subId, type, false);
+        } catch (RemoteException ex) {
+            // system server crash
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Processes potential event changes from the provided {@link TelephonyCallback}.
      *
      * @param telephonyCallback callback for monitoring callback changes to the telephony state.
@@ -1381,6 +1421,10 @@ public class TelephonyRegistryManager {
 
         if (telephonyCallback instanceof TelephonyCallback.SecurityAlgorithmsListener) {
             eventList.add(TelephonyCallback.EVENT_SECURITY_ALGORITHMS_CHANGED);
+        }
+
+        if (telephonyCallback instanceof TelephonyCallback.DomainSelectionEmergencyModeListener) {
+            eventList.add(TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED);
         }
 
         return eventList;

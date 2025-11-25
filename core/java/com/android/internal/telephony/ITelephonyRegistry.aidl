@@ -137,4 +137,6 @@ interface ITelephonyRegistry {
     void notifySecurityAlgorithmsChanged(int phoneId, int subId, in SecurityAlgorithmUpdate update);
     void notifyCellularIdentifierDisclosedChanged(
             int phoneId, int subId, in CellularIdentifierDisclosure disclosure);
+    void notifyDomainSelectionEmergencyModeChanged(
+            int phoneId, int subId, int type, boolean isEntered);
 }

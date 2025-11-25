@@ -91,4 +91,6 @@ oneway interface IPhoneStateListener {
     void onCarrierRoamingNtnSignalStrengthChanged(in NtnSignalStrength ntnSignalStrength);
     void onSecurityAlgorithmsChanged(in SecurityAlgorithmUpdate update);
     void onCellularIdentifierDisclosedChanged(in CellularIdentifierDisclosure disclosure);
+    void onDomainSelectionEmergencyModeEntered(int type, int slotIndex, int subscriptionId);
+    void onDomainSelectionEmergencyModeExited(int type, int slotIndex, int subscriptionId);
 }
