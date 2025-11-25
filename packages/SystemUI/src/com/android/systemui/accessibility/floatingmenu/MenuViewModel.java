@@ -38,7 +38,7 @@ import java.util.List;
  * The view model provides the menu information from the repository{@link MenuInfoRepository} for
  * the menu view{@link MenuView}.
  */
-class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
+public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     private final MutableLiveData<List<AccessibilityTarget>> mTargetFeaturesData =
             new MutableLiveData<>(emptyList());
     private final MutableLiveData<Integer> mSizeTypeData = new MutableLiveData<>();
