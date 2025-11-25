@@ -5752,6 +5752,19 @@ public class PackageParser {
             // Not a DSA public key.
         }
 
+        if (android.security.Flags.apkPqcHybridSigning()) {
+            /* Now try it as an ML-DSA key. */
+            try {
+                final KeyFactory keyFactory = KeyFactory.getInstance("ML-DSA");
+                return keyFactory.generatePublic(keySpec);
+            } catch (NoSuchAlgorithmException e) {
+                Slog.wtf(TAG,
+                        "Cound not parse public key: ML-DSA KeyFactory not included in build");
+            } catch (InvalidKeySpecException e) {
+                // Not an ML-DSA public key.
+            }
+        }
+
         /* Not a supported key type */
         return null;
     }
