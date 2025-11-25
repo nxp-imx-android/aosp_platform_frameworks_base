@@ -336,6 +336,13 @@ java_aconfig_library {
     ],
 }
 
+java_aconfig_library {
+    name: "com.android.window.flags.window-aconfig-java-host",
+    aconfig_declarations: "com.android.window.flags.window-aconfig",
+    host_supported: true,
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 cc_aconfig_library {
     name: "com.android.window.flags.window-aconfig_flags_c_lib",
     aconfig_declarations: "com.android.window.flags.window-aconfig",

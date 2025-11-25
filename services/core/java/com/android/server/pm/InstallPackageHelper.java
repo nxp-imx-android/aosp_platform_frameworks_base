@@ -209,12 +209,28 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 final class InstallPackageHelper {
     // One minute over PM WATCHDOG_TIMEOUT
     private static final long WAKELOCK_TIMEOUT_MS = WATCHDOG_TIMEOUT + 1000 * 60;
     private static final String INSTALLER_WAKE_LOCK_TAG = "installer:packages";
+
+    /**
+     * A dedicated thread pool for blocking operations, specifically for waiting on app processes
+     * to be killed during package updates. This prevents starvation of shared executors and allows
+     * for parallel waiting. Core threads are allowed to time out to conserve resources when idle.
+     */
+    private static final ThreadPoolExecutor sExecutorForStopAndKill =
+            new ThreadPoolExecutor(/* corePoolSize= */ 4, /* maximumPoolSize= */ 4,
+                    /* keepAliveTime= */ 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+
+    static {
+        sExecutorForStopAndKill.allowsCoreThreadTimeOut();
+    }
 
     private final PackageManagerService mPm;
     private final AppDataHelper mAppDataHelper;
@@ -1090,16 +1106,33 @@ final class InstallPackageHelper {
                 isDexoptSuccess = false;
             }
         }
-        boolean success = false;
-        try {
-            if (isDexoptSuccess && commitInstallPackages(reconciledPackages)) {
-                success = true;
+
+        if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+            final java.util.function.Consumer<Boolean> postCommitActions = (success) -> {
+                completeInstallProcess(requests, createdAppId, success);
+                Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+                doPostInstall(requests, moveInfo);
+                releaseWakeLock(acquireTime, requests.size());
+            };
+
+            if (!isDexoptSuccess) {
+                postCommitActions.accept(false);
+                return;
             }
-        } finally {
-            completeInstallProcess(requests, createdAppId, success);
-            Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
-            doPostInstall(requests, moveInfo);
-            releaseWakeLock(acquireTime, requests.size());
+
+            commitInstallPackagesAsync(reconciledPackages, postCommitActions);
+        } else {
+            boolean success = false;
+            try {
+                if (isDexoptSuccess && commitInstallPackages(reconciledPackages)) {
+                    success = true;
+                }
+            } finally {
+                completeInstallProcess(requests, createdAppId, success);
+                Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+                doPostInstall(requests, moveInfo);
+                releaseWakeLock(acquireTime, requests.size());
+            }
         }
     }
 
@@ -1404,6 +1437,52 @@ final class InstallPackageHelper {
         }
     }
 
+
+    private void commitInstallPackagesAsync(List<ReconciledPackage> reconciledPackages,
+            java.util.function.Consumer<Boolean> onComplete) {
+        // The package freezing is now run outside the mInstallLock since it doesn't interact
+        // with installD.
+        final List<CompletableFuture<Void>> freezerFutures = new ArrayList<>();
+        for (ReconciledPackage reconciledPkg : reconciledPackages) {
+            final InstallRequest installRequest = reconciledPkg.mInstallRequest;
+            final String packageName = installRequest.getParsedPackage().getPackageName();
+            final CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                PackageFreezer freezer = freezePackageForInstall(packageName,
+                        UserHandle.USER_ALL, installRequest.getInstallFlags(),
+                        "installPackageLI", ApplicationExitInfo.REASON_PACKAGE_UPDATED,
+                        installRequest);
+                installRequest.setFreezer(freezer);
+            }, sExecutorForStopAndKill);
+            freezerFutures.add(future);
+        }
+
+        // Wait for all packages to freeze in parallel on a dedicated ThreadPool
+        CompletableFuture.allOf(freezerFutures.toArray(new CompletableFuture[0]))
+                .thenRunAsync(() -> {
+                    // Once we are done waiting for all package freeze, we switch back to
+                    // mHandler again as before for rest of the installation flow
+                    try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
+                        synchronized (mPm.mLock) {
+                            try {
+                                Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "commitPackages");
+                                commitPackagesLocked(reconciledPackages,
+                                        mPm.mUserManager.getUserIds());
+                            } finally {
+                                Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+                            }
+                        }
+                        executePostCommitStepsLIF(reconciledPackages);
+                    }
+                }, mPm.mHandler::post)
+                .whenCompleteAsync((res, e) -> {
+                    if (e != null) {
+                        Slog.e(TAG, "Failed to freeze one or more packages", e);
+                        onComplete.accept(false);
+                    } else {
+                        onComplete.accept(true);
+                    }
+                }, mPm.mHandler::post);
+    }
 
     private boolean commitInstallPackages(List<ReconciledPackage> reconciledPackages) {
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
@@ -2443,7 +2522,14 @@ final class InstallPackageHelper {
         if ((installFlags & PackageManager.INSTALL_DONT_KILL_APP) != 0) {
             return new PackageFreezer(mPm, request);
         } else {
-            return mPm.freezePackage(packageName, userId, killReason, exitInfoReason, request);
+            if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+                return new PackageFreezer(packageName,
+                        UserHandle.USER_ALL, "installPackageLI", mPm,
+                        ApplicationExitInfo.REASON_PACKAGE_UPDATED,
+                        request, /*waitAppKilled =*/ false, /*waitAppStopped =*/ true);
+            } else {
+                return mPm.freezePackage(packageName, userId, killReason, exitInfoReason, request);
+            }
         }
     }
 

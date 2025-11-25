@@ -36,10 +36,19 @@ import java.util.concurrent.TimeUnit;
  * Use to monitor UIDs are really killed by the {@link IUidObserver}
  */
 final class KillAppBlocker {
-    private static final int MAX_WAIT_TIMEOUT_MS = 1000;
+    private static final int DEFAULT_MAX_WAIT_TIMEOUT_MS = 1000;
+    private final int mMaxWaitTimeoutMs;
     private CountDownLatch mUidsGoneCountDownLatch = new CountDownLatch(1);
     private List mActiveUids = new ArrayList();
     private boolean mRegistered = false;
+
+    KillAppBlocker() {
+        this(DEFAULT_MAX_WAIT_TIMEOUT_MS);
+    }
+
+    KillAppBlocker(int maxWaitTimeoutMs) {
+        mMaxWaitTimeoutMs = maxWaitTimeoutMs;
+    }
 
     private final IUidObserver mUidObserver = new UidObserver() {
         @Override
@@ -110,7 +119,7 @@ final class KillAppBlocker {
         }
 
         try {
-            mUidsGoneCountDownLatch.await(MAX_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            mUidsGoneCountDownLatch.await(mMaxWaitTimeoutMs, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             // no-op
         }
