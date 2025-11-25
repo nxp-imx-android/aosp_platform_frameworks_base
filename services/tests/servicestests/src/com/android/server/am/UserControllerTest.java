@@ -312,7 +312,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testStartUser_background_duringBootHsum() {
+    public void testStartUser_background_duringBootHsum() throws InterruptedException {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -330,9 +330,11 @@ public class UserControllerTest {
 
         mUserController.onBootComplete(null);
 
+        // User is unlocked after BOOT_COMPLETED.
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
         startUserAssertions(newArrayList(Intent.ACTION_USER_STARTED, Intent.ACTION_USER_STARTING,
                         Intent.ACTION_LOCKED_BOOT_COMPLETED),
-                START_BACKGROUND_USER_MESSAGE_CODES_WITHOUT_UNLOCK);
+                START_BACKGROUND_USER_MESSAGE_CODES);
     }
 
     @Test
