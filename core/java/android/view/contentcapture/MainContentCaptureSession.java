@@ -1046,6 +1046,11 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     }
                     ViewStructure structure = session.newViewStructure(view);
                     view.onProvideContentCaptureStructure(structure, /* flags= */ 0);
+
+                    if (Flags.newHeuristicsForImportanceEnabled()) {
+                        setContentDescriptionFromA11yIfNeeded(view, structure);
+                    }
+
                     if (Flags.enableExportAssistVirtualNodeToCcapi()
                             && view.getAccessibilityNodeProvider() != null
                             && structure.getAutofillId() != null
@@ -1063,6 +1068,20 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                 }
             }
         }
+    }
+
+    private void setContentDescriptionFromA11yIfNeeded(
+            @NonNull View view, @NonNull ViewStructure structure) {
+        AccessibilityNodeInfo currentNodeInfo = view.createAccessibilityNodeInfo();
+        if (currentNodeInfo == null) {
+            return;
+        }
+
+        CharSequence viewContentDescription = view.getContentDescription();
+        if (viewContentDescription != null && !viewContentDescription.isEmpty()) {
+            return;
+        }
+        structure.setContentDescription(currentNodeInfo.getText());
     }
 
     private void notifyContentCaptureEventsImpl(

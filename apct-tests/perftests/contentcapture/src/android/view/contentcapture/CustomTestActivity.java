@@ -24,6 +24,7 @@ import android.os.RemoteCallback;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,64 +44,80 @@ public class CustomTestActivity extends Activity {
     public static final int MAX_VIEWS = 500;
     public static final int VIEW_TYPE_CUSTOM_VIEW = 1;
     public static final int VIEW_TYPE_TEXT_VIEW = 2;
+    public static final int VIEW_TYPE_VIEW_GROUP_WITH_CONTENT_DESCRIPTION = 3;
+    public static final int VIEW_TYPE_VIEW_GROUP_WITH_A11Y_TEXT = 4;
     private static final int CUSTOM_CONTAINER_LAYOUT_ID = R.layout.test_container_activity;
     private static final int LAYOUT_GROUP_VIRTUAL_NODES_ID =
             R.layout.test_export_virtual_assist_node_activity;
-    private static final int VIEW_GROUP_LAYOUT_ID =
-            R.layout.test_view_group_activity;
+    private static final int VIEW_GROUP_LAYOUT_ID = R.layout.test_view_group_activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (getIntent().hasExtra(INTENT_EXTRA_LAYOUT_ID)) {
-            final int layoutId = getIntent().getIntExtra(INTENT_EXTRA_LAYOUT_ID,
-                    /* defaultValue= */0);
+            final int layoutId =
+                    getIntent().getIntExtra(INTENT_EXTRA_LAYOUT_ID, /* defaultValue= */ 0);
             final int view_type = getIntent().getIntExtra(INTENT_EXTRA_VIEW_TYPE, 0);
             setContentView(layoutId);
             if (layoutId == CUSTOM_CONTAINER_LAYOUT_ID) {
-                createCustomViews(findViewById(R.id.root_view),
+                createCustomViews(
+                        findViewById(R.id.root_view),
                         getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
             } else if (layoutId == LAYOUT_GROUP_VIRTUAL_NODES_ID) {
                 if (view_type == VIEW_TYPE_CUSTOM_VIEW) {
-                    createCustomViewsWithVirtualChildren(findViewById(R.id.group_root_view),
+                    createCustomViewsWithVirtualChildren(
+                            findViewById(R.id.group_root_view),
                             getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
                 } else if (view_type == VIEW_TYPE_TEXT_VIEW) {
-                    createTextViews(findViewById(R.id.group_root_view),
+                    createTextViews(
+                            findViewById(R.id.group_root_view),
                             getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
                 }
             } else if (layoutId == VIEW_GROUP_LAYOUT_ID) {
-                createViewGroupWithContentDescription(findViewById(R.id.view_group_root_view),
-                        getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
+                if (view_type == VIEW_TYPE_VIEW_GROUP_WITH_CONTENT_DESCRIPTION) {
+                    createViewGroupWithContentDescription(
+                            findViewById(R.id.view_group_root_view),
+                            getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
+                } else if (view_type == VIEW_TYPE_VIEW_GROUP_WITH_A11Y_TEXT) {
+                    createViewGroupWithA11yText(
+                            findViewById(R.id.view_group_root_view),
+                            getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
+                }
             }
         }
 
-        final RemoteCallback drawCallback = getIntent().getParcelableExtra(
-                INTENT_EXTRA_DRAW_CALLBACK, RemoteCallback.class);
+        final RemoteCallback drawCallback =
+                getIntent().getParcelableExtra(INTENT_EXTRA_DRAW_CALLBACK, RemoteCallback.class);
         if (drawCallback != null) {
-            getWindow().getDecorView().addOnAttachStateChangeListener(
-                    new View.OnAttachStateChangeListener() {
-                        @Override
-                        public void onViewAttachedToWindow(View v) {
-                            Choreographer.getInstance().postCallback(
-                                    Choreographer.CALLBACK_COMMIT,
-                                    // Report that the first frame is drawn.
-                                    () -> drawCallback.sendResult(null), null /* token */);
-                        }
+            getWindow()
+                    .getDecorView()
+                    .addOnAttachStateChangeListener(
+                            new View.OnAttachStateChangeListener() {
+                                @Override
+                                public void onViewAttachedToWindow(View v) {
+                                    Choreographer.getInstance()
+                                            .postCallback(
+                                                    Choreographer.CALLBACK_COMMIT,
+                                                    // Report that the first frame is drawn.
+                                                    () -> drawCallback.sendResult(null),
+                                                    null /* token */);
+                                }
 
-                        @Override
-                        public void onViewDetachedFromWindow(View v) {
-                        }
-                    });
+                                @Override
+                                public void onViewDetachedFromWindow(View v) {}
+                            });
         }
 
         if (getIntent().getBooleanExtra(INTENT_EXTRA_FINISH_ON_IDLE, false)) {
-            Looper.myQueue().addIdleHandler(() -> {
-                // Finish without animation.
-                finish();
-                overridePendingTransition(0 /* enterAnim */, 0 /* exitAnim */);
-                return false;
-            });
+            Looper.myQueue()
+                    .addIdleHandler(
+                            () -> {
+                                // Finish without animation.
+                                finish();
+                                overridePendingTransition(0 /* enterAnim */, 0 /* exitAnim */);
+                                return false;
+                            });
         }
     }
 
@@ -145,8 +162,11 @@ public class CustomTestActivity extends Activity {
     private LinearLayout createItem(Drawable drawable, int index) {
         final LinearLayout group = new LinearLayout(getApplicationContext());
         group.setOrientation(LinearLayout.VERTICAL);
-        group.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, /* weight= */ 1.0f));
+        group.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        /* weight= */ 1.0f));
 
         final TextView text = new TextView(this);
         text.setText("i = " + index);
@@ -159,6 +179,23 @@ public class CustomTestActivity extends Activity {
         for (int i = 0; i < number; i++) {
             ViewGroup viewGroup = new FrameLayout(this);
             viewGroup.setContentDescription("content description");
+            root.addView(viewGroup);
+        }
+    }
+
+    private void createViewGroupWithA11yText(LinearLayout root, int number) {
+        for (int i = 0; i < number; i++) {
+            ViewGroup viewGroup = new FrameLayout(this);
+            new View.AccessibilityDelegate();
+            viewGroup.setAccessibilityDelegate(
+                    new View.AccessibilityDelegate() {
+                        @Override
+                        public void onInitializeAccessibilityNodeInfo(
+                                View host, AccessibilityNodeInfo info) {
+                            super.onInitializeAccessibilityNodeInfo(host, info);
+                            info.setText("a11yText");
+                        }
+                    });
             root.addView(viewGroup);
         }
     }
