@@ -81,6 +81,7 @@ class ToggleButtonComponent(
                     }
                     contentDescription = viewModel.label
                 },
+                isExpandedAudioTileDetailsView = isExpandedAudioTileDetailsView,
                 modifier = modifier,
             )
             return

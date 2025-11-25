@@ -56,10 +56,8 @@ import javax.inject.Inject
 
 class AncButtonComponent
 @Inject
-constructor(
-    private val viewModel: AncViewModel,
-    private val ancPopup: AncPopup,
-) : ComposeVolumePanelUiComponent {
+constructor(private val viewModel: AncViewModel, private val ancPopup: AncPopup) :
+    ComposeVolumePanelUiComponent {
 
     @Composable
     override fun VolumePanelComposeScope.Content(modifier: Modifier) {
@@ -77,9 +75,7 @@ constructor(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Box(
-                modifier = Modifier.height(64.dp),
-            ) {
+            Box(modifier = Modifier.height(64.dp)) {
                 SliceAndroidView(
                     modifier = modifier.fillMaxSize(),
                     slice = slice,
@@ -100,7 +96,7 @@ constructor(
                             containerColor = Color.Transparent,
                             disabledContentColor = Color.Transparent,
                             disabledContainerColor = Color.Transparent,
-                        )
+                        ),
                 ) {}
             }
 
@@ -109,6 +105,12 @@ constructor(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 2,
+                color =
+                    if (isExpandedAudioTileDetailsView) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        Color.Unspecified
+                    },
             )
         }
     }
