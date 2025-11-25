@@ -78,7 +78,7 @@ constructor(
     private val sceneFamilyResolvers: Lazy<Map<SceneKey, @JvmSuppressWildcards SceneResolver>>,
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
-    private val restrictedModeInteractor: RestrictedModeInteractor,
+    private val restrictedModeInteractor: Lazy<RestrictedModeInteractor>,
     private val disabledContentInteractor: DisabledContentInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val authenticationInteractor: Lazy<AuthenticationInteractor>,
@@ -602,7 +602,7 @@ constructor(
             return false
         }
 
-        if (!restrictedModeInteractor.isSceneChangeAllowed(toScene = to)) {
+        if (!restrictedModeInteractor.get().isSceneChangeAllowed(toScene = to)) {
             logger.logContentChangeRejection(
                 from = from,
                 to = to,
@@ -721,7 +721,7 @@ constructor(
                 false
             }
 
-            !restrictedModeInteractor.isOverlayChangeAllowed(to) -> {
+            !restrictedModeInteractor.get().isOverlayChangeAllowed(to) -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
@@ -743,9 +743,9 @@ constructor(
     fun filteredUserActions(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
-        return restrictedModeInteractor.filteredUserActions(
-            disabledContentInteractor.filteredUserActions(unfiltered)
-        )
+        return restrictedModeInteractor
+            .get()
+            .filteredUserActions(disabledContentInteractor.filteredUserActions(unfiltered))
     }
 
     /**
