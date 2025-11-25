@@ -43,20 +43,10 @@ public object SettingsProxyExt {
                 }
 
             names.forEach { name ->
-                if (Flags.settingsExtRegisterContentObserverOnBgThread()) {
-                    registerContentObserverForUser(name, observer, userId)
-                } else {
-                    registerContentObserverForUserSync(name, observer, userId)
-                }
+                registerContentObserverForUser(name, observer, userId)
             }
 
-            awaitClose {
-                if (Flags.settingsExtRegisterContentObserverOnBgThread()) {
-                    unregisterContentObserverAsync(observer)
-                } else {
-                    unregisterContentObserverSync(observer)
-                }
-            }
+            awaitClose { unregisterContentObserverAsync(observer) }
         }
     }
 
@@ -71,20 +61,10 @@ public object SettingsProxyExt {
                 }
 
             names.forEach { name ->
-                if (Flags.settingsExtRegisterContentObserverOnBgThread()) {
-                    registerContentObserver(name, observer)
-                } else {
-                    registerContentObserverSync(name, observer)
-                }
+                registerContentObserver(name, observer)
             }
 
-            awaitClose {
-                if (Flags.settingsExtRegisterContentObserverOnBgThread()) {
-                    unregisterContentObserverAsync(observer)
-                } else {
-                    unregisterContentObserverSync(observer)
-                }
-            }
+            awaitClose { unregisterContentObserverAsync(observer) }
         }
     }
 }
