@@ -485,7 +485,7 @@ public final class CallAttributes implements Parcelable {
      * @throws IllegalArgumentException if the uri is invalid
      */
     public static void validateVoipContactUri(Uri uri) {
-        String errorMsg = TextUtils.formatSimple("The contact URI passed in, %s, is not"
+        String errorMsg = String.format("The contact URI passed in, %s, is not"
                 + " a valid URI. This must be a valid CP2 contact or VoIP contact "
                 + "directory URI.", uri);
         // Todo: once VoIP contact directory URIs are established, we should validate on that
