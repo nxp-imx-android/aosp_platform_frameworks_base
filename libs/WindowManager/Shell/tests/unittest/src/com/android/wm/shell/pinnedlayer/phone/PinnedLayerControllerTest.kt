@@ -17,22 +17,47 @@
 package com.android.wm.shell.pinnedlayer.phone
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration
 import android.graphics.Rect
+import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import android.util.DisplayMetrics
+import android.view.Display
+import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CHANGE
+import android.window.TransitionInfo
+import android.window.TransitionInfo.FLAG_NONE
+import android.window.WindowContainerTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
+import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopTestHelpers
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
+import com.android.wm.shell.shared.TransactionPool
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
-import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 
 /**
  * Unit tests against [PinnedLayerController]
@@ -46,32 +71,158 @@ import org.mockito.kotlin.verifyNoInteractions
 class PinnedLayerControllerTest : ShellTestCase() {
     @Mock private lateinit var shellInit: ShellInit
     @Mock private lateinit var transitions: Transitions
-    @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock private lateinit var transactionPool: TransactionPool
+    @Mock private lateinit var poolTransaction: SurfaceControl.Transaction
+    @Mock private lateinit var startTransaction: SurfaceControl.Transaction
+    @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
+    @Mock private lateinit var leash: SurfaceControl
+    @Mock private lateinit var displayController: DisplayController
+    @Mock private lateinit var displayLayout: DisplayLayout
+    @Mock private lateinit var desktopState: DesktopState
 
+    private lateinit var displayMetrics: DisplayMetrics
+    private lateinit var presentationController: PinnedLayerPresentationController
     private lateinit var pinnedLayerController: PinnedLayerController
 
     @Before
     fun setup() {
+        whenever(transactionPool.acquire()).thenReturn(poolTransaction)
+
+        // Default display setup: 1080x1920, density 2.0, insets top=100 bottom=50
+        // 10px padding for pinned window
+        val testableResources = mContext.getOrCreateTestableResources()
+        testableResources.addOverride(R.dimen.pinned_window_init_padding, 10)
+        displayMetrics = DisplayMetrics()
+        displayMetrics.density = 1.0f
+        whenever(testableResources.resources.displayMetrics).thenReturn(displayMetrics)
+        whenever(displayController.getDisplayLayout(Display.DEFAULT_DISPLAY))
+            .thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(Display.DEFAULT_DISPLAY)).thenReturn(context)
+        whenever(displayLayout.width()).thenReturn(DISPLAY_WIDTH)
+        whenever(displayLayout.height()).thenReturn(DISPLAY_HEIGHT)
+        whenever(displayLayout.stableInsets()).thenReturn(DISPLAY_STABLE_INSETS)
+        whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt())).thenReturn(true)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer {
+            val outRect = it.getArgument<Rect>(0)
+            outRect.set(DISPLAY_STABLE_BOUNDS)
+        }
+
+        presentationController =
+            PinnedLayerPresentationController(context, displayController, desktopState)
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
+                transactionPool,
             )
     }
 
     @Test
     fun dragEnded_notPinnedTask_doNothing() {
         val task = setupTask()
+        val dragStartBounds = Rect(DEFAULT_TASK_BOUNDS)
+        val dragEndBounds = Rect(DEFAULT_TASK_BOUNDS)
+        dragEndBounds.offset(100, 100)
 
-        pinnedLayerController.onDragEnded(task, EMPTY_RECT)
+        val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
 
-        verifyNoInteractions(transitions)
+        assertFalse(result)
+        verifyNoInteractions(transitions, transactionPool)
     }
 
-    // TODO(b/449118417): Add more tests to verify pinned tasks
+    @Test
+    fun dragEnded_noChangesInBounds_applyTransactionImmediately() {
+        val task = setupTask()
+        val transition = mock<IBinder>()
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerController.pinTask(transition, task, null)
+        pinnedLayerController.onTransitionReady(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        val dragStartBounds = Rect(DEFAULT_TASK_BOUNDS)
+        val dragEndBounds = Rect(dragStartBounds)
+        val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
+
+        assertTrue(result)
+        verify(poolTransaction)
+            .setPosition(leash, dragStartBounds.left.toFloat(), dragStartBounds.top.toFloat())
+        verify(transitions, never()).startTransition(any(), any(), any())
+    }
+
+    @Test
+    fun dragEndedOutsideValidArea_animateToSnappedBounds() {
+        val task = setupTask()
+        val transition = mock<IBinder>()
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerController.pinTask(transition, task, null)
+        pinnedLayerController.onTransitionReady(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        val dragStartBounds = Rect(DEFAULT_TASK_BOUNDS)
+        val dragEndBounds = Rect(dragStartBounds)
+        // Drag behind right edge of the drag area.
+        dragEndBounds.offset(displayLayout.width(), 0)
+
+        val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
+        assertTrue(result)
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions).startTransition(any(), wctCaptor.capture(), anyOrNull())
+
+        val wct = wctCaptor.firstValue
+        val changeBounds = wct.findBoundsChange(task)
+        val expectedBounds =
+            Rect(
+                DISPLAY_STABLE_BOUNDS.right - MIN_WINDOW_SIZE,
+                dragEndBounds.top,
+                DISPLAY_STABLE_BOUNDS.right,
+                dragStartBounds.bottom,
+            )
+
+        assertEquals(changeBounds, expectedBounds)
+    }
+
+    @Test
+    fun dragEnded_endBoundsWithinDragArea_updateTaskBounds() {
+        val task = setupTask()
+        val transition = mock<IBinder>()
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerController.pinTask(transition, task, null)
+        pinnedLayerController.onTransitionReady(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        val dragStartBounds = Rect(DEFAULT_TASK_BOUNDS)
+        val dragEndBounds = Rect(DEFAULT_TASK_BOUNDS)
+        dragEndBounds.offset(100, 100)
+
+        val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
+        assertFalse(result)
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions).startTransition(any(), wctCaptor.capture(), any())
+
+        val wct = wctCaptor.firstValue
+        val changeBounds = wct.findBoundsChange(task)
+        assertEquals(changeBounds, dragEndBounds)
+    }
 
     private fun setupTask(
         displayId: Int = DEFAULT_DISPLAY,
@@ -87,10 +238,38 @@ class PinnedLayerControllerTest : ShellTestCase() {
         return task
     }
 
+    private fun WindowContainerTransaction.findBoundsChange(task: RunningTaskInfo): Rect? =
+        changes.entries
+            .find { (token, change) ->
+                token == task.token.asBinder() &&
+                    (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0
+            }
+            ?.value
+            ?.configuration
+            ?.windowConfiguration
+            ?.bounds
+
     private companion object {
         private const val DEFAULT_DISPLAY = 0
+        private const val MIN_WINDOW_SIZE = 220
+        private const val DISPLAY_WIDTH = 1920
+        private const val DISPLAY_HEIGHT = 1080
 
-        private val DEFAULT_TASK_BOUNDS = Rect(240, 240, 240, 240)
-        private val EMPTY_RECT = Rect(0, 0, 0, 0)
+        private val DISPLAY_STABLE_INSETS = Rect(0, 100, 0, 50)
+        private val DEFAULT_TASK_BOUNDS =
+            Rect(
+                0,
+                DISPLAY_STABLE_INSETS.top,
+                MIN_WINDOW_SIZE,
+                MIN_WINDOW_SIZE + DISPLAY_STABLE_INSETS.top,
+            )
+
+        private val DISPLAY_STABLE_BOUNDS =
+            Rect(
+                DISPLAY_STABLE_INSETS.left,
+                DISPLAY_STABLE_INSETS.top,
+                DISPLAY_WIDTH - DISPLAY_STABLE_INSETS.right,
+                DISPLAY_HEIGHT - DISPLAY_STABLE_INSETS.bottom,
+            )
     }
 }

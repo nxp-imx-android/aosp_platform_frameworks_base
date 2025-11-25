@@ -34,22 +34,18 @@ import kotlin.math.min
 
 /** A controller that tracks the available display area for the pinned layer. */
 class PinnedLayerPresentationController(
-    private val context: Context,
+    context: Context,
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
 ) {
 
-    private val entryBoundsPadding: Int
+    private val entryBoundsPadding: Int =
+        context.resources.getDimensionPixelSize(R.dimen.pinned_window_init_padding)
 
     // Stores the tasks' initial and overridden bounds, which are used as a reference for
     // subsequent resize operations to prevent implicit movement of the task by resizing it in
     // various ways (e.g., by expanding or contracting against display boundaries).
     private val overriddenBounds: SparseArray<OverridableBounds> = SparseArray()
-
-    init {
-        entryBoundsPadding =
-            context.resources.getDimensionPixelSize(R.dimen.pinned_window_init_padding)
-    }
 
     /**
      * Calculates the entry destination bounds for a task window which is pinned.
@@ -58,7 +54,7 @@ class PinnedLayerPresentationController(
      * within the defined constraints (min 220dp, max 70% of display dimensions). The aspect ratio
      * of the task is preserved.
      *
-     * As a security mitigation -- to limit the app's abiltiy to position the pinned window -- the
+     * As a security mitigation -- to limit the app's ability to position the pinned window -- the
      * task is moved into the right bottom corner of the display, everytime it's pinned.
      *
      * @param task The task for which to calculate the bounds.
@@ -93,6 +89,23 @@ class PinnedLayerPresentationController(
         val displaySupportsDesktopMode =
             desktopState.isDesktopModeSupportedOnDisplay(task.displayId)
         return isFreeform && displaySupportsDesktopMode
+    }
+
+    /**
+     * Changes task's bounds to match constraints and ensures that it's positioned correctly on the
+     * display.
+     *
+     * @param task a task that's being clamped.
+     * @param bounds current task's bounds, either real task position or leash position.
+     * @return new bounds that match window constraints and that're placed inside visible display
+     *   bounds.
+     */
+    fun clampToDisplay(task: TaskInfo, bounds: Rect): Rect? {
+        val displayDetails = getDisplayDetails(task.displayId) ?: return null
+
+        return clampSizeToConstraints(bounds, displayDetails)?.also {
+            ensureNotOffscreen(it, displayDetails)
+        }
     }
 
     /**

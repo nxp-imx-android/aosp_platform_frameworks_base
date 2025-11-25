@@ -48,6 +48,7 @@ import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
@@ -88,6 +89,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var normalLayerController: NormalAppLayerController
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock private lateinit var transactionPool: TransactionPool
 
     private lateinit var pinnedLayerController: PinnedLayerController
     private lateinit var pinnedLayerHandler: PinnedLayerHandler
@@ -100,6 +102,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
+                transactionPool,
             )
         pinnedLayerHandler =
             PinnedLayerHandler(shellInit, transitions, pinnedLayerController, normalLayerController)

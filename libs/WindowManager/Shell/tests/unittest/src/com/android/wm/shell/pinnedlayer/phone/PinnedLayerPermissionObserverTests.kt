@@ -37,6 +37,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.concurrent.CountDownLatch
@@ -72,6 +73,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock private lateinit var transactionPool: TransactionPool
 
     private val uid = Binder.getCallingUid()
     private val shellExecutor = ObservedTestShellExecutor()
@@ -88,6 +90,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
+                transactionPool,
             )
         pinnedLayerPermissionObserver =
             PinnedLayerPermissionObserver(context, shellExecutor, pinnedLayerController)

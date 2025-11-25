@@ -650,8 +650,12 @@ public class DesktopModeTouchEventListener
                 final Rect validDragArea = decoration.getValidDragArea();
                 final boolean needDragIndicatorCleanup;
                 if (isPinned(taskInfo)) {
-                    mPinnedLayerController.onDragEnded(taskInfo, newTaskBounds);
-                    needDragIndicatorCleanup = false;
+                    needDragIndicatorCleanup =
+                            mPinnedLayerController.onDragEnded(
+                                    decoration.getTaskSurface(),
+                                    taskInfo,
+                                    new Rect(mOnDragStartInitialBounds),
+                                    newTaskBounds);
                 } else {
                     needDragIndicatorCleanup =
                             mDesktopTasksController.onDragPositioningEnd(
