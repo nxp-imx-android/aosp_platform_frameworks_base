@@ -68,8 +68,8 @@ flag {
 
 flag {
     name: "enhanced_pending_and_stop_reasons_api"
+    is_exported: true
     namespace: "backstage_power"
     description: "Introduce new enhanced job pending and stop reasons to improve readability and debuggability"
     bug: "430347691"
 }
-
