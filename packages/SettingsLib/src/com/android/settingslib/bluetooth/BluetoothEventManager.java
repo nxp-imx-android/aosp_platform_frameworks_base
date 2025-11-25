@@ -441,10 +441,12 @@ public class BluetoothEventManager {
                     Log.d(TAG, "BondStateChangedHandler: Start onDeviceUnpaired");
                     mDeviceManager.onDeviceUnpaired(cachedDevice);
                 }
-                int reason = intent.getIntExtra(BluetoothDevice.EXTRA_UNBOND_REASON,
-                        BluetoothDevice.ERROR);
 
-                showUnbondMessage(context, cachedDevice.getName(), reason);
+                if (!BluetoothUtils.isBluetoothDiagnosisAvailable(context)) {
+                    int reason = intent.getIntExtra(BluetoothDevice.EXTRA_UNBOND_REASON,
+                            BluetoothDevice.ERROR);
+                    showUnbondMessage(context, cachedDevice.getName(), reason);
+                }
             }
         }
 
