@@ -90,10 +90,27 @@ constructor(
         hunBounds.remove(contentKey)
     }
 
+    /** Alpha requested by the StackPlaceholder STL element. */
+    val stackAlpha: SynchronouslyObservableStateMap<ContentKey, Float?, Float> =
+        SynchronouslyObservableStateMap { contentKeyToValuesMap ->
+            stackPicker.pickValueFrom(contentKeyToValuesMap) ?: 1f
+        }
+
+    /** Set a value for [stackAlpha] associated by the given [contentKey]. */
+    fun setStackAlpha(contentKey: ContentKey, value: Float?) {
+        stackAlpha[contentKey] = value
+    }
+
+    /** Removes any stored [stackAlpha] value for the given [contentKey]. */
+    fun resetStackAlpha(contentKey: ContentKey) {
+        stackAlpha.remove(contentKey)
+    }
+
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("stackScrollTop: $stackScrollTop")
         pw.println("stackBounds: $stackBounds")
         pw.println("hunBounds: $hunBounds")
+        pw.println("stackAlpha: $stackAlpha")
     }
 }
 

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
@@ -29,6 +30,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.onUnplaced
+import com.android.systemui.notifications.ui.composable.Notifications.Elements
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 
 /**
@@ -50,7 +52,7 @@ internal fun ContentScope.StackPlaceholder(
     Box(
         modifier =
             modifier
-                .element(Notifications.Elements.StackPlaceholder)
+                .element(Elements.StackPlaceholder)
                 .debugBackground(viewModel, DEBUG_STACK_COLOR)
                 .onSizeChanged { size ->
                     debugLog(viewModel) { "$tag.STACK onSizeChanged: size=$size" }
@@ -69,6 +71,10 @@ internal fun ContentScope.StackPlaceholder(
                 .onUnplaced {
                     debugLog(viewModel) { "$tag.STACK onUnplaced" }
                     viewModel.resetStackScrollTop()
+                    viewModel.resetStackAlpha()
+                }
+                .drawBehind {
+                    viewModel.setStackAlpha(Elements.StackPlaceholder.currentAlpha())
                 }
     ) {
         if (viewModel.isVisualDebuggingEnabled) {

@@ -105,6 +105,14 @@ constructor(
         placeholderStateStorage.resetHunBounds(contentKey)
     }
 
+    fun setStackAlpha(value: Float?) {
+        placeholderStateStorage.setStackAlpha(contentKey, value)
+    }
+
+    fun resetStackAlpha() {
+        placeholderStateStorage.resetStackAlpha(contentKey)
+    }
+
     private val hydrator = Hydrator("NotificationsPlaceholderViewModel")
 
     /** The content key to use for the notification shade. */

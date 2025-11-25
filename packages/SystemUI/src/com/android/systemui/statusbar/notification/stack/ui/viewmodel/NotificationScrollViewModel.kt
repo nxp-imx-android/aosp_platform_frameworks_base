@@ -416,6 +416,9 @@ constructor(
     /** Vertical bounds of the top HUN. */
     val headsUpBounds: ObservableState<YSpace> = placeholderStateStorage.hunBounds
 
+    /** Alpha requested by the StackPlaceholder STL element. */
+    val stackPlaceholderAlpha: ObservableState<Float> = placeholderStateStorage.stackAlpha
+
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.
      *

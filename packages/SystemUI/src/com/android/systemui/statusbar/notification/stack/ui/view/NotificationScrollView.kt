@@ -55,6 +55,9 @@ interface NotificationScrollView {
     /** Max alpha for this view */
     fun setMaxAlpha(alpha: Float)
 
+    /** Alpha set on the placeholder composable. */
+    fun setPlaceholderAlpha(alpha: Float)
+
     /** Set whether this view is occluded by something else. */
     fun setOccluded(isOccluded: Boolean)
 

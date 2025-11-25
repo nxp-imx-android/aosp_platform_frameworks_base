@@ -171,6 +171,11 @@ constructor(
                             view.setHeadsUpBottom(hunBounds.bottom)
                         }
                     )
+                    register(
+                        viewModel.stackPlaceholderAlpha.observe { alpha ->
+                            view.setPlaceholderAlpha(alpha)
+                        }
+                    )
                 }
             }
         }

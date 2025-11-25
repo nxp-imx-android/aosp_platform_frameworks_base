@@ -1300,6 +1300,11 @@ public class NotificationStackScrollLayout
     }
 
     @Override
+    public void setPlaceholderAlpha(float alpha) {
+        mController.setMaxAlphaFromPlaceholder(alpha);
+    }
+
+    @Override
     public void setOccluded(boolean isOccluded) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return;

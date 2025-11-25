@@ -162,4 +162,39 @@ class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
 
             disposable.dispose()
         }
+
+    @Test
+    fun onStackAlphaChanged_shadeFadesOut() =
+        kosmos.runTest {
+            var stackAlpha: Float = Float.NaN
+            val disposable =
+                kosmos.notificationScrollViewModel.stackPlaceholderAlpha.observe { value ->
+                    stackAlpha = value
+                }
+
+            // Given: Initial alpha is 1f.
+            assertThat(stackAlpha).isEqualTo(1f)
+
+            // When: Shade sends an update
+            shadeViewModel.setStackAlpha(1f)
+            // Then: Observers are notified
+            assertThat(stackAlpha).isEqualTo(1f)
+
+            // When: Shade starts to fade out
+            shadeViewModel.setStackAlpha(.8f)
+            // Then: Observers are notified
+            assertThat(stackAlpha).isEqualTo(.8f)
+
+            // When: Shade continues to fade out
+            shadeViewModel.setStackAlpha(.4f)
+            // Then: Observers are notified
+            assertThat(stackAlpha).isEqualTo(.4f)
+
+            // When: Shade is removed
+            shadeViewModel.resetStackAlpha()
+            // Then: Observers get 1f again
+            assertThat(stackAlpha).isEqualTo(1f)
+
+            disposable.dispose()
+        }
 }
