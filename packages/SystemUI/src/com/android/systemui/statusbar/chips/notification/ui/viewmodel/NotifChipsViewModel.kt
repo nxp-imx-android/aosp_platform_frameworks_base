@@ -37,7 +37,9 @@ import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.domain.model.NotificationChipModel
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionAwareChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionState
@@ -352,8 +354,11 @@ constructor(
                         }
                         is PromotedNotificationContentModel.When.Chronometer -> {
                             OngoingActivityChipModel.Content.Timer(
-                                startTimeMs = time.elapsedRealtimeMillis,
-                                isEventInFuture = time.isCountDown,
+                                value =
+                                    Chronometer.Running(
+                                        EventTime.ElapsedRealtime(time.elapsedRealtimeMillis),
+                                        isCountdown = time.isCountDown,
+                                    ),
                                 timeSource = systemClock,
                             )
                         }

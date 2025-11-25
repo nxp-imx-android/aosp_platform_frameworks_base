@@ -37,7 +37,9 @@ import com.android.systemui.statusbar.chips.casttootherdevice.ui.view.EndGeneric
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractor
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.ProjectionChipModel
 import com.android.systemui.statusbar.chips.mediaprojection.ui.view.EndMediaProjectionDialogHelper
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
@@ -211,7 +213,10 @@ constructor(
             content =
                 OngoingActivityChipModel.Content.Timer(
                     // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
-                    startTimeMs = systemClock.elapsedRealtime(),
+                    value =
+                        Chronometer.Running(
+                            EventTime.ElapsedRealtime(systemClock.elapsedRealtime())
+                        ),
                     timeSource = systemClock,
                 ),
             colors = ColorsModel.Red,

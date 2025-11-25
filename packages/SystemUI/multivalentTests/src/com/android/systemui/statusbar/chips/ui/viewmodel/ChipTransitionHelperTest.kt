@@ -35,7 +35,9 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionAwareChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionState
@@ -71,8 +73,8 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content =
                         OngoingActivityChipModel.Content.Timer(
-                            startTimeMs = 100L,
-                            kosmos.fakeSystemClock,
+                            Chronometer.Running(EventTime.ElapsedRealtime(100L)),
+                            timeSource = kosmos.fakeSystemClock,
                         ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
@@ -110,8 +112,8 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content =
                         OngoingActivityChipModel.Content.Timer(
-                            startTimeMs = 100L,
-                            kosmos.fakeSystemClock,
+                            Chronometer.Running(EventTime.ElapsedRealtime(100L)),
+                            timeSource = kosmos.fakeSystemClock,
                         ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
@@ -155,8 +157,8 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content =
                         OngoingActivityChipModel.Content.Timer(
-                            startTimeMs = 100L,
-                            kosmos.fakeSystemClock,
+                            Chronometer.Running(EventTime.ElapsedRealtime(100L)),
+                            timeSource = kosmos.fakeSystemClock,
                         ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,

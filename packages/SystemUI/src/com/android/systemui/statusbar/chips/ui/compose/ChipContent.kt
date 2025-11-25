@@ -45,8 +45,7 @@ import com.android.systemui.Flags
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.chips.ui.viewmodel.Chronometer
-import com.android.systemui.statusbar.chips.ui.viewmodel.EventTime
+import com.android.systemui.statusbar.chips.ui.viewmodel.Formatter
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
@@ -90,10 +89,8 @@ fun ChipContent(
         is OngoingActivityChipModel.Content.Timer -> {
             val timerState =
                 rememberChronometerState(
-                    Chronometer.Running(
-                        EventTime.ElapsedRealtime(viewModel.startTimeMs),
-                        isCountdown = viewModel.isEventInFuture,
-                    ),
+                    chronometer = viewModel.value,
+                    formatter = viewModel.format.toFormatter(),
                     timeSource = viewModel.timeSource,
                 )
             timerState.currentTimeText?.let { text ->
@@ -182,6 +179,12 @@ fun ChipContent(
         }
     }
 }
+
+fun OngoingActivityChipModel.Content.Timer.Format.toFormatter() =
+    when (this) {
+        OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER -> Formatter.Chronometer
+        OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE -> Formatter.Adaptive
+    }
 
 /** A modifier that ensures the width of the content only increases and never decreases. */
 @VisibleForTesting

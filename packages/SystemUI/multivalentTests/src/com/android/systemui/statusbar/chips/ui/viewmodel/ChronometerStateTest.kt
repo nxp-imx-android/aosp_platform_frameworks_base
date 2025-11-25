@@ -22,6 +22,8 @@ import android.text.format.DateUtils.formatElapsedTime
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.fakeSystemClock

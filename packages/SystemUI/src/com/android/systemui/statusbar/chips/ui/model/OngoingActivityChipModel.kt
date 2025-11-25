@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.chips.ui.model
 
 import android.annotation.CurrentTimeMillisLong
-import android.annotation.ElapsedRealtimeLong
 import android.annotation.StringRes
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -122,31 +121,34 @@ sealed class OngoingActivityChipModel {
             override val logName = "IconOnly"
         }
 
-        /** The chip shows a timer, counting up from [startTimeMs]. */
+        /** The chip shows a timer. */
         data class Timer(
             /**
-             * The time this event started, used to show the timer.
-             *
-             * This time should be relative to [SystemClock.elapsedRealtime], *not*
-             * [SystemClock.currentTimeMillis] because the [ChipChronometer] is based off of elapsed
-             * realtime. See [android.widget.Chronometer.setBase].
+             * The timer's value (as a chronometer from/to a point in time, or a paused duration).
              */
-            @ElapsedRealtimeLong val startTimeMs: Long,
+            val value: Chronometer,
+
+            /** How the [value] should be formatted. */
+            val format: Format = Format.CHRONOMETER,
 
             /**
              * The [SystemClock] used to track the current time for this timer. Only used in the
              * Compose version of the chips.
              */
             val timeSource: SystemClock,
-
-            /**
-             * True if this chip represents an event starting in the future and false if this chip
-             * represents an event that has already started. If true, [startTimeMs] should be in the
-             * future. Otherwise, [startTimeMs] should be in the past.
-             */
-            val isEventInFuture: Boolean = false,
         ) : Content() {
-            override val logName = "Timer(time=$startTimeMs isFuture=$isEventInFuture)"
+            override val logName = "Timer(value=$value format=$format)"
+
+            enum class Format {
+                /** "Normal" chronometer appearance (e.g. 04:30) */
+                CHRONOMETER,
+
+                /**
+                 * Adaptive/textual chronometer format. See
+                 * [android.widget.ChronometerAdaptiveFormat.format]
+                 */
+                ADAPTIVE,
+            }
         }
 
         /**
