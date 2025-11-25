@@ -29,6 +29,7 @@ import android.view.View
 import android.view.animation.PathInterpolator
 import com.android.app.animation.Interpolators
 import com.android.internal.graphics.ColorUtils
+import com.android.systemui.surfaceeffects.core.dwellrippleeffect.DwellRippleShader
 import com.android.systemui.surfaceeffects.core.ripple.RippleShader
 
 private const val RIPPLE_SPARKLE_STRENGTH: Float = 0.3f
