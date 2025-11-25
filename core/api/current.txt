@@ -10288,6 +10288,7 @@ package android.app.usage {
 package android.app.voiceinteraction {
 
   @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public boolean canReadAssistStructure();
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
   }
 

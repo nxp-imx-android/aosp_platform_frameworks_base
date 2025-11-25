@@ -22,10 +22,16 @@ import android.annotation.NonNull;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.UserHandleAware;
+import android.app.AppOpsManager;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Process;
+import android.permission.flags.Flags;
 
 import com.android.internal.app.IVoiceInteractionManagerService;
+import com.android.internal.util.Preconditions;
 
 /**
  * Service that provides information about and interacts with the current global voice interactor
@@ -77,5 +83,30 @@ public final class VoiceInteractionManager {
         Intent intent = new Intent(ACTION_REQUEST_ASSIST_STRUCTURE);
         intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
         return intent;
+    }
+
+    /**
+     * Returns whether the calling app can read the {@link android.app.assist.AssistStructure}.
+     *
+     * @return {@code true} if the calling app is the current assistant and has access to the assist
+     * structure, {@code false} otherwise.
+     */
+    @FlaggedApi(FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
+    @UserHandleAware
+    public boolean canReadAssistStructure() {
+        Preconditions.checkState(Flags.assistSettingsPrivacyImprovementsEnabled(),
+                "canReadAssistStructure not available");
+
+        final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+        if (!roleManager.isRoleHeld(RoleManager.ROLE_ASSISTANT)) {
+            return false;
+        }
+
+        final AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
+        final int opMode = appOpsManager.checkOpNoThrow(
+                AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                Process.myUid(), mContext.getOpPackageName());
+
+        return opMode == AppOpsManager.MODE_DEFAULT || opMode == AppOpsManager.MODE_ALLOWED;
     }
 }
