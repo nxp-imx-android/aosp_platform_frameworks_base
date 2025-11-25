@@ -8315,20 +8315,6 @@ public class Notification implements Parcelable
         }
 
         /**
-         * Determines if the color is light or dark.  Specifically, this is using the same metric as
-         * {@link ContrastColorUtil#resolvePrimaryColor(Context, int, boolean)} and peers so that
-         * the direction of color shift is consistent.
-         *
-         * @param color the color to check
-         * @return {@code true} if the color has higher contrast with white than black
-         * @hide
-         */
-        public static boolean isColorDark(int color) {
-            // as per ContrastColorUtil.shouldUseDark, this uses the color contrast midpoint.
-            return ContrastColorUtil.calculateLuminance(color) <= 0.17912878474;
-        }
-
-        /**
          * Finds a button fill color with sufficient contrast over bg (1.3:1) that has the same hue
          * as the original color, but is lightened or darkened depending on whether the background
          * is dark or light.
@@ -8337,14 +8323,7 @@ public class Notification implements Parcelable
          */
         @VisibleForTesting
         public static int ensureButtonFillContrast(int color, int bg) {
-            return ensureColorContrast(color, bg, 1.3);
-        }
-
-
-        private static int ensureColorContrast(int color, int bg, double contrastRatio) {
-            return isColorDark(bg)
-                    ? ContrastColorUtil.findContrastColorAgainstDark(color, bg, true, contrastRatio)
-                    : ContrastColorUtil.findContrastColor(color, bg, true, contrastRatio);
+            return ContrastColorUtil.ensureContrast(color, bg, 1.3);
         }
 
         /**
@@ -14629,7 +14608,7 @@ public class Notification implements Parcelable
         public static int sanitizeProgressColor(@ColorInt int color,
                 @ColorInt int bg,
                 @ColorInt int defaultColor) {
-            return Builder.ensureColorContrast(
+            return ContrastColorUtil.ensureContrast(
                     Color.alpha(color) == 0 ? defaultColor : color,
                     bg,
                     3);
@@ -18665,7 +18644,7 @@ public class Notification implements Parcelable
                 } else {
                     mBackgroundColor = rawColor;
                 }
-                boolean isBgDark = Notification.Builder.isColorDark(mBackgroundColor);
+                boolean isBgDark = ContrastColorUtil.isColorDark(mBackgroundColor);
                 int onSurfaceColorExtreme = isBgDark ? Color.WHITE : Color.BLACK;
                 mPrimaryTextColor = ContrastColorUtil.ensureContrast(
                         ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.9f),
@@ -18783,15 +18762,15 @@ public class Notification implements Parcelable
         }
 
         private static @ColorInt int ensureTextContrast(@ColorInt int textColor, @ColorInt int bg) {
-            return Builder.ensureColorContrast(textColor, bg, TEXT_CONTRAST);
+            return ContrastColorUtil.ensureContrast(textColor, bg, TEXT_CONTRAST);
         }
 
         private static @ColorInt int ensureThinContrast(@ColorInt int color, @ColorInt int bg) {
-            return Builder.ensureColorContrast(color, bg, THIN_CONTRAST);
+            return ContrastColorUtil.ensureContrast(color, bg, THIN_CONTRAST);
         }
 
         private static @ColorInt int ensureMinimalContrast(@ColorInt int color, @ColorInt int bg) {
-            return Builder.ensureColorContrast(color, bg, MINIMAL_CONTRAST);
+            return ContrastColorUtil.ensureContrast(color, bg, MINIMAL_CONTRAST);
         }
 
         /** calculates the contrast color for the non-colorized notifications */

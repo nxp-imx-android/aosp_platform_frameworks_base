@@ -542,6 +542,17 @@ public class ContrastColorUtil {
     }
 
     /**
+     * Finds a color with sufficient contrast over bg.
+     *
+     * @param color the color to start searching from
+     * @param bg the color to ensure contrast against
+     * @param contrastRatio the minimum contrast ratio required
+     */
+    public static int ensureContrast(@ColorInt int color, @ColorInt int bg, double contrastRatio) {
+        return ensureContrast(color, bg, /* isBgDarker= */ isColorDark(bg), contrastRatio);
+    }
+
+    /**
      * Finds a color with sufficient contrast over bg that has the same or darker hue as the
      * original color, depending on the value of {@code isBgDarker}.
      *
