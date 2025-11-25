@@ -434,6 +434,9 @@ public class MediaProjectionPermissionActivity extends Activity {
         startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
         // close shade if it's open
         mStatusBarManager.collapsePanels();
+        // Finish this activity immediately, as the result is forwarded to the original
+        // launching activity using FLAG_ACTIVITY_FORWARD_RESULT.
+        finish();
     }
 
     private void setCommonIntentExtras(
