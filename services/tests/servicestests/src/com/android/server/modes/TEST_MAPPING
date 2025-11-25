@@ -2,6 +2,9 @@
   "presubmit": [
     {
       "name": "FrameworksServicesTests_contextual_mode"
+    },
+    {
+      "name": "CtsContextualModeManagerTestCases"
     }
   ]
 }

@@ -2460,6 +2460,18 @@ package android.app.job {
 
 }
 
+package android.app.modes {
+
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public final class ContextualModeManager {
+    method public boolean isModeSyncEnabled();
+    method public boolean isModeSyncSupported();
+    method public void registerModeSyncEnabledListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setModeSyncEnabled(boolean);
+    method public void unregisterModeSyncEnabledListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
+  }
+
+}
+
 package android.app.people {
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class PeopleManager {

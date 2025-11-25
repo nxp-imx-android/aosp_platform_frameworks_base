@@ -7879,4 +7879,9 @@
 
     <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
     <integer name="config_defaultFreezerDebounceTimeout">10000</integer>
+
+    <!-- Whether contextual mode (e.g. Do Not Disturb Mode) sync is supported by this device. -->
+    <bool name="config_supportContextualModeSync">true</bool>
+    <!-- If supported, should contextual mode sync be enabled by default. -->
+    <bool name="config_enableContextualModeSyncByDefault">true</bool>
 </resources>
