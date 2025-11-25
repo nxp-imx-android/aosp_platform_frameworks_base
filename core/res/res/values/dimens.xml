@@ -403,6 +403,9 @@
     <!-- padding between the notification icon and the circle containing it -->
     <dimen name="notification_icon_circle_padding">4dp</dimen>
 
+    <!-- size (width and height) of the circle icon in the notification header subtext -->
+    <dimen name="notification_header_subtext_icon_size">14sp</dimen>
+
     <!-- padding between the notification icon and the circle containing it
          (2025 redesign version) -->
     <dimen name="notification_2025_icon_circle_padding">8dp</dimen>
