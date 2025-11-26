@@ -592,6 +592,8 @@ applications that come with the platform
         <permission name="android.permission.CAPTURE_TUNER_AUDIO_INPUT" />
         <permission name="android.permission.CAPTURE_VOICE_COMMUNICATION_OUTPUT" />
         <permission name="android.permission.MODIFY_CELL_BROADCASTS" />
+        <!-- Permission required for CTS test - ContentSafetyManagerTest -->
+        <permission name="android.permission.CHECK_CONTENT_SAFETY" />
         <!-- Permission required for CTS test - CtsBroadcastRadioTestCases -->
         <permission name="android.permission.ACCESS_BROADCAST_RADIO"/>
         <!-- Permission required for CTS test - CtsAmbientContextServiceTestCases -->
