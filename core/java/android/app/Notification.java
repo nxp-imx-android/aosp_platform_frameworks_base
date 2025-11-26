@@ -9090,8 +9090,9 @@ public class Notification implements Parcelable
     /**
      * @return {@code true} if this notification has requested to be colorized, regardless of
      * whether it meets the requirements to be displayed that way.
+     * @hide
      */
-    private boolean isColorizedRequested() {
+    public boolean isColorizedRequested() {
         return extras.getBoolean(EXTRA_COLORIZED);
     }
 
