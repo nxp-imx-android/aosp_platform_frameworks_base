@@ -238,6 +238,11 @@ class AppToWebRepositoryImpl(
             // The prompt is already shown on the task.
             return false
         }
+        val flags = taskInfo.baseIntent?.flags
+        if (flags != null && flags.and(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER) != 0) {
+            // The intent sender explicitly prefers non-browser.
+            return false
+        }
         if (isBrowserApp(context, packageName, taskInfo.userId)) {
             // Browser apps are not the target.
             return false
