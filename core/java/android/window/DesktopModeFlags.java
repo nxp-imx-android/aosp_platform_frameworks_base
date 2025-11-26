@@ -61,8 +61,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION(Flags::enableDesktopWindowingBackNavigation, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingExitTransitionsBugfix, true),
-    ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING(
-            Flags::enableDesktopWindowingImmersiveHandleHiding, true),
     ENABLE_DESKTOP_WINDOWING_MODE(Flags::enableDesktopWindowingMode, true),
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, true),
     ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),

@@ -388,7 +388,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING)
     fun testInsetsStateChanged_notifiesAllDecorsInDisplay() {
         val task1 = createTask(windowingMode = WINDOWING_MODE_FREEFORM, displayId = 1)
         val decoration1 = setUpMockDecorationForTask(task1)
