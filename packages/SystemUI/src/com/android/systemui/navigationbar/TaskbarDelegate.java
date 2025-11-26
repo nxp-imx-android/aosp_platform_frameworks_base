@@ -376,7 +376,7 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
     }
 
     void addPipExclusionBoundsChangeListener(Pip pip) {
-        pip.addPipExclusionBoundsChangeListener(mPipListener);
+        pip.addPipExclusionBoundsChangeListener(mContext.getMainExecutor(), mPipListener);
     }
 
     void removePipExclusionBoundsChangeListener(Pip pip) {
