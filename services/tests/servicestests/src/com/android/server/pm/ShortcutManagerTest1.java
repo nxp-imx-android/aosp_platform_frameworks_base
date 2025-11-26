@@ -100,7 +100,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.Xml;
@@ -109,11 +112,14 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.frameworks.servicestests.R;
+import com.android.internal.content.PackageMonitor;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.pm.ShortcutService.ConfigConstants;
 import com.android.server.pm.ShortcutService.FileOutputStreamWithPath;
 
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -131,6 +137,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -152,6 +159,10 @@ import java.util.function.BiConsumer;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
+
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mSetFlagsClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mSetFlagsClassRule.createSetFlagsRule();
 
     private static final int CACHE_OWNER_0 = LauncherApps.FLAG_CACHE_NOTIFICATION_SHORTCUTS;
     private static final int CACHE_OWNER_1 = LauncherApps.FLAG_CACHE_BUBBLE_SHORTCUTS;
@@ -4245,6 +4256,172 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(1, mService.getShortcutsForTest().size());
 
         // TODO Check all other fields
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherPinnedShortcuts_flagEnabled_appLockEnabled_removesPinnedShortcuts()
+        throws Exception{
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // PackageMonitor setup
+        final PackageMonitor packageMonitor = mService.myPackageMonitor;
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        // Set the changing user ID via reflection, as it's not set when calling
+        // onPackageAppLockEnabled directly.
+        Field userIdField = PackageMonitor.class.getDeclaredField("mChangeUserId");
+        userIdField.setAccessible(true);
+        userIdField.set(packageMonitor, USER_10);
+        packageMonitor.onPackageAppLockEnabled(CALLING_PACKAGE_1);
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check USER_10:
+        // Launchers should no longer have pinned shortcuts for CALLING_PACKAGE_1 ("s0_1").
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_10), "s0_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_10), "s0_2");
+
+        // Check USER_11:
+        // This user should be completely unaffected by the lock on USER_10.
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_11), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_11), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        userIdField.set(packageMonitor, USER_11);
+        packageMonitor.onPackageAppLockEnabled(CALLING_PACKAGE_2);
+
+        // Check USER_11:
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_11), "s10_1");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_11), "s10_1");
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherPinnedShortcuts_flagDisabled_appLockEnabled_doesNotRemovesPinnedShortcuts()
+        throws Exception {
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // PackageMonitor setup
+        final PackageMonitor packageMonitor = mService.myPackageMonitor;
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        // Set the changing user ID via reflection, as it's not set when calling
+        // onPackageAppLockEnabled directly.
+        Field userIdField = PackageMonitor.class.getDeclaredField("mChangeUserId");
+        userIdField.setAccessible(true);
+        userIdField.set(packageMonitor, USER_10);
+        packageMonitor.onPackageAppLockEnabled(CALLING_PACKAGE_1);
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check for both users and Launcher, packages is not affected by app lock when flag is off.
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_10), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_10), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_11), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_11), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s0_1", USER_10);
+        assertShortcutExists(CALLING_PACKAGE_2, "s0_2", USER_10);
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        userIdField.set(packageMonitor, USER_11);
+        packageMonitor.onPackageAppLockEnabled(CALLING_PACKAGE_2);
+
+        // Check for both users and Launcher, packages is not affected by app lock when flag is off.
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_10), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_10), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_1, USER_11), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherPinnedShortcuts(LAUNCHER_2, USER_11), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s0_1", USER_10);
+        assertShortcutExists(CALLING_PACKAGE_2, "s0_2", USER_10);
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
     }
 
     public void disabled_testCleanupPackage() {
