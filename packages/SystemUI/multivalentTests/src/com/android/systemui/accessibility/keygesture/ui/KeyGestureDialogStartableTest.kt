@@ -25,7 +25,6 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.hardware.input.KeyGestureEvent
 import android.os.Build
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
@@ -105,7 +104,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_showDialog() =
         kosmos.runTest {
             underTest.start()
@@ -116,7 +114,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationDialogCreatedAndDismiss_dialogDismissed() =
         kosmos.runTest() {
             underTest.start()
@@ -129,7 +126,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_dialogShowing_ignoreAdditionalFlows() =
         kosmos.runTest {
             underTest.start()
@@ -149,7 +145,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagReceivedAndDismiss_thenShowScreenReaderAgain_showSecondDialog() =
         kosmos.runTest {
             underTest.start()
@@ -247,7 +242,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationDialog_enablesShortcutAndZoomsIn() =
         kosmos.runTest {
             underTest.start()
@@ -262,7 +256,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationDialog_opensCorrectlyOnNonDefaultDisplay() =
         kosmos.runTest {
             val spyUnderTest = spy(underTest)

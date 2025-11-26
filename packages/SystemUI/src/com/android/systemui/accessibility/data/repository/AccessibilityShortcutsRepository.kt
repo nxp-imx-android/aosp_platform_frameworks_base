@@ -28,7 +28,6 @@ import android.text.BidiFormatter
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
-import com.android.hardware.input.Flags
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.dialog.AccessibilityTarget
 import com.android.internal.accessibility.dialog.AccessibilityTargetHelper
@@ -401,17 +400,10 @@ constructor(
     private suspend fun getDialogTitle(keyGestureType: Int, featureName: CharSequence): String? {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION -> {
-                if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
-                    resources.getString(
-                        R.string.accessibility_key_gesture_magnification_dialog_title,
-                        featureName,
-                    )
-                } else {
-                    resources.getString(
-                        R.string.accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title,
-                        featureName,
-                    )
-                }
+                resources.getString(
+                    R.string.accessibility_key_gesture_magnification_dialog_title,
+                    featureName,
+                )
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
