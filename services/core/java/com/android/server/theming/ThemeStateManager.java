@@ -216,18 +216,16 @@ public class ThemeStateManager {
     }
 
     /**
-     * Called when a user starts (logs in or unlocks their profile).
+     * Called when a user is loaded (e.g. at boot or when created).
      *
-     * @param userHandle The {@link UserHandle} of the user starting.
-     * @param isSetup    {@code true} if the user has completed setup, {@code false} otherwise.
-     * @param seedColor  The initial seed color for the user's theme.
-     * @param contrast   The initial contrast value for the user's theme.
-     * @param style      The initial style for the user's theme.
+     * @param userId    The ID of the user loading.
+     * @param isSetup   {@code true} if the user has completed setup, {@code false} otherwise.
+     * @param seedColor The initial seed color for the user's theme.
+     * @param contrast  The initial contrast value for the user's theme.
+     * @param style     The initial style for the user's theme.
      */
-    void onUserStart(UserHandle userHandle, boolean isSetup, int seedColor, float contrast,
+    void onUserLoad(int userId, boolean isSetup, int seedColor, float contrast,
             @ThemeStyle.Type Integer style) {
-        int userId = userHandle.getIdentifier();
-
         synchronized (mLock) {
             Integer parentId = parentOf(userId);
 
@@ -236,11 +234,11 @@ public class ThemeStateManager {
                 ThemeStatePair parentState = mThemeStates.get(parentId);
                 if (parentState != null) {
                     Slog.d(TAG,
-                            "Profile " + userId + " started, added to existing parent " + parentId);
+                            "Profile " + userId + " loaded, added to existing parent " + parentId);
                     parentState.addProfile(userId);
                 } else {
-                    Slog.d(TAG, "Profile " + userId + " started before parent " + parentId
-                            + ". Waiting for parent start.");
+                    Slog.d(TAG, "Profile " + userId + " loaded before parent " + parentId
+                            + ". Waiting for parent load.");
                 }
             } else if (mThemeStates.contains(userId)) {
                 // CASE 2: userId is an existing user
@@ -263,6 +261,21 @@ public class ThemeStateManager {
                 mThemeStates.put(userId, newState);
             }
         }
+    }
+
+    /**
+     * Called when a user starts (logs in or unlocks their profile).
+     *
+     * @param userHandle The {@link UserHandle} of the user starting.
+     * @param isSetup    {@code true} if the user has completed setup, {@code false} otherwise.
+     * @param seedColor  The initial seed color for the user's theme.
+     * @param contrast   The initial contrast value for the user's theme.
+     * @param style      The initial style for the user's theme.
+     */
+    void onUserStart(UserHandle userHandle, boolean isSetup, int seedColor, float contrast,
+            @ThemeStyle.Type Integer style) {
+        // Ensure state is loaded. This is idempotent.
+        onUserLoad(userHandle.getIdentifier(), isSetup, seedColor, contrast, style);
         reevaluateSystemTheme();
     }
 
