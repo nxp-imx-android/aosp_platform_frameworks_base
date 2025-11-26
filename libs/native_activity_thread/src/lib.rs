@@ -26,6 +26,7 @@ use rustutils::android::process::{android_mallopt, MalloptOpcode};
 
 use utils::{apply_runtime_flags, setup_process_dumpability};
 
+mod font;
 mod library_loader;
 mod native_activity_thread;
 mod native_application_thread;

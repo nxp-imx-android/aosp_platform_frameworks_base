@@ -16,6 +16,8 @@
 
 package android.app;
 
+import android.os.ParcelFileDescriptor;
+
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ oneway interface INativeApplicationThread {
     void scheduleTrimMemory(int level);
 
     @UnsupportedAppUsage
-    void bindApplication();
+    void bindApplication(in @nullable ParcelFileDescriptor systemFontMapFd);
 
     @UnsupportedAppUsage
     void setProcessState(int state);

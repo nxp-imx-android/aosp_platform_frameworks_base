@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use binder::{Interface, SpIBinder};
+use binder::{Interface, ParcelFileDescriptor, SpIBinder};
 use log::info;
 use native_application_thread_aidl::aidl::android::app::INativeApplicationThread::INativeApplicationThread;
-use std::{marker::PhantomData, thread};
+use std::{marker::PhantomData, os::fd::OwnedFd, thread};
 
 use crate::task::Sender;
 use crate::utils::reset_time_zone;
@@ -89,13 +89,17 @@ pub struct UnbindServiceRequest {
     pub bind_token: SpIBinder,
 }
 
+pub struct BindApplicationRequest {
+    pub system_font_map_fd: Option<OwnedFd>,
+}
+
 pub enum NativeApplicationThreadRequest {
     CreateService(CreateServiceRequest),
     DestroyService(DestroyServiceRequest),
     BindService(BindServiceRequest),
     UnbindService(UnbindServiceRequest),
     TrimMemory(i32),
-    BindApplication,
+    BindApplication(BindApplicationRequest),
     SetProcessState(i32),
 }
 
@@ -234,14 +238,31 @@ impl INativeApplicationThread for NativeApplicationThread {
         Ok(())
     }
 
-    fn bindApplication(&self) -> binder::Result<()> {
+    fn bindApplication(
+        &self,
+        system_font_map_fd: Option<&ParcelFileDescriptor>,
+    ) -> binder::Result<()> {
         info!("bindApplication thread id={:?}", thread::current().id());
-        self.sender.send(NativeApplicationThreadRequest::BindApplication).map_err(|e| {
-            binder::Status::new_exception_str(
-                binder::ExceptionCode::SERVICE_SPECIFIC,
-                Some(format!("Failed to send a task: {:?}", e)),
-            )
-        })?;
+        let system_font_map_fd = system_font_map_fd
+            .map(|fd| {
+                fd.as_ref().try_clone().map_err(|e| {
+                    binder::Status::new_exception_str(
+                        binder::ExceptionCode::SERVICE_SPECIFIC,
+                        Some(format!("Failed to dup the FD for system font map: {:?}", e)),
+                    )
+                })
+            })
+            .transpose()?;
+        self.sender
+            .send(NativeApplicationThreadRequest::BindApplication(BindApplicationRequest {
+                system_font_map_fd,
+            }))
+            .map_err(|e| {
+                binder::Status::new_exception_str(
+                    binder::ExceptionCode::SERVICE_SPECIFIC,
+                    Some(format!("Failed to send a task: {:?}", e)),
+                )
+            })?;
         Ok(())
     }
 

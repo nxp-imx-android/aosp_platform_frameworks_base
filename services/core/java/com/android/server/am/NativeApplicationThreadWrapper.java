@@ -68,6 +68,7 @@ import com.android.internal.app.IVoiceInteractor;
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -269,7 +270,16 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
             long startRequestedUptime)
             throws RemoteException {
         // TODO(b/431634361): Send necessary or useful information to native processes.
-        mNativeThread.bindApplication();
+        try {
+            ParcelFileDescriptor systemFontMapFd = null;
+            if (serializedSystemFontMap != null) {
+                systemFontMapFd =
+                        ParcelFileDescriptor.dup(serializedSystemFontMap.getFileDescriptor());
+            }
+            mNativeThread.bindApplication(systemFontMapFd);
+        } catch (IOException e) {
+            throw new RemoteException("Failed to dup system font map FD");
+        }
     }
 
     @Override
