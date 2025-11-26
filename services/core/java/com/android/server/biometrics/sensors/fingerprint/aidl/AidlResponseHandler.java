@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.biometrics.face.Error;
-import android.hardware.biometrics.fingerprint.AuthenticateSuccess;
 import android.hardware.biometrics.fingerprint.ISessionCallback;
 import android.hardware.fingerprint.Fingerprint;
 import android.hardware.keymaster.HardwareAuthToken;
@@ -172,13 +171,6 @@ public class AidlResponseHandler extends ISessionCallback.Stub {
                 mAidlResponseHandlerCallback.onEnrollSuccess();
             }
         });
-    }
-
-    @Override
-    public void onAuthenticationSucceededWithResult(AuthenticateSuccess result) {
-        final int enrollmentId = result.enrollmentId;
-        final HardwareAuthToken hat = result.hat;
-        onAuthenticationSucceeded(enrollmentId, hat);
     }
 
     @Override
