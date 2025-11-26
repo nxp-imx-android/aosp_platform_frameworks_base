@@ -709,6 +709,31 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
     }
 
+    @Test
+    fun testOnSwitchToBrowser_opensBrowserAndClosesTask() {
+        val windowDecorationActions = createDefaultWindowActions()
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FULLSCREEN)
+        val taskInfo = decor.taskInfo
+        val uri = Uri.parse("https://www.google.com")
+        val intent = Intent(ACTION_MAIN, uri)
+        whenever(mockDesktopTasksController.closeTask(taskInfo))
+            .thenReturn(DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP)
+
+        windowDecorationActions.onSwitchToBrowser(taskInfo, intent)
+
+        // Verify that the browser is opened.
+        verify(spyContext)
+            .startActivityAsUser(
+                argThat { intentArg ->
+                    uri.equals(intentArg.data) && intentArg.action == ACTION_MAIN
+                },
+                any(),
+                eq(mockUserHandle),
+            )
+        // Verify that the task is closed.
+        verify(mockDesktopTasksController).closeTask(taskInfo)
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
