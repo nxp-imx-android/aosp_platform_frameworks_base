@@ -26,8 +26,8 @@ public class StringUtils {
     public static final byte GROUPING_BY4 = 2;  // e.g. 12,3456,7890.12
     public static final byte GROUPING_BY32 = 3; // e.g. 1,23,45,67,890.12
 
-    public static final byte SEPARATOR_PERIOD_COMMA = 0; // e.g. 123,456.12
-    public static final byte SEPARATOR_COMMA_PERIOD = 1; // e.g. 123.456,12
+    public static final byte SEPARATOR_COMMA_PERIOD = 0; // e.g. 123,456.12
+    public static final byte SEPARATOR_PERIOD_COMMA = 1; // e.g. 123.456,12
     public static final byte SEPARATOR_SPACE_COMMA = 2;  // e.g. 123 456,12
     public static final byte SEPARATOR_UNDER_PERIOD = 3; // e.g. 123_456.12
 
@@ -139,7 +139,7 @@ public class StringUtils {
         char groupSep = ',';
         char decSep = '.';
         switch (separator) {
-            case SEPARATOR_COMMA_PERIOD:
+            case SEPARATOR_PERIOD_COMMA:
                 groupSep = '.';
                 decSep = ',';
                 break;
@@ -151,7 +151,7 @@ public class StringUtils {
                 groupSep = '_';
                 decSep = '.';
                 break;
-            // default is SEPARATOR_PERIOD_COMMA
+            // default is SEPARATOR_COMMA_PERIOD
         }
         boolean useParenthesesForNeg = (options & NEGATIVE_PARENTHESES) != 0;
         boolean rounding = (options & ROUNDING) != 0;

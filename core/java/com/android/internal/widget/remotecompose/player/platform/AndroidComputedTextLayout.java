@@ -24,12 +24,17 @@ public class AndroidComputedTextLayout implements RcPlatformServices.ComputedTex
     StaticLayout mStaticLayout;
     float mWidth;
     float mHeight;
+    boolean mIsHyphenatedText;
 
     public AndroidComputedTextLayout(
-            @NonNull StaticLayout staticLayout, float width, float height) {
+            @NonNull StaticLayout staticLayout,
+            float width,
+            float height,
+            boolean isHyphenatedText) {
         mStaticLayout = staticLayout;
         mWidth = width;
         mHeight = height;
+        mIsHyphenatedText = isHyphenatedText;
     }
 
     /** Set a StaticLayout on this container */
@@ -51,5 +56,10 @@ public class AndroidComputedTextLayout implements RcPlatformServices.ComputedTex
     @Override
     public float getHeight() {
         return mHeight;
+    }
+
+    @Override
+    public boolean isHyphenatedText() {
+        return mIsHyphenatedText;
     }
 }
