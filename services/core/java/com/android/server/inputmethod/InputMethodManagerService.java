@@ -935,14 +935,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @NonNull
         private final InputMethodManagerService mService;
 
-        /** The ID of the new user. */
+        /** The ID of the user to switch to. */
         @UserIdInt
         final int mNewUserId;
 
         /** Whether this is a switch between user profiles or full users. */
         final boolean mProfileSwitch;
 
-        /** The IME client for which to reset the input connection. */
+        /** The IME client for which to reset the input connection, at the end of the switch. */
         @Nullable
         IInputMethodClientInvoker mClientToBeReset;
 
@@ -1084,21 +1084,27 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             AdditionalSubtypeMapRepository.remove(userId);
             InputMethodSettingsRepository.remove(userId);
             mService.mUserDataRepository.remove(userId);
+            if (mService.mConcurrentMultiUserModeEnabled) {
+                // In concurrent multi-user mode, we in general do not rely on the concept of
+                // current user.
+                return;
+            }
             synchronized (ImfLock.class) {
                 final int nextOrCurrentUser = mService.mUserSwitchHandlerTask != null
                         ? mService.mUserSwitchHandlerTask.mNewUserId : mService.mCurrentImeUserId;
-                if (!mService.mConcurrentMultiUserModeEnabled && userId == nextOrCurrentUser) {
-                    // The current user was removed without an ongoing switch, or the user targeted
-                    // by the ongoing switch was removed. Switch to the current non-profile user
-                    // to allow starting input on it or one of its profile users later.
-                    // Note: non-profile users cannot be removed while they are the current user.
-                    final int currentUserId = mService.mActivityManagerInternal.getCurrentUserId();
-                    // For the ongoing switch case, we cannot determine whether this would lead to
+                if (userId == nextOrCurrentUser) {
+                    // The current user was removed without a pending user switch, or the user
+                    // of the pending user switch was removed. Switch to the current full user from
+                    // ActivityManager to allow starting input on it or one of its profiles later.
+                    // Note: full users cannot be removed while they are the current user, as they
+                    // require a user switch beforehand.
+                    final int amUserId = mService.mActivityManagerInternal.getCurrentUserId();
+                    // For the pending switch case, we cannot determine whether this would lead to
                     // a profile switch between the current IMMS and ActivityManager users, fallback
                     // to non-profile switch.
                     final boolean profileSwitch = mService.mUserSwitchHandlerTask == null
-                            && user.isProfile() && user.profileGroupId == currentUserId;
-                    mService.scheduleSwitchUserTaskLocked(currentUserId, profileSwitch,
+                            && user.isProfile() && user.profileGroupId == amUserId;
+                    mService.scheduleSwitchUserTaskLocked(amUserId, profileSwitch,
                             null /* clientToBeReset */);
                 }
             }
@@ -1203,33 +1209,47 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     /**
-     * Schedules a switch to the given user.
+     * Schedules a switch to the given user. If there is a pending switch to the given user, this
+     * only updates the {@code clientToBeReset}. Otherwise, any pending switch is cancelled. If
+     * the switch is requested on the {@link #mCurrentImeUserId}, this is a no-op.
      *
-     * @param userId          the ID of the new user.
+     * @param newUserId       the ID of the user to switch to.
      * @param profileSwitch   whether this is switch between user profiles or full users.
-     * @param clientToBeReset the IME client for which to reset the input connection.
+     * @param clientToBeReset the IME client for which to reset the input connection, at the end of
+     *                        the switch.
+     *
+     * @return whether there is a pending user switch (either pre-exiting or new).
      */
     @GuardedBy("ImfLock.class")
-    private void scheduleSwitchUserTaskLocked(@UserIdInt int userId, boolean profileSwitch,
+    private boolean scheduleSwitchUserTaskLocked(@UserIdInt int newUserId, boolean profileSwitch,
             @Nullable IInputMethodClientInvoker clientToBeReset) {
         if (mUserSwitchHandlerTask != null) {
-            if (mUserSwitchHandlerTask.mNewUserId == userId) {
+            // Already have a pending user switch.
+            if (newUserId == mUserSwitchHandlerTask.mNewUserId) {
+                // Pending user switch for the given user, update client only.
                 mUserSwitchHandlerTask.mClientToBeReset = clientToBeReset;
-                return;
+                return true;
             }
+            // Pending user switch for a different user, cancel it.
             mIoHandler.removeCallbacks(mUserSwitchHandlerTask);
+            mUserSwitchHandlerTask = null;
         }
-        // Hide soft input before user switch task since switch task may block main handler a while
-        // and delayed the hideCurrentInputLocked().
+        if (newUserId == mCurrentImeUserId) {
+            // Switching to the current user, this is a no-op.
+            return false;
+        }
+        // Hide IME before user switch task as it may block main handler a while and delay any
+        // subsequent hide request.
         final var userData = getUserData(mCurrentImeUserId);
         final var statsToken = createStatsTokenForFocusedClient(false /* show */,
                 SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                 false /* updateTargetWindow */, statsToken,
                 SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
-        final var task = new UserSwitchHandlerTask(this, userId, profileSwitch, clientToBeReset);
+        final var task = new UserSwitchHandlerTask(this, newUserId, profileSwitch, clientToBeReset);
         mUserSwitchHandlerTask = task;
         mIoHandler.post(task);
+        return true;
     }
 
     @VisibleForTesting
@@ -1348,9 +1368,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     /**
      * Handles switching to the given user.
      *
-     * @param newUserId       the ID of the new user.
+     * @param newUserId       the ID of the user to switch to.
      * @param profileSwitch   whether this is a switch between user profiles or full users.
-     * @param clientToBeReset the IME client for which to reset the input connection.
+     * @param clientToBeReset the IME client for which to reset the input connection, at the end of
+     *                        the switch.
      */
     @GuardedBy("ImfLock.class")
     private void switchUserOnHandlerLocked(@UserIdInt int newUserId, boolean profileSwitch,
@@ -3705,45 +3726,36 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                             return InputBindResult.INVALID_DISPLAY_ID;
                     }
 
-                    // Verify if IMMS is in the process of switching user.
-                    if (!mConcurrentMultiUserModeEnabled && mUserSwitchHandlerTask != null) {
-                        // There is already an on-going pending user switch task.
-                        final int nextUserId = mUserSwitchHandlerTask.mNewUserId;
-                        if (userId == nextUserId) {
-                            scheduleSwitchUserTaskLocked(userId,
-                                    mUserSwitchHandlerTask.mProfileSwitch, cs.mClient);
+                    if (!mConcurrentMultiUserModeEnabled) {
+                        // Allow this user (potentially requiring a switch) if:
+                        //  * it is the current user OR
+                        //  * there is a pending user switch for it OR
+                        //  * it is a profile of the current user
+                        final boolean isAllowed = userId == mCurrentImeUserId
+                                || (mUserSwitchHandlerTask != null
+                                    && userId == mUserSwitchHandlerTask.mNewUserId)
+                                || ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId);
+                        if (!isAllowed) {
+                            Slog.w(TAG, "A background user is requesting window. Hiding IME.");
+                            Slog.w(TAG, "If you need to impersonate a foreground user/profile from"
+                                    + " a background user, use EditorInfo.targetInputMethodUser"
+                                    + " with INTERACT_ACROSS_USERS_FULL permission.");
+                            final var statsToken = createStatsTokenForFocusedClient(
+                                    false /* show */, SoftInputShowHideReason.HIDE_INVALID_USER,
+                                    userId);
+                            hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                                    true /* updateTargetWindow */, statsToken,
+                                    SoftInputShowHideReason.HIDE_INVALID_USER, userId);
+                            return InputBindResult.INVALID_USER;
+                        }
+                        // Schedule a pending user switch, and cancel any ongoing one. If we do
+                        // schedule a new one, it must be a profile switch.
+                        if (scheduleSwitchUserTaskLocked(userId, true /* profileSwitch */,
+                                cs.mClient)) {
+                            // Pending user switch scheduled, signal the client to wait.
                             return InputBindResult.USER_SWITCHING;
                         }
-                        final int[] profileIdsWithDisabled = getProfileIds(mCurrentImeUserId);
-                        for (int profileId : profileIdsWithDisabled) {
-                            if (profileId == userId) {
-                                scheduleSwitchUserTaskLocked(userId, true /* profileSwitch */,
-                                        cs.mClient);
-                                return InputBindResult.USER_SWITCHING;
-                            }
-                        }
-                        return InputBindResult.INVALID_USER;
-                    }
-
-                    // Verify if caller is a background user.
-                    if (!mConcurrentMultiUserModeEnabled && userId != mCurrentImeUserId) {
-                        if (ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId)) {
-                            // cross-profile access is always allowed here to allow
-                            // profile-switching.
-                            scheduleSwitchUserTaskLocked(userId, true /* profileSwitch */,
-                                    cs.mClient);
-                            return InputBindResult.USER_SWITCHING;
-                        }
-                        Slog.w(TAG, "A background user is requesting window. Hiding IME.");
-                        Slog.w(TAG, "If you need to impersonate a foreground user/profile from"
-                                + " a background user, use EditorInfo.targetInputMethodUser with"
-                                + " INTERACT_ACROSS_USERS_FULL permission.");
-                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
-                                SoftInputShowHideReason.HIDE_INVALID_USER, userId);
-                        hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
-                                true /* updateTargetWindow */, statsToken,
-                                SoftInputShowHideReason.HIDE_INVALID_USER, userId);
-                        return InputBindResult.INVALID_USER;
+                        // No pending user switch, already in the right user.
                     }
 
                     if (editorInfo != null && !InputMethodUtils.checkIfPackageBelongsToUid(
