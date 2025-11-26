@@ -32,7 +32,6 @@ import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_FALSE;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.NotificationServiceProto.ROOT_CONFIG;
-import static android.service.notification.ZenModeConfig.MANUAL_RULE_ID;
 import static android.service.notification.ZenModeConfig.ORIGIN_APP;
 import static android.service.notification.ZenModeConfig.ORIGIN_INIT;
 import static android.service.notification.ZenModeConfig.ORIGIN_INIT_USER;
@@ -1769,12 +1768,6 @@ public class ZenModeHelper {
                 if (obsoleteEventsRule != null && !obsoleteEventsRule.enabled) {
                     config.automaticRules.remove(ZenModeConfig.EVENTS_OBSOLETE_RULE_ID);
                 }
-            }
-
-            // Always set manual zen rule id.
-            if (android.service.notification.Flags.enableDndSync() &&
-                    config.manualRule.id == null) {
-                config.manualRule.id = MANUAL_RULE_ID;
             }
 
             if (DEBUG) Log.d(TAG, reason);
