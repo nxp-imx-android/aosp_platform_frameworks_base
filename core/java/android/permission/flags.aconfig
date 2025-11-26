@@ -699,3 +699,11 @@ flag {
     description: "When the flag is turned on, show new location permission radio buttons"
     bug: "436314824"
 }
+
+flag {
+    name: "new_default_app_confirmation_dialog_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "This flag controls whether to enable the new default app confirmation dialog"
+    bug: "440579404"
+}
