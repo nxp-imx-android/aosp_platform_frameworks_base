@@ -20234,6 +20234,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> FLASH_TORCH_STRENGTH_MAX_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<int[]> HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<android.hardware.camera2.params.DeviceStateSensorOrientationMap> INFO_DEVICE_STATE_SENSOR_ORIENTATION_MAP;
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_DEVICE_TYPE;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SESSION_CONFIGURATION_QUERY_VERSION;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SUPPORTED_HARDWARE_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.String> INFO_VERSION;
@@ -20640,6 +20641,10 @@ package android.hardware.camera2 {
     field public static final int HOT_PIXEL_MODE_FAST = 1; // 0x1
     field public static final int HOT_PIXEL_MODE_HIGH_QUALITY = 2; // 0x2
     field public static final int HOT_PIXEL_MODE_OFF = 0; // 0x0
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_BUILT_IN = 0; // 0x0
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_EXTERNAL = 1; // 0x1
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_UNKNOWN = 3; // 0x3
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_VIRTUAL = 2; // 0x2
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_3 = 3; // 0x3
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL = 4; // 0x4
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_FULL = 1; // 0x1
@@ -20939,6 +20944,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> FLASH_STATE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> FLASH_STRENGTH_LEVEL;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> HOT_PIXEL_MODE;
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> INFO_DEVICE_TYPE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<android.location.Location> JPEG_GPS_LOCATION;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> JPEG_ORIENTATION;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Byte> JPEG_QUALITY;
