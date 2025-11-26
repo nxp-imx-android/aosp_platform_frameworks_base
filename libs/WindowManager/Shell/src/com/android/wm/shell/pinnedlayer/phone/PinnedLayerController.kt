@@ -32,12 +32,16 @@ import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logD
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerPinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerUnpinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getRemovedFromLayerWct
 import com.android.wm.shell.shared.TransactionPool
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
@@ -52,6 +56,8 @@ import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
 class PinnedLayerController(
     shellInit: ShellInit,
     private val transitions: Transitions,
+    private val desktopState: DesktopState,
+    private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val presentationController: PinnedLayerPresentationController,
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
     private val windowClampAnimationHandler: PinnedWindowRepositionAnimationHandler,
@@ -171,6 +177,66 @@ class PinnedLayerController(
     }
 
     /**
+     * Starts a transition to move a task to a display with a given display id.
+     *
+     * Current method will set bounds considering constraints and valid drag area on display.
+     *
+     * @param task a [TaskInfo] that should be moved to another display.
+     * @param displayId a new display id to move task to.
+     * @param bounds a [Rect] representing new bounds the task wants to be placed at relative to the
+     *   [displayId] coordinate system.
+     * @return `true` when started a transition to move task to a new display, `false` otherwise.
+     */
+    fun moveToDisplay(task: TaskInfo, displayId: Int, bounds: Rect? = null): Boolean {
+        val displayAreaInfo = taskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        val isPinned = isPinned(task.taskId)
+        val isSameDisplay = task.taskId == displayId
+        val isDisplayUnavailable = displayAreaInfo == null
+        val isDesktopModeSupportedOnDisplay =
+            desktopState.isDesktopModeSupportedOnDisplay(displayId)
+        logD(
+            "moveToDisplay: task=%s, displayId=%d,\n isPinned=%b, isSameDisplayRequest=%b, " +
+                "isDisplayUnavailable=%b, isDesktopModeSupportedOnDisplay=%b",
+            task,
+            displayId,
+            isPinned,
+            isSameDisplay,
+            isDisplayUnavailable,
+            isDesktopModeSupportedOnDisplay,
+        )
+
+        if (
+            !isPinned || isSameDisplay || isDisplayUnavailable || !isDesktopModeSupportedOnDisplay
+        ) {
+            logV("moveToDisplay: skipping for the task=%s and display=%s.", task, displayAreaInfo)
+            return false
+        }
+
+        // TODO(b/463648549): projection mode?
+
+        val finalBounds =
+            bounds?.let { newBounds ->
+                presentationController.clampToDisplay(task, newBounds, displayId)
+            }
+        logV(
+            "moveToDisplay: moving a task=%s to display=%s.\n Original bounds=%s, " +
+                "clamped bounds=%s",
+            task,
+            displayAreaInfo,
+            bounds,
+            finalBounds,
+        )
+        val wct = WindowContainerTransaction()
+        if (finalBounds != null) {
+            wct.setBounds(task.token, finalBounds)
+        }
+
+        wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
+        transitions.startTransition(TRANSIT_CHANGE, wct, null)
+        return true
+    }
+
+    /**
      * Handles drag end event for the given [TaskInfo].
      *
      * Visual indicators and mirroring surfaces sometimes should be disposed by the API consumer,
@@ -181,7 +247,8 @@ class PinnedLayerController(
      * @param leash a [SurfaceControl] of the given task.
      * @param taskInfo the task to update.
      * @param dragStartBounds the bounds of the task when the drag was started.
-     * @param dragEndBounds the bounds of the task when drag has ended.
+     * @param dragEndBounds the bounds of the task relative to the display on which drag has
+     *   stopped.
      * @return `true` when the API caller should clear visual indicators itself, `false` otherwise.
      */
     fun onDragEnded(
@@ -189,11 +256,17 @@ class PinnedLayerController(
         taskInfo: TaskInfo,
         dragStartBounds: Rect,
         dragEndBounds: Rect,
+        displayId: Int = taskInfo.displayId,
     ): Boolean {
         if (isNotPinned(taskInfo.taskId)) return false
 
+        if (taskInfo.displayId != displayId && moveToDisplay(taskInfo, displayId, dragEndBounds)) {
+            return true
+        }
+
         // Post-process final drag bounds to keep them inside the valid drag area.
         val destinationBounds =
+            // TODO(b/463648549): should never be null.
             requireNotNull(presentationController.clampToDisplay(taskInfo, dragEndBounds)) {
                 "Clamped destination bounds for the pinned window can't be null."
             }
@@ -206,8 +279,6 @@ class PinnedLayerController(
             transactionPool.release(t)
             return true
         }
-
-        // TODO(b/449118417): Handle move to display, for now we snap back.
 
         if (destinationBounds != dragEndBounds) {
             // TODO(b/449118417): Fix flickering when mirrored leash is removed.

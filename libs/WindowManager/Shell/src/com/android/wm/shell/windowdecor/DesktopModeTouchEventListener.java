@@ -655,7 +655,8 @@ public class DesktopModeTouchEventListener
                                     decoration.getTaskSurface(),
                                     taskInfo,
                                     new Rect(mOnDragStartInitialBounds),
-                                    newTaskBounds);
+                                    newTaskBounds,
+                                    e.getDisplayId());
                 } else {
                     needDragIndicatorCleanup =
                             mDesktopTasksController.onDragPositioningEnd(

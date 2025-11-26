@@ -18,6 +18,7 @@ package com.android.wm.shell.dagger.pinnedlayer
 
 import android.content.Context
 import android.view.SurfaceControl
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
@@ -77,17 +78,20 @@ object PinnedLayerModule {
         windowDragTransitionHandler: WindowDragTransitionHandler,
         windowClampAnimationHandler: PinnedWindowRepositionAnimationHandler,
         transactionPool: TransactionPool,
+        rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                 PinnedLayerController(
                     shellInit = shellInit,
                     transitions = transitions,
+                    taskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
                     presentationController =
                         PinnedLayerPresentationController(context, displayController, desktopState),
                     windowDragTransitionHandler = windowDragTransitionHandler,
                     windowClampAnimationHandler = windowClampAnimationHandler,
                     transactionPool = transactionPool,
+                    desktopState = desktopState,
                 )
             )
         }
