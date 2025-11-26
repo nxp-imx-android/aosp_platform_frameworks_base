@@ -55,6 +55,7 @@ import android.window.TaskAppearedInfo;
 import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransactionCallback;
 
@@ -472,16 +473,19 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * Creates a persistent root task in WM for a particular windowing-mode.
      * @param request The data for this request
      * @param listener The listener to get the created task callback.
+     * @return the WindowContainerToken of the newly created root task.
      *
      * @hide
      */
-    public void createRootTask(@NonNull CreateRootTaskRequest request, TaskListener listener) {
+    @Nullable
+    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request,
+            TaskListener listener) {
         ProtoLog.v(WM_SHELL_TASK_ORG, "createRootTask() displayId=%d winMode=%d listener=%s" ,
                 request.displayId, request.windowingMode, listener.toString());
         final IBinder cookie = new Binder();
         request.setLaunchCookie(cookie);
         setPendingLaunchCookieListener(cookie, listener);
-        super.createRootTask(request);
+        return super.createRootTask(request);
     }
 
     /**
