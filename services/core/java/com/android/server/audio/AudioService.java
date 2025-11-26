@@ -4604,7 +4604,7 @@ public class AudioService extends IAudioService.Stub
             }
 
             if (streamType == getBluetoothContextualVolumeStream()
-                    && AudioSystem.isLeAudioDeviceType(deviceType)
+                    && AudioSystem.isBluetoothLeOutDevice(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 if (DEBUG_VOL) {
                     Slog.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
@@ -8814,7 +8814,7 @@ public class AudioService extends IAudioService.Stub
             if (absVolumePrioritizesAbsDevice() && selectAbsoluteDevices) {
                 ada = deviceSet.stream().filter(
                         device -> isA2dpAbsoluteVolumeDevice(device.getInternalType())
-                                || AudioSystem.isLeAudioDeviceType(
+                                || AudioSystem.isBluetoothLeOutDevice(
                                 device.getInternalType())).findFirst();
                 if (ada.isPresent()) {
                     return ada.get();
@@ -9173,7 +9173,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         if (isA2dpAbsoluteVolumeDevice(audioSystemDeviceOut)
-                || AudioSystem.isLeAudioDeviceType(audioSystemDeviceOut)) {
+                || AudioSystem.isBluetoothLeOutDevice(audioSystemDeviceOut)) {
             return DEVICE_VOLUME_BEHAVIOR_ABSOLUTE;
         }
         return DEVICE_VOLUME_BEHAVIOR_VARIABLE;
@@ -16465,7 +16465,7 @@ public class AudioService extends IAudioService.Stub
         } else {
             return hasAbsoluteVolumeDeviceKey
                     || isA2dpAbsoluteVolumeDevice(deviceType)
-                    || AudioSystem.isLeAudioDeviceType(deviceType)
+                    || AudioSystem.isBluetoothLeOutDevice(deviceType)
                     || deviceType == AudioSystem.DEVICE_OUT_HEARING_AID
                     || deviceType == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
         }
@@ -16486,7 +16486,7 @@ public class AudioService extends IAudioService.Stub
         } else {
             return hasAbsoluteVolumeDeviceKey
                     || isA2dpAbsoluteVolumeDevice(ada.getInternalType())
-                    || AudioSystem.isLeAudioDeviceType(ada.getInternalType())
+                    || AudioSystem.isBluetoothLeOutDevice(ada.getInternalType())
                     || ada.getInternalType() == AudioSystem.DEVICE_OUT_HEARING_AID
                     || ada.getInternalType() == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
         }
