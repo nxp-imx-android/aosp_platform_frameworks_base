@@ -310,6 +310,16 @@ flag {
 }
 
 flag {
+    name: "disable_dream_suppression"
+    namespace: "systemui"
+    description: "Disable suppression of dream when device is in a vehicle."
+    bug: "457463098"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "disable_flags_per_display"
    namespace: "systemui"
    description: "Make sure DisableFlags are implemented per display"
@@ -399,16 +409,6 @@ flag {
     description: "Flag to enable updated UI for dream overlay"
     bug: "368587927"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "dream_suppression"
-    namespace: "systemui"
-    description: "Suppress dream when device is in a vehicle."
-    bug: "433984504"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
