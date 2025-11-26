@@ -86,6 +86,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.phone.CentralSurfaces
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.util.asIndenting
+import com.android.systemui.util.kotlin.Quad
 import com.android.systemui.util.kotlin.getOrNull
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
@@ -722,7 +723,7 @@ constructor(
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
-                        keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                        keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                         freezeAndAnimateToCurrentState = true,
                     )
                 } else {
@@ -768,7 +769,7 @@ constructor(
                         .collect {
                             switchToScene(
                                 targetSceneKey = Scenes.Lockscreen,
-                                keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                                keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                                 loggingReason =
                                     "device became non-interactive (SceneContainerStartable)",
                             )
@@ -1049,11 +1050,16 @@ constructor(
         applicationScope.launch {
             occlusionInteractor.isKeyguardOccluded
                 .sample(
-                    combine(keyguardInteractor.isAbleToDream, sceneBackInteractor.backScene, ::Pair)
-                ) { occluded, (dreaming, backScene) ->
-                    Triple(occluded, dreaming, backScene)
+                    combine(
+                        keyguardInteractor.isAbleToDream,
+                        sceneBackInteractor.backScene,
+                        powerInteractor.isAwake,
+                        ::Triple,
+                    )
+                ) { occluded, (dreaming, backScene, isAwake) ->
+                    Quad(occluded, dreaming, backScene, isAwake)
                 }
-                .collect { (occluded, dreaming, backScene) ->
+                .collect { (occluded, dreaming, backScene, isAwake) ->
                     // Dreaming is a special case where the keyguard is occluded, and is handled
                     // separately. See [handleDreamState].
                     if (occluded && !dreaming) {
@@ -1083,9 +1089,14 @@ constructor(
                                 "unoccluded and device not entered, " +
                                     "bouncer was showing; leaving it up",
                                 hideOverlays = HideOverlayCommand.HideNone,
+                                keyguardState = getKeyguardStateForWakefulness(isAwake),
                             )
                         } else {
-                            switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
+                            switchToScene(
+                                Scenes.Lockscreen,
+                                "unoccluded and device not entered",
+                                keyguardState = getKeyguardStateForWakefulness(isAwake),
+                            )
                         }
                     }
                 }
@@ -1265,6 +1276,17 @@ constructor(
                         lockscreenUserManager.updatePublicMode()
                     }
                 }
+        }
+    }
+
+    /**
+     * Helper to return the appropriate keyguard state given the current wakefulness of the device.
+     */
+    private fun getKeyguardStateForWakefulness(isAwake: Boolean): KeyguardState {
+        return if (isAwake) {
+            KeyguardState.LOCKSCREEN
+        } else {
+            keyguardInteractor.asleepKeyguardState.value
         }
     }
 
