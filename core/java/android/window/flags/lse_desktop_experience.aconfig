@@ -1430,6 +1430,17 @@ flag {
 }
 
 flag {
+    name: "reparent_desk_leaf_tasks_if_relaunched"
+    namespace: "lse_desktop_experience"
+    description: "Reparents the leaf tasks of a desk to the task display area if they are /n"
+                 "relaunched outside of desktop."
+    bug: "452719159"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "reparent_window_token_api"
     namespace: "lse_desktop_experience"
     description: "Allows to reparent a window token to a different display"
