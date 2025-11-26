@@ -244,7 +244,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo token leash and configuration are persistend with no hierarchy flag`() {
         runTestScenario { r ->
@@ -503,10 +502,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo token leash and configuration are persisted with hierarchy enabled`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
