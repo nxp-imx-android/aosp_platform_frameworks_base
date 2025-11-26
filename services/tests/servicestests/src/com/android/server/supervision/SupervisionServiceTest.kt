@@ -22,6 +22,7 @@ import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.PropertyInvalidatedCache
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
@@ -91,6 +92,7 @@ import java.util.concurrent.Executor
 import java.util.function.Consumer
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
+import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -138,6 +140,8 @@ class SupervisionServiceTest {
 
     @Before
     fun setUp() {
+
+        PropertyInvalidatedCache.setTestMode(true);
         context =
             SupervisionContextWrapper(
                 InstrumentationRegistry.getInstrumentation().context,
@@ -181,6 +185,12 @@ class SupervisionServiceTest {
             false,
         )
         service.setSupervisionRecoveryInfo(null)
+    }
+
+    @After
+    @Throws(Exception::class)
+    fun tearDown() {
+        PropertyInvalidatedCache.setTestMode(false)
     }
 
     @Test
