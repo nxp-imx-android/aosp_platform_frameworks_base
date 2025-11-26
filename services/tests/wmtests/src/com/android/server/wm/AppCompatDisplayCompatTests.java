@@ -319,7 +319,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
                 } else { // SelfKillType.FINISH_AND_REMOVE_TASK
                     activity().removeTopTask();
                 }
-                activity().top().mAppCompatController.getDisplayCompatModePolicy()
+                activity().top().mAppCompatController.getDisplayCompatPolicy()
                         .onActivityFinishing();
                 completeTransition();
                 checkSelfKillRecoveryExecuted(shouldRecoverFromSelfKill);

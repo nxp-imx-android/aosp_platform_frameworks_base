@@ -600,7 +600,7 @@ class AppCompatSizeCompatModePolicy {
         final boolean launchedInAndExitedFromDesktop  = getAppCompatDisplayInsets() != null
                 && getAppCompatDisplayInsets().mInDesktopMode && !isInDesktopMode;
         final boolean hasMovedBetweenDisplays = mActivityRecord.mAppCompatController
-                .getDisplayCompatModePolicy().getDisplayChangedWithoutRestart();
+                .getDisplayCompatPolicy().getDisplayChangedWithoutRestart();
         final boolean isOnIgnoreOrientationRequestInternalDisplay = isOnInternalDisplay()
                 && mActivityRecord.getDisplayContent().getIgnoreOrientationRequest();
 
