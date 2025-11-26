@@ -70,13 +70,13 @@ public class LocalBluetoothAdapter {
     }
 
     /**
-     * See {@link #getInstance(Context, UserHandle)} with UserHandle.SYSTEM
+     * See {@link #getInstance(Context, UserHandle)}
      *
      * @deprecated use {@link #getInstance(Context, UserHandle)} instead.
      */
     @Deprecated
     static synchronized LocalBluetoothAdapter getInstance(Context context) {
-        return getInstance(context, UserHandle.SYSTEM);
+        return getInstance(context, context.getUser());
     }
 
     /**
