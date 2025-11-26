@@ -1436,7 +1436,8 @@ public class ProcessedPerfettoProtoLogImplTest {
 
         final var clearPackets = trace.getPacketList().stream()
                 .filter(it -> (it.getSequenceFlags()
-                        & SEQ_INCREMENTAL_STATE_CLEARED.getNumber()) != 0)
+                        & SEQ_INCREMENTAL_STATE_CLEARED.getNumber()) != 0
+                        && !it.getPreviousPacketDropped())
                 .toList();
         Truth.assertThat(clearPackets).hasSize(1);
     }
