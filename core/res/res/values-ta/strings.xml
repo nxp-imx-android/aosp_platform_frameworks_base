@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"மீண்டும் தொடங்கு"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"அவசர அழைப்பு"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"பிழை அறிக்கை"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"கருத்து"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"அமர்வை முடிக்கிறது"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ஸ்கிரீன்ஷாட்"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"காத்திருப்புப் பயன்முறை"</string>

@@ -279,8 +279,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Ponovo pokreni"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Hitni poziv"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Izvještaj o greškama"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Povratne informacije"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Završi sesiju"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Snimak ekrana"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Stanje mirovanja"</string>

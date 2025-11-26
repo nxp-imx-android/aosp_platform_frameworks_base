@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"रीस्टार्ट करें"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"आपातकालीन सुविधाएं देखें"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"गड़बड़ी की रिपोर्ट"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"सुझाव/राय/शिकायत वाला ऐप"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"सत्र खत्म करें"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"स्क्रीनशॉट"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"स्टैंडबाय"</string>

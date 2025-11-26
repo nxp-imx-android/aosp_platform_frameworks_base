@@ -282,8 +282,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"إعادة التشغيل"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"الطوارئ"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"تقرير الأخطاء"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"الملاحظات"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"إنهاء الجلسة"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"لقطة شاشة"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"وضع الاستعداد"</string>

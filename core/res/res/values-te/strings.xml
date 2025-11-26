@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"రీస్టార్ట్ చేయండి"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"ఎమర్జెన్సీ"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"బగ్ రిపోర్ట్‌"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"ఫీడ్‌బ్యాక్"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"సెషన్‌ను ముగించు"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"స్క్రీన్‌షాట్"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"స్టాండ్‌బై"</string>

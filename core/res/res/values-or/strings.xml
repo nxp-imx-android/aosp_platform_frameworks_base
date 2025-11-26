@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"ଜରୁରୀକାଳୀନ"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"ବଗ୍‌ ରିପୋର୍ଟ"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"ମତାମତ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"ସେସନ୍‍ ଶେଷ କରନ୍ତୁ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ସ୍କ୍ରିନସଟ"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"ଷ୍ଟାଣ୍ଡବାଏ"</string>

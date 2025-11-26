@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Рестартиране"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Спешно обаждане"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Сигнал за грешка"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Отзиви"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Прекратяване на сесията"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Екранна снимка"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Режим на готовност"</string>
