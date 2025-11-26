@@ -666,19 +666,12 @@ public final class MediaRouter2 {
 
         loadSystemRoutes(/* isProxyRouter */ true);
 
-        if (Flags.reduceTwoWayBinderCallsInMediaRouter2()) {
-            mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
-            mSystemController = new SystemRoutingController(mImpl.getSystemSessionInfo());
-        } else {
-            mSystemController =
-                    new SystemRoutingController(
-                            ProxyMediaRouter2Impl.getSystemSessionInfoImpl(
-                                    mMediaRouterService,
-                                    mContext.getPackageName(),
-                                    clientPackageName));
+        mSystemController =
+                new SystemRoutingController(
+                        ProxyMediaRouter2Impl.getSystemSessionInfoImpl(
+                                mMediaRouterService, mContext.getPackageName(), clientPackageName));
 
-            mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
-        }
+        mImpl = new ProxyMediaRouter2Impl(context, clientPackageName, user);
     }
 
     @GuardedBy("mLock")
