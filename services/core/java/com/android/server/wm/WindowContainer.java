@@ -2750,13 +2750,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * @param proto     Stream to write the WindowContainer object to.
      * @param fieldId   Field Id of the WindowContainer as defined in the parent message.
      * @param logLevel  Determines the amount of data to be written to the Protobuf.
-     * @hide
      */
     @CallSuper
     @Override
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
         boolean isVisible = isVisible();
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible) {
             return;
         }
