@@ -94,6 +94,7 @@ public class AccessibilityTileUtilsTest {
 
     @Before
     public void setUp() {
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
         when(mMockContext.getContentResolver()).thenReturn(mMockResolver);
     }
