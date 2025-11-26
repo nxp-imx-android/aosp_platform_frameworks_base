@@ -1760,6 +1760,20 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     @GuardedBy("mLock")
+    private List<String> getExistingArtManagedFilePathsLocked(PackageLite existing) {
+        List<String> result = new ArrayList<>();
+        File[] existingFiles = new File(existing.getBaseApkPath()).getParentFile().listFiles();
+        if (existingFiles != null) {
+            for (File file : existingFiles) {
+                if (sArtManagedFilter.accept(file)) {
+                    result.add(file.getPath());
+                }
+            }
+        }
+        return result;
+    }
+
+    @GuardedBy("mLock")
     private void enableFsVerityToAddedApksWithIdsig() throws PackageManagerException {
         try {
             long fsVerityEnabledApksSizeBytes = 0;
@@ -4517,7 +4531,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     TextUtils.formatSimple("Session: %d. No packages staged in %s", sessionId,
                           stageDir.getAbsolutePath()));
         }
-        final List<String> artManagedFilePaths = getArtManagedFilePathsLocked();
+        List<String> artManagedFilePaths = getArtManagedFilePathsLocked();
 
         // Verify that all staged packages are internally consistent
         final ArraySet<String> stagedSplits = new ArraySet<>();
@@ -4738,6 +4752,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 throw new PackageManagerException(INSTALL_FAILED_INVALID_APK,
                         "Existing signatures are inconsistent");
             }
+            artManagedFilePaths.addAll(getExistingArtManagedFilePathsLocked(existing));
 
             // Inherit base if not overridden.
             if (mResolvedBaseFile == null) {
