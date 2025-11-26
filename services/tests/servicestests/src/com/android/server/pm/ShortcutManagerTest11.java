@@ -19,8 +19,10 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.list;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -34,13 +36,18 @@ import android.content.pm.ShortcutInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.pm.ShortcutService.ConfigConstants;
 
 import org.mockito.ArgumentCaptor;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 
@@ -54,6 +61,10 @@ import java.util.List;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest11 extends BaseShortcutManagerTest {
+
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mSetFlagsClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mSetFlagsClassRule.createSetFlagsRule();
 
     private static final ShortcutQuery QUERY_MATCH_ALL = createShortcutQuery(
             ShortcutQuery.FLAG_MATCH_ALL_KINDS_WITH_ALL_PINNED);
@@ -929,6 +940,58 @@ public class ShortcutManagerTest11 extends BaseShortcutManagerTest {
             assertWith(removedShortcuts.getValue())
                     .areAllWithKeyFieldsOnly()
                     .haveIds("s1", "s2");
+        });
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testsetDynamicShortcuts_flagEnabled_appLockEnabled_assertFalse() {
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertFalse(mManager.setDynamicShortcuts(makeShortcuts("s3", "s4")));
+        });
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testsetDynamicShortcuts_flagEnabled_appLockDisabled_assertTrue() {
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(makeShortcuts("s3", "s4")));
+        });
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testSetDynamicShortcuts_flagDisabled_appLockEnabled_assertTrue() {
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(makeShortcuts("s1", "s2")));
+        });
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testSetDynamicShortcuts_flagDisabled_appLockDisabled_assertTrue() {
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(makeShortcuts("s1", "s2")));
         });
     }
 
