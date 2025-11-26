@@ -63,7 +63,7 @@ flag {
 
 flag {
     name: "scale_bitmap_to_ashmem"
-    namespace: "graphics"
+    namespace: "core_graphics"
     description: "Enable creating scaled ashmem bitmaps directly."
     bug: "458709877"
 }
