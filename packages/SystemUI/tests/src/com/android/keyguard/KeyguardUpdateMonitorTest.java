@@ -212,19 +212,73 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     private static final int TEST_CARRIER_ID = 1;
     private static final String TEST_GROUP_UUID = "59b5c870-fc4c-47a4-a99e-9db826b48b24";
     private static final int TEST_SLOT_ID = 3;
-    private static final SubscriptionInfo TEST_SUBSCRIPTION = new SubscriptionInfo(1, "",
-            TEST_SLOT_ID, TEST_CARRIER, TEST_CARRIER, NAME_SOURCE_CARRIER_ID, 0xFFFFFF, "",
-            DATA_ROAMING_DISABLE, null, null, null, null, false, null, "", false, TEST_GROUP_UUID,
-            TEST_CARRIER_ID, 0);
-    private static final SubscriptionInfo TEST_SUBSCRIPTION_2 = new SubscriptionInfo(2, "", 0,
-            TEST_CARRIER, TEST_CARRIER_2, NAME_SOURCE_CARRIER_ID, 0xFFFFFF, "",
-            DATA_ROAMING_DISABLE, null, null, null, null, false, null, "", true, TEST_GROUP_UUID,
-            TEST_CARRIER_ID, 0);
-    private static final SubscriptionInfo TEST_SUBSCRIPTION_PROVISIONING = new SubscriptionInfo(
-            1, "", 0,
-            TEST_CARRIER, TEST_CARRIER, NAME_SOURCE_CARRIER_ID, 0xFFFFFF, "",
-            DATA_ROAMING_DISABLE, null, null, null, null, false, null, "", false, TEST_GROUP_UUID,
-            TEST_CARRIER_ID, PROFILE_CLASS_PROVISIONING);
+    private static final SubscriptionInfo TEST_SUBSCRIPTION = new SubscriptionInfo.Builder()
+            .setId(1)
+            .setIccId("")
+            .setSimSlotIndex(TEST_SLOT_ID)
+            .setDisplayName(TEST_CARRIER)
+            .setCarrierName(TEST_CARRIER)
+            .setDisplayNameSource(NAME_SOURCE_CARRIER_ID)
+            .setIconTint(0xFFFFFF)
+            .setNumber("")
+            .setDataRoaming(DATA_ROAMING_DISABLE)
+            .setIcon(null)
+            .setMcc(null)
+            .setMnc(null)
+            .setCountryIso(null)
+            .setEmbedded(false)
+            .setNativeAccessRules(null)
+            .setCardString("")
+            .setOpportunistic(false)
+            .setGroupUuid(TEST_GROUP_UUID)
+            .setCarrierId(TEST_CARRIER_ID)
+            .setProfileClass(0)
+            .build();
+    private static final SubscriptionInfo TEST_SUBSCRIPTION_2 = new SubscriptionInfo.Builder()
+            .setId(2)
+            .setIccId("")
+            .setSimSlotIndex(0)
+            .setDisplayName(TEST_CARRIER)
+            .setCarrierName(TEST_CARRIER_2)
+            .setDisplayNameSource(NAME_SOURCE_CARRIER_ID)
+            .setIconTint(0xFFFFFF)
+            .setNumber("")
+            .setDataRoaming(DATA_ROAMING_DISABLE)
+            .setIcon(null)
+            .setMcc(null)
+            .setMnc(null)
+            .setCountryIso(null)
+            .setEmbedded(false)
+            .setNativeAccessRules(null)
+            .setCardString("")
+            .setOpportunistic(true)
+            .setGroupUuid(TEST_GROUP_UUID)
+            .setCarrierId(TEST_CARRIER_ID)
+            .setProfileClass(0)
+            .build();
+    private static final SubscriptionInfo TEST_SUBSCRIPTION_PROVISIONING =
+            new SubscriptionInfo.Builder()
+            .setId(1)
+            .setIccId("")
+            .setSimSlotIndex(0)
+            .setDisplayName(TEST_CARRIER)
+            .setCarrierName(TEST_CARRIER)
+            .setDisplayNameSource(NAME_SOURCE_CARRIER_ID)
+            .setIconTint(0xFFFFFF)
+            .setNumber("")
+            .setDataRoaming(DATA_ROAMING_DISABLE)
+            .setIcon(null)
+            .setMcc(null)
+            .setMnc(null)
+            .setCountryIso(null)
+            .setEmbedded(false)
+            .setNativeAccessRules(null)
+            .setCardString("")
+            .setOpportunistic(false)
+            .setGroupUuid(TEST_GROUP_UUID)
+            .setCarrierId(TEST_CARRIER_ID)
+            .setProfileClass(PROFILE_CLASS_PROVISIONING)
+            .build();
     private static final SubscriptionInfo TEST_REMOTE_SIM =
             new SubscriptionInfo.Builder(TEST_SUBSCRIPTION)
                     .setType(SubscriptionManager.SUBSCRIPTION_TYPE_REMOTE_SIM).build();
