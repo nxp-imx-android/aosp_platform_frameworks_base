@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,7 +46,10 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.test.MoreAsserts;
 import android.util.Log;
 import android.util.Pair;
@@ -56,6 +60,8 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.frameworks.servicestests.R;
 
 import org.mockito.ArgumentCaptor;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 
@@ -77,6 +83,10 @@ import org.junit.Test;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mSetFlagsClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mSetFlagsClassRule.createSetFlagsRule();
+
     private ShortcutRequestPinProcessor mProcessor;
 
     @Override
@@ -176,6 +186,71 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
             assertFalse(mManager.isRequestPinShortcutSupported());
         });
     }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testIsRequestPinItemSupported_flagEnabled_appLockEnabled_assertFalse() {
+        setDefaultLauncher(USER_10, LAUNCHER_1);
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            // By default, not app-locked.
+            assertFalse(mService.isRequestPinItemSupported(CALLING_PACKAGE_1, USER_10,
+                    LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT));
+        });
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testIsRequestPinItemSupported_flagEnabled_appLockDisabled_assertTrue() {
+        setDefaultLauncher(USER_10, LAUNCHER_1);
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            // By default, not app-locked.
+            assertTrue(mService.isRequestPinItemSupported(CALLING_PACKAGE_1, USER_10,
+                    LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT));
+        });
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testIsRequestPinItemSupported_flagDisabled_appLockEnabled_assertTrue() {
+        setDefaultLauncher(USER_10, LAUNCHER_1);
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            // By default, not app-locked, flag disabled, so always supported.
+            assertTrue(mService.isRequestPinItemSupported(CALLING_PACKAGE_1, USER_10,
+                    LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT));
+        });
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testIsRequestPinItemSupported_flagDisabled_appLockDisabled_assertTrue() {
+        setDefaultLauncher(USER_10, LAUNCHER_1);
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            // By default, not app-locked, flag disabled, so always supported.
+            assertTrue(mService.isRequestPinItemSupported(CALLING_PACKAGE_1, USER_10,
+                    LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT));
+        });
+    }
+
 
     public void disabled_testRequestPinShortcut_notSupported() {
         // User-0's launcher has no confirmation activity.
