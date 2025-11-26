@@ -16,8 +16,6 @@
 
 package com.android.server.privatecompute;
 
-import static android.os.Process.SYSTEM_UID;
-
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccService;
@@ -44,6 +42,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
+import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -319,7 +318,14 @@ public final class PccSandboxManagerInternal {
     }
 
     private boolean isTrustedClient(int clientUid) {
-        return Process.isPrivateComputeCoreUid(clientUid) || clientUid == SYSTEM_UID;
+        if (Process.isPrivateComputeCoreUid(clientUid)) {
+            return true;
+        }
+        AndroidPackage androidPackage = mPackageManagerInternal.getPackage(clientUid);
+        if (androidPackage != null) {
+            return isPccTrustedApp(clientUid, androidPackage.getPackageName());
+        }
+        return isPccTrustedApp(clientUid, null);
     }
 
     /**
