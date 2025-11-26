@@ -1240,17 +1240,6 @@ flag {
 }
 
 flag {
-    name: "enable_top_visible_root_task_per_user_tracking"
-    namespace: "lse_desktop_experience"
-    description: "Enables tracking the top visible root tasks for a user."
-    bug: "381038076"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_window_context_resources_update_on_config_change"
     namespace: "lse_desktop_experience"
     description: "Updates window context resources before the view receives the config change callback."

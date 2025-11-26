@@ -1391,7 +1391,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(taskDisplayArea.getTopRootTask(), taskDisplayArea.getRootHomeTask());
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING)
     @Test
     public void testSwitchUser_withVisibleRootTasks_storesAllVisibleRootTasksForCurrentUser() {
         // Set up root tasks
