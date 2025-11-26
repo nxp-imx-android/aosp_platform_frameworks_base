@@ -1421,7 +1421,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(StatusBarShowIconsInSecureCamera.FLAG_NAME, Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
+    @EnableFlags(StatusBarShowIconsInSecureCamera.FLAG_NAME)
     fun secureCamera_noStatusBarViewsShown_duringAnyPartOfLaunch() =
         kosmos.runTest {
             setStatusBarWindowState(StatusBarWindowState.Showing)
@@ -1444,7 +1444,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(StatusBarShowIconsInSecureCamera.FLAG_NAME, Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
+    @EnableFlags(StatusBarShowIconsInSecureCamera.FLAG_NAME)
     fun secureCamera_statusBarViewsShown_ifWindowShowing() =
         kosmos.runTest {
             setStatusBarWindowState(StatusBarWindowState.Showing)

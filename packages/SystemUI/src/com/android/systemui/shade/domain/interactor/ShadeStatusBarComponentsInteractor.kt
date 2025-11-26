@@ -19,15 +19,12 @@ package com.android.systemui.shade.domain.interactor
 import android.view.Display
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.FlowTracing.traceEach
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepository
-import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
@@ -57,7 +54,6 @@ constructor(
     shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     homeStatusBarComponentsRepository: HomeStatusBarComponentsRepository,
     perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-    @Default defaultDisableFlagsInteractorLazy: Lazy<DisableFlagsInteractor>,
 ) {
 
     private val shadeDisplayId: StateFlow<Int> =
@@ -98,28 +94,24 @@ constructor(
             .filterNotNull()
 
     val disableFlags: StateFlow<DisableFlagsModel> =
-        if (Flags.disableFlagsPerDisplay()) {
-            shadeDisplayId
-                .flatMapLatest { displayId ->
+        shadeDisplayId
+            .flatMapLatest { displayId ->
+                perDisplaySubcomponentRepository
+                    .getOrDefault(displayId)
+                    .disableFlagsInteractor
+                    .disableFlags
+            }
+            .traceEach("$TAG#disableFlagsInteractor", logcat = true)
+            .stateIn(
+                bgScope,
+                SharingStarted.Eagerly,
+                initialValue =
                     perDisplaySubcomponentRepository
-                        .getOrDefault(displayId)
+                        .getOrDefault(shadeDisplayId.value)
                         .disableFlagsInteractor
                         .disableFlags
-                }
-                .traceEach("$TAG#disableFlagsInteractor", logcat = true)
-                .stateIn(
-                    bgScope,
-                    SharingStarted.Eagerly,
-                    initialValue =
-                        perDisplaySubcomponentRepository
-                            .getOrDefault(shadeDisplayId.value)
-                            .disableFlagsInteractor
-                            .disableFlags
-                            .value,
-                )
-        } else {
-            defaultDisableFlagsInteractorLazy.get().disableFlags
-        }
+                        .value,
+            )
 
     val systemStatusEventAnimationInteractor: Flow<SystemStatusEventAnimationInteractor> =
         shadeDisplayId
