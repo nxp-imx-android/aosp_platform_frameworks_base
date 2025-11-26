@@ -435,8 +435,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void testMergeAnimation_dispatchDisplayTransition() {
-        assumeTrue(com.android.wm.shell.Flags.fixTaskViewRotationAnimation());
-
         final TransitionInfo.Change displayChange = new TransitionInfo.Change(
                 /* container= */ null, new SurfaceControl());
         displayChange.setStartAbsBounds(new Rect(0, 0, 500, 1000));
