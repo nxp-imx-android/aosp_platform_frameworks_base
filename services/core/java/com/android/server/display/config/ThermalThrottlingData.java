@@ -20,7 +20,6 @@ import android.os.PowerManager;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
-import android.view.SurfaceControl.WorkDuration;
 
 import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.feature.flags.Flags;
@@ -108,7 +107,7 @@ public class ThermalThrottlingData {
     private final Map<String, SparseArray<SurfaceControl.RefreshRateRange>>
             mRefreshRateThrottlingMap = new HashMap<>();
 
-    private final Map<String, SparseArray<WorkDuration>>
+    private final Map<String, SparseArray<WorkDurationsData>>
             mThermalThrottlingWorkDurations = new HashMap<>();
 
     /**
@@ -253,7 +252,7 @@ public class ThermalThrottlingData {
                 continue;
             }
 
-            SparseArray<WorkDuration> thermalThrottlingWorkDurations = new SparseArray<>();
+            SparseArray<WorkDurationsData> thermalThrottlingWorkDurations = new SparseArray<>();
             for (WorkDurationsThrottlingPair pair : pairs) {
                 @PowerManager.ThermalStatus int status = DisplayDeviceConfigUtils
                         .convertValidThermalStatus(pair.getThermalStatus());
@@ -271,7 +270,7 @@ public class ThermalThrottlingData {
                 }
 
                 thermalThrottlingWorkDurations.put(status,
-                        WorkDurationsConfigLoader.loadThermalThrottlingWorkDurations(pair));
+                        WorkDurationsData.loadThermalThrottlingWorkDurations(pair));
             }
             if (thermalThrottlingWorkDurations.size() == 0) {
                 Slog.w(TAG, "ThermalThrottlingWorkDurations: no valid throttling pairs"
@@ -283,7 +282,7 @@ public class ThermalThrottlingData {
 
     }
 
-    public Map<String, SparseArray<WorkDuration>> getThermalThrottlingWorkDurations() {
+    public Map<String, SparseArray<WorkDurationsData>> getThermalThrottlingWorkDurations() {
         return mThermalThrottlingWorkDurations;
     }
 

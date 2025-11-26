@@ -2482,51 +2482,6 @@ public final class SurfaceControl implements Parcelable {
         }
     }
 
-    /**
-     * Contains information on the late, early, and app work durations. May change due to the device
-     * being in low power mode or thermal throttling.
-     *
-     * @hide
-     */
-    public static class WorkDuration {
-        public final long minSfDurationNanos;
-        public final long maxSfDurationNanos;
-        public final long appDurationNanos;
-
-        public WorkDuration(@NonNull WorkDuration other) {
-            this(other.minSfDurationNanos, other.maxSfDurationNanos, other.appDurationNanos);
-        }
-
-        public WorkDuration(long minSfDurationNanos, long maxSfDurationNanos,
-                            long appDurationNanos) {
-            this.minSfDurationNanos = minSfDurationNanos;
-            this.maxSfDurationNanos = maxSfDurationNanos;
-            this.appDurationNanos = appDurationNanos;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(minSfDurationNanos, maxSfDurationNanos, appDurationNanos);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof WorkDuration other)) return false;
-            return (this.minSfDurationNanos == other.minSfDurationNanos)
-                    && (this.maxSfDurationNanos == other.maxSfDurationNanos)
-                    && (this.appDurationNanos == other.appDurationNanos);
-        }
-
-        @Override
-        public String toString() {
-            return "WorkDuration{"
-                    + "minSfDurationNanos=" + minSfDurationNanos
-                    + ", maxSfDurationNanos=" + maxSfDurationNanos
-                    + ", appWorkDurationNanos=" + appDurationNanos
-                    + "}";
-        }
-    }
-
 
     /**
      * Contains information about desired display configuration.
@@ -2573,13 +2528,6 @@ public final class SurfaceControl implements Parcelable {
         @Nullable
         public IdleScreenRefreshRateConfig idleScreenRefreshRateConfig;
 
-        /**
-         * Contains late, early, and app work durations depending on low power mode, thermal
-         * throttling, or none.
-         */
-        @Nullable
-        public WorkDuration workDuration = null;
-
         public DesiredDisplayModeSpecs() {
             this.primaryRanges = new RefreshRateRanges();
             this.appRequestRanges = new RefreshRateRanges();
@@ -2594,8 +2542,7 @@ public final class SurfaceControl implements Parcelable {
         public DesiredDisplayModeSpecs(IBinder displayToken, IBinder applyToken,
                 int defaultMode, boolean allowGroupSwitching,
                 RefreshRateRanges primaryRanges, RefreshRateRanges appRequestRanges,
-                @Nullable IdleScreenRefreshRateConfig idleScreenRefreshRateConfig,
-                @Nullable WorkDuration workDuration) {
+                @Nullable IdleScreenRefreshRateConfig idleScreenRefreshRateConfig) {
             this.displayToken = displayToken;
             this.applyToken = applyToken;
             this.defaultMode = defaultMode;
@@ -2607,7 +2554,6 @@ public final class SurfaceControl implements Parcelable {
             this.idleScreenRefreshRateConfig =
                     (idleScreenRefreshRateConfig == null) ? null : new IdleScreenRefreshRateConfig(
                             idleScreenRefreshRateConfig.timeoutMillis);
-            this.workDuration = (workDuration == null) ? null : new WorkDuration(workDuration);
         }
 
         @Override
@@ -2626,8 +2572,7 @@ public final class SurfaceControl implements Parcelable {
                     && primaryRanges.equals(other.primaryRanges)
                     && appRequestRanges.equals(other.appRequestRanges)
                     && Objects.equals(
-                    idleScreenRefreshRateConfig, other.idleScreenRefreshRateConfig)
-                    && Objects.equals(workDuration, other.workDuration);
+                    idleScreenRefreshRateConfig, other.idleScreenRefreshRateConfig);
         }
 
         @Override
@@ -2646,8 +2591,6 @@ public final class SurfaceControl implements Parcelable {
             primaryRanges.copyFrom(other.primaryRanges);
             appRequestRanges.copyFrom(other.appRequestRanges);
             copyIdleScreenRefreshRateConfig(other.idleScreenRefreshRateConfig);
-            workDuration = other.workDuration == null ? null
-                    : new WorkDuration(other.workDuration);
         }
 
         @Override
@@ -2658,8 +2601,7 @@ public final class SurfaceControl implements Parcelable {
                     + " allowGroupSwitching=" + allowGroupSwitching
                     + " primaryRanges=" + primaryRanges
                     + " appRequestRanges=" + appRequestRanges
-                    + " idleScreenRefreshRate=" + String.valueOf(idleScreenRefreshRateConfig)
-                    + " workDuration=" + workDuration;
+                    + " idleScreenRefreshRate=" + String.valueOf(idleScreenRefreshRateConfig);
         }
 
         private void copyIdleScreenRefreshRateConfig(IdleScreenRefreshRateConfig other) {

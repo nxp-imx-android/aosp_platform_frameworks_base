@@ -51,6 +51,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Spline;
 import android.view.Display;
@@ -1162,7 +1163,7 @@ public class LocalDisplayAdapterTest {
                 new DisplayModeDirector.DesiredDisplayModeSpecs(
                         /*baseModeId*/ baseModeId,
                         /*allowGroupSwitching*/ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
                 ));
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
@@ -1172,7 +1173,7 @@ public class LocalDisplayAdapterTest {
                         /* applyToken */ null,
                         /* baseModeId */ 0,
                         /* allowGroupSwitching */ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
                 )});
 
         // Change the display
@@ -1199,7 +1200,7 @@ public class LocalDisplayAdapterTest {
                 new DisplayModeDirector.DesiredDisplayModeSpecs(
                         /*baseModeId*/ baseModeId,
                         /*allowGroupSwitching*/ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
                 ));
 
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
@@ -1212,7 +1213,7 @@ public class LocalDisplayAdapterTest {
                         /* applyToken */ null,
                         /* baseModeId */ 2,
                         /* allowGroupSwitching */ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
                 )});
     }
 
@@ -1893,7 +1894,7 @@ public class LocalDisplayAdapterTest {
                         /* defaultMode */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES,
-                        new IdleScreenRefreshRateConfig(100), null
+                        new IdleScreenRefreshRateConfig(100)
                 );
 
         private FakeDisplay(int port) {
