@@ -34,6 +34,7 @@ import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRe
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.dreams.dreamStartable
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
@@ -43,6 +44,7 @@ import com.android.systemui.keyguard.data.repository.fakeTrustRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -50,6 +52,7 @@ import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runCurrent
@@ -186,6 +189,44 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             showBouncer()
 
             val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
+            assertThat(isDeviceEntered).isFalse()
+        }
+
+    @Test
+    fun isDeviceEntered_onDreamAfterDeviceLock_isFalse() =
+        kosmos.runTest {
+            dreamStartable.start()
+
+            // Unlock device and go to home screen.
+            fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            // Verify device is entered.
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(currentOverlays).isEmpty()
+            assertThat(isDeviceEntered).isTrue()
+
+            // Dream starts, and device is unlocked.
+            keyguardInteractor.setDreaming(true)
+            advanceTimeBy(DREAMING_DELAY_MS)
+
+            // Verify device remains entered.
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(currentOverlays).isEmpty()
+            assertThat(isDeviceEntered).isTrue()
+
+            // Device locks due to timeout.
+            underTest.lockNow("timeout")
+
+            // Verify device is no longer entered.
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(currentOverlays).isEmpty()
             assertThat(isDeviceEntered).isFalse()
         }
 
@@ -545,7 +586,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun isDeviceEntered_goneToCommunal_emitsFalse() =
+    fun isDeviceEntered_goneToCommunalAndLockDevice_emitsFalse() =
         kosmos.runTest {
             val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
             val isDeviceEnteredDirectly by collectLastValue(underTest.isDeviceEnteredDirectly)
@@ -565,8 +606,9 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(isDeviceEntered).isTrue()
             assertThat(isDeviceEnteredDirectly).isTrue()
 
-            // Return to communal and verify device not entered
+            // Return to communal, lock device, and verify device is not entered
             switchToScene(Scenes.Communal)
+            underTest.lockNow("test")
             assertThat(isDeviceEntered).isFalse()
             assertThat(isDeviceEnteredDirectly).isFalse()
         }
@@ -688,5 +730,10 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         fakeKeyguardRepository.setKeyguardDismissible(false)
         keyguardBouncerRepository.setPrimaryShow(false)
         assertThat(canShowAlternateBouncer).isTrue()
+    }
+
+    private companion object {
+        // A delay to move past the initial dreaming delay.
+        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L
     }
 }

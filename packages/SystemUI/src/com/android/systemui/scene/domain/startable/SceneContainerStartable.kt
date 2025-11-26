@@ -50,7 +50,6 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
-import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
@@ -74,6 +73,7 @@ import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -479,10 +479,13 @@ constructor(
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
                         return@map if (
-                            renderedScenes.any { it in keyguardScenes } ||
+                            renderedScenes.any { it.isKeyguardScene() } ||
                                 Overlays.Bouncer in renderedOverlays
                         ) {
-                            // Already on a keyguard scene or bouncer, no need to change scenes.
+                            // The device locked while already on a keyguard scene or bouncer, no
+                            // need to change scenes. But make sure to replace the Gone scene in
+                            // the back stack with Lockscreen.
+                            sceneBackInteractor.replaceGoneSceneOnBackStack()
                             SwitchSceneCommand.NoOp
                         } else {
                             // The device locked while on a scene that's not a keyguard scene, go

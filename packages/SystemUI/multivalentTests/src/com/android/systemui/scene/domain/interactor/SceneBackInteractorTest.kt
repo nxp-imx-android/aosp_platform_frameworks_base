@@ -198,6 +198,36 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun replaceGoneSceneOnBackStack_replacesGoneWithLockscreen() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Gone, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
+
+            underTest.replaceGoneSceneOnBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+        }
+
+    @Test
+    fun replaceGoneSceneOnBackStack_nothingToDo() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Lockscreen, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+
+            underTest.replaceGoneSceneOnBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+        }
+
+    @Test
     fun addLockscreenToBackStack_empty() =
         kosmos.runTest {
             enableSingleShade()
