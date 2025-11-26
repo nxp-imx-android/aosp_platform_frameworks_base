@@ -1862,10 +1862,10 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                 && newParentConfig.assetsSeq > requestedOverrideConfig.assetsSeq) {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
+        // Make sure that we don't accidentally override the activity type.
+        requestedOverrideConfig.windowConfiguration.setActivityType(ACTIVITY_TYPE_UNDEFINED);
         super.resolveOverrideConfiguration(newParentConfig);
         final Configuration resolvedConfig = getResolvedOverrideConfiguration();
-        // Make sure that we don't accidentally override the activity type.
-        resolvedConfig.windowConfiguration.setActivityType(ACTIVITY_TYPE_UNDEFINED);
         // Activity has an independent ActivityRecord#mConfigurationSeq. If this process registers
         // activity configuration, its config seq shouldn't go backwards by activity configuration.
         // Otherwise if other places send wpc.getConfiguration() to client, the configuration may
