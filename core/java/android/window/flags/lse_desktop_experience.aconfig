@@ -1181,13 +1181,6 @@ flag {
 }
 
 flag {
-    name: "enable_task_resizing_keyboard_shortcuts"
-    namespace: "lse_desktop_experience"
-    description: "Enables keyboard shortcuts for resizing tasks in desktop mode."
-    bug: "335819608"
-}
-
-flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."

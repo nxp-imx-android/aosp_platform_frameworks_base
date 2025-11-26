@@ -53,9 +53,6 @@ constructor(
 
     @Before
     fun setup() {
-        if (usingKeyboard) {
-            Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
-        }
         testApp1.enterDesktopMode(wmHelper, device)
         appInDesktop.add(testApp1)
         testApp2.launchViaIntent(wmHelper)
