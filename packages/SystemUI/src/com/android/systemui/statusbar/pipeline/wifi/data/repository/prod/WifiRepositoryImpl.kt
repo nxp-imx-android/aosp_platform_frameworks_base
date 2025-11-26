@@ -72,6 +72,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -309,10 +310,21 @@ constructor(
             }
         }
 
+    private val _wifiToggleState = MutableStateFlow<WifiToggleState>(WifiToggleState.Normal)
+    override val wifiToggleState: StateFlow<WifiToggleState> = _wifiToggleState.asStateFlow()
+
     override val isWifiEnabled: StateFlow<Boolean> =
         wifiPickerTrackerInfo
             .map { it.state == WifiManager.WIFI_STATE_ENABLED }
             .distinctUntilChanged()
+            .onEach { enabled ->
+                // TODO: Find a better way to achieve this cancellation effect without introducing
+                // a Flow side-effect.
+                if (!enabled) {
+                    _wifiToggleState.value = WifiToggleState.Normal
+                    cancelOptimisticToggleTimeoutJobs()
+                }
+            }
             .logDiffsForTable(tableLogger, columnName = COL_NAME_IS_ENABLED, initialValue = false)
             .stateIn(scope, SharingStarted.Eagerly, false)
 
@@ -444,9 +456,6 @@ constructor(
             .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     private fun List<ScanResult>.toModel(): List<WifiScanEntry> = map { WifiScanEntry(it.SSID) }
-
-    private val _wifiToggleState = MutableStateFlow<WifiToggleState>(WifiToggleState.Normal)
-    override val wifiToggleState: StateFlow<WifiToggleState> = _wifiToggleState.asStateFlow()
 
     private fun cancelOptimisticToggleTimeoutJobs() {
         scanForWifiTimeoutJob?.cancel()
