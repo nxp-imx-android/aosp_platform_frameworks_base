@@ -17,7 +17,6 @@
 package com.android.server.adb;
 
 import android.content.Context;
-import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Handler;
 import android.os.Message;
@@ -29,7 +28,7 @@ import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
 import java.util.Optional;
 
-class AdbPairingThread extends Thread implements NsdManager.RegistrationListener {
+class AdbPairingThread extends Thread implements AdbdServicesManager.RegistrationCallback {
     private static final String TAG = AdbPairingThread.class.getSimpleName();
     private final Context mContext;
     private final String mPairingCode;
@@ -71,7 +70,7 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
     @Override
     public void run() {
         AdbdServicesManager servicesManager = new AdbdServicesManager(mContext);
-        servicesManager.registerService(mServiceName, mServiceType, mPort);
+        servicesManager.registerService(mServiceName, mServiceType, mPort, this);
 
         // Send pairing port to UI
         Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT);
@@ -122,32 +121,21 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
         native_pairing_cancel();
     }
 
-    @Override
-    public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-        Slog.i(TAG, "Registered pairing service: " + serviceInfo);
-    }
-
-    @Override
-    public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        Slog.e(TAG, "Failed to register pairing service(err=" + errorCode + "): " + serviceInfo);
-        cancelPairing();
-    }
-
-    @Override
-    public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-        Slog.i(TAG, "Unregistered pairing service: " + serviceInfo);
-    }
-
-    @Override
-    public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        Slog.w(TAG, "Failed to unregister pairing service(err=" + errorCode + "): " + serviceInfo);
-    }
-
     private native int native_pairing_start(String guid, String password);
 
     private native void native_pairing_cancel();
 
     private native String native_pairing_wait();
+
+    @Override
+    public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+        cancelPairing();
+    }
+
+    @Override
+    public void onServiceRegistered(NsdServiceInfo serviceInfo) {
+        // nothing to do, pairing is in progress.
+    }
 
     enum AdbWifiPairingMethod {
         QR_CODE,
