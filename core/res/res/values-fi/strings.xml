@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Käynnistä uudelleen"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Hätäpuhelu"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Virheraportti"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Palaute"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Lopeta käyttökerta"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Kuvakaappaus"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Säästötila"</string>

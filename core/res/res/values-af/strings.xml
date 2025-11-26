@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Herbegin"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Noodgeval"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Foutverslag"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Terugvoer"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Beëindig sessie"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Skermskoot"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Bystand"</string>

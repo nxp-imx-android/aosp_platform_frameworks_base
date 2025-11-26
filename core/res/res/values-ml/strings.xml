@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"റീസ്റ്റാർട്ട് ചെയ്യുക"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"എമർജൻസി"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"ബഗ് റിപ്പോർട്ട്"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"ഫീഡ്‌ബാക്ക്"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"സെഷൻ അവസാനിപ്പിക്കുക"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"സ്‌ക്രീൻഷോട്ട്"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"സ്‌റ്റാൻഡ്‌ബൈ"</string>
