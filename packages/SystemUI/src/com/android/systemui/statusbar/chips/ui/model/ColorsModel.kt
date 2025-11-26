@@ -20,6 +20,7 @@ import android.annotation.ColorRes
 import android.content.Context
 import android.content.res.ColorStateList
 import androidx.annotation.ColorInt
+import androidx.annotation.VisibleForTesting
 import com.android.internal.util.ContrastColorUtil
 import com.android.systemui.res.R
 
@@ -70,7 +71,7 @@ sealed interface ColorsModel {
      */
     data class SystemThemedWithOverride(
         @param:ColorRes private val backgroundRes: Int? = null,
-        @param:ColorRes private val textRes: Int? = null,
+        @param:ColorRes @property:VisibleForTesting val textRes: Int? = null,
         @param:ColorRes private val outlineRes: Int? = null,
     ) : ColorsModel {
 

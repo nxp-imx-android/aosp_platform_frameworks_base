@@ -1048,6 +1048,24 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns the color resource corresponding to a {@link SemanticStyle}, or {@code null} if the
+     * value is either {@link #SEMANTIC_STYLE_UNSPECIFIED} or out of the range of known values.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    @Nullable
+    @ColorRes
+    public static Integer semanticStyleToColorRes(@SemanticStyle int semanticStyle) {
+        return switch (semanticStyle) {
+            case SEMANTIC_STYLE_INFO -> R.color.semanticBlueOnSurfaceVariant;
+            case SEMANTIC_STYLE_SAFE -> R.color.semanticGreenOnSurfaceVariant;
+            case SEMANTIC_STYLE_CAUTION -> R.color.semanticYellowOnSurfaceVariant;
+            case SEMANTIC_STYLE_DANGER -> R.color.semanticRedOnSurfaceVariant;
+            default -> null;
+        };
+    }
+
+    /**
      * Accent color (an ARGB integer like the constants in {@link android.graphics.Color})
      * to be applied by the standard Style templates when presenting this notification.
      *
@@ -18746,13 +18764,17 @@ public class Notification implements Parcelable
 
             if (Flags.apiNotificationSemanticStyle()) {
                 mSemanticInfo = ensureTextContrast(
-                    ctx.getColor(R.color.semanticBlueOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_INFO)),
+                        mBackgroundColor);
                 mSemanticSafe = ensureTextContrast(
-                        ctx.getColor(R.color.semanticGreenOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_SAFE)),
+                        mBackgroundColor);
                 mSemanticCaution = ensureTextContrast(
-                        ctx.getColor(R.color.semanticYellowOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_CAUTION)),
+                        mBackgroundColor);
                 mSemanticDanger = ensureTextContrast(
-                        ctx.getColor(R.color.semanticRedOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_DANGER)),
+                        mBackgroundColor);
             }
 
             // make sure every color has a valid value
