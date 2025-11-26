@@ -60,3 +60,10 @@ flag {
   description: "Make GradientDrawable support arc shape for drawing ring with rounded stroke cap."
   bug: "380000245"
 }
+
+flag {
+    name: "scale_bitmap_to_ashmem"
+    namespace: "graphics"
+    description: "Enable creating scaled ashmem bitmaps directly."
+    bug: "458709877"
+}

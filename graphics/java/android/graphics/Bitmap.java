@@ -39,6 +39,7 @@ import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.ThreadedRenderer;
 
+import com.android.graphics.flags.Flags;
 import com.android.server.am.BitmapDumpProto;
 
 import dalvik.annotation.optimization.CriticalNative;
@@ -459,7 +460,10 @@ public final class Bitmap implements Parcelable {
      */
     public int getGenerationId() {
         if (mRecycled) {
-            Log.w(TAG, "Called getGenerationId() on a recycle()'d bitmap! This is undefined behavior!");
+            Log.w(
+                    TAG,
+                    "Called getGenerationId() on a recycle()'d bitmap! This is undefined"
+                        + " behavior!");
         }
         return nativeGenerationId(mNativePtr);
     }
@@ -917,6 +921,78 @@ public final class Bitmap implements Parcelable {
     }
 
     /**
+     * Creates a new immutable bitmap backed by ashmem, scaled from an existing bitmap.
+     *
+     * <p>Use this when you expect to parcel the bitmap. In doing so, you can avoid the subsequent
+     * copy operation into ashmem when you parcel, saving additional work and transient memory
+     * allocation that is proportional to the size of the downscaled bitmap.
+     *
+     * @see {@link #createScaledBitmap}
+     * @hide
+     */
+    @NonNull
+    public static Bitmap createScaledAshmemBitmap(
+            @NonNull Bitmap src, int dstWidth, int dstHeight, boolean filter) {
+        if (!Flags.scaleBitmapToAshmem()) {
+            return createScaledBitmap(src, dstWidth, dstHeight, filter);
+        }
+        src.checkRecycled("Can't copy a recycled bitmap");
+
+        Matrix m = new Matrix();
+        final int width = src.getWidth();
+        final int height = src.getHeight();
+
+        final float sx = dstWidth / (float) width;
+        final float sy = dstHeight / (float) height;
+        m.setScale(sx, sy);
+
+        Rect srcR = new Rect(0, 0, width, height);
+        RectF dstR = new RectF(0, 0, width, height);
+        RectF deviceR = new RectF();
+        m.mapRect(deviceR, dstR);
+
+        final int neww = Math.round(deviceR.width());
+        final int newh = Math.round(deviceR.height());
+
+        Config newConfig = src.getConfig();
+        if (newConfig == null) {
+            newConfig = Config.ARGB_8888;
+        }
+        ColorSpace cs = src.getColorSpace();
+
+        Bitmap b = nativeCreateEmptyAshmemBitmap(neww, newh, newConfig.nativeInt,
+                (cs == null) ? 0 : cs.getNativeInstance());
+
+        if (b == null) {
+            throw new OutOfMemoryError();
+        }
+
+        b.mDensity = src.mDensity;
+        b.setHasAlpha(src.hasAlpha());
+        b.setPremultiplied(src.mRequestPremultiplied);
+
+        Paint paint = new Paint();
+        paint.setFilterBitmap(filter);
+
+        Canvas canvas = new Canvas(b);
+        canvas.translate(-deviceR.left, -deviceR.top);
+        canvas.concat(m);
+        canvas.drawBitmap(src, srcR, dstR, paint);
+        canvas.setBitmap(null);
+
+        if (src.hasGainmap()) {
+            Bitmap newMapContents = transformGainmap(src, b, m, paint, srcR, dstR,
+                    deviceR);
+            if (newMapContents != null) {
+                b.setGainmap(new Gainmap(src.getGainmap(), newMapContents));
+            }
+        }
+
+        b.setImmutable();
+        return b;
+    }
+
+    /**
      * Returns a bitmap from the source bitmap. The new bitmap may
      * be the same object as source, or a copy may have been made.  It is
      * initialized with the same density and color space as the original bitmap.
@@ -1100,7 +1176,7 @@ public final class Bitmap implements Parcelable {
             // If the source has a gainmap, apply the same set of transformations to the gainmap
             // and set it on the output
             if (source.hasGainmap()) {
-                Bitmap newMapContents = transformGainmap(source, m, neww, newh, paint, srcR, dstR,
+                Bitmap newMapContents = transformGainmap(source, bitmap, m, paint, srcR, dstR,
                         deviceR);
                 if (newMapContents != null) {
                     bitmap.setGainmap(new Gainmap(source.getGainmap(), newMapContents));
@@ -1140,16 +1216,17 @@ public final class Bitmap implements Parcelable {
             .endProto();
     }
 
-    private static Bitmap transformGainmap(Bitmap source, Matrix m, int neww, int newh, Paint paint,
+    private static Bitmap transformGainmap(Bitmap source, Bitmap newBase, Matrix m, Paint paint,
             Rect srcR, RectF dstR, RectF deviceR) {
         Canvas canvas;
         Bitmap sourceGainmap = source.getGainmap().getGainmapContents();
+        final boolean isDestAshmem = nativeIsBackedByAshmem(newBase.getNativeInstance());
         // Gainmaps can be scaled relative to the base image (eg, 1/4th res)
         // Preserve that relative scaling between the base & gainmap in the output
         float scaleX = (sourceGainmap.getWidth() / (float) source.getWidth());
         float scaleY = (sourceGainmap.getHeight() / (float) source.getHeight());
-        int mapw = Math.round(neww * scaleX);
-        int maph = Math.round(newh * scaleY);
+        int mapw = Math.round(newBase.getWidth() * scaleX);
+        int maph = Math.round(newBase.getHeight() * scaleY);
 
         if (mapw == 0 || maph == 0) {
             // The gainmap has been scaled away entirely, drop it
@@ -1165,8 +1242,18 @@ public final class Bitmap implements Parcelable {
         // Note: createBitmap isn't used as that requires a non-null colorspace, however
         // gainmaps don't have a colorspace. So use `nativeCreate` directly to bypass
         // that colorspace enforcement requirement (#getColorSpace() allows a null return)
-        Bitmap newMapContents = nativeCreate(null, 0, mapw, mapw, maph,
-                sourceGainmap.getConfig().nativeInt, true, 0);
+        Bitmap newMapContents;
+        if (isDestAshmem) {
+            newMapContents = nativeCreateEmptyAshmemBitmap(mapw, maph,
+                    sourceGainmap.getConfig().nativeInt, 0);
+            if (newMapContents == null) {
+                Log.w(TAG, "Failed to create gainmap bitmap");
+                return null;
+            }
+        } else {
+            newMapContents = nativeCreate(null, 0, mapw, mapw, maph,
+                    sourceGainmap.getConfig().nativeInt, true, 0);
+        }
         newMapContents.eraseColor(0);
         canvas = new Canvas(newMapContents);
         // Scale the translate & matrix to be in gainmap-relative dimensions
@@ -1858,7 +1945,10 @@ public final class Bitmap implements Parcelable {
      */
     public final boolean isPremultiplied() {
         if (mRecycled) {
-            Log.w(TAG, "Called isPremultiplied() on a recycle()'d bitmap! This is undefined behavior!");
+            Log.w(
+                    TAG,
+                    "Called isPremultiplied() on a recycle()'d bitmap! This is undefined"
+                        + " behavior!");
         }
         return nativeIsPremultiplied(mNativePtr);
     }
@@ -2672,6 +2762,8 @@ public final class Bitmap implements Parcelable {
                                               long nativeColorSpace);
     private static native Bitmap nativeCopy(long nativeSrcBitmap, int nativeConfig,
                                             boolean isMutable);
+    private static native Bitmap nativeCreateEmptyAshmemBitmap(int width, int height,
+            int nativeConfig, long nativeColorSpace);
     private static native Bitmap nativeCopyAshmem(long nativeSrcBitmap);
     private static native Bitmap nativeCopyAshmemConfig(long nativeSrcBitmap, int nativeConfig);
     private static native int nativeGetAshmemFD(long nativeBitmap);
