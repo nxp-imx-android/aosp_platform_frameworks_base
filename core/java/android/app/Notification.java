@@ -15127,6 +15127,7 @@ public class Notification implements Parcelable
     public static final class BasicCompactContent extends CompactContent implements Parcelable {
         private final CompactIcon mIcon;
         private final CompactText mText;
+        private @SemanticStyle int mSemanticStyle;
 
         /**
          * Creates a {@link BasicCompactContent} instance with a specific icon and text.
@@ -15144,6 +15145,14 @@ public class Notification implements Parcelable
             this(CompactIcon.auto(), text);
         }
 
+        /** Sets the semantic style for the compact content. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @NonNull
+        public BasicCompactContent setSemanticStyle(@SemanticStyle int semanticStyle) {
+            mSemanticStyle = semanticStyle;
+            return this;
+        }
+
         @NonNull
         private CompactIcon getIcon() {
             return mIcon;
@@ -15154,10 +15163,15 @@ public class Notification implements Parcelable
             return mText;
         }
 
+        private @SemanticStyle int getSemanticStyle() {
+            return mSemanticStyle;
+        }
+
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeTypedObject(mIcon, flags);
             dest.writeTypedObject(mText, flags);
+            dest.writeInt(mSemanticStyle);
         }
 
         public static final @NonNull Creator<BasicCompactContent> CREATOR = new Creator<>() {
@@ -15165,7 +15179,8 @@ public class Notification implements Parcelable
             public BasicCompactContent createFromParcel(Parcel source) {
                 return new BasicCompactContent(
                         source.readTypedObject(CompactIcon.CREATOR),
-                        source.readTypedObject(CompactText.CREATOR));
+                        source.readTypedObject(CompactText.CREATOR))
+                        .setSemanticStyle(source.readInt());
             }
 
             @Override
@@ -15268,7 +15283,6 @@ public class Notification implements Parcelable
         private final @TextSource int mWhich;
         private final int mStyleMetricIndex;
         private final @Nullable Metric.MetricValue mCustomMetricValue;
-        private @SemanticStyle int mSemanticStyle;
 
         private CompactText(@TextSource int which, int styleMetricIndex,
                 @Nullable Metric.MetricValue customMetricValue) {
@@ -15330,14 +15344,6 @@ public class Notification implements Parcelable
             return new CompactText(TEXT_CUSTOM_METRIC, 0, requireNonNull(metricValue));
         }
 
-        /** Sets the semantic style for the compact content. */
-        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
-        @NonNull
-        public CompactText setSemanticStyle(@SemanticStyle int semanticStyle) {
-            mSemanticStyle = semanticStyle;
-            return this;
-        }
-
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mWhich);
@@ -15351,9 +15357,6 @@ public class Notification implements Parcelable
                     dest.writeBoolean(false);
                 }
             }
-            if (Flags.apiNotificationSemanticStyle()) {
-                dest.writeInt(mSemanticStyle);
-            }
         }
 
         public static final @NonNull Creator<CompactText> CREATOR = new Creator<>() {
@@ -15366,17 +15369,13 @@ public class Notification implements Parcelable
                         int styleMetricIndex = source.readInt();
                         Metric customMetric = Metric.fromBundle(
                                 source.readBundle(getClass().getClassLoader()));
-                        res = new CompactText(which, styleMetricIndex, customMetric.getValue());
+                        return new CompactText(which, styleMetricIndex, customMetric.getValue());
                     } else {
-                        res = new CompactText(which, 0, null);
+                        return new CompactText(which, 0, null);
                     }
                 } else {
-                    res = new CompactText(which, 0, null);
+                    return new CompactText(which, 0, null);
                 }
-                if (Flags.apiNotificationSemanticStyle()) {
-                    res.setSemanticStyle(source.readInt());
-                }
-                return res;
             }
 
             @Override
@@ -15664,7 +15663,7 @@ public class Notification implements Parcelable
                         content.getText());
                 if (Flags.apiNotificationSemanticStyle()) {
                     return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
-                            content.getText().mSemanticStyle);
+                            content.getSemanticStyle());
                 } else {
                     return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
                             SEMANTIC_STYLE_UNSPECIFIED);
@@ -15672,7 +15671,7 @@ public class Notification implements Parcelable
             } else {
                 if (Flags.apiNotificationSemanticStyle()) {
                     return new ResolvedBasicCompactContent(resolvedIcon, null,
-                            content.getText().mSemanticStyle);
+                            content.getSemanticStyle());
                 } else {
                     return new ResolvedBasicCompactContent(resolvedIcon, null,
                             SEMANTIC_STYLE_UNSPECIFIED);
