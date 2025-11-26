@@ -30,7 +30,21 @@ import java.time.Instant;
  * Represents a set of talismans, which can be either a verified device talisman or a {@link
  * TalismanIdentitySet}. The talismans are under the same public key.
  */
-final class TalismanSet {
+record TalismanSet(
+        @Type int type,
+        ByteString publicKey,
+        /** The serialized talismans. */
+        ByteString talismanSet,
+        /**
+         * The time at which the talismans was created. If the talismans have different creation
+         * time, the earliest one is chosen.
+         */
+        Instant createdAt,
+        /**
+         * The time at which the talismans expires. If the talismans have different expiry time, the
+         * earliest one is chosen.
+         */
+        Instant expireAt) {
 
     static final int TYPE_VERIFIED_DEVICE = 1;
     static final int TYPE_VERIFIED_IDENTITIES = 2;
@@ -43,59 +57,6 @@ final class TalismanSet {
                 TYPE_VERIFIED_IDENTITIES,
             })
     @interface Type {}
-
-    private final @Type int mType;
-
-    private final ByteString mPublicKey;
-
-    /** The serialized talismans. */
-    private final ByteString mTalismanSet;
-
-    /**
-     * The time at which the talismans was created. If the talismans have different creation time,
-     * the earliest one is chosen.
-     */
-    private final Instant mCreatedAt;
-
-    /**
-     * The time at which the talismans expires. If the talismans have different expiry time, the
-     * earliest one is chosen.
-     */
-    private final Instant mExpireAt;
-
-    /**
-     * Constructs a {@link TalismanSet} from a {@link Builder}.
-     *
-     * @param builder The builder instance.
-     */
-    private TalismanSet(Builder builder) {
-        mType = builder.mType;
-        mPublicKey = ByteString.copyFrom(builder.mPublicKey);
-        mTalismanSet = ByteString.copyFrom(builder.mTalismanSet);
-        mCreatedAt = builder.mCreatedAt;
-        mExpireAt = builder.mExpireAt;
-    }
-
-    @Type
-    int getType() {
-        return mType;
-    }
-
-    ByteString getPublicKey() {
-        return mPublicKey;
-    }
-
-    ByteString getTalismanSet() {
-        return mTalismanSet;
-    }
-
-    Instant getCreatedAt() {
-        return mCreatedAt;
-    }
-
-    Instant getExpireAt() {
-        return mExpireAt;
-    }
 
     /**
      * Converts this TalismanSet to a {@link Talisman} if its type is {@link #TYPE_VERIFIED_DEVICE}.
@@ -140,8 +101,8 @@ final class TalismanSet {
 
     static final class Builder {
         private @Type int mType;
-        private byte[] mPublicKey;
-        private byte[] mTalismanSet;
+        private ByteString mPublicKey;
+        private ByteString mTalismanSet;
         private Instant mCreatedAt;
         private Instant mExpireAt;
 
@@ -152,13 +113,23 @@ final class TalismanSet {
             return this;
         }
 
-        Builder setPublicKey(byte[] publicKey) {
+        Builder setPublicKey(ByteString publicKey) {
             this.mPublicKey = publicKey;
             return this;
         }
 
-        Builder setTalismanSet(byte[] talismanSet) {
+        Builder setPublicKey(byte[] publicKey) {
+            this.mPublicKey = ByteString.copyFrom(publicKey);
+            return this;
+        }
+
+        Builder setTalismanSet(ByteString talismanSet) {
             this.mTalismanSet = talismanSet;
+            return this;
+        }
+
+        Builder setTalismanSet(byte[] talismanSet) {
+            this.mTalismanSet = ByteString.copyFrom(talismanSet);
             return this;
         }
 
@@ -173,7 +144,7 @@ final class TalismanSet {
         }
 
         TalismanSet build() {
-            return new TalismanSet(this);
+            return new TalismanSet(mType, mPublicKey, mTalismanSet, mCreatedAt, mExpireAt);
         }
     }
 }

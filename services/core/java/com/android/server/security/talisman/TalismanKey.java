@@ -16,13 +16,11 @@
 
 package com.android.server.security.talisman;
 
-/** Represents a key pair used for Talisman operations. The secret key may be encrypted. */
-final class TalismanKey {
-    public final byte[] publicKey;
-    public final byte[] secretKey;
+import com.android.framework.protobuf.ByteString;
 
-    TalismanKey(byte[] publicKey, byte[] secretKey) {
-        this.publicKey = publicKey;
-        this.secretKey = secretKey;
+/** Represents a key pair used for Talisman operations. The private key may be encrypted. */
+record TalismanKey(ByteString publicKey, ByteString privateKey) {
+    TalismanKey(byte[] publicKey, byte[] privateKey) {
+        this(ByteString.copyFrom(publicKey), ByteString.copyFrom(privateKey));
     }
 }

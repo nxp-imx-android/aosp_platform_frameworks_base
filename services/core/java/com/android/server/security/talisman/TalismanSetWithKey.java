@@ -17,12 +17,4 @@
 package com.android.server.security.talisman;
 
 /** Represents a {@link TalismanSet} and the associated {@link TalismanKey}. */
-final class TalismanSetWithKey {
-    public final TalismanKey key;
-    public final TalismanSet talismanSet;
-
-    TalismanSetWithKey(TalismanKey key, TalismanSet talismanSet) {
-        this.key = key;
-        this.talismanSet = talismanSet;
-    }
-}
+record TalismanSetWithKey(TalismanKey key, TalismanSet talismanSet) {}
