@@ -349,7 +349,7 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
                     outputSurface);
 
             if (output.isMultiResolutionOutput) {
-                cameraOutput.setMultiResolutionOutput();
+                cameraOutput.setMultiResolutionOutput(/*multiResolutionReader*/ null);
             }
             if ((output.sharedSurfaceConfigs != null) && !output.sharedSurfaceConfigs.isEmpty()) {
                 cameraOutput.enableSurfaceSharing();

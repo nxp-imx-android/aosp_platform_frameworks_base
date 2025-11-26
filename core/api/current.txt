@@ -21025,12 +21025,18 @@ package android.hardware.camera2 {
   public class MultiResolutionImageReader implements java.lang.AutoCloseable {
     ctor public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int);
     ctor @FlaggedApi("com.android.internal.camera.flags.multiresolution_imagereader_usage_public") public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int, long);
+    ctor @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int, long, boolean);
     method public void close();
     method protected void finalize();
     method public void flush();
     method @NonNull public android.hardware.camera2.params.MultiResolutionStreamInfo getStreamInfoForImageReader(@NonNull android.media.ImageReader);
     method @NonNull public android.view.Surface getSurface();
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public void setOnActiveOutputSurfacesListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.MultiResolutionImageReader.OnActiveOutputSurfacesListener);
     method public void setOnImageAvailableListener(@Nullable android.media.ImageReader.OnImageAvailableListener, @Nullable java.util.concurrent.Executor);
+  }
+
+  @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public static interface MultiResolutionImageReader.OnActiveOutputSurfacesListener {
+    method public void onActiveOutputSurfaces(@NonNull java.util.List<android.view.Surface>, long, long);
   }
 
   public final class TotalCaptureResult extends android.hardware.camera2.CaptureResult {
@@ -21222,6 +21228,7 @@ package android.hardware.camera2.params {
     method @NonNull public java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo> getInputInfo(int);
     method @NonNull public int[] getOutputFormats();
     method @NonNull public java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo> getOutputInfo(int);
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public boolean isConcurrentReadersSupported(int);
   }
 
   public class MultiResolutionStreamInfo {
