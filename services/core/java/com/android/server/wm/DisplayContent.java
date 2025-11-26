@@ -4998,17 +4998,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // has been settled down after IME control target changed.
         final boolean imeControlChanged = prevImeControlTarget != mImeControlTarget;
         if (imeControlChanged || forceUpdateImeParent) {
-            final WindowContainer originalParent = mImeParent;
             updateImeParent();
-            final ImeInsetsSourceProvider imeInsetsSourceProvider =
-                    mInsetsStateController.getImeSourceProvider();
-            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
-            // proceed with starting window removal after a task or activity switch.
-            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
-                    && mImeControlTarget != null && originalParent != mImeParent
-                    && imeInsetsSourceProvider.getSource().isVisible()) {
-                imeInsetsSourceProvider.reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
-            }
         }
 
         final WindowState win = InsetsControlTarget.asWindowOrNull(mImeControlTarget);
@@ -5037,7 +5027,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mImeParent = null;
             return;
         }
-
         final var newParent = computeImeParent();
         final var newParentSurface =
                 newParent != null ? newParent.getSurfaceControl() : null;
@@ -5045,6 +5034,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mImeParent != null ? mImeParent.getSurfaceControl() : null;
         ProtoLog.i(WM_DEBUG_IME, "updateImeParent %s", newParent);
         if (newParentSurface != null && newParentSurface != parentSurface) {
+            final WindowContainer originalParent = mImeParent;
             mImeParent = newParent;
             final var t = getSyncTransaction();
             t.reparent(mImeContainer.mSurfaceControl, newParentSurface);
@@ -5056,6 +5046,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             assignRelativeLayerForIme(t, true /* forceUpdate */);
             scheduleAnimation();
 
+            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
+            // proceed with starting window removal after a task or activity switch.
+            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
+                    && mImeControlTarget != null && originalParent != newParent
+                    && mInsetsStateController.getImeSourceProvider().isImeShowing()) {
+                mInsetsStateController.getImeSourceProvider()
+                        .reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
+            }
             mWmService.mH.post(
                     () -> InputMethodManagerInternal.get().onImeParentChanged(getDisplayId()));
         } else if (mImeControlTarget != null && mImeControlTarget == mImeLayeringTarget) {
