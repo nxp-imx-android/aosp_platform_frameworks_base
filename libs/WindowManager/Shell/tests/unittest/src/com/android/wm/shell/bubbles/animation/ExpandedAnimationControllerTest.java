@@ -152,9 +152,9 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     }
 
     @Test
-    public void testJumptcutBubbleSwitching_onChildAdded() throws Exception {
+    public void testJumpcutBubbleSwitching_onChildAdded() throws Exception {
         expand();
-        waitForMainThread();
+        waitForAnimation();
         doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
 
         // Add another new view and no need to wait for its animation.
@@ -165,7 +165,7 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     }
 
     @Test
-    public void testJumptcutBubbleSwitching_onChildRemoved() throws Exception {
+    public void testJumpcutBubbleSwitching_onChildRemoved() throws Exception {
         expand();
         waitForMainThread();
         doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
