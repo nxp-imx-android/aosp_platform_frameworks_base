@@ -36,6 +36,8 @@ import java.util.List;
  */
 public record ForceInvertOverrideState(
         List<String> packagesToEnable, List<String> packagesToDisable) {
+    // TODO(b/448469020): Migrate the List to Set
+
     /**
      * An empty force invert override state.
      */
@@ -85,6 +87,63 @@ public record ForceInvertOverrideState(
         return UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED;
     }
 
+    /**
+     * Returns the list of force invert always disable apps.
+     *
+     * @hide
+     */
+    public List<String> getAllForceInvertAlwaysDisableApps() {
+        return packagesToDisable;
+    }
+
+    /**
+     * Sets the ForceInvertOverrideState for a specific package.
+     *
+     * @hide
+     */
+    public boolean setForceInvertOverrideStateForPackage(
+            ContentResolver resolver,
+            @Nullable String packageName,
+            @UiModeManager.ForceInvertPackageOverrideState int newState,
+            int userId) {
+        if (TextUtils.isEmpty(packageName)) {
+            return false;
+        }
+
+        boolean result = false;
+        switch (newState) {
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE -> {
+                result = !packagesToDisable.contains(packageName);
+                if (result) {
+                    packagesToDisable.add(packageName);
+                    packagesToEnable.remove(packageName);
+                }
+            }
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE -> {
+                result = !packagesToEnable.contains(packageName);
+                if (result) {
+                    packagesToDisable.remove(packageName);
+                    packagesToEnable.add(packageName);
+                }
+            }
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED -> {
+                result = packagesToDisable.remove(packageName);
+                result |= packagesToEnable.remove(packageName);
+            }
+        }
+
+        if (result) {
+            saveToCsv(resolver, userId,
+                    Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                    packagesToDisable);
+            saveToCsv(resolver, userId,
+                    Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                    packagesToEnable);
+        }
+
+        return result;
+    }
+
     @NonNull
     private static List<String> parseCsv(ContentResolver resolver, int userId, String settingsKey) {
         var csv = Settings.System.getStringForUser(resolver, settingsKey, userId);
@@ -94,4 +153,12 @@ public record ForceInvertOverrideState(
 
         return ArrayUtils.toList(TextUtils.split(csv, DELIMITER));
     }
+
+    private static boolean saveToCsv(ContentResolver resolver, int userId,
+            String settingsKey, List<String> packageList) {
+        return Settings.System.putStringForUser(
+                resolver, settingsKey, TextUtils.join(DELIMITER, packageList), userId);
+    }
 }
+
+
