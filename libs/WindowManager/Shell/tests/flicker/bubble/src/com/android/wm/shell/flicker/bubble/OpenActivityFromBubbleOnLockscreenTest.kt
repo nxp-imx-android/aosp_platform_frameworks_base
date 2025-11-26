@@ -72,7 +72,7 @@ class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
                     metricInsets.getInsetsIgnoringVisibility(
                         WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()
                     )
-                device.swipe(100, insets.top + 100, 100, device.displayHeight / 2, 4)
+                device.swipe(100, insets.top + 100, 100, device.displayHeight / 2, /* steps= */ 20)
                 device.waitForIdle(2000)
                 instrumentation.uiAutomation.syncInputTransactions()
 
