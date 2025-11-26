@@ -67,12 +67,12 @@ class DefaultCompatUIHandler(
                             compState,
                         )
                         spec.log("Component $componentId registered")
-                        // We initialize the layout for the component
-                        component.initLayout(compatUIInfo)
-                        spec.log("Component $componentId layout created")
-                        // Now we can invoke the update passing the shared state and
-                        // the state specific to the component
                         executor.execute {
+                            // We initialize the layout for the component
+                            component.initLayout(compatUIInfo)
+                            spec.log("Component $componentId layout created")
+                            // Now we can invoke the update passing the shared state and
+                            // the state specific to the component
                             component.update(compatUIInfo)
                             spec.log("Component $componentId updated with $compatUIInfo")
                         }
