@@ -228,9 +228,15 @@ open class SettingsPreferenceGroupAdapter @JvmOverloads constructor(
         } else { // Handle the background of the preferences that are group divider
             val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
             val (paddingStart, paddingEnd) = getStartEndPadding(position)
-            v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
             v.clipToOutline = backgroundRes != 0
+            // Cache the current vertical padding. We must do this before calling
+            // setBackgroundResource, because that method resets the View's padding
+            // to the drawable's intrinsic padding.
+            val paddingTop = v.paddingTop
+            val paddingBottom = v.paddingBottom
             v.setBackgroundResource(backgroundRes)
+            // Restore the preserved vertical padding and apply the calculated horizontal padding.
+            v.setPaddingRelative(paddingStart, paddingTop, paddingEnd, paddingBottom)
         }
     }
 
