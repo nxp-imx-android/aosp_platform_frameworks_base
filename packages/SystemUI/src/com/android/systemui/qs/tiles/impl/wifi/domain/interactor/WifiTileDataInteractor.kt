@@ -87,7 +87,7 @@ constructor(
             }
 
             if (!isEnabled) {
-                return@combine WifiTileModel.Active(
+                return@combine WifiTileModel.Inactive(
                     icon = WifiTileIconModel(R.drawable.ic_signal_wifi_off),
                     secondaryLabel = null,
                 )
