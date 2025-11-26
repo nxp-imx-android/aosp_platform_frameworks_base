@@ -29,6 +29,8 @@ import static org.mockito.Mockito.when;
 import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.PendingIntent;
+import android.app.RemoteAction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -131,6 +133,25 @@ public class NotificationActionRendererTest {
             throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
+        List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
+
+        assertThat(adjustments).hasSize(1);
+        ArrayList<Notification.Action> actions = getActionsFromAdjustment(adjustments.get(0));
+        assertThat(actions).hasSize(1);
+        Notification.Action action = actions.get(0);
+
+        assertThat(action.title.toString()).isEqualTo("Test Title");
+        assertThat(action.isContextual()).isTrue();
+        assertThat(action.actionIntent).isNotNull();
+        assertThat(action.getIcon()).isEqualTo(FAKE_ICON);
+    }
+
+    @Test
+    public void testRender_actionableInsightWithREmoteAction_requestsAdjustment()
+            throws GeneralSecurityException {
+        mockPackageManagerResolvesIntent();
+        ActionableInsight insight =
+                createActionableInsightWithRemoteAction("Test Title", FAKE_ICON);
         List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
 
         assertThat(adjustments).hasSize(1);
@@ -327,6 +348,35 @@ public class NotificationActionRendererTest {
     private ActionableInsight createActionableInsight(
             StatusBarNotification sbn, @Nullable String title, @Nullable Icon icon)
             throws GeneralSecurityException {
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+        return createActionableInsight(sbn, title, icon, actionDetails);
+    }
+
+    private ActionableInsight createActionableInsightWithRemoteAction(
+            @Nullable String title, @Nullable Icon icon) throws GeneralSecurityException {
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder()
+                        .setRemoteAction(
+                                new RemoteAction(
+                                        icon,
+                                        title,
+                                        "contentDescription",
+                                        PendingIntent.getActivity(
+                                                mContext,
+                                                /* requestCode= */ 0,
+                                                new Intent("ACTION"),
+                                                PendingIntent.FLAG_IMMUTABLE)))
+                        .build();
+        return createActionableInsight(mSbn1, title, icon, actionDetails);
+    }
+
+    private ActionableInsight createActionableInsight(
+            StatusBarNotification sbn,
+            @Nullable String title,
+            @Nullable Icon icon,
+            InsightActionDetails actionDetails)
+            throws GeneralSecurityException {
         NotificationHint hint =
                 new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
@@ -336,8 +386,6 @@ public class NotificationActionRendererTest {
                 new ContextHintWithSignature.Builder(
                                 hint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
-        InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
         InsightDisplayDetails.Builder displayDetailsBuilder;
         if (title != null && icon != null) {
             displayDetailsBuilder = new InsightDisplayDetails.Builder(title, icon);
