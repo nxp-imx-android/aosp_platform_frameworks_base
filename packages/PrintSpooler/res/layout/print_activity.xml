@@ -16,6 +16,7 @@
 
 <com.android.printspooler.widget.PrintContentView
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:id="@+id/options_content"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
@@ -122,7 +123,7 @@
         android:id="@+id/action_row"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="2dip"
+        android:paddingTop="8dip"
         android:paddingStart="16dip"
         android:paddingEnd="16dip"
         android:paddingBottom="8dip"
@@ -135,8 +136,13 @@
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dip"
+            android:paddingStart="24dip"
+            android:paddingEnd="24dip"
+            android:paddingTop="12dip"
+            android:paddingBottom="12dip"
             android:elevation="@dimen/preview_controls_elevation"
+            android:background="@drawable/cancel_button"
+            android:textColor="@androidprv:color/materialColorPrimary"
             android:text="@string/cancel"
             android:featureFlag="com.android.printspooler.flags.updated_button_layout">
         </Button>
@@ -144,8 +150,14 @@
             android:id="@+id/print_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dip"
+            android:layout_marginStart="12dp"
+            android:paddingStart="24dip"
+            android:paddingEnd="24dip"
+            android:paddingTop="12dip"
+            android:paddingBottom="12dip"
             android:elevation="@dimen/preview_controls_elevation"
+            android:background="@drawable/print_button_state_selector"
+            android:textColor="@drawable/solid_button_text_color"
             android:text="@string/print_button"
             android:featureFlag="com.android.printspooler.flags.updated_button_layout">
         </Button>

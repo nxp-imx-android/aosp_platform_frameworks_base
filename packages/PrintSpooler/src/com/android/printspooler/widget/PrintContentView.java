@@ -331,10 +331,11 @@ public final class PrintContentView extends ViewGroup implements View.OnClickLis
                 + mStaticContent.getMeasuredHeight()
                 + mClosedOptionsOffsetY + mDynamicContent.getMeasuredHeight();
         final int embContentBottom =
-                embContentTop
-                        + mEmbeddedContentContainer.getMeasuredHeight()
-                        - (Flags.updatedButtonLayout() ? mActionRow.getMeasuredHeight() : 0)
-                        - mPaddingBottom;
+                Flags.updatedButtonLayout()
+                        ? bottom - mPaddingBottom - mActionRow.getMeasuredHeight()
+                        : (embContentTop
+                                + mEmbeddedContentContainer.getMeasuredHeight()
+                                - mPaddingBottom);
 
         mEmbeddedContentContainer.layout(childLeft, embContentTop, childRight, embContentBottom);
     }

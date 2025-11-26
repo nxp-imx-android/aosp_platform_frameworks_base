@@ -2040,8 +2040,14 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             }
         } else {
             if (Flags.updatedButtonLayout()) {
-                mPrintButton.setText(getString(R.string.savetopdf_button));
-                mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
+                if (mShowDestinationPrompt) {
+                    mPrintButton.setText(getString(R.string.destination_default_text));
+                    mPrintButton.setContentDescription(
+                            getString(R.string.destination_default_text));
+                } else {
+                    mPrintButton.setText(getString(R.string.savetopdf_button));
+                    mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
+                }
             } else {
                 mPrintImageButton.setImageResource(R.drawable.ic_menu_savetopdf);
                 mPrintImageButton.setContentDescription(getString(R.string.savetopdf_button));
