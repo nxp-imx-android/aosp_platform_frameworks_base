@@ -129,7 +129,7 @@ constructor(
                     countDownFlow(
                         duration = status.untilStarted,
                         onTick = { status.copy(untilStarted = it) },
-                        onFinished = { Started(status.parameters) },
+                        onFinished = { startRecording(status.parameters) },
                     )
                 } else {
                     flowOf(status)
@@ -322,7 +322,7 @@ private fun <T> countDownFlow(
     duration: Duration,
     intervalDuration: Duration = startingStatusUpdateInterval,
     onTick: (millisLeft: Duration) -> T,
-    onFinished: () -> T,
+    onFinished: () -> Unit,
 ): Flow<T> = flow {
     val intervalInMillis = intervalDuration.inWholeMilliseconds
     var millisLeft = duration.inWholeMilliseconds
@@ -333,5 +333,5 @@ private fun <T> countDownFlow(
         delay(delayDuration)
     }
     emit(onTick(0.milliseconds))
-    emit(onFinished())
+    onFinished()
 }

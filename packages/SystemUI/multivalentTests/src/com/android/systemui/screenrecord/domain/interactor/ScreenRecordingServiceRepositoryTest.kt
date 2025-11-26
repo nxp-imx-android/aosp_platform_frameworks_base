@@ -43,6 +43,7 @@ import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Before
 import org.junit.Test
@@ -300,6 +301,39 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
             assertThat(status).isEqualTo(ScreenRecordingStatus.Stopped(StopReason.STOP_ERROR))
         }
     }
+
+    @Test
+    fun testUpdatingParameters_afterStartRecording() =
+        kosmos.runTest {
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+
+            underTest.startRecording(defaultParams.copy(shouldShowTaps = false))
+
+            advanceTimeBy(1.minutes)
+
+            underTest.updateParameters { copy(shouldShowTaps = true) }
+
+            assertThat((serviceStatus as ScreenRecordingStatus.Started).parameters.shouldShowTaps)
+                .isTrue()
+        }
+
+    @Test
+    fun testUpdatingParameters_afterStartRecordingDelayed() =
+        kosmos.runTest {
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+
+            underTest.startRecordingDelayed(
+                parameters = defaultParams.copy(shouldShowTaps = false),
+                delay = 3.seconds,
+            )
+
+            advanceTimeBy(1.minutes)
+
+            underTest.updateParameters { copy(shouldShowTaps = true) }
+
+            assertThat((serviceStatus as ScreenRecordingStatus.Started).parameters.shouldShowTaps)
+                .isTrue()
+        }
 }
 
 private fun ScreenRecordingServiceRepository.startRecording() {
