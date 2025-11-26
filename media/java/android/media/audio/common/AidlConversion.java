@@ -952,6 +952,17 @@ public class AidlConversion {
                 break;
             case AudioSystem.DEVICE_OUT_BLE_HEARING_AID:
                 aidl.type = AudioDeviceType.OUT_HEARING_AID;
+                break;
+            case AudioSystem.DEVICE_OUT_BLE_CENTRAL:
+                aidl.type = AudioDeviceType.OUT_CENTRAL_DEVICE;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
+            case AudioSystem.DEVICE_IN_BLE_CENTRAL:
+                aidl.type = AudioDeviceType.IN_CENTRAL_DEVICE;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
+            case AudioSystem.DEVICE_IN_BLE_CENTRAL_BROADCAST:
+                aidl.type = AudioDeviceType.IN_CENTRAL_BROADCAST_DEVICE;
                 aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
                 break;
             case AudioSystem.DEVICE_IN_DEFAULT:

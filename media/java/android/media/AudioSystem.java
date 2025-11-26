@@ -1218,6 +1218,8 @@ public class AudioSystem
     public static final int DEVICE_OUT_BLE_BROADCAST = 0x20000002;
     /** @hide */
     public static final int DEVICE_OUT_BLE_HEARING_AID = 0x20000004;
+    /** @hide */
+    public static final int DEVICE_OUT_BLE_CENTRAL = 0x20000008;
 
     /** @hide */
     public static final int DEVICE_OUT_DEFAULT = DEVICE_BIT_DEFAULT;
@@ -1301,6 +1303,7 @@ public class AudioSystem
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_BLE_SPEAKER);
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_BLE_BROADCAST);
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_BLE_HEARING_AID);
+        DEVICE_OUT_ALL_SET.add(DEVICE_OUT_BLE_CENTRAL);
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_DEFAULT);
 
         DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET = new HashSet<>();
@@ -1414,6 +1417,10 @@ public class AudioSystem
     /** @hide */
     public static final int DEVICE_IN_BLE_HEARING_AID = DEVICE_BIT_IN | 0x20000001;
     /** @hide */
+    public static final int DEVICE_IN_BLE_CENTRAL = DEVICE_BIT_IN | 0x20000002;
+    /** @hide */
+    public static final int DEVICE_IN_BLE_CENTRAL_BROADCAST = DEVICE_BIT_IN | 0x20000004;
+    /** @hide */
     @UnsupportedAppUsage
     public static final int DEVICE_IN_DEFAULT = DEVICE_BIT_IN | DEVICE_BIT_DEFAULT;
 
@@ -1464,6 +1471,8 @@ public class AudioSystem
         DEVICE_IN_ALL_SET.add(DEVICE_IN_ECHO_REFERENCE);
         DEVICE_IN_ALL_SET.add(DEVICE_IN_BLE_HEADSET);
         DEVICE_IN_ALL_SET.add(DEVICE_IN_BLE_HEARING_AID);
+        DEVICE_IN_ALL_SET.add(DEVICE_IN_BLE_CENTRAL);
+        DEVICE_IN_ALL_SET.add(DEVICE_IN_BLE_CENTRAL_BROADCAST);
         DEVICE_IN_ALL_SET.add(DEVICE_IN_DEFAULT);
     }
 
@@ -1599,6 +1608,7 @@ public class AudioSystem
     /** @hide */ public static final String DEVICE_OUT_BLE_SPEAKER_NAME = "ble_speaker";
     /** @hide */ public static final String DEVICE_OUT_BLE_BROADCAST_NAME = "ble_broadcast";
     /** @hide */ public static final String DEVICE_OUT_BLE_HEARING_AID_NAME = "ble_hearing_aid";
+    /** @hide */ public static final String DEVICE_OUT_BLE_CENTRAL_NAME = "ble_central";
 
     /** @hide */ public static final String DEVICE_IN_COMMUNICATION_NAME = "communication";
     /** @hide */ public static final String DEVICE_IN_AMBIENT_NAME = "ambient";
@@ -1629,6 +1639,9 @@ public class AudioSystem
     /** @hide */ public static final String DEVICE_IN_HDMI_EARC_NAME = "hdmi_earc";
     /** @hide */ public static final String DEVICE_IN_BLE_HEADSET_NAME = "ble_headset";
     /** @hide */ public static final String DEVICE_IN_BLE_HEARING_AID_NAME = "ble_hearing_aid";
+    /** @hide */ public static final String DEVICE_IN_BLE_CENTRAL_NAME = "ble_central";
+    /** @hide */ public static final String DEVICE_IN_BLE_CENTRAL_BROADCAST_NAME =
+            "ble_central_broadcast";
 
     /** @hide */
     @UnsupportedAppUsage
@@ -1706,6 +1719,8 @@ public class AudioSystem
             return DEVICE_OUT_BLE_BROADCAST_NAME;
         case DEVICE_OUT_BLE_HEARING_AID:
             return DEVICE_OUT_BLE_HEARING_AID_NAME;
+        case DEVICE_OUT_BLE_CENTRAL:
+            return DEVICE_OUT_BLE_CENTRAL_NAME;
         case DEVICE_OUT_DEFAULT:
         default:
             return "0x" + Integer.toHexString(device);
@@ -1775,6 +1790,10 @@ public class AudioSystem
             return DEVICE_IN_BLE_HEADSET_NAME;
         case DEVICE_IN_BLE_HEARING_AID:
             return DEVICE_IN_BLE_HEARING_AID_NAME;
+        case DEVICE_IN_BLE_CENTRAL:
+            return DEVICE_IN_BLE_CENTRAL_NAME;
+        case DEVICE_IN_BLE_CENTRAL_BROADCAST:
+             return DEVICE_IN_BLE_CENTRAL_BROADCAST_NAME;
         case DEVICE_IN_DEFAULT:
         default:
             return Integer.toString(device);

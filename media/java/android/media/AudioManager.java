@@ -6519,6 +6519,13 @@ public class AudioManager {
     public static final int DEVICE_OUT_MULTICHANNEL_GROUP =
             AudioSystem.DEVICE_OUT_MULTICHANNEL_GROUP;
     /** @hide
+     * A device corresponding to the transmit path in an android implementation
+     * operating in a Bluetooth audio peripheral mode (LE Audio, A2DP or HFP profiles).
+     */
+    public static final int DEVICE_OUT_BLE_CENTRAL =
+            AudioSystem.DEVICE_OUT_BLE_CENTRAL;
+
+    /** @hide
      * This is not used as a returned value from {@link #getDevicesForStream}, but could be
      *  used in the future in a set method to select whatever default device is chosen by the
      *  platform-specific implementation.
@@ -6621,6 +6628,20 @@ public class AudioManager {
      * The audio input device code for a BLE audio hearing aid.
      */
     public static final int DEVICE_IN_BLE_HEARING_AID = AudioSystem.DEVICE_IN_BLE_HEARING_AID;
+
+    /** @hide
+     * A device corresponding to the receive path in an android implementation
+     * operating in a Bluetooth audio peripheral mode (LE Audio, A2DP or HFP profiles).
+     */
+    public static final int DEVICE_IN_BLE_CENTRAL =
+            AudioSystem.DEVICE_IN_BLE_CENTRAL;
+
+    /** @hide
+     * A device corresponding to the receive path in an android implementation
+     * operating in a Bluetooth LE audio peripheral mode in a broadcast group.
+     */
+    public static final int DEVICE_IN_BLE_CENTRAL_BROADCAST =
+            AudioSystem.DEVICE_IN_BLE_CENTRAL_BROADCAST;
 
     /**
      * Return true if the device code corresponds to an output device.

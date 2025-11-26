@@ -22436,6 +22436,8 @@ package android.media {
     method public boolean isSource();
     field public static final int TYPE_AUX_LINE = 19; // 0x13
     field public static final int TYPE_BLE_BROADCAST = 30; // 0x1e
+    field @FlaggedApi("android.media.audio.ble_peripheral_devices") public static final int TYPE_BLE_CENTRAL = 34; // 0x22
+    field @FlaggedApi("android.media.audio.ble_peripheral_devices") public static final int TYPE_BLE_CENTRAL_BROADCAST = 35; // 0x23
     field public static final int TYPE_BLE_HEADSET = 26; // 0x1a
     field @FlaggedApi("android.media.audio.ble_hearing_aid_device") public static final int TYPE_BLE_HEARING_AID = 33; // 0x21
     field public static final int TYPE_BLE_SPEAKER = 27; // 0x1b
