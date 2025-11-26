@@ -18,8 +18,8 @@
 use activitymanager_structured_aidl::aidl::android::app::IActivityManagerStructured::IActivityManagerStructured;
 use anyhow::{Context, Result};
 use binder::{BinderFeatures, ProcessState, Strong};
-use dlext_bindgen::android_set_application_target_sdk_version;
 use log::{error, info, warn, LevelFilter};
+use native_activity_thread_bindgen::android_set_application_target_sdk_version;
 use native_application_thread_aidl::aidl::android::app::INativeApplicationThread::BnNativeApplicationThread;
 use nix::sys::signal::{pthread_sigmask, SigSet, SigmaskHow, Signal};
 use rustutils::android::process::{android_mallopt, MalloptOpcode};

@@ -16,13 +16,13 @@
 use anyhow::{bail, Context, Result};
 use bitflags::bitflags;
 use libc::mallopt;
+use native_activity_thread_bindgen::tzset;
 use nix::{
     errno::Errno,
     sys::resource::{getrlimit, setrlimit, Resource},
     unistd::getuid,
 };
 use rustutils::android::system_properties;
-use time_bindgen::tzset;
 
 use std::ffi::{c_int, c_ulong};
 use std::io::Error;
