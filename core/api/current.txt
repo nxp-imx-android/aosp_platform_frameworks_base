@@ -47618,6 +47618,7 @@ package android.telephony {
     method public int getDataLimitBehavior();
     method public long getDataLimitBytes();
     method public long getDataUsageBytes();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @Nullable public java.time.ZonedDateTime getDataUsageResetTime();
     method public long getDataUsageTime();
     method @NonNull public int[] getNetworkTypes();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @Nullable public java.time.ZonedDateTime getPlanEndDate();
@@ -47655,10 +47656,12 @@ package android.telephony {
   public static class SubscriptionPlan.Builder {
     method public android.telephony.SubscriptionPlan build();
     method public static android.telephony.SubscriptionPlan.Builder createNonrecurring(java.time.ZonedDateTime, java.time.ZonedDateTime);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public static android.telephony.SubscriptionPlan.Builder createNonrecurring(@NonNull java.time.Period);
     method public static android.telephony.SubscriptionPlan.Builder createRecurring(java.time.ZonedDateTime, java.time.Period);
     method @NonNull public android.telephony.SubscriptionPlan.Builder resetNetworkTypes();
     method public android.telephony.SubscriptionPlan.Builder setDataLimit(long, int);
     method public android.telephony.SubscriptionPlan.Builder setDataUsage(long, long);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setDataUsageResetTime(@Nullable java.time.ZonedDateTime);
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(int);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(int);
