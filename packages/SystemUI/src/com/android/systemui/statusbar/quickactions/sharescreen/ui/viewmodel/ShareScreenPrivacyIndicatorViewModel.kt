@@ -52,7 +52,7 @@ constructor(
 
     private fun toPopupChipModel(isVisible: Boolean): QuickActionChipUiState {
         return if (isVisible) {
-            QuickActionChipUiState.Shown(
+            QuickActionChipUiState.PopupChip(
                 chipId = QuickActionChipId.ShareScreenPrivacyIndicator,
                 icons = listOf(ChipIcon(Icon.Resource(R.drawable.ic_share_screen, null))),
                 chipText = null,

@@ -63,7 +63,7 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
         return when (val sensorActivityModel = avControlsChipModel.sensorActivityModel) {
             is SensorActivityModel.Inactive -> QuickActionChipUiState.Hidden(chipId)
             is SensorActivityModel.Active ->
-                QuickActionChipUiState.Shown(
+                QuickActionChipUiState.PopupChip(
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
                     chipText = null,

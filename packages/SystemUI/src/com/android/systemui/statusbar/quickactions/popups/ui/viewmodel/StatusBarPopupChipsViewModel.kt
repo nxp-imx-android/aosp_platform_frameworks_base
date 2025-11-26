@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 
 /**
  * View model deciding which system process chips to show in the status bar. Emits a list of
- * PopupChipModels.
+ * [QuickActionChipUiState]s.
  */
 class StatusBarPopupChipsViewModel
 @AssistedInject
@@ -58,11 +58,11 @@ constructor(
     private val assistantIcon by lazy { assistantIconFactory.create() }
     private val imeIndicatorChip by lazy { imeIndicatorChipFactory.create() }
 
-    /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
-    private var currentShownQuickActionId by mutableStateOf<QuickActionChipId?>(null)
+    /** The ID of the current chip that is currently active, or `null` if no chip is active. */
+    private var currentActiveQuickActionId by mutableStateOf<QuickActionChipId?>(null)
 
-    private val incomingPopupChipBundle: PopupChipBundle by derivedStateOf {
-        PopupChipBundle(
+    private val incomingQuickActionChipBundle: QuickActionChipBundle by derivedStateOf {
+        QuickActionChipBundle(
             media = mediaControlChip.chip,
             privacy = avControlsChip.chip,
             shareScreen = shareScreenPrivacyIndicator.chip,
@@ -71,21 +71,21 @@ constructor(
         )
     }
 
-    val shownPopupChips: List<QuickActionChipUiState.Shown> by derivedStateOf {
+    val shownQuickActionChips: List<QuickActionChipUiState.PopupChip> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
-            val bundle = incomingPopupChipBundle
+            val bundle = incomingQuickActionChipBundle
 
             listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
-                .filterIsInstance<QuickActionChipUiState.Shown>()
+                .filterIsInstance<QuickActionChipUiState.PopupChip>()
                 .map { chip ->
                     chip.copy(
-                        isPopupShown = chip.chipId == currentShownQuickActionId,
-                        showPopup = { currentShownQuickActionId = chip.chipId },
-                        hidePopup = { currentShownQuickActionId = null },
+                        isPopupShown = chip.chipId == currentActiveQuickActionId,
+                        showPopup = { currentActiveQuickActionId = chip.chipId },
+                        hidePopup = { currentActiveQuickActionId = null },
                     )
                 } +
                 listOfNotNull(bundle.assistant, bundle.ime)
-                    .filterIsInstance<QuickActionChipUiState.Shown>()
+                    .filterIsInstance<QuickActionChipUiState.PopupChip>()
         } else {
             emptyList()
         }
@@ -103,15 +103,15 @@ constructor(
             // TODO(b/452975516): Clean up this logic after the bundle is split into popup chips and
             // action chips.
             launch {
-                snapshotFlow { incomingPopupChipBundle }
+                snapshotFlow { incomingQuickActionChipBundle }
                     .distinctUntilChanged()
                     .collect { bundle ->
                         if (
                             listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
-                                .filterIsInstance<QuickActionChipUiState.Shown>()
-                                .none { it.chipId == currentShownQuickActionId }
+                                .filterIsInstance<QuickActionChipUiState.PopupChip>()
+                                .none { it.chipId == currentActiveQuickActionId }
                         ) {
-                            currentShownQuickActionId = null
+                            currentActiveQuickActionId = null
                         }
                     }
             }
@@ -119,7 +119,7 @@ constructor(
         awaitCancellation()
     }
 
-    private data class PopupChipBundle(
+    private data class QuickActionChipBundle(
         val media: QuickActionChipUiState =
             QuickActionChipUiState.Hidden(chipId = QuickActionChipId.MediaControl),
         val privacy: QuickActionChipUiState =

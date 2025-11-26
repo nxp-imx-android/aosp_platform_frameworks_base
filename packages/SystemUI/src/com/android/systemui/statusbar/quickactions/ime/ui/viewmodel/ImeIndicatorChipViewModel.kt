@@ -42,7 +42,7 @@ constructor(private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor) 
 
     private fun toPopupChipModel(isVisible: Boolean): QuickActionChipUiState {
         return if (isVisible) {
-            QuickActionChipUiState.Shown(
+            QuickActionChipUiState.PopupChip(
                 chipId = QuickActionChipId.ImeIndicator,
                 // TODO(b/458557858): Replace placeholder text with IME subtype short label or icon.
                 icons = emptyList(),

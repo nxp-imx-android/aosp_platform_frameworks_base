@@ -85,7 +85,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             val userMedia = MediaData(active = true, song = "test")
             updateMedia(userMedia)
 
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
         }
 
     @Test
@@ -95,14 +95,14 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             val newSongName = "New Song"
             val userMedia = MediaData(active = true, song = initialSongName)
             updateMedia(userMedia)
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
-            assertThat((underTest.chip as QuickActionChipUiState.Shown).chipText)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+            assertThat((underTest.chip as QuickActionChipUiState.PopupChip).chipText)
                 .isEqualTo(initialSongName)
 
             val updatedUserMedia = userMedia.copy(song = newSongName)
             updateMedia(updatedUserMedia)
 
-            assertThat((underTest.chip as QuickActionChipUiState.Shown).chipText)
+            assertThat((underTest.chip as QuickActionChipUiState.PopupChip).chipText)
                 .isEqualTo(newSongName)
         }
 

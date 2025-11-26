@@ -180,7 +180,7 @@ interface HomeStatusBarViewModel : Activatable {
     val operatorNameViewModel: StatusBarOperatorNameViewModel
 
     /** The popup chips that should be shown on the right-hand side of the status bar. */
-    val popupChips: List<QuickActionChipUiState.Shown>
+    val popupChips: List<QuickActionChipUiState.PopupChip>
 
     /**
      * True if the status bar should be visible.
@@ -323,7 +323,7 @@ constructor(
         shareToAppChipViewModel.stopDialogToShow
 
     override val popupChips
-        get() = statusBarPopupChips.shownPopupChips
+        get() = statusBarPopupChips.shownQuickActionChips
 
     private val isShadeExpandedEnough =
         // Keep the status bar visible while the shade is just starting to open or while a HUN is

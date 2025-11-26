@@ -129,37 +129,37 @@ private fun QuickActionChipUiState.verifyHidden(): QuickActionChipUiState.Hidden
     return this as QuickActionChipUiState.Hidden
 }
 
-private fun QuickActionChipUiState.verifyShown(): QuickActionChipUiState.Shown {
+private fun QuickActionChipUiState.verifyShown(): QuickActionChipUiState.PopupChip {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AvControlsIndicator)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.Shown::class.java)
-    return this as QuickActionChipUiState.Shown
+    assertThat(this).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+    return this as QuickActionChipUiState.PopupChip
 }
 
-private fun QuickActionChipUiState.Shown.verifyHasNoText() {
+private fun QuickActionChipUiState.PopupChip.verifyHasNoText() {
     assertThat(this.chipText).isEqualTo(null)
 }
 
-private fun QuickActionChipUiState.Shown.verifyHasIcon(res: Int) {
+private fun QuickActionChipUiState.PopupChip.verifyHasIcon(res: Int) {
     assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
 }
 
-private fun QuickActionChipUiState.Shown.verifyNumberOfIcons(num: Int) {
+private fun QuickActionChipUiState.PopupChip.verifyNumberOfIcons(num: Int) {
     assertThat(this.icons.size).isEqualTo(num)
 }
 
-private fun QuickActionChipUiState.Shown.verifyIsCameraOnlyChip() {
+private fun QuickActionChipUiState.PopupChip.verifyIsCameraOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
     verifyHasNoText()
 }
 
-private fun QuickActionChipUiState.Shown.verifyIsMicrophoneOnlyChip() {
+private fun QuickActionChipUiState.PopupChip.verifyIsMicrophoneOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
     verifyHasNoText()
 }
 
-private fun QuickActionChipUiState.Shown.verifyIsCameraAndMicrophoneChip() {
+private fun QuickActionChipUiState.PopupChip.verifyIsCameraAndMicrophoneChip() {
     verifyNumberOfIcons(2)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)

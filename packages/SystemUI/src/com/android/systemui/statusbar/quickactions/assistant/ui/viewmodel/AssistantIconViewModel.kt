@@ -67,7 +67,7 @@ fun AssistantIconSharedModel.toPopupChipModel(startAssistant: () -> Unit): Quick
         // TODO(b/440281094): update with a proper description.
         val iconDrawable =
             Icon.Resource(resId = R.drawable.ic_assistant_icon, contentDescription = null)
-        QuickActionChipUiState.Shown(
+        QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.AssistantIcon,
             icons = listOf(ChipIcon(icon = iconDrawable)),
             chipText = null,

@@ -57,7 +57,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagEnabled_isShown() =
         kosmos.runTest {
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
         }
 
     @Test
@@ -65,8 +65,8 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     fun chip_showPopup_callsShowInputMethodPicker() =
         kosmos.runTest {
             val chip = underTest.chip
-            assertThat(chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
-            val shownChip = chip as QuickActionChipUiState.Shown
+            assertThat(chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+            val shownChip = chip as QuickActionChipUiState.PopupChip
 
             shownChip.showPopup()
             testScope.runCurrent()

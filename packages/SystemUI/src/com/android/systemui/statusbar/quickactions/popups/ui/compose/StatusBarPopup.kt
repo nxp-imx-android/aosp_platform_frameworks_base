@@ -52,7 +52,7 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
  */
 @Composable
 fun StatusBarPopup(
-    viewModel: QuickActionChipUiState.Shown,
+    viewModel: QuickActionChipUiState.PopupChip,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
 ) {
@@ -108,7 +108,7 @@ fun StatusBarPopup(
                 }
                 /**
                  * Some chip ids (e.g. AssistantIcon, ImeIndicator) have custom
-                 * [QuickActionChipUiState.Shown.showPopup] and don't rely on this Composable.
+                 * [QuickActionChipUiState.PopupChip.showPopup] and don't rely on this Composable.
                  */
                 is QuickActionChipId.AssistantIcon -> {}
 

@@ -50,14 +50,14 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     @Test
     fun shownPopupChips_allHidden_empty() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
             assertThat(shownPopupChips).isEmpty()
         }
 
     @Test
     fun shownPopupChips_activeMedia_restHidden_mediaControlChipShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
             val userMedia = MediaData(active = true, song = "test")
 
             mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
@@ -71,7 +71,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     @Test
     fun shownPopupChips_mediaChipToggled_popupShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
 
             val userMedia = MediaData(active = true, song = "test")
 

@@ -67,7 +67,7 @@ class FakeHomeStatusBarViewModel(
 
     override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
 
-    override val popupChips = emptyList<QuickActionChipUiState.Shown>()
+    override val popupChips = emptyList<QuickActionChipUiState.PopupChip>()
 
     override val mediaProjectionStopDialogDueToCallEndedState =
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)

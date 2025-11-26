@@ -34,7 +34,7 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
 fun StatusBarPopupChipsContainer(
-    chips: List<QuickActionChipUiState.Shown>,
+    chips: List<QuickActionChipUiState.PopupChip>,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
     onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,

@@ -60,14 +60,14 @@ class ShareScreenPrivacyIndicatorViewModelTest : SysuiTestCase() {
     fun chip_whenInteractorVisible_isShown() =
         kosmos.runTest {
             interactor.showChip()
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
         }
 
     @Test
     fun chip_shownThenHidden() =
         kosmos.runTest {
             interactor.showChip()
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
 
             // Hide the chip and verify it's hidden
             interactor.hideChip()

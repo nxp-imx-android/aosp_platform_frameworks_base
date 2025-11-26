@@ -73,7 +73,7 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
  */
 @Composable
 fun StatusBarPopupChip(
-    viewModel: QuickActionChipUiState.Shown,
+    viewModel: QuickActionChipUiState.PopupChip,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {

@@ -109,13 +109,13 @@ private fun QuickActionChipUiState.assertIsHidden(): QuickActionChipUiState.Hidd
     return this as QuickActionChipUiState.Hidden
 }
 
-private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.Shown {
+private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.PopupChip {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.Shown::class.java)
-    return this as QuickActionChipUiState.Shown
+    assertThat(this).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+    return this as QuickActionChipUiState.PopupChip
 }
 
-private fun QuickActionChipUiState.Shown.verifyIcon(res: Int) {
+private fun QuickActionChipUiState.PopupChip.verifyIcon(res: Int) {
     assertThat(this.icons.size).isEqualTo(1)
     assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
 }

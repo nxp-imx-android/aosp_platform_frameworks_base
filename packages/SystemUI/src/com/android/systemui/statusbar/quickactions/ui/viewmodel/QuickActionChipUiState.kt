@@ -59,7 +59,7 @@ sealed class QuickActionChipUiState {
         override val logName = "Hidden(id=$chipId, anim=$shouldAnimate)"
     }
 
-    data class Shown(
+    data class PopupChip(
         override val chipId: QuickActionChipId,
         /** Icons shown on the chip when no specific hover behavior. */
         val icons: List<ChipIcon>,

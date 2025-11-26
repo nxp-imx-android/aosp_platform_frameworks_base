@@ -84,7 +84,7 @@ constructor(
                 }
                 is MediaControlChipModel.Compose -> model.appIcon
             }
-        return QuickActionChipUiState.Shown(
+        return QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.MediaControl,
             icons = listOf(ChipIcon(icon = defaultIcon)),
             chipText = model.songName.toString(),
