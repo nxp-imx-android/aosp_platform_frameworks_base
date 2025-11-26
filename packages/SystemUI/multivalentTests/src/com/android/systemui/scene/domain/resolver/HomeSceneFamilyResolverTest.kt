@@ -21,7 +21,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.testKosmosNew
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
@@ -30,7 +29,6 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.kosmos.Kosmos
@@ -38,6 +36,9 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
@@ -59,74 +60,104 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     @Test
-    fun resolvesToDream() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        fakeKeyguardRepository.setDreaming(true)
-        fakeKeyguardRepository.setDreamingWithOverlay(true)
-        fakeKeyguardRepository.setDozeTransitionModel(
-            DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
-        )
-        testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L)
+    fun resolvesToDream() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            fakeKeyguardRepository.setDreaming(true)
+            fakeKeyguardRepository.setDreamingWithOverlay(true)
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+            )
+            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L)
 
-        assertThat(resolvedScene).isEqualTo(Scenes.Dream)
-    }
-
-    @Test
-    fun resolvesToOccluded() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
-
-        assertThat(resolvedScene).isEqualTo(Scenes.Occluded)
-    }
+            assertThat(resolvedScene).isEqualTo(Scenes.Dream)
+        }
 
     @Test
-    fun resolvesToGone_whenKeyguardDisabled() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        fakeKeyguardRepository.setKeyguardEnabled(false)
+    fun resolvesToOccluded() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
 
-        assertThat(resolvedScene).isEqualTo(Scenes.Gone)
-    }
-
-    @Test
-    fun resolvesToLockscreen_whenCanSwipeToEnter() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        setupSwipeDeviceEntryMethod()
-
-        assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
-    }
+            assertThat(resolvedScene).isEqualTo(Scenes.Occluded)
+        }
 
     @Test
-    fun resolvesToLockscreen_whenDeviceNotEntered() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+    fun resolvesToGone_whenKeyguardDisabled() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            fakeKeyguardRepository.setKeyguardEnabled(false)
 
-        assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
-    }
-
-    @Test
-    fun resolvesToLockscreen_whenOnBackStack() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        setupSwipeDeviceEntryMethod()
-        switchToScene(Scenes.Gone)
-        sceneBackInteractor.addLockscreenToBackStack()
-
-        assertThat(deviceEntryInteractor.canSwipeToEnter.value).isEqualTo(false)
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
-        assertThat(deviceEntryInteractor.isUnlocked.value).isEqualTo(true)
-        assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
-    }
+            assertThat(resolvedScene).isEqualTo(Scenes.Gone)
+        }
 
     @Test
-    fun resolvesToGone_byDefault() = kosmos.runTest {
-        val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-        setupSwipeDeviceEntryMethod()
-        switchToScene(Scenes.Gone)
+    fun resolvesToLockscreen_whenKeyguardDisabled_butAodEnabledAndAsleep() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            kosmos.powerInteractor.setAsleepForTest()
+            fakeKeyguardRepository.setKeyguardEnabled(false)
+            fakeKeyguardRepository.setAodAvailable(true)
 
-        assertThat(deviceEntryInteractor.canSwipeToEnter.value).isEqualTo(false)
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
-        assertThat(deviceEntryInteractor.isUnlocked.value).isEqualTo(true)
-        assertThat(resolvedScene).isEqualTo(Scenes.Gone)
-    }
+            assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun resolvesToGone_whenKeyguardDisabled_aodEnabledButAwake() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            kosmos.powerInteractor.setAwakeForTest()
+            fakeKeyguardRepository.setKeyguardEnabled(false)
+            fakeKeyguardRepository.setAodAvailable(true)
+
+            assertThat(resolvedScene).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun resolvesToLockscreen_whenCanSwipeToEnter() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            setupSwipeDeviceEntryMethod()
+
+            assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun resolvesToLockscreen_whenDeviceNotEntered() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+
+            assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun resolvesToLockscreen_whenOnBackStack() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            setupSwipeDeviceEntryMethod()
+            switchToScene(Scenes.Lockscreen)
+            switchToScene(Scenes.Shade)
+            sceneBackInteractor.addLockscreenToBackStack()
+
+            assertThat(deviceEntryInteractor.canSwipeToEnter.value).isEqualTo(true)
+            assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(false)
+            assertThat(deviceEntryInteractor.isUnlocked.value).isEqualTo(true)
+            assertThat(resolvedScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun resolvesToGone_byDefault() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            setupSwipeDeviceEntryMethod()
+            switchToScene(Scenes.Gone)
+
+            assertThat(deviceEntryInteractor.canSwipeToEnter.value).isEqualTo(false)
+            assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
+            assertThat(deviceEntryInteractor.isUnlocked.value).isEqualTo(true)
+            assertThat(resolvedScene).isEqualTo(Scenes.Gone)
+        }
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)

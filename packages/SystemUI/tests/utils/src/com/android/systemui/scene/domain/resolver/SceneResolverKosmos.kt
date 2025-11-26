@@ -23,6 +23,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.shared.model.SceneFamilies
 
@@ -37,6 +38,7 @@ val Kosmos.homeSceneFamilyResolver by
             keyguardInteractor = keyguardInteractor,
             keyguardEnabledInteractor = keyguardEnabledInteractor,
             keyguardOcclusionInteractor = keyguardOcclusionInteractor,
+            powerInteractor = powerInteractor,
             sceneBackInteractor = sceneBackInteractor,
         )
     }
