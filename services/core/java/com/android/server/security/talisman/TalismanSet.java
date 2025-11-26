@@ -61,7 +61,7 @@ final class TalismanSet {
      * The time at which the talismans expires. If the talismans have different expiry time, the
      * earliest one is chosen.
      */
-    private final Instant mExpiredAt;
+    private final Instant mExpireAt;
 
     /**
      * Constructs a {@link TalismanSet} from a {@link Builder}.
@@ -73,7 +73,7 @@ final class TalismanSet {
         mPublicKey = ByteString.copyFrom(builder.mPublicKey);
         mTalismanSet = ByteString.copyFrom(builder.mTalismanSet);
         mCreatedAt = builder.mCreatedAt;
-        mExpiredAt = builder.mExpiredAt;
+        mExpireAt = builder.mExpireAt;
     }
 
     @Type
@@ -93,8 +93,8 @@ final class TalismanSet {
         return mCreatedAt;
     }
 
-    Instant getExpiredAt() {
-        return mExpiredAt;
+    Instant getExpireAt() {
+        return mExpireAt;
     }
 
     /**
@@ -143,7 +143,7 @@ final class TalismanSet {
         private byte[] mPublicKey;
         private byte[] mTalismanSet;
         private Instant mCreatedAt;
-        private Instant mExpiredAt;
+        private Instant mExpireAt;
 
         Builder() {}
 
@@ -167,8 +167,8 @@ final class TalismanSet {
             return this;
         }
 
-        Builder setExpiredAt(Instant expiredAt) {
-            this.mExpiredAt = expiredAt;
+        Builder setExpireAt(Instant expireAt) {
+            this.mExpireAt = expireAt;
             return this;
         }
 
