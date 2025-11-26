@@ -19,11 +19,13 @@ import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.AudioSystem.DEVICE_IN_ALL_SCO_SET;
 import static android.media.AudioSystem.DEVICE_IN_BLE_HEADSET;
+import static android.media.AudioSystem.DEVICE_IN_BLE_HEARING_AID;
 import static android.media.AudioSystem.DEVICE_IN_BLUETOOTH_SCO_HEADSET;
 import static android.media.AudioSystem.DEVICE_IN_USB_HEADSET;
 import static android.media.AudioSystem.DEVICE_IN_WIRED_HEADSET;
 import static android.media.AudioSystem.DEVICE_OUT_ALL_SCO_SET;
 import static android.media.AudioSystem.DEVICE_OUT_BLE_HEADSET;
+import static android.media.AudioSystem.DEVICE_OUT_BLE_HEARING_AID;
 import static android.media.AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
 import static android.media.AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_CARKIT;
 import static android.media.AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_HEADSET;
@@ -62,8 +64,6 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.AudioManager.AudioDeviceCategory;
-import android.media.AudioPlaybackConfiguration;
-import android.media.AudioRecordingConfiguration;
 import android.media.AudioRoutesInfo;
 import android.media.AudioSystem;
 import android.media.BluetoothProfileConnectionInfo;
@@ -105,7 +105,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -2541,7 +2540,8 @@ public class AudioDeviceBroker {
                 DEVICE_OUT_USB_HEADSET, DEVICE_IN_USB_HEADSET,
                 DEVICE_OUT_BLUETOOTH_SCO, DEVICE_IN_BLUETOOTH_SCO_HEADSET,
                 DEVICE_OUT_BLUETOOTH_SCO_HEADSET, DEVICE_IN_BLUETOOTH_SCO_HEADSET,
-                DEVICE_OUT_BLUETOOTH_SCO_CARKIT, DEVICE_IN_BLUETOOTH_SCO_HEADSET
+                DEVICE_OUT_BLUETOOTH_SCO_CARKIT, DEVICE_IN_BLUETOOTH_SCO_HEADSET,
+                DEVICE_OUT_BLE_HEARING_AID, DEVICE_IN_BLE_HEARING_AID
             ));
 
     /**
@@ -2696,9 +2696,15 @@ public class AudioDeviceBroker {
         // priority to Hearing Aid.
         if (communnicationDeviceHaCompatOn()) {
             device = mDeviceInventory.getDeviceOfType(AudioSystem.DEVICE_OUT_HEARING_AID);
+            if (device == null) {
+                device = mDeviceInventory.getDeviceOfType(AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
+            }
         }
         if (device == null && communnicationDeviceLeAudioCompatOn()) {
             device = mDeviceInventory.getDeviceOfType(AudioSystem.DEVICE_OUT_BLE_HEADSET);
+            if (device == null) {
+                device = mDeviceInventory.getDeviceOfType(AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
+            }
         }
         return device;
     }

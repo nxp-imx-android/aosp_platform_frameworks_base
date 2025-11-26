@@ -844,7 +844,8 @@ public class AudioService extends IAudioService.Stub
                     AudioSystem.DEVICE_OUT_BLE_BROADCAST, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_HEARING_AID, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, AudioSystem.STREAM_VOICE_CALL,
-                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_HEADSET, AudioSystem.STREAM_VOICE_CALL
+                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_HEADSET, AudioSystem.STREAM_VOICE_CALL,
+                    AudioSystem.DEVICE_OUT_BLE_HEARING_AID, AudioSystem.STREAM_MUSIC
             ));
 
     /**
@@ -1133,7 +1134,8 @@ public class AudioService extends IAudioService.Stub
     Set<Integer> mAbsVolumeMultiModeCaseDevices = new HashSet<>(
             Arrays.asList(AudioSystem.DEVICE_OUT_HEARING_AID,
                           AudioSystem.DEVICE_OUT_BLE_HEADSET,
-                          AudioSystem.DEVICE_OUT_BLE_SPEAKER));
+                          AudioSystem.DEVICE_OUT_BLE_SPEAKER,
+                          AudioSystem.DEVICE_OUT_BLE_HEARING_AID));
 
     private final boolean mMonitorRotation;
 

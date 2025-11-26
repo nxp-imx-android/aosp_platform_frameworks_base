@@ -946,6 +946,14 @@ public class AidlConversion {
                 aidl.type = AudioDeviceType.OUT_HEADSET;
                 aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
                 break;
+            case AudioSystem.DEVICE_IN_BLE_HEARING_AID:
+                aidl.type = AudioDeviceType.IN_HEARING_AID;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
+            case AudioSystem.DEVICE_OUT_BLE_HEARING_AID:
+                aidl.type = AudioDeviceType.OUT_HEARING_AID;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
             case AudioSystem.DEVICE_IN_DEFAULT:
                 aidl.type = AudioDeviceType.IN_DEFAULT;
                 break;

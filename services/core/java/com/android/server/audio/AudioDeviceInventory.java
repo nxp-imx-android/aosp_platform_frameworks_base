@@ -2195,7 +2195,8 @@ public class AudioDeviceInventory {
 
      /*package*/ void disconnectLeAudio(int device) {
         if (device != AudioSystem.DEVICE_OUT_BLE_HEADSET
-                && device != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                && device != AudioSystem.DEVICE_OUT_BLE_BROADCAST
+                && device != AudioSystem.DEVICE_OUT_BLE_HEARING_AID) {
             Log.e(TAG, "disconnectLeAudio: Can't disconnect not LE Audio device " + device);
             return;
         }
@@ -2937,8 +2938,6 @@ public class AudioDeviceInventory {
         BECOMING_NOISY_INTENT_DEVICES_SET.add(AudioSystem.DEVICE_OUT_ANLG_DOCK_HEADSET);
         BECOMING_NOISY_INTENT_DEVICES_SET.add(AudioSystem.DEVICE_OUT_LINE);
         BECOMING_NOISY_INTENT_DEVICES_SET.add(DEVICE_OUT_HEARING_AID);
-        BECOMING_NOISY_INTENT_DEVICES_SET.add(AudioSystem.DEVICE_OUT_BLE_HEADSET);
-        BECOMING_NOISY_INTENT_DEVICES_SET.add(AudioSystem.DEVICE_OUT_BLE_BROADCAST);
         BECOMING_NOISY_INTENT_DEVICES_SET.addAll(DEVICE_OUT_ALL_A2DP_SET);
         BECOMING_NOISY_INTENT_DEVICES_SET.addAll(AudioSystem.DEVICE_OUT_ALL_USB_SET);
         BECOMING_NOISY_INTENT_DEVICES_SET.addAll(DEVICE_OUT_ALL_BLE_SET);

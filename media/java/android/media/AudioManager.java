@@ -27,7 +27,6 @@ import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
-import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
 import static android.media.audio.Flags.FLAG_AMSCO_AVAILABLE_API;
 import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
@@ -6511,6 +6510,10 @@ public class AudioManager {
      */
     public static final int DEVICE_OUT_BLE_BROADCAST = AudioSystem.DEVICE_OUT_BLE_BROADCAST;
     /** @hide
+     * The audio output device code for a BLE audio hearing aid.
+     */
+    public static final int DEVICE_OUT_BLE_HEARING_AID = AudioSystem.DEVICE_OUT_BLE_HEARING_AID;
+    /** @hide
      * The audio output device code for a wireless speaker group supporting multichannel content.
      */
     public static final int DEVICE_OUT_MULTICHANNEL_GROUP =
@@ -6613,6 +6616,11 @@ public class AudioManager {
      * The audio input device code for a BLE audio headset.
      */
     public static final int DEVICE_IN_BLE_HEADSET = AudioSystem.DEVICE_IN_BLE_HEADSET;
+
+    /** @hide
+     * The audio input device code for a BLE audio hearing aid.
+     */
+    public static final int DEVICE_IN_BLE_HEARING_AID = AudioSystem.DEVICE_IN_BLE_HEARING_AID;
 
     /**
      * Return true if the device code corresponds to an output device.
