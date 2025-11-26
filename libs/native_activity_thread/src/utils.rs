@@ -15,8 +15,10 @@
 
 use anyhow::{bail, Context, Result};
 use bitflags::bitflags;
-use libc::mallopt;
-use native_activity_thread_bindgen::tzset;
+use libc::{
+    dl_iterate_phdr, dl_phdr_info, mallopt, mprotect, size_t, PROT_EXEC, PROT_READ, PT_LOAD,
+};
+use native_activity_thread_bindgen::{tzset, PF_X};
 use nix::{
     errno::Errno,
     sys::resource::{getrlimit, setrlimit, Resource},
@@ -24,8 +26,9 @@ use nix::{
 };
 use rustutils::android::system_properties;
 
-use std::ffi::{c_int, c_ulong};
+use std::ffi::{c_int, c_ulong, c_void};
 use std::io::Error;
+use std::slice;
 
 const AID_APP_START: u32 = 10000;
 
@@ -36,6 +39,56 @@ pub fn reset_time_zone() {
     // Refresh Bionic's timezone information.
     // SAFETY: Not passing any function parameter.
     unsafe { tzset() };
+}
+
+#[allow(non_camel_case_types)]
+#[cfg(target_pointer_width = "64")]
+type ElfW_Phdr = libc::Elf64_Phdr;
+#[allow(non_camel_case_types)]
+#[cfg(target_pointer_width = "32")]
+type ElfW_Phdr = libc::Elf32_Phdr;
+
+/// A callback function for `dl_iterate_phdr` which changes XO regions to RX.
+///
+/// # Safety
+/// Callers must ensure that `info` is a valid pointer to `dl_phdr_info` which outlives this
+/// function and contains a shared object information.
+unsafe extern "C" fn disable_execute_only(
+    info: *mut dl_phdr_info,
+    _size: usize,
+    _data: *mut c_void,
+) -> c_int {
+    if info.is_null() {
+        return 0;
+    }
+
+    // SAFETY: `info` is a valid pointer which outlives this function and is aligned properly.
+    let info_ref = unsafe { &*info };
+
+    let phdr_ptr = info_ref.dlpi_phdr;
+    let phdr_count = info_ref.dlpi_phnum as usize;
+
+    // SAFETY: `phdr_ptr` points to a valid ElfW_Phdr array of `phdr_count` elements.
+    let program_headers: &[ElfW_Phdr] = unsafe { slice::from_raw_parts(phdr_ptr, phdr_count) };
+
+    // Search for any execute-only segments and mark them read+execute.
+    // This operation only affects RWX flags because of the implementation
+    // of mprotect, so other architectural flags (like PROT_BTI) will not be cleared.
+    for phdr in program_headers {
+        if phdr.p_type == PT_LOAD && phdr.p_flags == PF_X {
+            let addr = (info_ref.dlpi_addr + phdr.p_vaddr) as *mut c_void;
+            let len = phdr.p_memsz as size_t;
+
+            // SAFETY: Callers guarantee that `addr` is an address of a page-aligned memory region
+            // and `len` is the size of the region.
+            let ret = unsafe { mprotect(addr, len, PROT_READ | PROT_EXEC) };
+            if ret != 0 {
+                log::warn!("Failed to mprotect(): {}", Error::last_os_error());
+            }
+        }
+    }
+
+    0
 }
 
 bitflags! {
@@ -59,6 +112,7 @@ bitflags! {
         const PROFILEABLE = 1 << 24;
         const DEBUG_ENABLE_PTRACE = 1 << 25;
         const ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26;
+        const ENABLE_EXECUTE_ONLY_MEMORY = 1 << 27;
     }
 }
 
@@ -82,6 +136,10 @@ impl RuntimeFlags {
 
     pub fn is_profileable_from_shell(&self) -> bool {
         self.contains(Self::PROFILE_FROM_SHELL)
+    }
+
+    pub fn is_execute_only_memory_enabled(&self) -> bool {
+        self.contains(Self::ENABLE_EXECUTE_ONLY_MEMORY)
     }
 }
 
@@ -122,6 +180,15 @@ pub fn apply_runtime_flags(runtime_flags: u32) {
             "Failed to mallopt(M_BIONIC_SET_HEAP_TAGGING_LEVEL): {}",
             Error::last_os_error()
         );
+    }
+
+    // If the app does not support execute-only memory, then iterate through
+    // the shared objects and mark them readable.
+    if cfg!(feature = "build_execute_only_memory") && !flags.is_execute_only_memory_enabled() {
+        // SAFETY: Passes a callback function which has the expected function signature. The
+        // callback doesn't use `data`. The libc runtime guarantees to meet the safety requirements
+        // of the callback.
+        unsafe { dl_iterate_phdr(Some(disable_execute_only), std::ptr::null_mut()) };
     }
 }
 

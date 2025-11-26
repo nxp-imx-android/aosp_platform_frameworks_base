@@ -58,4 +58,10 @@ rust_library {
     rlibs: [
         "libnative_activity_thread_bindgen",
     ],
+    features: select(release_flag("RELEASE_BUILD_EXECUTE_ONLY_MEMORY"), {
+        true: [
+            "build_execute_only_memory",
+        ],
+        default: [],
+    }),
 }
