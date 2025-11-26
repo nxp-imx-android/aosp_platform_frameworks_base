@@ -194,8 +194,8 @@ constructor(
                                     with(transformationViewModel) {
                                         scaleX = scale
                                         scaleY = scale
-                                        translationX = offset.x
-                                        translationY = offset.y
+                                        translationX = offsetX
+                                        translationY = offsetY
                                         rotationZ = rotation
                                     }
                                 }
