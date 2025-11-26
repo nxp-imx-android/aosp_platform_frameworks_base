@@ -25,7 +25,6 @@ import static android.app.role.RoleManager.ROLE_FINANCED_DEVICE_KIOSK;
 
 import static com.android.settingslib.Utils.getColorAttrDefaultColor;
 
-import android.Manifest;
 import android.annotation.UserIdInt;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
@@ -45,6 +44,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.os.Binder;
 import android.os.Build;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -62,7 +62,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.widget.LockPatternUtils;
@@ -568,7 +567,6 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
     /**
      * Disables accessibility service that are not permitted.
      */
-    @RequiresPermission(value = Manifest.permission.QUERY_ADMIN_POLICY, conditional = true)
     public static EnforcedAdmin checkIfAccessibilityServiceDisallowed(Context context,
             String packageName, int userId) {
         DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(
@@ -599,9 +597,14 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
         }
 
         String userRestriction = UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE;
-        PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
-                getIdentifierForUserRestriction(userRestriction),
-                UserHandle.myUserId());
+        PolicyEnforcementInfo policyEnforcementInfo;
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                    getIdentifierForUserRestriction(userRestriction), userId);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
         if (policyEnforcementInfo.getAllAdmins().isEmpty()) {
             return null;
         }

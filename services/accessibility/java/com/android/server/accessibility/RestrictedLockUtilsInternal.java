@@ -20,17 +20,15 @@ import static android.app.admin.DevicePolicyIdentifiers.getIdentifierForUserRest
 
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
-import android.Manifest;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.PolicyEnforcementInfo;
 import android.content.Context;
 import android.content.pm.UserInfo;
+import android.os.Binder;
 import android.os.UserHandle;
 import android.os.UserManager;
-
-import androidx.annotation.RequiresPermission;
 
 import com.android.settingslib.RestrictedLockUtils;
 
@@ -46,7 +44,6 @@ public class RestrictedLockUtilsInternal {
     /**
      * Disables accessibility service that are not permitted.
      */
-    @RequiresPermission(Manifest.permission.QUERY_ADMIN_POLICY)
     public static EnforcedAdmin checkIfAccessibilityServiceDisallowed(Context context,
             String packageName, int userId) {
         final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
@@ -76,9 +73,14 @@ public class RestrictedLockUtilsInternal {
             return profileAdmin;
         }
         String userRestriction = UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE;
-        PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
-                getIdentifierForUserRestriction(userRestriction),
-                UserHandle.myUserId());
+        PolicyEnforcementInfo policyEnforcementInfo;
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                    getIdentifierForUserRestriction(userRestriction), userId);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
         if (policyEnforcementInfo.getAllAdmins().isEmpty()) {
             return null;
         }
