@@ -67,6 +67,8 @@ import android.os.IThermalEventListener;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.Temperature;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.testing.TestableContext;
@@ -77,6 +79,7 @@ import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.IdleScreenRefreshRateConfig;
 import android.view.SurfaceControl.RefreshRateRange;
+import android.view.SurfaceControl.WorkDuration;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -93,6 +96,7 @@ import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.config.IdleScreenRefreshRateTimeoutLuxThresholdPoint;
 import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.mode.DisplayModeDirector.BrightnessObserver;
 import com.android.server.display.mode.DisplayModeDirector.DesiredDisplayModeSpecs;
 import com.android.server.display.utils.AmbientFilter;
@@ -105,6 +109,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -126,6 +131,9 @@ import java.util.stream.Collectors;
 @SmallTest
 @RunWith(JUnitParamsRunner.class)
 public class DisplayModeDirectorTest {
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mClassRule.createSetFlagsRule();
     private static final RefreshRateData EMPTY_REFRESH_RATE_DATA = new RefreshRateData(
             /* defaultRefreshRate= */ 0,
             /* defaultPeakRefreshRate= */ 0,
@@ -3580,6 +3588,70 @@ public class DisplayModeDirectorTest {
 
         Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
         assertThat(vote).isNotNull();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
+    public void testWorkDurations_defaultValuesSetInDesiredDisplayModeSpecs() {
+        // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
+        WorkDuration workDurations = new WorkDuration(10500000,
+                16600000, 16600000);
+        DisplayDeviceConfig ddcMock = mock(DisplayDeviceConfig.class);
+        RefreshRateData rrd = new RefreshRateData(60, 65, 65, 75,
+        /* defaultWorkDurations= */ workDurations, List.of(), List.of(), null);
+        when(ddcMock.getRefreshRateData()).thenReturn(rrd);
+        SparseArray<DisplayDeviceConfig> configs = new SparseArray<>();
+        configs.put(DISPLAY_ID, ddcMock);
+        SparseArray<Display.Mode> defaultModesByDisplay = new SparseArray<>();
+        Display.Mode mode = new Display.Mode(
+                /*modeId=*/8, /*width=*/2000, /*height=*/2000, 90);
+        defaultModesByDisplay.put(DISPLAY_ID, mode);
+        SparseArray<Display.Mode[]> supportedModes = new SparseArray<>();
+        supportedModes.put(DISPLAY_ID, new Display.Mode[]{mode});
+
+        DisplayModeDirector director = new DisplayModeDirector(mContext, mHandler, mInjector,
+                mDisplayManagerFlags, mDisplayDeviceConfigProvider);
+        director.injectDisplayDeviceConfigByDisplay(configs);
+        director.injectDefaultModeByDisplay(defaultModesByDisplay);
+        director.injectSupportedModesByDisplay(supportedModes);
+
+        // No votes change the work durations, so the ones in spec should be the defaults.
+
+        DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        assertEquals(workDurations, specs.workDurationsData);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
+    public void testWorkDurations_lowPowerMode_setInDesiredDisplayModeSpecs() {
+        // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
+        WorkDuration workDurations = new WorkDuration(11500000,
+                17600000, 17600000);
+        DisplayDeviceConfig ddcMock = mock(DisplayDeviceConfig.class);
+        SparseArray<DisplayDeviceConfig> configs = new SparseArray<>();
+        configs.put(DISPLAY_ID, ddcMock);
+        SparseArray<Display.Mode> defaultModesByDisplay = new SparseArray<>();
+        Display.Mode mode = new Display.Mode(
+                /*modeId=*/8, /*width=*/2000, /*height=*/2000, 90);
+        defaultModesByDisplay.put(DISPLAY_ID, mode);
+        SparseArray<Display.Mode[]> supportedModes = new SparseArray<>();
+        supportedModes.put(DISPLAY_ID, new Display.Mode[]{mode});
+
+        DisplayModeDirector director = new DisplayModeDirector(mContext, mHandler, mInjector,
+                mDisplayManagerFlags, mDisplayDeviceConfigProvider);
+        director.injectDisplayDeviceConfigByDisplay(configs);
+        director.injectDefaultModeByDisplay(defaultModesByDisplay);
+        director.injectSupportedModesByDisplay(supportedModes);
+
+        // Set up the low power votes.
+        SparseArray<Vote> votes = new SparseArray<>();
+        SparseArray<SparseArray<Vote>> votesByDisplay = new SparseArray<>();
+        votesByDisplay.put(DISPLAY_ID, votes);
+        votes.put(Vote.PRIORITY_LOW_POWER_MODE_MODES, Vote.forWorkDurations(workDurations));
+        director.injectVotesByDisplay(votesByDisplay);
+
+        DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        assertEquals(workDurations, specs.workDurationsData);
     }
 
     private Temperature getSkinTemp(@Temperature.ThrottlingStatus int status) {
