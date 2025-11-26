@@ -101,7 +101,6 @@ import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
-import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.VibratorHelper;
@@ -682,7 +681,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @Inject
     public UdfpsController(@NonNull @Main Context context,
             @NonNull Execution execution,
-            @NonNull @ShadeDisplayAware LayoutInflater inflater,
+            @NonNull LayoutInflater inflater,
             @Nullable FingerprintManager fingerprintManager,
             @NonNull @Main WindowManager windowManager,
             @NonNull StatusBarStateController statusBarStateController,
