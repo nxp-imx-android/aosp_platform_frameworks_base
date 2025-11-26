@@ -36,6 +36,7 @@ import com.android.mechanics.GestureContext
 import com.android.mechanics.MutableDragOffsetGestureContext
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 internal fun createSwipeAnimation(
@@ -455,7 +456,11 @@ internal class SwipeAnimation<T : ContentKey>(
     fun freezeAndAnimateToCurrentState() {
         if (isAnimatingOffset()) return
 
-        contentTransition.coroutineScope.launch {
+        // We use CoroutineStart.UNDISPATCHED so that animateOffset is called directly to avoid a
+        // race condition where we get `isAnimatingOffset=false`, then launch animateOffset() but
+        // have it run after someone else also calls animateOffset() (which can be called only
+        // once).
+        contentTransition.coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
             animateOffset(initialVelocity = 0f, targetContent = currentContent)
         }
     }

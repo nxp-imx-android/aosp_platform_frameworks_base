@@ -22,9 +22,17 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.compose.animation.scene.TestScenes.SceneA
+import com.android.compose.animation.scene.TestScenes.SceneB
+import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.mechanics.ProvidedGestureContext
+import com.android.mechanics.spec.InputDirection
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.motion.compose.runMonotonicClockTest
 
 @RunWith(AndroidJUnit4::class)
 class SwipeAnimationTest {
@@ -100,5 +108,51 @@ class SwipeAnimationTest {
             targetOffset,
             initialVelocity,
         )
+    }
+
+    @Test
+    // Regression test for b/462102178.
+    fun animateOffsetCalledOnce() = runMonotonicClockTest {
+        val swipeAnimation =
+            SwipeAnimation(
+                    layoutState = MutableSceneTransitionLayoutStateForTests(SceneA),
+                    fromContent = SceneA,
+                    toContent = SceneB,
+                    isUpOrLeft = false,
+                    requiresFullDistanceSwipe = false,
+                    distance = { 100f },
+                    gestureContext =
+                        ProvidedGestureContext(dragOffset = 100f, direction = InputDirection.Max),
+                    decayAnimationSpec =
+                        SplineBasedFloatDecayAnimationSpec(Density(1f)).generateDecayAnimationSpec(),
+                )
+                .apply {
+                    val swipeAnimation = this
+                    contentTransition =
+                        object : TransitionState.Transition.ChangeScene(SceneA, SceneB) {
+                            override val progress: Float = 0f
+                            override val progressVelocity: Float = 0f
+                            override val isInitiatedByUserInput: Boolean = true
+                            override val isUserInputOngoing: Boolean = true
+                            override val currentScene: SceneKey = SceneA
+
+                            override suspend fun run() {
+                                swipeAnimation.run()
+                            }
+
+                            override fun freezeAndAnimateToCurrentState() {
+                                swipeAnimation.freezeAndAnimateToCurrentState()
+                            }
+                        }
+                }
+
+        launch(start = CoroutineStart.UNDISPATCHED) {
+            swipeAnimation.contentTransition.runInternal()
+        }
+
+        swipeAnimation.freezeAndAnimateToCurrentState()
+        if (!swipeAnimation.isAnimatingOffset()) {
+            swipeAnimation.animateOffset(initialVelocity = 0f, targetContent = SceneB)
+        }
     }
 }
