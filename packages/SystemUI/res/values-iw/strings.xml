@@ -950,7 +950,7 @@
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ייתכן שיופעל צלצול או רטט בהתאם להגדרות במכשיר"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ייתכן שיופעל צלצול או רטט בהתאם להגדרות במכשיר. שיחות מהאפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> מופיעות בבועות כברירת מחדל."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"אפשר לתת למערכת לקבוע אם ההתראה הזאת צריכה להיות מלווה בצליל או ברטט"</string>
-    <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"‏&lt;b&gt;הסטטוס:&lt;/b&gt; הועלה בדרגה ל\'ברירת מחדל\'"</string>
+    <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"‏&lt;b&gt;הסטטוס:&lt;/b&gt; הועלה בדרגה ל\'ברירת מחדל‘"</string>
     <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
     <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"‏&lt;b&gt;הסטטוס:&lt;/b&gt; הורד בדרגה ל\'שקט\'"</string>

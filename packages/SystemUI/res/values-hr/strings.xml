@@ -1428,7 +1428,7 @@
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Glasnoća"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Neki uređaji nisu vidljivi. Ažurirajte dopuštenja aplikacije"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Popravi"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Ispravite"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Povezani zvučnici"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Zvučnici i zasloni"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Predloženo"</string>
