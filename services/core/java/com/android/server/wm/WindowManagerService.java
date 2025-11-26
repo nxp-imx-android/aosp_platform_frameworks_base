@@ -156,7 +156,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
-import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -4613,8 +4612,8 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " display state="
                             + Display.stateToString(displayContent.getDisplayInfo().state));
                 }
-                captureArgs = displayContent.getLayerCaptureArgs(predicate,
-                        /*useWindowingLayerAsScreenshotRoot*/ enableLppAssistInvocationEffect());
+                captureArgs =
+                        displayContent.getWindowingLayerCaptureArgs(predicate);
             }
         }
 

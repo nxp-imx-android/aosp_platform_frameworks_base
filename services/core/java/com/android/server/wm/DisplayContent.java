@@ -5503,21 +5503,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Creates a {@link LayerCaptureArgs} object.
+     * Creates a {@link LayerCaptureArgs} object with windowing layer as screenshot root.
      *
-     * If {@code useWindowingLayerAsScreenshotRoot} is false, the returned
-     * {@code LayerCaptureArgs} will represent the entire DisplayContent.
-     *
-     * If {@code useWindowingLayerAsScreenshotRoot} is true, the
-     * {@code LayerCaptureArgs} will represent the surface area of the windowing layer.
      * @param predicate An optional filter function to determine which windows are captured. If
-     *                  null, all windows are included.
-     * @param useWindowingLayerAsScreenshotRoot Whether to use the windowing layer's
-     * surface area as the screenshot root.
-     * @return A {@code LayerCaptureArgs} object configured according to the parameters.
+     * null, all windows are included.
+     *
+     * @return A {@code LayerCaptureArgs} object representing the entire surface area of the
+     * windowing layer.
      */
-    LayerCaptureArgs getLayerCaptureArgs(@Nullable ToBooleanFunction<WindowState> predicate,
-            boolean useWindowingLayerAsScreenshotRoot) {
+    LayerCaptureArgs getWindowingLayerCaptureArgs(
+            @Nullable ToBooleanFunction<WindowState> predicate) {
         if (!mWmService.mPolicy.isScreenOn(mDisplayId)) {
             if (DEBUG_SCREENSHOT) {
                 Slog.i(TAG_WM, "Attempted to take screenshot while display " + mDisplayId
@@ -5528,9 +5523,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         getBounds(mTmpRect);
         mTmpRect.offsetTo(0, 0);
-        SurfaceControl sc =
-                useWindowingLayerAsScreenshotRoot ? getWindowingLayer() : getSurfaceControl();
-        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(sc).setSourceCrop(mTmpRect);
+
+        // Using windowing layer as screenshot root causes windows of TYPE_SECURE_SYSTEM_OVERLAY or
+        // higher to be excluded from the screenshot. If TYPE_SECURE_SYSTEM_OVERLAY (and higher)
+        // windows need to be included in a screenshot, please consider using getSurfaceControl().
+        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(getWindowingLayer())
+                .setSourceCrop(mTmpRect);
 
         if (predicate != null) {
             ArrayList<SurfaceControl> excludeLayers = new ArrayList<>();
