@@ -421,6 +421,7 @@ private fun ContentScope.QuickSettingsContent(
             stackTopPadding = notificationStackPadding,
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,
+            isActivated = false,
             modifier =
                 Modifier.fillMaxWidth()
                     // Match the screen height with the scrim, so it covers the whole screen,

@@ -196,6 +196,7 @@ fun ContentScope.ScrollingNotificationPanel(
     shouldFillMaxSize: Boolean = true,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    isActivated: Boolean = true,
     scrollState: ScrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
             ScrollState(initial = 0)
@@ -203,32 +204,34 @@ fun ContentScope.ScrollingNotificationPanel(
     overscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect(),
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    val composeViewRoot = LocalView.current
-    // whether the stack is moving due to a swipe or fling
-    val isScrollInProgress = scrollState.isScrollInProgress || overscrollEffect.isInProgress
+    if (isActivated) {
+        val composeViewRoot = LocalView.current
+        // whether the stack is moving due to a swipe or fling
+        val isScrollInProgress = scrollState.isScrollInProgress || overscrollEffect.isInProgress
 
-    LaunchedEffectWithLifecycle(isScrollInProgress) {
-        if (isScrollInProgress) {
-            jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
-            debugLog(viewModel) { "STACK scroll begins" }
-        } else {
-            debugLog(viewModel) { "STACK scroll ends" }
-            jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
-        }
-    }
-
-    val shadeScrollState by
-        shadeSession.rememberSession(key = "SingleShadeScrollState") {
-            derivedStateOf {
-                ShadeScrollState(
-                    // we are not scrolled to the top unless the scroll position is zero,
-                    isScrolledToTop = scrollState.value == 0,
-                    scrollPosition = scrollState.value,
-                    maxScrollPosition = scrollState.maxValue,
-                )
+        LaunchedEffectWithLifecycle(isScrollInProgress) {
+            if (isScrollInProgress) {
+                jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+                debugLog(viewModel) { "STACK scroll begins" }
+            } else {
+                debugLog(viewModel) { "STACK scroll ends" }
+                jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
             }
         }
-    LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+
+        val shadeScrollState by
+            shadeSession.rememberSession(key = "ScrollingNotificationPanelScrollState") {
+                derivedStateOf {
+                    ShadeScrollState(
+                        // we are not scrolled to the top unless the scroll position is zero,
+                        isScrolledToTop = scrollState.value == 0,
+                        scrollPosition = scrollState.value,
+                        maxScrollPosition = scrollState.maxValue,
+                    )
+                }
+            }
+        LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+    }
 
     NestedScrollingNotificationPanel(
         tag = "$tag.Scrolling",
@@ -243,6 +246,7 @@ fun ContentScope.ScrollingNotificationPanel(
         shouldFillMaxSize = shouldFillMaxSize,
         shouldDrawScrimBackground = shouldDrawScrimBackground,
         shouldIncludeHeadsUpSpace = shouldIncludeHeadsUpSpace,
+        isActivated = isActivated,
         scrollState = scrollState,
         overscrollEffect = overscrollEffect,
         onEmptySpaceClick = onEmptySpaceClick,
@@ -267,12 +271,90 @@ fun ContentScope.NestedScrollingNotificationPanel(
     shouldFillMaxSize: Boolean = true,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    isActivated: Boolean = true,
     onEmptySpaceClick: (() -> Unit)? = null,
     onStackHeightChanged: (Int) -> Unit = {},
 ) {
+    /**
+     * Space available for the notification stack on the screen. These bounds don't scroll off the
+     * screen, and respect the scrim paddings, scrim clipping.
+     */
+    val stackBoundsOnScreen = remember { mutableStateOf(Rect.Zero) }
+
     val nestedScrollDispatcher =
         shadeSession.rememberSession(key = "NestedScrollDispatcher") { NestedScrollDispatcher() }
-    val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
+
+    // The top y bound of the IME.
+    val imeTop = remember { mutableFloatStateOf(0f) }
+
+    if (isActivated) {
+        val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
+
+        // set the bounds to null when the scrim disappears
+        DisposableEffectWithLifecycle(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
+
+        val isRemoteInputActive by viewModel.isRemoteInputActive.collectAsStateWithLifecycle(false)
+
+        // The bottom Y bound of the currently focused remote input notification.
+        val remoteInputRowBottom by
+            viewModel.remoteInputRowBottomBound.collectAsStateWithLifecycle(0f)
+
+        // if remote input state changes, compare the row and IME's overlap and offset the scrim and
+        // placeholder accordingly.
+        LaunchedEffectWithLifecycle(isRemoteInputActive, remoteInputRowBottom, imeTop) {
+            imeTop.floatValue = 0f
+            snapshotFlow { imeTop.floatValue }
+                .collect { imeTopValue ->
+                    // Only scroll the stack if IME value has been populated (IME placeholder has
+                    // been composed at least once), and our remote input row overlaps with the ime
+                    // bounds.
+                    if (
+                        isRemoteInputActive &&
+                            imeTopValue > 0f &&
+                            remoteInputRowBottom > imeTopValue
+                    ) {
+                        scrollStackWithNestedScroll(
+                            delta = Offset(x = 0f, y = remoteInputRowBottom - imeTopValue),
+                            nestedScrollDispatcher = nestedScrollDispatcher,
+                            scrollState = scrollState,
+                        )
+                    }
+                }
+        }
+
+        // TalkBack sends a scroll event, when it wants to navigate to an item that is not displayed
+        // in
+        // the current viewport.
+        LaunchedEffectWithLifecycle(viewModel) {
+            viewModel.setAccessibilityScrollEventConsumer { event ->
+                // scroll up, or down by the height of the visible portion of the notification stack
+                val direction =
+                    when (event) {
+                        AccessibilityScrollEvent.SCROLL_UP -> -1
+                        AccessibilityScrollEvent.SCROLL_DOWN -> 1
+                    }
+                val viewPortHeight = stackBoundsOnScreen.value.height
+                val scrollStep = max(0f, viewPortHeight - stackScrollView.stackBottomInset)
+                val scrollPosition = scrollState.value.toFloat()
+                val scrollRange = scrollState.maxValue.toFloat()
+                val targetScroll =
+                    (scrollPosition + direction * scrollStep).coerceIn(0f, scrollRange)
+                coroutineScope.launch {
+                    scrollStackWithNestedScroll(
+                        delta = Offset(x = 0f, y = targetScroll - scrollPosition),
+                        nestedScrollDispatcher = nestedScrollDispatcher,
+                        scrollState = scrollState,
+                    )
+                }
+            }
+            try {
+                awaitCancellation()
+            } finally {
+                viewModel.setAccessibilityScrollEventConsumer(null)
+            }
+        }
+    }
+
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
@@ -294,74 +376,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
     val stackHorizontalPaddingPx =
         with(LocalDensity.current) { (stackTopPadding + stackBottomPadding).toPx() }.roundToInt()
 
-    /**
-     * Space available for the notification stack on the screen. These bounds don't scroll off the
-     * screen, and respect the scrim paddings, scrim clipping.
-     */
-    val stackBoundsOnScreen = remember { mutableStateOf(Rect.Zero) }
-
     val scrimRounding =
         viewModel.shadeScrimRounding.collectAsStateWithLifecycle(ShadeScrimRounding())
-
-    // set the bounds to null when the scrim disappears
-    DisposableEffectWithLifecycle(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
-
-    val isRemoteInputActive by viewModel.isRemoteInputActive.collectAsStateWithLifecycle(false)
-
-    // The bottom Y bound of the currently focused remote input notification.
-    val remoteInputRowBottom by viewModel.remoteInputRowBottomBound.collectAsStateWithLifecycle(0f)
-
-    // The top y bound of the IME.
-    val imeTop = remember { mutableFloatStateOf(0f) }
-
-    // if remote input state changes, compare the row and IME's overlap and offset the scrim and
-    // placeholder accordingly.
-    LaunchedEffectWithLifecycle(isRemoteInputActive, remoteInputRowBottom, imeTop) {
-        imeTop.floatValue = 0f
-        snapshotFlow { imeTop.floatValue }
-            .collect { imeTopValue ->
-                // Only scroll the stack if IME value has been populated (IME placeholder has
-                // been composed at least once), and our remote input row overlaps with the ime
-                // bounds.
-                if (isRemoteInputActive && imeTopValue > 0f && remoteInputRowBottom > imeTopValue) {
-                    scrollStackWithNestedScroll(
-                        delta = Offset(x = 0f, y = remoteInputRowBottom - imeTopValue),
-                        nestedScrollDispatcher = nestedScrollDispatcher,
-                        scrollState = scrollState,
-                    )
-                }
-            }
-    }
-
-    // TalkBack sends a scroll event, when it wants to navigate to an item that is not displayed in
-    // the current viewport.
-    LaunchedEffectWithLifecycle(viewModel) {
-        viewModel.setAccessibilityScrollEventConsumer { event ->
-            // scroll up, or down by the height of the visible portion of the notification stack
-            val direction =
-                when (event) {
-                    AccessibilityScrollEvent.SCROLL_UP -> -1
-                    AccessibilityScrollEvent.SCROLL_DOWN -> 1
-                }
-            val viewPortHeight = stackBoundsOnScreen.value.height
-            val scrollStep = max(0f, viewPortHeight - stackScrollView.stackBottomInset)
-            val scrollPosition = scrollState.value.toFloat()
-            val scrollRange = scrollState.maxValue.toFloat()
-            val targetScroll = (scrollPosition + direction * scrollStep).coerceIn(0f, scrollRange)
-            coroutineScope.launch {
-                scrollStackWithNestedScroll(
-                    delta = Offset(x = 0f, y = targetScroll - scrollPosition),
-                    nestedScrollDispatcher = nestedScrollDispatcher,
-                    scrollState = scrollState,
-                )
-            }
-        }
-        try {
-            awaitCancellation()
-        } finally {
-            viewModel.setAccessibilityScrollEventConsumer(null)
-        }
-    }
 
     val swipeToExpandNotificationScrollConnection =
         shadeSession.rememberSession(
