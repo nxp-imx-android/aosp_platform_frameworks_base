@@ -136,7 +136,7 @@ class ScreenRecordingServiceNotificationInteractor(
                 SmallScreenPostRecordingActivity.showRecording(context, savedRecording.uri)
             } else {
                 Intent(Intent.ACTION_VIEW)
-                    .setFlags(
+                    .addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
                     )
                     .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4)
@@ -148,10 +148,10 @@ class ScreenRecordingServiceNotificationInteractor(
                     strings.shareLabel,
                     PendingIntent.getActivity(
                         context,
-                        REQUEST_CODE,
+                        notificationId,
                         Intent.createChooser(
                             Intent(Intent.ACTION_SEND)
-                                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 .putExtra(Intent.EXTRA_STREAM, savedRecording.uri)
                                 .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4),
                             context.getString(R.string.screenrecord_share_label),
