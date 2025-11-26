@@ -59,6 +59,9 @@ import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.Overlay
 import com.android.compose.animation.scene.content.Scene
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.debug.StlDebugConfig
+import com.android.compose.animation.scene.debug.debugScene
+import com.android.compose.animation.scene.debug.debugStl
 import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.util.lerp
@@ -491,6 +494,13 @@ internal class SceneTransitionLayoutImpl(
                     LayoutElement(layoutImpl = this, transitionState = this.state.transitionState)
                 )
                 .thenIf(implicitTestTags) { Modifier.testTag(SceneTransitionLayoutRootContentTag) }
+                .thenIf(StlDebugConfig.showSceneBorders || StlDebugConfig.showSceneLabels) {
+                    Modifier.debugStl(
+                        state = state,
+                        debugName = debugName,
+                        nestingLevel = ancestors.size,
+                    )
+                }
         ) {
             LookaheadScope {
                 if (_lookaheadScope == null) {
@@ -519,7 +529,12 @@ internal class SceneTransitionLayoutImpl(
             key(scene.key) {
                 scene.Content(
                     isInvisible = isInvisible,
-                    modifier = Modifier.then(ContentElement(scene.zIndex, isInvisible)),
+                    modifier =
+                        Modifier.then(ContentElement(scene.zIndex, isInvisible)).thenIf(
+                            StlDebugConfig.showSceneBorders
+                        ) {
+                            Modifier.debugScene(scene.key)
+                        },
                 )
             }
         }

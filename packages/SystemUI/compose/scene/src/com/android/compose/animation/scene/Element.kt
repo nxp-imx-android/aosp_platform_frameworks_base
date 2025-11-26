@@ -54,6 +54,8 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.util.lerp
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.debug.StlDebugConfig
+import com.android.compose.animation.scene.debug.debugElement
 import com.android.compose.animation.scene.transformation.CustomPropertyTransformation
 import com.android.compose.animation.scene.transformation.CustomSharedPropertyTransformation
 import com.android.compose.animation.scene.transformation.InterpolatedPropertyTransformation
@@ -174,6 +176,9 @@ internal fun Modifier.element(
             Modifier.maybeElevateInContent(layoutImpl, content, key, currentTransitionStates)
         }
         .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
+        .thenIf(StlDebugConfig.showElementBorders || StlDebugConfig.showElementLabels) {
+            Modifier.debugElement(key)
+        }
 }
 
 /**
