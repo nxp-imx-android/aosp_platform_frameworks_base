@@ -167,7 +167,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Minimizatu aplikazioaren leihoa"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Itxi aplikazioaren leihoa"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Modu lehenetsian irekitzearen ezarpenak"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Aukeratu nola ireki sareko estekak aplikazio honetan"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Aukeratu nola ireki web-estekak aplikazio honetan"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"Aplikazioan"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"Arakatzailean"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"Ados"</string>
