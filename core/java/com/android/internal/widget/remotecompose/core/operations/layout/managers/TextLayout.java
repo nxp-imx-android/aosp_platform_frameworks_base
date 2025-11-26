@@ -423,7 +423,8 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
             float maxHeight,
             @NonNull MeasurePass measure) {
         super.computeSize(context, minWidth, maxWidth, minHeight, maxHeight, measure);
-        computeWrapSize(context, maxWidth, maxHeight, true, true, measure, mCachedSize);
+        computeWrapSize(context, minWidth, maxWidth,
+                minHeight, maxHeight, true, true, measure, mCachedSize);
         ComponentMeasure m = measure.get(this);
         m.setW(mCachedSize.getWidth());
         m.setH(mCachedSize.getHeight());
@@ -432,8 +433,8 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
     @Override
     public void computeWrapSize(
             @NonNull PaintContext context,
-            float maxWidth,
-            float maxHeight,
+            float minWidth, float maxWidth,
+            float minHeight, float maxHeight,
             boolean horizontalWrap,
             boolean verticalWrap,
             @NonNull MeasurePass measure,
@@ -459,6 +460,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                 || mOverflow == OVERFLOW_MIDDLE_ELLIPSIS
                 || mOverflow == OVERFLOW_ELLIPSIS)) {
             flags |= PaintContext.TEXT_COMPLEX;
+            // TODO: enable forceComplex = true;
         }
         if ((flags & PaintContext.TEXT_COMPLEX) != PaintContext.TEXT_COMPLEX) {
             for (int i = 0; i < mCachedString.length(); i++) {
@@ -484,6 +486,14 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                             mOverflow,
                             mMaxLines,
                             maxWidth,
+                            0f,
+                            0f,
+                            1f,
+                            0,
+                            0,
+                            0,
+                            false,
+                            false,
                             flags);
             if (mComputedTextLayout != null) {
                 bounds[0] = 0f;
@@ -663,5 +673,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         serializer.add("fontWeight", mFontWeight);
         serializer.add("fontFamilyId", mFontFamilyId);
         serializer.add("textAlign", mTextAlign);
+        serializer.add("overflow", mOverflow);
+        serializer.add("maxLines", mMaxLines);
     }
 }

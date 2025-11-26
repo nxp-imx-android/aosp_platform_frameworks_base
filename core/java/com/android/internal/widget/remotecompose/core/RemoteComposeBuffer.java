@@ -121,6 +121,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleColumnLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleRowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ColumnLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.CoreText;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.FitBoxLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ImageLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
@@ -189,9 +190,10 @@ public class RemoteComposeBuffer {
     private @NonNull WireBuffer mBuffer = new WireBuffer();
     private static final boolean DEBUG = false;
 
-    private int mLastComponentId = 0;
+    protected int mLastComponentId = 0;
     private int mGeneratedComponentId = -1;
-    private int mApiLevel = CoreDocument.DOCUMENT_API_LEVEL;
+    protected int mApiLevel = CoreDocument.DOCUMENT_API_LEVEL;
+    protected int mProfileMask = 0;
 
     Operations.UniqueIntMap<CompanionOperation> mMap = new Operations.UniqueIntMap<>();
 
@@ -1512,7 +1514,7 @@ public class RemoteComposeBuffer {
      * @param id the current component id (if -1, we'll generate a new one)
      * @return a usable component id
      */
-    private int getComponentId(int id) {
+    protected int getComponentId(int id) {
         int resolvedId = 0;
         if (id != -1) {
             resolvedId = id;
@@ -1570,9 +1572,19 @@ public class RemoteComposeBuffer {
         float g = (color >> 8 & 0xff) / 255.0f;
         float b = (color & 0xff) / 255.0f;
         float a = (color >> 24 & 0xff) / 255.0f;
-        BackgroundModifierOperation.apply(mBuffer, 0f, 0f, 0f, 0f, r, g, b, a, shape);
+        BackgroundModifierOperation.apply(mBuffer, 0, 0, 0, 0, r, g, b, a, shape);
     }
 
+    /**
+     * Add a background modifier of provided color
+     *
+     * @param colorId the color of the background
+     * @param shape the background shape -- SHAPE_RECTANGLE, SHAPE_CIRCLE
+     */
+    public void addDynamicModifierBackground(int colorId, int shape) {
+        BackgroundModifierOperation.apply(mBuffer,
+                BackgroundModifierOperation.COLOR_REF, colorId, 0, 0, 0f, 0f, 0f, 0f, shape);
+    }
 
     /**
      * Add a background modifier of provided color
@@ -1584,7 +1596,7 @@ public class RemoteComposeBuffer {
      * @param shape the background shape -- SHAPE_RECTANGLE, SHAPE_CIRCLE
      */
     public void addModifierBackground(float r, float g, float b, float a, int shape) {
-        BackgroundModifierOperation.apply(mBuffer, 0f, 0f, 0f, 0f, r, g, b, a, shape);
+        BackgroundModifierOperation.apply(mBuffer, 0, 0, 0, 0, r, g, b, a, shape);
     }
 
     /**
@@ -1609,7 +1621,24 @@ public class RemoteComposeBuffer {
         float b = (color & 0xff) / 255.0f;
         float a = (color >> 24 & 0xff) / 255.0f;
         BorderModifierOperation.apply(
-                mBuffer, 0f, 0f, 0f, 0f, borderWidth, borderRoundedCorner, r, g, b, a, shape);
+                mBuffer, 0, 0, 0, 0, borderWidth, borderRoundedCorner, r, g, b, a, shape);
+    }
+
+    /**
+     * Add a border modifier
+     *
+     * @param borderWidth the border width
+     * @param borderRoundedCorner the rounded corner radius if the shape is ROUNDED_RECT
+     * @param colorId the color of the border
+     * @param shape the shape of the border
+     */
+    public void addModifierDynamicBorder(
+            float borderWidth, float borderRoundedCorner, int colorId, int shape) {
+
+        BorderModifierOperation.apply(
+                mBuffer,
+                BorderModifierOperation.COLOR_REF, colorId, 0, 0,
+                borderWidth, borderRoundedCorner, 0, 0, 0, 0, shape);
     }
 
     /**
@@ -1901,18 +1930,16 @@ public class RemoteComposeBuffer {
     /**
      * Add a text component start tag
      *
-     * @param componentId component id
-     * @param animationId animation id
-     * @param textId id of the text
-     * @param color color of the text
-     * @param fontSize font size
-     * @param fontStyle font style (0 : Normal, 1 : Italic)
-     * @param fontWeight font weight (1 to 1000, normal is 400)
+     * @param componentId  component id
+     * @param animationId  animation id
+     * @param textId       id of the text
+     * @param color        color of the text
+     * @param fontSize     font size
+     * @param fontStyle    font style (0 : Normal, 1 : Italic)
+     * @param fontWeight   font weight (1 to 1000, normal is 400)
      * @param fontFamilyId font family or null
-     * @param flags flags for configuration, only use by color (0: Static color, 1: Color Id)
-     * @param textAlign text alignment (0 : Center, 1 : Left, 2 : Right)
-     * @param overflow
-     * @param maxLines
+     * @param flags        flags for configuration, only use by color (0: Static color, 1: Color Id)
+     * @param textAlign    text alignment (0 : Center, 1 : Left, 2 : Right)
      */
     public void addTextComponentStart(
             int componentId,
@@ -1929,7 +1956,6 @@ public class RemoteComposeBuffer {
             int maxLines) {
         mLastComponentId = getComponentId(componentId);
         int flagsAndTextAlign = (flags << 16) | (textAlign & 0xFFFF);
-
         TextLayout.apply(
                 mBuffer,
                 mLastComponentId,
@@ -1943,6 +1969,75 @@ public class RemoteComposeBuffer {
                 flagsAndTextAlign,
                 overflow,
                 maxLines);
+    }
+
+    /**
+     * Add a text component start tag
+     *
+     * @param componentId  component id
+     * @param animationId  animation id
+     * @param textId       id of the text
+     * @param color        color of the text
+     * @param colorId      color id of the text
+     * @param fontSize     font size
+     * @param fontStyle    font style (0 : Normal, 1 : Italic)
+     * @param fontWeight   font weight (1 to 1000, normal is 400)
+     * @param fontFamilyId font family or null
+     * @param flags        flags for configuration, only use by color (0: Static color, 1: Color Id)
+     * @param textAlign    text alignment (0 : Center, 1 : Left, 2 : Right)
+     */
+    public void addTextComponentStart(
+            int componentId,
+            int animationId,
+            int textId,
+            int color,
+            int colorId,
+            float fontSize,
+            int fontStyle,
+            float fontWeight,
+            int fontFamilyId,
+            int textAlign,
+            int overflow,
+            int maxLines,
+            float letterSpacing,
+            float lineHeightAdd,
+            float lineHeightMultiplier,
+            int lineBreakStrategy,
+            int hyphenationFrequency,
+            int justificationMode,
+            boolean underline,
+            boolean strikethrough,
+            @NonNull int [] fontAxis,
+            @NonNull float [] fontAxisValues,
+            boolean autosize,
+            int flags) {
+        mLastComponentId = getComponentId(componentId);
+        CoreText.apply(
+                mBuffer,
+                mLastComponentId,
+                animationId,
+                textId,
+                color,
+                colorId,
+                fontSize,
+                fontStyle,
+                fontWeight,
+                fontFamilyId,
+                textAlign,
+                overflow,
+                maxLines,
+                letterSpacing,
+                lineHeightAdd,
+                lineHeightMultiplier,
+                lineBreakStrategy,
+                hyphenationFrequency,
+                justificationMode,
+                underline,
+                strikethrough,
+                fontAxis,
+                fontAxisValues,
+                autosize,
+                flags);
     }
 
     /**
@@ -2189,6 +2284,13 @@ public class RemoteComposeBuffer {
     }
 
     /**
+     * Ends the current conditional operation stared by {@link #addConditionalOperations}.
+     */
+    public void endConditionalOperations() {
+        addContainerEnd();
+    }
+
+    /**
      * Add a debug message
      *
      * @param textId text id
@@ -2265,18 +2367,17 @@ public class RemoteComposeBuffer {
      */
     public void setVersion(int documentApiLevel, int profiles) {
         mApiLevel = documentApiLevel;
+        mProfileMask = profiles;
         mBuffer.setVersion(documentApiLevel, profiles);
     }
 
     /**
      * Set current version of the buffer (typically for writing)
-     *
-     * @param documentApiLevel
-     * @param supportedOperations
      */
-    public void setVersion(int documentApiLevel, @NonNull Set<Integer> supportedOperations) {
+    public void setVersion(int documentApiLevel, int profileMask,
+            @NonNull Set<Integer> supportedOperations) {
         mApiLevel = documentApiLevel;
-
+        mProfileMask = profileMask;
         mBuffer.setValidOperations(supportedOperations);
     }
 
