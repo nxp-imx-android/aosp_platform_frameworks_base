@@ -836,6 +836,7 @@ rust_aconfig_library {
     aconfig_declarations: "android.security.flags-aconfig",
     apex_available: [
         "//apex_available:platform",
+        "com.android.compos",
         "com.android.virt",
     ],
 }
@@ -874,6 +875,12 @@ java_aconfig_library {
     aconfig_declarations: "android.content.pm.flags-aconfig",
     host_supported: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+cc_aconfig_library {
+    name: "android.content.pm.flags-aconfig-cc",
+    aconfig_declarations: "android.content.pm.flags-aconfig",
+    min_sdk_version: "30",
 }
 
 // Resources

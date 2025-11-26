@@ -327,7 +327,7 @@ flag {
 
 flag {
     name: "verified_dexopt"
-    namespace: "desktop_security"
+    namespace: "hardware_backed_security"
     description: "Flag guarding the PackageState verifiedDexOpt API."
     is_exported: true
     bug: "439646165"
