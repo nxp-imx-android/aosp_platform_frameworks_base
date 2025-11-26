@@ -1214,8 +1214,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                                 mDisplayModeSpecs.allowGroupSwitching,
                                 mDisplayModeSpecs.primary,
                                 mDisplayModeSpecs.appRequest,
-                                mDisplayModeSpecs.mIdleScreenRefreshRateConfig,
-                                    mDisplayModeSpecs.workDurationsData)}));
+                                mDisplayModeSpecs.mIdleScreenRefreshRateConfig)}));
             }
         }
 

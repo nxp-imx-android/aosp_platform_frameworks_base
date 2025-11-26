@@ -66,8 +66,6 @@ final class VoteSummary {
     private final boolean mSupportsFrameRateOverride;
     private final boolean mLoggingEnabled;
 
-    public SurfaceControl.WorkDuration workDurationsData = null;
-
     VoteSummary(boolean supportedModesVoteEnabled,
             boolean loggingEnabled, boolean supportsFrameRateOverride) {
         mSupportedModesVoteEnabled = supportedModesVoteEnabled;
