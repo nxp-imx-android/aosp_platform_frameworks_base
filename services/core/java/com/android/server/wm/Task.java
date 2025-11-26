@@ -112,6 +112,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import static java.lang.Integer.MAX_VALUE;
 
+import android.annotation.CallSuper;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -6468,9 +6469,11 @@ class Task extends TaskFragment {
         return boundsChange[0];
     }
 
+    @CallSuper
     @Override
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
             return;
         }

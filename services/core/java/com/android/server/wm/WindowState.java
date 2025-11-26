@@ -4084,6 +4084,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
         boolean isVisible = isVisible();
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible) {
             return;
         }
@@ -6224,12 +6225,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     public boolean isInputMethodClientFocus(int uid, int pid) {
         return getDisplayContent().isInputMethodClientFocus(uid, pid);
-    }
-
-    @Override
-    public void dumpProto(ProtoOutputStream proto, long fieldId,
-                          @WindowTracingLogLevel int logLevel) {
-        dumpDebug(proto, fieldId, logLevel);
     }
 
     public boolean cancelAndRedraw(int seqId) {

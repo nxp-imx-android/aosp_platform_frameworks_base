@@ -16,11 +16,6 @@
 
 package com.android.server.wm;
 
-
-import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
-import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
-import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.IDENTIFIER;
-
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_EMBEDDED_WINDOWS;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -32,7 +27,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Slog;
-import android.util.proto.ProtoOutputStream;
 import android.view.InputApplicationHandle;
 import android.view.InputChannel;
 import android.view.WindowInsets;
@@ -490,18 +484,6 @@ class EmbeddedWindowController {
         @Override
         public ActivityRecord getActivityRecord() {
             return mHostActivityRecord;
-        }
-
-        @Override
-        public void dumpProto(ProtoOutputStream proto, long fieldId,
-                              @WindowTracingLogLevel int logLevel) {
-            final long token = proto.start(fieldId);
-
-            final long token2 = proto.start(IDENTIFIER);
-            proto.write(HASH_CODE, System.identityHashCode(this));
-            proto.write(TITLE, "EmbeddedWindow");
-            proto.end(token2);
-            proto.end(token);
         }
 
         public void updateHost(WindowState hostWindowState) {
