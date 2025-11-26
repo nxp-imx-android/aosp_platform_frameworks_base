@@ -150,6 +150,7 @@ public final class MediaRouter2 {
     private static MediaRouter2 sInstance;
 
     private final Context mContext;
+    private final Logger mLog;
     private final IMediaRouterService mMediaRouterService;
     private final Object mLock = new Object();
     private final MediaRouter2Impl mImpl;
@@ -637,6 +638,7 @@ public final class MediaRouter2 {
 
     private MediaRouter2(Context appContext) {
         mContext = appContext;
+        mLog = new Logger("local");
         mMediaRouterService =
                 IMediaRouterService.Stub.asInterface(
                         ServiceManager.getService(Context.MEDIA_ROUTER_SERVICE));
@@ -656,6 +658,7 @@ public final class MediaRouter2 {
     private MediaRouter2(
             Context context, Looper looper, String clientPackageName, UserHandle user) {
         mContext = context;
+        mLog = new Logger(TextUtils.formatSimple("proxy-%s", clientPackageName));
         mHandler = new Handler(looper);
         mMediaRouterService =
                 IMediaRouterService.Stub.asInterface(
@@ -758,7 +761,7 @@ public final class MediaRouter2 {
         Objects.requireNonNull(routeCallback, "callback must not be null");
 
         if (!mRouteCallbackRecords.remove(new RouteCallbackRecord(null, routeCallback, null))) {
-            Log.w(TAG, "unregisterRouteCallback: Ignoring unknown callback");
+            mLog.w("unregisterRouteCallback: Ignoring unknown callback");
             return;
         }
 
@@ -818,10 +821,9 @@ public final class MediaRouter2 {
 
         if (!mListingPreferenceCallbackRecords.remove(
                 new RouteListingPreferenceCallbackRecord(/* executor */ null, callback))) {
-            Log.w(
-                    TAG,
+            mLog.w(
                     "unregisterRouteListingPreferenceUpdatedCallback: Ignoring an unknown"
-                        + " callback");
+                            + " callback");
         }
     }
 
@@ -837,10 +839,7 @@ public final class MediaRouter2 {
 
         if (!mDeviceSuggestionsUpdatesCallbackRecords.remove(
                 new DeviceSuggestionsUpdatesCallbackRecord(/* executor */ null, callback))) {
-            Log.w(
-                    TAG,
-                    "unregisterDeviceSuggestionsUpdatesCallback: Ignoring an unknown"
-                            + " callback");
+            mLog.w("unregisterDeviceSuggestionsUpdatesCallback: Ignoring an unknown" + " callback");
         }
     }
 
@@ -1079,7 +1078,7 @@ public final class MediaRouter2 {
 
         TransferCallbackRecord record = new TransferCallbackRecord(executor, callback);
         if (!mTransferCallbackRecords.addIfAbsent(record)) {
-            Log.w(TAG, "registerTransferCallback: Ignoring the same callback");
+            mLog.w("registerTransferCallback: Ignoring the same callback");
         }
     }
 
@@ -1094,7 +1093,7 @@ public final class MediaRouter2 {
         Objects.requireNonNull(callback, "callback must not be null");
 
         if (!mTransferCallbackRecords.remove(new TransferCallbackRecord(null, callback))) {
-            Log.w(TAG, "unregisterTransferCallback: Ignoring an unknown callback");
+            mLog.w("unregisterTransferCallback: Ignoring an unknown callback");
         }
     }
 
@@ -1111,7 +1110,7 @@ public final class MediaRouter2 {
 
         ControllerCallbackRecord record = new ControllerCallbackRecord(executor, callback);
         if (!mControllerCallbackRecords.addIfAbsent(record)) {
-            Log.w(TAG, "registerControllerCallback: Ignoring the same callback");
+            mLog.w("registerControllerCallback: Ignoring the same callback");
         }
     }
 
@@ -1125,7 +1124,7 @@ public final class MediaRouter2 {
         Objects.requireNonNull(callback, "callback must not be null");
 
         if (!mControllerCallbackRecords.remove(new ControllerCallbackRecord(null, callback))) {
-            Log.w(TAG, "unregisterControllerCallback: Ignoring an unknown callback");
+            mLog.w("unregisterControllerCallback: Ignoring an unknown callback");
         }
     }
 
@@ -1285,8 +1284,10 @@ public final class MediaRouter2 {
                         routingChangeInfo,
                         controllerHints);
             } catch (RemoteException ex) {
-                Log.e(TAG, "createControllerForTransfer: "
-                                + "Failed to request for creating a controller.", ex);
+                mLog.e(
+                        "createControllerForTransfer: "
+                                + "Failed to request for creating a controller.",
+                        ex);
                 mControllerCreationRequests.remove(request);
                 if (managerRequestId == MANAGER_REQUEST_ID_NONE) {
                     notifyTransferFailure(route);
@@ -1382,8 +1383,11 @@ public final class MediaRouter2 {
     void syncRoutesOnHandler(
             List<MediaRoute2Info> currentRoutes, RoutingSessionInfo currentSystemSessionInfo) {
         if (currentRoutes == null || currentRoutes.isEmpty() || currentSystemSessionInfo == null) {
-            Log.e(TAG, "syncRoutesOnHandler: Received wrong data. currentRoutes=" + currentRoutes
-                    + ", currentSystemSessionInfo=" + currentSystemSessionInfo);
+            mLog.e(
+                    "syncRoutesOnHandler: Received wrong data. currentRoutes="
+                            + currentRoutes
+                            + ", currentSystemSessionInfo="
+                            + currentSystemSessionInfo);
             return;
         }
 
@@ -1530,7 +1534,7 @@ public final class MediaRouter2 {
         }
 
         if (matchingRequest == null) {
-            Log.w(TAG, "createControllerOnHandler: Ignoring an unknown request.");
+            mLog.w("createControllerOnHandler: Ignoring an unknown request.");
             return;
         }
 
@@ -1542,8 +1546,7 @@ public final class MediaRouter2 {
             notifyTransferFailure(requestedRoute);
             return;
         } else if (!TextUtils.equals(requestedRoute.getProviderId(), sessionInfo.getProviderId())) {
-            Log.w(
-                    TAG,
+            mLog.w(
                     "The session's provider ID does not match the requested route's. "
                             + "(requested route's providerId="
                             + requestedRoute.getProviderId()
@@ -1558,8 +1561,7 @@ public final class MediaRouter2 {
         // When the old controller is released before transferred, treat it as a failure.
         // This could also happen when transfer is requested twice or more.
         if (!oldController.scheduleRelease()) {
-            Log.w(
-                    TAG,
+            mLog.w(
                     "createControllerOnHandler: "
                             + "Ignoring controller creation for released old controller. "
                             + "oldController="
@@ -1593,7 +1595,7 @@ public final class MediaRouter2 {
 
     void updateControllerOnHandler(RoutingSessionInfo sessionInfo) {
         if (sessionInfo == null) {
-            Log.w(TAG, "updateControllerOnHandler: Ignoring null sessionInfo.");
+            mLog.w("updateControllerOnHandler: Ignoring null sessionInfo.");
             return;
         }
 
@@ -1612,7 +1614,7 @@ public final class MediaRouter2 {
 
     void releaseControllerOnHandler(RoutingSessionInfo sessionInfo) {
         if (sessionInfo == null) {
-            Log.w(TAG, "releaseControllerOnHandler: Ignoring null sessionInfo.");
+            mLog.w("releaseControllerOnHandler: Ignoring null sessionInfo.");
             return;
         }
 
@@ -1636,8 +1638,7 @@ public final class MediaRouter2 {
             }
 
             if (controller == null) {
-                Log.w(
-                        TAG,
+                mLog.w(
                         logPrefix
                                 + ": Matching controller not found. uniqueSessionId="
                                 + sessionInfo.getId());
@@ -1646,8 +1647,7 @@ public final class MediaRouter2 {
 
             RoutingSessionInfo oldInfo = controller.getRoutingSessionInfo();
             if (!TextUtils.equals(oldInfo.getProviderId(), sessionInfo.getProviderId())) {
-                Log.w(
-                        TAG,
+                mLog.w(
                         logPrefix
                                 + ": Provider IDs are not matched. old="
                                 + oldInfo.getProviderId()
@@ -1664,8 +1664,7 @@ public final class MediaRouter2 {
             MediaRoute2Info route,
             long managerRequestId,
             RoutingChangeInfo routingChangeInfo) {
-        Log.i(
-                TAG,
+        mLog.i(
                 TextUtils.formatSimple(
                         "requestCreateSessionByManager | requestId: %d, oldSession: %s, route: %s",
                         managerRequestId, oldSession, route));
@@ -1679,11 +1678,10 @@ public final class MediaRouter2 {
             }
         }
         if (controller == null) {
-            Log.w(
-                    TAG,
+            mLog.w(
                     TextUtils.formatSimple(
                             "Ignoring requestCreateSessionByManager (requestId: %d) because no"
-                                + " controller for old session (id: %s) was found.",
+                                    + " controller for old session (id: %s) was found.",
                             managerRequestId, oldSessionId));
             return;
         }
@@ -2407,19 +2405,19 @@ public final class MediaRouter2 {
                 @NonNull MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
             if (isReleased()) {
-                Log.w(TAG, "selectRoute: Called on released controller. Ignoring.");
+                mLog.w("selectRoute: Called on released controller. Ignoring.");
                 return;
             }
 
             List<MediaRoute2Info> selectedRoutes = getSelectedRoutes();
             if (containsRouteInfoWithId(selectedRoutes, route.getId())) {
-                Log.w(TAG, "Ignoring selecting a route that is already selected. route=" + route);
+                mLog.w("Ignoring selecting a route that is already selected. route=" + route);
                 return;
             }
 
             List<MediaRoute2Info> selectableRoutes = getSelectableRoutes();
             if (!containsRouteInfoWithId(selectableRoutes, route.getId())) {
-                Log.w(TAG, "Ignoring selecting a non-selectable route=" + route);
+                mLog.w("Ignoring selecting a non-selectable route=" + route);
                 return;
             }
 
@@ -2457,19 +2455,19 @@ public final class MediaRouter2 {
                 @NonNull MediaRoute2Info route, RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
             if (isReleased()) {
-                Log.w(TAG, "deselectRoute: called on released controller. Ignoring.");
+                mLog.w("deselectRoute: called on released controller. Ignoring.");
                 return;
             }
 
             List<MediaRoute2Info> selectedRoutes = getSelectedRoutes();
             if (!containsRouteInfoWithId(selectedRoutes, route.getId())) {
-                Log.w(TAG, "Ignoring deselecting a route that is not selected. route=" + route);
+                mLog.w("Ignoring deselecting a route that is not selected. route=" + route);
                 return;
             }
 
             List<MediaRoute2Info> deselectableRoutes = getDeselectableRoutes();
             if (!containsRouteInfoWithId(deselectableRoutes, route.getId())) {
-                Log.w(TAG, "Ignoring deselecting a non-deselectable route=" + route);
+                mLog.w("Ignoring deselecting a non-deselectable route=" + route);
                 return;
             }
 
@@ -2497,9 +2495,7 @@ public final class MediaRouter2 {
             Objects.requireNonNull(routingChangeInfo, "routingChangeInfo must not be null");
             synchronized (mControllerLock) {
                 if (isReleased()) {
-                    Log.w(
-                            TAG,
-                            "tryTransferWithinProvider: Called on released controller. Ignoring.");
+                    mLog.w("tryTransferWithinProvider: Called on released controller. Ignoring.");
                     return true;
                 }
 
@@ -2513,8 +2509,7 @@ public final class MediaRouter2 {
                                 && mSessionInfo.getSelectedRoutes().contains(route.getId());
                 if (!isSystemRouteReselection
                         && !mSessionInfo.getTransferableRoutes().contains(route.getId())) {
-                    Log.i(
-                            TAG,
+                    mLog.i(
                             "Transferring to a non-transferable route="
                                     + route
                                     + " session= "
@@ -2532,7 +2527,7 @@ public final class MediaRouter2 {
                     mMediaRouterService.transferToRouteWithRouter2(
                             stub, getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
-                    Log.e(TAG, "Unable to transfer to route for session.", ex);
+                    mLog.e("Unable to transfer to route for session.", ex);
                 }
             }
             return true;
@@ -2547,16 +2542,16 @@ public final class MediaRouter2 {
          */
         public void setVolume(int volume) {
             if (getVolumeHandling() == MediaRoute2Info.PLAYBACK_VOLUME_FIXED) {
-                Log.w(TAG, "setVolume: The routing session has fixed volume. Ignoring.");
+                mLog.w("setVolume: The routing session has fixed volume. Ignoring.");
                 return;
             }
             if (volume < 0 || volume > getVolumeMax()) {
-                Log.w(TAG, "setVolume: The target volume is out of range. Ignoring");
+                mLog.w("setVolume: The target volume is out of range. Ignoring");
                 return;
             }
 
             if (isReleased()) {
-                Log.w(TAG, "setVolume: Called on released controller. Ignoring.");
+                mLog.w("setVolume: Called on released controller. Ignoring.");
                 return;
             }
 
@@ -2607,7 +2602,7 @@ public final class MediaRouter2 {
             synchronized (mControllerLock) {
                 if (mState == CONTROLLER_STATE_RELEASED) {
                     if (DEBUG) {
-                        Log.d(TAG, "releaseInternal: Called on released controller. Ignoring.");
+                        mLog.d("releaseInternal: Called on released controller. Ignoring.");
                     }
                     return;
                 }
@@ -3381,9 +3376,7 @@ public final class MediaRouter2 {
             Objects.requireNonNull(sessionInfo, "sessionInfo must not be null");
             Objects.requireNonNull(route, "route must not be null");
 
-            Log.v(
-                    TAG,
-                    "Transferring routing session. session= " + sessionInfo + ", route=" + route);
+            mLog.v("Transferring routing session. session= " + sessionInfo + ", route=" + route);
 
             boolean isUnknownRoute;
             synchronized (mLock) {
@@ -3391,7 +3384,7 @@ public final class MediaRouter2 {
             }
 
             if (isUnknownRoute) {
-                Log.w(TAG, "transfer: Ignoring an unknown route id=" + route.getId());
+                mLog.w("transfer: Ignoring an unknown route id=" + route.getId());
                 this.onTransferFailed(sessionInfo, route);
                 return;
             }
@@ -3498,7 +3491,7 @@ public final class MediaRouter2 {
                 @NonNull MediaRoute2Info route,
                 @NonNull RoutingChangeInfo routingChangeInfo) {
             if (TextUtils.isEmpty(oldSession.getClientPackageName())) {
-                Log.w(TAG, "requestCreateSession: Can't create a session without package name.");
+                mLog.w("requestCreateSession: Can't create a session without package name.");
                 this.onTransferFailed(oldSession, route);
                 return;
             }
@@ -3544,11 +3537,11 @@ public final class MediaRouter2 {
         @Override
         public void setRouteVolume(@NonNull MediaRoute2Info route, int volume) {
             if (route.getVolumeHandling() == MediaRoute2Info.PLAYBACK_VOLUME_FIXED) {
-                Log.w(TAG, "setRouteVolume: the route has fixed volume. Ignoring.");
+                mLog.w("setRouteVolume: the route has fixed volume. Ignoring.");
                 return;
             }
             if (volume < 0 || volume > route.getVolumeMax()) {
-                Log.w(TAG, "setRouteVolume: the target volume is out of range. Ignoring");
+                mLog.w("setRouteVolume: the target volume is out of range. Ignoring");
                 return;
             }
 
@@ -3571,11 +3564,11 @@ public final class MediaRouter2 {
             Objects.requireNonNull(sessionInfo, "sessionInfo must not be null");
 
             if (sessionInfo.getVolumeHandling() == MediaRoute2Info.PLAYBACK_VOLUME_FIXED) {
-                Log.w(TAG, "setSessionVolume: the route has fixed volume. Ignoring.");
+                mLog.w("setSessionVolume: the route has fixed volume. Ignoring.");
                 return;
             }
             if (volume < 0 || volume > sessionInfo.getVolumeMax()) {
-                Log.w(TAG, "setSessionVolume: the target volume is out of range. Ignoring");
+                mLog.w("setSessionVolume: the target volume is out of range. Ignoring");
                 return;
             }
 
@@ -3629,12 +3622,12 @@ public final class MediaRouter2 {
             Objects.requireNonNull(route, "route must not be null");
 
             if (sessionInfo.getSelectedRoutes().contains(route.getId())) {
-                Log.w(TAG, "Ignoring selecting a route that is already selected. route=" + route);
+                mLog.w("Ignoring selecting a route that is already selected. route=" + route);
                 return;
             }
 
             if (!sessionInfo.getSelectableRoutes().contains(route.getId())) {
-                Log.w(TAG, "Ignoring selecting a non-selectable route=" + route);
+                mLog.w("Ignoring selecting a non-selectable route=" + route);
                 return;
             }
 
@@ -3667,12 +3660,12 @@ public final class MediaRouter2 {
             Objects.requireNonNull(route, "route must not be null");
 
             if (!sessionInfo.getSelectedRoutes().contains(route.getId())) {
-                Log.w(TAG, "Ignoring deselecting a route that is not selected. route=" + route);
+                mLog.w("Ignoring deselecting a route that is not selected. route=" + route);
                 return;
             }
 
             if (!sessionInfo.getDeselectableRoutes().contains(route.getId())) {
-                Log.w(TAG, "Ignoring deselecting a non-deselectable route=" + route);
+                mLog.w("Ignoring deselecting a non-deselectable route=" + route);
                 return;
             }
 
@@ -3901,8 +3894,7 @@ public final class MediaRouter2 {
             MediaRoute2Info requestedRoute = matchingRequest.mTargetRoute;
 
             if (!sessionInfo.getSelectedRoutes().contains(requestedRoute.getId())) {
-                Log.w(
-                        TAG,
+                mLog.w(
                         "The session does not contain the requested route. "
                                 + "(requestedRouteId="
                                 + requestedRoute.getId()
@@ -3912,8 +3904,7 @@ public final class MediaRouter2 {
                 this.onTransferFailed(matchingRequest.mOldSessionInfo, requestedRoute);
             } else if (!TextUtils.equals(
                     requestedRoute.getProviderId(), sessionInfo.getProviderId())) {
-                Log.w(
-                        TAG,
+                mLog.w(
                         "The session's provider ID does not match the requested route's. "
                                 + "(requested route's providerId="
                                 + requestedRoute.getProviderId()
@@ -3944,7 +3935,7 @@ public final class MediaRouter2 {
 
         private void onSessionReleasedOnHandler(@NonNull RoutingSessionInfo session) {
             if (session.isSystemSession()) {
-                Log.e(TAG, "onSessionReleasedOnHandler: Called on system session. Ignoring.");
+                mLog.e("onSessionReleasedOnHandler: Called on system session. Ignoring.");
                 return;
             }
 
@@ -4035,8 +4026,7 @@ public final class MediaRouter2 {
         }
 
         private void onInvalidateInstanceOnHandler() {
-            Log.w(
-                    TAG,
+            mLog.w(
                     "MEDIA_ROUTING_CONTROL has been revoked for this package. Invalidating"
                             + " instance.");
             // After this block, all following getInstance() calls should throw a SecurityException,
@@ -4296,7 +4286,7 @@ public final class MediaRouter2 {
                     unregisterRouterStubIfNeededLocked(/* isScanningStopping */ false);
 
                 } catch (RemoteException ex) {
-                    Log.e(TAG, "unregisterRouteCallback: Unable to set discovery request.", ex);
+                    mLog.e("unregisterRouteCallback: Unable to set discovery request.", ex);
                 }
             }
         }
@@ -4378,7 +4368,7 @@ public final class MediaRouter2 {
         @Override
         public void transferTo(
                 MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo) {
-            Log.v(TAG, "Transferring to route: " + route);
+            mLog.v("Transferring to route: " + route);
 
             boolean routeFound;
             synchronized (mLock) {
@@ -4452,7 +4442,7 @@ public final class MediaRouter2 {
                     mMediaRouterService.setSessionVolumeWithRouter2(
                             stub, sessionInfo.getId(), volume);
                 } catch (RemoteException ex) {
-                    Log.e(TAG, "setVolume: Failed to deliver request.", ex);
+                    mLog.e("setVolume: Failed to deliver request.", ex);
                 }
             }
         }
@@ -4497,7 +4487,7 @@ public final class MediaRouter2 {
                     mMediaRouterService.selectRouteWithRouter2(
                             stub, sessionInfo.getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
-                    Log.e(TAG, "Unable to select route for session.", ex);
+                    mLog.e("Unable to select route for session.", ex);
                 }
             }
         }
@@ -4522,7 +4512,7 @@ public final class MediaRouter2 {
                     mMediaRouterService.deselectRouteWithRouter2(
                             stub, sessionInfo.getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
-                    Log.e(TAG, "Unable to deselect route from session.", ex);
+                    mLog.e("Unable to deselect route from session.", ex);
                 }
             }
         }
@@ -4604,6 +4594,42 @@ public final class MediaRouter2 {
                 mMediaRouterService.unregisterRouter2(mStub);
                 mStub = null;
             }
+        }
+    }
+
+    private static class Logger {
+        private final String mPrefix;
+
+        private Logger(String prefix) {
+            mPrefix = prefix;
+        }
+
+        private void e(String message) {
+            Log.e(TAG, formatMessage(message));
+        }
+
+        private void e(String message, Throwable throwable) {
+            Log.e(TAG, formatMessage(message), throwable);
+        }
+
+        private void w(String message) {
+            Log.w(TAG, formatMessage(message));
+        }
+
+        private void i(String message) {
+            Log.i(TAG, formatMessage(message));
+        }
+
+        private void d(String message) {
+            Log.d(TAG, formatMessage(message));
+        }
+
+        private void v(String message) {
+            Log.v(TAG, formatMessage(message));
+        }
+
+        private String formatMessage(String message) {
+            return TextUtils.formatSimple("[%s] %s", mPrefix, message);
         }
     }
 }
