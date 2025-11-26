@@ -39,6 +39,7 @@ import org.junit.runner.RunWith
 class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val vmFactory = kosmos.notificationsPlaceholderViewModelFactory
+    private val goneViewModel = vmFactory.create(Scenes.Gone)
     private val lockscreenViewModel = vmFactory.create(Scenes.Lockscreen)
     private val quickSettingsViewModel = vmFactory.create(Scenes.QuickSettings)
     private val shadeViewModel = vmFactory.create(Scenes.Shade)
@@ -123,6 +124,41 @@ class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
             shadeViewModel.resetStackBounds()
             // Then: Observers get the QS values
             assertThat(stackBounds).isEqualTo(YSpace(100f, 200f))
+
+            disposable.dispose()
+        }
+
+    @Test
+    fun onHunBoundsChanged_goneToShade() =
+        kosmos.runTest {
+            var hunBounds: YSpace? = YSpace(Float.NaN, Float.NaN)
+            val disposable =
+                kosmos.notificationScrollViewModel.headsUpBounds.observe { value ->
+                    hunBounds = value
+                }
+
+            // Given: Initial bounds are zero.
+            assertThat(hunBounds).isEqualTo(YSpace.Zero)
+
+            // When: HUN is idle over Gone
+            goneViewModel.setHeadsUpBounds(YSpace(50f, 100f))
+            // Then: Observers are notified
+            assertThat(hunBounds).isEqualTo(YSpace(50f, 100f))
+
+            // When: Shade sends an update
+            shadeViewModel.setHeadsUpBounds(YSpace(100f, 150f))
+            // Then: Observers still have the value from Gone
+            assertThat(hunBounds).isEqualTo(YSpace(50f, 100f))
+
+            // When: Gone sends more updates
+            goneViewModel.setHeadsUpBounds(YSpace(75f, 125f))
+            // Then: Observers get notified
+            assertThat(hunBounds).isEqualTo(YSpace(75f, 125f))
+
+            // When: The Gone scene is gone
+            goneViewModel.resetHeadsUpBounds()
+            // Then: Observers get the Shade values
+            assertThat(hunBounds).isEqualTo(YSpace(100f, 150f))
 
             disposable.dispose()
         }

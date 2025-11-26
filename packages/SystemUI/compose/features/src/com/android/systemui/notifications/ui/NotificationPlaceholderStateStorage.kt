@@ -20,6 +20,8 @@ import com.android.compose.animation.scene.ContentKey
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.notifications.ui.composable.HeadsUpPlaceholderContentPicker
+import com.android.systemui.notifications.ui.composable.NotificationContentPicker
 import com.android.systemui.notifications.ui.composable.StackPlaceholderContentPicker
 import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.util.state.SynchronouslyObservableStateMap
@@ -30,8 +32,11 @@ import javax.inject.Inject
 @SysUISingleton
 class NotificationPlaceholderStateStorage
 @Inject
-constructor(private val stackPicker: StackPlaceholderContentPicker, dumpManager: DumpManager) :
-    Dumpable {
+constructor(
+    private val hunPicker: HeadsUpPlaceholderContentPicker,
+    private val stackPicker: StackPlaceholderContentPicker,
+    dumpManager: DumpManager,
+) : Dumpable {
 
     init {
         dumpManager.registerNormalDumpable(this)
@@ -40,7 +45,7 @@ constructor(private val stackPicker: StackPlaceholderContentPicker, dumpManager:
     /** Y coordinate for the top of the notification stack, including the scroll offset. */
     val stackScrollTop: SynchronouslyObservableStateMap<ContentKey, Float, Float> =
         SynchronouslyObservableStateMap { contentKeyToValuesMap ->
-            pickValueFrom(contentKeyToValuesMap) ?: 0f
+            stackPicker.pickValueFrom(contentKeyToValuesMap) ?: 0f
         }
 
     /** Set a value for [stackScrollTop] associated by the given [contentKey]. */
@@ -56,7 +61,7 @@ constructor(private val stackPicker: StackPlaceholderContentPicker, dumpManager:
     /** Vertical bounds for the user visible area of the notification stack. */
     val stackBounds: SynchronouslyObservableStateMap<ContentKey, YSpace, YSpace> =
         SynchronouslyObservableStateMap { contentKeyToValuesMap ->
-            pickValueFrom(contentKeyToValuesMap) ?: YSpace.Zero
+            stackPicker.pickValueFrom(contentKeyToValuesMap) ?: YSpace.Zero
         }
 
     /** Set a value for [stackBounds] associated by the given [contentKey]. */
@@ -69,12 +74,30 @@ constructor(private val stackPicker: StackPlaceholderContentPicker, dumpManager:
         stackBounds.remove(contentKey)
     }
 
-    private fun <V> pickValueFrom(map: Map<ContentKey, V>): V? {
-        return stackPicker.pickContentFrom(map.keys)?.let { found -> map[found] }
+    /** Vertical bounds of the top HUN. */
+    val hunBounds: SynchronouslyObservableStateMap<ContentKey, YSpace, YSpace> =
+        SynchronouslyObservableStateMap { contentKeyToValuesMap ->
+            hunPicker.pickValueFrom(contentKeyToValuesMap) ?: YSpace.Zero
+        }
+
+    /** Set a value for [hunBounds] associated by the given [contentKey]. */
+    fun setHunBounds(contentKey: ContentKey, space: YSpace) {
+        hunBounds[contentKey] = space
+    }
+
+    /** Removes any stored [hunBounds] value for the given [contentKey]. */
+    fun resetHunBounds(contentKey: ContentKey) {
+        hunBounds.remove(contentKey)
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("stackScrollTop: $stackScrollTop")
         pw.println("stackBounds: $stackBounds")
+        pw.println("hunBounds: $hunBounds")
     }
+}
+
+/** Returns a value from the provided [map] or null. */
+private fun <V> NotificationContentPicker.pickValueFrom(map: Map<ContentKey, V>): V? {
+    return pickContentFrom(map.keys)?.let { found -> map[found] }
 }

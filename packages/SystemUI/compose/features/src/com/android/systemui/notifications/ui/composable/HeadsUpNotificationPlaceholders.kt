@@ -41,7 +41,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
@@ -70,15 +69,11 @@ import kotlin.math.roundToInt
  * @param stackScrollView The legacy view that hosts the notification stack.
  * @param viewModel The view model for placeholder state.
  * @param modifier The [Modifier] to be applied to this placeholder.
- * @param useHunBounds A lambda to determine whether this instance should report its bounds. This is
- *   used to avoid conflicting bounds updates during scene transitions when multiple placeholders
- *   might co-exist.
  */
 @Composable
 fun ContentScope.HeadsUpNotificationPlaceholder(
     tag: String,
     stackScrollView: NotificationScrollView,
-    useHunBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -89,26 +84,23 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
                 .fillMaxWidth()
                 .notificationHeadsUpHeight(stackScrollView)
                 .debugBackground(viewModel, DEBUG_HUN_COLOR)
-                .onGloballyPositioned { coordinates: LayoutCoordinates ->
-                    // This element is sometimes opted out of the shared element system, so there
-                    // can be multiple instances of it during a transition. Thus we need to
-                    // determine which instance should feed its bounds to NSSL to avoid providing
-                    // conflicting values.
-                    val useBounds = useHunBounds()
-                    if (useBounds) {
-                        val positionInWindow = coordinates.positionInWindow()
-                        val boundsInWindow = coordinates.boundsInWindow()
-                        debugLog(viewModel) {
-                            "$tag.HUNS onGloballyPositioned:" +
-                                " size=${coordinates.size}" +
-                                " bounds=$boundsInWindow"
-                        }
-                        // Note: boundsInWindow doesn't scroll off the screen, so use
-                        // positionInWindow for top bound, which can scroll off screen while
-                        // snoozing.
-                        stackScrollView.setHeadsUpTop(positionInWindow.y)
-                        stackScrollView.setHeadsUpBottom(boundsInWindow.bottom)
+                .onPlaced { coordinates: LayoutCoordinates ->
+                    // Note: boundsInWindow doesn't scroll off the screen, so use positionInWindow
+                    // for top bound, which can scroll off screen while snoozing.
+                    val positionInWindow = coordinates.positionInWindow()
+                    val boundsInWindow = coordinates.boundsInWindow()
+                    viewModel.setHeadsUpBounds(
+                        YSpace(top = positionInWindow.y, bottom = boundsInWindow.bottom)
+                    )
+                    debugLog(viewModel) {
+                        "$tag.HUNS onPlaced:" +
+                            " size=${coordinates.size}" +
+                            " bounds=$boundsInWindow"
                     }
+                }
+                .onUnplaced {
+                    debugLog(viewModel) { "$tag.HUNS onUnplaced" }
+                    viewModel.resetHeadsUpBounds()
                 }
     ) {
         if (viewModel.isVisualDebuggingEnabled) {
@@ -136,7 +128,6 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
 fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     tag: String,
     stackScrollView: NotificationScrollView,
-    useStackBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -192,7 +183,6 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     HeadsUpNotificationPlaceholder(
         tag = "$tag.Snoozable",
         stackScrollView = stackScrollView,
-        useHunBounds = { true },
         viewModel = viewModel,
         modifier =
             modifier
@@ -211,18 +201,20 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                             ),
                     )
                 }
-                // TODO(462706428) Make NSSL use strictly HeadsUpPlaceholder values and leave stack
-                // related updates strictly to the other placeholders.
+                // TODO(462706428) Make NSSL work with HeadsUpPlaceholder values only, and leave
+                // stack related updates strictly to the stack placeholders.
                 //
                 // Make sure NSSL needs to receive some valid stack bounds, even if the
                 // HeadsUpPlaceholder is displayed without the regular StackPlaceholder.
                 .onPlaced {
                     val bounds = it.boundsInWindow()
+                    debugLog(viewModel) { "$tag.Snoozable onPlaced bounds:$bounds" }
                     viewModel.setStackBounds(YSpace(bounds.top, bounds.bottom))
                     // Use -headsUpInset to allow HUN translation outside bounds for snoozing.
                     viewModel.setStackScrollTop(-headsUpInset)
                 }
                 .onUnplaced {
+                    debugLog(viewModel) { "$tag.Snoozable onUnplaced" }
                     viewModel.resetStackBounds()
                     viewModel.resetStackScrollTop()
                 }

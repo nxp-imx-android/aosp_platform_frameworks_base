@@ -19,11 +19,20 @@ package com.android.systemui.notifications.ui
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.notifications.ui.composable.HeadsUpPlaceholderContentPicker
 import com.android.systemui.notifications.ui.composable.StackPlaceholderContentPicker
 import com.android.systemui.scene.sceneContainerConfig
 
 val Kosmos.notificationPlaceholderStateStorage by Fixture {
-    NotificationPlaceholderStateStorage(stackPlaceholderContentPicker, dumpManager)
+    NotificationPlaceholderStateStorage(
+        headsUpPlaceholderContentPicker,
+        stackPlaceholderContentPicker,
+        dumpManager,
+    )
+}
+
+val Kosmos.headsUpPlaceholderContentPicker by Fixture {
+    HeadsUpPlaceholderContentPicker(sceneContainerConfig)
 }
 
 val Kosmos.stackPlaceholderContentPicker by Fixture {

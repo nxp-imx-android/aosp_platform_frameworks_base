@@ -413,6 +413,9 @@ constructor(
     /** Vertical bounds for the user visible area of the notification stack. */
     val stackBounds: ObservableState<YSpace> = placeholderStateStorage.stackBounds
 
+    /** Vertical bounds of the top HUN. */
+    val headsUpBounds: ObservableState<YSpace> = placeholderStateStorage.hunBounds
+
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.
      *

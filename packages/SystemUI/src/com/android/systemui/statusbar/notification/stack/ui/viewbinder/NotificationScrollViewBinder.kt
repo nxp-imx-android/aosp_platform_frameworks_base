@@ -165,6 +165,12 @@ constructor(
                             view.updateStackBounds(stackBounds)
                         }
                     )
+                    register(
+                        viewModel.headsUpBounds.observe { hunBounds ->
+                            view.setHeadsUpTop(hunBounds.top)
+                            view.setHeadsUpBottom(hunBounds.bottom)
+                        }
+                    )
                 }
             }
         }

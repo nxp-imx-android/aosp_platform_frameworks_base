@@ -97,6 +97,14 @@ constructor(
         placeholderStateStorage.resetStackBounds(contentKey)
     }
 
+    fun setHeadsUpBounds(space: YSpace) {
+        placeholderStateStorage.setHunBounds(contentKey, space)
+    }
+
+    fun resetHeadsUpBounds() {
+        placeholderStateStorage.resetHunBounds(contentKey)
+    }
+
     private val hydrator = Hydrator("NotificationsPlaceholderViewModel")
 
     /** The content key to use for the notification shade. */

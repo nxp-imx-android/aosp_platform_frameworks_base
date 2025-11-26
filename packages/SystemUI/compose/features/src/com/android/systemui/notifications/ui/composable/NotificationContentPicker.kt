@@ -42,3 +42,21 @@ class StackPlaceholderContentPicker @Inject constructor(config: SceneContainerCo
         return contentKeysByZOrder.lastOrNull { it in keys }
     }
 }
+
+/**
+ * A content picker for [HeadsUpPlaceholderStateStorage] that selects the [ContentKey] with the
+ * lowest z index defined in [SceneContainerConfig].
+ */
+class HeadsUpPlaceholderContentPicker @Inject constructor(config: SceneContainerConfig) :
+    NotificationContentPicker {
+    /**
+     * The keys of contents sorted by z-order such that the last one renders on top of all previous
+     * ones.
+     */
+    private val contentKeysByZOrder by lazy { (config.sceneKeys + config.overlayKeys) }
+
+    override fun pickContentFrom(keys: Set<ContentKey>): ContentKey? {
+        // Select the content drawn at the bottom.
+        return contentKeysByZOrder.firstOrNull { it in keys }
+    }
+}
