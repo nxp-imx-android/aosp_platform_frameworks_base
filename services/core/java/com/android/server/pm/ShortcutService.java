@@ -4194,7 +4194,8 @@ public class ShortcutService extends IShortcutService.Stub {
     }
 
     boolean isPackageAppLockEnabled(String packageName, int userId) {
-        return mPackageManagerInternal.isPackageAppLockEnabled(packageName, userId);
+        return android.content.pm.Flags.appLockShortcutRemoval()
+            && mPackageManagerInternal.isPackageAppLockEnabled(packageName, userId);
     }
 
     boolean isEphemeralApp(String packageName, int userId) {
