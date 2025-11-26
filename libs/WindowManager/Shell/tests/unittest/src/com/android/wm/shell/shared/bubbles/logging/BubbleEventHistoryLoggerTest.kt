@@ -135,6 +135,19 @@ class BubbleEventHistoryLoggerTest {
         assertThat(logLinesCount).isEqualTo(MAX_EVENTS)
     }
 
+    @Test
+    fun flush_clearsEvents() {
+        // Given we stored some logs
+        logger.d("debug log")
+        assertThat(logger.recentEvents).isNotEmpty()
+
+        // When we flush the logs
+        logger.flush()
+
+        // Then the logs are cleared
+        assertThat(logger.recentEvents).isEmpty()
+    }
+
     private fun assertLogFormat(logEntry: String, expectedLogWithoutDate: String) {
         assertThat(logEntry.matches(logPattern)).isTrue()
         val trimmedDateTime = logEntry.substring(DATE_FORMAT.length + 1)
