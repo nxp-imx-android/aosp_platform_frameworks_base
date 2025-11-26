@@ -164,7 +164,12 @@ constructor(
                                 contentDescription = null,
                             )
                             .value,
-                    onClick = {},
+                    onClick = {
+                        coroutineScope.launch {
+                            postRecordingViewModel.openInFolder()
+                            hide()
+                        }
+                    },
                 ),
                 ActionButtonGroupItem(
                     icon =
