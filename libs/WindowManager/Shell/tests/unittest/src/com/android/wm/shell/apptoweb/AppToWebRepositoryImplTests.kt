@@ -353,6 +353,18 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun shouldShowFirstRunPrompt_returnsFalse_withRequireNonBrowserFlag() {
+        val taskInfoWithFlag = createTaskInfo().apply {
+            taskId = taskInfo.taskId + 1
+            baseActivity = taskInfo.baseActivity
+            capturedLink = TEST_CAPTURED_URI
+            baseIntent = Intent().apply { addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER) }
+        }
+        assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithFlag))
+    }
+
     private suspend fun assertAppToWebIntent(expectedUri: Uri, isBrowserApp: Boolean = false) {
         whenever(
             mockAssistContentRequester.requestAssistContent(
