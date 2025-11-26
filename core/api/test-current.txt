@@ -3471,6 +3471,14 @@ package android.service.chooser {
 
 }
 
+package android.service.contentsafety {
+
+  @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetyService extends android.app.Service {
+    method public void onReady();
+  }
+
+}
+
 package android.service.dreams {
 
   public abstract class DreamOverlayService extends android.app.Service {
