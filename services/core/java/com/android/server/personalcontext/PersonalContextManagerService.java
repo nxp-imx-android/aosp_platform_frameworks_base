@@ -326,6 +326,24 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
+    private void publishInsightSurfaceHints(
+            int userId, Set<ContextHint> hints, InsightSurfaceClientInfo clientInfo) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "No user state when publishing insight surface hints");
+            return;
+        }
+
+        final RenderToken renderToken =
+                userState.embeddedInsightRenderer.getRenderTokenForClient(clientInfo);
+        if (renderToken == null) {
+            Slog.e(TAG, "No render token for client " + clientInfo.getId());
+            return;
+        }
+
+        startRefinerWorkflow(userId, hints, renderToken);
+    }
+
     private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
             return mUserStates.get(userId);
@@ -427,6 +445,20 @@ public class PersonalContextManagerService extends SystemService {
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () -> getService().unregisterInsightSurfaceClient(userId, id.getUuid()));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void publishInsightSurfaceHints(
+                List<ContextHintWrapper> hints, InsightSurfaceClientInfo clientInfo, int userId) {
+            verifyUser(userId);
+
+            // TODO(b/450547433): Add security checks.
+            Binder.withCleanCallingIdentity(
+                    () -> getService().publishInsightSurfaceHints(
+                            userId,
+                            ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
+                            clientInfo));
         }
 
         @PermissionManuallyEnforced
