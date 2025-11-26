@@ -743,9 +743,17 @@ public class WindowlessWindowManager implements IWindowSession {
 
     @Override
     public boolean moveFocusToAdjacentWindow(IWindow fromWindow, @FocusDirection int direction) {
-        Log.e(TAG, "Received request to moveFocusToAdjacentWindow on"
-                + " WindowlessWindowManager. We shouldn't get here!");
-        return false;
+        if (mHostInputTransferToken == null || mParentInterface == null) {
+            // we don't have a host or an interface to the host drop this for now.
+            return false;
+        }
+        try {
+            mParentInterface.transferFocusToParent(direction);
+            return true;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to forward focus move to Parent: ", e);
+            return false;
+        }
     }
 
     @Override
