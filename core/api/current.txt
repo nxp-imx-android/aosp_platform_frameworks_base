@@ -14060,6 +14060,7 @@ package android.content.pm {
     field public static final String FEATURE_CONTROLS = "android.software.controls";
     field public static final String FEATURE_CREDENTIALS = "android.software.credentials";
     field public static final String FEATURE_DEVICE_ADMIN = "android.software.device_admin";
+    field @FlaggedApi("android.security.keystore2.make_id_attestation_feature_public") public static final String FEATURE_DEVICE_ID_ATTESTATION = "android.software.device_id_attestation";
     field public static final String FEATURE_DEVICE_LOCK = "android.software.device_lock";
     field public static final String FEATURE_EMBEDDED = "android.hardware.type.embedded";
     field public static final String FEATURE_ETHERNET = "android.hardware.ethernet";

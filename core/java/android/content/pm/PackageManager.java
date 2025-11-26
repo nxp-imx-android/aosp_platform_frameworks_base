@@ -4817,11 +4817,13 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}:
-     * The device has a Keymaster implementation that supports Device ID attestation.
+     * The device has a KeyMint (or Keymaster) implementation that supports device ID attestation.
+     * See <a href="https://source.android.com/docs/security/features/keystore/attestation#id-attestation">the public documentation</a>
+     * for more information about device ID attestation.
      *
      * @see DevicePolicyManager#isDeviceIdAttestationSupported
-     * @hide
      */
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MAKE_ID_ATTESTATION_FEATURE_PUBLIC)
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_DEVICE_ID_ATTESTATION =
             "android.software.device_id_attestation";
