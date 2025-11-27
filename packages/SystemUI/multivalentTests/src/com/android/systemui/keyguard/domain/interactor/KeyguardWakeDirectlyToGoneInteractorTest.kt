@@ -24,34 +24,27 @@ import android.content.Intent
 import android.content.mockedContext
 import android.os.PowerManager
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.widget.lockPatternUtils
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
-import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
-import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
-import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
-import com.android.systemui.scene.data.repository.setSceneTransition
-import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.scene.shared.model.Scenes.Gone
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
 import junit.framework.Assert.assertEquals
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -65,20 +58,14 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableSceneContainer
+@DisableSceneContainer
 class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
 
     private var lastRegisteredBroadcastReceiver: BroadcastReceiver? = null
     private val kosmos =
         testKosmos().apply {
-            deviceEntryRepository.deviceUnlockStatus.value =
-                DeviceUnlockStatus(
-                    isUnlocked = true,
-                    deviceUnlockSource = DeviceUnlockSource.BouncerInput,
-                )
             whenever(mockedContext.user).thenReturn(mock<UserHandle>())
             doAnswer { invocation ->
                     lastRegisteredBroadcastReceiver = invocation.arguments[0] as BroadcastReceiver
@@ -94,6 +81,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
     private val transitionRepository = kosmos.fakeKeyguardTransitionRepository
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCanWakeDirectlyToGone_keyguardServiceEnabledThenDisabled() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -119,10 +107,11 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             repository.setKeyguardEnabled(true)
             runCurrent()
 
-            assertEquals(listOf(false, true, false), canWake)
+            assertEquals(listOf(false, true), canWake)
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCanWakeDirectlyToGone_lockscreenDisabledThenEnabled_onlyAfterWakefulnessChange() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -174,6 +163,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCanWakeDirectlyToGone_lockscreenDisabledThenEnabled_lockNowEvent() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -236,6 +226,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCanWakeDirectlyToGone_wakeAndUnlock() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -259,6 +250,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCanWakeDirectlyToGone_andSetsAlarm_ifPowerButtonDoesNotLockImmediately() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -282,10 +274,10 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testSetsCanIgnoreAuth_andSetsAlarm_whenTimingOut() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
-            kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
             assertEquals(
                 listOf(
@@ -296,20 +288,13 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
 
             whenever(kosmos.devicePolicyManager.getMaximumTimeToLock(eq(null), anyInt()))
                 .thenReturn(-1)
-            kosmos.fakeSettings.putIntForUser(
-                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                500,
-                FakeUserRepository.DEFAULT_SELECTED_USER,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT, 500)
 
-            kosmos.sceneInteractor.changeScene(Gone, loggingReason = "for test")
-            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.GONE,
                 testScope,
             )
-            runCurrent()
 
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
@@ -327,13 +312,10 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testCancelsFirstAlarm_onWake_withSecondAlarmSet() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
-            kosmos.sceneInteractor.changeScene(
-                toScene = Scenes.Lockscreen,
-                loggingReason = "for test",
-            )
 
             assertEquals(
                 listOf(
@@ -344,23 +326,17 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
 
             whenever(kosmos.devicePolicyManager.getMaximumTimeToLock(eq(null), anyInt()))
                 .thenReturn(-1)
-            kosmos.fakeSettings.putIntForUser(
-                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                500,
-                FakeUserRepository.DEFAULT_SELECTED_USER,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT, 500)
 
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Gone, loggingReason = "for test")
-            runCurrent()
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GONE,
+                testScope,
+            )
 
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
             )
-            kosmos.sceneInteractor.changeScene(
-                toScene = Scenes.Lockscreen,
-                loggingReason = "for test",
-            )
-            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.AOD,
@@ -387,11 +363,9 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAwakeForTest()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,
-                to = KeyguardState.UNDEFINED,
+                to = KeyguardState.GONE,
                 testScope = testScope,
             )
-            runCurrent()
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Gone, loggingReason = "for test")
             runCurrent()
 
             assertEquals(
@@ -401,6 +375,8 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                     // Should be canceled by the wakeup, but there would still be an
                     // alarm in flight that should be canceled.
                     false,
+                    // True once we're actually GONE.
+                    true,
                 ),
                 canWake,
             )
@@ -430,5 +406,49 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
 
             // It should not have any effect.
             assertEquals(listOf(false, true, false, true), canWake)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun testCanWakeDirectlyToGone_falseAsSoonAsTransitionsAwayFromGone() =
+        testScope.runTest {
+            val canWake by collectValues(underTest.canWakeDirectlyToGone)
+
+            assertEquals(
+                listOf(
+                    false // Defaults to false.
+                ),
+                canWake,
+            )
+
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GONE,
+                testScope,
+            )
+
+            assertEquals(
+                listOf(
+                    false,
+                    true, // Because we're GONE.
+                ),
+                canWake,
+            )
+
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GONE,
+                testScope = testScope,
+                throughTransitionState = TransitionState.RUNNING,
+            )
+
+            assertEquals(
+                listOf(
+                    false,
+                    true,
+                    false, // False as soon as we start a transition away from GONE.
+                ),
+                canWake,
+            )
         }
 }
