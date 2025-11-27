@@ -1068,6 +1068,7 @@ package android {
     field public static final int isIndicator = 16843079; // 0x1010147
     field public static final int isLightTheme = 16844176; // 0x1010590
     field @Deprecated public static final int isModifier = 16843334; // 0x1010246
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int isPrivateComputeCoreProcess;
     field @Deprecated public static final int isRepeatable = 16843336; // 0x1010248
     field public static final int isScrollContainer = 16843342; // 0x101024e
     field @Deprecated public static final int isSplitRequired = 16844177; // 0x1010591

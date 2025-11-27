@@ -111,6 +111,7 @@ android_test {
         ":PackageParserTestApp9",
         ":PackageParserTestApp10",
         ":PackageParserTestPcc",
+        ":PackageParserTestPccAndIsolatedService",
     ],
     resource_zips: [":PackageManagerServiceServerTests_apks_as_resources"],
 

@@ -111,7 +111,7 @@ public class ServiceInfo extends ComponentInfo
     /**
      * Bit in {@link #flags} indicating if the service should run in the Private Compute Core
      * sandbox.
-     * @see android.R.styleable#AndroidManifestPrivateCompute
+     * @see android.R.styleable#AndroidManifestService_isPrivateComputeProcess
      * @hide
      */
     public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;
