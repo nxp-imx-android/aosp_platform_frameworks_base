@@ -18,15 +18,13 @@ package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.copy
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.math.PI
@@ -34,7 +32,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.properties.Delegates
 
-class ScreenCaptureCameraTransformationViewModel @AssistedInject constructor() :
+class ScreenCaptureCameraTransformationViewModel
+@AssistedInject
+constructor(private val interactor: ScreenCaptureCameraTransformationInteractor) :
     HydratedActivatable() {
 
     var bounds: Rect by
@@ -43,14 +43,17 @@ class ScreenCaptureCameraTransformationViewModel @AssistedInject constructor() :
             boundsAsPath.addRect(new, Path.Direction.Clockwise)
             recalculateTransformation()
         }
-    var offset by mutableStateOf(Offset.Zero)
-        private set
+    val offsetX: Float
+        get() = interactor.offsetX
 
-    var scale by mutableFloatStateOf(1f)
-        private set
+    val offsetY: Float
+        get() = interactor.offsetY
 
-    var rotation by mutableFloatStateOf(0f)
-        private set
+    val scale: Float
+        get() = interactor.scale
+
+    val rotation: Float
+        get() = interactor.rotation
 
     private val transformation: Matrix by derivedStateOf { Matrix().apply {} }
 
@@ -59,16 +62,20 @@ class ScreenCaptureCameraTransformationViewModel @AssistedInject constructor() :
         private set
 
     fun changeTransformation(offsetChange: Offset, zoomChange: Float, rotationChange: Float) {
-        scale *= zoomChange
-        rotation += rotationChange
-        offset += offsetChange.rotateBy(rotation) * scale
+        with(interactor) {
+            scale *= zoomChange
+            rotation += rotationChange
+            val compensatedOffsetChange = offsetChange.rotateBy(rotation) * scale
+            offsetX += compensatedOffsetChange.x
+            offsetY += compensatedOffsetChange.y
+        }
         recalculateTransformation()
     }
 
     private fun recalculateTransformation() =
         with(transformation) {
             reset()
-            translate(x = bounds.center.x + offset.x, y = bounds.center.y + offset.y)
+            translate(x = bounds.center.x + offsetX, y = bounds.center.y + offsetY)
             rotateZ(degrees = rotation)
             scale(x = scale, y = scale)
             translate(x = -bounds.center.x, y = -bounds.center.y)

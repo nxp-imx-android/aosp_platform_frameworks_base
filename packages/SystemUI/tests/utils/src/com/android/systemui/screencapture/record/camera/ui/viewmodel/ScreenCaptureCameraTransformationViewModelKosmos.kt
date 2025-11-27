@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
 
 val Kosmos.screenCaptureCameraTransformationViewModel: ScreenCaptureCameraTransformationViewModel by
     Kosmos.Fixture { screenCaptureCameraTransformationViewModelFactory.create() }
@@ -26,6 +27,8 @@ val Kosmos.screenCaptureCameraTransformationViewModelFactory:
     Kosmos.Fixture {
         object : ScreenCaptureCameraTransformationViewModel.Factory {
             override fun create(): ScreenCaptureCameraTransformationViewModel =
-                ScreenCaptureCameraTransformationViewModel()
+                ScreenCaptureCameraTransformationViewModel(
+                    screenCaptureCameraTransformationInteractor
+                )
         }
     }
