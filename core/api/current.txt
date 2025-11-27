@@ -6841,6 +6841,7 @@ package android.app {
     ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactIcon, @NonNull android.app.Notification.CompactText);
     ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactText);
     method public int describeContents();
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.BasicCompactContent setSemanticStyle(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BasicCompactContent> CREATOR;
   }
@@ -7056,7 +7057,6 @@ package android.app {
     method public int describeContents();
     method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText fromMetricValue(@NonNull android.app.Notification.Metric.MetricValue);
     method @NonNull public static android.app.Notification.CompactText none();
-    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.CompactText setSemanticStyle(int);
     method @NonNull public static android.app.Notification.CompactText useShortCriticalText();
     method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText useStyleMetric(int);
     method @NonNull public static android.app.Notification.CompactText useWhenAsChronometer(boolean);
