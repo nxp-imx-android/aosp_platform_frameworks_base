@@ -30,13 +30,13 @@ import android.service.contentsafety.IGetFeatureCallback;
  interface IContentSafetyService {
 
   @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-  void getFeature(in int featureType, in AndroidFuture cancellationSignal, in IGetFeatureCallback callback) = 1;
+  oneway void getFeature(in int featureType, in AndroidFuture cancellationSignal, in IGetFeatureCallback callback) = 1;
 
-  void notifySandboxedServiceConnected() = 2;
-  void notifySandboxedServiceDisconnected() = 3;
-  void ready() = 4;
-  void notifySettingsServiceConnected() = 5;
-  void notifySettingsServiceDisconnected() = 6;
+  oneway void notifySandboxedServiceConnected() = 2;
+  oneway void notifySandboxedServiceDisconnected() = 3;
+  oneway void ready() = 4;
+  oneway void notifySettingsServiceConnected() = 5;
+  oneway void notifySettingsServiceDisconnected() = 6;
 
   @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
   SupportedTypesResult getSupportedInputTypes(in int featureType) = 7;

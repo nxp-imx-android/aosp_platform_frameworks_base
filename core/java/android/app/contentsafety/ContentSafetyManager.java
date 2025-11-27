@@ -63,7 +63,7 @@ import java.util.function.Consumer;
 @SystemService(Context.CONTENT_SAFETY_SERVICE)
 @FlaggedApi(FLAG_ENABLE_CONTENTSAFETY)
 public final class ContentSafetyManager {
-    public static final String TAG = "ContentSafety";
+    private static final String TAG = "ContentSafety";
     private final IContentSafetyManager mService;
     private final Context mContext;
 
