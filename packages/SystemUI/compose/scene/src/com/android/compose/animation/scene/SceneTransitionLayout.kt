@@ -301,11 +301,15 @@ interface BaseContentScope : ElementStateScope {
     fun Modifier.noResizeDuringTransitions(): Modifier = skipToLookaheadSize()
 
     /**
-     * Temporarily disable this content swipe actions when any scrollable below this modifier has
-     * consumed any amount of scroll delta, until the scroll gesture is finished.
+     * Temporarily disables swipe gestures for this content and all ancestor
+     * [SceneTransitionLayout]s when any scrollable below this modifier has consumed any amount of
+     * scroll delta.
+     *
+     * This ensures that a scroll gesture is fully consumed by the scrollable element, preventing
+     * accidental scene transitions in this layout or any ancestor [SceneTransitionLayout].
      *
      * This can for instance be used to ensure that a scrollable list is overscrolled once it
-     * reached its bounds instead of directly starting a scene transition from the same scroll
+     * reaches its bounds instead of directly starting a scene transition from the same scroll
      * gesture.
      */
     fun Modifier.disableSwipesWhenScrolling(
