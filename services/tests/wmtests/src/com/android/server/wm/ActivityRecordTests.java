@@ -1180,9 +1180,21 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     /**
-     * Verify that when finishing the top focused activity on top display, the root task order
-     * will be changed by adjusting focus.
+     * Verify that when finishing the top focused activity on top display, the focus is not
+     * adjusted immediately.
      */
+    @Test
+    public void testFinishActivityIfPossible_topFocusedActivityDoesNotAdjustFocus() {
+        final ActivityRecord activity = createActivityWithTask();
+        final Task task = activity.getTask();
+        activity.setState(RESUMED, "test");
+        doReturn(true).when(mRootWindowContainer).isTopDisplayFocusedRootTask(any());
+
+        activity.finishIfPossible("test", false /* oomAdj */);
+
+        verify(task, never()).adjustFocusToNextFocusableTask(anyString(), anyBoolean(),
+                anyBoolean());
+    }
 
     /**
      * Verify that resumed activity is paused due to finish request.
