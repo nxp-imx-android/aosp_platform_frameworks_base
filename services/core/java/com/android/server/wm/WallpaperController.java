@@ -28,7 +28,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_WALLPAPER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.H.WALLPAPER_DRAW_PENDING_TIMEOUT;
-import static com.android.window.flags.Flags.choosingVisibleAsWallpaperTarget;
 import static com.android.window.flags.Flags.multiCrop;
 
 import android.annotation.Nullable;
@@ -164,8 +163,7 @@ class WallpaperController {
             return true;
         } else if (w.hasWallpaper()
                 && (w.mActivityRecord != null ? w.isOnScreen() : w.isReadyForDisplay())) {
-            if (choosingVisibleAsWallpaperTarget()
-                    && !w.isVisibleRequested() && !mFindResults.hasInvisibleRequestedTarget) {
+            if (!w.isVisibleRequested() && !mFindResults.hasInvisibleRequestedTarget) {
                 // If the first target is not visibleRequested, set it as a candidate and search for
                 // the next visible target.
                 if (DEBUG_WALLPAPER) {
