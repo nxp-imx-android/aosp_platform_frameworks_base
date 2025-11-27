@@ -120,6 +120,13 @@ open class ScreenRecordingService : ComponentService() {
 
     override fun onBind(intent: Intent): IBinder = binder
 
+    override fun onUnbind(intent: Intent?): Boolean {
+        // System UI has likely crashed because we don't expect it to willingly unbind from this
+        // service
+        recordingContext?.stopRecording(StopReason.STOP_ERROR)
+        return super.onUnbind(intent)
+    }
+
     private fun RecordingContext.startRecording() {
         screenRecordingPreferenceRepository.updateShowTaps(shouldShowTaps)
         try {
