@@ -1,8 +1,7 @@
 package: "com.android.systemui.accessibility.accessibilitymenu"
 container: "system_ext"
 
-# NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
-
+# go/keep-sorted start block=yes newline_separated=yes by_regex=name:\s*"([^"]+)"
 flag {
     name: "a11y_menu_hide_before_taking_action"
     namespace: "accessibility"
@@ -29,3 +28,4 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+# go/keep-sorted end
