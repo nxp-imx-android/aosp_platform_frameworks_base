@@ -40,7 +40,7 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.enableBackNavigationDesktopAppNoMinimize
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
@@ -173,13 +173,16 @@ class RootTaskDesksOrganizer(
                     ),
                 this,
             )
-        if (enableBackNavigationDesktopAppNoMinimize()) {
-            token?.let {
-                shellTaskOrganizer.applyTransaction(
-                    WindowContainerTransaction().apply {
-                        setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
-                    }
-                )
+        token?.let {
+            val wct = WindowContainerTransaction()
+            if (Flags.reparentDeskLeafTasksIfRelaunched()) {
+                wct.setReparentLeafTaskIfRelaunch(token, /* reparentLeafTaskIfRelaunch */ true)
+            }
+            if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
+                wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
+            }
+            if (!wct.isEmpty) {
+                shellTaskOrganizer.applyTransaction(wct)
             }
         }
     }
