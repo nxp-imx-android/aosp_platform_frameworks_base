@@ -1133,6 +1133,16 @@ flag {
 }
 
 flag {
+    name: "enable_shell_thread_lint_check"
+    namespace: "lse_desktop_experience"
+    description: "Enables annotation to check invoking thread in Shell."
+    bug: "463999903"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."
