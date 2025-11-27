@@ -20,8 +20,10 @@ import android.Manifest
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.apifirst.category.Category
 import com.android.settingslib.metadata.apifirst.preconditions.Allowed
@@ -30,8 +32,12 @@ import com.android.settingslib.metadata.apifirst.preconditions.EnterpriseRestric
 import com.android.settingslib.metadata.apifirst.preconditions.HardwareUnsupported
 import com.android.settingslib.metadata.apifirst.types.AnyBoolean
 import com.android.settingslib.metadata.apifirst.types.AnyInt
+import com.android.settingslib.metadata.apifirst.types.GeneratedParameterType
+import com.android.settingslib.metadata.apifirst.types.ResultValue
+import kotlinx.coroutines.test.runTest
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.toList
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -197,7 +203,7 @@ class ApiFirstPreferenceScreenTest {
                     }
 
                     set {
-                        execute { context, value ->
+                        execute { value ->
                             preferenceValue2 = value
                         }
                     }
@@ -251,7 +257,7 @@ class ApiFirstPreferenceScreenTest {
                     }
 
                     set {
-                        valuePreconditions(R.string.value_preconditions_even_number_description) { _, value ->
+                        valuePreconditions(R.string.value_preconditions_even_number_description) { value ->
                             // Value's digits must add up to even number
                             var sum = 0
                             for (digit in value.toString()) {
@@ -264,7 +270,7 @@ class ApiFirstPreferenceScreenTest {
                             }
                         }
 
-                        execute { _, value ->
+                        execute { value ->
                             preferenceValue = value
                         }
                     }
@@ -321,7 +327,14 @@ class ApiFirstPreferenceScreenTest {
                     }
 
                     parameters {
-                        parameter("package", "description")
+                        parameter(
+                            "package",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
                     }
                 }
             }
@@ -344,7 +357,14 @@ class ApiFirstPreferenceScreenTest {
             ) {
                 init {
                     parameters {
-                        parameter("package", "description")
+                        parameter(
+                            "package",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
                     }
 
                     preconditions(R.string.preconditions_description1) {
@@ -385,11 +405,25 @@ class ApiFirstPreferenceScreenTest {
             ) {
                 init {
                     parameters {
-                        parameter("package", "description")
+                        parameter(
+                            "package",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
                     }
 
                     parameters {
-                        parameter("package", "description")
+                        parameter(
+                            "component",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
                     }
 
                     preference(
@@ -408,6 +442,89 @@ class ApiFirstPreferenceScreenTest {
         }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("parameters"))
+    }
+
+    @Test
+    fun parameters_emptyBlock_throwsException() {
+        val exception = assertThrows(IllegalStateException::class.java) {
+            object : ApiFirstPreferenceScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose
+            ) {
+                init {
+                    parameters {}
+                }
+            }
+        }
+
+        assertThat(exception.message).isEqualTo(EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED)
+    }
+
+    @Test
+    fun parameters_multipleParameters_throwsException() {
+        val exception = assertThrows(IllegalStateException::class.java) {
+            object : ApiFirstPreferenceScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose
+            ) {
+                init {
+                    parameters {
+                        parameter(
+                            "package",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
+                        parameter(
+                            "component",
+                            "description",
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(ResultValue("type_description", "value"))
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        assertThat(exception.message).isEqualTo(
+            getExceptionMessageMultipleParametersDefined(2)
+        )
+    }
+
+    @Test
+    fun getAllPossibleParameters_returnsCorrectParameters() = runTest {
+        val screen = object : ApiFirstPreferenceScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose
+        ) {
+            init {
+                parameters {
+                    parameter(
+                        "package",
+                        "description",
+                        true,
+                        GeneratedParameterType(R.string.parameter_type_description) {
+                            listOf(ResultValue("type_description", "value"))
+                        }
+                    )
+                }
+            }
+        }
+
+        val allPossibleParameters = screen.getAllPossibleParameters(context).toList()
+
+        assertThat(allPossibleParameters).hasSize(1)
+        assertThat(allPossibleParameters[0].getRequired("package")).isEqualTo("value")
     }
 
     @Test
@@ -616,13 +733,13 @@ class ApiFirstPreferenceScreenTest {
                         }
 
                         set {
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
 
                         set {
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -653,7 +770,7 @@ class ApiFirstPreferenceScreenTest {
                         type = AnyBoolean
                     ) {
                         set {
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -701,7 +818,7 @@ class ApiFirstPreferenceScreenTest {
                         }
 
                         set {
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -882,11 +999,11 @@ class ApiFirstPreferenceScreenTest {
                                 HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                             }
 
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
 
-                            valuePreconditions(R.string.value_preconditions_description1) { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description1) { value ->
                                 Allowed
                             }
                         }
@@ -920,7 +1037,7 @@ class ApiFirstPreferenceScreenTest {
                             permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
                             permissions(listOf(Manifest.permission.WRITE_SETTINGS))
 
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -958,7 +1075,7 @@ class ApiFirstPreferenceScreenTest {
                                 EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
                             }
 
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -989,14 +1106,14 @@ class ApiFirstPreferenceScreenTest {
                         type = AnyBoolean
                     ) {
                         set {
-                            valuePreconditions(R.string.value_preconditions_description1) { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description1) { value ->
                                 Allowed
                             }
-                            valuePreconditions(R.string.value_preconditions_description2) { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description2) { value ->
                                 Allowed
                             }
 
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }
@@ -1027,11 +1144,11 @@ class ApiFirstPreferenceScreenTest {
                         type = AnyBoolean
                     ) {
                         set {
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
 
-                            execute { _, value ->
+                            execute { value ->
                                 preferenceValue = value
                             }
                         }

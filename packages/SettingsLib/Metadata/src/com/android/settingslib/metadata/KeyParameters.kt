@@ -115,6 +115,10 @@ data class ValidatedKeyParameters internal constructor(
 
         return values[key] ?: error("Value for required parameter '$key' was null.")
     }
+
+    companion object {
+        val EMPTY = ValidatedKeyParameters(KeyParametersSchema { }, emptyMap())
+    }
 }
 
 /**

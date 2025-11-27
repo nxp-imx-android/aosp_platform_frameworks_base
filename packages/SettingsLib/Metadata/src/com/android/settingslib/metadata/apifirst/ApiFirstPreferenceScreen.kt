@@ -25,12 +25,71 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.apifirst.category.Category
+import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.apifirst.types.ApiFirstType
+import com.android.settingslib.metadata.apifirst.types.GeneratedParameterType
+import com.android.settingslib.metadata.apifirst.types.GeneratedTypeContext
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlin.collections.mutableListOf
 import kotlin.reflect.KClass
+
+/**
+ * Interface for preference screens that provide parameters in a non-static method.
+ */
+interface ProvidesParametersNonStatically {
+    fun getAllPossibleParameters(context: Context): Flow<ValidatedKeyParameters>
+}
+
+/**
+ * Scope for parameterization-related declarations.
+ */
+class ParameterizationConfig {
+    internal class ApiFirstParameterDefinition(
+        val name: String,
+        val purpose: String,
+        val required: Boolean,
+        val type: GeneratedParameterType
+    )
+
+    internal val parameters = mutableMapOf<String, ApiFirstParameterDefinition>()
+
+    /**
+     * Defines a parameter and adds it to the schema.
+     *
+     * @param name The unique name for the parameter.
+     * @param purpose A human-readable purpose of the parameter.
+     * @param required Whether this parameter must be provided. Defaults to `false`.
+     * @param type
+     *
+     * @throws IllegalArgumentException if a parameter with the same name is already defined.
+     */
+    fun parameter(
+        name: String,
+        purpose: String,
+        required: Boolean = false,
+        type: GeneratedParameterType
+    ) {
+        if (parameters.containsKey(name)) {
+            throw IllegalArgumentException("Parameter '$name' is already defined.")
+        }
+        parameters[name] = ApiFirstParameterDefinition(name, purpose, required, type)
+    }
+
+    /**
+     * Builds and returns the final [KeyParametersSchema] instance. For internal use by the DSL.
+     */
+    internal fun buildSchema(): KeyParametersSchema = KeyParametersSchema {
+        parameters.values.map {
+            parameter(name = it.name, description = it.purpose, required = it.required)
+        }
+    }
+}
 
 /**
  * Container for all information and preferences on a Settings screen which is intended to be
@@ -42,7 +101,7 @@ abstract class ApiFirstPreferenceScreen(
     val fragment: KClass<out Fragment>,
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
-) : PreferenceScreenMetadata {
+) : PreferenceScreenMetadata, ProvidesParametersNonStatically {
     override fun fragmentClass(): Class<out Fragment>? = fragment.java
 
     override fun getPreferenceHierarchy(
@@ -58,6 +117,14 @@ abstract class ApiFirstPreferenceScreen(
     var parametersSchema: KeyParametersSchema? = null
     var screenPermissions: PermissionsConfig? = null
     var screenPreconditions: PreconditionsConfig? = null
+
+    private lateinit var screenParameters: ValidatedKeyParameters
+
+    override val keyParameters: ValidatedKeyParameters?
+        get() = if (::screenParameters.isInitialized) screenParameters else super.keyParameters
+
+    private var allPossibleParameters: ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
+    val preferencesPermissions = mutableListOf<String>()
 
     val preferences = mutableListOf<ApiFirstPreference<*>>()
 
@@ -133,22 +200,79 @@ abstract class ApiFirstPreferenceScreen(
             type,
             V::class.java,
             screenPermissions,
-            screenPreconditions
+            screenPreconditions,
+            keyParameters,
         )
         builder.lambda()
         preferences.add(builder.build())
     }
 
-    protected fun parameters(lambda: KeyParametersSchema.Builder.() -> Unit) {
+    /**
+     * Initializes the [ValidatedKeyParameters] if this preference screen is parameterized.
+     */
+    fun initializeParameters(keyParameters: ValidatedKeyParameters) {
+        screenParameters = keyParameters
+    }
+
+    /**
+     * Returns a [Flow] of all possible [ValidatedKeyParameters] parameters if this preference
+     * screen is parameterized, otherwise returns an empty flow.
+     *
+     * This method provides a stream of all valid combinations of parameters that can be used
+     * to instantiate this preference screen.
+     *
+     * @param context The application context.
+     * @return A [Flow] emitting all possible [ValidatedKeyParameters].
+     */
+    override fun getAllPossibleParameters(context: Context) = allPossibleParameters(context).asFlow()
+
+    /**
+     * Declares the parameterization for this preference screen.
+     *
+     * Example:
+     * ```
+     * parameters {
+     *     parameter(
+     *         name = "package",
+     *         purpose = "The app package",
+     *         required = true,
+     *         type = GeneratedParameterType(...)
+     *     )
+     * }
+     * ```
+     */
+    protected fun parameters(lambda: ParameterizationConfig.() -> Unit) {
         if (parametersSchema != null) {
-            error(getExceptionMessageMultipleDefines("parameters"))
+            throw IllegalStateException(getExceptionMessageMultipleDefines("parameters"))
         }
 
-        if (preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null) {
-            error(getExceptionMessageWrongOrder("parameters"))
-        }
+        if (preferences.isEmpty() && screenPermissions == null && screenPreconditions == null) {
+            val scope = ParameterizationConfig()
+            scope.lambda()
+            parametersSchema = scope.buildSchema()
 
-        parametersSchema = KeyParametersSchema(lambda)
+            val parametersSize = scope.parameters.size
+            if (parametersSize == 0) {
+                throw IllegalStateException(EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED)
+            }
+            if (parametersSize > 1) {
+                throw IllegalStateException(
+                    getExceptionMessageMultipleParametersDefined(parametersSize)
+                )
+            }
+
+            val parameterToUse = scope.parameters.values.first()
+
+            this@ApiFirstPreferenceScreen.allPossibleParameters = { context ->
+                parameterToUse.type.lambda.invoke(GeneratedTypeContext(context)).map { parameterOption ->
+                    this@ApiFirstPreferenceScreen.parametersSchema!!.prepare(
+                        parameterToUse.name to parameterOption.value
+                    )
+                }
+            }
+        } else {
+            throw IllegalStateException(getExceptionMessageWrongOrder("parameters"))
+        }
     }
 
     protected fun permissions(permissions: List<String>) {
@@ -165,7 +289,7 @@ abstract class ApiFirstPreferenceScreen(
 
     protected fun preconditions(
         @StringRes description: Int,
-        lambda: (Context) -> ApiFirstPreconditions
+        lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions
     ) {
         if (screenPreconditions != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))

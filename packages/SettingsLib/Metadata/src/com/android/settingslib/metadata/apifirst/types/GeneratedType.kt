@@ -17,5 +17,19 @@
 package com.android.settingslib.metadata.apifirst.types
 
 import android.content.Context
+import androidx.annotation.StringRes
 
-class GeneratedType<V: Any>(description: String, lambda: (Context) -> V) : ApiFirstType<V>
+typealias GeneratedParameterType = GeneratedType<ResultValue>
+
+/**
+ * The context for a GeneratedType, providing access to the [Context] and any necessary
+ * environmental information for executing the lambda.
+ *
+ * @property context The application context, used for accessing system services and resources.
+ */
+class GeneratedTypeContext(val context: Context)
+
+class GeneratedType<V : Any>(
+    @StringRes val description: Int,
+    val lambda: GeneratedTypeContext.() -> Collection<V>
+) : ApiFirstType<V>

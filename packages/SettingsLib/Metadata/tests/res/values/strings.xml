@@ -26,4 +26,6 @@
     <string name="value_preconditions_disallow_custom_reason" translatable="false">Wrong value</string>
     <string name="value_preconditions_description1" translatable="false">Value Preconditions Description 1</string>
     <string name="value_preconditions_description2" translatable="false">Value Preconditions Description 2</string>
+    <string name="parameter_purpose1" translatable="false">Parameter purpose 1</string>
+    <string name="parameter_type_description" translatable="false">Parameter generated type</string>
 </resources>
