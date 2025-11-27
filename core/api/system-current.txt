@@ -7783,6 +7783,39 @@ package android.hardware.usb {
     field public static final int LINK_TRAINING_STATUS_UNKNOWN = 0; // 0x0
   }
 
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public final class PowerProfileInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingProfiles();
+    method @CheckResult public int getMaxCurrentMa();
+    method @CheckResult public int getMaxPowerMw();
+    method @CheckResult public int getMaxVoltageMv();
+    method @CheckResult public int getMinCurrentMa();
+    method @CheckResult public int getMinVoltageMv();
+    method @Nullable public String getName();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @CheckResult public int getPowerProfileType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.PowerProfileInfo> CREATOR;
+    field public static final int POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED = -2; // 0xfffffffe
+    field public static final int POWER_PROFILE_ERROR_NO_MATCH = -3; // 0xfffffffd
+    field public static final int POWER_PROFILE_ERROR_OTHER = -1; // 0xffffffff
+    field public static final int POWER_PROFILE_TYPE_BATTERY = 7; // 0x7
+    field public static final int POWER_PROFILE_TYPE_FIXED = 6; // 0x6
+    field public static final int POWER_PROFILE_TYPE_NONE = 0; // 0x0
+    field public static final int POWER_PROFILE_TYPE_OTHER = 1; // 0x1
+    field public static final int POWER_PROFILE_TYPE_RP_1_5A = 4; // 0x4
+    field public static final int POWER_PROFILE_TYPE_RP_3_0A = 5; // 0x5
+    field public static final int POWER_PROFILE_TYPE_RP_DEFAULT = 3; // 0x3
+    field public static final int POWER_PROFILE_TYPE_SPR_AVS = 10; // 0xa
+    field public static final int POWER_PROFILE_TYPE_SPR_PPS = 9; // 0x9
+    field public static final int POWER_PROFILE_TYPE_VARIABLE = 8; // 0x8
+    field public static final int POWER_PROFILE_TYPE_VENDOR = 2; // 0x2
+  }
+
   public class UsbDeviceConnection {
     method public boolean resetDevice();
   }
@@ -7793,10 +7826,14 @@ package android.hardware.usb {
     method @FlaggedApi("android.hardware.usb.flags.expose_usb_speed_system_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbBandwidthMbps();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void grantPermission(android.hardware.usb.UsbDevice, String);
     method public static boolean isUvcSupportEnabled();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerBc12TypeListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.Bc12TypeListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerDisplayPortAltModeInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerPowerProfileInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbGadget();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setCurrentFunctions(long);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterBc12TypeListener(@NonNull android.hardware.usb.UsbManager.Bc12TypeListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterDisplayPortAltModeInfoListener(@NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterPowerProfileInfoListener(@NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_ACCESSORY_HANDSHAKE = "android.hardware.usb.action.USB_ACCESSORY_HANDSHAKE";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_CHANGED = "android.hardware.usb.action.USB_PORT_CHANGED";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_COMPLIANCE_CHANGED = "android.hardware.usb.action.USB_PORT_COMPLIANCE_CHANGED";
@@ -7829,8 +7866,16 @@ package android.hardware.usb {
     field public static final String USB_FUNCTION_RNDIS = "rndis";
   }
 
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static interface UsbManager.Bc12TypeListener {
+    method public void onPartnerBc12TypeChanged(@NonNull android.hardware.usb.UsbPort, int);
+  }
+
   public static interface UsbManager.DisplayPortAltModeInfoListener {
     method public void onDisplayPortAltModeInfoChanged(@NonNull String, @NonNull android.hardware.usb.DisplayPortAltModeInfo);
+  }
+
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static interface UsbManager.PowerProfileInfoListener {
+    method public void onPowerProfileInfoChanged(@NonNull android.hardware.usb.UsbPort, @NonNull android.hardware.usb.UsbPortStatus);
   }
 
   public final class UsbPort {
@@ -7842,6 +7887,8 @@ package android.hardware.usb {
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbPort(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setRoles(int, int);
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean supportsComplianceWarnings();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public boolean supportsPartnerBc12Type();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public boolean supportsPowerProfiles();
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_INTERNAL = 1; // 0x1
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_NOT_SUPPORTED = 2; // 0x2
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_OTHER = 4; // 0x4
@@ -7873,7 +7920,12 @@ package android.hardware.usb {
     method public int getCurrentMode();
     method public int getCurrentPowerRole();
     method @Nullable public android.hardware.usb.DisplayPortAltModeInfo getDisplayPortAltModeInfo();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public int getPartnerBc12Type();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPartnerSinkPowerProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPartnerSourcePowerProfiles();
     method public int getPlugState();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPortSinkPowerProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPortSourcePowerProfiles();
     method public int getPowerBrickConnectionStatus();
     method public int getSupportedRoleCombinations();
     method public int getUsbDataStatus();
@@ -7882,6 +7934,10 @@ package android.hardware.usb {
     method public boolean isPowerTransferLimited();
     method public boolean isRoleCombinationSupported(int, int);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_CDP = 2; // 0x2
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_DCP = 3; // 0x3
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_SDP = 1; // 0x1
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_UNKNOWN = 0; // 0x0
     field public static final int COMPLIANCE_WARNING_BC_1_2 = 3; // 0x3
     field public static final int COMPLIANCE_WARNING_DEBUG_ACCESSORY = 2; // 0x2
     field @FlaggedApi("android.hardware.usb.flags.enable_usb_data_compliance_warning") public static final int COMPLIANCE_WARNING_ENUMERATION_FAIL = 7; // 0x7

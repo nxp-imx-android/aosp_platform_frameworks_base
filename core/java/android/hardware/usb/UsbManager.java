@@ -18,6 +18,7 @@
 package android.hardware.usb;
 
 import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
+import static android.hardware.usb.UsbPortStatus.Bc12Type;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 
 import android.Manifest;
@@ -810,6 +811,49 @@ public class UsbManager {
     }
 
     /**
+     * Listener to register when the partner Bc12Type for a {@link UsbPortStatus} changes on a
+     * {@link UsbPort}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public interface Bc12TypeListener {
+        /**
+         * Callback to be executed when the partner BC 1.2 type changes on a {@link UsbPort}
+         *
+         * @param port              The {@link UsbPort} where the partner BC 1.2 type was changed.
+         * @param partnerBc12Type   New {@link Bc12Type} for the corresponding portId.
+         */
+        public void onPartnerBc12TypeChanged(@NonNull UsbPort port, @Bc12Type int partnerBc12Type);
+    }
+
+    /**
+     * Listener to register when the PowerProfileInfo representations belonging to
+     * {@link UsbPortStatus} change on a {@link UsbPort}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public interface PowerProfileInfoListener {
+        /**
+         * Callback to be executed when the {@link PowerProfileInfo} objects change on a
+         * {@link UsbPort}. The local port sink and source power profiles can change if the local
+         * USB port can modify its sink and source capabilities dynamically depending on the use
+         * case. The partner port sink and source power profiles will change when a USB device is
+         * connected or disconnected, or if the partner port is also able to modify its sink and
+         * source capabilities dynamically.
+         *
+         * @param port          The {@link UsbPort} where the {@link PowerProfileInfo} changed as
+         * described above.
+         * @param portStatus    New {@link UsbPortStatus} for the corresponding portId.
+         */
+        public void onPowerProfileInfoChanged(@NonNull UsbPort port,
+                @NonNull UsbPortStatus portStatus);
+    }
+
+    /**
      * Holds callback and executor data to be passed across UsbService.
      */
     private class DisplayPortAltModeInfoDispatchingListener extends
@@ -828,6 +872,75 @@ public class UsbManager {
                                 displayPortAltModeInfo));
                     } catch (Exception e) {
                         Slog.e(TAG, "Exception during onDisplayPortAltModeInfoChanged from "
+                                + "executor: " + executor, e);
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Holds callback and executor data to be passed across UsbService.
+     */
+    private class Bc12TypeDispatchingListener extends
+            IBc12TypeListener.Stub {
+        UsbManager mUsbManager;
+
+        Bc12TypeDispatchingListener(UsbManager usbManager) {
+            mUsbManager = usbManager;
+        }
+
+        public void onPartnerBc12TypeChanged(ParcelableUsbPort parcelablePort,
+                @Bc12Type int partnerBc12Type) {
+            UsbPort port = parcelablePort.getUsbPort(mUsbManager);
+
+            synchronized(mBc12TypeListenersLock) {
+                for (Map.Entry<Bc12TypeListener, Executor> entry : mBc12TypeListeners.entrySet()) {
+                    Executor executor = entry.getValue();
+                    Bc12TypeListener callback = entry.getKey();
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        executor.execute(() -> callback.onPartnerBc12TypeChanged(port,
+                                partnerBc12Type));
+                    } catch (Exception e) {
+                        Slog.e(TAG, "Exception during onPartnerBc12TypeChanged from "
+                                + "executor: " + executor, e);
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Holds callback and executor data to be passed across UsbService.
+     */
+    private class PowerProfileInfoDispatchingListener extends
+            IPowerProfileInfoListener.Stub {
+        UsbManager mUsbManager;
+
+        PowerProfileInfoDispatchingListener(UsbManager usbManager) {
+            mUsbManager = usbManager;
+        }
+
+        public void onPowerProfileInfoChanged(ParcelableUsbPort parcelablePort,
+                UsbPortStatus portStatus) {
+            UsbPort port = parcelablePort.getUsbPort(mUsbManager);
+
+            synchronized(mPowerProfileInfoListenersLock) {
+                for (Map.Entry<PowerProfileInfoListener, Executor> entry :
+                        mPowerProfileInfoListeners.entrySet()) {
+                    Executor executor = entry.getValue();
+                    PowerProfileInfoListener callback = entry.getKey();
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        executor.execute(() -> callback.onPowerProfileInfoChanged(port,
+                                portStatus));
+                    } catch (Exception e) {
+                        Slog.e(TAG, "Exception during onPowerProfileInfoChanged from "
                                 + "executor: " + executor, e);
                     } finally {
                         Binder.restoreCallingIdentity(token);
@@ -1085,6 +1198,17 @@ public class UsbManager {
     private ArrayMap<DisplayPortAltModeInfoListener, Executor> mDisplayPortListeners;
     @GuardedBy("mDisplayPortListenersLock")
     private DisplayPortAltModeInfoDispatchingListener mDisplayPortServiceListener;
+    private final Object mBc12TypeListenersLock = new Object();
+    @GuardedBy("mBc12TypeListenersLock")
+    private ArrayMap<Bc12TypeListener, Executor> mBc12TypeListeners;
+    @GuardedBy("mBc12TypeListenersLock")
+    private Bc12TypeDispatchingListener mBc12TypeServiceListener;
+
+    private final Object mPowerProfileInfoListenersLock = new Object();
+    @GuardedBy("mPowerProfileInfoListenersLock")
+    private ArrayMap<PowerProfileInfoListener, Executor> mPowerProfileInfoListeners;
+    @GuardedBy("mPowerProfileInfoListenersLock")
+    private PowerProfileInfoDispatchingListener mPowerProfileInfoServiceListener;
 
     private final Object mAccessoryHandleMapLock = new Object();
     @GuardedBy("mAccessoryHandleMapLock")
@@ -2098,6 +2222,211 @@ public class UsbManager {
             }
         }
         return;
+    }
+
+    @GuardedBy("mBc12TypeListenersLock")
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    private boolean registerBc12TypeEventsIfNeededLocked() {
+        Bc12TypeDispatchingListener bc12TypeDispatchingListener =
+                new Bc12TypeDispatchingListener(this);
+        try {
+            if (mService.registerForBc12TypeEvents(bc12TypeDispatchingListener)) {
+                mBc12TypeServiceListener = bc12TypeDispatchingListener;
+                return true;
+            }
+            return false;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers the given listener to listen for partner Bc12 type changes
+     * <p>
+     * If this method returns without Exceptions, the caller should ensure to call
+     * {@link #unregisterBc12TypeListener} when it no longer requires updates.
+     *
+     * @param executor          Executor on which to run the listener.
+     * @param listener          Bc12TypeListener invoked on UsbPortStatus' bc12Type changes.
+     *                          See {@link #Bc12TypeListener} for listener details.
+     *
+     * @throws IllegalStateException if listener has already been registered previously but not
+     * unregistered or an unexpected system failure occurs.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void registerBc12TypeListener(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Bc12TypeListener listener) {
+        Objects.requireNonNull(executor, "registerBc12TypeListener: "
+                + "executor must not be null.");
+        Objects.requireNonNull(listener, "registerBc12TypeListener: "
+                + "listener must not be null.");
+
+        synchronized (mBc12TypeListenersLock) {
+            if (mBc12TypeListeners == null) {
+                mBc12TypeListeners = new ArrayMap<Bc12TypeListener, Executor>();
+            }
+
+            if (mBc12TypeServiceListener == null) {
+                if (!registerBc12TypeEventsIfNeededLocked()) {
+                    throw new IllegalStateException("Unexpected failure registering service "
+                            + "listener");
+                }
+            }
+            if (mBc12TypeListeners.containsKey(listener)) {
+                throw new IllegalStateException("Listener has already been registered.");
+            }
+
+            mBc12TypeListeners.put(listener, executor);
+        }
+    }
+
+    @GuardedBy("mBc12TypeListenersLock")
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    private void unregisterBc12TypeEventsLocked() {
+        if (mBc12TypeServiceListener != null) {
+            try {
+                mService.unregisterForBc12TypeEvents(mBc12TypeServiceListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            } finally {
+                // If there was a RemoteException, the system server may have died,
+                // and this listener probably became unregistered, so clear it for re-registration.
+                mBc12TypeServiceListener = null;
+            }
+        }
+    }
+
+    /**
+     * Unregisters the given listener if it was previously passed to
+     * registerBc12TypeListener.
+     *
+     * @param listener          Bc12TypeListener used to register the listener
+     *                          in registerBc12TypeListener.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void unregisterBc12TypeListener(
+            @NonNull Bc12TypeListener listener) {
+        synchronized (mBc12TypeListenersLock) {
+            if (mBc12TypeListeners == null) {
+                return;
+            }
+            mBc12TypeListeners.remove(listener);
+            if (mBc12TypeListeners.isEmpty()) {
+                unregisterBc12TypeEventsLocked();
+            }
+        }
+    }
+
+    @GuardedBy("mPowerProfileInfoListenersLock")
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    private boolean registerPowerProfileInfoEventsIfNeededLocked() {
+        PowerProfileInfoDispatchingListener dispatchingListener =
+                new PowerProfileInfoDispatchingListener(this);
+        try {
+            if (mService.registerForPowerProfileInfoEvents(dispatchingListener)) {
+                mPowerProfileInfoServiceListener = dispatchingListener;
+                return true;
+            }
+            return false;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers the given listener to listen for PowerProfileInfo changes.
+     * <p>
+     * If this method returns without Exceptions, the caller should ensure to call
+     * {@link #unregisterPowerProfileInfoListener} when it no longer requires updates.
+     *
+     * @param executor          Executor on which to run the listener.
+     * @param listener          PowerProfileInfoListener invoked on UsbPortStatus'
+     *                          PowerProfileInfo changes. See {@link #PowerProfileInfoListener}
+     *                          for listener details.
+     *
+     * @throws IllegalStateException if listener has already been registered previously but not
+     * unregistered or an unexpected system failure occurs.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void registerPowerProfileInfoListener(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull PowerProfileInfoListener listener) {
+        Objects.requireNonNull(executor, "registerPowerProfileInfoListener: "
+                + "executor must not be null.");
+        Objects.requireNonNull(listener, "registerPowerProfileInfoListener: "
+                + "listener must not be null.");
+
+        synchronized (mPowerProfileInfoListenersLock) {
+            if (mPowerProfileInfoListeners == null) {
+                mPowerProfileInfoListeners = new ArrayMap<PowerProfileInfoListener, Executor>();
+            }
+
+            if (mPowerProfileInfoServiceListener == null) {
+                if (!registerPowerProfileInfoEventsIfNeededLocked()) {
+                    throw new IllegalStateException("Unexpected failure registering service "
+                            + "listener");
+                }
+            }
+            if (mPowerProfileInfoListeners.containsKey(listener)) {
+                throw new IllegalStateException("Listener has already been registered.");
+            }
+
+            mPowerProfileInfoListeners.put(listener, executor);
+        }
+    }
+
+    @GuardedBy("mPowerProfileInfoListenersLock")
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    private void unregisterPowerProfileInfoEventsLocked() {
+        if (mPowerProfileInfoServiceListener != null) {
+            try {
+                mService.unregisterForPowerProfileInfoEvents(mPowerProfileInfoServiceListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            } finally {
+                // If there was a RemoteException, the system server may have died,
+                // and this listener probably became unregistered, so clear it for re-registration.
+                mPowerProfileInfoServiceListener = null;
+            }
+        }
+    }
+
+    /**
+     * Unregisters the given listener if it was previously passed to
+     * registerPowerProfileInfoListener.
+     *
+     * @param listener          PowerProfileInfoListener used to register the listener
+     *                          in registerPowerProfileInfoListener.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void unregisterPowerProfileInfoListener(
+            @NonNull PowerProfileInfoListener listener) {
+        synchronized (mPowerProfileInfoListenersLock) {
+            if (mPowerProfileInfoListeners == null) {
+                return;
+            }
+            mPowerProfileInfoListeners.remove(listener);
+            if (mPowerProfileInfoListeners.isEmpty()) {
+                unregisterPowerProfileInfoEventsLocked();
+            }
+        }
     }
 
     /**

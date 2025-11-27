@@ -44,7 +44,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.usb.IBc12TypeListener;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
+import android.hardware.usb.IPowerProfileInfoListener;
 import android.hardware.usb.IUsbManager;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.IUsbOperationInternal;
@@ -1302,6 +1304,78 @@ public class UsbService extends IUsbManager.Stub {
         try {
             if (mPortManager != null) {
                 mPortManager.unregisterForDisplayPortEvents(listener);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @Override
+    public boolean registerForBc12TypeEvents(@NonNull IBc12TypeListener listener) {
+        Objects.requireNonNull(listener, "registerForBc12TypeEvents: listener " +
+                "must not be null.");
+
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mPortManager != null) {
+                return mPortManager.registerForBc12TypeEvents(listener);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+
+        return false;
+    }
+
+    @Override
+    public void unregisterForBc12TypeEvents(@NonNull IBc12TypeListener listener) {
+        Objects.requireNonNull(listener, "unregisterForBc12TypeEvents: listener " +
+                "must not be null.");
+
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mPortManager != null) {
+                mPortManager.unregisterForBc12TypeEvents(listener);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @Override
+    public boolean registerForPowerProfileInfoEvents(@NonNull IPowerProfileInfoListener listener) {
+        Objects.requireNonNull(listener, "registerForPowerProfileInfoEvents: listener " +
+                "must not be null.");
+
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mPortManager != null) {
+                return mPortManager.registerForPowerProfileInfoEvents(listener);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+
+        return false;
+    }
+
+    @Override
+    public void unregisterForPowerProfileInfoEvents(@NonNull IPowerProfileInfoListener listener) {
+        Objects.requireNonNull(listener, "unregisterForPowerProfileInfoEvents: listener " +
+                "must not be null.");
+
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mPortManager != null) {
+                mPortManager.unregisterForPowerProfileInfoEvents(listener);
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
