@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.app.Notification
 import android.content.Context
 import android.content.DialogInterface
 import android.content.packageManager
@@ -25,13 +26,11 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
-import android.view.ViewRootImpl
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
@@ -72,6 +71,7 @@ import com.android.systemui.statusbar.notification.data.repository.addNotifs
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.NotificationChipApi
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
@@ -93,12 +93,18 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 // TODO(b/273205603): add tests for Active chips with hidden=true once actually used.
 /** Tests for [OngoingActivityChipsViewModel] */
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+@EnableFlags(
+    android.app.Flags.FLAG_API_METRIC_STYLE,
+    android.app.Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE,
+)
+class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val systemClock = kosmos.fakeSystemClock
 
@@ -115,11 +121,12 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             } doReturn chipBackgroundView
             on { context } doReturn context
         }
-    private val viewRootImpl = mock<ViewRootImpl> { on { view } doReturn chipView }
-    private val dialogTransitionController =
-        mock<DialogTransitionAnimator.Controller> { on { viewRoot } doReturn viewRootImpl }
 
     private val Kosmos.underTest by Kosmos.Fixture { ongoingActivityChipsViewModel }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -332,8 +339,17 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             addOngoingCallState(key = "call")
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.shortCriticalText = "Some text here"
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                Notification.Metric.FixedText("Some text here"),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.shortCriticalText = "Some text here"
+                    }
                 }
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
@@ -486,7 +502,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         packageName = "notif",
                         statusBarChipIcon = icon,
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -510,13 +526,15 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "firstNotif",
                         packageName = "firstNotif",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentBuilder("firstNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("firstNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "secondNotif",
                         packageName = "secondNotif",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentBuilder("secondNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("secondNotif").build(),
                     ),
                 )
             )
@@ -543,25 +561,29 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "firstNotif",
                         packageName = "firstNotif",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentBuilder("firstNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("firstNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "secondNotif",
                         packageName = "secondNotif",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentBuilder("secondNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("secondNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "thirdNotif",
                         packageName = "thirdNotif",
                         statusBarChipIcon = thirdIcon,
-                        promotedContent = PromotedNotificationContentBuilder("thirdNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("thirdNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "fourthNotif",
                         packageName = "fourthNotif",
                         statusBarChipIcon = fourthIcon,
-                        promotedContent = PromotedNotificationContentBuilder("fourthNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("fourthNotif").build(),
                     ),
                 )
             )
@@ -587,25 +609,29 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "firstNotif",
                         packageName = "firstNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("firstNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("firstNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "secondNotif",
                         packageName = "secondNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("secondNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("secondNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "thirdNotif",
                         packageName = "thirdNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("thirdNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("thirdNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "fourthNotif",
                         packageName = "fourthNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("fourthNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("fourthNotif").build(),
                     ),
                 )
             )
@@ -625,25 +651,29 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "firstNotif",
                         packageName = "firstNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("firstNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("firstNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "secondNotif",
                         packageName = "secondNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("secondNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("secondNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "thirdNotif",
                         packageName = "thirdNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("thirdNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("thirdNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "fourthNotif",
                         packageName = "fourthNotif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("fourthNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("fourthNotif").build(),
                     ),
                 )
             )
@@ -688,7 +718,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 requestedPromotion = true,
                 promotedContent =
                     OngoingCallTestHelper.PromotedContentInput.OverrideToValue(
-                        PromotedNotificationContentBuilder(key).build()
+                        newPromotedNotificationContentBuilder(key).build()
                     ),
             )
 
@@ -729,19 +759,22 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "firstNotif",
                         packageName = "firstNotif",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentBuilder("firstNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("firstNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "secondNotif",
                         packageName = "secondNotif",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentBuilder("secondNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("secondNotif").build(),
                     ),
                     activeNotificationModel(
                         key = "thirdNotif",
                         packageName = "thirdNotif",
                         statusBarChipIcon = thirdIcon,
-                        promotedContent = PromotedNotificationContentBuilder("thirdNotif").build(),
+                        promotedContent =
+                            newPromotedNotificationContentBuilder("thirdNotif").build(),
                     ),
                 )
             )
@@ -811,7 +844,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     key = "notif",
                     packageName = "notif",
                     statusBarChipIcon = notifIcon,
-                    promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                 )
             )
             addOngoingCallState(key = callNotificationKey)
@@ -823,7 +856,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     key = "notif2",
                     packageName = "notif2",
                     statusBarChipIcon = notifIcon2,
-                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -849,7 +882,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         key = "notif1",
                         packageName = "notif1",
                         statusBarChipIcon = notif1Icon,
-                        promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                     )
                 )
             )
@@ -900,7 +933,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     key = "notif2",
                     packageName = "notif2",
                     statusBarChipIcon = notif2Icon,
-                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -1039,6 +1072,20 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                android.app.Flags.FLAG_API_NOTIFICATION_CHIP
+            )
+        }
+
+        private val COMPACT_ICON =
+            Notification.ResolvedCompactIcon(
+                Notification.ResolvedCompactIcon.SOURCE_SMALL_ICON,
+                null,
+            )
+
         /**
          * Assuming that the click listener in [latest] opens a dialog, this fetches the action
          * associated with the positive button, which we assume is the "Stop sharing" action.
@@ -1189,9 +1236,31 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 key = key,
                 packageName = "fake.package.$key",
                 statusBarChipIcon = createStatusBarIconViewOrNull(),
-                promotedContent = PromotedNotificationContentBuilder(key).build(),
+                promotedContent = newPromotedNotificationContentBuilder(key).build(),
             )
         )
+    }
+
+    private fun newPromotedNotificationContentBuilder(
+        key: String
+    ): PromotedNotificationContentBuilder {
+        val builder = PromotedNotificationContentBuilder(key)
+        if (NotificationChipApi.isEnabled) {
+            builder.applyToShared {
+                // If API_NOTIFICATION_CHIP is active, then PromotedNotificationContentModel must
+                // have SOME compactContent, otherwise toPrunedModel() will throw. We provide a
+                // default here. Tests that want to check chip icon/text should set an explicit
+                // one.
+                this.compactContent =
+                    Notification.ResolvedBasicCompactContent(
+                        COMPACT_ICON,
+                        null,
+                        Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                    )
+            }
+        }
+
+        return builder
     }
 
     private fun setNotifs(notifs: List<ActiveNotificationModel>) {

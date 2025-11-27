@@ -12929,7 +12929,6 @@ public class Notification implements Parcelable
             protected abstract void toBundle(Bundle bundle);
 
             /** @hide */
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public record ValueString(String text, @Nullable String subtext) {
                 public ValueString(String text) {
                     this(text, null);
@@ -12947,7 +12946,6 @@ public class Notification implements Parcelable
              * @hide
              */
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public abstract ValueString toValueString(Context context);
         }
 
@@ -13230,7 +13228,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // Not used; Chronometer view will take charge of formatting.
                 return ValueString.EMPTY;
@@ -13346,7 +13343,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // DateUtils.formatDateTime expects epoch millis, so make up a time.
                 LocalDateTime localDateTime = mValue.atStartOfDay();
@@ -13461,7 +13457,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // DateUtils.formatDateTime expects epoch millis, so make up a date.
                 LocalDateTime localDateTime = mValue.atDate(getToday());
@@ -13556,7 +13551,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 return new ValueString(String.valueOf(mValue), mUnit);
             }
@@ -13702,7 +13696,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 String formatted = NumberFormatter.withLocale(Locale.getDefault())
                         .precision(Precision.minMaxFraction(mMinFractionDigits, mMaxFractionDigits))
@@ -13795,7 +13788,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 return new ValueString(mValue, mUnit);
             }
@@ -15417,7 +15409,9 @@ public class Notification implements Parcelable
         private final @Nullable Metric.MetricValue mText;
         private final @SemanticStyle int mSemanticStyle;
 
-        private ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
+        /** @hide */
+        @VisibleForTesting
+        public ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
                 @Nullable Metric.MetricValue text, @SemanticStyle int semanticStyle) {
             mIcon = icon;
             mText = text;
@@ -15505,7 +15499,9 @@ public class Notification implements Parcelable
         private final int mSource;
         private final @Nullable Icon mIcon;
 
-        private ResolvedCompactIcon(int source, @Nullable Icon icon) {
+        /** @hide */
+        @VisibleForTesting
+        public ResolvedCompactIcon(@ResolvedCompactIconSource int source, @Nullable Icon icon) {
             mSource = source;
             mIcon = icon;
         }
@@ -15543,9 +15539,18 @@ public class Notification implements Parcelable
         @Override
         public String toString() {
             return "ResolvedCompactIcon{"
-                    + "mSource=" + mSource
+                    + "mSource=" + sourceToString(mSource)
                     + ", mIcon=" + mIcon
                     + "}";
+        }
+
+        private static String sourceToString(@ResolvedCompactIconSource int value) {
+            return switch(value) {
+                case SOURCE_SMALL_ICON -> "SOURCE_SMALL_ICON";
+                case SOURCE_PACKAGE_APP_ICON -> "SOURCE_PACKAGE_APP_ICON";
+                case SOURCE_UNKNOWN -> "SOURCE_UNKNOWN";
+                default -> "Unexpected! (" + value + ")";
+            };
         }
     }
 
