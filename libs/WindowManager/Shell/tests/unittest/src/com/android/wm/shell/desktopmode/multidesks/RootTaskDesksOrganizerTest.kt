@@ -1179,6 +1179,42 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         assertThat(activityOpts.launchRootTask).isEqualTo(deskRoot.token)
     }
 
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_BACK_NAVIGATION_DESKTOP_APP_NO_MINIMIZE)
+    fun testOnBackPressedOnTaskRoot_notOptIn_invokesListener() = runTest {
+        val desk = createDeskSuspending()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        organizer.onTaskAppeared(task, SurfaceControl())
+        val listener = mock<(ActivityManager.RunningTaskInfo) -> Unit>()
+        organizer.setBackPressOnDeskListener(listener)
+
+        organizer.onBackPressedOnTaskRoot(
+            taskInfo = task,
+            isFromMoveActivityTaskToBack = false,
+            isOptInOnBackInvoked = false,
+        )
+
+        verify(listener).invoke(task)
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_BACK_NAVIGATION_DESKTOP_APP_NO_MINIMIZE)
+    fun testOnBackPressedOnTaskRoot_optIn_doesNothing() = runTest {
+        val desk = createDeskSuspending()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        organizer.onTaskAppeared(task, SurfaceControl())
+        val listener = mock<(ActivityManager.RunningTaskInfo) -> Unit>()
+        organizer.setBackPressOnDeskListener(listener)
+
+        organizer.onBackPressedOnTaskRoot(
+            taskInfo = task,
+            isFromMoveActivityTaskToBack = false,
+            isOptInOnBackInvoked = true,
+        )
+
+        verify(listener, never()).invoke(any())
+    }
+
     private data class DeskRoots(
         val deskRoot: DeskRoot,
         val minimizationRoot: DeskMinimizationRoot,
