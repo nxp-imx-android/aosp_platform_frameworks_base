@@ -2033,6 +2033,7 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.permission",
+        "com.android.appsearch",
     ],
     min_sdk_version: "30",
 }
