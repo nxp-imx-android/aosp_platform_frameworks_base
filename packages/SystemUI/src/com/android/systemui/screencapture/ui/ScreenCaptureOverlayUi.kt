@@ -129,6 +129,7 @@ constructor(
             rememberViewModel("ScreenCaptureMarkupOverlayViewModel") {
                 markupViewModelFactory.create()
             }
+        ConditionalLaunchedEffect(!viewModel.shouldShowMarkup) { outTouchableRegion.setEmpty() }
         AnimatedVisibility(
             visible = viewModel.shouldShowMarkup,
             modifier =
@@ -161,6 +162,9 @@ constructor(
         val surfaceSize =
             viewModel.surfaceSize?.let { IntSize(width = it.width, height = it.height) }
         val shouldShowCamera = viewModel.shouldShowCamera
+        ConditionalLaunchedEffect(shouldShowCamera != true || surfaceSize == null) {
+            outTouchableRegion.setEmpty()
+        }
         if (shouldShowCamera != null && surfaceSize != null) {
             AnimatedVisibility(shouldShowCamera) {
                 val transformationViewModel =
@@ -231,6 +235,15 @@ constructor(
 
     private fun hide() {
         dialog.dismissWithoutAnimation()
+    }
+}
+
+@Composable
+private fun ConditionalLaunchedEffect(condition: Boolean, action: suspend () -> Unit) {
+    LaunchedEffect(condition) {
+        if (condition) {
+            action()
+        }
     }
 }
 
