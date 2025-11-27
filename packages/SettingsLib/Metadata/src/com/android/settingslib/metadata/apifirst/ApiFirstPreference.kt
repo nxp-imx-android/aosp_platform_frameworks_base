@@ -63,17 +63,12 @@ data class SetConfig<V : Any>(
  */
 abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     // TODO: Maybe refactor, use common function for both get/setPermissions
-    private fun getPermissions(): Permissions? {
+    private fun getPermissions(): Permissions {
         val permissionsList = mutableListOf<String>()
         commonPermissions?.let { permissionsList.addAll(it.permissions) }
-
-        if (get.permissions == null && permissionsList.isEmpty()) {
-            return null
-        }
-
         get.permissions?.let { permissionsList.addAll(it) }
-        var perms = Permissions.EMPTY
 
+        var perms = Permissions.EMPTY
         for (perm in permissionsList) {
             perms = perms and perm
         }
@@ -81,17 +76,12 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
         return perms
     }
 
-    private fun setPermissions(): Permissions? {
+    private fun setPermissions(): Permissions {
         val permissionsList = mutableListOf<String>()
         commonPermissions?.let { permissionsList.addAll(it.permissions) }
-
-        if (set?.permissions == null && permissionsList.isEmpty()) {
-            return null
-        }
-
         set?.permissions?.let { permissionsList.addAll(it) }
-        var perms = Permissions.EMPTY
 
+        var perms = Permissions.EMPTY
         for (perm in permissionsList) {
             perms = perms and perm
         }
@@ -134,14 +124,14 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     override fun getReadPermit(context: Context, callingPid: Int, callingUid: Int) =
         when (getPreconditions(context)) {
             Allowed -> ReadWritePermit.ALLOW
-            null -> super.getReadPermit(context, callingPid, callingUid)
+            null -> ReadWritePermit.ALLOW
             else -> ReadWritePermit.DISALLOW
         }
 
     override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
         when (setPreconditions(context)) {
             Allowed -> ReadWritePermit.ALLOW
-            null -> super.getWritePermit(context, callingPid, callingUid)
+            null -> ReadWritePermit.ALLOW
             else -> ReadWritePermit.DISALLOW
         }
 
