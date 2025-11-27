@@ -145,8 +145,14 @@ public class ThemeManagerService extends SystemService {
         Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
-            setupListeners();
             mStateManager.onServicesReady();
+            setupListeners();
+
+            // Pre-load users to avoid race conditions with ContentObservers
+            int[] userIds = mUserManagerInternal.getUserIds();
+            for (int userId : userIds) {
+                loadUserThemeState(userId);
+            }
         }
 
         if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
@@ -201,6 +207,25 @@ public class ThemeManagerService extends SystemService {
 
     // HELPER METHODS
 
+    private void loadUserThemeState(int userId) {
+        if (shouldIgnoreForHsum(UserHandle.of(userId), "loadUserThemeState")) {
+            return;
+        }
+
+        ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
+        int seedColor = userSettings.colorSource().equals(VALUE_PRESET)
+                ? userSettings.systemPalette().toArgb()
+                : ColorScheme.getSeedColor(
+                        mWallpaperManagerInternal.getWallpaperColors(FLAG_SYSTEM, userId));
+
+        boolean isSetup = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1;
+
+        mStateManager.onUserLoad(userId, isSetup, seedColor,
+                mUiModeManagerInternal.getContrast(userId),
+                userSettings.themeStyle());
+    }
+
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     private void setupListeners() {
         Executor mainExecutor = mContext.getMainExecutor();
@@ -230,6 +255,10 @@ public class ThemeManagerService extends SystemService {
                             UserHandle.class);
 
                     int newUserOrProfileId = newUserHandle.getIdentifier();
+
+                    // Ensure user state is loaded immediately when a new user/profile is added.
+                    loadUserThemeState(newUserOrProfileId);
+
                     int parentId = mStateManager.parentOf(newUserOrProfileId);
                     if (shouldIgnoreForHsum(UserHandle.of(parentId), "onProfileAdd")) {
                         return;
