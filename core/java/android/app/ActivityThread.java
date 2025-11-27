@@ -3074,16 +3074,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
     /** Backdoor to set private static fields */
     @RavenwoodReplace
-    static void staticInitForRavenwood(
-            ActivityThread instance
-    ) {
+    static void staticInitForRavenwood(ActivityThread instance) {
         throw new IllegalStateException(); // shouldn't be called on a real device.
     }
 
-    static void staticInitForRavenwood$ravenwood(
-            ActivityThread instance
-    ) {
+    static void staticInitForRavenwood$ravenwood(ActivityThread instance) {
         sCurrentActivityThread = instance;
+        sMainThreadHandler = instance.getHandler();
     }
 
     @UnsupportedAppUsage

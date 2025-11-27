@@ -1449,6 +1449,7 @@ public abstract class Context {
      */
     @Deprecated
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public File getSharedPrefsFile(String name) {
         return getSharedPreferencesPath(name);
     }
@@ -1477,6 +1478,7 @@ public abstract class Context {
      *
      * @see #MODE_PRIVATE
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract SharedPreferences getSharedPreferences(String name, @PreferencesMode int mode);
 
     /**
@@ -1499,6 +1501,7 @@ public abstract class Context {
      * @removed
      */
     @SuppressWarnings("HiddenAbstractMethod")
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract SharedPreferences getSharedPreferences(File file, @PreferencesMode int mode);
 
     /**

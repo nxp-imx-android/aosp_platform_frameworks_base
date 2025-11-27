@@ -17,6 +17,7 @@
 package android.content;
 
 import android.annotation.Nullable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +63,7 @@ import java.util.Set;
  *
  * @see Context#getSharedPreferences
  */
+@RavenwoodKeepWholeClass
 public interface SharedPreferences {
     /**
      * Interface definition for a callback to be invoked when a shared

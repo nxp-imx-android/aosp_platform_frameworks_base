@@ -256,6 +256,7 @@ android_ravenwood_test {
     srcs: [
         "src/android/app/ActivityManagerTest.java",
         "src/android/app/PropertyInvalidatedCacheTests.java",
+        "src/android/app/QueuedWorkTest.java",
         "src/android/colormodel/CamTest.java",
         "src/android/content/ContextTest.java",
         "src/android/content/ContentResolverUtilsTest.java",
