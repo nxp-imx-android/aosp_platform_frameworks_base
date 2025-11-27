@@ -8148,10 +8148,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 false, pr -> {
                     if (pr.uid == callingUid) {
                         final ProcessServiceRecord psr = pr.mServices;
-                        final int serviceCount = psr.mServices.size();
+                        final int serviceCount = psr.numberOfRunningServices();
                         for (int svc = 0; svc < serviceCount; svc++) {
                             final ArrayMap<IBinder, ArrayList<ConnectionRecord>> conns =
-                                    psr.mServices.valueAt(svc).getConnections();
+                                    psr.getRunningServiceAt(svc).getConnections();
                             final int size = conns.size();
                             for (int conni = 0; conni < size; conni++) {
                                 final ArrayList<ConnectionRecord> crs = conns.valueAt(conni);
