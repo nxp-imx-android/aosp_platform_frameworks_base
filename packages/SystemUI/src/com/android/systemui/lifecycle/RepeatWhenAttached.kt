@@ -161,6 +161,8 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
         ViewTreeObserver.OnWindowVisibilityChangeListener { updateState() }
     private val windowFocusListener = ViewTreeObserver.OnWindowFocusChangeListener { updateState() }
 
+    private var observer: ViewTreeObserver? = null
+
     @SuppressLint("VisibleForTests") // required due to "createUnsafe" usage
     private val registry =
         if (useSeparateThreadUnsafe) {
@@ -171,14 +173,25 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
 
     fun onCreate() {
         registry.currentState = Lifecycle.State.CREATED
-        view.viewTreeObserver.addOnWindowVisibilityChangeListener(windowVisibleListener)
-        view.viewTreeObserver.addOnWindowFocusChangeListener(windowFocusListener)
+        assert(observer == null)
+        // ViewTreeObserver on a view actually changes whether the view is attached to Window or
+        // not. This can cause a race where we attempt to deregister our listeners on the wrong
+        // instance leading to memory leaks.
+        observer =
+            view.viewTreeObserver.apply {
+                addOnWindowVisibilityChangeListener(windowVisibleListener)
+                addOnWindowFocusChangeListener(windowFocusListener)
+            }
         updateState()
     }
 
     fun onDestroy() {
-        view.viewTreeObserver.removeOnWindowVisibilityChangeListener(windowVisibleListener)
-        view.viewTreeObserver.removeOnWindowFocusChangeListener(windowFocusListener)
+        assert(observer != null)
+        observer?.apply {
+            removeOnWindowVisibilityChangeListener(windowVisibleListener)
+            removeOnWindowFocusChangeListener(windowFocusListener)
+        }
+        observer = null
         registry.currentState = Lifecycle.State.DESTROYED
     }
 
