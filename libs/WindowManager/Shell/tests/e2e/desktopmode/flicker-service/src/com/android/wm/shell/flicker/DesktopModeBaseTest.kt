@@ -27,6 +27,7 @@ import com.android.server.wm.flicker.statusBarLayerPositionAtStartAndEnd
 import com.android.server.wm.flicker.statusBarWindowIsAlwaysVisible
 import com.android.server.wm.flicker.taskBarLayerIsVisibleAtStartAndEnd
 import com.android.server.wm.flicker.taskBarWindowIsAlwaysVisible
+import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.Assume
 import org.junit.Before
@@ -66,6 +67,7 @@ abstract class DesktopModeBaseTest(flicker: FlickerTest) : BaseBenchmarkTest(fli
         device.executeShellCommand(
             "dumpsys activity service SystemUIService WMShell desktopmode removeAllDesks"
         )
+        Utils.clearAllRememberedDesktopBounds()
 
         val currentTestMethodName = testName.methodName
         Assume.assumeFalse(
