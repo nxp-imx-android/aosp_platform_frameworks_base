@@ -634,9 +634,9 @@ package android.se.omapi {
 
 package android.service.uprobestats {
 
-  @FlaggedApi("android.security.dynamic_instrumentation_api") public class DynamicInstrumentationUtil {
-    method @FlaggedApi("android.security.dynamic_instrumentation_api") @Nullable public static android.content.ComponentName getDynamicInstrumentationEventConsumer(@NonNull android.content.Context);
-    method @FlaggedApi("android.security.dynamic_instrumentation_api") public static void setDynamicInstrumentationEventConsumer(@NonNull android.content.Context, @Nullable android.content.ComponentName);
+  @FlaggedApi("android.security.dynamic_instrumentation_api") public final class DynamicInstrumentationManager {
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") @Nullable public android.content.ComponentName getDynamicInstrumentationEventConsumer();
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") public void setDynamicInstrumentationEventConsumer(@Nullable android.content.ComponentName);
   }
 
 }
