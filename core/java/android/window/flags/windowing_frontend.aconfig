@@ -104,6 +104,16 @@ flag {
 }
 
 flag {
+  name: "remove_legacy_orientation_report"
+  namespace: "windowing_frontend"
+  description: "Remove legacy task letterbox logic"
+  bug: "464110049"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"

@@ -7387,6 +7387,9 @@ final class ActivityRecord extends WindowToken {
      * orientation is updated before the app becomes visible.
      */
     void reportDescendantOrientationChangeIfNeeded() {
+        if (com.android.window.flags.Flags.removeLegacyOrientationReport()) {
+            return;
+        }
         // Orientation request is exposed only when we're visible. Therefore visibility change
         // will change requested orientation. Notify upward the hierarchy ladder to adjust
         // configuration. This is important to cases where activities with incompatible
