@@ -94,6 +94,16 @@ flag {
 }
 
 flag {
+  name: "refactor_dimmer_crop"
+  namespace: "windowing_frontend"
+  description: "Reuse existing logic and fix corner issue"
+  bug: "435301249"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"

@@ -147,6 +147,12 @@ public class DimmerTests extends WindowTestsBase {
     }
 
     private void verifySurfaceCrop(SurfaceControl dimLayer, Rect crop, int x, int y) {
+        if (com.android.window.flags.Flags.refactorDimmerCrop()) {
+            crop = new Rect(crop);
+            crop.offsetTo(x, y);
+            verify(mTransaction).setCrop(dimLayer, crop);
+            return;
+        }
         verify(mTransaction).setWindowCrop(dimLayer, crop.width(), crop.height());
         verify(mTransaction).setPosition(dimLayer, x, y);
     }
