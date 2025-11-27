@@ -83,10 +83,10 @@ public class BackupEligibilityRules {
                     Sets.newArraySet(WALLPAPER_PACKAGE, SETTINGS_PACKAGE));
 
     /**
-     * List of system packages that are eligible for backup for the main user in Headless System
-     * User Mode (HSUM). In HSUM, certain packages are only backed up for the main user.
+     * List of system packages that are eligible for backup for the admin user in Headless System
+     * User Mode (HSUM). In HSUM, certain packages are only backed up for the admin user.
      */
-    private static final Set<String> systemPackagesAllowedForHsumMainUser =
+    private static final Set<String> systemPackagesAllowedForHsumAdminUser =
             SetUtils.union(
                     systemPackagesAllowedForNonSystemUsers,
                     Sets.newArraySet(TELEPHONY_PROVIDER_PACKAGE));
@@ -226,11 +226,10 @@ public class BackupEligibilityRules {
             return systemPackagesAllowedForProfileUser.contains(packageName);
         }
 
-        // In Headless System User Mode, certain packages are only backed up for the main user.
+        // In Headless System User Mode, certain packages are only backed up for the admin users.
         if (UserManager.isHeadlessSystemUserMode()) {
-            int mainUserId = mUserManagerInternal.getMainUserId();
-            if (mainUserId != UserHandle.USER_NULL && mainUserId == mUserId) {
-                return systemPackagesAllowedForHsumMainUser.contains(packageName);
+            if (mUserManagerInternal.getUserInfo(mUserId).isAdmin()) {
+                return systemPackagesAllowedForHsumAdminUser.contains(packageName);
             }
         }
 
