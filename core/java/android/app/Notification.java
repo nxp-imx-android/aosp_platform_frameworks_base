@@ -12873,8 +12873,9 @@ public class Notification implements Parcelable
         }
 
         /**
-         * A superclass for the various value types used by the {@link Metric} class, or included in
-         * a {@link ResolvedCompactContent}.
+         * A superclass for the various value types used by the {@link Metric}
+         * class{@if (flag(Flags.FLAG_API_NOTIFICATION_CHIP)) {, or included in
+         * a {@link ResolvedCompactContent}}}.
          */
         public abstract static class MetricValue {
 
