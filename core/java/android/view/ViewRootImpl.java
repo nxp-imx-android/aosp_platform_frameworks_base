@@ -6855,9 +6855,7 @@ public final class ViewRootImpl implements ViewParent,
                     WindowTokenClientController.getInstance().onWindowConfigurationChanged(
                             windowContextToken,
                             mLastReportedMergedConfiguration.getMergedConfiguration(),
-                            newDisplayId == INVALID_DISPLAY
-                                    ? mDisplay.getDisplayId()
-                                    : newDisplayId
+                            newDisplayId
                     );
                 }
             }
