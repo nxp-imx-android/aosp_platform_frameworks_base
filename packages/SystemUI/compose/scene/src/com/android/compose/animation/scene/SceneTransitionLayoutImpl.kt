@@ -59,9 +59,11 @@ import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.Overlay
 import com.android.compose.animation.scene.content.Scene
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.debug.StateLogger
 import com.android.compose.animation.scene.debug.StlDebugConfig
 import com.android.compose.animation.scene.debug.debugScene
 import com.android.compose.animation.scene.debug.debugStl
+import com.android.compose.animation.scene.debug.logElementsOnTransitionChange
 import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.util.lerp
@@ -284,6 +286,13 @@ internal class SceneTransitionLayoutImpl(
         return ancestors.fastAny { it.inContent == content }
     }
 
+    internal fun isLocalContent(key: ContentKey): Boolean {
+        return when (key) {
+            is SceneKey -> scenes.contains(key)
+            is OverlayKey -> overlays.contains(key)
+        }
+    }
+
     internal fun contentForUserActions(): Content {
         return findOverlayWithHighestZIndex() ?: scene(state.transitionState.currentScene)
     }
@@ -482,6 +491,12 @@ internal class SceneTransitionLayoutImpl(
 
     @Composable
     internal fun Content(modifier: Modifier) {
+        val stateLogger =
+            if (StlDebugConfig.DEBUG_STL && StlDebugConfig.logElements) {
+                remember { StateLogger() }
+            } else {
+                null
+            }
         Box(
             modifier
                 .nestedScroll(nestedScrollConnection, nestedScrollDispatcher)
@@ -500,6 +515,9 @@ internal class SceneTransitionLayoutImpl(
                         debugName = debugName,
                         nestingLevel = ancestors.size,
                     )
+                }
+                .thenIf(StlDebugConfig.logElements && stateLogger != null) {
+                    Modifier.logElementsOnTransitionChange(this, stateLogger!!)
                 }
         ) {
             LookaheadScope {

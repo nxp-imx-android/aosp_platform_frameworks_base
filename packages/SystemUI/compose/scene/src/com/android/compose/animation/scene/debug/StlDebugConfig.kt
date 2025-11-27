@@ -21,6 +21,7 @@ import android.os.SystemProperties
 internal object StlDebugConfig {
     const val DEBUG_STL = false
 
+    // ====================== ELEMENT ======================
     /**
      * Shows borders around elements. The borders are inset on 3 lanes and dashed to reduce
      * overlapping and better visual. Filtered by [elementKeyFilter].
@@ -37,14 +38,32 @@ internal object StlDebugConfig {
     val elementLabelPosition = DebugLabelPosition.CenterTop
 
     /**
+     * Log the element states of all elements on each transition changes. Filtered by
+     * [elementKeyFilter] but can also used without filter if you want to understand the hierarchy.
+     *
+     * This is useful if you want to understand which contents currently hold which state and which
+     * content is currently responsible for placing the element during a transition.
+     */
+    val logElements = DEBUG_STL
+
+    /**
+     * Log the verbose path that is taken during measure, layout and drawing of a specific element.
+     * This is filtered by [elementKeyFilter] and will only log if a filter is set.
+     *
+     * This is useful if you want to debug the inner workings of STL.
+     */
+    val logElementsVerbose = DEBUG_STL
+
+    /**
      * Limit visual debugging and logging to elements containing this String in the [key.debugName].
      *
-     * Command: `adb shell setprop persist.debug.stl_element_key_filter YOUR_FILTER_STRING && adb
-     * reboot`
-     *
-     * to reset: `adb shell setprop persist.debug.stl_element_key_filter \"\" && adb reboot`
+     * SET: `adb shell setprop persist.debug.stl_element_key_filter YOUR_FILTER && adb reboot`
+     * RESET: `adb shell setprop persist.debug.stl_element_key_filter \"\" && adb reboot`
      */
-    val elementKeyFilter: String? = SystemProperties.get("persist.debug.stl_element_key_filter")
+    val elementKeyFilter: String =
+        SystemProperties.get("persist.debug.stl_element_key_filter") ?: ""
+
+    // ====================== SCENE ======================
 
     /** Shows borders around scenes */
     val showSceneBorders = DEBUG_STL
@@ -54,6 +73,8 @@ internal object StlDebugConfig {
 
     /** Position of the scene label within the scene */
     val sceneLabelPosition = DebugLabelPosition.BottomRight
+
+    // ====================== STL ======================
 
     /** Show a border around an STL */
     val showStlBorders = DEBUG_STL
