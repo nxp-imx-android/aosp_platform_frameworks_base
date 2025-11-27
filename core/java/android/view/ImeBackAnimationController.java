@@ -259,6 +259,12 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
             return false;
         }
 
+        final var inputMethodManager = mInsetsController.getHost().getInputMethodManager();
+        if (inputMethodManager != null && inputMethodManager.isFullscreenMode()) {
+            // Disable predictive back animation in fullscreen mode
+            return false;
+        }
+
         // otherwise, the predictive back animation is allowed in all cases except when
         // 1. softInputMode is adjust_resize AND
         // 2. there is no app-registered WindowInsetsAnimationCallback AND
