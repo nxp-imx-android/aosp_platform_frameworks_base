@@ -6046,15 +6046,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mPkgToStoppingProcessMap.remove(packageName);
             }
             // Kill app outside of the lock
-            killApplicationAsync(packageName, wpc, "killDueToPackageUpdate");
+            killApplicationAsync(packageName, UserHandle.getAppId(wpc.mUid),
+                    wpc.mUserId, "killDueToPackageUpdate",
+                    ApplicationExitInfo.REASON_PACKAGE_UPDATED);
         }
     }
 
-    private void killApplicationAsync(String packageName, WindowProcessController wpc,
-            String reason) {
-        mH.post(() -> mAmInternal.killApplicationSync(packageName, UserHandle.getAppId(wpc.mUid),
-                wpc.mUserId,
-                reason, ApplicationExitInfo.REASON_PACKAGE_UPDATED));
+    private void killApplicationAsync(String packageName, int appId, int userId,
+            String reason, int reasonCode) {
+        mH.post(() -> mAmInternal.killApplicationSync(packageName, appId, userId,
+                reason, reasonCode));
     }
 
     void setBooting(boolean booting) {
@@ -7613,8 +7614,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
                 // No process with activities for this package, let's log
                 if (processesToWait.isEmpty()) {
-                    ProtoLog.e(WM_DEBUG_PACKAGE_UPDATE,
+                    ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
                             "Package %s no process with activities in it.", packageName);
+                    killApplicationAsync(packageName, appId, userId, "killDueToPackageUpdate",
+                            ApplicationExitInfo.REASON_PACKAGE_UPDATED);
                 } else {
                     mPkgToStoppingProcessMap.put(packageName, processesToWait);
                     for (int i = 0; i < processesToWait.size(); i++) {

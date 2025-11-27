@@ -68,6 +68,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityManagerInternal;
+import android.app.ApplicationExitInfo;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
@@ -1668,6 +1669,28 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         activity.activityStopped(null, null, null, "test");
 
         verify(mAtm).onProcessReadyToBeKilled(activity.packageName, activity.app);
+    }
+
+    @Test
+    public void testStopAndKillAppForUpdate_noActiveProcesses_killsImmediately() {
+        final String packageName = "com.example.test";
+        final int uid = 10001;
+        final int appId = 20001;
+        WindowProcessController wpc = createWindowProcessController(packageName, uid);
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        doReturn(true).when(mAtm).isCallerSystem(anyInt());
+        mAtm.mProcessMap.put(wpc.getPid(), wpc);
+
+        mAtm.mInternal.stopAndKillAppForUpdate(packageName, uid, appId);
+        waitHandlerIdle(mAtm.mH);
+
+        verify(mAtm.mAmInternal).killApplicationSync(
+                packageName,
+                appId,
+                uid,
+                "killDueToPackageUpdate",
+                ApplicationExitInfo.REASON_PACKAGE_UPDATED
+        );
     }
 
     private WindowProcessController createWindowProcessController(String packageName,
