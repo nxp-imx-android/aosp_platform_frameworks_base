@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use anyhow::{bail, Context, Result};
-use dlext_bindgen::{
+use native_activity_thread_bindgen::{
     android_create_namespace, android_dlextinfo, android_dlopen_ext, android_namespace_t, dlclose,
     dlsym, ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_SHARED_ISOLATED, RTLD_LOCAL,
 };

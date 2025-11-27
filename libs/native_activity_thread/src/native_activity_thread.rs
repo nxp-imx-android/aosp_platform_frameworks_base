@@ -24,7 +24,7 @@ use binder::{
     SpIBinder, Strong,
 };
 use libactivity_manager_procstate_aidl::aidl::android::app::ProcessStateEnum::ProcessStateEnum;
-use native_service_bindgen::{
+use native_activity_thread_bindgen::{
     ANativeService, ANativeServiceCallbacks,
     ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND,
     ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_UI_HIDDEN, ANativeService_createFunc,
