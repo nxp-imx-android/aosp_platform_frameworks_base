@@ -85,18 +85,15 @@ constructor(
                     command(META_META_ON or META_CTRL_ON, KEYCODE_DPAD_DOWN)
                 }
             )
-
-            if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
-                // Move a window to the next display:
-                //  - Meta + Ctrl + D
-                add(
-                    shortcutInfo(
-                        resources.getString(R.string.system_multitasking_move_to_next_display)
-                    ) {
-                        command(META_META_ON or META_CTRL_ON, KEYCODE_D)
-                    }
-                )
-            }
+            // Move a window to the next display:
+            //  - Meta + Ctrl + D
+            add(
+                shortcutInfo(
+                    resources.getString(R.string.system_multitasking_move_to_next_display)
+                ) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_D)
+                }
+            )
             // Snap a freeform window to the left
             //  - Meta + Left bracket
             add(
