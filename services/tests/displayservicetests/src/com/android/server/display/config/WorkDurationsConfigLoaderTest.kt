@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class WorkDurationsDataTest {
+class WorkDurationsConfigLoaderTest {
     @get:Rule
     val mContext: TestableContext = TestableContext(
         InstrumentationRegistry.getInstrumentation().getContext()
@@ -67,26 +67,26 @@ class WorkDurationsDataTest {
 
         assertThat(thermalDurationsPairs).isNotNull()
         val thermalDurations = thermalDurationsPairs?.get(ThermalStatusEnum.NONE.toPowerManagerConstant())
-        val lowPowerDurations = WorkDurationsData.loadLowPowerWorkDurations(config.refreshRate)
-        val defaultDurations = WorkDurationsData.loadDefaultWorkDurations(config.refreshRate)
+        val lowPowerDurations = WorkDurationsConfigLoader.loadLowPowerWorkDurations(config.refreshRate)
+        val defaultDurations = WorkDurationsConfigLoader.loadDefaultWorkDurations(config.refreshRate)
 
         // Assert Default Work Durations
         assertThat(defaultDurations).isNotNull()
-        assertThat(defaultDurations?.lateWorkDuration).isEqualTo(10500000)
-        assertThat(defaultDurations?.earlyWorkDuration).isEqualTo(16600000)
-        assertThat(defaultDurations?.appWorkDuration).isEqualTo(16600000)
+        assertThat(defaultDurations?.minSfDurationNanos).isEqualTo(10500000)
+        assertThat(defaultDurations?.maxSfDurationNanos).isEqualTo(16600000)
+        assertThat(defaultDurations?.appDurationNanos).isEqualTo(16600000)
 
         // Assert Thermal Throttling Work Durations
         assertThat(thermalDurations).isNotNull()
-        assertThat(thermalDurations?.lateWorkDuration).isEqualTo(11500000)
-        assertThat(thermalDurations?.earlyWorkDuration).isEqualTo(17600000)
-        assertThat(thermalDurations?.appWorkDuration).isEqualTo(18600000)
+        assertThat(thermalDurations?.minSfDurationNanos).isEqualTo(11500000)
+        assertThat(thermalDurations?.maxSfDurationNanos).isEqualTo(17600000)
+        assertThat(thermalDurations?.appDurationNanos).isEqualTo(18600000)
 
         // Assert Low Power Work Durations
         assertThat(lowPowerDurations).isNotNull()
-        assertThat(lowPowerDurations?.lateWorkDuration).isEqualTo(9500000)
-        assertThat(lowPowerDurations?.earlyWorkDuration).isEqualTo(15600000)
-        assertThat(lowPowerDurations?.appWorkDuration).isEqualTo(15600000)
+        assertThat(lowPowerDurations?.minSfDurationNanos).isEqualTo(9500000)
+        assertThat(lowPowerDurations?.maxSfDurationNanos).isEqualTo(15600000)
+        assertThat(lowPowerDurations?.appDurationNanos).isEqualTo(15600000)
     }
 
     @Test
@@ -101,8 +101,8 @@ class WorkDurationsDataTest {
         val thermalThrottlingData = ThermalThrottlingData()
         thermalThrottlingData.loadThermalThrottlingConfig(config)
         val thermalDurationsMap = thermalThrottlingData.thermalThrottlingWorkDurations
-        val lowPowerDurations = WorkDurationsData.loadLowPowerWorkDurations(config.refreshRate)
-        val defaultDurations = WorkDurationsData.loadDefaultWorkDurations(config.refreshRate)
+        val lowPowerDurations = WorkDurationsConfigLoader.loadLowPowerWorkDurations(config.refreshRate)
+        val defaultDurations = WorkDurationsConfigLoader.loadDefaultWorkDurations(config.refreshRate)
 
         assertThat(thermalDurationsMap).isEmpty()
         assertThat(lowPowerDurations).isNull()
@@ -132,8 +132,8 @@ class WorkDurationsDataTest {
         val thermalThrottlingData = ThermalThrottlingData()
         thermalThrottlingData.loadThermalThrottlingConfig(config)
         val thermalDurationsMap = thermalThrottlingData.thermalThrottlingWorkDurations
-        val defaultDurations = WorkDurationsData.loadDefaultWorkDurations(config.refreshRate)
-        val lowPowerDurations = WorkDurationsData.loadLowPowerWorkDurations(config.refreshRate)
+        val defaultDurations = WorkDurationsConfigLoader.loadDefaultWorkDurations(config.refreshRate)
+        val lowPowerDurations = WorkDurationsConfigLoader.loadLowPowerWorkDurations(config.refreshRate)
 
         assertThat(thermalDurationsMap).isEmpty()
         assertThat(lowPowerDurations).isNull()

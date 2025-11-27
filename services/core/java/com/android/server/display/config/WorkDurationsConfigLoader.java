@@ -16,31 +16,18 @@
 
 package com.android.server.display.config;
 
-import com.android.internal.annotations.VisibleForTesting;
+import android.view.SurfaceControl.WorkDuration;
+
 import com.android.server.display.feature.flags.Flags;
 
-import java.util.Objects;
-
-public class WorkDurationsData {
-
-    public final int lateWorkDuration;
-    public final int earlyWorkDuration;
-    public final int appWorkDuration;
-
-    @VisibleForTesting
-    public WorkDurationsData(int lateWorkDuration, int earlyWorkDuration, int appWorkDuration) {
-        this.lateWorkDuration = lateWorkDuration;
-        this.earlyWorkDuration = earlyWorkDuration;
-        this.appWorkDuration = appWorkDuration;
-    }
-
+public class WorkDurationsConfigLoader {
     /**
      * Loads the default work durations from the given refresh rate configuration.
      *
      * @param refreshRateConfigs The {@link RefreshRateConfigs} to load the work durations from.
      * @return The loaded default {@link WorkDurationsData}, or null if not available or disabled
      */
-    public static WorkDurationsData loadDefaultWorkDurations(
+    public static WorkDuration loadDefaultWorkDurations(
             RefreshRateConfigs refreshRateConfigs) {
         if (Flags.enableWorkDurations() && refreshRateConfigs != null) {
             WorkDurations defaultWorkDurations = refreshRateConfigs.getDefaultWorkDurations();
@@ -55,7 +42,7 @@ public class WorkDurationsData {
      * @param refreshRateConfigs The {@link RefreshRateConfigs} to load the work durations from.
      * @return The loaded low-power {@link WorkDurationsData}, or null if not available or disabled
      */
-    public static WorkDurationsData loadLowPowerWorkDurations(
+    public static WorkDuration loadLowPowerWorkDurations(
             RefreshRateConfigs refreshRateConfigs) {
         if (Flags.enableWorkDurations() && refreshRateConfigs != null) {
             WorkDurations lowPowerWorkDurations = refreshRateConfigs.getLowPowerWorkDurations();
@@ -72,7 +59,7 @@ public class WorkDurationsData {
      * @return The loaded thermal-throttling {@link WorkDurations}, or null if not available or has
      * flag disabled
      */
-    public static WorkDurationsData loadThermalThrottlingWorkDurations(
+    public static WorkDuration loadThermalThrottlingWorkDurations(
             WorkDurationsThrottlingPair thermalThrottling) {
         if (Flags.enableWorkDurations() && thermalThrottling != null) {
             WorkDurations thermalThrottlingWorkDurations =
@@ -82,34 +69,13 @@ public class WorkDurationsData {
         return null;
     }
 
-    private static WorkDurationsData load(WorkDurations workDurations) {
+    private static WorkDuration load(WorkDurations workDurations) {
         if (workDurations != null) {
-            return new WorkDurationsData(
-                    workDurations.getLateWorkDuration().intValue(),
-                    workDurations.getEarlyWorkDuration().intValue(),
-                    workDurations.getAppWorkDuration().intValue());
+            return new WorkDuration(
+                    workDurations.getLateWorkDuration().longValue(),
+                    workDurations.getEarlyWorkDuration().longValue(),
+                    workDurations.getAppWorkDuration().longValue());
         }
         return null;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lateWorkDuration, earlyWorkDuration, appWorkDuration);
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof WorkDurationsData other)) return false;
-        return (this.lateWorkDuration == other.lateWorkDuration)
-                && (this.earlyWorkDuration == other.earlyWorkDuration)
-                && (this.appWorkDuration == other.appWorkDuration);
-    }
-
-    @Override
-    public String toString() {
-        return "WorkDurationsData{"
-                + "lateWorkDuration=" + lateWorkDuration
-                + ", earlyWorkDuration=" + earlyWorkDuration
-                + ", appWorkDuration=" + appWorkDuration
-                + "}";
     }
 }

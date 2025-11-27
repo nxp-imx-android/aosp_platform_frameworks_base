@@ -234,6 +234,14 @@ static struct {
 static struct {
     jclass clazz;
     jmethodID ctor;
+    jfieldID minSfDurationNanos;
+    jfieldID maxSfDurationNanos;
+    jfieldID appDurationNanos;
+} gWorkDurationClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID ctor;
     jfieldID displayToken;
     jfieldID applyToken;
     jfieldID defaultMode;
@@ -241,6 +249,7 @@ static struct {
     jfieldID primaryRanges;
     jfieldID appRequestRanges;
     jfieldID idleScreenRefreshRateConfig;
+    jfieldID workDuration;
 } gDesiredDisplayModeSpecsClassInfo;
 
 static struct {
@@ -1736,6 +1745,21 @@ static jboolean nativeSetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
 
     const jsize specsLength = env->GetArrayLength(jDesiredDisplayModeSpecs);
 
+    const auto makeWorkDuration =
+            [env](jobject obj) -> std::optional<gui::DisplayModeSpecs::WorkDuration> {
+        if (obj == NULL) {
+            return std::nullopt;
+        }
+        gui::DisplayModeSpecs::WorkDuration workDuration;
+        workDuration.minSfDurationNanos =
+                env->GetLongField(obj, gWorkDurationClassInfo.minSfDurationNanos);
+        workDuration.maxSfDurationNanos =
+                env->GetLongField(obj, gWorkDurationClassInfo.maxSfDurationNanos);
+        workDuration.appDurationNanos =
+                env->GetLongField(obj, gWorkDurationClassInfo.appDurationNanos);
+        return workDuration;
+    };
+
     std::vector<gui::DisplayModeSpecs> displayModeSpecs;
     displayModeSpecs.reserve(specsLength);
 
@@ -1766,6 +1790,8 @@ static jboolean nativeSetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
         specs.idleScreenRefreshRateConfig = makeIdleScreenRefreshRateConfig(
                 env->GetObjectField(jSpecs,
                                     gDesiredDisplayModeSpecsClassInfo.idleScreenRefreshRateConfig));
+        specs.workDuration = makeWorkDuration(
+                env->GetObjectField(jSpecs, gDesiredDisplayModeSpecsClassInfo.workDuration));
 
         displayModeSpecs.push_back(std::move(specs));
     }
@@ -1801,6 +1827,17 @@ static jobject nativeGetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
                               idleScreenRefreshRateConfig->timeoutMillis);
     };
 
+    const auto workDurationToJava =
+            [env](const std::optional<gui::DisplayModeSpecs::WorkDuration>& workDuration)
+            -> jobject {
+        if (!workDuration.has_value()) {
+            return NULL; // Return null if input config is null
+        }
+        return env->NewObject(gWorkDurationClassInfo.clazz, gWorkDurationClassInfo.ctor,
+                              workDuration->minSfDurationNanos, workDuration->maxSfDurationNanos,
+                              workDuration->appDurationNanos);
+    };
+
     gui::DisplayModeSpecs specs;
     if (SurfaceComposerClient::getDesiredDisplayModeSpecs(displayToken, &specs) != NO_ERROR) {
         return nullptr;
@@ -1811,7 +1848,8 @@ static jobject nativeGetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
                           javaObjectForIBinder(env, specs.applyToken), specs.defaultMode,
                           specs.allowGroupSwitching, rangesToJava(specs.primaryRanges),
                           rangesToJava(specs.appRequestRanges),
-                          idleScreenRefreshRateConfigToJava(specs.idleScreenRefreshRateConfig));
+                          idleScreenRefreshRateConfigToJava(specs.idleScreenRefreshRateConfig),
+                          workDurationToJava(specs.workDuration));
 }
 
 static jobject nativeGetDisplayNativePrimaries(JNIEnv* env, jclass, jobject tokenObj) {
@@ -3151,6 +3189,18 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gIdleScreenRefreshRateConfigClassInfo.timeoutMillis =
             GetFieldIDOrDie(env, gIdleScreenRefreshRateConfigClassInfo.clazz, "timeoutMillis", "I");
 
+    jclass WorkDurationConfigClazz =
+            FindClassOrDie(env, "android/view/SurfaceControl$WorkDuration");
+    gWorkDurationClassInfo.clazz = MakeGlobalRefOrDie(env, WorkDurationConfigClazz);
+    gWorkDurationClassInfo.ctor =
+            GetMethodIDOrDie(env, gWorkDurationClassInfo.clazz, "<init>", "(JJJ)V");
+    gWorkDurationClassInfo.minSfDurationNanos =
+            GetFieldIDOrDie(env, gWorkDurationClassInfo.clazz, "minSfDurationNanos", "J");
+    gWorkDurationClassInfo.maxSfDurationNanos =
+            GetFieldIDOrDie(env, gWorkDurationClassInfo.clazz, "maxSfDurationNanos", "J");
+    gWorkDurationClassInfo.appDurationNanos =
+            GetFieldIDOrDie(env, gWorkDurationClassInfo.clazz, "appDurationNanos", "J");
+
     jclass DesiredDisplayModeSpecsClazz =
             FindClassOrDie(env, "android/view/SurfaceControl$DesiredDisplayModeSpecs");
     gDesiredDisplayModeSpecsClassInfo.clazz = MakeGlobalRefOrDie(env, DesiredDisplayModeSpecsClazz);
@@ -3159,7 +3209,8 @@ int register_android_view_SurfaceControl(JNIEnv* env)
                              "(Landroid/os/IBinder;Landroid/os/IBinder;IZ"
                              "Landroid/view/SurfaceControl$RefreshRateRanges;Landroid/view/"
                              "SurfaceControl$RefreshRateRanges;Landroid/view/"
-                             "SurfaceControl$IdleScreenRefreshRateConfig;)V");
+                             "SurfaceControl$IdleScreenRefreshRateConfig;"
+                             "Landroid/view/SurfaceControl$WorkDuration;)V");
     gDesiredDisplayModeSpecsClassInfo.displayToken =
             GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "displayToken",
                             "Landroid/os/IBinder;");
@@ -3179,6 +3230,9 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gDesiredDisplayModeSpecsClassInfo.idleScreenRefreshRateConfig =
             GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "idleScreenRefreshRateConfig",
                             "Landroid/view/SurfaceControl$IdleScreenRefreshRateConfig;");
+    gDesiredDisplayModeSpecsClassInfo.workDuration =
+            GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "workDuration",
+                            "Landroid/view/SurfaceControl$WorkDuration;");
 
     jclass jankDataClazz =
                 FindClassOrDie(env, "android/view/SurfaceControl$JankData");

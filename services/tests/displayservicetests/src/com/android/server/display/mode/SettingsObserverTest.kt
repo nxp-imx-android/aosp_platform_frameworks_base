@@ -18,19 +18,26 @@ package com.android.server.display.mode
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
+import android.testing.TestableContext
 import android.util.SparseArray
 import android.view.Display
 import android.view.SurfaceControl.RefreshRateRange
 import android.view.SurfaceControl.RefreshRateRanges
+import android.view.SurfaceControl.WorkDuration
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.util.test.FakeSettingsProvider
 import com.android.server.display.DisplayDeviceConfig
 import com.android.server.display.config.RefreshRateData
 import com.android.server.display.config.SupportedModeData
 import com.android.server.display.config.createRefreshRateData
 import com.android.server.display.feature.DisplayManagerFlags
+import com.android.server.display.feature.flags.Flags
 import com.android.server.display.mode.DisplayModeDirector.DisplayDeviceConfigProvider
 import com.android.server.display.mode.SupportedRefreshRatesVote.RefreshRates
 import com.android.server.testutils.TestHandler
@@ -75,10 +82,13 @@ private val RANGES_MIN90_90TO90 = RefreshRateRanges(RANGE_90_INF, RANGE_90_90)
 
 private val LOW_POWER_GLOBAL_VOTE = Vote.forRenderFrameRates(0f, 60f)
 private val LOW_POWER_REFRESH_RATE_DATA = createRefreshRateData(
-    lowPowerSupportedModes = listOf(SupportedModeData(60f, 60f), SupportedModeData(60f, 240f)))
+    lowPowerSupportedModes = listOf(SupportedModeData(60f, 60f), SupportedModeData(60f, 240f)),
+    lowPowerWorkDurations = WorkDuration(10, 10, 10)
+    )
 private val LOW_POWER_EMPTY_REFRESH_RATE_DATA = createRefreshRateData()
 private val EXPECTED_SUPPORTED_MODES_VOTE = SupportedRefreshRatesVote(
     listOf(RefreshRates(60f, 60f), RefreshRates(60f, 240f)))
+private val EXPECTED_WORK_DURATIONS_VOTE = WorkDurationsVote(WorkDuration(10, 10, 10))
 
 @SmallTest
 @RunWith(TestParameterInjector::class)
@@ -88,6 +98,13 @@ class SettingsObserverTest {
 
     @get:Rule
     val settingsProviderRule = FakeSettingsProvider.rule()
+
+    @get:Rule
+    val setFlagRule = SetFlagsRule()
+
+    @get:Rule
+    val mContext = TestableContext(
+        InstrumentationRegistry.getInstrumentation().targetContext)
 
     private lateinit var spyContext: Context
     private val mockInjector = mock<DisplayModeDirector.Injector>()
@@ -103,6 +120,7 @@ class SettingsObserverTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     fun testLowPowerMode(@TestParameter testCase: LowPowerTestCase) {
         whenever(spyContext.contentResolver)
                 .thenReturn(settingsProviderRule.mockContentResolver(null))
@@ -145,6 +163,7 @@ class SettingsObserverTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     fun testSettingsRefreshRates(@TestParameter testCase: SettingsRefreshRateTestCase) {
         val displayModeDirector = DisplayModeDirector(
             spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
@@ -216,5 +235,61 @@ class SettingsObserverTest {
         LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, RANGES_90TO120, RANGES_120),
         LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, RANGES_90TO90, RANGES_90),
         LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, RANGES_60TO120_60TO90, RANGES_120),
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
+    fun testLowPowerMode_workDurationsInVotes() {
+        val configDefaultPeakRefreshRateId = 0x10e0075
+        mContext.orCreateTestableResources.addOverride(configDefaultPeakRefreshRateId, 60)
+
+        Settings.Global.putInt(
+            mContext.contentResolver, Settings.Global.LOW_POWER_MODE, 1)
+
+        val displayModeDirector = DisplayModeDirector(
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+        val ddcByDisplay = SparseArray<DisplayDeviceConfig>()
+        whenever(mockDeviceConfig.refreshRateData).thenReturn(LOW_POWER_REFRESH_RATE_DATA)
+        ddcByDisplay.put(0, mockDeviceConfig)
+        displayModeDirector.injectDisplayDeviceConfigByDisplay(ddcByDisplay)
+        val settingsObserver = displayModeDirector.SettingsObserver(
+            mContext, testHandler, mockFlags)
+
+        settingsObserver.onChange(
+            false, Settings.Global.getUriFor(Settings.Global.LOW_POWER_MODE), 1)
+
+        assertThat(displayModeDirector.getVote(0, Vote.PRIORITY_LOW_POWER_MODE_MODES))
+            .isEqualTo(CombinedVote(
+                listOf(
+                    EXPECTED_SUPPORTED_MODES_VOTE,
+                    EXPECTED_WORK_DURATIONS_VOTE
+                )
+            ))
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
+    fun testLowPowerMode_workDurationsDisabled() {
+        val configDefaultPeakRefreshRateId = 0x10e0075
+        mContext.orCreateTestableResources.addOverride(configDefaultPeakRefreshRateId, 60)
+
+        Settings.Global.putInt(
+            mContext.contentResolver, Settings.Global.LOW_POWER_MODE, 1)
+
+        val displayModeDirector = DisplayModeDirector(
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+        val ddcByDisplay = SparseArray<DisplayDeviceConfig>()
+        whenever(mockDeviceConfig.refreshRateData).thenReturn(LOW_POWER_REFRESH_RATE_DATA)
+        ddcByDisplay.put(0, mockDeviceConfig)
+        displayModeDirector.injectDisplayDeviceConfigByDisplay(ddcByDisplay)
+        val settingsObserver = displayModeDirector.SettingsObserver(
+            mContext, testHandler, mockFlags)
+
+        settingsObserver.onChange(
+            false, Settings.Global.getUriFor(Settings.Global.LOW_POWER_MODE), 1)
+
+        // no combined vote with work durations
+        assertThat(displayModeDirector.getVote(0, Vote.PRIORITY_LOW_POWER_MODE_MODES))
+            .isEqualTo(EXPECTED_SUPPORTED_MODES_VOTE)
     }
 }
