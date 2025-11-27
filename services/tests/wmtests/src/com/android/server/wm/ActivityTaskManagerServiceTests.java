@@ -39,8 +39,8 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
+import static com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
-import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1903,7 +1903,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         assertFalse(record.inPinnedWindowingMode());
     }
 
-    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @EnableFlags(FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_permissionGranted() {
         final int displayId = Display.DEFAULT_DISPLAY;
@@ -1927,7 +1927,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         }
     }
 
-    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @EnableFlags(FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_permissionDenied() {
         final int displayId = Display.DEFAULT_DISPLAY;

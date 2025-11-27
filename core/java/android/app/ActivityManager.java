@@ -3343,7 +3343,7 @@ public class ActivityManager {
      *
      * @throws IllegalArgumentException if there is no display with given display ID
      */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
     @SuppressLint("RequiresPermission")
     public boolean isTaskMoveAllowedOnDisplay(int displayId) {
         try {
