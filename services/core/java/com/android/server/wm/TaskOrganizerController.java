@@ -167,7 +167,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             }
         }
 
-        void onBackPressedOnTaskRoot(Task task) {
+        private void onBackPressedOnTaskRoot(Task task, boolean isFromMoveActivityTaskToBack) {
             ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Task back pressed on root taskId=%d",
                     task.mTaskId);
             if (!task.mTaskAppearedSent) {
@@ -179,7 +179,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 return;
             }
             try {
-                mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo());
+                mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo(),
+                        isFromMoveActivityTaskToBack);
             } catch (Exception e) {
                 Slog.e(TAG, "Exception sending onBackPressedOnTaskRoot callback", e);
             }
@@ -293,7 +294,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     dispatchTaskInfoChanged(event.mTask, event.mForce);
                     break;
                 case PendingTaskEvent.EVENT_ROOT_BACK_PRESSED:
-                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task);
+                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
+                            /* isFromMoveActivityTaskToBack= */ false);
+                    break;
+                case PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK:
+                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
+                            /* isFromMoveActivityTaskToBack= */ true);
                     break;
             }
         }
@@ -460,6 +466,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         static final int EVENT_VANISHED = 1;
         static final int EVENT_INFO_CHANGED = 2;
         static final int EVENT_ROOT_BACK_PRESSED = 3;
+        static final int EVENT_MOVE_TASK_TO_BACK = 4;
 
         final int mEventType;
         final Task mTask;
@@ -1218,7 +1225,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
-    public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r) {
+    public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r,
+            boolean isFromMoveActivityTaskToBack) {
         // Intercept are set on the root task
         if (!shouldInterceptBackPressedOnRootTask(r.getRootTask())) {
             return false;
@@ -1250,10 +1258,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return false;
         }
 
-        PendingTaskEvent pending = pendingEventsQueue.getPendingTaskEvent(
-                task, PendingTaskEvent.EVENT_ROOT_BACK_PRESSED);
+        final int eventType = isFromMoveActivityTaskToBack
+                ? PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK
+                : PendingTaskEvent.EVENT_ROOT_BACK_PRESSED;
+        PendingTaskEvent pending = pendingEventsQueue.getPendingTaskEvent(task, eventType);
         if (pending == null) {
-            pending = new PendingTaskEvent(task, PendingTaskEvent.EVENT_ROOT_BACK_PRESSED);
+            pending = new PendingTaskEvent(task, eventType);
         } else {
             // Pending already exist, remove and add for re-ordering.
             pendingEventsQueue.removePendingTaskEvent(pending);

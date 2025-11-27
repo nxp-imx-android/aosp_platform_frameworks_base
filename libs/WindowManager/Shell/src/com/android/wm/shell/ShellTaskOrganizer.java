@@ -121,8 +121,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          * organized, there will be no callback.
          *
          * @param taskInfo The RunningTaskInfo for the Task which received back event.
+         * @param isFromMoveActivityTaskToBack {@code true} if this is from an app calling
+         *                                     Activity#moveTaskToBack(), {@code false} if this is
+         *                                     from back button press.
          */
-        default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {}
+        default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
+                boolean isFromMoveActivityTaskToBack) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
             // All TaskListeners should support compat UI except PIP and StageCoordinator.
@@ -914,12 +918,13 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     @Override
-    public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {
+    public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
+            boolean isFromMoveActivityTaskToBack) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d", taskInfo.taskId);
             final TaskListener listener = getTaskListener(taskInfo);
             if (listener != null) {
-                listener.onBackPressedOnTaskRoot(taskInfo);
+                listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack);
             }
         }
     }
