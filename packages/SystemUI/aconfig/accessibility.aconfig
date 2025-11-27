@@ -1,8 +1,7 @@
 package: "com.android.systemui"
 container: "system"
 
-# NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
-
+# go/keep-sorted start block=yes newline_separated=yes by_regex=name:\s*"([^"]+)"
 flag {
     name: "bouncer_accessibility_button_for_desktop"
     namespace: "accessibility"
@@ -101,3 +100,4 @@ flag {
     description: "Uses region sampling in the Status Bar to avoid contrast bugs in the status bar when expanded dark theme is enabled"
     bug: "379760792"
 }
+# go/keep-sorted end
