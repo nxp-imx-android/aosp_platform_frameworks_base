@@ -6,6 +6,9 @@ package android.service.contentsafety;
   * @hide
   */
 oneway interface ILoadFeatureCallback {
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
     void onResult() = 1;
+
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
     void onError(in int errorCode) = 2;
 }

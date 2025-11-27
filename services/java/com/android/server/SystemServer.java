@@ -166,6 +166,7 @@ import com.android.server.content.ContentService;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
 import com.android.server.contentcapture.ContentCaptureManagerService;
 import com.android.server.contentrestriction.ContentRestrictionService;
+import com.android.server.contentsafety.ContentSafetyManagerService;
 import com.android.server.contentsuggestions.ContentSuggestionsManagerService;
 import com.android.server.contextualsearch.ContextualSearchManagerService;
 import com.android.server.coverage.CoverageService;
@@ -2095,6 +2096,7 @@ public final class SystemServer implements Dumpable {
                 Slog.d(TAG, "Not starting WearableSensingService");
             }
             startOnDeviceIntelligenceService(t);
+            startContentSafetyManagerService(t);
 
             if (deviceHasConfigString(
                     context, R.string.config_defaultAmbientContextDetectionService)) {
@@ -3620,6 +3622,12 @@ public final class SystemServer implements Dumpable {
     private void startOnDeviceIntelligenceService(TimingsTraceAndSlog t) {
         t.traceBegin("startOnDeviceIntelligenceManagerService");
         mSystemServiceManager.startService(ON_DEVICE_INTELLIGENCE_MANAGER_SERVICE_CLASS);
+        t.traceEnd();
+    }
+
+    private void startContentSafetyManagerService(TimingsTraceAndSlog t) {
+        t.traceBegin("startContentSafetyManagerService");
+        mSystemServiceManager.startService(ContentSafetyManagerService.class);
         t.traceEnd();
     }
 

@@ -210,6 +210,16 @@ public final class ContentSafetyManager {
      */
     public static final int CONTENT_SAFETY_LOAD_FEATURE_INVOKE_ERROR = 13;
     /**
+     * Indicates that the remote call getFeature failed due to internal error.
+     * @hide
+     */
+    public static final int CONTENT_SAFETY_GET_FEATURE_INTERNAL_ERROR = 14;
+    /**
+     * Indicates that the remote call loadFeature failed due to internal error.
+     * @hide
+     */
+    public static final int CONTENT_SAFETY_LOAD_FEATURE_INTERNAL_ERROR = 15;
+    /**
      * @hide
      */
     @Target({ElementType.TYPE_USE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
@@ -230,6 +240,8 @@ public final class ContentSafetyManager {
                     CONTENT_SAFETY_CHECK_CONTENT_INVOKE_ERROR,
                     CONTENT_SAFETY_GET_FEATURE_INVOKE_ERROR,
                     CONTENT_SAFETY_LOAD_FEATURE_INVOKE_ERROR,
+                    CONTENT_SAFETY_GET_FEATURE_INTERNAL_ERROR,
+                    CONTENT_SAFETY_LOAD_FEATURE_INTERNAL_ERROR
             })
     public @interface CheckContentStatus{ }
 
