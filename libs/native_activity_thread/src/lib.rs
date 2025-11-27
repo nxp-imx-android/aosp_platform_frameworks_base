@@ -57,7 +57,9 @@ pub fn app_process_init(target_sdk_version: i32, runtime_flags: u32) {
         log::error!("Call to android_mallopt failed: Opcode = M_SET_ZYGOTE_CHILD");
     }
 
-    apply_runtime_flags(runtime_flags);
+    if let Err(e) = apply_runtime_flags(runtime_flags) {
+        panic!("Failed to apply runtime flags: {e}");
+    }
 
     let target = if target_sdk_version <= 0 { SDK_VERSION_UNSET } else { target_sdk_version };
     // SAFETY: target is a valid SDK version validated above.
