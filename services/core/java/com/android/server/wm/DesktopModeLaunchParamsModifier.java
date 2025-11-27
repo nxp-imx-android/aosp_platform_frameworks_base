@@ -418,6 +418,19 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
                     appendLog("desktop-first-but-fullscreen-relaunch");
                     return WINDOWING_MODE_FULLSCREEN;
                 }
+
+                if (mDesktopModeCompatPolicy.isPartOfDefaultHomePackageOrNoHomeAvailable(
+                                source.mActivityComponent.getPackageName(), source.mUserId)) {
+                    appendLog("desktop-first-but-fullscreen-relaunch-from-home");
+                    return WINDOWING_MODE_FULLSCREEN;
+                }
+
+                if (source.info != null && source.info.applicationInfo != null
+                                && source.info.applicationInfo.isSignedWithPlatformKey()) {
+                    appendLog("desktop-first-but-fullscreen-relaunch-from-signed-activity");
+                    return WINDOWING_MODE_FULLSCREEN;
+                }
+
                 // Fullscreen relaunch but the source activity was exempted from desktop, so we
                 // continue to evaluate the desktop-first policy.
             } else {
