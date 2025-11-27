@@ -175,6 +175,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     private static final long FORWARD_BACK_KEY_TOLERANCE_MS = 100;
     private static final int LOGTAG_SURFACEVIEW_LAYOUT = 60005;
     private static final int LOGTAG_SURFACEVIEW_CALLBACK = 60006;
+    private static final int LOGTAG_INPUT_FOCUS = 62001;
 
     @UnsupportedAppUsage(
             maxTargetSdk = Build.VERSION_CODES.TIRAMISU,
@@ -435,6 +436,45 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 }
                 vri.enqueueInputEvent(keyEvent, null /* receiver */, 0 /* flags */,
                         true /* processImmediately */);
+            });
+        }
+
+        @Override
+        public void transferFocusToParent(int direction) {
+            SurfaceView sv;
+            synchronized (this) {
+                sv = mSurfaceView;
+            }
+            if (sv == null) {
+                EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                        "transferFocusToParent failed",
+                        "reason=detached_surface_view");
+                return;
+            }
+            sv.runOnUiThread(() -> {
+                if (!sv.isAttachedToWindow()) {
+                    EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                            "transferFocusToParent failed: " + sv.getName(),
+                            "reason=not_attached");
+                    return;
+                }
+                if (!sv.isFocused()) {
+                    EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                            "transferFocusToParent failed: " + sv.getName(),
+                            "reason=not_focused");
+                    return;
+                }
+                View nextFocus = sv.focusSearch(direction);
+                if (nextFocus != null && nextFocus != sv) {
+                    EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                            "transferFocusToParent success: " + sv.getName(),
+                            "reason=focus_request");
+                    nextFocus.requestFocus(direction);
+                } else {
+                    EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                            "transferFocusToParent failed: " + sv.getName(),
+                            "reason=no_next_focus");
+                }
             });
         }
     }
@@ -2520,6 +2560,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
             return;
         }
         try {
+            EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                    "requestEmbeddedFocus: " + gainFocus + " " + getName(),
+                    "reason=requestEmbeddedFocus");
             viewRoot.mWindowSession.grantEmbeddedWindowFocus(viewRoot.mWindow,
                     mSurfacePackage.getInputTransferToken(), gainFocus);
         } catch (Exception e) {

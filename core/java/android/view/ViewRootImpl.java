@@ -120,6 +120,7 @@ import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
 import static android.view.flags.Flags.disableDrawWakeLock;
+import static android.view.flags.Flags.enableWindowlessWindowFocusNavigation;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
 import static android.view.flags.Flags.toolkitDisableCategoryOnMrr;
@@ -8284,13 +8285,17 @@ public final class ViewRootImpl implements ViewParent,
 
         private boolean moveFocusToAdjacentWindow(@FocusDirection int direction) {
             final int windowingMode = getConfiguration().windowConfiguration.getWindowingMode();
+            final boolean isEmbeddedWindow = enableWindowlessWindowFocusNavigation()
+                            && mWindowSession instanceof WindowlessWindowManager;
             if (windowingMode != WINDOWING_MODE_MULTI_WINDOW
-                    && windowingMode != WINDOWING_MODE_FREEFORM) {
+                    && windowingMode != WINDOWING_MODE_FREEFORM
+                    && !isEmbeddedWindow) {
                 return false;
             }
             try {
                 return mWindowSession.moveFocusToAdjacentWindow(mWindow, direction);
             } catch (RemoteException e) {
+                Log.d(TAG, "moveFocusToAdjacentWindow: RemoteException", e);
                 return false;
             }
         }
