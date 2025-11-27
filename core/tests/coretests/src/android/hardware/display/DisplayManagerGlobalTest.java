@@ -633,6 +633,20 @@ public class DisplayManagerGlobalTest {
     }
 
     @Test
+    public void testUpdateDisplayIdsCache_skipRemovedAndDisconnectedForUnknownDisplayId() {
+        var cache = initDisplayIdsCache(/*enableConnectedCache=*/ true, /*enableAddedCache=*/ true);
+        var mask = cache.updateCacheLocked(1, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED);
+        assertEquals("Out mask must contain REMOVED AND DISCONNECTED",
+                DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED, mask);
+
+        mask = cache.updateCacheLocked(2, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED);
+        assertEquals("Out mask should not contain REMOVED AND DISCONNECTED", 0, mask);
+    }
+
+    @Test
     public void testInvalidateDisplayIdsCache() {
         var cache = initDisplayIdsCache(/*enableConnectedCache=*/ true, /*enableAddedCache=*/ true);
         assertExpectedCache(cache, new int[] { 0, 1 }, new int[] { 0 });
@@ -654,6 +668,12 @@ public class DisplayManagerGlobalTest {
 
         cache.updateCacheLocked(new int[] { 0, 1 }, new int[] { 0 });
         assertExpectedCache(cache, new int[] { 0, 1 }, new int[] { 0 });
+
+        cache.updateCacheLocked(new int[] { 0, 1, 2 }, new int[] {});
+        assertExpectedCache(cache, new int[] { 0, 1, 2 }, new int[] { 0 });
+
+        cache.updateCacheLocked(new int[] {}, new int[] { 0, 1 });
+        assertExpectedCache(cache, new int[] { 0, 1, 2 }, new int[] { 0, 1 });
     }
 
     @Test
