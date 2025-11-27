@@ -19,21 +19,42 @@ package com.android.settingslib.metadata.apifirst
 import android.content.Context
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
+import com.android.settingslib.datastore.Permissions
+import com.android.settingslib.datastore.and
 import com.android.settingslib.metadata.PersistentPreference
+import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.apifirst.preconditions.Allowed
+import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
+import com.android.settingslib.metadata.apifirst.types.ApiFirstType
 
-/** Configuration of the [ApiFirstPreference] getter. */
-data class GetterConfig<V : Any>(
-    // TODO: add other lambdas for Get API
+/** Configuration of the [ApiFirstPreference] permissions. */
+data class PermissionsConfig(
+    val permissions: List<String>,
+)
+
+/** Configuration of the [ApiFirstPreference] preconditions. */
+data class PreconditionsConfig(
+    val preconditions: (Context) -> ApiFirstPreconditions,
+)
+
+/** Configuration of the [ApiFirstPreference] get. */
+data class GetConfig<V : Any>(
+    val permissions: List<String>? = null,
+    val preconditions: ((Context) -> ApiFirstPreconditions)? = null,
     val execute: (Context) -> V
 )
 
-/** Configuration of the [ApiFirstPreference] setter. */
-data class SetterConfig<V : Any>(
-    // TODO: add other lambdas for Set API
+/** Configuration of the [ApiFirstPreference] set. */
+data class SetConfig<V : Any>(
+    val permissions: List<String>? = null,
+    val preconditions: ((Context) -> ApiFirstPreconditions)? = null,
+    val valuePreconditions: ((Context, V) -> ApiFirstPreconditions)? = null,
     val execute: (Context, V) -> Unit
 )
 
 /**
+ * TODO: Remove the typing from the preference and infer it based on the passed type
+ *
  * A preference abstraction to describe the ability of getting and (optionally) setting a value
  * specific to that preference, without relying on binding to an actual UI widget. This class is
  * produced when an Engineer in a partner team migrates their preference to Catalyst using the 2026
@@ -41,6 +62,89 @@ data class SetterConfig<V : Any>(
  * partner teams to write and the methods which Catalyst expects.
  */
 abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
+    // TODO: Maybe refactor, use common function for both get/setPermissions
+    private fun getPermissions(): Permissions? {
+        val permissionsList = mutableListOf<String>()
+        commonPermissions?.let { permissionsList.addAll(it.permissions) }
+
+        if (get.permissions == null && permissionsList.isEmpty()) {
+            return null
+        }
+
+        get.permissions?.let { permissionsList.addAll(it) }
+        var perms = Permissions.EMPTY
+
+        for (perm in permissionsList) {
+            perms = perms and perm
+        }
+
+        return perms
+    }
+
+    private fun setPermissions(): Permissions? {
+        val permissionsList = mutableListOf<String>()
+        commonPermissions?.let { permissionsList.addAll(it.permissions) }
+
+        if (set?.permissions == null && permissionsList.isEmpty()) {
+            return null
+        }
+
+        set?.permissions?.let { permissionsList.addAll(it) }
+        var perms = Permissions.EMPTY
+
+        for (perm in permissionsList) {
+            perms = perms and perm
+        }
+
+        return perms
+    }
+
+    // TODO: Maybe refactor, use common function for both get/setPreconditions
+    private fun getPreconditions(context: Context): ApiFirstPreconditions? {
+        val commonPreconditionsCheck = commonPreconditions?.preconditions(context)
+
+        if (commonPreconditionsCheck != null && commonPreconditionsCheck != Allowed) {
+            return commonPreconditionsCheck
+        }
+
+        get.preconditions?.let {
+            return it(context)
+        }
+
+        return null
+    }
+
+    private fun setPreconditions(context: Context): ApiFirstPreconditions? {
+        val commonPreconditionsCheck = commonPreconditions?.preconditions(context)
+
+        if (commonPreconditionsCheck != null && commonPreconditionsCheck != Allowed) {
+            return commonPreconditionsCheck
+        }
+
+        set?.preconditions?.let {
+            return it(context)
+        }
+
+        return null
+    }
+
+    override fun getReadPermissions(context: Context) = getPermissions()
+    override fun getWritePermissions(context: Context) = setPermissions()
+
+    override fun getReadPermit(context: Context, callingPid: Int, callingUid: Int) =
+        when (getPreconditions(context)) {
+            Allowed -> ReadWritePermit.ALLOW
+            null -> super.getReadPermit(context, callingPid, callingUid)
+            else -> ReadWritePermit.DISALLOW
+        }
+
+    override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
+        when (setPreconditions(context)) {
+            Allowed -> ReadWritePermit.ALLOW
+            null -> super.getWritePermit(context, callingPid, callingUid)
+            else -> ReadWritePermit.DISALLOW
+        }
+
     override fun storage(context: Context): KeyValueStore =
         object : NoOpKeyedObservable<String>(), KeyValueStore {
             override fun contains(storeKey: String): Boolean = storeKey == key
@@ -48,8 +152,7 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
             override fun <T : Any> getValue(storeKey: String, valueType: Class<T>): T? =
                 when {
                     storeKey == key -> {
-                        // TODO: Maybe add permission checks here
-                        getter.execute(context) as T?
+                        get.execute(context) as T?
                     }
 
                     else -> null
@@ -58,26 +161,55 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
             override fun <T : Any> setValue(storeKey: String, valueType: Class<T>, value: T?) {
                 if (storeKey == key) {
                     // This cast is safe because the framework ensures `value` is of type `V`.
-                    setter?.execute(context, value as V)
+                    set?.execute(context, value as V)
                 }
             }
         }
 
-    /** Getter block with logic for retrieving the preference's value. */
-    abstract val getter: GetterConfig<V>
+    /** Permissions of the preference's value. */
+    abstract val commonPermissions: PermissionsConfig?
 
-    /** Setter block with logic for changing a preference's value. */
-    abstract val setter: SetterConfig<V>?
+    /** Preconditions of the preference's value. */
+    abstract val commonPreconditions: PreconditionsConfig?
+
+    /** Get block with logic for retrieving the preference's value. */
+    abstract val get: GetConfig<V>
+
+    /** Set block with logic for changing a preference's value. */
+    abstract val set: SetConfig<V>?
 }
 
 @DslMarker
 internal annotation class ApiFirstPreferenceDsl
 
+@ApiFirstPreferenceDsl
+class PermissionsConfigBuilder(perms: List<String>) {
+    private var permissionsList: List<String> = perms
+
+    internal fun build(): PermissionsConfig {
+        return PermissionsConfig(
+            permissions = permissionsList,
+        )
+    }
+}
+
+@ApiFirstPreferenceDsl
+class PreconditionsConfigBuilder(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+    private var preconditionsFun: (Context) -> ApiFirstPreconditions = lambda
+    private var preconditionsDescription: String = description // TODO: Make use of this, too
+
+    internal fun build(): PreconditionsConfig {
+        return PreconditionsConfig(
+            preconditions = preconditionsFun,
+        )
+    }
+}
+
 /**
- * Getter configuration builder for an [ApiFirstPreference].
+ * Get configuration builder for an [ApiFirstPreference].
  *
  * ```
- * getter {
+ * get {
  *     execute { context ->
  *         // Get the value
  *         Foo(context)
@@ -86,28 +218,46 @@ internal annotation class ApiFirstPreferenceDsl
  * ```
  */
 @ApiFirstPreferenceDsl
-class GetterConfigBuilder<V : Any> {
+class GetConfigBuilder<V : Any> {
+    private var permissionsRequired: List<String>? = null
+    private var preconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
+    private var preconditionDescription: String? = null
     private var executeFun: ((Context) -> V)? = null
 
-    // TODO: When we add other blocks, error if they're done out-of-order
-    /** Declare the execute block of the getter. */
+    /** Sets permissions for the get. */
+    fun permissions(permissionsList: List<String>) {
+        permissionsRequired = permissionsList
+    }
+
+    /** Defines a precondition check that must pass for the get to be executed. */
+    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+        preconditionDescription = description
+        preconditionsFun = lambda
+    }
+
+    /*
+     * TODO: When we add other blocks, error if they're done out-of-order. Make sure they are
+     *       called only once.
+     */
+    /** Declare the execute block of the get. */
     fun execute(lambda: (Context) -> V) {
         executeFun = lambda
     }
 
-    internal fun build(): GetterConfig<V> {
-        return GetterConfig(
+    internal fun build(): GetConfig<V> {
+        return GetConfig(
+            preconditions = preconditionsFun,
             execute = executeFun
-                ?: throw IllegalStateException("Getter 'execute' block is required")
+                ?: throw IllegalStateException("get 'execute' block is required")
         )
     }
 }
 
 /**
- * Setter configuration builder for an [ApiFirstPreference].
+ * Set configuration builder for an [ApiFirstPreference].
  *
  * ```
- * setter {
+ * set {
  *     execute { context, value ->
  *         // Set the value
  *         Bar(context, value)
@@ -116,47 +266,91 @@ class GetterConfigBuilder<V : Any> {
  * ```
  */
 @ApiFirstPreferenceDsl
-class SetterConfigBuilder<V : Any> {
+class SetConfigBuilder<V : Any> {
+    private var permissionsRequired: List<String>? = null
+    private var preconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
+    private var preconditionDescription: String? = null
+    private var valuePreconditionsFun: ((Context, V) -> ApiFirstPreconditions)? = null
+    private var valuePreconditionDescription: String? = null
     private var executeFun: ((Context, V) -> Unit)? = null
 
-    // TODO: When we add other blocks, error if they're done out-of-order
-    /** Declare the execute block of the setter. */
+    /** Sets permissions for the set. */
+    fun permissions(permissionsList: List<String>) {
+        permissionsRequired = permissionsList
+    }
+
+    /** Defines a precondition check that must pass for the set to be executed. */
+    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+        preconditionDescription = description
+        preconditionsFun = lambda
+    }
+
+    /** Defines a value precondition check that must pass for the set to be executed. */
+    fun valuePreconditions(description: String, lambda: (Context, V) -> ApiFirstPreconditions) {
+        valuePreconditionDescription = description
+        valuePreconditionsFun = lambda
+    }
+
+    /*
+     * TODO: When we add other blocks, error if they're done out-of-order. Make sure they are
+     *       called only once.
+     */
+    /** Declare the execute block of the set. */
     fun execute(lambda: (Context, V) -> Unit) {
         executeFun = lambda
     }
 
-    internal fun build(): SetterConfig<V> {
-        return SetterConfig(
+    internal fun build(): SetConfig<V> {
+        return SetConfig(
             execute = executeFun
-                ?: throw IllegalStateException("Setter 'execute' block is required")
+                ?: throw IllegalStateException("Set 'execute' block is required")
         )
     }
 }
 
 /** Configuration builder for an [ApiFirstPreference]. */
 @ApiFirstPreferenceDsl
-class ApiFirstPreferenceConfigBuilder<V : Any>(val type: Class<V>) {
-    /** Preference key. */
+class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>) {
     lateinit var key: String
-    private var getterConfig: GetterConfig<V>? = null
-    private var setterConfig: SetterConfig<V>? = null
+    lateinit var type: ApiFirstType
+    var purpose: Int = 0
+    private var permissionsConfig: PermissionsConfig? = null
+    private var preconditionsConfig: PreconditionsConfig? = null
+    private var getConfig: GetConfig<V>? = null
+    private var setConfig: SetConfig<V>? = null
 
     /**
-     * Build the [GetterConfig] from the given [GetterConfigBuilder] block.
+     * Build the [PermissionsConfig] from the given [PermissionsConfigBuilder] block.
      */
-    fun getter(lambda: GetterConfigBuilder<V>.() -> Unit) {
-        val builder = GetterConfigBuilder<V>()
-        builder.lambda()
-        getterConfig = builder.build()
+    fun permissions(permissionsList: List<String>) {
+        val builder = PermissionsConfigBuilder(permissionsList)
+        permissionsConfig = builder.build()
     }
 
     /**
-     * Build the [SetterConfig] from the given [SetterConfigBuilder] block.
+     * Build the [PreconditionsConfig] from the given [PreconditionsConfigBuilder] block.
      */
-    fun setter(lambda: SetterConfigBuilder<V>.() -> Unit) {
-        val builder = SetterConfigBuilder<V>()
+    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+        val builder = PreconditionsConfigBuilder(description, lambda)
+        preconditionsConfig = builder.build()
+    }
+
+    /**
+     * Build the [GetConfig] from the given [GetConfigBuilder] block.
+     */
+    fun get(lambda: GetConfigBuilder<V>.() -> Unit) {
+        val builder = GetConfigBuilder<V>()
         builder.lambda()
-        setterConfig = builder.build()
+        getConfig = builder.build()
+    }
+
+    /**
+     * Build the [SetConfig] from the given [SetConfigBuilder] block.
+     */
+    fun set(lambda: SetConfigBuilder<V>.() -> Unit) {
+        val builder = SetConfigBuilder<V>()
+        builder.lambda()
+        setConfig = builder.build()
     }
 
     /** Create an instance of [ApiFirstPreference] from its configuration. */
@@ -165,49 +359,21 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val type: Class<V>) {
             throw IllegalStateException("'key' is required")
         }
 
+        if (!this::type.isInitialized) {
+            throw IllegalStateException("'type' is required")
+        }
+
         // keep a copy of the preference key
         val preferenceKey = key
 
         return object : ApiFirstPreference<V>() {
-            override val getter: GetterConfig<V> =
-                getterConfig ?: throw IllegalStateException("'getter' block is required")
-            override val setter: SetterConfig<V>? = setterConfig
-            override val valueType: Class<V> = type
+            override val commonPermissions: PermissionsConfig? = permissionsConfig
+            override val commonPreconditions: PreconditionsConfig? = preconditionsConfig
+            override val get: GetConfig<V> =
+                getConfig ?: throw IllegalStateException("'get' block is required")
+            override val set: SetConfig<V>? = setConfig
+            override val valueType: Class<V> = preferenceValueType // TODO: Use the passed `type`
             override val key: String = preferenceKey
         }
     }
 }
-
-/**
- * A factory function to create an instance of [ApiFirstPreference].
- * This is a convenient way to instantiate a preference without creating a new concrete class.
- *
- * ```
- * createPreference {
- *     key = "PREFERENCE_KEY"
- *
- *     getter {
- *         execute { context ->
- *             // Get the value
- *             Foo(context)
- *         }
- *     }
- *
- *     setter {
- *         execute { context, value ->
- *             // Set the value
- *             Bar(context, value)
- *         }
- *     }
- * }
- * ```
- */
-inline fun <reified V : Any> createPreference(
-    lambda: ApiFirstPreferenceConfigBuilder<V>.() -> Unit
-): ApiFirstPreference<V> {
-    val builder = ApiFirstPreferenceConfigBuilder(V::class.java)
-    builder.lambda()
-    return builder.build()
-}
-
-

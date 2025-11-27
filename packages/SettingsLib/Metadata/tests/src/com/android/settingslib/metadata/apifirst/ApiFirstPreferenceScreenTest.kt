@@ -19,6 +19,9 @@ package com.android.settingslib.metadata.apifirst
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.apifirst.category.Category
+import com.android.settingslib.metadata.apifirst.types.AnyBoolean
+import com.android.settingslib.metadata.apifirst.types.AnyInt
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
@@ -36,13 +39,19 @@ class ApiFirstPreferenceScreenTest {
         assertThrows(IllegalStateException::class.java) {
             val preferenceKey1 = "ApiFirstPreference"
 
-            setupApiFirstPreferenceScreen(
-                listOf(
-                    createPreference<Boolean> {
+            object : ApiFirstPreferenceScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = 0
+            ) {
+                init {
+                    preference<Boolean> {
                         key = preferenceKey1
-                    },
-                )
-            )
+                        type = AnyBoolean
+                    }
+                }
+            }
         }
     }
 
@@ -51,37 +60,43 @@ class ApiFirstPreferenceScreenTest {
         val preferenceKey1 = "ApiFirstPreference1"
         val preferenceKey2 = "ApiFirstPreference2"
 
+        val preferenceScreen = object : ApiFirstPreferenceScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = 0
+        ) {
+            init {
+                preference {
+                    key = preferenceKey1
+                    type = AnyBoolean
 
-        val preferencesList = getPreferencesList(
-            setupApiFirstPreferenceScreen(
-                listOf(
-                    createPreference {
-                        key = preferenceKey1
-
-                        getter {
-                            execute {
-                            }
-                        }
-                    },
-
-                    createPreference {
-                        key = preferenceKey2
-
-                        getter {
-                            execute {
-                            }
+                    get {
+                        execute {
                         }
                     }
-                )))
+                }
+
+                preference {
+                    key = preferenceKey2
+                    type = AnyInt
+
+                    get {
+                        execute {
+                        }
+                    }
+                }
+            }
+        }
 
         // Check we only have 2 preferences in the list
-        assertThat(preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
 
         // Check preference order is correct
-        val firstPreference = preferencesList[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
 
-        val secondPreference = preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
     }
 
@@ -92,40 +107,48 @@ class ApiFirstPreferenceScreenTest {
         val preferenceValue2 = 0
         val preferenceKey2 = "ApiFirstPreference2"
 
-        val preferencesList = getPreferencesList(
-            setupApiFirstPreferenceScreen(
-                listOf(
-                    createPreference {
-                        key = preferenceKey1
+        val preferenceScreen = object : ApiFirstPreferenceScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = 0
+        ) {
+            init {
+                preference {
+                    key = preferenceKey1
+                    type = AnyBoolean
 
-                        getter {
-                            execute {
-                                preferenceValue1
-                            }
-                        }
-                    },
-
-                    createPreference {
-                        key = preferenceKey2
-
-                        getter {
-                            execute {
-                                preferenceValue2
-                            }
+                    get {
+                        execute {
+                            preferenceValue1
                         }
                     }
-                )))
+                }
+
+                preference {
+                    key = preferenceKey2
+                    type = AnyInt
+
+                    get {
+                        execute {
+                            preferenceValue2
+                        }
+                    }
+                }
+            }
+        }
+
 
         // Check we only have 2 preferences in the list
-        assertThat(preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
 
         // Check that getters return the correct value
-        val firstPreference = preferencesList[0] as ApiFirstPreference<Boolean>
-        assertThat(firstPreference.getter.execute(context)).isEqualTo(preferenceValue1)
+        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
+        assertThat(firstPreference.get.execute(context)).isEqualTo(preferenceValue1)
 
-        val secondPreference = preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo("ApiFirstPreference2")
-        assertThat(secondPreference.getter.execute(context)).isEqualTo(preferenceValue2)
+        assertThat(secondPreference.get.execute(context)).isEqualTo(preferenceValue2)
     }
 
     @Test
@@ -136,77 +159,62 @@ class ApiFirstPreferenceScreenTest {
         val preferenceKey2 = "ApiFirstPreference2"
         val newPreferenceValue2 = 22
 
-        val preferencesList = getPreferencesList(
-            setupApiFirstPreferenceScreen(
-                listOf(
-                    createPreference {
-                        key = preferenceKey1
+        val preferenceScreen = object : ApiFirstPreferenceScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = 0
+        ) {
+            init {
+                preference {
+                    key = preferenceKey1
+                    type = AnyBoolean
 
-                        getter {
-                            execute {
-                                preferenceValue1
-                            }
-                        }
-                    },
-
-                    createPreference {
-                        key = preferenceKey2
-
-                        getter {
-                            execute {
-                                preferenceValue2
-                            }
-                        }
-
-                        setter {
-                            execute { context, value ->
-                                preferenceValue2 = value
-                            }
+                    get {
+                        execute {
+                            preferenceValue1
                         }
                     }
-                )))
+                }
+
+                preference {
+                    key = preferenceKey2
+                    type = AnyInt
+
+                    get {
+                        execute {
+                            preferenceValue2
+                        }
+                    }
+
+                    set {
+                        execute { context, value ->
+                            preferenceValue2 = value
+                        }
+                    }
+                }
+            }
+        }
 
         // Check we only have 2 preferences in the list
-        assertThat(preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
 
         // First preference doesn't have a setter, so the getter should return the same value
-        val firstPreference = preferencesList[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
-        assertThat(firstPreference.setter?.execute(context, true)).isEqualTo(null)
-        assertThat(firstPreference.getter.execute(context)).isEqualTo(preferenceValue1)
+        assertThat(firstPreference.set?.execute(context, true)).isEqualTo(null)
+        assertThat(firstPreference.get.execute(context)).isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
-        val secondPreference = preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
         assertThat(
-            secondPreference.setter?.execute(
+            secondPreference.set?.execute(
                 context,
                 newPreferenceValue2
             )
         ).isNotEqualTo(null)
-        assertThat(secondPreference.getter.execute(context)).isEqualTo(newPreferenceValue2)
-    }
-
-    private fun setupApiFirstPreferenceScreen(preferencesList: List<ApiFirstPreference<*>>) =
-        object : ApiFirstPreferenceScreen() {
-            override fun fragmentClass() = PreferenceFragment::class.java
-            override val key: String = SCREEN_KEY
-            override val purpose: Int = 0
-            override fun preferences(context: Context) = preferencesList
-        }
-
-    private fun getPreferencesList(apiFirstPreferenceScreen: ApiFirstPreferenceScreen): List<ApiFirstPreference<*>> {
-        val preferencesList = mutableListOf<ApiFirstPreference<*>>()
-        apiFirstPreferenceScreen.getPreferenceHierarchy(
-            context,
-            CoroutineScope(Dispatchers.Unconfined)
-        ).forEachRecursively { child ->
-            if (child.metadata is ApiFirstPreference<*>) {
-                preferencesList.add(child.metadata)
-            }
-        }
-
-        return preferencesList
+        assertThat(secondPreference.get.execute(context)).isEqualTo(newPreferenceValue2)
     }
 
     companion object {
