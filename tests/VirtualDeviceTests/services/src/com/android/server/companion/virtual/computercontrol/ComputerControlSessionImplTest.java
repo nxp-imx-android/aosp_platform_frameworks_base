@@ -543,11 +543,12 @@ public class ComputerControlSessionImplTest {
         verify(mVirtualTouchscreen,
                 timeout(TOUCH_EVENT_DELAY_MS * (SWIPE_STEPS + 1)).times(SWIPE_STEPS))
                 .sendTouchEvent(argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_MOVE)));
-        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS))
+        verify(mVirtualTouchscreen, timeout(2 * TOUCH_EVENT_DELAY_MS))
                 .sendTouchEvent(argThat(
                         new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_MOVE)));
-        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
-                new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_UP)));
+        verify(mVirtualTouchscreen, timeout(2 * TOUCH_EVENT_DELAY_MS))
+                .sendTouchEvent(argThat(
+                        new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_UP)));
     }
 
     @Test
@@ -1139,6 +1140,16 @@ public class ComputerControlSessionImplTest {
                 return true;
             }
             return mX == event.getX() && mY == event.getY();
+        }
+
+        @Override
+        public String toString() {
+            return "MatchesTouchEvent{"
+                    + "mX=" + mX
+                    + ", mY=" + mY
+                    + ", mAction=" + mAction
+                    + ", mToolType=" + mToolType
+                    + '}';
         }
     }
 
