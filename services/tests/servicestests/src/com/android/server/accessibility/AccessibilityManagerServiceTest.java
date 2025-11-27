@@ -2442,6 +2442,10 @@ public class AccessibilityManagerServiceTest {
 
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
+
+        // Verify no dialog is launched
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
     }
 
     @Test
@@ -2575,6 +2579,86 @@ public class AccessibilityManagerServiceTest {
                         .getValue()
                         .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
+    public void handleKeyGestureEvent_activateSelectToSpeak_emptyDefault_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultSelectToSpeakService, "");
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_S);
+
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
+    public void handleKeyGestureEvent_toggleVoiceAccess_noDefault_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+
+        // No resource for config_defaultVoiceAccessService
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_V);
+
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
+    public void handleKeyGestureEvent_toggleVoiceAccess_emptyDefault_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultVoiceAccessService, "");
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_V);
+
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES)
+    public void handleKeyGestureEvent_toggleScreenReader_noDefault_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+
+        // No resource for config_defaultAccessibilityService
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_T);
+
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES)
+    public void handleKeyGestureEvent_toggleScreenReader_emptyDefault_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultAccessibilityService, "");
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_T);
+
+        verify(mTestableContext.getMockContext(), never())
+                .sendBroadcastAsUser(any(Intent.class), any(UserHandle.class));
     }
 
     @Test
