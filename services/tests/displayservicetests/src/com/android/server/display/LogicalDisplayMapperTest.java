@@ -64,7 +64,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -107,7 +106,6 @@ import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.DisplayIdProducer;
 import com.android.server.display.layout.Layout;
-import com.android.server.display.mode.SyntheticModeManager;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.utils.FoldSettingProvider;
 import com.android.server.wm.DesktopModeHelper;
@@ -116,7 +114,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -197,8 +194,6 @@ public class LogicalDisplayMapperTest {
     @Mock DisplayAdapter mDisplayAdapterMock;
     @Mock WindowManagerPolicy mWindowManagerPolicy;
     @Mock
-    SyntheticModeManager mSyntheticModeManagerMock;
-    @Mock
     Predicate<DisplayInfo> mIsDisplayAllowedInTopologyMock;
     @Mock
     CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> mDisplayInfoCacheMock;
@@ -253,8 +248,6 @@ public class LogicalDisplayMapperTest {
         when(mResourcesMock.getIntArray(
                 com.android.internal.R.array.config_deviceStatesOnWhichToSleep))
                 .thenReturn(new int[]{0});
-        when(mSyntheticModeManagerMock.createAppSupportedModes(any(), any(), anyBoolean()))
-                .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
         mLooper = new TestLooper();
         mHandler = new Handler(mLooper.getLooper());
@@ -1892,7 +1885,7 @@ public class LogicalDisplayMapperTest {
         mLogicalDisplayMapper = new LogicalDisplayMapper(mContextMock, mFoldSettingProviderMock,
                 mDisplayDeviceRepo,
                 mListenerMock, new DisplayManagerService.SyncRoot(), mHandler,
-                mDeviceStateToLayoutMapSpy, mFlagsMock, mSyntheticModeManagerMock,
+                mDeviceStateToLayoutMapSpy, mFlagsMock,
                 mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock, mDisplayInfoCacheMock);
         mLogicalDisplayMapper.onWindowManagerReady();
     }

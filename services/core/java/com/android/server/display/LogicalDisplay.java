@@ -45,7 +45,6 @@ import android.view.SurfaceControl;
 import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
-import com.android.server.display.mode.SyntheticModeManager;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.wm.utils.InsetUtils;
 
@@ -230,7 +229,6 @@ final class LogicalDisplay {
 
     private final boolean mSyncedResolutionSwitchEnabled;
 
-    private final boolean mSyntheticModesV2Enabled;
     private final boolean mSizeOverrideEnabled;
 
     private boolean mCanHostTasks;
@@ -238,13 +236,11 @@ final class LogicalDisplay {
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
             CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
-        this(displayId, layerStack, primaryDisplayDevice, false,
-                true, false, displayInfoCache);
+        this(displayId, layerStack, primaryDisplayDevice, false, false, displayInfoCache);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isSyncedResolutionSwitchEnabled, boolean syntheticModesV2Enabled,
-            boolean sizeOverrideEnabled,
+            boolean isSyncedResolutionSwitchEnabled, boolean sizeOverrideEnabled,
             CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
@@ -257,7 +253,6 @@ final class LogicalDisplay {
         mPowerThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
-        mSyntheticModesV2Enabled = syntheticModesV2Enabled;
         mSizeOverrideEnabled = sizeOverrideEnabled;
         mDisplayInfoCache = displayInfoCache;
 
@@ -454,8 +449,7 @@ final class LogicalDisplay {
      *
      * @param deviceRepo Repository of active {@link DisplayDevice}s.
      */
-    public void updateLocked(DisplayDeviceRepository deviceRepo,
-            SyntheticModeManager syntheticModeManager) {
+    public void updateLocked(DisplayDeviceRepository deviceRepo) {
         // Nothing to update if already invalid.
         if (mPrimaryDisplayDevice == null) {
             return;
@@ -572,10 +566,6 @@ final class LogicalDisplay {
             mBaseDisplayInfo.userPreferredModeId = deviceInfo.userPreferredModeId;
             mBaseDisplayInfo.supportedModes = Arrays.copyOf(
                     deviceInfo.supportedModes, deviceInfo.supportedModes.length);
-            mBaseDisplayInfo.appsSupportedModes = mSyntheticModesV2Enabled
-                    ? Arrays.copyOf(deviceInfo.supportedModes, deviceInfo.supportedModes.length)
-                    : syntheticModeManager.createAppSupportedModes(config,
-                            mBaseDisplayInfo.supportedModes, mBaseDisplayInfo.hasArrSupport);
             mBaseDisplayInfo.colorMode = deviceInfo.colorMode;
             mBaseDisplayInfo.supportedColorModes = Arrays.copyOf(
                     deviceInfo.supportedColorModes,

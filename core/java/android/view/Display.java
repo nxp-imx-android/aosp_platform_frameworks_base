@@ -1329,7 +1329,7 @@ public final class Display {
     public Mode[] getSupportedModes() {
         synchronized (mLock) {
             updateDisplayInfoLocked();
-            final Display.Mode[] modes = mDisplayInfo.appsSupportedModes;
+            final Display.Mode[] modes = mDisplayInfo.supportedModes;
             return Arrays.copyOf(modes, modes.length);
         }
     }

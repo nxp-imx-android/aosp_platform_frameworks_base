@@ -60,7 +60,7 @@ class DisplayModeFactoryTest {
             supportedHdrTypes = displayMode.supportedHdrTypes)
 
         val result = DisplayModeFactory.createMode(displayMode, alternativeRefreshRates,
-            testCase.hasArrSupport, testCase.syntheticModesV2Enabled, testCase.sizeOverrideEnabled)
+            testCase.hasArrSupport, testCase.sizeOverrideEnabled)
 
         assertModesEqual(result, expectedMode)
     }
@@ -68,15 +68,13 @@ class DisplayModeFactoryTest {
     enum class SFModeTestCase(
         val inputRefreshRate: Float,
         val hasArrSupport: Boolean,
-        val syntheticModesV2Enabled: Boolean,
         val sizeOverrideEnabled: Boolean,
         val expectedFlags: Int
     ) {
-        ARR_60HZ_MODE(60f, true, true, false, Display.Mode.FLAG_ARR_RENDER_RATE),
-        ARR_HIGH_REFRESH_RATE_MODE(120f, true, true, false, NO_FLAGS),
-        ARR_60HZ_MODE_SYNTHETICV2_DISABLED(60f, true, false, false, NO_FLAGS),
-        NON_ARR_60HZ_MODE(60f, false, true, false, NO_FLAGS),
-        SIZE_OVERRIDE_ENABLED_MODE(60f, false, false, true, Display.Mode.FLAG_SIZE_OVERRIDE),
+        ARR_60HZ_MODE(60f, true, false, Display.Mode.FLAG_ARR_RENDER_RATE),
+        ARR_HIGH_REFRESH_RATE_MODE(120f, true, false, NO_FLAGS),
+        NON_ARR_60HZ_MODE(60f, false, false, NO_FLAGS),
+        SIZE_OVERRIDE_ENABLED_MODE(60f, false, true, Display.Mode.FLAG_SIZE_OVERRIDE),
     }
 
     @Test
@@ -86,7 +84,7 @@ class DisplayModeFactoryTest {
         val expectedMode = createDisplayMode(parentId = modeForArr.modeId,
             peakRefreshRate = 60f, vsyncRate = 60f, flags = Display.Mode.FLAG_ARR_RENDER_RATE)
 
-        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), true, true)
+        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), true)
 
         assertThat(result).hasSize(1)
         assertModesEqual(result.get(0).mMode, expectedMode)
@@ -102,7 +100,7 @@ class DisplayModeFactoryTest {
             peakRefreshRate = 60f, vsyncRate = 60f, flags = Display.Mode.FLAG_ARR_RENDER_RATE)
 
         val result = DisplayModeFactory.createArrSyntheticModes(
-            listOf(recordForArr1, recordForArr2), true, true)
+            listOf(recordForArr1, recordForArr2), true)
 
         assertThat(result).hasSize(1)
         assertModesEqual(result.get(0).mMode, expectedMode)
@@ -114,7 +112,7 @@ class DisplayModeFactoryTest {
             createDisplayMode(peakRefreshRate = 120f, flags = Display.Mode.FLAG_ARR_RENDER_RATE),
         )
 
-        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), true, true)
+        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), true)
         assertWithMessage("Result should be empty for FLAG_ARR_RENDER_RATE mode")
             .that(result).isEmpty()
     }
@@ -125,19 +123,8 @@ class DisplayModeFactoryTest {
             createDisplayMode(peakRefreshRate = 120f),
         )
 
-        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), false, true)
+        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), false)
         assertWithMessage("Result should be empty for ARR not supported")
-            .that(result).isEmpty()
-    }
-
-    @Test
-    fun testCreateArrSyntheticModes_noSyntheticV2Support() {
-        val recordForArr = LocalDisplayAdapter.DisplayModeRecord(
-            createDisplayMode(peakRefreshRate = 120f),
-        )
-
-        val result = DisplayModeFactory.createArrSyntheticModes(listOf(recordForArr), true, false)
-        assertWithMessage("Result should be empty for SyntheticV2 not supported")
             .that(result).isEmpty()
     }
 
