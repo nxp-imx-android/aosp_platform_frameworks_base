@@ -9360,8 +9360,12 @@ public abstract class PackageManager {
      * {@link PackageManager#VERIFICATION_ALLOW} or
      * {@link PackageManager#VERIFICATION_REJECT}.
      *
-     * This method may only be called once per package id. Additional calls
-     * will have no effect.
+     * This method can be called multiple times, but the total amount of time extension time will
+     * be limited to {@link PackageManager#MAXIMUM_VERIFICATION_TIMEOUT}. If the method is called
+     * multiple times with different {@code verificationCodeAtTimeout}, then previous
+     * {@code verificationCodeAtTimeout} will be ignored and only the latest one will take effect.
+     * If this method is called after calling {@link PackageManager#verifyPendingInstall}, it may
+     * nullify the result set by verifyPendingInstall.
      *
      * @param id pending package identifier as passed via the
      *            {@link PackageManager#EXTRA_VERIFICATION_ID} Intent extra.

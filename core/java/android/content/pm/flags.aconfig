@@ -384,3 +384,10 @@ flag {
     description: "When enabled, signature verification will be skipped when recollecting signatures from a disabled system package during boot."
     bug: "477359598"
 }
+
+flag {
+    name: "extend_verification_timeout_multiple_times"
+    namespace: "package_manager_service"
+    description: "PackageManagerService.extendVerificationTimeout() API allowed to be called by same id multiple times"
+    bug: "402455304"
+}
