@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.ui.viewmodel
 
 import android.view.View
 import androidx.compose.runtime.getValue
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -32,7 +31,6 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -59,9 +57,8 @@ constructor(
     @Application scope: CoroutineScope,
     desktopInteractor: DesktopInteractor,
     sceneInteractor: SceneInteractor,
-    private val keyguardInteractor: KeyguardInteractor,
+    keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
-    private val userLogoutInteractor: UserLogoutInteractor,
     shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
     /** True if this view should be visible and false otherwise. */
@@ -117,18 +114,6 @@ constructor(
     /** True if we can show the user switcher on keyguard and false otherwise. */
     val isKeyguardUserSwitcherEnabled: Flow<Boolean> =
         keyguardStatusBarInteractor.isKeyguardUserSwitcherEnabled
-
-    val isSignOutButtonEnabled: Boolean
-        get() =
-            Flags.signOutButtonOnKeyguardStatusBar() &&
-                keyguardInteractor.isSignOutButtonOnStatusBarEnabled
-
-    val isSignOutButtonVisible: Boolean by
-        userLogoutInteractor.isLogoutToSystemUserEnabled.hydratedStateOf()
-
-    fun onSignOut() {
-        enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
-    }
 
     @AssistedFactory
     interface Factory {

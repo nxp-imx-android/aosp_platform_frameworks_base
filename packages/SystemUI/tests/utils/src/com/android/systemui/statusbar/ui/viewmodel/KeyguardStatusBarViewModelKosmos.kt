@@ -23,7 +23,6 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInteractor
-import com.android.systemui.user.domain.interactor.userLogoutInteractor
 
 val Kosmos.keyguardStatusBarViewModelFactory by
     Kosmos.Fixture {
@@ -35,7 +34,6 @@ val Kosmos.keyguardStatusBarViewModelFactory by
                     sceneInteractor,
                     keyguardInteractor,
                     keyguardStatusBarInteractor,
-                    userLogoutInteractor,
                     shadeStatusBarComponentsInteractor,
                 )
         }
