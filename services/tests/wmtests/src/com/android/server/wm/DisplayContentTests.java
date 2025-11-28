@@ -34,6 +34,7 @@ import static android.view.Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
 import static android.view.Display.FLAG_TRUSTED;
+import static android.view.DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS;
 import static android.view.DisplayCutout.BOUNDS_POSITION_TOP;
 import static android.view.DisplayCutout.fromBoundingRect;
 import static android.view.Surface.ROTATION_0;
@@ -128,6 +129,7 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.HardwareBuffer;
+import android.hardware.display.DisplayManagerGlobal;
 import android.metrics.LogMaker;
 import android.os.Binder;
 import android.os.RemoteException;
@@ -2391,6 +2393,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testIsPublicSecondaryDisplayWithDesktopModeForceEnabled() {
         mWm.mForceDesktopModeOnExternalDisplays = true;
         // Not applicable for default display
@@ -2410,6 +2413,54 @@ public class DisplayContentTests extends WindowTestsBase {
         // Make sure forceDesktopMode() is false when the force config is disabled.
         mWm.mForceDesktopModeOnExternalDisplays = false;
         assertFalse(publicDc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testIsNotPublicSecondaryDisplayWithDesktopModeForceEnabledAndContentModeMngmnt() {
+        mWm.mForceDesktopModeOnExternalDisplays = true;
+        // Not applicable for default display
+        assertFalse(mDefaultDisplay.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+
+        // Not applicable for private secondary display.
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        displayInfo.flags = FLAG_PRIVATE;
+        final DisplayContent privateDc = createNewDisplay(displayInfo);
+        assertFalse(privateDc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+
+        // Still not applicable for public secondary display, as content mode management is enabled.
+        final DisplayContent publicDc = createNewDisplay();
+        assertFalse(publicDc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+
+        // Make sure forceDesktopMode() is false when the force config is disabled.
+        mWm.mForceDesktopModeOnExternalDisplays = false;
+        assertFalse(publicDc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testDisplayCanHostTaskCanHaveSystemDecor() {
+        DisplayWindowSettings.SettingsProvider.SettingsEntry entry =
+                new DisplayWindowSettings.SettingsProvider.SettingsEntry();
+        entry.mShouldShowSystemDecors = true;
+
+        DisplayContent dc = constructDisplayContentWithSavedSettings(/*canHostTasks=*/ true, entry);
+
+        assertTrue(mAtm.mWindowManager.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testDisplayCannotHostTaskCannotHaveSystemDecor() {
+        DisplayWindowSettings.SettingsProvider.SettingsEntry entry =
+                new DisplayWindowSettings.SettingsProvider.SettingsEntry();
+        entry.mShouldShowSystemDecors = true;
+
+        DisplayContent dc = constructDisplayContentWithSavedSettings(/*canHostTasks=*/ false,
+                entry);
+
+        assertFalse(mAtm.mWindowManager.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
     @Test
@@ -3473,6 +3524,29 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         doNothing().when(dc).updateDisplayInfo(any(DisplayInfo.class));
         return dc;
+    }
+
+    /** Create a display content with saved settings. Only call the constructor. */
+    @NonNull
+    private DisplayContent constructDisplayContentWithSavedSettings(
+            boolean canHostTasks,
+            DisplayWindowSettings.SettingsProvider.SettingsEntry savedSettingsEntry
+    ) {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        final int displayId = SystemServicesTestRule.sNextDisplayId++;
+        displayInfo.displayId = displayId;
+        displayInfo.uniqueId = "TEST_DISPLAY_ID-" + System.currentTimeMillis();
+        final Display display = new Display(DisplayManagerGlobal.getInstance(), displayId,
+                displayInfo, DEFAULT_DISPLAY_ADJUSTMENTS);
+        mAtm.mWindowManager.mDisplayWindowSettingsProvider
+                .updateOverrideSettings(displayInfo, savedSettingsEntry);
+        spyOn(display);
+        doReturn(canHostTasks).when(display).canHostTasks();
+        doReturn(true).when(display).isValid();
+
+        return new TestDisplayContent.Builder(mAtm, displayInfo, /*generateUniqueId=*/ false)
+                .createInternal(display);
     }
 
     private void assertForAllWindowsOrder(@NonNull List<WindowState> expectedWindowsBottomToTop) {
