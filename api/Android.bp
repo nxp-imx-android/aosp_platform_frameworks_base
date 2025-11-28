@@ -147,6 +147,11 @@ combined_apis {
             "framework-uprobestats",
         ],
         default: [],
+    }) + select(release_flag("RELEASE_WEBAPP_MODULE"), {
+        true: [
+            "framework-webapp",
+        ],
+        default: [],
     }),
     system_server_classpath: [
         "service-art",

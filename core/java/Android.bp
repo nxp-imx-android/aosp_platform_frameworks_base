@@ -25,6 +25,7 @@ filegroup {
         ":anomaly_detector_mock_initializer",
         ":npumanager_mock_initializer",
         ":uprobestats_mock_initializer",
+        ":webapp_mock_initializer",
         ":systemfeatures-gen-srcs",
         ":framework-network-security-config-sources",
     ],
@@ -40,6 +41,7 @@ filegroup {
         "android/os/profiling/anomaly/mock/*.java",
         "android/ranging/**/*.java",
         "android/npumanager/mock/**/*.java",
+        "android/content/pm/webapp/mock/**/*.java",
     ],
     visibility: ["//frameworks/base"],
 }
@@ -205,6 +207,42 @@ uprobestats_mock_init {
                 srcs: ["android/service/uprobestats/UprobestatsFrameworkInitializer.java.mock"],
                 cmd: "mkdir -p android/service/uprobestats/; cp $(in) $(out);",
                 out: ["android/service/uprobestats/UprobestatsFrameworkInitializer.java"],
+            },
+        },
+    },
+}
+
+// Mock to allow service registry for WebApp.
+// TODO(b/400883716): Remove this once RELEASE_WEBAPP_MODULE is ramped up to next.
+soong_config_module_type {
+    name: "webapp_framework_mock_init",
+    module_type: "genrule",
+    config_namespace: "bootclasspath",
+    bool_variables: [
+        "release_webapp_module",
+    ],
+    properties: [
+        "cmd",
+        "out",
+        "srcs",
+    ],
+}
+
+// The actual WebAppFrameworkInitializer is present in packages/modules/WebApp/framework.
+// Mock WebAppFrameworkInitializer does nothing and allows to successfully build
+// SystemServiceRegistry after registering for system service in SystemServiceRegistry both with
+// and without build flag RELEASE_WEBAPP_MODULE enabled.
+webapp_framework_mock_init {
+    name: "webapp_mock_initializer",
+    soong_config_variables: {
+        release_webapp_module: {
+            cmd: "touch $(out)",
+            // Adding an empty file as out is mandatory.
+            out: ["android/content/pm/webapp/empty_webapp_fw.txt"],
+            conditions_default: {
+                srcs: ["android/content/pm/webapp/mock/WebAppFrameworkInitializer.java"],
+                cmd: "mkdir -p android/content/pm/webapp/; cp $(in) $(out);",
+                out: ["android/content/pm/webapp/WebAppFrameworkInitializer.java"],
             },
         },
     },
