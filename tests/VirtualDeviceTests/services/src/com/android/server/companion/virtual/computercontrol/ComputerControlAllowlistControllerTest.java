@@ -398,6 +398,7 @@ public class ComputerControlAllowlistControllerTest {
                 packageName, "com.some.owner", mPackageManager));
     }
 
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
     public void isPackageAutomatable_allowlistedApps_returnsTrue() throws Exception {
         final String packageName1 = "com.hello.appp1";
@@ -419,6 +420,23 @@ public class ComputerControlAllowlistControllerTest {
                 packageName1, "com.some.owner1", mPackageManager));
         assertTrue(mAllowlistController.isPackageAutomatable(
                 packageName2, "com.some.owner2", mPackageManager));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_allowlistedApp_preinstalled_returnsTrue() throws Exception {
+        final String packageName = "com.hello.appp1";
+        final Signature signature = generateSignature((byte) 1);
+        final String unused = preparePackage(packageName, signature, /* preinstalled= */ true,
+                /* testOnly= */ false);
+        final List<ComputerControlAllowlistController.SignedPackage> apps = List.of(
+                new ComputerControlAllowlistController.SignedPackage(packageName, "PREINSTALLED"));
+
+        mDeviceConfigWriter.allowlistAutomatableApps(apps);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertTrue(mAllowlistController.isPackageAutomatable(
+                packageName, "com.some.owner1", mPackageManager));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
