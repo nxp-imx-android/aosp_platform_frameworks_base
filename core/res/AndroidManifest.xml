@@ -1694,7 +1694,8 @@
          @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
     -->
     <permission android:name="android.permission.SEND_DYNAMIC_INSTRUMENTATION_EVENTS"
-        android:protectionLevel="signature" />
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.dynamic_instrumentation_api" />
 
     <!-- Allows a calling app to continue a call which was started in another app.  An example is a
          video calling app that wants to continue a voice call on the user's mobile network.<p>
