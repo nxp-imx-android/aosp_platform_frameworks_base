@@ -2903,15 +2903,6 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(WEAR_MODE_SERVICE_CLASS);
             t.traceEnd();
 
-            boolean enableWristOrientationService =
-                    !android.server.Flags.migrateWristOrientation()
-                    && SystemProperties.getBoolean("config.enable_wristorientation", false);
-            if (enableWristOrientationService) {
-                t.traceBegin("StartWristOrientationService");
-                mSystemServiceManager.startService(WRIST_ORIENTATION_SERVICE_CLASS);
-                t.traceEnd();
-            }
-
             if (android.server.Flags.wearGestureApi()
                     && SystemProperties.getBoolean("config.enable_gesture_api", false)) {
                 t.traceBegin("StartWearGestureService");
