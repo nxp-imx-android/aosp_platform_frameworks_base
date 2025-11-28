@@ -97,7 +97,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.checkRestartMenuVisibility(false);
             robot.activity().clearInvocationsForActivity();
 
-            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().moveTaskBetweenDisplays();
             robot.activity().checkTopActivityRelaunched(false);
             robot.checkRestartMenuVisibility(true);
 
@@ -116,7 +116,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.checkRestartMenuVisibility(false);
             robot.activity().clearInvocationsForActivity();
 
-            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().moveTaskBetweenDisplays();
             robot.activity().checkTopActivityRelaunched(true);
             robot.checkRestartMenuVisibility(false);
         });
@@ -134,7 +134,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.checkRestartMenuVisibility(false);
             robot.activity().clearInvocationsForActivity();
 
-            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().moveTaskBetweenDisplays();
             robot.activity().checkTopActivityRelaunched(false);
             robot.checkRestartMenuVisibility(true);
 
@@ -152,7 +152,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.activity().setTopActivityResumed();
             robot.activity().clearInvocationsForActivity();
 
-            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().moveTaskBetweenDisplays();
 
             robot.activity().checkTopActivityProcessRestarted(true);
         });
@@ -167,7 +167,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.activity().setTopActivityResumed();
             robot.activity().clearInvocationsForActivity();
 
-            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().moveTaskBetweenDisplays();
 
             robot.activity().checkTopActivityProcessRestarted(false);
         });
@@ -178,6 +178,17 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryOnDisplayMove_finishActivity() {
         testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
                 true /* moveDisplays */,
+                false /* removeDisplay */,
+                true /* relaunchActivity */,
+                SelfKillType.FINISH_ACTIVITY);
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_disconnectDisplay() {
+        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                true /* removeDisplay */,
                 true /* relaunchActivity */,
                 SelfKillType.FINISH_ACTIVITY);
     }
@@ -187,6 +198,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryOnDisplayMove_finishAndRemoveTask() {
         testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
                 true /* moveDisplays */,
+                false /* removeDisplay */,
                 true /* relaunchActivity */,
                 SelfKillType.FINISH_AND_REMOVE_TASK);
     }
@@ -196,6 +208,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryOnDisplayMove_killProcess() {
         testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
                 true /* moveDisplays */,
+                false /* removeDisplay */,
                 true /* relaunchActivity */,
                 SelfKillType.KILL_PROCESS /* selfKillType */);
     }
@@ -205,6 +218,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryOnDisplayMove_flagDisabled() {
         testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
                 true /* moveDisplays */,
+                false /* removeDisplay */,
                 true /* relaunchActivity */,
                 SelfKillType.FINISH_ACTIVITY);
     }
@@ -214,6 +228,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryNotOnDisplayMove() {
         testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
                 false /* moveDisplays */,
+                false /* removeDisplay */,
                 true /* relaunchActivity */,
                 SelfKillType.FINISH_ACTIVITY);
     }
@@ -223,22 +238,29 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     public void testSelfKillRecoveryOnDisplayMove_noActivityRelaunch() {
         testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
                 true /* moveDisplays */,
+                false /* removeDisplay */,
                 false /* relaunchActivity */,
                 SelfKillType.FINISH_ACTIVITY);
     }
 
+    // TODO(b/463781180): Consider using the builder pattern.
     private void testSelfKillOnDisplayMoveInner(boolean shouldRecoverFromSelfKill,
-            boolean moveDisplays, boolean relaunchActivity, SelfKillType selfKillType) {
+            boolean moveDisplays, boolean removeDisplay, boolean relaunchActivity,
+            SelfKillType selfKillType) {
         runTestScenario((robot) -> {
-            robot.activity().createSecondaryDisplay();
-            robot.activity().createActivityWithComponent();
+            robot.activity().createActivityWithComponentInSecondaryDisplay();
             robot.activity().setTopActivityResumed();
             robot.activity().setTopActivityConfigChanges(
                     relaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
             robot.activity().clearInvocationsForActivity();
 
             if (moveDisplays) {
-                robot.activity().moveTaskToSecondaryDisplay();
+                if (removeDisplay) {
+                    robot.completeTransition();
+                    robot.activity().top().mRootWindowContainer
+                            .onDisplayRemoved(robot.activity().top().getDisplayId());
+                }
+                robot.activity().moveTaskBetweenDisplays();
             } else {
                 robot.activity().setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
             }

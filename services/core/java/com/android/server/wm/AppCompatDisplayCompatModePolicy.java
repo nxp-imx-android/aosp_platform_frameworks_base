@@ -125,7 +125,7 @@ class AppCompatDisplayCompatModePolicy {
             return;
         }
 
-        mSelfKillStateMachine.onMovedToDisplay(newDisplay.getDisplayId());
+        mSelfKillStateMachine.onMovedToDisplay(previousDisplay, newDisplay);
 
         mDisplayChangedWithoutRestart = true;
 
@@ -325,45 +325,59 @@ class AppCompatDisplayCompatModePolicy {
             mSelfKillState = state;
         }
 
-        void onMovedToDisplay(int newDisplayId) {
-            if (mActivityRecord.mTransitionController.isCollecting(mActivityRecord.getTask())) {
-                final Transition displayMoveTransition =
-                        mActivityRecord.mTransitionController.getCollectingTransition();
-                if (displayMoveTransition != null) {
-                    final Runnable timeoutCallback = () -> {
-                        synchronized (mActivityRecord.mWmService.mGlobalLock) {
-                            ProtoLog.e(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
-                                    "Timeout waiting for display-move transition (%d) to finish.",
-                                    displayMoveTransition.getSyncId());
-                            mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
-                            if (mDisplayMoveTransitions.size() == 0) {
-                                mSelfKillState = SelfKillState.UNDEFINED;
-                            }
-                        }
-                    };
-                    if (isInState(SelfKillState.UNDEFINED)) {
-                        moveToState(SelfKillState.DISPLAY_MOVING);
-                    }
-                    mDisplayMoveTransitions.put(displayMoveTransition.getSyncId(), timeoutCallback);
-                    mActivityRecord.mWmService.mH.postDelayed(timeoutCallback,
-                            DISPLAY_MOVE_TRANSITION_TIMEOUT_MS);
-
-                    displayMoveTransition.addTransitionEndedListener(() -> {
-                        final Runnable callback =
-                                mDisplayMoveTransitions.get(displayMoveTransition.getSyncId());
-                        mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
-                        if (callback != null) {
-                            mActivityRecord.mWmService.mH.removeCallbacks(callback);
-                        }
-
-                        startActivityForSelfKillRecoveryIfNeeded(newDisplayId);
-
-                        if (mDisplayMoveTransitions.size() == 0) {
-                            moveToState(SelfKillState.UNDEFINED);
-                        }
-                    });
-                }
+        void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
+                @NonNull DisplayContent newDisplay) {
+            final Transition displayMoveTransition =
+                    mActivityRecord.mTransitionController.getCollectingTransition();
+            if (displayMoveTransition == null) {
+                return;
             }
+            if (displayMoveTransition.getExistenceChanged(previousDisplay)
+                    || displayMoveTransition.getExistenceChanged(newDisplay)) {
+                // There are a few problems with enabling self-kill recovery for display
+                // disconnection/reconnection.
+                // 1.Multiple tasks can be reparented to another display, and as the self-kill
+                //  recovery is async, it can mess up z-order.
+                // 2. At the end of some automated E2E tests, they clean up external displays and
+                // tasks. Removing a display causes the tasks on the display to be reparented to
+                // another display, so the self-kill recovery can be triggered and some tasks may be
+                // left on another display unexpectedly.
+                // For these reasons, self-kill recovery is disabled for display disconnection and
+                // reconnection for now.
+                return;
+            }
+            final Runnable timeoutCallback = () -> {
+                synchronized (mActivityRecord.mWmService.mGlobalLock) {
+                    ProtoLog.e(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
+                            "Timeout waiting for display-move transition (%d) to finish.",
+                            displayMoveTransition.getSyncId());
+                    mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
+                    if (mDisplayMoveTransitions.size() == 0) {
+                        mSelfKillState = SelfKillState.UNDEFINED;
+                    }
+                }
+            };
+            if (isInState(SelfKillState.UNDEFINED)) {
+                moveToState(SelfKillState.DISPLAY_MOVING);
+            }
+            mDisplayMoveTransitions.put(displayMoveTransition.getSyncId(), timeoutCallback);
+            mActivityRecord.mWmService.mH.postDelayed(timeoutCallback,
+                    DISPLAY_MOVE_TRANSITION_TIMEOUT_MS);
+
+            displayMoveTransition.addTransitionEndedListener(() -> {
+                final Runnable callback =
+                        mDisplayMoveTransitions.get(displayMoveTransition.getSyncId());
+                mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
+                if (callback != null) {
+                    mActivityRecord.mWmService.mH.removeCallbacks(callback);
+                }
+
+                startActivityForSelfKillRecoveryIfNeeded(newDisplay.getDisplayId());
+
+                if (mDisplayMoveTransitions.size() == 0) {
+                    moveToState(SelfKillState.UNDEFINED);
+                }
+            });
         }
 
         void onActivityRelaunching(int configChangeFlags) {
@@ -374,14 +388,12 @@ class AppCompatDisplayCompatModePolicy {
                 return;
             }
 
-            if (mActivityRecord.mTransitionController.isCollecting(mActivityRecord.getTask())) {
-                final Transition displayMoveTransition =
-                        mActivityRecord.mTransitionController.getCollectingTransition();
-                if (displayMoveTransition != null
-                        && mDisplayMoveTransitions.get(displayMoveTransition.getSyncId()) != null
-                        && isInState(SelfKillState.DISPLAY_MOVING)) {
-                    moveToState(SelfKillState.RELAUNCHING_ON_DISPLAY_MOVE);
-                }
+            final Transition displayMoveTransition =
+                    mActivityRecord.mTransitionController.getCollectingTransition();
+            if (displayMoveTransition != null
+                    && mDisplayMoveTransitions.get(displayMoveTransition.getSyncId()) != null
+                    && isInState(SelfKillState.DISPLAY_MOVING)) {
+                moveToState(SelfKillState.RELAUNCHING_ON_DISPLAY_MOVE);
             }
         }
 
