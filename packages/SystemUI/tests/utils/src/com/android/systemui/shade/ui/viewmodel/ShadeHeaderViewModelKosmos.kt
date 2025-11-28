@@ -38,37 +38,32 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatu
 import com.android.systemui.statusbar.ui.systemBarUtilsState
 import org.mockito.kotlin.mock
 
-private val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
-    Kosmos.Fixture {
-        ShadeHeaderViewModel(
-            activityStarter = activityStarter,
-            sceneInteractor = sceneInteractor,
-            shadeInteractor = shadeInteractor,
-            carrierTextInteractor = fakeCarrierTextInteractor,
-            shadeModeInteractor = shadeModeInteractor,
-            shadeDarkIconInteractor = shadeDarkIconInteractor,
-            mobileIconsInteractor = mobileIconsInteractor,
-            mobileIconsViewModel = mobileIconsViewModel,
-            privacyChipInteractor = privacyChipInteractor,
-            clockInteractor = clockInteractor,
-            batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,
-            statusBarIconController = mock<StatusBarIconController>(),
-            batteryViewModelFactory = batteryViewModelAlwaysShowPercentFactory,
-            kairosNetwork = kairos,
-            mobileIconsViewModelKairos = { mobileIconsViewModelKairos },
-            dualShadeEducationInteractor = dualShadeEducationInteractor,
-            desktopInteractor = desktopInteractor,
-            systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
-            systemBarUtilsState = systemBarUtilsState,
-            ignoreTestHarness = true,
-        )
-    }
-
 val Kosmos.shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory by
     Kosmos.Fixture {
         object : ShadeHeaderViewModel.Factory {
             override fun create(ignoreTestHarness: Boolean): ShadeHeaderViewModel {
-                return shadeHeaderViewModel
+                return ShadeHeaderViewModel(
+                    activityStarter = activityStarter,
+                    sceneInteractor = sceneInteractor,
+                    shadeInteractor = shadeInteractor,
+                    carrierTextInteractor = fakeCarrierTextInteractor,
+                    shadeModeInteractor = shadeModeInteractor,
+                    shadeDarkIconInteractor = shadeDarkIconInteractor,
+                    mobileIconsInteractor = mobileIconsInteractor,
+                    mobileIconsViewModel = mobileIconsViewModel,
+                    privacyChipInteractor = privacyChipInteractor,
+                    clockInteractor = clockInteractor,
+                    batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,
+                    statusBarIconController = mock<StatusBarIconController>(),
+                    batteryViewModelFactory = batteryViewModelAlwaysShowPercentFactory,
+                    kairosNetwork = kairos,
+                    mobileIconsViewModelKairos = { mobileIconsViewModelKairos },
+                    dualShadeEducationInteractor = dualShadeEducationInteractor,
+                    desktopInteractor = desktopInteractor,
+                    systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
+                    systemBarUtilsState = systemBarUtilsState,
+                    ignoreTestHarness = true,
+                )
             }
         }
     }
