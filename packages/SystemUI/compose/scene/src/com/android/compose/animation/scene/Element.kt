@@ -737,19 +737,45 @@ internal inline fun elementState(
     transitionStates.fastForEachIndexed { index, states ->
         if (index < transitionStates.size - 1) {
             // Check if any ancestor runs a transition that has a transformation for the element
-            states.fastForEachReversed { state ->
+            for (j in states.indices.reversed()) {
+                val state = states[j]
+                if (state !is TransitionState.Transition) continue
+
+                // We check if the element is affected by the current transition either by being
+                // shared or having a transformation defined. If a transformation is defined we
+                // prioritize the transformation of the ancestor transition over its children.
+                // However, checking for a transformation is needed because otherwise a running
+                // ancestor transition would always claim priority even if the element is just
+                // sitting idle there - this would mask running child STL transitions.
                 if (
                     isSharedElement(state, isInContent) ||
                         isElementAffectedByTransition(state, elementKey, isInContent)
                 ) {
                     return state
                 }
+
+                // If we don't have a transformation on an ancestor defined but it is still part
+                // of the content we want to break on the current nesting level and defer
+                // responsibility to the nesting layer beneath. This is done so no other
+                // transition can claim priority over this when the current transition has the
+                // content defined and also this logic has to be synced with the selection in
+                // localElementState otherwise the picked transitions mismatch and the element
+                // might disappear.
+                if (appearsInAnyContent(state, isInContent)) break
             }
         } else {
             return localElementState(states, isInContent)
         }
     }
     return null
+}
+
+/** Matching selection logic between localElementState() and elementState() */
+private inline fun appearsInAnyContent(
+    state: TransitionState.Transition,
+    isInContent: (ContentKey) -> Boolean,
+): Boolean {
+    return isInContent(state.fromContent) || isInContent(state.toContent)
 }
 
 private inline fun localElementState(
@@ -766,7 +792,7 @@ private inline fun localElementState(
     // Find the last transition with a content that contains the element.
     states.fastForEachReversed { state ->
         val transition = state as TransitionState.Transition
-        if (isInContent(transition.fromContent) || isInContent(transition.toContent)) {
+        if (appearsInAnyContent(transition, isInContent)) {
             return transition
         }
     }
