@@ -25,6 +25,7 @@ import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
+import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
@@ -81,6 +82,7 @@ import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
+import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
@@ -241,6 +243,12 @@ interface HomeStatusBarViewModel : Activatable {
     /** True if the user can click on the quick settings chip. */
     val isQuickSettingsChipClickable: Boolean
 
+    /** True if the sign out button is currently visible. */
+    val isSignOutButtonVisible: Boolean
+
+    /** Notifies that the current user should be signed out. */
+    fun onSignOut()
+
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
         fun create(): HomeStatusBarViewModel
@@ -265,7 +273,7 @@ constructor(
     desktopInteractor: DesktopInteractor,
     darkIconInteractor: DarkIconInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
-    keyguardInteractor: KeyguardInteractor,
+    private val keyguardInteractor: KeyguardInteractor,
     statusBarNotificationIconsInteractor: StatusBarNotificationIconsInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
     private val sceneInteractor: SceneInteractor,
@@ -282,7 +290,8 @@ constructor(
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
     deviceProvisioningInteractor: DeviceProvisioningInteractor,
-) : HomeStatusBarViewModel, HydratedActivatable() {
+    private val userLogoutInteractor: UserLogoutInteractor,
+) : HomeStatusBarViewModel, HydratedActivatable(enableEnqueuedActivations = true) {
 
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
 
@@ -730,6 +739,21 @@ constructor(
     override val contentArea: Flow<Rect> =
         statusBarContentInsetsViewModelStore.forDisplay(thisDisplayId)?.contentArea
             ?: flowOf(Rect(0, 0, 0, 0)).flowOn(bgDispatcher)
+
+    override val isSignOutButtonVisible: Boolean by
+        combine(userLogoutInteractor.isLogoutToSystemUserEnabled, sceneInteractor.currentScene) {
+                isLogoutToSystemUserEnabled,
+                currentScene ->
+                Flags.signOutButtonOnKeyguardStatusBar() &&
+                    keyguardInteractor.isSignOutButtonOnStatusBarEnabled &&
+                    isLogoutToSystemUserEnabled &&
+                    currentScene == Scenes.Lockscreen
+            }
+            .hydratedStateOf(traceName = "isSignOutButtonVisible", initialValue = false)
+
+    override fun onSignOut() {
+        enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
+    }
 
     @View.Visibility
     private fun Boolean.toVisibleOrGone(): Int {
