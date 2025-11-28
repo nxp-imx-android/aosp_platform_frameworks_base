@@ -12,14 +12,7 @@ flag {
 flag {
     name: "keep_gnss_stationary_throttling"
     namespace: "location"
-    description: "Keeps stationary throttling for the GNSS provider even if the disable_stationary_throttling flag is true."
-    bug: "354000147"
-}
-
-flag {
-    name: "disable_stationary_throttling"
-    namespace: "location"
-    description: "Disables stationary throttling for all providers"
+    description: "Keeps stationary throttling for the GNSS provider."
     bug: "354000147"
 }
 
