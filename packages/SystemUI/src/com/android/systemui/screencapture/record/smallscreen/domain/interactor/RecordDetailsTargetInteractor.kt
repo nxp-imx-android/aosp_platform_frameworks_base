@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.domain
+package com.android.systemui.screencapture.record.smallscreen.domain.interactor
 
 import android.view.Display
 import com.android.app.tracing.coroutines.flow.stateInTraced

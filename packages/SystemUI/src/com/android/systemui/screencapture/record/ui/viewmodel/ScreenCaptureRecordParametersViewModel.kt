@@ -21,7 +21,7 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
-import com.android.systemui.screencapture.record.smallscreen.domain.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
 import com.android.systemui.screencapture.record.smallscreen.shared.model.currentTargetModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory

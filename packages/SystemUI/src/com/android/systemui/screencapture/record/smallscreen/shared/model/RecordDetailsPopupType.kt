@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
+package com.android.systemui.screencapture.record.smallscreen.shared.model
 
 enum class RecordDetailsPopupType {
     Invisible,

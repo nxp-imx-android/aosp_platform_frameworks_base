@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.domain
+package com.android.systemui.screencapture.record.smallscreen.domain.interactor
 
 import android.hardware.display.defaultDisplay
 import com.android.systemui.kosmos.Kosmos

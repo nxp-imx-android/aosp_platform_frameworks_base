@@ -20,7 +20,7 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.record.smallscreen.domain.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 

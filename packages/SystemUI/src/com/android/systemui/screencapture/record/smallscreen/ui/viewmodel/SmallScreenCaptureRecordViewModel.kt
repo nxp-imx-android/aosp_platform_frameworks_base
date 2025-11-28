@@ -23,8 +23,6 @@ import android.media.projection.StopReason
 import android.view.Display
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -36,7 +34,9 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screencapture.record.smallscreen.domain.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsStateInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsPopupType
 import com.android.systemui.screencapture.record.smallscreen.shared.model.currentTargetModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -67,6 +67,7 @@ constructor(
     private val activityManager: ActivityManagerWrapper,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     private val recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
+    private val recordDetailsStateInteractor: RecordDetailsStateInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -88,7 +89,7 @@ constructor(
                 initialValue = screenRecordingServiceInteractor.status.value.isRecording,
             )
 
-    var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
+    var detailsPopup by recordDetailsStateInteractor::type
         private set
 
     val markupEnabled: Boolean? by
