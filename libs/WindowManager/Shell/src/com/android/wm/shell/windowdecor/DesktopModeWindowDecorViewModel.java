@@ -551,9 +551,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 new DesktopModeOnTaskResizeAnimationListener());
         mDesktopTasksController.setOnTaskRepositionAnimationListener(
                 new DesktopModeOnTaskRepositionAnimationListener());
-        mPinnedLayerController.setOnTaskRepositionAnimationListener(
-                new DesktopModeOnTaskRepositionAnimationListener()
-        );
         mRecentsTransitionHandler.addTransitionStateListener(
                 new DesktopModeRecentsTransitionStateListener());
         mDisplayController.addDisplayChangingController(mOnDisplayChangingListener);

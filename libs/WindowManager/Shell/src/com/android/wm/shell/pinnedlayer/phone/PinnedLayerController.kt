@@ -40,7 +40,6 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getRemovedFromLay
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
 
 /**
  * A controller that is responsible for managing [WINDOWING_LAYER_PINNED] layer that has PiP
@@ -54,7 +53,6 @@ class PinnedLayerController(
     private val transitions: Transitions,
     private val presentationController: PinnedLayerPresentationController,
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
-    private val windowClampAnimationHandler: PinnedWindowRepositionAnimationHandler,
     private val transactionPool: TransactionPool,
 ) : Transitions.TransitionObserver {
 
@@ -210,20 +208,15 @@ class PinnedLayerController(
         // TODO(b/449118417): Handle move to display, for now we snap back.
 
         if (destinationBounds != dragEndBounds) {
-            // TODO(b/449118417): Fix flickering when mirrored leash is removed.
             // Drag bounds were snapped and we want to animate that.
-            windowClampAnimationHandler.startTransition(taskInfo, dragEndBounds, destinationBounds)
+            // TODO(b/449118417): Use a custom handler to animate destination bounds.
+            startBoundsChangeTransition(taskInfo, destinationBounds, null)
             return true
         }
 
         // That's a simple user drag, just match task bounds to leash bounds.
         startBoundsChangeTransition(taskInfo, destinationBounds, windowDragTransitionHandler)
         return false
-    }
-
-    /** @see PinnedWindowRepositionAnimationHandler.setOnTaskRepositionAnimationListener */
-    fun setOnTaskRepositionAnimationListener(listener: OnTaskRepositionAnimationListener?) {
-        windowClampAnimationHandler.setOnTaskRepositionAnimationListener(listener)
     }
 
     private fun startBoundsChangeTransition(
@@ -233,6 +226,7 @@ class PinnedLayerController(
     ) {
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, bounds)
+        // TODO(b/449118417): setAppBounds? caption insets exclusion?
         transitions.startTransition(TRANSIT_CHANGE, wct, handler)
     }
 

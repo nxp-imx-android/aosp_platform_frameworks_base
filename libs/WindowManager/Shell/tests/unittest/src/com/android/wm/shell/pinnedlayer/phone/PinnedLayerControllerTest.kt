@@ -76,7 +76,6 @@ class PinnedLayerControllerTest : ShellTestCase() {
     @Mock private lateinit var poolTransaction: SurfaceControl.Transaction
     @Mock private lateinit var startTransaction: SurfaceControl.Transaction
     @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
-    @Mock private lateinit var repositionTransaction: SurfaceControl.Transaction
     @Mock private lateinit var leash: SurfaceControl
     @Mock private lateinit var displayController: DisplayController
     @Mock private lateinit var displayLayout: DisplayLayout
@@ -84,8 +83,6 @@ class PinnedLayerControllerTest : ShellTestCase() {
 
     private lateinit var displayMetrics: DisplayMetrics
     private lateinit var presentationController: PinnedLayerPresentationController
-    private lateinit var pinnedWindowRepositionAnimationHandler:
-        PinnedWindowRepositionAnimationHandler
     private lateinit var pinnedLayerController: PinnedLayerController
 
     @Before
@@ -113,15 +110,12 @@ class PinnedLayerControllerTest : ShellTestCase() {
 
         presentationController =
             PinnedLayerPresentationController(context, displayController, desktopState)
-        pinnedWindowRepositionAnimationHandler =
-            PinnedWindowRepositionAnimationHandler(transitions, { repositionTransaction })
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
-                pinnedWindowRepositionAnimationHandler,
                 transactionPool,
             )
     }

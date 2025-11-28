@@ -89,9 +89,6 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var normalLayerController: NormalAppLayerController
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
-    @Mock
-    private lateinit var pinnedWindowRepositionAnimationHandler:
-        PinnedWindowRepositionAnimationHandler
     @Mock private lateinit var transactionPool: TransactionPool
 
     private lateinit var pinnedLayerController: PinnedLayerController
@@ -105,7 +102,6 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 transitions,
                 presentationController,
                 windowDragTransitionHandler,
-                pinnedWindowRepositionAnimationHandler,
                 transactionPool,
             )
         pinnedLayerHandler =
