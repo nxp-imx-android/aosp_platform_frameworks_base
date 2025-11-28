@@ -178,6 +178,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SINGLE_USER_
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
+import static android.app.admin.DevicePolicyManager.STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_FULL_USER;
@@ -16813,14 +16814,18 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private int checkMultiUserDeviceProvisioningPreCondition(@UserIdInt int callingUserId) {
         synchronized (getLockObject()) {
+            // Device needs to support multi-user management.
+            if (!multiUserManagementSupported()) {
+                return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
+            }
+            if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
+                return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
+            }
             if (!isProvisioningAllowed()) {
                 return STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
             }
             if (callingUserId != UserHandle.USER_SYSTEM) {
                 return STATUS_NOT_SYSTEM_USER;
-            }
-            if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
-                return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
             }
             // There must be no users that have completed setup.
             int userId = mDeviceAdmins.getUserWithSetupCompleted();
@@ -16890,8 +16895,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
-        if (!Flags.multiUserManagementUserProvisioning()) {
-            return STATUS_MANAGED_USERS_NOT_SUPPORTED;
+        // Device needs to support multi-user management.
+        if (!multiUserManagementSupported()) {
+            return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
         }
 
         // Cannot provision non-HSUM.
@@ -16950,6 +16956,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         } catch (RemoteException e) {
             return false;
         }
+    }
+
+    private boolean multiUserManagementSupported() {
+        final boolean multiUserManagementEnabled = mContext.getResources()
+                .getBoolean(com.android.internal.R.bool.config_enableMultiUserManagement);
+        return multiUserManagementEnabled;
     }
 
     @Override
