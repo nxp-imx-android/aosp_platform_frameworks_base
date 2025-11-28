@@ -8978,7 +8978,7 @@
     <!-- Allows an application access to computer control features.
      @hide -->
     <permission android:name="android.permission.ACCESS_COMPUTER_CONTROL"
-        android:protectionLevel="internal|knownSigner"
+        android:protectionLevel="internal|privileged|knownSigner"
         android:knownCerts="@array/config_accessComputerControlKnownSigners"
         android:featureFlag="android.companion.virtualdevice.flags.computer_control_access"/>
 
