@@ -126,7 +126,8 @@ public class ThemeBinderServiceTests {
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
 
-        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mMockWmi);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(mMockWmi);
+        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
             @NonNull
             @Override

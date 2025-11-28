@@ -16,7 +16,6 @@
 
 package com.android.server.theming;
 
-import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import android.Manifest;
@@ -105,7 +104,7 @@ public class ThemeManagerService extends SystemService {
     private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeStateManager mStateManager;
 
-    private final WallpaperManagerInternal mWallpaperManagerInternal;
+    private final ThemeWallpaperManager mThemeWallpaperManager;
     private UiModeManagerInternal mUiModeManagerInternal;
     private UserManagerInternal mUserManagerInternal;
     private final SystemPropertiesReader mSystemPropertiesReader;
@@ -120,12 +119,12 @@ public class ThemeManagerService extends SystemService {
     ThemeManagerService(@NonNull Context context,
             @NonNull SystemPropertiesReader systemPropertiesReader,
             ThemeStateManager themeStateManager,
-            WallpaperManagerInternal wallpaperManagerInternal) {
+            @Nullable WallpaperManagerInternal wallpaperManagerInternal) {
         super(context);
         mContext = context;
         mStateManager = themeStateManager;
-        mWallpaperManagerInternal = wallpaperManagerInternal;
-        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
+        mThemeWallpaperManager = new ThemeWallpaperManager(wallpaperManagerInternal);
+        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager);
         mSystemPropertiesReader = systemPropertiesReader;
 
         mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
@@ -171,10 +170,7 @@ public class ThemeManagerService extends SystemService {
         // check if seed color comes from wallpaper or preset
         ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
 
-        int seedColor = userSettings.colorSource().equals(VALUE_PRESET)
-                ? userSettings.systemPalette().toArgb()
-                : ColorScheme.getSeedColor(
-                        mWallpaperManagerInternal.getWallpaperColors(FLAG_SYSTEM, userId));
+        int seedColor = getEffectiveSeedColor(userSettings, userId);
 
         Slog.d(TAG, "User: " + user.getUserIdentifier() + " starting");
 
@@ -213,10 +209,7 @@ public class ThemeManagerService extends SystemService {
         }
 
         ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
-        int seedColor = userSettings.colorSource().equals(VALUE_PRESET)
-                ? userSettings.systemPalette().toArgb()
-                : ColorScheme.getSeedColor(
-                        mWallpaperManagerInternal.getWallpaperColors(FLAG_SYSTEM, userId));
+        int seedColor = getEffectiveSeedColor(userSettings, userId);
 
         boolean isSetup = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                 Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1;
@@ -224,6 +217,18 @@ public class ThemeManagerService extends SystemService {
         mStateManager.onUserLoad(userId, isSetup, seedColor,
                 mUiModeManagerInternal.getContrast(userId),
                 userSettings.themeStyle());
+    }
+
+    private int getEffectiveSeedColor(ThemeSettings userSettings, int userId) {
+        int seedColor;
+        if (userSettings.colorSource().equals(VALUE_PRESET)) {
+            seedColor = userSettings.systemPalette().toArgb();
+        } else {
+            Integer wallpaperSeed = mThemeWallpaperManager.getSeedColor(userId);
+            seedColor = wallpaperSeed != null ? wallpaperSeed
+                    : userSettings.systemPalette().toArgb();
+        }
+        return seedColor;
     }
 
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
@@ -288,7 +293,7 @@ public class ThemeManagerService extends SystemService {
         }, filter, null, bgHandler);
 
         // Wallpaper Color Change
-        mWallpaperManagerInternal.addOnColorsChangedListener(
+        mThemeWallpaperManager.addOnColorsChangedListener(
                 (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
                     if (shouldIgnoreForHsum(UserHandle.of(userId), "onColorsChanged")) {
                         return;
@@ -408,3 +413,4 @@ public class ThemeManagerService extends SystemService {
         return false;
     }
 }
+

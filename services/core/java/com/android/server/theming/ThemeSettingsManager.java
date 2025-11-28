@@ -23,8 +23,6 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.app.WallpaperColors;
-import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.content.theming.FieldColor;
@@ -38,8 +36,6 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.Slog;
-
-import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,7 +62,7 @@ class ThemeSettingsManager {
     public static final String OVERLAY_CATEGORY_SYSTEM_PALETTE = KEY_PREFIX + "system_palette";
     public static final String OVERLAY_CATEGORY_THEME_STYLE = KEY_PREFIX + "theme_style";
     public static final String OVERLAY_COLOR_SOURCE = KEY_PREFIX + "color_source";
-    private final WallpaperManagerInternal mWallpaperManagerInternal;
+    private final ThemeWallpaperManager mWallpaperManager;
     private static final ThemeSettings HARDCODED_FALLBACK = new ThemeSettings.Builder()
             .setThemeStyle(ThemeStyle.TONAL_SPOT)
             .setColorSource(VALUE_PRESET)
@@ -79,8 +75,8 @@ class ThemeSettingsManager {
             Map.entry(OVERLAY_COLOR_SOURCE, new FieldColorSource()),
             Map.entry(OVERLAY_CATEGORY_THEME_STYLE, new FieldThemeStyle()));
 
-    ThemeSettingsManager(WallpaperManagerInternal wallpaperManagerInternal) {
-        mWallpaperManagerInternal = wallpaperManagerInternal;
+    ThemeSettingsManager(ThemeWallpaperManager wallpaperManager) {
+        mWallpaperManager = wallpaperManager;
     }
 
     /**
@@ -186,13 +182,12 @@ class ThemeSettingsManager {
         String colorSource;
 
         if (colorSourceString.equals(VALUE_HOME_WALLPAPER)) {
-            WallpaperColors wallpaperColors = mWallpaperManagerInternal.getWallpaperColors(
-                    WallpaperManager.FLAG_SYSTEM, userId);
-            if (wallpaperColors == null) {
+            Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
+            if (wallpaperSeed == null) {
                 throw new IllegalStateException(
                         "User's " + userId + " Wallpaper colors could not be retrieved.");
             }
-            seedColor = wallpaperColors.getPrimaryColor();
+            seedColor = Color.valueOf(wallpaperSeed);
             colorSource = VALUE_HOME_WALLPAPER;
         } else {
             seedColor = Color.valueOf(Color.parseColor(colorSourceString));

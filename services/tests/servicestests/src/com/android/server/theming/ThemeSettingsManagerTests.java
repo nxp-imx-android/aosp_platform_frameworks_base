@@ -38,6 +38,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.systemui.monet.ColorScheme;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -65,7 +66,6 @@ public class ThemeSettingsManagerTests {
 
     private ContentResolver mContentResolver;
     private ThemeSettingsManager mManager;
-    private final Color mDefaultWallpaperColor = Color.valueOf(Color.BLUE);
 
     private static final String UNKNOWN_FIELDS_JSON = """
                     {
@@ -82,7 +82,7 @@ public class ThemeSettingsManagerTests {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mContentResolver = mContext.getContentResolver();
-        mManager = new ThemeSettingsManager(mMockWmi);
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi));
 
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -279,7 +279,8 @@ public class ThemeSettingsManagerTests {
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(Color.CYAN));
+        assertThat(defaultSettings.systemPalette()).isEqualTo(
+                Color.valueOf(ColorScheme.getSeedColor(wallpaperColors)));
     }
 
     @Test

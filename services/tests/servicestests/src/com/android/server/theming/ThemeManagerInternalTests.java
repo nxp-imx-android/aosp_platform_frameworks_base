@@ -125,7 +125,9 @@ public class ThemeManagerInternalTests {
             return new int[]{requestedUserId};
         });
 
-        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
+                mWallpaperManagerInternal);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor);
         mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
