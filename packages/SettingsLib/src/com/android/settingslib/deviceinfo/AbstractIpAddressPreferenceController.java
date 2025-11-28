@@ -98,6 +98,9 @@ public abstract class AbstractIpAddressPreferenceController
 
     @Override
     protected void updateConnectivity() {
+        if (mIpAddress == null) {
+            return;
+        }
         String ipAddress = getDefaultIpAddresses(mCM);
         if (ipAddress != null) {
             mIpAddress.setSummary(ipAddress);
