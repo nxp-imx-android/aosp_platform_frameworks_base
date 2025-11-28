@@ -70,7 +70,7 @@ class CompatUIComponent(
      * @param newInfo The new CompatUIInfo object
      */
     fun update(newInfo: CompatUIInfo) {
-        updateComponentState(newInfo, componentUIComponentRepository.stateForComponent(id))
+        compatUIInfo = newInfo
         updateUI()
     }
 
@@ -123,13 +123,11 @@ class CompatUIComponent(
         spec.log("$tag state: $componentState")
         // We inflate the layout
         layout = spec.layout.viewBuilder(context, compatUIInfo, componentState)
-        spec.log("$tag layout: $layout")
-        viewHost =
-            createSurfaceViewHost().apply {
-                spec.log("${this@CompatUIComponent.tag} adding view $layout to host $this")
-                setView(layout!!, getWindowLayoutParams())
-            }
-        updateSurfacePosition()
+        layout?.let {
+            spec.log("$tag adding view $it to created host")
+            viewHost = createSurfaceViewHost().apply { setView(it, getWindowLayoutParams()) }
+            updateSurfacePosition()
+        }
     }
 
     /** Creates a [SurfaceControlViewHost] for this window manager. */
@@ -145,18 +143,31 @@ class CompatUIComponent(
     }
 
     protected fun updateSurfacePosition() {
-        spec.log("$tag updateSurfacePosition on layout $layout")
+        val positionFactory = spec.layout.positionFactory
+        val componentTag = tag
+        if (positionFactory == null) {
+            spec.log("$componentTag positionFactory missing for component ${spec.name}")
+            return
+        }
+        if (layout == null) {
+            spec.log("$componentTag Layout not available")
+            return
+        }
+        val sharedState = sharedStateRepository.find(compatUIInfo.taskId)
+        if (sharedState == null) {
+            spec.log("$componentTag SharedState not available for component ${spec.name}")
+            return
+        }
         layout?.let {
-            sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
-                updateSurfacePosition(
-                    spec.layout.positionFactory(
-                        it,
-                        compatUIInfo,
-                        sharedState,
-                        componentUIComponentRepository.stateForComponent(id),
-                    )
+            val newPosition =
+                positionFactory(
+                    it,
+                    compatUIInfo,
+                    sharedState,
+                    componentUIComponentRepository.stateForComponent(id),
                 )
-            }
+            spec.log("$componentTag updateSurfacePosition($newPosition) on layout $layout")
+            updateSurfacePosition(newPosition)
         }
     }
 
@@ -182,13 +193,13 @@ class CompatUIComponent(
 
     /** Gets the layout params. */
     protected fun getWindowLayoutParams(): WindowManager.LayoutParams =
-        layout?.run {
-            measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-            spec.log(
-                "${this@CompatUIComponent.tag} getWindowLayoutParams" +
-                    " size: ${measuredWidth}x$measuredHeight"
-            )
-            return getWindowLayoutParams(measuredWidth, measuredHeight)
+        layout?.let { componentView ->
+            sharedState?.let { state ->
+                val componentSize =
+                    spec.layout.sizeFactory(componentView, compatUIInfo, state, componentState)
+                return getWindowLayoutParams(componentSize.width, componentSize.height)
+            }
+            return WindowManager.LayoutParams()
         } ?: WindowManager.LayoutParams()
 
     protected fun updateSurfacePosition(position: Point) {
@@ -205,19 +216,9 @@ class CompatUIComponent(
         }
     }
 
-    private fun updateComponentState(
-        newInfo: CompatUIInfo,
-        componentState: CompatUIComponentState?,
-    ) {
-        spec.log("$tag component state updating.... $componentState")
-        compatUIInfo = newInfo
-    }
-
     private fun updateUI() {
         spec.log("$tag updating ui")
         setConfiguration(compatUIInfo.taskInfo.configuration)
-        val componentState: CompatUIComponentState? =
-            componentUIComponentRepository.stateForComponent(id)
         layout?.run {
             spec.log("${this@CompatUIComponent.tag} viewBinder execution...")
             sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
@@ -236,4 +237,13 @@ class CompatUIComponent(
             t.setLayer(leash, spec.layout.zOrder)
         }
     }
+
+    private val componentState: CompatUIComponentState?
+        get() = componentUIComponentRepository.stateForComponent(id)
+
+    private val sharedState: CompatUISharedState?
+        get() = sharedStateRepository.find(compatUIInfo.taskId)
+
+    private val taskId: Int
+        get() = compatUIInfo.taskId
 }

@@ -18,7 +18,9 @@ package com.android.wm.shell.compatui.api
 
 import android.content.Context
 import android.graphics.Point
+import android.util.Size
 import android.view.View
+import android.view.WindowManager.LayoutParams
 import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import com.android.internal.protolog.ProtoLog
@@ -42,6 +44,25 @@ class CompatUILifecyclePredicates(
 typealias ComponentUiPositionFactory =
     (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Point
 
+/**
+ * Type for the function responsible to get the [Size] of the ComponentUI to be used for the
+ * [LayoutParams] calculation.
+ */
+typealias ComponentUiSizeFactory =
+    (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Size
+
+/** [ComponentUiSizeFactory] that measures the [View] using [MeasureSpec.UNSPECIFIED]. */
+val measureSizeFactory: ComponentUiSizeFactory = { view, _, _, _ ->
+    view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+    Size(view.measuredWidth, view.measuredHeight)
+}
+
+/** [ComponentUiSizeFactory] that measures the [View] using all the task bound. */
+val taskBoundsSizeFactory: ComponentUiSizeFactory = { _, _, sharedState, _ ->
+    val taskBounds = sharedState.taskBoundsFn()
+    Size(taskBounds.width(), taskBounds.height())
+}
+
 /** Layout configuration */
 data class CompatUILayout(
     val zOrder: Int = 0,
@@ -50,7 +71,8 @@ data class CompatUILayout(
     val viewBinder: (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Unit =
         { _, _, _, _ ->
         },
-    val positionFactory: ComponentUiPositionFactory,
+    val positionFactory: ComponentUiPositionFactory? = null,
+    val sizeFactory: ComponentUiSizeFactory = measureSizeFactory,
     val viewReleaser: () -> Unit = {},
 )
 
