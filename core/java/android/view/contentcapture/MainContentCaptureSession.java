@@ -63,6 +63,7 @@ import android.view.contentcapture.ViewNode.ViewStructureImpl;
 import android.view.contentcapture.flags.Flags;
 import android.view.contentprotection.ContentProtectionEventProcessor;
 import android.view.inputmethod.BaseInputConnection;
+import android.widget.TextView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
@@ -1072,13 +1073,19 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
 
     private void setContentDescriptionFromA11yIfNeeded(
             @NonNull View view, @NonNull ViewStructure structure) {
-        AccessibilityNodeInfo currentNodeInfo = view.createAccessibilityNodeInfo();
-        if (currentNodeInfo == null) {
+        // No need to set the content description for TextView as it has the text value.
+        // Return early to reduce the system health impact.
+        if (view instanceof TextView) {
             return;
         }
 
         CharSequence viewContentDescription = view.getContentDescription();
         if (viewContentDescription != null && !viewContentDescription.isEmpty()) {
+            return;
+        }
+
+        AccessibilityNodeInfo currentNodeInfo = view.createAccessibilityNodeInfo();
+        if (currentNodeInfo == null) {
             return;
         }
         structure.setContentDescription(currentNodeInfo.getText());
