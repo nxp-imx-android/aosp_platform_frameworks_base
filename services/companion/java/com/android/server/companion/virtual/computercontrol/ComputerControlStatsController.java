@@ -68,21 +68,21 @@ final class ComputerControlStatsController {
     private final Supplier<Instant> mClock;
 
     private final AtomicBoolean mIsWritten = new AtomicBoolean(false);
-    private AtomicReference<Instant> mCreationTime = new AtomicReference<>();
+    private final AtomicReference<Instant> mCreationTime = new AtomicReference<>();
 
     @GuardedBy("mBlockReasons")
     private final IntArray mBlockReasons = new IntArray();
 
-    private AtomicInteger mMirroredViews = new AtomicInteger(0);
-    private AtomicInteger mMirroredViewsInteractive = new AtomicInteger(0);
+    private final AtomicInteger mMirroredViews = new AtomicInteger(0);
+    private final AtomicInteger mMirroredViewsInteractive = new AtomicInteger(0);
 
     @GuardedBy("mApplicationLaunchPackages")
     private final ArrayList<String> mApplicationLaunchPackages = new ArrayList<>();
 
-    private AtomicInteger mTaps = new AtomicInteger(0);
-    private AtomicInteger mSwipes = new AtomicInteger(0);
-    private AtomicInteger mLongPresses = new AtomicInteger(0);
-    private AtomicInteger mInsertTexts = new AtomicInteger(0);
+    private final AtomicInteger mTaps = new AtomicInteger(0);
+    private final AtomicInteger mSwipes = new AtomicInteger(0);
+    private final AtomicInteger mLongPresses = new AtomicInteger(0);
+    private final AtomicInteger mInsertTexts = new AtomicInteger(0);
 
     @GuardedBy("mPerformedActions")
     private final IntArray mPerformedActions = new IntArray();
