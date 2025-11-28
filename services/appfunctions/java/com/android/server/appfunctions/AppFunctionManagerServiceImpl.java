@@ -36,6 +36,7 @@ import android.annotation.Nullable;
 import android.annotation.WorkerThread;
 import android.app.IUriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
@@ -194,6 +195,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Nullable private final AppInteractionService mAppInteractionService;
 
+    private final VisibilityHelper mVisibilityHelper;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -225,7 +228,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
                 new AppFunctionMetadataReader(),
-                appInteractionService);
+                appInteractionService,
+                new VisibilityHelperImpl(context, packageManagerInternal));
     }
 
     private AppFunctionManagerServiceImpl(
@@ -244,7 +248,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
             AppFunctionMetadataReader appFunctionMetadataReader,
-            @Nullable AppInteractionService appInteractionService) {
+            @Nullable AppInteractionService appInteractionService,
+            VisibilityHelper visibilityHelper) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -264,6 +269,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
         mAppInteractionService = appInteractionService;
+        mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
     }
 
     /** Called when the user is unlocked. */
@@ -567,32 +573,62 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Override
     public void searchAppFunctions(
-            @NonNull AppFunctionSearchSpec searchSpec,
-            @NonNull UserHandle userHandle,
+            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
             @NonNull ISearchAppFunctionsCallback searchAppFunctionsCallback)
             throws RemoteException {
-        Objects.requireNonNull(searchSpec);
-        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(aidlSearchSpec);
         Objects.requireNonNull(searchAppFunctionsCallback);
 
-        // TODO(b/438413081): Ensure caller has EXECUTE_APP_FUNCTIONS_PERMISSION.
-        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
 
+        try {
+            // The calling package name will be used to determine the visible packages.
+            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
+        } catch (SecurityException e) {
+            try {
+                searchAppFunctionsCallback.onError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
         if (perUserAppSearchManager == null) {
             throw new IllegalStateException(
-                    "AppSearchManager not found for user:" + userHandle.getIdentifier());
+                    "AppSearchManager not found for user:" + targetUser.getIdentifier());
         }
-        // TODO(b/438413081): Use future chaining without posting to executor here.
+
         THREAD_POOL_EXECUTOR.execute(
                 () -> {
-                    try {
-                        FutureGlobalSearchSession futureGlobalSearchSession =
-                                new FutureGlobalSearchSession(
-                                        perUserAppSearchManager, THREAD_POOL_EXECUTOR);
+                    AppFunctionSearchSpec filteredSearchSpec =
+                            mVisibilityHelper.applyVisiblePackageFilter(
+                                    aidlSearchSpec, callingUid, callingPid);
+                    if (filteredSearchSpec == null) {
+                        // Early return, search nothing
+                        try {
+                            searchAppFunctionsCallback.onSuccess(Collections.emptyList());
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
+                        }
+                        return;
+                    }
 
+                    // Clear the caller identity since the AppFunction service needs to search
+                    // with "android" capability and filter the documents via search query.
+                    final long token = Binder.clearCallingIdentity();
+                    try (FutureGlobalSearchSession futureGlobalSearchSession =
+                            new FutureGlobalSearchSession(perUserAppSearchManager, Runnable::run)) {
                         List<AppFunctionMetadata> resultMetadataList =
                                 mAppFunctionMetadataReader.searchAppFunctions(
-                                        futureGlobalSearchSession, searchSpec);
+                                        futureGlobalSearchSession, filteredSearchSpec);
                         try {
                             searchAppFunctionsCallback.onSuccess(resultMetadataList);
                         } catch (RemoteException e) {
@@ -604,6 +640,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         } catch (RemoteException ex) {
                             Slog.e(TAG, "Failed to execute callback#onError.", e);
                         }
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
                     }
                 });
     }

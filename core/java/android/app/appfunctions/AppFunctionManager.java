@@ -472,10 +472,13 @@ public final class AppFunctionManager {
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
 
+        AppFunctionAidlSearchSpec aidlSearchSpec =
+                new AppFunctionAidlSearchSpec(
+                        mContext.getPackageName(), searchSpec, mContext.getUserId());
+
         try {
             mService.searchAppFunctions(
-                    searchSpec,
-                    mContext.getUser(),
+                    aidlSearchSpec,
                     new ISearchAppFunctionsCallback.Stub() {
                         @Override
                         public void onSuccess(List<AppFunctionMetadata> result) {

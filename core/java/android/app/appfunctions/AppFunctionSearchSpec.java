@@ -129,6 +129,22 @@ public final class AppFunctionSearchSpec implements Parcelable {
                 mPackageNames, mFunctionNames, mSchemaCategory, mSchemaName, mMinSchemaVersion);
     }
 
+    @Override
+    public String toString() {
+        return "AppFunctionSearchSpec("
+                + "packageNames="
+                + mPackageNames
+                + ", functionNames="
+                + mFunctionNames
+                + ", schemaCategory="
+                + mSchemaCategory
+                + ", schemaName="
+                + mSchemaName
+                + ", minSchemaVersion="
+                + mMinSchemaVersion
+                + ")";
+    }
+
     /**
      * Returns a query expression to use when searching for app functions based on this {@link
      * AppFunctionSearchSpec}.
@@ -198,6 +214,20 @@ public final class AppFunctionSearchSpec implements Parcelable {
          * Creates a new instance of {@link AppFunctionSearchSpec.Builder} with empty properties.
          */
         public Builder() {}
+
+        /**
+         * Creates a new instance of {@link AppFunctionSearchSpec.Builder} based on {@code
+         * searchSpec}.
+         *
+         * @hide
+         */
+        public Builder(@NonNull AppFunctionSearchSpec searchSpec) {
+            this.mPackageNames = searchSpec.mPackageNames;
+            this.mFunctionNames = searchSpec.mFunctionNames;
+            this.mSchemaCategory = searchSpec.mSchemaCategory;
+            this.mSchemaName = searchSpec.mSchemaName;
+            this.mMinSchemaVersion = searchSpec.mMinSchemaVersion;
+        }
 
         /**
          * Constructs the final, immutable {@link AppFunctionSearchSpec} object.
