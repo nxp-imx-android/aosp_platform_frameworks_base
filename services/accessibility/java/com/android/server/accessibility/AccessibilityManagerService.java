@@ -1156,7 +1156,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     userState.mEnabledServices, userState.mUserId);
         }
 
-        if (Flags.removeAllShortcutsWhenForceStopAlwaysOnService()) {
             boolean shortcutTargetsChanged = false;
             // Remove any shortcut targets that match any stopped continuous services
             List<String> shortcutTargetsToRemove = userState.getShortcutTargetsLocked(ALL)
@@ -1175,23 +1174,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
 
             return enabledServicesChanged || shortcutTargetsChanged;
-        } else {
-
-            // Remove any button targets that match any stopped continuous services
-            Set<String> buttonTargets = userState.getShortcutTargetsLocked(SOFTWARE);
-            boolean buttonTargetsChanged = buttonTargets.removeIf(
-                    target -> continuousServices.contains(
-                            ComponentName.unflattenFromString(target)));
-            if (buttonTargetsChanged) {
-                userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE);
-                persistColonDelimitedSetToSettingLocked(
-                        ShortcutUtils.convertToKey(SOFTWARE),
-                        userState.mUserId,
-                        buttonTargets, str -> str);
-            }
-
-            return enabledServicesChanged || buttonTargetsChanged;
-        }
     }
 
     @VisibleForTesting

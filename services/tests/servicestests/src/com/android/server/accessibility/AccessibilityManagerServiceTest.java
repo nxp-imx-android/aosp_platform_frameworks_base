@@ -1018,51 +1018,8 @@ public class AccessibilityManagerServiceTest {
         assertThat(enabledServices).containsExactly(info_b.getComponentName().flattenToString());
     }
 
-    @DisableFlags(Flags.FLAG_REMOVE_ALL_SHORTCUTS_WHEN_FORCE_STOP_ALWAYS_ON_SERVICE)
-    @Test
-    public void testPackagesForceStopped_fromContinuousService_removesButtonTarget() {
-        final AccessibilityServiceInfo info_a = new AccessibilityServiceInfo();
-        info_a.setComponentName(COMPONENT_NAME);
-        info_a.flags = FLAG_REQUEST_ACCESSIBILITY_BUTTON;
-        final AccessibilityServiceInfo info_b = new AccessibilityServiceInfo();
-        info_b.setComponentName(new ComponentName("package", "class"));
 
-        AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
-        installedServices.add(info_a);
-        installedServices.add(info_b);
-        userState.buildInstalledServicesMapLocked(installedServices);
 
-        userState.updateShortcutTargetsLocked(Set.of(
-                        info_a.getComponentName().flattenToString(),
-                        info_b.getComponentName().flattenToString()),
-                SOFTWARE);
-        writeStringsToSetting(Set.of(
-                        info_a.getComponentName().flattenToString(),
-                        info_b.getComponentName().flattenToString()),
-                ShortcutUtils.convertToKey(SOFTWARE));
-
-        // despite force stopping both packages, only the first service has the relevant flag,
-        // so only the first should be removed.
-        synchronized (mA11yms.getLock()) {
-            mA11yms.onPackagesForceStoppedLocked(
-                    new String[]{
-                            info_a.getComponentName().getPackageName(),
-                            info_b.getComponentName().getPackageName()},
-                    userState);
-        }
-
-        //Assert user state change
-        userState = mA11yms.getCurrentUserState();
-        assertThat(userState.getShortcutTargetsLocked(SOFTWARE)).containsExactly(
-                info_b.getComponentName().flattenToString());
-        //Assert setting change
-        final Set<String> targetsFromSetting = readStringsFromSetting(
-                ShortcutUtils.convertToKey(SOFTWARE));
-        assertThat(targetsFromSetting).containsExactly(info_b.getComponentName().flattenToString());
-    }
-
-    @EnableFlags(Flags.FLAG_REMOVE_ALL_SHORTCUTS_WHEN_FORCE_STOP_ALWAYS_ON_SERVICE)
     @Test
     public void continuousServiceForceStopped_removesAllAssociatedShortcuts() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
