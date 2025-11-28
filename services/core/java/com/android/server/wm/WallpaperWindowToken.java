@@ -255,6 +255,11 @@ class WallpaperWindowToken extends WindowToken {
     }
 
     @Override
+    boolean shouldCheckTokenVisibleRequested() {
+        return true;
+    }
+
+    @Override
     protected boolean onChildVisibleRequestedChanged(@Nullable WindowContainer child) {
         // Wallpaper manages visibleRequested directly (it's not determined by children)
         return false;

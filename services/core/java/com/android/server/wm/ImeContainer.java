@@ -118,7 +118,9 @@ final class ImeContainer extends DisplayArea.Tokens {
         for (int i = 0; i < mChildren.size(); i++) {
             final ImeWindowToken child = mChildren.get(i).asImeToken();
             if (child != null) {
-                child.setVisible(child == token);
+                // This calls into ViewRootImpl#handleAppVisibility in the client, which eventually
+                // determines whether a child window of this token can be visible.
+                child.setClientVisible(child == token);
             }
         }
         if (token == null || token.isEmpty()) {
