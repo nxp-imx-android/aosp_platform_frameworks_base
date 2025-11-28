@@ -1359,7 +1359,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private void switchUserOnHandlerLocked(@UserIdInt int newUserId, boolean profileSwitch,
             @Nullable IInputMethodClientInvoker clientToBeReset) {
         final int prevUserId = mCurrentImeUserId;
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 1/3. newUserId=%s prevUserId=%s", newUserId,
+        ProtoLog.v(IMMS_DEBUG, "Switching user stage 1/3. newUserId=%d prevUserId=%d", newUserId,
                 prevUserId);
 
         // Clean up stuff for mCurrentImeUserId, which soon becomes the previous user.
@@ -1394,7 +1394,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final String defaultImiId = SecureSettingsWrapper.getString(
                 Settings.Secure.DEFAULT_INPUT_METHOD, null, newUserId);
 
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 2/3. newUserId=%s defaultImiId=%s", newUserId,
+        ProtoLog.v(IMMS_DEBUG, "Switching user stage 2/3. newUserId=%d defaultImiId=%s", newUserId,
                 defaultImiId);
 
         // For secondary users, the list of enabled IMEs may not have been updated since the
@@ -1431,7 +1431,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     newSettings.getEnabledInputMethodList());
         }
 
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 3/3. newUserId=%s selectedImeId=%s", newUserId,
+        ProtoLog.v(IMMS_DEBUG, "Switching user stage 3/3. newUserId=%d selectedImeId=%s", newUserId,
                 newSettings.getSelectedInputMethod());
 
         if (mIsInteractive && clientToBeReset != null) {
@@ -2839,7 +2839,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return;
         }
         final int curDisplayId = bindingController.getCurDisplayId();
-        ProtoLog.v(IMMS_DEBUG, "IME window vis: %s active: %s visible: %s displayId: %s", vis,
+        ProtoLog.v(IMMS_DEBUG, "IME window vis: %d active: %d visible: %d displayId: %d", vis,
                 (vis & InputMethodService.IME_ACTIVE), (vis & InputMethodService.IME_VISIBLE),
                 curDisplayId);
         final IBinder focusedWindowToken = userData.mImeBindingState.mFocusedWindow;
@@ -2909,7 +2909,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             if (defaultDeviceIme != null && !Objects.equals(ime, defaultDeviceIme)) {
                 ProtoLog.v(IMMS_DEBUG,
                         "Current input method %s differs from the stored default device input "
-                                + "method for user %s - restoring %s",
+                                + "method for user %d - restoring %s",
                         ime, userId, defaultDeviceIme);
                 SecureSettingsWrapper.putString(
                         Settings.Secure.DEFAULT_INPUT_METHOD, defaultDeviceIme, userId);
@@ -3726,7 +3726,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                             // next client receiving focus that has any interest in input will
                             // be calling through here after that change happens.
                             ProtoLog.v(IMMS_DEBUG,
-                                    "Focus gain on non-focused client %s (uid=%s pid=%s)",
+                                    "Focus gain on non-focused client %s (uid=%d pid=%d)",
                                     cs.mClient, cs.mUid, cs.mPid);
                             return InputBindResult.NOT_IME_TARGET_WINDOW;
                         case WindowManagerInternal.ImeClientFocusResult.INVALID_DISPLAY_ID:
@@ -3829,7 +3829,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         ProtoLog.v(IMMS_DEBUG,
                 "startInputOrWindowGainedFocus editorInfo.targetDevicePolicyUser: %d",
-                editorInfo.targetDevicePolicyUser);
+                editorInfo.targetDevicePolicyUser.getIdentifier());
         StringBuilder allowedImesLog = new StringBuilder("allowedImes: ");
         if (allowedImes != null) {
             allowedImes.forEach(allowedIme ->
@@ -3889,11 +3889,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     + " startInputFlags=%s"
                     + " softInputMode=%s"
                     + " windowFlags=#%s"
-                    + " unverifiedTargetSdkVersion=%s"
+                    + " unverifiedTargetSdkVersion=%d"
                     + " bindingController=%s"
                     + " imeBackCallbackReceiver=%s"
                     + " cs=%s"
-                    + " imeRequestedVisible=%s",
+                    + " imeRequestedVisible=%b",
                 InputMethodDebug.startInputReasonToString(startInputReason), client.asBinder(),
                 inputContext, editorInfo, InputMethodDebug.startInputFlagsToString(startInputFlags),
                 InputMethodDebug.softInputModeToString(softInputMode),
@@ -4305,7 +4305,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         if (!TextUtils.isEmpty(targetLastImiId)) {
-            ProtoLog.v(IMMS_DEBUG, "Switch to: %s, %s, from: %s, %s", lastImi.getId(),
+            ProtoLog.v(IMMS_DEBUG, "Switch to: %s, %s, from: %s, %d", lastImi.getId(),
                     lastIme.second, bindingController.getSelectedImeId(), subtypeIndex);
             setInputMethodWithSubtypeIndexLocked(targetLastImiId, subtypeIndex, userId);
             return true;
@@ -4993,8 +4993,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
         final String selectedImeId = settings.getSelectedInputMethod();
         int selectedSubtypeIndex = settings.getSelectedInputMethodSubtypeIndex(selectedImeId);
-        ProtoLog.v(IMMS_DEBUG, "Show IME switcher menu, showAuxSubtypes=%s displayId=%s"
-                        + " selectedImeId=%s selectedSubtypeIndex=%s", showAuxSubtypes, displayId,
+        ProtoLog.v(IMMS_DEBUG, "Show IME switcher menu, showAuxSubtypes=%b displayId=%d"
+                        + " selectedImeId=%s selectedSubtypeIndex=%d", showAuxSubtypes, displayId,
                 selectedImeId, selectedSubtypeIndex);
 
         if (selectedSubtypeIndex == NOT_A_SUBTYPE_INDEX) {
@@ -5322,7 +5322,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     void postInputMethodSettingUpdatedLocked(boolean resetDefaultEnabledIme,
             @UserIdInt int userId) {
-        ProtoLog.v(IMMS_DEBUG, "--- re-buildInputMethodList reset = %s"
+        ProtoLog.v(IMMS_DEBUG, "--- re-buildInputMethodList reset = %b"
                 + " \n ------ caller=%s", resetDefaultEnabledIme, Debug.getCallers(10));
         if (!mSystemReady) {
             Slog.e(TAG, "buildInputMethodListLocked is not allowed until system is ready");
@@ -5437,7 +5437,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (TextUtils.equals(currentDefaultVoiceImeId, newSystemVoiceIme.getId())) {
             return;
         }
-        ProtoLog.v(IMMS_DEBUG, "Enabling the default Voice IME: %s userId: %s", newSystemVoiceIme,
+        ProtoLog.v(IMMS_DEBUG, "Enabling the default Voice IME: %s userId: %d", newSystemVoiceIme,
                 userId);
         setInputMethodEnabledLocked(newSystemVoiceIme.getId(), true, userId);
         settings.putDefaultVoiceInputMethod(newSystemVoiceIme.getId());
