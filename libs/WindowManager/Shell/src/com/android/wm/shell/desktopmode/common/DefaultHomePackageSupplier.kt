@@ -78,13 +78,17 @@ class DefaultHomePackageSupplier(
                     .firstOrNull()
         }
 
+        var flags = PackageManager.MATCH_SYSTEM_ONLY
+        if (Flags.homePackageWindowingExemptionsBugFix()) {
+            flags = flags or PackageManager.MATCH_DISABLED_COMPONENTS
+        }
         val isSetupWizard =
             defaultHomePackage != null &&
                 context.packageManager.resolveActivityAsUser(
                     Intent()
                         .setPackage(defaultHomePackage)
                         .addCategory(Intent.CATEGORY_SETUP_WIZARD),
-                    PackageManager.MATCH_SYSTEM_ONLY,
+                    flags,
                     currentUserId,
                 ) != null
         if (isSetupWizard) {
