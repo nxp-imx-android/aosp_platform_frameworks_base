@@ -17,6 +17,7 @@ package com.android.systemui.notetask
 
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.notetask.NoteTaskEntryPoint.ACTION_CORNER
 import com.android.systemui.notetask.NoteTaskEntryPoint.APP_CLIPS
 import com.android.systemui.notetask.NoteTaskEntryPoint.KEYBOARD_SHORTCUT
 import com.android.systemui.notetask.NoteTaskEntryPoint.QS_NOTES_TILE
@@ -57,6 +58,9 @@ class NoteTaskEventLogger @Inject constructor(private val uiEventLogger: UiEvent
                 WIDGET_PICKER_SHORTCUT_LAUNCH_IN_ACTIVITY -> NOTE_OPENED_VIA_SHORTCUT
 
                 QUICK_AFFORDANCE -> NOTE_OPENED_VIA_KEYGUARD_QUICK_AFFORDANCE
+
+                ACTION_CORNER -> NoteTaskUiEvent.NOTE_OPENED_VIA_ACTION_CORNER
+
                 APP_CLIPS,
                 KEYBOARD_SHORTCUT,
                 QS_NOTES_TILE, // TODO(b/376640872): Add logging for QS Tile entry point.
@@ -83,6 +87,7 @@ class NoteTaskEventLogger @Inject constructor(private val uiEventLogger: UiEvent
                 APP_CLIPS,
                 KEYBOARD_SHORTCUT,
                 QS_NOTES_TILE,
+                ACTION_CORNER,
                 null -> return
             }
         uiEventLogger.log(event, info.uid, info.packageName)
@@ -108,7 +113,8 @@ class NoteTaskEventLogger @Inject constructor(private val uiEventLogger: UiEvent
         @UiEvent(doc = "Note closed via a tail button while device is unlocked")
         NOTE_CLOSED_VIA_STYLUS_TAIL_BUTTON(1311),
         @UiEvent(doc = "Note closed via a tail button while device is locked")
-        NOTE_CLOSED_VIA_STYLUS_TAIL_BUTTON_LOCKED(1312);
+        NOTE_CLOSED_VIA_STYLUS_TAIL_BUTTON_LOCKED(1312),
+        @UiEvent(doc = "Note opened via action corner") NOTE_OPENED_VIA_ACTION_CORNER(2541);
 
         override fun getId() = _id
     }

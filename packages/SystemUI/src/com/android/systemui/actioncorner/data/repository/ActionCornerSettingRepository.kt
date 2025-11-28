@@ -18,6 +18,7 @@ package com.android.systemui.actioncorner.data.repository
 
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_HOME
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_LOCKSCREEN
+import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTE
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTIFICATIONS
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_OVERVIEW
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_QUICK_SETTINGS
@@ -26,10 +27,12 @@ import android.provider.Settings.Secure.ACTION_CORNER_BOTTOM_RIGHT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_LEFT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_RIGHT_ACTION
 import android.provider.Settings.Secure.ActionCornerActionType
+import com.android.systemui.Flags
 import com.android.systemui.actioncorner.data.model.ActionType
 import com.android.systemui.actioncorner.data.model.ActionType.HOME
 import com.android.systemui.actioncorner.data.model.ActionType.LOCKSCREEN
 import com.android.systemui.actioncorner.data.model.ActionType.NONE
+import com.android.systemui.actioncorner.data.model.ActionType.NOTE
 import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
 import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
@@ -97,6 +100,7 @@ constructor(
             ACTION_CORNER_ACTION_NOTIFICATIONS -> NOTIFICATIONS
             ACTION_CORNER_ACTION_QUICK_SETTINGS -> QUICK_SETTINGS
             ACTION_CORNER_ACTION_LOCKSCREEN -> LOCKSCREEN
+            ACTION_CORNER_ACTION_NOTE -> if (Flags.enableNoteInActionCorner()) NOTE else NONE
             else -> NONE
         }
 }
