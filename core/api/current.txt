@@ -9977,7 +9977,7 @@ package android.app.privatecompute {
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class PccService extends android.app.Service {
-    ctor public PccService();
+    ctor protected PccService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onReceiveData(@NonNull android.os.Bundle, @NonNull String);
   }
