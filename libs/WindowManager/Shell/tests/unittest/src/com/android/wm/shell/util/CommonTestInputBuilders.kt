@@ -198,8 +198,10 @@ class AppCompatTransitionInfoTestInputBuilder : TestInputBuilder<AppCompatTransi
 
     var letterboxBounds: Rect = Rect()
 
+    var hasRoundedCorners: Boolean = false
+
     override fun build(): AppCompatTransitionInfo =
-        AppCompatTransitionInfo(letterboxBounds)
+        AppCompatTransitionInfo(letterboxBounds, hasRoundedCorners)
 }
 
 // [TestInputBuilder] for a [ComponentName]

@@ -240,6 +240,14 @@ class AppCompatLetterboxPolicy {
         return mAppCompatRoundedCorners.getRoundedCornersRadius(mainWindow);
     }
 
+    /**
+     * @return {@code true} if rounded corners have been applied to the main window.
+     */
+    boolean hasMainWindowRoundedCorners() {
+        final WindowState mainWin = mActivityRecord.findMainWindow();
+        return mainWin != null && getRoundedCornersRadius(mainWin) > 0;
+    }
+
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         final WindowState mainWin = mActivityRecord.findMainWindow();
         if (mainWin == null) {
