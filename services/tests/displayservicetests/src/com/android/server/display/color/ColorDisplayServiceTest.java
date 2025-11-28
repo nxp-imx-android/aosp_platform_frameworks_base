@@ -52,7 +52,8 @@ import android.provider.Settings.Secure;
 import android.provider.Settings.System;
 import android.test.mock.MockContentResolver;
 import android.view.Display;
-
+import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityManager;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -1267,7 +1268,8 @@ public class ColorDisplayServiceTest {
 
         mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
 
-        assertDisplayInversionObserverRegistered(mUserId);
+        assertAccessibilityObserverRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED);
     }
 
     @Test
@@ -1281,7 +1283,8 @@ public class ColorDisplayServiceTest {
 
         mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
 
-        assertDisplayInversionObserverNotRegistered(mUserId);
+        assertAccessibilityObserverNotRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED);
     }
 
     @Test
@@ -1295,7 +1298,89 @@ public class ColorDisplayServiceTest {
 
         mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
 
-        assertDisplayInversionObserverNotRegistered(mUserId);
+        assertAccessibilityObserverNotRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void onUserChanged_userNotSetupAndDaltonizerEnabledInSuw_registersObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0, mUserId);
+        doReturn(true)
+                .when(mResourcesSpy)
+                .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertAccessibilityObserverRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void
+            onUserChanged_userNotSetupAndDaltonizerDisabledInSuwByConfig_doesNotRegisterObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0, mUserId);
+        doReturn(false)
+                .when(mResourcesSpy)
+                .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertAccessibilityObserverNotRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void
+            onUserChanged_userNotSetupAndDaltonizerDisabledInSuwByFlag_doesNotRegisterObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0, mUserId);
+        doReturn(true)
+                .when(mResourcesSpy)
+                .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertAccessibilityObserverNotRegistered(
+                mUserId, Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void
+            restoreDaltonizerSettings_userNotSetupAndDaltonizerSuwEnabled_doesNotApplyDaltonizer() {
+        if (!mContext.getResources().getConfiguration().isScreenWideColorGamut()) {
+            return;
+        }
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0, mUserId);
+        doReturn(true)
+                .when(mResourcesSpy)
+                .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard);
+        setAccessibilityColorCorrection(true);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertActiveColorMode(ColorDisplayManager.COLOR_MODE_NATURAL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void
+            restoreDaltonizerSettings_userSetupCompleteAndDaltonizerSuwEnabled_appliesDaltonizer() {
+        if (!mContext.getResources().getConfiguration().isScreenWideColorGamut()) {
+            return;
+        }
+        doReturn(true)
+                .when(mResourcesSpy)
+                .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard);
+        setAccessibilityColorCorrection(true);
+        setColorMode(ColorDisplayManager.COLOR_MODE_NATURAL);
+
+        startService();
+
+        assertActiveColorMode(
+                mContext.getResources().getInteger(R.integer.config_accessibilityColorMode));
     }
 
     /**
@@ -1451,28 +1536,30 @@ public class ColorDisplayServiceTest {
     }
 
     /**
-     * Convenience method for asserting that the content observer for display inversion is
+     * Convenience method for asserting that the content observer for an accessibility setting is
      * registered for a specific user.
      *
      * @param userId The user ID.
+     * @param accessibilitySetting accessibility setting.
      */
-    private void assertDisplayInversionObserverRegistered(int userId) {
+    private void assertAccessibilityObserverRegistered(int userId, String accessibilitySetting) {
         verify(mContext.getContentResolver()).registerContentObserver(
-                eq(Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED)),
+                eq(Secure.getUriFor(accessibilitySetting)),
                 anyBoolean(),
                 any(ContentObserver.class),
                 eq(userId));
     }
 
     /**
-     * Convenience method for asserting that the content observer for display inversion is NOT
-     * registered for a specific user.
+     * Convenience method for asserting that the content observer for display inversion an
+     * accessibility setting is NOT registered for a specific user.
      *
      * @param userId The user ID.
+     * @param accessibilitySetting the accessibility setting.
      */
-    private void assertDisplayInversionObserverNotRegistered(int userId) {
+    private void assertAccessibilityObserverNotRegistered(int userId, String accessibilitySetting) {
         verify(mContext.getContentResolver(), never()).registerContentObserver(
-                eq(Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED)),
+                eq(Secure.getUriFor(accessibilitySetting)),
                 anyBoolean(),
                 any(ContentObserver.class),
                 eq(userId));

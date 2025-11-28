@@ -87,9 +87,9 @@ public class SettingsHelper {
     private static final String ERROR_FAILED_TO_RESTORE_SETTING = "failed_to_restore_setting";
 
     /**
-     * Restored status for color inversion settings.
+     * Restored status for accessibility settings.
      */
-    public enum ColorInversionStatus {
+    public enum SettingRestoreStatus {
         RESTORED_DISABLED(-2),
         RESTORED_ENABLED(-1),
         ENABLED(1),
@@ -97,7 +97,7 @@ public class SettingsHelper {
 
         private final int value;
 
-        ColorInversionStatus(int value) {
+        SettingRestoreStatus(int value) {
             this.value = value;
         }
 
@@ -321,15 +321,38 @@ public class SettingsHelper {
                 // before the Setup Wizard finishes.
                 try {
                     int intValue = Integer.parseInt(value);
-                    if (intValue == ColorInversionStatus.ENABLED.getValue()) {
-                        value = String.valueOf(ColorInversionStatus.RESTORED_ENABLED.getValue());
-                    } else if (intValue == ColorInversionStatus.DISABLED.getValue()) {
-                        value = String.valueOf(ColorInversionStatus.RESTORED_DISABLED.getValue());
+                    if (intValue == SettingRestoreStatus.ENABLED.getValue()) {
+                        value = String.valueOf(SettingRestoreStatus.RESTORED_ENABLED.getValue());
+                    } else if (intValue == SettingRestoreStatus.DISABLED.getValue()) {
+                        value = String.valueOf(SettingRestoreStatus.RESTORED_DISABLED.getValue());
                     }
                     // Unrecognized integer values fall through to write the original setting.
                 } catch (NumberFormatException e) {
                     // Non-integer values also fall through.
                     Log.w(TAG, "Unexpected non-integer value for color inversion: " + value);
+                }
+                // Fall through to write the setting.
+            } else if (Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED.equals(name)
+                    && isColorDaltonizerInSetupWizardEnabled(context)
+                    && !isUserSetupCompleted(cr)) {
+                Log.i(TAG, "Color daltonizer setting is restored: " + name + " " + value);
+                // If the value is null, don't restore.
+                if (value == null) {
+                    return;
+                }
+                // Map the restored value to a temporary value to avoid it taking effect
+                // before the Setup Wizard finishes.
+                try {
+                    int intValue = Integer.parseInt(value);
+                    if (intValue == SettingRestoreStatus.ENABLED.getValue()) {
+                        value = String.valueOf(SettingRestoreStatus.RESTORED_ENABLED.getValue());
+                    } else if (intValue == SettingRestoreStatus.DISABLED.getValue()) {
+                        value = String.valueOf(SettingRestoreStatus.RESTORED_DISABLED.getValue());
+                    }
+                    // Unrecognized integer values fall through to write the original setting.
+                } catch (NumberFormatException e) {
+                    // Non-integer values also fall through.
+                    Log.w(TAG, "Unexpected non-integer value for color daltonizer: " + value);
                 }
                 // Fall through to write the setting.
             }
@@ -385,6 +408,14 @@ public class SettingsHelper {
         return context.getResources().getBoolean(
                  com.android.internal.R.bool.config_enableColorInversionInSetupWizard)
                  && com.android.server.accessibility.Flags.enableColorInversionInSuw();
+    }
+
+    private static boolean isColorDaltonizerInSetupWizardEnabled(Context context) {
+        return context.getResources()
+                        .getBoolean(
+                                com.android.internal.R.bool
+                                        .config_enableColorDaltonizerInSetupWizard)
+                && com.android.server.accessibility.Flags.enableColorDaltonizerInSuw();
     }
 
     private static boolean isUserSetupCompleted(ContentResolver cr) {
