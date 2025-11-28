@@ -42,7 +42,8 @@ import java.util.Set;
 /**
  * Handles blocking access to the camera for apps running on virtual devices.
  */
-class CameraAccessController extends CameraManager.AvailabilityCallback implements AutoCloseable {
+final class CameraAccessController extends CameraManager.AvailabilityCallback
+        implements AutoCloseable {
     private static final String TAG = "CameraAccessController";
 
     private final Object mLock = new Object();

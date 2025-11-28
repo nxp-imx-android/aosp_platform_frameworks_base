@@ -69,7 +69,7 @@ import java.util.Objects;
  * <p>This class enforces session creation policies, such as limiting the number of concurrent
  * sessions and preventing creation when the device is locked.
  */
-public class ComputerControlSessionProcessor {
+public final class ComputerControlSessionProcessor {
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 

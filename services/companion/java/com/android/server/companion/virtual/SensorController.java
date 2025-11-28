@@ -52,7 +52,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Controls virtual sensors, including their lifecycle and sensor event dispatch. */
-public class SensorController {
+final class SensorController {
 
     private static final String TAG = "SensorController";
 
