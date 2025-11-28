@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.UserHandle
 import android.util.SparseArray
+import com.android.window.flags.Flags
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -52,18 +53,31 @@ class DefaultHomePackageSupplier(
         context.registerReceiverForAllUsers(
             this,
             IntentFilter(Intent.ACTION_PREFERRED_ACTIVITY_CHANGED),
-            null /* broadcastPermission */,
+            null, /* broadcastPermission */
             mainHandler,
         )
     }
 
     private fun updateDefaultHomePackage(): String? {
         val currentUserId = shellController.currentUserId
-        var defaultHomePackage =
-            context
-                .getSystemService(RoleManager::class.java)
-                .getRoleHoldersAsUser(RoleManager.ROLE_HOME, UserHandle.of(currentUserId))
-                .firstOrNull()
+
+        var defaultHomePackage: String?
+        if (Flags.homePackageWindowingExemptionsBugFix()) {
+            val defaultHomeInfo =
+                context.packageManager.resolveActivityAsUser(
+                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
+                    0,
+                    currentUserId,
+                )
+            defaultHomePackage = defaultHomeInfo?.let { defaultHomeInfo.activityInfo.packageName }
+        } else {
+            defaultHomePackage =
+                context
+                    .getSystemService(RoleManager::class.java)
+                    .getRoleHoldersAsUser(RoleManager.ROLE_HOME, UserHandle.of(currentUserId))
+                    .firstOrNull()
+        }
+
         val isSetupWizard =
             defaultHomePackage != null &&
                 context.packageManager.resolveActivityAsUser(
@@ -76,6 +90,7 @@ class DefaultHomePackageSupplier(
         if (isSetupWizard) {
             defaultHomePackage = null
         }
+
         defaultHomePackageUserMap.put(currentUserId, defaultHomePackage)
         return defaultHomePackage
     }
