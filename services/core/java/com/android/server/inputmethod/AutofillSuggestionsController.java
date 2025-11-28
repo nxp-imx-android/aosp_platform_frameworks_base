@@ -40,9 +40,7 @@ final class AutofillSuggestionsController {
 
     @NonNull private final InputMethodBindingController mBindingController;
 
-    /**
-     * The host input token of the input method that is currently associated with this controller.
-     */
+    /** The host input token of the IME that is currently associated with this controller. */
     @GuardedBy("ImfLock.class")
     @Nullable
     private IBinder mCurHostInputToken;
@@ -84,11 +82,17 @@ final class AutofillSuggestionsController {
         mBindingController = bindingController;
     }
 
+    /**
+     * Clears the host input token of the IME that is currently associated with this controller.
+     */
     @GuardedBy("ImfLock.class")
-    void onResetSystemUi() {
+    void clearHostInputToken() {
         mCurHostInputToken = null;
     }
 
+    /**
+     * Returns the host input token of the IME that is currently associated with this controller.
+     */
     @Nullable
     @GuardedBy("ImfLock.class")
     IBinder getCurHostInputToken() {
@@ -100,11 +104,10 @@ final class AutofillSuggestionsController {
             InlineSuggestionsRequestCallback callback, boolean touchExplorationEnabled) {
         clearPendingInlineSuggestionsRequest();
         mInlineSuggestionsRequestCallback = callback;
-
-        // Note that current user ID is guaranteed to be userId.
-        final var imeId = mBindingController.getSelectedMethodId();
-        final InputMethodInfo imi = InputMethodSettingsRepository.get(
-                mBindingController.getUserId()).getMethodMap().get(imeId);
+        final int userId = mBindingController.getUserId();
+        final var imeId = mBindingController.getSelectedImeId();
+        final InputMethodInfo imi = InputMethodSettingsRepository.get(userId).getMethodMap()
+                .get(imeId);
         if (imi == null || !isInlineSuggestionsEnabled(imi, touchExplorationEnabled)) {
             callback.onInlineSuggestionsUnsupported();
             return;
@@ -112,7 +115,7 @@ final class AutofillSuggestionsController {
 
         mPendingInlineSuggestionsRequest = new CreateInlineSuggestionsRequest(
                 requestInfo, callback, imi.getPackageName());
-        if (mBindingController.getCurMethod() != null) {
+        if (mBindingController.getCurIme() != null) {
             // In the normal case when the IME is connected, we can make the request here.
             performOnCreateInlineSuggestionsRequest();
         } else {
@@ -130,19 +133,19 @@ final class AutofillSuggestionsController {
         if (mPendingInlineSuggestionsRequest == null) {
             return;
         }
-        IInputMethodInvoker curMethod = mBindingController.getCurMethod();
+        final IInputMethodInvoker curIme = mBindingController.getCurIme();
         if (DEBUG) {
-            Slog.d(TAG, "Performing onCreateInlineSuggestionsRequest. mCurMethod = " + curMethod);
+            Slog.d(TAG, "Performing onCreateInlineSuggestionsRequest. mCurIme = " + curIme);
         }
-        if (curMethod != null) {
+        if (curIme != null) {
             final IInlineSuggestionsRequestCallback callback =
                     new InlineSuggestionsRequestCallbackDecorator(
                             mPendingInlineSuggestionsRequest.mCallback,
                             mPendingInlineSuggestionsRequest.mPackageName,
-                            mBindingController.getCurTokenDisplayId(),
+                            mBindingController.getCurDisplayId(),
                             mBindingController.getCurToken());
-            curMethod.onCreateInlineSuggestionsRequest(
-                    mPendingInlineSuggestionsRequest.mRequestInfo, callback);
+            curIme.onCreateInlineSuggestionsRequest(mPendingInlineSuggestionsRequest.mRequestInfo,
+                    callback);
         } else {
             Slog.w(TAG, "No IME connected! Abandoning inline suggestions creation request.");
         }
