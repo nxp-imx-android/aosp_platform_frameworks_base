@@ -39,7 +39,10 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 /** Base scenario test for moving a projected task to another display via the keyboard shortcut. */
 @Ignore("Test Base Class")
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+@RequiresFlagsEnabled(
+    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+    Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
+)
 abstract class MoveToNextDisplayProjected {
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())

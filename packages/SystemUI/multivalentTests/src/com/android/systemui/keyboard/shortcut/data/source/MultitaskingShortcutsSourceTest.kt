@@ -37,6 +37,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.window.flags.Flags
+import com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
 import com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.google.common.truth.Truth.assertThat
@@ -144,6 +145,7 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
+        Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
         Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     )
     fun shortcutGroups_containsDesktopShortcuts() {
@@ -158,6 +160,7 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
+        Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
         Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     )
     fun shortcutGroups_desktopDisabled_doesNotContainDesktopShortcuts() {
