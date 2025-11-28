@@ -20,7 +20,6 @@ import static android.view.DisplayCutout.NO_CUTOUT;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
@@ -53,6 +52,7 @@ import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
 import android.view.InsetsSource;
@@ -61,7 +61,8 @@ import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.Assume;
+import com.android.window.flags.Flags;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,7 +70,6 @@ import org.junit.runner.RunWith;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class DisplayPolicyTests extends WindowTestsBase {
-
     private WindowState createOpaqueFullscreen(boolean hasLightNavBar) {
         final WindowState win = newWindowBuilder("opaqueFullscreen", TYPE_BASE_APPLICATION).build();
         final WindowManager.LayoutParams attrs = win.mAttrs;
@@ -478,9 +478,9 @@ public class DisplayPolicyTests extends WindowTestsBase {
     }
 
     @SetupWindows(addWindows = { W_ACTIVITY, W_NAVIGATION_BAR })
+    @DisableFlags(Flags.FLAG_ENABLE_TRANSIENT_GESTURE_IN_SYSTEM_UI)
     @Test
     public void testCanSystemBarsBeShownByUser() {
-        Assume.assumeFalse(CLIENT_TRANSIENT);
         ((TestWindowManagerPolicy) mWm.mPolicy).mIsUserSetupComplete = true;
         mAppWindow.mAttrs.insetsFlags.behavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
         mAppWindow.setRequestedVisibleTypes(0, navigationBars());
@@ -500,9 +500,9 @@ public class DisplayPolicyTests extends WindowTestsBase {
     }
 
     @UseTestDisplay(addWindows = { W_NAVIGATION_BAR })
+    @DisableFlags(Flags.FLAG_ENABLE_TRANSIENT_GESTURE_IN_SYSTEM_UI)
     @Test
     public void testTransientBarsSuppressedOnDreams() {
-        Assume.assumeFalse(CLIENT_TRANSIENT);
         final WindowState win = createDreamWindow();
 
         ((TestWindowManagerPolicy) mWm.mPolicy).mIsUserSetupComplete = true;
