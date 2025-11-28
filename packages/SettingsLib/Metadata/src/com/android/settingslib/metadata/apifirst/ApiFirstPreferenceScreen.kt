@@ -46,6 +46,10 @@ abstract class ApiFirstPreferenceScreen(
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
             for (preference in preferencesList) {
+                preference.apply {
+                    screenPermissions = preferencesPermissions
+                    screenPreconditions = preferencesPreconditionsFun
+                }
                 +preference
             }
         }
