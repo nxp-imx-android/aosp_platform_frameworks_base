@@ -123,6 +123,7 @@ import com.android.internal.policy.AttributeCache;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
+import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -1855,7 +1856,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestStartingWindowOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestStartingWindowOrganizer extends StubOrganizer {
         private final ActivityTaskManagerService mAtm;
         private final WindowManagerService mWMService;
         private final SparseArray<IBinder> mTaskAppMap = new SparseArray<>();
@@ -1901,7 +1902,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestSplitOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestSplitOrganizer extends StubOrganizer {
         final ActivityTaskManagerService mService;
         final TaskDisplayArea mDefaultTDA;
         Task mPrimary;
@@ -1962,7 +1963,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestDesktopOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestDesktopOrganizer extends StubOrganizer {
         final int mDesktopModeDefaultWidthDp = 840;
         final int mDesktopModeDefaultHeightDp = 630;
         final int mDesktopDensity = 284;

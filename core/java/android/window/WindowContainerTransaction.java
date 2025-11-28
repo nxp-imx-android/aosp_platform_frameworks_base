@@ -636,7 +636,8 @@ public final class WindowContainerTransaction implements Parcelable {
      *
      * <p>When {@code true}, the system will call Shell to do gatekeeping during the package update
      * process. This means that when the task is going through the package update process and
-     * before the process is killed, shell will get a signal to prepare the task if needed.
+     * before the process is killed, shell will get a signal to prepare the task if needed. Note
+     * that this needs to be set per leaf task.
      *
      * @param taskContainer          The window container of the task.
      * @param handlePackageUpdate {@code true} to allow package update for task to be handled
@@ -647,6 +648,7 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction setHandlePackageUpdateForTask(
             @NonNull WindowContainerToken taskContainer,
             boolean handlePackageUpdate) {
+        // TODO(b/458105923) This should probably only apply to root tasks.
         if (!Flags.enableAppRestartAfterUpdate()) {
             return this;
         }
@@ -1461,6 +1463,28 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Signals WMCore to continue with the PackageUpdate process.
+     *
+     * <p> When set, the system will mark the task as handled and continue with the rest of
+     * the package update process for the given task.
+     *
+     * @param taskContainer        The window container of the task.
+     * @see TaskOrganizer#onPackageUpdateRequested
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction continuePackageUpdate(
+            @NonNull WindowContainerToken taskContainer) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return this;
+        }
+        mHierarchyOps.add(
+                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE)
+                        .setContainer(taskContainer.asBinder()).build());
+        return this;
+    }
+
+    /**
      * Merges another WCT into this one.
      * @param transfer When true, this will transfer everything from other potentially leaving
      *                 other in an unusable state. When false, other is left alone, but
@@ -2080,6 +2104,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 26;
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 27;
         public static final int HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE = 28;
+        public static final int HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE = 29;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -2111,6 +2136,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE,
                 HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN,
                 HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE,
+                HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2610,6 +2636,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN:
                     return "disallowOverrideBoundsForChildren";
                 case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE: return "setAnimationDelegate";
+                case HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE: return "setPackageUpdateHandled";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2728,6 +2755,9 @@ public final class WindowContainerTransaction implements Parcelable {
                     break;
                 case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE:
                     sb.append(" caller=").append(mCaller);
+                    break;
+                case HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE:
+                    sb.append(" packageUpdateHandled=").append(mContainer);
                     break;
                 default:
                     sb.append("container=").append(mContainer)

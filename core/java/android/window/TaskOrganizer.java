@@ -16,6 +16,8 @@
 
 package android.window;
 
+import static android.view.WindowManager.TRANSIT_TO_BACK;
+
 import android.annotation.BinderThread;
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
@@ -245,6 +247,23 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull TransitionRequestInfo request) {}
 
     /**
+     * Called when a package update is initiated. If this method is overridden, the implementer must
+     * use {@link WindowContainerTransaction#continuePackageUpdate} to continue the update.
+     *
+     * @param updatingTasks The tasks that are going through the package update process.
+     * @hide
+     */
+    @BinderThread
+    public void onPackageUpdateRequested(
+            @NonNull List<ActivityManager.RunningTaskInfo> updatingTasks) {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        for (int i = 0; i < updatingTasks.size(); i++) {
+            wct.continuePackageUpdate(updatingTasks.get(i).token);
+        }
+        startNewTransition(TRANSIT_TO_BACK, wct);
+    }
+
+    /**
      * @deprecated Use {@link #createRootTask(CreateRootTaskRequest)}
      * @hide
      */
@@ -472,6 +491,11 @@ public class TaskOrganizer extends WindowOrganizer {
         @Override
         public void requestStartTransition(IBinder iBinder, TransitionRequestInfo request) {
             mExecutor.execute(() -> TaskOrganizer.this.requestStartTransition(iBinder, request));
+        }
+
+        @Override
+        public void onPackageUpdateRequested(List<ActivityManager.RunningTaskInfo> updatingTasks) {
+            mExecutor.execute(() -> TaskOrganizer.this.onPackageUpdateRequested(updatingTasks));
         }
     };
 

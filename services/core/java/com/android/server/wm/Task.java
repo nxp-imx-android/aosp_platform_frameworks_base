@@ -6051,6 +6051,19 @@ class Task extends TaskFragment {
         }
     }
 
+    void continuePackageUpdate() {
+        // If the task is not marked to be handled, do nothing.
+        if (Flags.enableAppRestartAfterUpdate() && !mHandlePackageUpdate) {
+            return;
+        }
+
+        final ActivityRecord rootActivity = getRootActivity();
+        if (rootActivity == null) {
+            return;
+        }
+        rootActivity.app.onTaskPackageUpdateHandled(this);
+    }
+
     boolean dump(FileDescriptor fd, PrintWriter pw, boolean dumpAll, boolean dumpClient,
             String dumpPackage, final boolean needSep) {
         return dump("  ", fd, pw, dumpAll, dumpClient, dumpPackage, needSep, null /* header */);
