@@ -16,7 +16,9 @@
 package android.view.contentcapture;
 
 import static android.view.contentcapture.ContentCaptureManager.NO_SESSION_ID;
+import static android.view.contentcapture.flags.Flags.deprecateSetContentCaptureEnabled;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -59,8 +61,14 @@ public final class ContentCaptureContext implements Parcelable {
      * in which case the service will just receive activity-level events.
      *
      * @hide
+     *
+     * @deprecated For apps targeting SDK 37 and higher, this flag is deprecated. To opt
+     * out of content capture, you should use
+     * {@link android.view.WindowManager.LayoutParams#FLAG_SECURE}.
      */
     @SystemApi
+    @Deprecated
+    @FlaggedApi("android.view.contentcapture.flags.deprecate_set_content_capture_enabled")
     public static final int FLAG_DISABLED_BY_APP = 0x1;
 
     /**
