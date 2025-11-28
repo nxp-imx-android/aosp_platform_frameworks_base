@@ -373,6 +373,14 @@ interface IActivityTaskManager {
     void setRunningRemoteTransitionDelegate(in IBinder transition);
 
     /**
+     * Simulate inject touch event to trigger potential focus change in the server.
+     * Called when navigation bar is about to trigger back event but won't inject back key to input
+     * manager.
+     * @param displayId Id of the display the user just touched.
+     */
+    void simulateTouchDisplay(int displayId);
+
+    /**
      * Prepare the back navigation in the server. This setups the leashed for sysui to animate
      * the back gesture and returns the data needed for the animation.
      * @param navigationObserver a remote callback to nofify shell when the focused window is gone,

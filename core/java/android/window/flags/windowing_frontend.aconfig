@@ -541,3 +541,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "simulate_touch_display_from_navigation_back"
+    namespace: "windowing_frontend"
+    description: "Trigger potential display focus change for non-gesture input because SystemUI won't inject input event."
+    bug: "461642122"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
