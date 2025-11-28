@@ -144,6 +144,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -2823,6 +2824,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(Configuration.ORIENTATION_LANDSCAPE, activityConfig.orientation);
     }
 
+    @DisableFlags(Flags.FLAG_REMOVE_LEGACY_ORIENTATION_REPORT)
     @Test
     public void testReportOrientationChange() {
         final Task task = new TaskBuilder(mSupervisor)
