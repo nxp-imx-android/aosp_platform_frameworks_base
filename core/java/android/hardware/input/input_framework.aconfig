@@ -78,13 +78,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_color_inversion_key_gestures"
-    namespace: "accessibility"
-    description: "Adds key gestures for display color inversion for accessibility needs"
-    bug: "383730505"
-}
-
-flag {
     name: "enable_color_inversion_key_gestures"
     namespace: "accessibility"
     description: "Adds key gestures for color inversion for accessibility needs"
