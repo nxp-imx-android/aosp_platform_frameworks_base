@@ -28,6 +28,8 @@ import static com.android.server.accessibility.AccessibilityInputFilter.FLAG_FEA
 import static com.android.server.accessibility.AccessibilityInputFilter.FLAG_FEATURE_TOUCH_EXPLORATION;
 import static com.android.server.accessibility.AccessibilityInputFilter.FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,6 +39,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -88,6 +91,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -575,7 +579,41 @@ public class AccessibilityInputFilterTest {
         upEvent.recycle();
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_A11Y_ACTION_CANCEL_ON_RESET)
+    public void testDisableFeatures_withActiveTouch_injectsCancelEvent() {
+        // Enable Touch Exploration to track events. Spy on filter to intercept output.
+        AccessibilityInputFilter spyFilter = spy(mA11yInputFilter);
+        doNothing().when(spyFilter).sendInputEvent(any(), anyInt());
+        spyFilter.onInstalled();
+        spyFilter.setUserAndEnabledFeatures(0, FLAG_FEATURE_TOUCH_EXPLORATION);
 
+        // Send ACTION_DOWN to start a touch sequence.
+        long downTime = SystemClock.uptimeMillis();
+        MotionEvent downEvent = MotionEvent.obtain(downTime, downTime,
+                MotionEvent.ACTION_DOWN, 100, 100, 0);
+        downEvent.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+        downEvent.setDisplayId(DEFAULT_DISPLAY);
+        spyFilter.onInputEvent(downEvent, FLAG_PASS_TO_USER);
+
+        // Disable features while pointers are down to trigger stream reset.
+        spyFilter.setUserAndEnabledFeatures(0, 0);
+
+        // Verify the last outgoing event was ACTION_CANCEL.
+        ArgumentCaptor<InputEvent> eventCaptor = ArgumentCaptor.forClass(InputEvent.class);
+        verify(spyFilter, atLeastOnce()).sendInputEvent(eventCaptor.capture(),
+                eq(FLAG_PASS_TO_USER));
+        List<InputEvent> capturedEvents = eventCaptor.getAllValues();
+        assertThat(capturedEvents).isNotEmpty();
+        InputEvent lastEvent = capturedEvents.getLast();
+        assertThat(lastEvent).isInstanceOf(MotionEvent.class);
+        MotionEvent lastMotionEvent = (MotionEvent) lastEvent;
+        assertThat(lastMotionEvent.getActionMasked()).isEqualTo(MotionEvent.ACTION_CANCEL);
+        assertThat(lastMotionEvent.getSource()).isEqualTo(InputDevice.SOURCE_TOUCHSCREEN);
+        assertThat(lastMotionEvent.getDisplayId()).isEqualTo(DEFAULT_DISPLAY);
+
+        downEvent.recycle();
+    }
 
     private Display createStubDisplay(DisplayInfo displayInfo) {
         final int displayId = sNextDisplayId++;
