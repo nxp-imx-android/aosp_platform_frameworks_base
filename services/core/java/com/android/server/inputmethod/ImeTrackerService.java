@@ -732,13 +732,14 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 pw.print(" - " + mTag);
                 pw.println(" (" + mDuration + "ms):");
 
-                pw.print(prefix);
-                pw.print("  startTime=" + formatter.format(Instant.ofEpochMilli(mStartWallTimeMs)));
+                final String innerPrefix = prefix + "  ";
+                pw.print(innerPrefix);
+                pw.print("startTime=" + formatter.format(Instant.ofEpochMilli(mStartWallTimeMs)));
                 pw.print(" (timestamp=" + mStartTimestampMs + ")");
                 pw.println(" " + ImeTracker.Debug.originToString(mOrigin));
 
-                pw.print(prefix);
-                pw.print("  reason=" + InputMethodDebug.softInputDisplayReasonToString(mReason));
+                pw.print(innerPrefix);
+                pw.print("reason=" + InputMethodDebug.softInputDisplayReasonToString(mReason));
                 pw.print(" " + ImeTracker.Debug.phaseToString(mPhase));
 
                 if (mStatus == ImeTracker.STATUS_TIMEOUT) {
@@ -747,11 +748,12 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 }
                 pw.println();
 
-                pw.print("  mUserId: " + mUserId);
-                pw.println("  mDisplayId: " + mDisplayId);
+                pw.print(innerPrefix);
+                pw.print("userId=" + mUserId);
+                pw.println(" displayId=" + mDisplayId);
 
-                pw.print(prefix);
-                pw.println("  requestWindowName=" + mRequestWindowName);
+                pw.print(innerPrefix);
+                pw.println("requestWindowName=" + mRequestWindowName);
             }
 
             @Override
