@@ -6506,4 +6506,11 @@
   <java-symbol type="bool" name="config_supportContextualModeSync"/>
     <!-- If supported, should contextual mode sync be enabled by default. -->
   <java-symbol type="bool" name="config_enableContextualModeSyncByDefault"/>
+
+  <!-- TV Watchdog configuration -->
+  <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
+  <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />
+  <java-symbol type="integer" name="config_tvWatchdogUserPackageSettingsResetDays" />
+  <java-symbol type="integer" name="config_tvWatchdogRecurringOverusePeriodInDays" />
+  <java-symbol type="integer" name="config_tvWatchdogRecurringOveruseTimes" />
 </resources>
