@@ -309,6 +309,24 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testResolveOverrideConfiguration_clearsActivityTypeInRequestedConfig() {
+        // Set a requested override configuration with a specific activity type.
+        Configuration requestedOverride = new Configuration();
+        requestedOverride.windowConfiguration.setActivityType(ACTIVITY_TYPE_HOME);
+        mWpc.onRequestedOverrideConfigurationChanged(requestedOverride);
+
+        // After a configuration change, the requested override should have its activity type
+        // cleared. This is because resolveOverrideConfiguration modifies the requested config
+        // directly.
+        assertEquals(ACTIVITY_TYPE_UNDEFINED,
+                mWpc.getRequestedOverrideConfiguration().windowConfiguration.getActivityType());
+
+        // And the resolved config should also have it cleared.
+        assertEquals(ACTIVITY_TYPE_UNDEFINED,
+                mWpc.getResolvedOverrideConfiguration().windowConfiguration.getActivityType());
+    }
+
+    @Test
     public void testCachedStateConfigurationChange() throws RemoteException {
         doReturn(true).when(mClientLifecycleManager).scheduleTransactionItemNow(any(), any());
         final IApplicationThread thread = mWpc.getThread();
