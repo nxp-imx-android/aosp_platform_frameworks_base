@@ -57,7 +57,7 @@
     <item msgid="4875147066469902392">"الميزة مفعّلة"</item>
   </string-array>
   <string-array name="tile_states_modes_dnd">
-    <item msgid="6509540227356524582">"غير متوفّر"</item>
+    <item msgid="6509540227356524582">"غير متاحة"</item>
     <item msgid="8589336868985358191">"غير مفعَّل"</item>
     <item msgid="726072717827778234">"مفعّل"</item>
   </string-array>
@@ -112,7 +112,7 @@
     <item msgid="630890598801118771">"الميزة مفعّلة"</item>
   </string-array>
   <string-array name="tile_states_work">
-    <item msgid="389523503690414094">"الميزة غير متاحة"</item>
+    <item msgid="389523503690414094">"غير متاحة"</item>
     <item msgid="8045580926543311193">"الميزة غير مفعّلة"</item>
     <item msgid="4913460972266982499">"الميزة مفعّلة"</item>
   </string-array>
