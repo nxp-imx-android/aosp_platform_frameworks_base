@@ -15,6 +15,7 @@
  */
 package com.android.settingslib.bluetooth;
 
+import static com.android.settingslib.flags.Flags.FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_BLUETOOTH_DIAGNOSIS;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_LE_AUDIO_SHARING;
 import static com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.UiModeManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothCsipSetCoordinator;
 import android.bluetooth.BluetoothDevice;
@@ -117,6 +119,8 @@ public class CachedBluetoothDeviceTest {
     private HapClientProfile mHapClientProfile;
     @Mock
     private LeAudioProfile mLeAudioProfile;
+    @Mock
+    private UiModeManager mUiModeManager;
 
     @Mock
     private HidProfile mHidProfile;
@@ -148,7 +152,8 @@ public class CachedBluetoothDeviceTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mSetFlagsRule.enableFlags(FLAG_ENABLE_LE_AUDIO_SHARING);
-        mContext = RuntimeEnvironment.application;
+        mContext = spy(RuntimeEnvironment.application);
+        doReturn(mUiModeManager).when(mContext).getSystemService(UiModeManager.class);
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mShadowBluetoothAdapter = Shadow.extract(BluetoothAdapter.getDefaultAdapter());
         mShadowBluetoothAdapter.setIsLeAudioBroadcastSourceSupported(
@@ -244,6 +249,51 @@ public class CachedBluetoothDeviceTest {
         BluetoothProfile.CONNECTION_POLICY_UNKNOWN, null);
         testTransitionFromConnectingToDisconnected(mLeAudioProfile, mA2dpProfile,
         BluetoothProfile.CONNECTION_POLICY_UNKNOWN, null);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER)
+    public void onProfileStateChanged_a2dpDisconnected_isAndroidAuto_noConnectionFailure() {
+        // Arrange
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mA2dpProfile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(mA2dpProfile.isEnabled(mDevice)).thenReturn(true);
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+        // Set another profile to connected so that isConnected() is true.
+        updateProfileStatus(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+
+        // Act: A2DP transitions from connecting to disconnected
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_DISCONNECTED);
+
+        // Assert: No connection timeout summary because it's Android Auto
+        assertThat(mCachedDevice.getConnectionSummary()).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER)
+    public void onProfileStateChanged_a2dpDisconnected_notAndroidAuto_showsConnectionFailure() {
+        // Arrange
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mA2dpProfile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(mA2dpProfile.isEnabled(mDevice)).thenReturn(true);
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_NONE);
+
+        // Set another profile to connected so that isConnected() is true.
+        updateProfileStatus(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+
+        // Act: A2DP transitions from connecting to disconnected
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_DISCONNECTED);
+
+        // Assert: Connection timeout summary is shown
+        String connectTimeoutString = mContext.getString(R.string.profile_connect_timeout_subtext);
+        assertThat(mCachedDevice.getConnectionSummary()).isEqualTo(connectTimeoutString);
     }
 
     @Test
