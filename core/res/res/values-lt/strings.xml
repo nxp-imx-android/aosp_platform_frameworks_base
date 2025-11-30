@@ -280,8 +280,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Paleisti iš naujo"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Skubus atvejis"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Pranešimas apie riktą"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Atsiliepimai"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Baigti seansą"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Ekrano kopija"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Budėjimo laikas"</string>
@@ -648,6 +647,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Leidžia programai pasiekti vietinio tinklo įrenginius"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"naudoti atgalinio ciklo sąsają"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Programai leidžiama sąveikauti su kitomis programomis per atgalinio ciklo sąsają"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"nustatyti apytikslę netoliese esančių įrenginių poziciją"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Leisti programai nustatyti apytikslę netoliese esančių įrenginių poziciją"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Pageidaujama ARL mokėjimo paslaugos informacija"</string>
@@ -2182,29 +2185,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Nėra jokių automatinio pildymo pasiūlymų"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{Vienas automatinio pildymo pasiūlymas}one{# automatinio pildymo pasiūlymas}few{# automatinio pildymo pasiūlymai}many{# automatinio pildymo pasiūlymo}other{# automatinio pildymo pasiūlymų}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Išsaugoti paslaugoje "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"Informacijos išsaugojimas paslaugoje "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Išsaugoti <xliff:g id="TYPE">%1$s</xliff:g> paslaugoje "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"<xliff:g id="TYPE">%1$s</xliff:g> išsaugojimas paslaugoje "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Išsaugoti <xliff:g id="TYPE_0">%1$s</xliff:g> ir <xliff:g id="TYPE_1">%2$s</xliff:g> paslaugoje "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"<xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ir "<b>" išsaugojimas paslaugoje <xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Išsaugoti <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ir <xliff:g id="TYPE_2">%3$s</xliff:g> paslaugoje "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"<xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ir <xliff:g id="TYPE_2">%3$s</xliff:g> išsaugojimas paslaugoje "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"Atnaujinti paslaugoje "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"Informacijos atnaujinimas paslaugoje "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Atnaujinti <xliff:g id="TYPE">%1$s</xliff:g> paslaugoje "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"<xliff:g id="TYPE">%1$s</xliff:g> atnaujinimas paslaugoje "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Atnaujinti <xliff:g id="TYPE_0">%1$s</xliff:g> ir <xliff:g id="TYPE_1">%2$s</xliff:g> paslaugoje "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"<xliff:g id="TYPE_0">%1$s</xliff:g> ir <xliff:g id="TYPE_1">%2$s</xliff:g> atnaujinimas paslaugoje "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Atnaujinti šiuos elementus paslaugoje "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ir <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"Šių elementų atnaujinimas paslaugoje "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ir <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"Išsaugoti"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"Ne, ačiū"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Ne dabar"</string>

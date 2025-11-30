@@ -649,6 +649,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"يسمح هذا الإذن للتطبيق بالوصول إلى الأجهزة المتصلة بالشبكة المحلية"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"استخدام واجهة الاسترجاع"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"يسمح هذا الإذن للتطبيق بالتفاعل مع تطبيقات أخرى عبر واجهة الاسترجاع"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"تحديد الموضع النسبي بين الأجهزة المجاورة"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"يسمح هذا الإذن للتطبيق بتحديد الموضع النسبي بين الأجهزة المجاورة"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏معلومات الخدمات المدفوعة باستخدام الاتصال قصير المدى NFC المفضّل"</string>
@@ -2183,29 +2187,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"لا توجد اقتراحات للملء التلقائي"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{اقتراح واحد للملء التلقائي}zero{# اقتراح للملء التلقائي}two{اقتراحان للملء التلقائي}few{# اقتراحات للملء التلقائي}many{# اقتراحًا للملء التلقائي}other{# اقتراح للملء التلقائي}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"هل تريد الحفظ في "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"يمكنك حفظ المعلومات في "<b>"\"<xliff:g id="LABEL">%1$s</xliff:g>\""</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"هل تريد حفظ <xliff:g id="TYPE">%1$s</xliff:g> في "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"يمكنك حفظ <xliff:g id="TYPE">%1$s</xliff:g> في "<b>"\"<xliff:g id="LABEL">%2$s</xliff:g>\""</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"هل تريد حفظ <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> في "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"يمكنك حفظ <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> في "<b>"\"<xliff:g id="LABEL">%3$s</xliff:g>\""</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"هل تريد حفظ <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> و<xliff:g id="TYPE_2">%3$s</xliff:g> في "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"يمكنك حفظ <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> و<xliff:g id="TYPE_2">%3$s</xliff:g> في "<b>"\"<xliff:g id="LABEL">%4$s</xliff:g>\""</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"هل تريد التحديث في "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"يمكنك تعديل المعلومات في "<b>"\"<xliff:g id="LABEL">%1$s</xliff:g>\""</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"هل تريد تحديث <xliff:g id="TYPE">%1$s</xliff:g> في "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"يمكنك تعديل <xliff:g id="TYPE">%1$s</xliff:g> في "<b>"\"<xliff:g id="LABEL">%2$s</xliff:g>\""</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"هل تريد تحديث <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> في "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"؟"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"يمكنك تعديل <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> في "<b>"\"<xliff:g id="LABEL">%3$s</xliff:g>\""</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"هل تريد تعديل هذه العناصر في "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> و<xliff:g id="TYPE_2">%3$s</xliff:g>؟"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"يمكنك تعديل هذه المعلومات في "<b>"\"<xliff:g id="LABEL">%4$s</xliff:g>\""</b>": <xliff:g id="TYPE_0">%1$s</xliff:g> و<xliff:g id="TYPE_1">%2$s</xliff:g> و<xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"حفظ"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"لا، شكرًا"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"ليس الآن"</string>
@@ -2467,7 +2463,7 @@
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_SUCCESS" msgid="2861223407953766632">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_PUK_SUCCESS" msgid="5345648571175243272">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
     <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_PUK_SUCCESS" msgid="3725278343103422466">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
-    <string name="PERSOSUBSTATE_SIM_SIM_PUK_SUCCESS" msgid="6998502547560297983">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
+    <string name="PERSOSUBSTATE_SIM_SIM_PUK_SUCCESS" msgid="6998502547560297983">"‏تم فتح القفل باستخدام رمز PUK بنجاح."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_PUK_SUCCESS" msgid="8555433771162560361">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_PUK_SUCCESS" msgid="3555767296933606232">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_PUK_SUCCESS" msgid="6778051818199974237">"‏تم إلغاء القفل باستخدام رمز PUK بنجاح."</string>

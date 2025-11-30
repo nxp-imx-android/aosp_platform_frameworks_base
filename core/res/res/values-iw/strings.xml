@@ -646,6 +646,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ההרשאה מאפשרת לאפליקציה לגשת למכשירים ברשת המקומית"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"‏שימוש בממשק לולאה חוזרת (loopback)"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"‏ההרשאה מאפשרת לאפליקציה ליצור אינטראקציה עם אפליקציות אחרות דרך ממשק לולאה חוזרת (loopback)"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"זיהוי המיקום היחסי בין מכשירים קרובים"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"האפליקציה תזהה את המיקום היחסי בין מכשירים קרובים"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏פרטים על שירות תשלום מועדף ב-NFC"</string>
@@ -2180,29 +2184,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"אין הצעות של מילוי אוטומטי"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{הצעה אחת של מילוי אוטומטי}one{# הצעות של מילוי אוטומטי}two{# הצעות של מילוי אוטומטי}other{# הצעות של מילוי אוטומטי}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"לשמור בשירות "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"שמירה של המידע ב-"<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"האם לשמור את <xliff:g id="TYPE">%1$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"שמירה של <xliff:g id="TYPE">%1$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"האם לשמור את <xliff:g id="TYPE_0">%1$s</xliff:g> ואת <xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"שמירה של <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-"<b>" ב-<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"לשמור את <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ואת <xliff:g id="TYPE_2">%3$s</xliff:g> בשירות "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"שמירה של <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-<xliff:g id="TYPE_2">%3$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"לעדכן בשירות "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"עדכון הפרטים ב-"<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"לעדכן <xliff:g id="TYPE">%1$s</xliff:g> בשירות "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"עדכון של <xliff:g id="TYPE">%1$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"האם לעדכן את <xliff:g id="TYPE_0">%1$s</xliff:g> ואת <xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"עדכון של <xliff:g id="TYPE_0">%1$s</xliff:g> ו-<xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"לעדכן את הפריטים אלה ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-<xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"עדכון של הפריטים האלה ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-<xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"שמירה"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"לא, תודה"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"לא עכשיו"</string>
