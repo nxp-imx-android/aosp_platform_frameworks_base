@@ -910,6 +910,10 @@
          This flag is disabled by default. -->
     <bool name="config_enableColorInversionInSetupWizard">false</bool>
 
+    <!-- Boolean indicating whether Color Daltonizer is enabled within the Setup Wizard flow.
+         This flag is disabled by default. -->
+    <bool name="config_enableColorDaltonizerInSetupWizard">false</bool>
+
     <!-- Boolean indicating whether the HWC setColorTransform function can be performed efficiently
          in hardware. -->
     <bool name="config_setColorTransformAccelerated">false</bool>
