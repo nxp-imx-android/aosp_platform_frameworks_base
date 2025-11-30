@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ସ୍କ୍ରିନସଟକୁ ସେଭ୍ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ଆପ୍‍ କିମ୍ବା ସଂସ୍ଥା ଦ୍ୱାରା ସ୍କ୍ରୀନଶଟ୍‍ ନେବାକୁ ଅନୁମତି ଦିଆଯାଇ ନାହିଁ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ସ୍କ୍ରିନସଟଗୁଡ଼ିକ ନେବା ଆପଣଙ୍କ IT ଆଡମିନଙ୍କ ଦ୍ୱାରା ବ୍ଲକ କରାଯାଇଛି"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"କ୍ଲିପବୋର୍ଡକୁ ସ୍କ୍ରିନସଟ କପି କରନ୍ତୁ"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ସ୍କ୍ରିନସଟକୁ ଏଡିଟ କରନ୍ତୁ ବଟନ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ସେୟାର କରନ୍ତୁ"</string>
@@ -837,6 +836,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s। ଭାଇବ୍ରେଟରେ ସେଟ୍‍ କରିବାକୁ ଟାପ୍‍ କରନ୍ତୁ।"</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s। ମ୍ୟୁଟ୍‍ କରିବାକୁ ଟାପ୍‍ କରନ୍ତୁ।"</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"ନଏଜ କଣ୍ଟ୍ରୋଲ"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"ସ୍ପାସିଅଲ ଅଡିଓ"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"ବନ୍ଦ ଅଛି"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"ଠିକ ହୋଇଯାଇଛି"</string>
@@ -928,31 +929,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ହୋଇଗଲା"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ଲାଗୁ କରନ୍ତୁ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ବନ୍ଦ କରନ୍ତୁ"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ଫୋନ"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ଟାବଲେଟ"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ଲାପଟପ"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"ୱାଚ"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ଟିଭି"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ସେଟିଂସ ଖୋଲନ୍ତୁ"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ନୀରବ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ଡିଫଲ୍ଟ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ସ୍ୱଚାଳିତ"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"ଏହି ବିଜ୍ଞପ୍ତି ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରୁ ଆସିଛି"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"କୌଣସି ସାଉଣ୍ଡ କିମ୍ବା ଭାଇବ୍ରେସନ୍ ନାହିଁ"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"କୌଣସି ସାଉଣ୍ଡ ବା ଭାଇବ୍ରେସନ ନାହିଁ କିନ୍ତୁ ଏବେ ବି ବାର୍ତ୍ତାଳାପ ବିଭାଗରେ ଦେଖାଯାଏ"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ଡିଭାଇସ ସେଟିଂସ ଆଧାରରେ ରିଂ କିମ୍ବା ଭାଇବ୍ରେଟ ହୋଇପାରେ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ଡିଭାଇସ ସେଟିଂସ ଆଧାରରେ ରିଂ କିମ୍ବା ଭାଇବ୍ରେଟ ହୋଇପାରେ। ଡିଫଲ୍ଟ ଭାବରେ <xliff:g id="APP_NAME">%1$s</xliff:g>ରୁ ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ ବବଲ ଭାବେ ଦେଖାଯାଏ।"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ଏହି ବିଜ୍ଞପ୍ତି ପ୍ରାପ୍ତ ହେବା ସମୟରେ ସାଉଣ୍ଡ ହେବା ଉଚିତ ନା ଭାଇବ୍ରେସନ୍ ତାହା ସିଷ୍ଟମକୁ ସ୍ଥିର କରିବାକୁ ଦିଅନ୍ତୁ"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;ସ୍ଥିତି:&lt;/b&gt; ଡିଫଲ୍ଟକୁ ପ୍ରମୋଟ୍ କରାଯାଇଛି"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"ସିଙ୍କ ହୋଇଥିବା ବିଜ୍ଞପ୍ତି ପ୍ରାଥମିକତା ଏବଂ ସେଟିଂସକୁ ଆପଣଙ୍କ <xliff:g id="DEVICE_NAME">%1$s</xliff:g>ରେ ଆଡଜଷ୍ଟ କରାଯାଇପାରିବ"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;ସ୍ଥିତି:&lt;/b&gt; ନୀରବକୁ ଡିମୋଟ୍ କରାଯାଇଛି"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;ସ୍ଥିତି:&lt;/b&gt; ରେଙ୍କ ଉପରକୁ କରାଯାଇଛି"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;ସ୍ଥିତି:&lt;/b&gt; ରେଙ୍କ ତଳକୁ କରାଯାଇଛି"</string>

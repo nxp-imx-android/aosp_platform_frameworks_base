@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"บันทึกภาพหน้าจอไม่ได้"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"แอปหรือองค์กรของคุณไม่อนุญาตให้จับภาพหน้าจอ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"การจับภาพหน้าจอถูกบล็อกโดยผู้ดูแลระบบไอทีของคุณ"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"คัดลอกภาพหน้าจอไปยังคลิปบอร์ด"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"แก้ไข"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ปุ่มแก้ไขภาพหน้าจอ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"แชร์"</string>
@@ -837,6 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s แตะเพื่อตั้งค่าให้สั่น"</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s แตะเพื่อปิดเสียง"</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"การควบคุมเสียง"</string>
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"การตัดเสียงรบกวนของไมโครโฟน"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"เสียงรอบทิศทาง"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"ปิด"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"คงที่"</string>
@@ -928,31 +928,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"เสร็จสิ้น"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ใช้"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ปิดการแจ้งเตือน"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"โทรศัพท์"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"แท็บเล็ต"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"แล็ปท็อป"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"นาฬิกา"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ทีวี"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"เปิดการตั้งค่า<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ปิดเสียง"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ค่าเริ่มต้น"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"อัตโนมัติ"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"การแจ้งเตือนนี้มาจาก<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ของคุณ"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"ไม่มีเสียงหรือการสั่น"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ไม่มีเสียงหรือการสั่น แต่ยังคงปรากฏในส่วนการสนทนา"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"อาจส่งเสียงหรือสั่นโดยขึ้นอยู่กับการตั้งค่าอุปกรณ์"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"อาจส่งเสียงหรือสั่นโดยขึ้นอยู่กับการตั้งค่าอุปกรณ์ การสนทนาจาก <xliff:g id="APP_NAME">%1$s</xliff:g> จะแสดงเป็นบับเบิลโดยค่าเริ่มต้น"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ให้ระบบพิจารณาว่าจะให้การแจ้งเตือนนี้ส่งเสียงหรือสั่นหรือไม่"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;สถานะ:&lt;/b&gt; เลื่อนระดับเป็นค่าเริ่มต้น"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"คุณปรับลำดับความสำคัญและการตั้งค่าการแจ้งเตือนที่ซิงค์ได้ใน <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;สถานะ:&lt;/b&gt; ลดระดับเป็นปิดเสียง"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;สถานะ:&lt;/b&gt; อันดับสูงขึ้น"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;สถานะ:&lt;/b&gt; อันดับต่ำลง"</string>

@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Skrinşotu yadda saxlamaq mümkün olmadı"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Skrinşot çəkməyə tətbiq və ya təşkilat tərəfindən icazə verilmir"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Skrinşot çəkilməsi İT admininiz tərəfindən bloklanıb"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"Skrinşotu mübadilə buferinə kopiyalayın"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Redaktə edin"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Skrinşotu redaktə edin düyməsi"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Paylaşın"</string>
@@ -837,6 +836,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Vibrasiyanı ayarlamaq üçün klikləyin."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Səssiz etmək üçün klikləyin."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Səs-küy idarəetməsi"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Məkani səs"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Sönülü"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Sabit"</string>
@@ -928,31 +929,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Hazırdır"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tətbiq edin"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Söndürün"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"planşet"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"noutbuk"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"saat"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"TV"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ayarlarını açın"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Səssiz"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Defolt"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Avtomatik"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"Bu bildiriş <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınızdandır"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Səs və ya vibrasiya yoxdur"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Səs və ya vibrasiya yoxdur, lakin hələ də söhbət bölməsində görünür"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Cihaz ayarlarına əsasən zəng çala və ya vibrasiya edə bilər"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Cihaz ayarlarına əsasən zəng çala və ya vibrasiya edə bilər. <xliff:g id="APP_NAME">%1$s</xliff:g> tətbiqindən söhbətlərdə defolt olaraq qabarcıq çıxır."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Bu bildirişin səs çıxarması və ya vibrasiya etməsi sistem tərəfindən təyin edilsin"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;Status:&lt;/b&gt; Defolt ayara keçirilib"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"Sinxronlaşdırılmış bildiriş prioritetini və ayarlarını <xliff:g id="DEVICE_NAME">%1$s</xliff:g> cihazında tənzimləmək olar"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Status:&lt;/b&gt; Səssiz rejimə keçirilib"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Status:&lt;/b&gt; Yuxarı sıraya keçirilib"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Status:&lt;/b&gt; Aşağı sıraya keçirilib"</string>
