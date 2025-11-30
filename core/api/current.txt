@@ -11685,6 +11685,7 @@ package android.content {
     field public static final String VIRTUAL_DEVICE_SERVICE = "virtualdevice";
     field public static final String VPN_MANAGEMENT_SERVICE = "vpn_management";
     field @UiContext public static final String WALLPAPER_SERVICE = "wallpaper";
+    field @FlaggedApi("com.android.webapp.flags.enable_web_app_service") public static final String WEB_APP_SERVICE = "web_app";
     field public static final String WIFI_AWARE_SERVICE = "wifiaware";
     field public static final String WIFI_P2P_SERVICE = "wifip2p";
     field public static final String WIFI_RTT_RANGING_SERVICE = "wifirtt";

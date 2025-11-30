@@ -4680,6 +4680,7 @@ public abstract class Context {
                 ANOMALY_DETECTOR_SERVICE,
                 TASK_CONTINUITY_SERVICE,
                 NPU_SERVICE,
+                WEB_APP_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
@@ -7103,6 +7104,15 @@ public abstract class Context {
      */
     @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
     public static final String NPU_SERVICE = "npu";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.content.pm.webapp.WebAppManager}.
+     *
+     * @see #getSystemService(String)
+     */
+    @FlaggedApi(com.android.webapp.flags.Flags.FLAG_ENABLE_WEB_APP_SERVICE)
+    public static final String WEB_APP_SERVICE = "web_app";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
