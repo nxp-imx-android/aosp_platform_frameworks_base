@@ -688,6 +688,55 @@ public class DeveloperVerifierControllerTest {
     }
 
     @Test
+    public void testStopAutoDisconnectIsCalledWhenRequestIsDelivered() throws Exception {
+        // Override the mock for post() to capture the job instead of running it immediately.
+        // This simulates the asynchronous nature of the call, allowing us to test the timing
+        // of the auto-disconnect cancellation.
+        ArgumentCaptor<ServiceConnector.VoidJob> jobCaptor =
+                ArgumentCaptor.forClass(ServiceConnector.VoidJob.class);
+        when(mMockServiceConnector.post(jobCaptor.capture()))
+                .thenReturn(new AndroidFuture<>());
+
+        // Bind to the service and trigger onConnected to schedule the first auto-disconnect.
+        ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> callbacksCaptor =
+                ArgumentCaptor.forClass(ServiceConnector.ServiceLifecycleCallbacks.class);
+        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
+                mUserId, mOnConnectionEstablished)).isTrue();
+        verify(mMockServiceConnector).setServiceLifecycleCallbacks(callbacksCaptor.capture());
+        ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> callbacks =
+                callbacksCaptor.getValue();
+        callbacks.onConnected(mMockService);
+
+        // Verify that auto-disconnect has been scheduled.
+        // startAutoDisconnectCountdown calls removeCallbacks then postDelayed.
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mInjector, times(1)).removeCallbacks(eq(mHandler), runnableCaptor.capture());
+        verify(mHandler, times(1)).sendMessageAtTime(
+                argThat(argument -> argument.getCallback() == runnableCaptor.getValue()),
+                anyLong());
+
+        // Start a verification session. This should post the job but not execute it yet.
+        mDeveloperVerifierController.startVerificationSession(
+                mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
+                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
+                mSessionCallback, mOnConnectionEstablished, /* retry= */ false,
+                mTestVerificationFlags);
+
+        // Verify that stopAutoDisconnectCountdown has NOT been called again yet.
+        // The count should still be 1 from the onConnected call.
+        verify(mInjector, times(1)).removeCallbacks(eq(mHandler), any(Runnable.class));
+
+        // Now, simulate the job being delivered and executed by the remote service.
+        ServiceConnector.VoidJob<IDeveloperVerifierService> postedJob = jobCaptor.getValue();
+        postedJob.run(mMockService);
+
+        // Verify that stopAutoDisconnectCountdown has now been called a second time,
+        // proving it was inside the posted job, which fixes the race condition.
+        verify(mInjector, times(2)).removeCallbacks(eq(mHandler), any(Runnable.class));
+        verify(mMockService).onVerificationRequired(any(DeveloperVerificationSession.class));
+    }
+
+    @Test
     public void testAutoDisconnect() throws Exception {
         // Mock message handling for auto-disconnect.
         when(mHandler.sendMessageAtTime(argThat(argument -> argument.obj == null),
