@@ -76,7 +76,6 @@ class AppCompatLetterboxPolicy {
         mActivityRecord = activityRecord;
         mLetterboxPolicyState = Flags.appCompatRefactoring() ? new ShellLetterboxPolicyState()
                 : new LegacyLetterboxPolicyState();
-        // TODO (b/358334569) Improve cutout logic dependency on app compat.
         mAppCompatRoundedCorners = new AppCompatRoundedCorners(mActivityRecord,
                 this::ieEligibleForRoundedCorners);
         mAppCompatConfiguration = appCompatConfiguration;
