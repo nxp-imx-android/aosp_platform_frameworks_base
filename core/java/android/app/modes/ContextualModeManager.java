@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -120,6 +121,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @SystemApi
+    @UserHandleAware
     public boolean isModeSyncEnabled() {
         return isModeSyncEnabled(mContext.getUser());
     }
@@ -153,6 +155,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @SystemApi
+    @UserHandleAware
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
     public void setModeSyncEnabled(boolean enabled) {
         setModeSyncEnabled(mContext.getUser(), enabled);
@@ -195,6 +198,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @SystemApi
+    @UserHandleAware
     public void registerModeSyncEnabledListener(
             @NonNull Executor executor, @NonNull Consumer<Boolean> listener) {
         registerModeSyncEnabledListener(mContext.getUser(), executor, listener);
@@ -277,6 +281,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @TestApi
+    @UserHandleAware
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     @NonNull
     public List<ContextualMode> getModes() {
@@ -319,6 +324,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @TestApi
+    @UserHandleAware
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     public void mutateModes(@NonNull ContextualModesMutation mutation) {
         mutateModes(mContext.getUser(), mutation);
@@ -361,6 +367,7 @@ public final class ContextualModeManager {
      * @hide
      */
     @TestApi
+    @UserHandleAware
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     public void registerModeListener(
             @NonNull Executor executor, @NonNull ContextualModeListener listener) {
