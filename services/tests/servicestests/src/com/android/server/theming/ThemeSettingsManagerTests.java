@@ -38,6 +38,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.systemui.monet.ColorScheme;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -65,7 +66,6 @@ public class ThemeSettingsManagerTests {
 
     private ContentResolver mContentResolver;
     private ThemeSettingsManager mManager;
-    private final Color mDefaultWallpaperColor = Color.valueOf(Color.BLUE);
 
     private static final String UNKNOWN_FIELDS_JSON = """
                     {
@@ -82,7 +82,7 @@ public class ThemeSettingsManagerTests {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mContentResolver = mContext.getContentResolver();
-        mManager = new ThemeSettingsManager(mMockWmi);
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi));
 
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -92,29 +92,29 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void loadSettings_noSettings_returnsNull() {
-        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+    public void getSettings_noSettings_returnsNull() {
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
         assertThat(settings).isNull();
     }
 
     @Test
-    public void loadSettings_emptyJSON_returnsNull() {
+    public void getSettings_emptyJSON_returnsNull() {
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "{}", mUserId);
-        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
         assertThat(settings).isNull();
     }
 
     @Test
-    public void loadSettings_invalidJSON_returnsNull() {
+    public void getSettings_invalidJSON_returnsNull() {
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "{invalid_json", mUserId);
-        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
         assertThat(settings).isNull();
     }
 
     @Test
-    public void writeSettings_writesPresetToProvider() throws Exception {
+    public void setSettings_writesPresetToProvider() throws Exception {
         long currentTime = System.currentTimeMillis();
         ThemeSettings presetSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.MONOCHROMATIC)
@@ -122,7 +122,7 @@ public class ThemeSettingsManagerTests {
                 .setSystemPalette(Color.valueOf(0xFF112233))
                 .build();
 
-        boolean success = mManager.writeSettings(mUserId, mContentResolver, presetSettings);
+        boolean success = mManager.setSettings(mUserId, mContentResolver, presetSettings);
         assertThat(success).isTrue();
 
         String settingsString = Settings.Secure.getStringForUser(mContentResolver,
@@ -146,14 +146,14 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void writeSettings_writesWallpaperToProvider() throws Exception {
+    public void setSettings_writesWallpaperToProvider() throws Exception {
         ThemeSettings wallpaperSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
                 .setSystemPalette(Color.valueOf(Color.BLUE))
                 .build();
 
-        boolean success = mManager.writeSettings(mUserId, mContentResolver, wallpaperSettings);
+        boolean success = mManager.setSettings(mUserId, mContentResolver, wallpaperSettings);
         assertThat(success).isTrue();
 
         String settingsString = Settings.Secure.getStringForUser(mContentResolver,
@@ -175,7 +175,7 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void writeAndReadSettings_persistsAndReadsCorrectly() {
+    public void setAndGetSettings_persistsAndReadsCorrectly() {
         // Test Wallpaper case
         ThemeSettings originalWallpaper = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.EXPRESSIVE)
@@ -183,8 +183,8 @@ public class ThemeSettingsManagerTests {
                 .setSystemPalette(Color.valueOf(Color.RED))
                 .build();
 
-        mManager.writeSettings(mUserId, mContentResolver, originalWallpaper);
-        ThemeSettings loadedWallpaper = mManager.readSettings(mUserId, mContentResolver);
+        mManager.setSettings(mUserId, mContentResolver, originalWallpaper);
+        ThemeSettings loadedWallpaper = mManager.getSettings(mUserId, mContentResolver);
 
         assertThat(loadedWallpaper).isNotNull();
         assertThat(loadedWallpaper.timeStamp().toEpochMilli()).isEqualTo(
@@ -200,8 +200,8 @@ public class ThemeSettingsManagerTests {
                 .setSystemPalette(Color.valueOf(Color.GREEN))
                 .build();
 
-        mManager.writeSettings(mUserId, mContentResolver, originalPreset);
-        ThemeSettings loadedPreset = mManager.readSettings(mUserId, mContentResolver);
+        mManager.setSettings(mUserId, mContentResolver, originalPreset);
+        ThemeSettings loadedPreset = mManager.getSettings(mUserId, mContentResolver);
 
         assertThat(loadedPreset).isNotNull();
         assertThat(loadedPreset.timeStamp().toEpochMilli()).isEqualTo(
@@ -212,15 +212,15 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void writeAndReadSettings_preservesUnknownFields() throws Exception {
+    public void setAndGetSettings_preservesUnknownFields() throws Exception {
         // Manually write JSON with unknown fields
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, UNKNOWN_FIELDS_JSON, mUserId);
 
         // Read settings, then write them back without modification
-        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
         assertThat(settings).isNotNull();
-        mManager.writeSettings(mUserId, mContentResolver, settings);
+        mManager.setSettings(mUserId, mContentResolver, settings);
 
         // Read the raw JSON again and verify unknown fields are still present
         String finalJsonString = Settings.Secure.getStringForUser(mContentResolver,
@@ -279,7 +279,8 @@ public class ThemeSettingsManagerTests {
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(Color.CYAN));
+        assertThat(defaultSettings.systemPalette()).isEqualTo(
+                Color.valueOf(ColorScheme.getSeedColor(wallpaperColors)));
     }
 
     @Test
@@ -324,7 +325,7 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void loadSettings_missingTimestamp_returnsSettingsWithCurrentTimestamp() {
+    public void getSettings_missingTimestamp_returnsSettingsWithCurrentTimestamp() {
         String jsonWithoutTimestamp = "{"
                 + "\"android.theme.customization.color_source\":\"preset\","
                 + "\"android.theme.customization.theme_style\":\"TONAL_SPOT\","
@@ -334,11 +335,64 @@ public class ThemeSettingsManagerTests {
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, jsonWithoutTimestamp,
                 mUserId);
 
-        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
 
         assertThat(settings).isNotNull();
         assertThat(settings.timeStamp().toEpochMilli()).isAtLeast(Instant.EPOCH.toEpochMilli());
         assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
+    }
+
+    @Test
+    public void getSettings_cachesValue() {
+        // 1. Write initial value to disk
+        ThemeSettings initialSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.RED))
+                .build();
+        mManager.setSettings(mUserId, mContentResolver, initialSettings);
+
+        // 2. First read should hit disk and populate cache
+        ThemeSettings cachedSettings = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(cachedSettings).isEqualTo(initialSettings);
+
+        // 3. Modify disk directly (bypassing manager) to simulate external change or to prove
+        // cache hit
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "{}", mUserId);
+
+        // 4. Second read should still return the cached value, ignoring disk change
+        ThemeSettings secondRead = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(secondRead).isEqualTo(initialSettings);
+    }
+
+    @Test
+    public void setSettings_updatesCache() {
+        // 1. Set initial settings via manager
+        ThemeSettings initialSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .build();
+        mManager.setSettings(mUserId, mContentResolver, initialSettings);
+
+        // 2. Verify it's in cache by corrupting disk and reading back
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "invalid_json", mUserId);
+        ThemeSettings cachedSettings = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(cachedSettings).isEqualTo(initialSettings);
+
+        // 3. Update settings via manager
+        ThemeSettings newSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.EXPRESSIVE)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.GREEN))
+                .build();
+        mManager.setSettings(mUserId, mContentResolver, newSettings);
+
+        // 4. Verify cache is updated
+        ThemeSettings updatedCachedSettings = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(updatedCachedSettings).isEqualTo(newSettings);
     }
 }

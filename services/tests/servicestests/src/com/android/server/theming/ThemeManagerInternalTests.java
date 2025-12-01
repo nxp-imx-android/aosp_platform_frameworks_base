@@ -125,7 +125,9 @@ public class ThemeManagerInternalTests {
             return new int[]{requestedUserId};
         });
 
-        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
+                mWallpaperManagerInternal);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor);
         mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
@@ -193,7 +195,7 @@ public class ThemeManagerInternalTests {
 
         assertThat(didRegister).isTrue();
         // When no theme is set, oldSettings should be null.
-        mUnderTest.notifySettingsChange(mUserId, newPayload);
+        mUnderTest.notifySettingsChange(mUserId, null, newPayload);
         assertThat(returnedOldSettings[0]).isNull();
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
     }
@@ -232,7 +234,7 @@ public class ThemeManagerInternalTests {
         assertThat(didRegister).isTrue();
 
         // Notify with the new settings.
-        mUnderTest.notifySettingsChange(mUserId, newPayload);
+        mUnderTest.notifySettingsChange(mUserId, oldPayload, newPayload);
 
         // The callback should receive the new settings correctly.
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
