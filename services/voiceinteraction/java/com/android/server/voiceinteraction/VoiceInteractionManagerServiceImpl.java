@@ -65,6 +65,7 @@ import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SharedMemory;
+import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -153,6 +154,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     final PlatformCompat mPlatformCompat;
     boolean mEnableAssistStructure = true;
     boolean mBound = false;
+    long mLastHotwordDetectionTimestamp = 0L;
     IVoiceInteractionService mService;
     volatile HotwordDetectionConnection mHotwordDetectionConnection;
 
@@ -689,6 +691,10 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         return mInfo.getServiceInfo().applicationInfo;
     }
 
+    public long getLastHotwordDetectedMillis() {
+        return mLastHotwordDetectionTimestamp;
+    }
+
     public void startListeningVisibleActivityChangedLocked(@NonNull IBinder token) {
         if (DEBUG) {
             Slog.d(TAG, "startListeningVisibleActivityChangedLocked: token=" + token);
@@ -1108,6 +1114,9 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
                             + " isn't established");
             return;
         }
+        // Manually set the hotword detection time to now since this won't run through the regular
+        // SoundTriggerCallback path.
+        mLastHotwordDetectionTimestamp = SystemClock.uptimeMillis();
         mHotwordDetectionConnection.triggerHardwareRecognitionEventForTestLocked(event, callback);
     }
 
@@ -1119,7 +1128,13 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             Slog.d(TAG, "createSoundTriggerCallbackLocked");
         }
         return new HotwordDetectionConnection.SoundTriggerCallback(
-                context, callback, mHotwordDetectionConnection, voiceInteractorIdentity);
+                context,
+                callback,
+                mHotwordDetectionConnection,
+                voiceInteractorIdentity,
+                () -> {
+                    mLastHotwordDetectionTimestamp = SystemClock.uptimeMillis();
+                });
     }
 
     private static ServiceInfo getServiceInfoLocked(
