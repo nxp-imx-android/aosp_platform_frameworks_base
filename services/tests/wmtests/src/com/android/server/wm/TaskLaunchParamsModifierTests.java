@@ -1020,6 +1020,30 @@ public class TaskLaunchParamsModifierTests extends
                 WINDOWING_MODE_FULLSCREEN);
     }
 
+    @Test
+    public void testCalculate_relaunchFromHomeToReparent_setsFullscreenAndFlag() {
+        final TestDisplayContent fullscreenDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        // Source activity is in a fullscreen trampoline task.
+        final ActivityRecord source = createSourceActivity(fullscreenDisplay);
+        // The task to be launched is a bubble task
+        final Task bubbleTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(fullscreenDisplay.getDefaultTaskDisplayArea())
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .build();
+        bubbleTask.getRootTask().mReparentLeafTaskIfRelaunchFromHome = true;
+        final Request request = new Request();
+        request.mLaunchOriginatedFromHome = true;
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setRequest(request)
+                        .setSource(source).setTask(bubbleTask).calculate());
+
+        assertEquivalentWindowingMode(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode,
+                WINDOWING_MODE_MULTI_WINDOW /* parentWindowingMode */);
+        assertTrue(mResult.mIsRelaunchFromHomeToReparent);
+    }
+
     // ================================
     // Launching Bounds Related Tests
     // ===============================

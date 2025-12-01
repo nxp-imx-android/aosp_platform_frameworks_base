@@ -212,6 +212,8 @@ class ActivityMetricsLogger {
         final long mStartRealtimeNs = SystemClock.elapsedRealtimeNanos();
         /** Non-null when a {@link TransitionInfo} is created for this state. */
         private TransitionInfo mAssociatedTransitionInfo;
+        /** Tracking origination for the consecutive launch among trampoline activities. */
+        private ActivityRecord mOriginalCaller;
         /** The sequence id for trace. It is used to map the traces before resolving intent. */
         private static int sTraceSeqId;
         /** The trace format is "launchingActivity#$seqId:$state(:$packageName)". */
@@ -272,6 +274,14 @@ class ActivityMetricsLogger {
 
         boolean contains(ActivityRecord r) {
             return mAssociatedTransitionInfo != null && mAssociatedTransitionInfo.contains(r);
+        }
+
+        @NonNull
+        ActivityRecord tracksOriginator(@NonNull ActivityRecord caller) {
+            if (mOriginalCaller == null) {
+                mOriginalCaller = caller;
+            }
+            return mOriginalCaller;
         }
     }
 

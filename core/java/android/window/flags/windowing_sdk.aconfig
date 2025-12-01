@@ -220,3 +220,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "track_launch_originator"
+    namespace: "windowing_sdk"
+    description: "Track origination for the consecutive launch among trampoline activities"
+    bug: "456621541"
+}

@@ -232,6 +232,16 @@ class LaunchParamsController {
         @WindowingMode
         int mWindowingMode;
 
+        /**
+         * Whether the Activity was originally launched from home and needs to reparent the leaf
+         * task to TDA.
+         */
+        // TODO(b/265345023): Control this via mPreferredRootTask to support other root tasks.
+        // For example, in desktop mode, a bubble leaf task may need to reparent to a
+        // desktop-root-task rather than the TDA. WM Core should somehow reparent the leaf task
+        // to the TDA (or applicable root) if the preferred root task is the leaf task itself.
+        boolean mIsRelaunchFromHomeToReparent;
+
         /** Whether the Activity needs the safe region bounds. A {@code null} value means unset. */
         @Nullable
         Boolean mNeedsSafeRegionBounds = null;
@@ -245,6 +255,7 @@ class LaunchParamsController {
             mPreferredTaskDisplayArea = null;
             mPreferredRootTask = null;
             mWindowingMode = WINDOWING_MODE_UNDEFINED;
+            mIsRelaunchFromHomeToReparent = false;
             mNeedsSafeRegionBounds = null;
         }
 
@@ -257,6 +268,7 @@ class LaunchParamsController {
             mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
             mPreferredRootTask = params.mPreferredRootTask;
             mWindowingMode = params.mWindowingMode;
+            mIsRelaunchFromHomeToReparent = params.mIsRelaunchFromHomeToReparent;
             mNeedsSafeRegionBounds = params.mNeedsSafeRegionBounds;
         }
 
@@ -269,6 +281,7 @@ class LaunchParamsController {
             mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
             mPreferredRootTask = params.mPreferredRootTask;
             mWindowingMode = params.mWindowingMode;
+            mIsRelaunchFromHomeToReparent = params.mIsRelaunchFromHomeToReparent;
             // Only update mNeedsSafeRegionBounds if a modifier updates it by setting a non null
             // value. Otherwise, carry over from previous modifiers
             if (params.mNeedsSafeRegionBounds != null) {
@@ -281,7 +294,9 @@ class LaunchParamsController {
             return (mBounds.isEmpty() && !mBoundsSet) && mAppBounds.isEmpty()
                     && mPreferredTaskDisplayArea == null
                     && mPreferredRootTask == null
-                    && mWindowingMode == WINDOWING_MODE_UNDEFINED && mNeedsSafeRegionBounds == null;
+                    && mWindowingMode == WINDOWING_MODE_UNDEFINED
+                    && !mIsRelaunchFromHomeToReparent
+                    && mNeedsSafeRegionBounds == null;
         }
 
         boolean hasWindowingMode() {
@@ -302,6 +317,7 @@ class LaunchParamsController {
             if (mPreferredTaskDisplayArea != that.mPreferredTaskDisplayArea) return false;
             if (mPreferredRootTask != that.mPreferredRootTask) return false;
             if (mWindowingMode != that.mWindowingMode) return false;
+            if (mIsRelaunchFromHomeToReparent != that.mIsRelaunchFromHomeToReparent) return false;
             if (!mAppBounds.equals(that.mAppBounds)) return false;
             if (!Objects.equals(mNeedsSafeRegionBounds, that.mNeedsSafeRegionBounds)) return false;
             if (mBoundsSetFromOptions != that.mBoundsSetFromOptions) return false;
@@ -320,6 +336,7 @@ class LaunchParamsController {
             result = 31 * result + (mPreferredRootTask != null
                     ? mPreferredRootTask.hashCode() : 0);
             result = 31 * result + mWindowingMode;
+            result = 31 * result + Boolean.hashCode(mIsRelaunchFromHomeToReparent);
             result = 31 * result + (mNeedsSafeRegionBounds != null
                     ? Boolean.hashCode(mNeedsSafeRegionBounds) : 0);
             return result;

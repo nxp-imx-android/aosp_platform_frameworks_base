@@ -94,6 +94,7 @@ import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 import static com.android.window.flags.Flags.balReportAbortedActivityStarts;
+import static com.android.window.flags.Flags.trackLaunchOriginator;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -453,6 +454,15 @@ class ActivityStarter {
         boolean allowPendingRemoteAnimationRegistryLookup;
 
         /**
+         * Indicates whether the launch request originated from the home activity (Launcher).
+         *
+         * <p>This value is determined at the beginning of {@link ActivityStarter#execute} based on
+         * the source record. It is subsequently used by {@link TaskLaunchParamsModifier#calculate}
+         * to adjust launch parameters for transitions originating from home.
+         */
+        boolean mLaunchOriginatedFromHome;
+
+        /**
          * Ensure constructed request matches reset instance.
          */
         Request() {
@@ -502,6 +512,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = false;
             freezeScreen = false;
             errorCallbackToken = null;
+            mLaunchOriginatedFromHome = false;
         }
 
         /**
@@ -546,6 +557,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = request.allowBalExemptionForSystemProcess;
             freezeScreen = request.freezeScreen;
             errorCallbackToken = request.errorCallbackToken;
+            mLaunchOriginatedFromHome = request.mLaunchOriginatedFromHome;
         }
 
         /**
@@ -812,6 +824,7 @@ class ActivityStarter {
             }
 
             final LaunchingState launchingState;
+            final ActivityRecord originator;
             synchronized (mService.mGlobalLock) {
                 final ActivityRecord caller = ActivityRecord.forTokenLocked(mRequest.resultTo);
                 final int callingUid = mRequest.realCallingUid == Request.DEFAULT_REAL_CALLING_UID
@@ -819,6 +832,12 @@ class ActivityStarter {
                 launchingState = mSupervisor.getActivityMetricsLogger().notifyActivityLaunching(
                         mRequest.intent, caller, callingUid);
                 callerActivityName = caller != null ? caller.info.name : null;
+                originator = trackLaunchOriginator() && caller != null
+                        ? launchingState.tracksOriginator(caller) : null;
+            }
+
+            if (trackLaunchOriginator() && originator != null) {
+                mRequest.mLaunchOriginatedFromHome = originator.isActivityTypeHome();
             }
 
             if (mRequest.intent != null) {

@@ -46,6 +46,16 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
+// Protologtool doesn't pre-process Kotlin files, so string interning happens at runtime.
+// See b/317337621 for details.
+filegroup {
+    name: "wmtests-sources-kt",
+    srcs: ["src/**/*.kt"],
+    exclude_srcs: [":wmtests-support-sources"],
+    path: "src",
+    visibility: ["//visibility:private"],
+}
+
 java_genrule {
     name: "wmtests.protologsrc",
     srcs: [
@@ -73,6 +83,7 @@ android_test {
     // We only want this apk build for tests.
     srcs: [
         ":wmtests-sources",
+        ":wmtests-sources-kt",
         "src/**/*.aidl",
     ],
 
