@@ -43,9 +43,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Utilities to convert the client side classes to the virtual camera service ones. */
-public final class VirtualCameraConversionUtil {
+final class VirtualCameraConversionUtil {
 
     private static final String TAG = "VirtualCameraConversionUtil";
+
+    private VirtualCameraConversionUtil() {
+    }
 
     /**
      * Fetches the configuration of the provided virtual cameraConfig that was provided by its owner
