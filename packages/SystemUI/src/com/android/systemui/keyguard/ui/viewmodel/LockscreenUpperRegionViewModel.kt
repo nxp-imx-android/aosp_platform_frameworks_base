@@ -60,8 +60,8 @@ constructor(
     val isDozing: Boolean by
         hydrator.hydratedStateOf(traceName = "isDozing", source = keyguardInteractor.isDozing)
 
-    val isMediaActive: Boolean
-        get() = keyguardMediaViewModel.isMediaActive
+    val isMediaVisible: Boolean
+        get() = keyguardMediaViewModel.isMediaVisible
 
     val isNotificationStackActive: Boolean by
         hydrator.hydratedStateOf(

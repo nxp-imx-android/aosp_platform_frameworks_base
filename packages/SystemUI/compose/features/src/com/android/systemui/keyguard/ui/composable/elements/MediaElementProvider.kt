@@ -72,7 +72,7 @@ constructor(
                 }
 
             AnimatedVisibility(
-                viewModel.isMediaActive && !viewModel.isDozing,
+                viewModel.isMediaVisible && !viewModel.isDozing,
                 enter = expandVertically(expandFrom = Alignment.Top),
                 exit = fadeOut(),
             ) {

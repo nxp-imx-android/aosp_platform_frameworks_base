@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -28,6 +29,9 @@ import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class KeyguardMediaViewModel
 @AssistedInject
@@ -36,15 +40,27 @@ constructor(
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     shadeModeInteractor: ShadeModeInteractor,
+    deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("KeyguardMediaViewModel.hydrator")
 
-    /** Whether the media notification is active */
-    val isMediaActive: Boolean by
+    private val isMediaVisibleFlow: Flow<Boolean> =
+        combine(
+                mediaCarouselInteractor.allowMediaOnLockscreen,
+                mediaCarouselInteractor.hasActiveMedia,
+                deviceEntryBypassInteractor.isBypassEnabled,
+            ) { allowMediaOnLockscreen, hasActiveMedia, isBypassEnabled ->
+                allowMediaOnLockscreen && hasActiveMedia && !isBypassEnabled
+            }
+            .distinctUntilChanged()
+
+    /** Whether the media notification can be visible on keyguard. */
+    val isMediaVisible: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isMediaActive",
-            source = mediaCarouselInteractor.hasActiveMedia,
+            traceName = "isMediaVisible",
+            initialValue = false,
+            source = isMediaVisibleFlow,
         )
 
     val shadeMode: ShadeMode by
