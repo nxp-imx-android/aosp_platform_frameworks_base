@@ -83,7 +83,8 @@ fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
                 if (volumePanelState != null) {
                     with(
                         VolumePanelComposeScope(
-                            volumePanelState.collectAsStateWithLifecycle().value
+                            state = volumePanelState.collectAsStateWithLifecycle().value,
+                            isExpandedAudioTileDetailsFeatureEnabled = true,
                         )
                     ) {
                         AudioContentsDefaultPage(viewModel = currentViewModel)

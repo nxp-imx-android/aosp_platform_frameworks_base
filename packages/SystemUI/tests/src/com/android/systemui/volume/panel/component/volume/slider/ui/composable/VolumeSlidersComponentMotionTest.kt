@@ -38,6 +38,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
+import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.localMediaController
 import com.android.systemui.volume.localMediaRepository
 import com.android.systemui.volume.localPlaybackStateBuilder
@@ -296,9 +297,15 @@ class VolumeSlidersComponentMotionTest : SysuiTestCase() {
 
     @Composable
     fun Kosmos.Sliders() {
+        val expandedAudioTileDetailsFeatureInteractor = expandedAudioTileDetailsFeatureInteractor
         val volumePanelState by volumePanelViewModel.volumePanelState.collectAsState()
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-            with(VolumePanelComposeScope(volumePanelState)) {
+            with(
+                VolumePanelComposeScope(
+                    volumePanelState,
+                    expandedAudioTileDetailsFeatureInteractor.isEnabled(),
+                )
+            ) {
                 with(volumeSlidersComponent) { Content(modifier = Modifier) }
             }
         }

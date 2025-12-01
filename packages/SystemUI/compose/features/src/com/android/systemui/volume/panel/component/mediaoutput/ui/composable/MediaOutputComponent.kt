@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -66,6 +65,7 @@ import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediaoutput.ui.viewmodel.ConnectedDeviceViewModel
 import com.android.systemui.volume.panel.component.mediaoutput.ui.viewmodel.DeviceIconViewModel
 import com.android.systemui.volume.panel.component.mediaoutput.ui.viewmodel.MediaOutputViewModel
+import com.android.systemui.volume.panel.component.mediastream.ui.composable.MediaStreamStyle
 import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
 import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
@@ -87,6 +87,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
             viewModel.deviceIconViewModel.collectAsStateWithLifecycle()
         val clickLabel = stringResource(R.string.volume_panel_enter_media_output_settings)
         val enabled: Boolean by viewModel.enabled.collectAsStateWithLifecycle()
+        val style = MediaStreamStyle.style(isExpandedAudioTileDetailsView)
 
         Expandable(
             modifier =
@@ -99,18 +100,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                             true
                         }
                     },
-            color =
-                if (Flags.blurOnMoreSurfaces()) {
-                    androidx.compose.ui.graphics.Color.Transparent
-                } else if (Flags.volumeRedesign()) {
-                    MaterialTheme.colorScheme.surface
-                } else {
-                    if (enabled) {
-                        MaterialTheme.colorScheme.surface
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHighest
-                    }
-                },
+            color = style.backgroundColor,
             shape =
                 RoundedCornerShape(
                     if (Flags.volumeRedesign()) {
@@ -134,7 +124,13 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                     },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                connectedDeviceViewModel?.let { ConnectedDeviceText(it, Modifier.weight(1f)) }
+                connectedDeviceViewModel?.let {
+                    ConnectedDeviceText(
+                        it,
+                        Modifier.weight(1f).padding(start = style.paddingStart),
+                        style,
+                    )
+                }
 
                 deviceIconViewModel?.let { ConnectedDeviceIcon(it) }
             }
@@ -145,12 +141,13 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
     private fun ConnectedDeviceText(
         connectedDeviceViewModel: ConnectedDeviceViewModel,
         modifier: Modifier = Modifier,
+        style: MediaStreamStyle,
     ) {
         Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.basicMarquee(),
                 text = connectedDeviceViewModel.label.toString(),
-                style = MaterialTheme.typography.labelMedium,
+                style = style.labelTextStyle,
                 color = connectedDeviceViewModel.labelColor.toColor(),
                 maxLines = 1,
             )
@@ -158,7 +155,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                 Text(
                     modifier = Modifier.basicMarquee(),
                     text = it.toString(),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = style.deviceNameTextStyle,
                     color = connectedDeviceViewModel.deviceNameColor.toColor(),
                     maxLines = 1,
                 )
