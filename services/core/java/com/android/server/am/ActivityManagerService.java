@@ -435,7 +435,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManagerInternal;
-import android.widget.Toast;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
@@ -487,7 +486,6 @@ import com.android.server.SystemConfig;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.ThreadPriorityBooster;
-import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.psc.ActiveUidsInternal;
@@ -2696,12 +2694,26 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
             @AssociationType int associationType) {
+        return validateAssociationAllowedLocked(pkg1, uid1, pkg2, uid2, associationType,
+                /* extras= */ null);
+    }
+
+    /**
+     * Returns true if the package {@code pkg1} running under user handle {@code uid1} is
+     * allowed association with the package {@code pkg2} running under user handle {@code uid2}.
+     * <p> If either of the packages are running as  part of the core system, then the
+     * association is implicitly allowed.
+     * <p> {@code extras} are checked for some associations to enforce one-way data flow into the
+     * PCC sandbox.
+     */
+    boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
+            @AssociationType int associationType, @Nullable Bundle extras) {
         boolean callerOrTargetIsPcc = false;
         if (enablePccFrameworkSupport()) {
             callerOrTargetIsPcc =
                     Process.isPrivateComputeCoreUid(uid1) || Process.isPrivateComputeCoreUid(uid2);
             if (callerOrTargetIsPcc && validateAssociationAllowedForPccLocked(
-                    uid1, pkg1, uid2, pkg2, associationType)) {
+                    uid1, pkg1, uid2, pkg2, associationType, extras)) {
                 return true;
             }
         }
@@ -2742,14 +2754,14 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean validateAssociationAllowedForPccLocked(
             int callerUid, String callerPackage, int targetUid, String targetPackage,
-            @AssociationType int associationType) {
+            @AssociationType int associationType, Bundle extras) {
         final PccSandboxManagerInternal pccSandboxManagerInternal =
                 LocalServices.getService(PccSandboxManagerInternal.class);
         if (pccSandboxManagerInternal == null) {
             return false;
         }
         return pccSandboxManagerInternal.validateAssociationAllowed(
-                callerUid, callerPackage, targetUid, targetPackage, associationType);
+                callerUid, callerPackage, targetUid, targetPackage, associationType, extras);
     }
 
     /**
