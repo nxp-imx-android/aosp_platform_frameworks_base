@@ -1643,9 +1643,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             // Check if selected IME of current user supports handwriting.
             if (userId == mCurrentImeUserId) {
                 final var bindingController = getInputMethodBindingController(userId);
-                return bindingController.supportsStylusHandwriting()
+                return bindingController.getSupportsStylusHandwriting()
                         && (!connectionless
-                        || bindingController.supportsConnectionlessStylusHandwriting());
+                        || bindingController.getSupportsConnectionlessStylusHandwriting());
             }
             final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
             final InputMethodInfo selectedImi = settings.getMethodMap().get(
@@ -1960,7 +1960,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final SparseArray<IAccessibilityInputMethodSession> accessibilityInputMethodSessions =
                 createAccessibilityInputMethodSessions(
                         userData.mCurClient.mAccessibilitySessions);
-        if (bindingController.supportsStylusHandwriting() && hasSupportedStylusLocked()) {
+        if (bindingController.getSupportsStylusHandwriting() && hasSupportedStylusLocked()) {
             mHwController.setInkWindowInitializer(new InkWindowInitializer());
         }
         return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WITH_IME_SESSION,
@@ -2560,11 +2560,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      * the given user. Then it will re-request IME sessions on the client, for the newly connected
      * IME.
      *
+     * @param imeId  the ID of the IME that has connected.
      * @param imeUid the UID of the IME that has connected.
      * @param userId the ID of the user whose IME has connected.
      */
     @GuardedBy("ImfLock.class")
-    void onImeConnected(int imeUid, @UserIdInt int userId) {
+    void onImeConnected(@NonNull String imeId, int imeUid, @UserIdInt int userId) {
         final var userData = getUserData(userId);
         if (userData.mCurClient != null) {
             clearClientSessionLocked(userData.mCurClient);
@@ -2574,6 +2575,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         scheduleNotifyImeUidToAudioService(imeUid);
+        final var bindingController = getInputMethodBindingController(userId);
+        final InputMethodInfo imi = InputMethodSettingsRepository.get(userId).getMethodMap()
+                .get(imeId);
+        if (bindingController.getSupportsStylusHandwriting() != imi.supportsStylusHandwriting()) {
+            bindingController.setSupportsStylusHandwriting(imi.supportsStylusHandwriting());
+            InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
+        }
+        if (bindingController.getSupportsConnectionlessStylusHandwriting()
+                != imi.supportsConnectionlessStylusHandwriting()) {
+            bindingController.setSupportsConnectionlessStylusHandwriting(
+                    imi.supportsConnectionlessStylusHandwriting());
+            InputMethodManager.invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
+        }
         // Reset Handwriting event receiver. Always call this as it handles changes in the newly
         // connected IME supporting Stylus Handwriting. If unchanged, this is a no-op.
         scheduleResetStylusHandwriting();
@@ -3127,7 +3141,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @NonNull IConnectionlessHandwritingCallback callback) {
         synchronized (ImfLock.class) {
             final var bindingController = getInputMethodBindingController(userId);
-            if (!bindingController.supportsConnectionlessStylusHandwriting()) {
+            if (!bindingController.getSupportsConnectionlessStylusHandwriting()) {
                 Slog.w(TAG, "Connectionless stylus handwriting mode unsupported by IME.");
                 try {
                     callback.onError(CONNECTIONLESS_HANDWRITING_ERROR_UNSUPPORTED);
@@ -3213,7 +3227,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final long ident = Binder.clearCallingIdentity();
                 try {
                     final var bindingController = getInputMethodBindingController(userId);
-                    if (!bindingController.supportsStylusHandwriting()) {
+                    if (!bindingController.getSupportsStylusHandwriting()) {
                         Slog.w(TAG,
                                 "Stylus HW unsupported by IME. Ignoring startStylusHandwriting()");
                         return false;
@@ -4557,7 +4571,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         // handwriting initialized, lets do it now.
         final var bindingController = getInputMethodBindingController(mCurrentImeUserId);
         if (mHwController.getCurrentRequestId().isEmpty()
-                && bindingController.supportsStylusHandwriting()) {
+                && bindingController.getSupportsStylusHandwriting()) {
             scheduleResetStylusHandwriting();
         }
     }
@@ -5106,7 +5120,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 synchronized (ImfLock.class) {
                     final var bindingController =
                             getInputMethodBindingController(mCurrentImeUserId);
-                    if (bindingController.supportsStylusHandwriting()
+                    if (bindingController.getSupportsStylusHandwriting()
                             && bindingController.getCurIme() != null
                             && hasSupportedStylusLocked()) {
                         Slog.d(TAG, "Initializing Handwriting Spy");
