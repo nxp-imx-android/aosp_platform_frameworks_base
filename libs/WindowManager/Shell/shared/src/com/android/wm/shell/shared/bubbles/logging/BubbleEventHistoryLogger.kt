@@ -53,6 +53,11 @@ class BubbleEventHistoryLogger : DebugLogger {
         logEvent("e: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
+    /** Flushes all stored logs. */
+    fun flush() {
+        recentEvents.clear()
+    }
+
     /**
      * Logs a RECORD level message.
      *
