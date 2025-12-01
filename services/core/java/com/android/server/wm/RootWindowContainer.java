@@ -95,6 +95,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.UserProperties;
 import android.content.res.Configuration;
@@ -1283,14 +1284,107 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         });
     }
 
-    void startHomeOnDisplaysWithNoHome(String reason) {
+    @Nullable
+    private Pair<ActivityInfo, Intent> getHomeIntentAndInfoForTaskDisplayArea(
+            @NonNull TaskDisplayArea taskDisplayArea, int userId) {
+        Intent homeIntent;
+        ActivityInfo aInfo;
+        if (taskDisplayArea == getDefaultTaskDisplayArea()
+                || mWmService.shouldPlacePrimaryHomeOnDisplay(
+                taskDisplayArea.getDisplayId(), userId)) {
+            homeIntent = mService.getHomeIntent();
+            aInfo = resolveHomeActivity(userId, homeIntent);
+        } else if (shouldPlaceSecondaryHomeOnDisplayArea(taskDisplayArea)) {
+            Pair<ActivityInfo, Intent> info = resolveSecondaryHomeActivity(userId, taskDisplayArea);
+            aInfo = info.first;
+            homeIntent = info.second;
+        } else {
+            return null;
+        }
+        return (aInfo == null) ? null : Pair.create(aInfo, homeIntent);
+    }
+
+    /**
+     * Checks if the home is required in the given {@link TaskDisplayArea} for the specified user.
+     *
+     * @param userId          The ID of the user.
+     * @param taskDisplayArea The {@link TaskDisplayArea} to check.
+     * @return {@code true} if there is no home present in the given {@link TaskDisplayArea} or if
+     * the home package names are different; {@code false} otherwise.
+     */
+    boolean needsHomeLaunchOnDisplay(int userId, TaskDisplayArea taskDisplayArea) {
+        if (!taskDisplayArea.canHostHomeTask()) {
+            return false;
+        }
+        final ActivityRecord existingHomeForUserOnDisplay =
+                taskDisplayArea.getHomeActivityForUser(userId);
+        if (existingHomeForUserOnDisplay == null) {
+            // Even when no home activity for the given userId is on this display, a home activity
+            // for a different user might still be present. This code does not explicitly finish
+            // the old home activity; instead, relies on other system mechanisms for cleanup.
+            return true;
+        }
+
+        // Even if a home activity for the given userId is present, it could be a different
+        // package and thereby requiring launch of the correctly resolved home activity.
+        final Pair<ActivityInfo, Intent> resolvedHomeActivityIntentPair =
+                getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+        final ActivityInfo resolvedHomePackage = resolvedHomeActivityIntentPair == null ? null
+                : resolvedHomeActivityIntentPair.first;
+        if (resolvedHomePackage == null) {
+            return false;
+        }
+        return !Objects.equals(resolvedHomePackage.packageName,
+                existingHomeForUserOnDisplay.packageName);
+    }
+
+    void startHomeOnDisplaysIfNeeded(String reason) {
         forAllTaskDisplayAreas(taskDisplayArea -> {
-            if (taskDisplayArea.getHomeActivity() == null) {
-                int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
-                startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
-                        false /* allowInstrumenting */, false /* fromHomeKey */, false /* onTop */);
+            final int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
+            final Pair<ActivityInfo, Intent> homeActivityIntentPair =
+                    getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+
+            if (homeActivityIntentPair == null) {
+                return;
+            }
+
+            boolean allowHomeAlwaysPresent = isHomeAlwaysPresentAllowed(
+                    homeActivityIntentPair.first, userId);
+            if (allowHomeAlwaysPresent
+                    && homeActivityIntentPair.first.applicationInfo.isPrivilegedApp()) {
+                if (needsHomeLaunchOnDisplay(userId, taskDisplayArea)) {
+                    // Launch home not on top as this path ensures the correct home activity is
+                    // running in the background without disrupting the current foreground activity.
+                    startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                            false /* allowInstrumenting */, false /* fromHomeKey */,
+                            false /* onTop */);
+                }
+            } else {
+                if (taskDisplayArea.topRunningActivity() == null) {
+                    startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                            false /* allowInstrumenting */, false /* fromHomeKey */,
+                            true /* onTop */);
+                }
             }
         });
+    }
+
+    boolean isHomeAlwaysPresentAllowed(ActivityInfo aInfo, int userId) {
+        boolean allowHomeAlwaysPresent = false;
+        try {
+            final PackageManager pm = mService.mContext.getPackageManager();
+            final PackageManager.Property prop = pm.getPropertyAsUser(
+                    WindowManager.ALLOW_HOME_ACTIVITY_ALWAYS_PRESENT,
+                    aInfo.packageName,
+                    aInfo.name,
+                    userId);
+            if (prop != null) {
+                allowHomeAlwaysPresent = prop.getBoolean();
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // Property not found or package not found, default to false.
+        }
+        return allowHomeAlwaysPresent;
     }
 
     boolean startHomeOnDisplay(int userId, String reason, int displayId) {
@@ -1341,18 +1435,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             taskDisplayArea.setShouldKeepNoTask(false);
         }
 
-        Intent homeIntent = null;
-        ActivityInfo aInfo = null;
-        if (taskDisplayArea == getDefaultTaskDisplayArea()
-                || mWmService.shouldPlacePrimaryHomeOnDisplay(
-                        taskDisplayArea.getDisplayId(), userId)) {
-            homeIntent = mService.getHomeIntent();
-            aInfo = resolveHomeActivity(userId, homeIntent);
-        } else if (shouldPlaceSecondaryHomeOnDisplayArea(taskDisplayArea)) {
-            Pair<ActivityInfo, Intent> info = resolveSecondaryHomeActivity(userId, taskDisplayArea);
-            aInfo = info.first;
-            homeIntent = info.second;
+        final Pair<ActivityInfo, Intent> homeActivityIntentPair =
+                getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+
+        if (homeActivityIntentPair == null) {
+            return false;
         }
+
+        final ActivityInfo aInfo = homeActivityIntentPair.first;
+        final Intent homeIntent = homeActivityIntentPair.second;
 
         if (aInfo == null || homeIntent == null) {
             return false;

@@ -475,11 +475,11 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      */
     @Test
     @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
-    public void testStartHomeAfterUserUnlocked_() {
+    public void testStartHomeAfterUserUnlockedWithHomeAlwaysPresent() {
         mSupervisor.onUserUnlocked(0);
         waitHandlerIdle(mAtm.mH);
         verify(mRootWindowContainer, timeout(TIMEOUT_MS))
-                .startHomeOnDisplaysWithNoHome("userUnlocked");
+                .startHomeOnDisplaysIfNeeded("userUnlocked");
     }
 
     /** Verifies that launch from recents sets the launch cookie on the activity. */
