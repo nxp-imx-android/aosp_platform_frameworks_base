@@ -23,6 +23,7 @@ import android.os.Parcelable;
 import android.os.PersistableBundle;
 
 import java.lang.annotation.ElementType;
+import java.util.Objects;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -74,18 +75,12 @@ public final class FeatureDetails implements Parcelable {
             @Status int featureStatus,
             @NonNull PersistableBundle featureDetailParams) {
         this.mFeatureStatus = featureStatus;
-        com.android.internal.util.AnnotationValidations.validate(
-                Status.class, null, mFeatureStatus);
-        this.mFeatureDetailParams = featureDetailParams;
-        com.android.internal.util.AnnotationValidations.validate(
-                NonNull.class, null, mFeatureDetailParams);
+        this.mFeatureDetailParams = Objects.requireNonNull(featureDetailParams);
     }
 
     public FeatureDetails(
             @Status int featureStatus) {
         this.mFeatureStatus = featureStatus;
-        com.android.internal.util.AnnotationValidations.validate(
-                Status.class, null, mFeatureStatus);
         this.mFeatureDetailParams = new PersistableBundle();
     }
 
@@ -150,11 +145,7 @@ public final class FeatureDetails implements Parcelable {
                 PersistableBundle.CREATOR);
 
         this.mFeatureStatus = status;
-        com.android.internal.util.AnnotationValidations.validate(
-                Status.class, null, mFeatureStatus);
         this.mFeatureDetailParams = persistableBundle;
-        com.android.internal.util.AnnotationValidations.validate(
-                NonNull.class, null, mFeatureDetailParams);
     }
 
 

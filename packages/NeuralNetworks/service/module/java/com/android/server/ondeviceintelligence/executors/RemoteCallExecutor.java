@@ -20,7 +20,7 @@ import android.os.IInterface;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
@@ -30,6 +30,8 @@ import java.util.concurrent.Executors;
  * Base class for executing remote calls with failure handling.
  *
  * @param <S> The type of the service interface.
+ *
+ * @hide
  */
 public abstract class RemoteCallExecutor<S extends IInterface> {
     /** Enum for failure types. */

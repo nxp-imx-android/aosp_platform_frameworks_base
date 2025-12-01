@@ -21,7 +21,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.Bundle;
 import android.os.RemoteCallback;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 
 /**
  * Interface for a concrete implementation to provide access to storage read access

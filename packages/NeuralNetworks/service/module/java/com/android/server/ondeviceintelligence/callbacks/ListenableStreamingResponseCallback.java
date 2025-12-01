@@ -24,7 +24,7 @@ import android.os.PersistableBundle;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 
 import java.util.concurrent.TimeoutException;
 
@@ -34,6 +34,8 @@ import java.util.concurrent.TimeoutException;
  * wait for timeout. Instead, in such cases we rely on the remote service sending partial results
  * and if there are *no* invocations of {@link #onPartialResult} in the duration of
  * {@link #mIdleTimeoutMs}, we can assume the streaming will not complete, enabling faster cleanup.
+ *
+ * @hide
  */
 public class ListenableStreamingResponseCallback extends IStreamingResponseCallback.Stub
         implements Runnable {

@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
-import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Looper;
@@ -33,7 +32,8 @@ import android.os.UserHandle;
 import android.util.Log;
 import android.util.Slog;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
+import com.android.modules.utils.HandlerExecutor;
 
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
@@ -60,6 +60,8 @@ import java.util.function.Function;
  * Use {@link ServiceConnector.Impl} to construct an instance.
  *
  * @param <I> the type of the {@link IInterface ipc interface} for the remote service
+ *
+ * @hide
  */
 public interface ServiceConnector<I extends IInterface> {
 

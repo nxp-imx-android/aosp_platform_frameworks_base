@@ -43,7 +43,7 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeoutException;
@@ -51,6 +51,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Util methods for ensuring the Bundle passed in various methods are read-only and restricted to
  * some known types.
+ *
+ * @hide
  */
 public class BundleUtil {
     private static final String TAG = "BundleUtil";
@@ -76,7 +78,7 @@ public class BundleUtil {
                  * {@link ClassNotFoundException} exception is swallowed and `null` is returned
                  * instead. We want to ensure cleanup of null entries in such case.
                  */
-                bundle.putObject(key, null);
+                bundle.putParcelable(key, null);
                 continue;
             }
             if (canMarshall(obj) || obj instanceof CursorWindow) {
@@ -121,7 +123,7 @@ public class BundleUtil {
                  * {@link ClassNotFoundException} exception is swallowed and `null` is returned
                  * instead. We want to ensure cleanup of null entries in such case.
                  */
-                bundle.putObject(key, null);
+                bundle.putParcelable(key, null);
                 continue;
             }
             if (canMarshall(obj)) {
@@ -164,7 +166,7 @@ public class BundleUtil {
                  * {@link ClassNotFoundException} exception is swallowed and `null` is returned
                  * instead. We want to ensure cleanup of null entries in such case.
                  */
-                bundle.putObject(key, null);
+                bundle.putParcelable(key, null);
                 continue;
             }
             if (canMarshall(obj)) {
@@ -345,10 +347,13 @@ public class BundleUtil {
         };
     }
 
-    private static boolean canMarshall(Object obj) {
-        return obj instanceof byte[]
-                || obj instanceof PersistableBundle
-                || PersistableBundle.isValidType(obj);
+    private static boolean canMarshall(Object value) {
+        return (value instanceof byte[]) || (value instanceof Integer) || (value instanceof Long) ||
+                (value instanceof Double) || (value instanceof String) ||
+                (value instanceof int[]) || (value instanceof long[]) ||
+                (value instanceof double[]) || (value instanceof String[]) ||
+                (value instanceof PersistableBundle) || (value == null) ||
+                (value instanceof Boolean) || (value instanceof boolean[]);
     }
 
     private static void ensureValidBundle(Bundle bundle) {
@@ -389,7 +394,7 @@ public class BundleUtil {
                         "Bundle contains a parcel file descriptor which is not read-only.");
             }
         } catch (ErrnoException e) {
-            throw new BadParcelableException("Invalid File descriptor passed in the Bundle.", e);
+            throw new BadParcelableException("Invalid File descriptor passed in the Bundle.");
         }
     }
 

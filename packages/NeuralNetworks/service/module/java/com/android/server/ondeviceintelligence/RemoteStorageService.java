@@ -28,7 +28,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 import android.app.ondeviceintelligence.Feature;
 import android.service.ondeviceintelligence.IRemoteStorageService;
 import android.util.Slog;
@@ -37,6 +37,8 @@ import android.util.Slog;
  * Implementation of {@link IRemoteStorageService.Stub} for the OnDeviceIntelligenceManagerService.
  * This class handles calls from the sandboxed inference service to the main intelligence service
  * for storage-related operations.
+ *
+ * @hide
  */
 public class RemoteStorageService extends IRemoteStorageService.Stub {
     private static final String TAG = "RemoteStorageService";

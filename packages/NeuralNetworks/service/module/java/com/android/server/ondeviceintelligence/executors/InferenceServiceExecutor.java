@@ -21,7 +21,7 @@ import android.os.RemoteException;
 import android.service.ondeviceintelligence.IOnDeviceSandboxedInferenceService;
 import android.util.Slog;
 
-import com.android.internal.infra.AndroidFuture;
+import com.android.modules.utils.AndroidFuture;
 import com.android.server.ondeviceintelligence.OnDeviceIntelligenceManagerService;
 
 import java.util.concurrent.TimeoutException;
@@ -32,6 +32,8 @@ import java.util.concurrent.TimeoutException;
  * <p>This class centralizes the logic for permission checks, ensuring the remote service is
  * available, and handling various failure scenarios like timeouts or remote exceptions before
  * dispatching the call.
+ *
+ * @hide
  */
 public final class InferenceServiceExecutor
         extends RemoteCallExecutor<IOnDeviceSandboxedInferenceService> {
