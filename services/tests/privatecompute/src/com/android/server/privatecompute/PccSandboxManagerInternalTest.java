@@ -50,6 +50,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.FileDescriptor;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 /**
  * Tests for {@link PccSandboxManagerServiceInternal}.
@@ -97,8 +99,7 @@ public class PccSandboxManagerInternalTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
 
         int testUid = android.os.Process.myUid();
@@ -107,7 +108,8 @@ public class PccSandboxManagerInternalTest {
         when(mPackageManagerInternal.isSameApp(WRONG_CALLING_PACKAGE, testUid,
                 UserHandle.getUserId(testUid))).thenReturn(false);
 
-        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        when(mMockPccSandboxManagerService.getExecutorService())
+                .thenReturn(Executors.newSingleThreadExecutor());
         mPccSandboxManagerInternal = new PccSandboxManagerInternal(
                 context, mMockPccSandboxManagerService);
         mRealBinder = new IPccService.Stub() {
@@ -124,6 +126,11 @@ public class PccSandboxManagerInternalTest {
         };
         mServiceName = new ComponentName("com.example.test", "com.example.test.MyPccService");
         mIntent = new Intent().setComponent(mServiceName);
+    }
+
+    @After
+    public void tearDown() {
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
     }
 
     @Test
@@ -356,6 +363,7 @@ public class PccSandboxManagerInternalTest {
 
             }
 
+
             @Override
             public boolean transact(int code, @NonNull Parcel data, @Nullable Parcel reply,
                     int flags) {
@@ -421,5 +429,29 @@ public class PccSandboxManagerInternalTest {
                 REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1);
 
         assertTrue("Association between a regular UID and a PCC UID should be allowed", allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccToTrustedUid_isAllowed() {
+        boolean allowed;
+        for (int trustedUid : PccSandboxManagerInternal.TRUSTED_UIDS) {
+            allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                    PCC_UID_1, PCC_PACKAGE_1, trustedUid, REGULAR_PACKAGE);
+            assertTrue("Association between a PCC UID and a trusted UID should be"
+                    + " allowed", allowed);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccToTrustedPackage_isAllowed() {
+        mPccSandboxManagerInternal.populatePccTrustedPackages();
+        for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
+            boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                    PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, trustedPackage);
+            assertTrue("Association between a PCC UID and a trusted package should be allowed",
+                    allowed);
+        }
     }
 }
