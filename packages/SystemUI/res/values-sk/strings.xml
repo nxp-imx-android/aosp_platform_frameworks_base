@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Snímka obrazovky sa nedá uložiť"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Vytváranie snímok obrazovky je zakázané aplikáciou alebo vašou organizáciou"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Vytváranie snímok obrazovky zablokoval váš správca IT"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"Skopírovať snímku obrazovky do schránky"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Upraviť"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Tlačidlo Upraviť snímku obrazovky"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Zdieľať"</string>
@@ -837,6 +836,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Klepnutím nastavíte vibrovanie."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Klepnutím vypnete zvuk."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Ovládanie šumu"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Priestorový zvuk"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Vypnuté"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Pevné"</string>
@@ -928,31 +929,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použiť"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnúť"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefón"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"hodinky"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"televízor"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Otvoriť nastavenia zariadenia <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Tiché"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Predvolené"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automaticky"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"Toto upozornenie je zo zariadenia <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Žiadny zvuk ani vibrácie"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Žiadny zvuk ani vibrácie, ale naďalej sa zobrazuje v sekcii konverzácií"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Môže zvoniť či vibrovať podľa nastavení v zariadení"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Môže zvoniť alebo vibrovať podľa nastavení v zariadení. Predvolene sa zobrazia konverzácie z bubliny aplikácie <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Nechajte systém určiť, či má toto upozornenie vydávať zvuk alebo vibrovať"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;Stav:&lt;/b&gt; Preradené vyššie do kategórie Predvolené"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"Prioritu a nastavenia synchronizovaných upozornení môžete upraviť v zariadení <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Status:&lt;/b&gt; Preradené nižšie do kategórie Tiché"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Status:&lt;/b&gt; Preradené vyššie"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Stav:&lt;/b&gt; Preradené nižšie"</string>

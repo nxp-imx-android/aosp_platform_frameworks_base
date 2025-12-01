@@ -837,6 +837,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s। कम्पन मोडमा सेट गर्न ट्याप गर्नुहोस्।"</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s। म्यूट गर्न ट्याप गर्नुहोस्।"</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"न्वाइज कन्ट्रोल"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"स्पेसियल अडियो"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"अफ छ"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"निश्चित"</string>

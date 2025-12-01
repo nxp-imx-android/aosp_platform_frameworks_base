@@ -836,6 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Tap to set to vibrate."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Tap to mute."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Noise Control"</string>
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Mic Noise Cancellation"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Spatial Audio"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Off"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fixed"</string>
