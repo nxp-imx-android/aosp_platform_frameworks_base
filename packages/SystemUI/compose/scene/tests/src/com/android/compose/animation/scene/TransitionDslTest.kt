@@ -326,6 +326,28 @@ class TransitionDslTest {
             .isEqualTo(spec)
     }
 
+    @Test
+    fun isReversed_inSpec_direction_isFalse() {
+        val transitions = transitions { from(SceneA, to = SceneB) }
+        val transformationSpec =
+            transitions
+                .transitionSpec(from = SceneA, to = SceneB, key = null)
+                .transformationSpec(aToB())
+
+        assertThat(transformationSpec.isReversed).isFalse()
+    }
+
+    @Test
+    fun isReversed_whenReversed_isTrue() {
+        val transitions = transitions { from(SceneB, to = SceneA) }
+        val transformationSpec =
+            transitions
+                .transitionSpec(from = SceneA, to = SceneB, key = null)
+                .transformationSpec(aToB())
+
+        assertThat(transformationSpec.isReversed).isTrue()
+    }
+
     companion object {
         private val TRANSFORMATION_RANGE =
             Correspondence.transforming<TransformationMatcher, TransformationRange?>(

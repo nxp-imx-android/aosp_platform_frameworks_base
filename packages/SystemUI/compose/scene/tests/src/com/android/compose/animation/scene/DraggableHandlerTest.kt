@@ -18,14 +18,22 @@
 
 package com.android.compose.animation.scene
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.overscroll
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -38,7 +46,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestOverlays.OverlayA
 import com.android.compose.animation.scene.TestOverlays.OverlayB
 import com.android.compose.animation.scene.TestScenes.SceneA
@@ -47,10 +54,18 @@ import com.android.compose.animation.scene.TestScenes.SceneC
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.content.state.TransitionState.Companion.DistanceUnspecified
 import com.android.compose.animation.scene.content.state.TransitionState.Transition
+import com.android.compose.animation.scene.mechanics.UserActionGesture
+import com.android.compose.animation.scene.mechanics.UserActionGestureFlag
+import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.animation.scene.subjects.assertThat
 import com.android.compose.gesture.NestedDraggable
 import com.android.compose.gesture.effect.OffsetOverscrollEffectFactory
 import com.android.mechanics.spec.InputDirection
+import com.android.mechanics.spec.MotionSpec
+import com.android.mechanics.spec.builder.directionalMotionSpec
+import com.android.mechanics.spec.builder.spatialDirectionalMotionSpec
+import com.android.mechanics.spec.with
+import com.android.systemui.Flags.FLAG_STL_USER_ACTION_GESTURE
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.nextUp
 import kotlin.math.sign
@@ -58,16 +73,32 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.MonotonicClockTestScope
 import platform.test.motion.compose.runMonotonicClockTest
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 private const val SCREEN_SIZE = 100f
 private val LAYOUT_SIZE = IntSize(SCREEN_SIZE.toInt(), SCREEN_SIZE.toInt())
 
-@RunWith(AndroidJUnit4::class)
-class DraggableHandlerTest {
+@RunWith(ParameterizedAndroidJunit4::class)
+class DraggableHandlerTest(flags: FlagsParameterization) {
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(FLAG_STL_USER_ACTION_GESTURE)
+        }
+
+        const val FLOAT_EPSILON = 0.0001f
+    }
+
+    @get:Rule val setFlagsRule = SetFlagsRule().apply { setFlagsParameterization(flags) }
+
     private class TestGestureScope(val testScope: MonotonicClockTestScope) {
         var canChangeScene: (SceneKey) -> Boolean = { true }
         val layoutState =
@@ -155,10 +186,7 @@ class DraggableHandlerTest {
         val draggableHandler = layoutImpl.verticalDraggableHandler
         val horizontalDraggableHandler = layoutImpl.horizontalDraggableHandler
         val velocityThreshold
-            get() = draggableHandler.velocityThreshold
-
-        val positionalThreshold
-            get() = draggableHandler.positionalThreshold
+            get() = with(density) { layoutImpl.swipeDetector.velocityThreshold.toPx() }
 
         fun down(fractionOfScreen: Float) =
             if (fractionOfScreen < 0f) error("use up()") else SCREEN_SIZE * fractionOfScreen
@@ -266,7 +294,7 @@ class DraggableHandlerTest {
             expectedConsumed: Float = pixels,
         ) {
             val consumed = onDrag(delta = pixels)
-            assertThat(consumed).isEqualTo(expectedConsumed)
+            assertThat(consumed).isWithin(FLOAT_EPSILON).of(expectedConsumed)
         }
 
         suspend fun NestedDraggable.Controller.onDragStoppedAnimateNow(
@@ -1020,4 +1048,324 @@ class DraggableHandlerTest {
         dragController.onDragDelta(pixels = directionChangeSlop.nextUp())
         assertThat(gestureContext.direction).isEqualTo(InputDirection.Max)
     }
+
+    @Test
+    @DisableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_flagDisabled_hasNoEffect() = runGestureTest {
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneB) {
+                distance = UserActionGesture { _, _, _, _ ->
+                    error("gestureSpec must not be called in this scenario")
+                }
+            }
+        }
+
+        val controller = onDragStarted(overSlop = up(fractionOfScreen = 0.9f))
+
+        controller.onDragStoppedAnimateNow(
+            velocity = 0f,
+            onAnimationStart = {
+                assertTransition(fromScene = SceneA, toScene = SceneB, progress = 0.9f)
+            },
+        )
+        assertIdle(SceneB)
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_distanceUndefined_noBehaviorChange() = runGestureTest {
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneB) {
+                distance =
+                    UserActionGesture(
+                        distance = UserActionDistance { _, _, _ -> DistanceUnspecified }
+                    ) { _, _, _, _ ->
+                        error("gestureSpec must not be called in this scenario")
+                    }
+            }
+        }
+
+        val controller = onDragStarted(overSlop = up(fractionOfScreen = 0.9f))
+
+        // The distance is not computed yet, so we don't know the "progress" value yet.
+        assertTransition(fromScene = SceneA, toScene = SceneB, progress = 0.0f)
+
+        controller.onDragStoppedAnimateNow(
+            // We are animating from SceneA to SceneA, when the distance is still unspecified.
+            velocity = velocityThreshold,
+            onAnimationStart = {
+                assertTransition(fromScene = SceneA, toScene = SceneB, progress = 0.0f)
+            },
+        )
+        assertIdle(SceneA)
+    }
+
+    private class RecordingUserActionGesture(distance: UserActionDistance = DefaultSwipeDistance) :
+        UserActionGesture, UserActionDistance by distance {
+
+        val gestureSpecInvocations = mutableListOf<UserActionGestureInvocation>()
+
+        data class UserActionGestureInvocation(
+            val fromContent: ContentKey,
+            val toContent: ContentKey,
+            val orientation: Orientation,
+            val distance: Float,
+        )
+
+        override fun UserActionGestureScope.gestureSpec(
+            fromContent: ContentKey,
+            toContent: ContentKey,
+            orientation: Orientation,
+            absoluteDistance: Float,
+        ): MotionSpec {
+            gestureSpecInvocations.add(
+                UserActionGestureInvocation(fromContent, toContent, orientation, absoluteDistance)
+            )
+            return MotionSpec.Identity
+        }
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_draggingUp_correctOrientationAndDistance() = runGestureTest {
+        val userActionGesture = RecordingUserActionGesture()
+
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneB) { distance = userActionGesture }
+        }
+
+        onDragStarted(overSlop = up(0.1f))
+
+        assertThat(userActionGesture.gestureSpecInvocations).hasSize(1)
+        userActionGesture.gestureSpecInvocations.first().also {
+            assertThat(it.orientation).isEqualTo(Orientation.Vertical)
+            assertThat(it.distance).isEqualTo(SCREEN_SIZE)
+        }
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_draggingDown_correctOrientationAndDistance() = runGestureTest {
+        val userActionGesture = RecordingUserActionGesture()
+
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneC) { distance = userActionGesture }
+        }
+
+        onDragStarted(overSlop = down(0.1f))
+
+        assertThat(userActionGesture.gestureSpecInvocations).hasSize(1)
+        userActionGesture.gestureSpecInvocations.first().also {
+            assertThat(it.orientation).isEqualTo(Orientation.Vertical)
+            assertThat(it.distance).isEqualTo(SCREEN_SIZE)
+        }
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_reversed_hasActualTransitionParameters() = runGestureTest {
+        val userActionGesture = RecordingUserActionGesture()
+
+        layoutState.transitions = transitions {
+            from(SceneC, to = SceneA) { distance = userActionGesture }
+        }
+
+        onDragStarted(overSlop = down(0.1f))
+
+        assertThat(userActionGesture.gestureSpecInvocations).hasSize(1)
+        userActionGesture.gestureSpecInvocations.first().also {
+            assertThat(it.fromContent).isEqualTo(SceneA)
+            assertThat(it.toContent).isEqualTo(SceneC)
+            assertThat(it.orientation).isEqualTo(Orientation.Vertical)
+            assertThat(it.distance).isEqualTo(SCREEN_SIZE)
+        }
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_gestureSpecIsCreated_onceDistanceSpecified() = runGestureTest {
+        var providedDistance by mutableFloatStateOf(DistanceUnspecified)
+        val userActionGesture =
+            RecordingUserActionGesture(
+                distance = UserActionDistance { _, _, _ -> providedDistance }
+            )
+
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneB) { distance = userActionGesture }
+        }
+
+        val controller = onDragStarted(overSlop = up(fractionOfScreen = 0.1f))
+
+        // The distance is not computed yet, so the spec must not have been requested
+        assertThat(userActionGesture.gestureSpecInvocations).isEmpty()
+        // however the transition dis starty
+        assertTransition(fromScene = SceneA, toScene = SceneB, progress = 0.0f)
+
+        controller.onDragDelta(up(.1f), expectedConsumed = 0f)
+        assertThat(userActionGesture.gestureSpecInvocations).isEmpty()
+
+        providedDistance = SCREEN_SIZE
+        controller.onDragDelta(up(.1f))
+        assertThat(userActionGesture.gestureSpecInvocations)
+            .containsExactly(
+                RecordingUserActionGesture.UserActionGestureInvocation(
+                    fromContent = SceneA,
+                    toContent = SceneB,
+                    orientation = Orientation.Vertical,
+                    distance = SCREEN_SIZE,
+                )
+            )
+
+        controller.onDragDelta(up(.1f))
+        // Must not be called again
+        assertThat(userActionGesture.gestureSpecInvocations).hasSize(1)
+
+        controller.onDragStoppedAnimateNow(
+            velocity = -velocityThreshold,
+            onAnimationStart = {
+                assertTransition(fromScene = SceneA, toScene = SceneB, progress = 0.3f)
+            },
+        )
+        assertIdle(SceneB)
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_dragDownOrRight() = runGestureTest {
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneC) {
+                distance = UserActionGesture { _, _, _, distance ->
+                    MotionSpec(
+                        spatialDirectionalMotionSpec {
+                            targetFromCurrent(breakpoint = 0f, to = distance / 4f)
+                            targetFromCurrent(breakpoint = distance / 2f, to = distance)
+                            identity(breakpoint = distance)
+                        }
+                    )
+                }
+            }
+        }
+
+        // Gesture reaches 25% progress in the first half of the drag, 100% in the second half
+        val controller = onDragStarted(overSlop = down(0.1f))
+        assertTransition(progress = .25f * .2f)
+        controller.onDragDelta(down(.3f))
+        assertTransition(progress = .25f * .8f)
+        controller.onDragDelta(down(.1f))
+        assertTransition(progress = .25f)
+        controller.onDragDelta(down(.1f))
+        assertTransition(progress = .25f + .75f * .2f)
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun userActionGesture_dragUpOrLeft_progressIsComputedCorrectly() = runGestureTest {
+        layoutState.transitions = transitions {
+            from(SceneA, to = SceneB) {
+                distance = UserActionGesture { _, _, _, distance ->
+                    MotionSpec(
+                        spatialDirectionalMotionSpec {
+                            targetFromCurrent(breakpoint = 0f, to = distance / 4f)
+                            targetFromCurrent(breakpoint = distance / 2f, to = distance)
+                            identity(breakpoint = distance)
+                        }
+                    )
+                }
+            }
+        }
+
+        // Gesture reaches 25% progress in the first half of the drag, 100% in the second half
+        val controller = onDragStarted(overSlop = up(0.1f))
+        assertTransition(progress = .25f * .2f)
+        controller.onDragDelta(up(.3f))
+        assertTransition(progress = .25f * .8f)
+        controller.onDragDelta(up(.1f))
+        assertTransition(progress = .25f)
+        controller.onDragDelta(up(.1f))
+        assertTransition(progress = .25f + .75f * .2f)
+    }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun onDragStoppedAfterDrag_shouldCommitFalse_velocityBelowThreshold_staysOnSameScene() =
+        runGestureTest {
+            layoutState.transitions = transitions {
+                from(SceneA, to = SceneC) {
+                    distance = UserActionGesture { _, _, _, _ ->
+                        MotionSpec(
+                            directionalMotionSpec(
+                                semantics = listOf(UserActionGesture.ShouldCommit with false)
+                            )
+                        )
+                    }
+                }
+            }
+
+            val dragController = onDragStarted(overSlop = down(fractionOfScreen = 0.9f))
+            assertTransition(currentScene = SceneA)
+
+            dragController.onDragStoppedAnimateNow(
+                velocity = velocityThreshold - 0.01f,
+                onAnimationStart = { assertTransition(currentScene = SceneA, progress = 0.9f) },
+            )
+
+            assertIdle(currentScene = SceneA)
+        }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun onDragStoppedAfterDrag_shouldCommitTrue_velocityBelowThreshold_goesToTarget() =
+        runGestureTest {
+            layoutState.transitions = transitions {
+                from(SceneA, to = SceneC) {
+                    distance = UserActionGesture { _, _, _, _ ->
+                        MotionSpec(
+                            directionalMotionSpec(
+                                semantics = listOf(UserActionGesture.ShouldCommit with true)
+                            )
+                        )
+                    }
+                }
+            }
+
+            val dragController = onDragStarted(overSlop = down(fractionOfScreen = 0.1f))
+            assertTransition(currentScene = SceneA)
+
+            dragController.onDragStoppedAnimateNow(
+                velocity = velocityThreshold - 0.01f,
+                onAnimationStart = { assertTransition(currentScene = SceneC, progress = 0.1f) },
+            )
+
+            assertIdle(currentScene = SceneC)
+        }
+
+    @Test
+    @EnableFlags(UserActionGestureFlag.FLAG_NAME)
+    fun onDragStoppedAfterDrag_shouldCommitTrue_requiresFullDistance_staysOnScene() =
+        runGestureTest {
+            mutableUserActionsA +=
+                Swipe.Down to UserActionResult(SceneC, requiresFullDistanceSwipe = true)
+
+            layoutState.transitions = transitions {
+                from(SceneA, to = SceneC) {
+                    distance = UserActionGesture { _, _, _, _ ->
+                        MotionSpec(
+                            directionalMotionSpec(
+                                semantics = listOf(UserActionGesture.ShouldCommit with true)
+                            )
+                        )
+                    }
+                }
+            }
+
+            val dragController = onDragStarted(overSlop = down(fractionOfScreen = 0.9f))
+            assertTransition(currentScene = SceneA)
+
+            dragController.onDragStoppedAnimateNow(
+                velocity = velocityThreshold - 0.01f,
+                onAnimationStart = { assertTransition(currentScene = SceneA, progress = 0.9f) },
+            )
+
+            assertIdle(currentScene = SceneA)
+        }
 }
