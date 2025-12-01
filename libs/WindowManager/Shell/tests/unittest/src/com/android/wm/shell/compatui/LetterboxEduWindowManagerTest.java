@@ -32,11 +32,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.TaskInfo;
@@ -47,6 +50,7 @@ import android.testing.AndroidTestingRunner;
 import android.util.Pair;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
+import android.view.InsetsState;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.ViewGroup;
@@ -119,6 +123,7 @@ public class LetterboxEduWindowManagerTest extends ShellTestCase {
     @Mock private Transitions mTransitions;
     @Mock private Consumer<Pair<TaskInfo, ShellTaskOrganizer.TaskListener>> mOnDismissCallback;
     @Mock private DockStateReader mDockStateReader;
+    @Mock private InsetsState mInsetsState;
 
     private CompatUIConfiguration mCompatUIConfiguration;
     private TestShellExecutor mExecutor;
@@ -384,6 +389,8 @@ public class LetterboxEduWindowManagerTest extends ShellTestCase {
                 newDisplayCutoutTop, /* expectedExtraBottomMargin= */ newDisplayCutoutBottom);
         verify(mViewHost).relayout(mWindowAttrsCaptor.capture());
         assertThat(mWindowAttrsCaptor.getValue()).isEqualTo(layout.getLayoutParams());
+        verify(mViewHost).relayout(mWindowAttrsCaptor.capture());
+        assertThat(mWindowAttrsCaptor.getValue()).isEqualTo(layout.getLayoutParams());
     }
 
     @Test
@@ -500,8 +507,14 @@ public class LetterboxEduWindowManagerTest extends ShellTestCase {
         displayInfo.logicalHeight = TASK_HEIGHT;
         displayInfo.displayCutout = new DisplayCutout(
                 insets, null, null, null, null);
-        return new DisplayLayout(displayInfo,
+        DisplayLayout dl =  new DisplayLayout(displayInfo,
                 mContext.getResources(), /* hasNavigationBar= */ false, /* hasStatusBar= */ false);
+        final Rect displayFrame = new Rect(0, 0, TASK_WIDTH, TASK_HEIGHT);
+        when(mInsetsState.getDisplayFrame()).thenReturn(displayFrame);
+        when(mInsetsState.calculateInsets(any(Rect.class), any(), anyInt(),
+                anyBoolean())).thenReturn(insets);
+        dl.setInsets(mContext.getResources(), mInsetsState);
+        return dl;
     }
 
     private static TaskInfo createTaskInfo(boolean eligible) {
