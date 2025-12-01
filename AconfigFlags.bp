@@ -67,6 +67,7 @@ aconfig_declarations_group {
         "android.net.wifi.flags-aconfig-java",
         "android.nfc.flags-aconfig-java",
         "android.os.flags-aconfig-java",
+        "android.os.multisensory.flags-aconfig-java",
         "android.os.vibrator.flags-aconfig-java",
         "android.permission.flags-aconfig-java",
         "android.print.flags-aconfig-java",
@@ -711,6 +712,20 @@ java_aconfig_library {
     name: "android.view.inputmethod.flags-aconfig-java-host",
     aconfig_declarations: "android.view.inputmethod.flags-aconfig",
     host_supported: true,
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Multisensory
+aconfig_declarations {
+    name: "android.os.multisensory.flags-aconfig",
+    package: "android.os.multisensory",
+    container: "system",
+    srcs: ["core/java/android/os/multisensory/*.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.os.multisensory.flags-aconfig-java",
+    aconfig_declarations: "android.os.multisensory.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
