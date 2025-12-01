@@ -30,6 +30,7 @@ import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_FALSE;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.NotificationListenerService.SUPPRESSED_EFFECT_SCREEN_ON;
+import static android.service.notification.ZenModeConfig.MANUAL_RULE_ID;
 import static android.service.notification.ZenModeConfig.XML_VERSION_MODES_API;
 import static android.service.notification.ZenModeConfig.XML_VERSION_MODES_UI;
 import static android.service.notification.ZenModeConfig.ZEN_TAG;
@@ -1085,6 +1086,21 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         // The result should have a manual rule; it should not be changed from the previous rule.
         assertThat(fromXml.manualRule).isEqualTo(config.manualRule);
         assertThat(fromXml.isManualActive()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void testConfigXml_readXml_manualZenRuleHasNoId_setId() throws Exception {
+        ZenModeConfig config = getMutedAllConfig();
+        // Change manual rule id to null.
+        config.manualRule.id = null;
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writeConfigXml(config, XML_VERSION_MODES_API, /* forBackup= */ false, baos, null);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ZenModeConfig fromXml = readConfigXml(bais, null);
+
+        assertThat(fromXml.manualRule.id).isEqualTo(MANUAL_RULE_ID);
     }
 
     @Test

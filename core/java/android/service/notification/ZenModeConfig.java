@@ -725,6 +725,9 @@ public class ZenModeConfig implements Parcelable {
                     rt.manualRule = readRuleXml(parser);
                     // manualRule.enabled can never be false, but it was broken in some builds.
                     rt.manualRule.enabled = true;
+                    if (Flags.enableDndSync()) {
+                        rt.manualRule.id = MANUAL_RULE_ID;
+                    }
                     // Manual rule may be present prior to modes_ui if it were on, but in that
                     // case it would not have a set policy, so make note of the need to set
                     // it up later.
