@@ -186,7 +186,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                 }
                             }
                 ) {
-                    AppWindowBox(taskInfo = viewModel.topTask)
+                    AppWindowBox(appWindowModel = viewModel.appWindowSelection)
                 }
             }
         }
