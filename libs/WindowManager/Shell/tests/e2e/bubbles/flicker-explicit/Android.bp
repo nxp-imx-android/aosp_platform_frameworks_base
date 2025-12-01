@@ -81,6 +81,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest",
         "com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest",
+        "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaAppIconTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchFullscreenToBubbleTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchFullscreenToBubbleTrampolineTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTest",
@@ -283,6 +284,13 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaAppIconTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaAppIconTest"],
 }
 
 test_module_config {
