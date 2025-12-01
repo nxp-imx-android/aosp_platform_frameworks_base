@@ -83,15 +83,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Provides a way to create instances of a KeyPair which will be placed in the
- * Android keystore service usable only by the application that called it. This
- * can be used in conjunction with
- * {@link java.security.KeyStore#getInstance(String)} using the
- * {@code "AndroidKeyStore"} type.
+ * Provides a way to create {@code java.security.KeyPair} instances that are stored and
+ * managed by Android Keystore and can only be used by the application that created them.
  * <p>
- * This class can not be directly instantiated and must instead be used via the
- * {@link KeyPairGenerator#getInstance(String)
- * KeyPairGenerator.getInstance("AndroidKeyStore")} API.
+ * This class provides the implementation used by the {@code "AndroidKeyStore"} provider.
+ * It cannot be directly instantiated and must instead be used by calling
+ * {@link KeyPairGenerator#getInstance(String) KeyPairGenerator.getInstance("AndroidKeyStore")}.
  *
  * @hide
  */
@@ -110,9 +107,10 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         }
     }
 
-    // For curve 25519, KeyMint uses the KM_ALGORITHM_EC constant, but in the Java layer we need
-    // to distinguish between Curve 25519 and other EC algorithms, so we use a different constant
-    // with a value that is outside the range of the enum used for KeyMint algorithms.
+    // KeyMint uses the KM_ALGORITHM_EC constant defined in
+    // frameworks/base/core/java/android/security/keymaster/KeymasterDefs.java for Curve25519.
+    // However, the Java layer needs to distinguish between Curve25519 and other EC algorithms, so
+    // it uses new constants with values outside the range of the KeyMint enum.
     private static final int ALGORITHM_XDH = KeymasterDefs.KM_ALGORITHM_EC + 1200;
     private static final int ALGORITHM_ED25519 = ALGORITHM_XDH + 1;
 
@@ -136,10 +134,6 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         }
     }
 
-    /*
-     * These must be kept in sync with system/security/keystore/defaults.h
-     */
-
     /* EC */
     private static final int EC_DEFAULT_KEY_SIZE = 256;
 
@@ -152,23 +146,22 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             new HashMap<String, Integer>();
     private static final List<String> SUPPORTED_EC_CURVE_NAMES = new ArrayList<String>();
     private static final List<Integer> SUPPORTED_EC_CURVE_SIZES = new ArrayList<Integer>();
-    private static final String CURVE_X_25519 = NamedParameterSpec.X25519.getName();
-    private static final String CURVE_ED_25519 = NamedParameterSpec.ED25519.getName();
-
+    private static final String CURVE_X25519 = NamedParameterSpec.X25519.getName();
+    private static final String CURVE_ED25519 = NamedParameterSpec.ED25519.getName();
 
     static {
         // Aliases for NIST P-224
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("p-224", 224);
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("secp224r1", 224);
 
-
         // Aliases for NIST P-256
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("p-256", 256);
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("secp256r1", 256);
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("prime256v1", 256);
+
         // Aliases for Curve 25519
-        SUPPORTED_EC_CURVE_NAME_TO_SIZE.put(CURVE_X_25519.toLowerCase(Locale.US), 256);
-        SUPPORTED_EC_CURVE_NAME_TO_SIZE.put(CURVE_ED_25519.toLowerCase(Locale.US), 256);
+        SUPPORTED_EC_CURVE_NAME_TO_SIZE.put(CURVE_X25519.toLowerCase(Locale.US), 256);
+        SUPPORTED_EC_CURVE_NAME_TO_SIZE.put(CURVE_ED25519.toLowerCase(Locale.US), 256);
 
         // Aliases for NIST P-384
         SUPPORTED_EC_CURVE_NAME_TO_SIZE.put("p-384", 384);
@@ -186,12 +179,13 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         Collections.sort(SUPPORTED_EC_CURVE_SIZES);
     }
 
+    // Algorithm from the relevant KM_ALGORITHM_.* constant defined in
+    // frameworks/base/core/java/android/security/keymaster/KeymasterDefs.java, or one of the
+    // special values for Curve25519 ({@link #ALGORITHM_XDH}, {@link #ALGORITHM_ED25519}).
     private final int mOriginalKeymasterAlgorithm;
 
     private KeyStore2 mKeyStore;
-
     private KeyGenParameterSpec mSpec;
-
     private String mEntryAlias;
     private int mEntryNamespace;
     private @KeyProperties.KeyAlgorithmEnum String mJcaKeyAlgorithm;
@@ -200,14 +194,12 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
     private SecureRandom mRng;
     private KeyDescriptor mAttestKeyDescriptor;
     private String mEcCurveName;
-
     private int[] mKeymasterPurposes;
     private int[] mKeymasterBlockModes;
     private int[] mKeymasterEncryptionPaddings;
     private int[] mKeymasterSignaturePaddings;
     private int[] mKeymasterDigests;
     private int[] mKeymasterMgf1Digests;
-
     private Long mRSAPublicExponent;
 
     protected AndroidKeyStoreKeyPairGeneratorSpi(int keymasterAlgorithm) {
@@ -257,14 +249,13 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             }
 
             KeyGenParameterSpec spec;
-            boolean encryptionAtRestRequired = false;
             int keymasterAlgorithm = (mOriginalKeymasterAlgorithm == ALGORITHM_XDH
                     || mOriginalKeymasterAlgorithm == ALGORITHM_ED25519)
                     ? KeymasterDefs.KM_ALGORITHM_EC : mOriginalKeymasterAlgorithm;
             if (params instanceof KeyGenParameterSpec) {
                 spec = (KeyGenParameterSpec) params;
             } else if (params instanceof KeyPairGeneratorSpec) {
-                // Legacy/deprecated spec
+                // Deprecated legacy spec
                 KeyPairGeneratorSpec legacySpec = (KeyPairGeneratorSpec) params;
                 try {
                     keymasterAlgorithm = getKeymasterAlgorithmFromLegacy(keymasterAlgorithm,
@@ -297,10 +288,11 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                                 + ", " + KeyPairGeneratorSpec.class.getName());
             }
 
-            mEntryAlias = spec.getKeystoreAlias();
-            mEntryNamespace = spec.getNamespace();
             mSpec = spec;
+            mEntryNamespace = spec.getNamespace();
             mKeymasterAlgorithm = keymasterAlgorithm;
+            mEntryAlias = spec.getKeystoreAlias();
+
             mKeySizeBits = spec.getKeySize();
             initAlgorithmSpecificParameters();
             if (mKeySizeBits == -1) {
@@ -308,10 +300,6 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             }
             checkValidKeySize(keymasterAlgorithm, mKeySizeBits, mSpec.isStrongBoxBacked(),
                     mEcCurveName);
-
-            if (spec.getKeystoreAlias() == null) {
-                throw new InvalidAlgorithmParameterException("KeyStore entry alias not provided");
-            }
 
             String jcaKeyAlgorithm;
             try {
@@ -374,7 +362,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
 
             mAttestKeyDescriptor = buildAndCheckAttestKeyDescriptor(spec);
             checkAttestKeyPurpose(spec);
-            checkCorrectKeyPurposeForCurve(spec);
+            checkCorrectKeyPurposeIfCurve25519(spec);
 
             success = true;
         } finally {
@@ -393,7 +381,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         }
     }
 
-    private void checkCorrectKeyPurposeForCurve(KeyGenParameterSpec spec)
+    private void checkCorrectKeyPurposeIfCurve25519(KeyGenParameterSpec spec)
             throws InvalidAlgorithmParameterException {
         // Validate the key usage purposes against the curve. x25519 should be
         // key exchange only, ed25519 signing and attesting.
@@ -402,11 +390,11 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             return;
         }
 
-        if (mEcCurveName.equalsIgnoreCase(CURVE_X_25519)
+        if (mEcCurveName.equalsIgnoreCase(CURVE_X25519)
                 && spec.getPurposes() != KeyProperties.PURPOSE_AGREE_KEY) {
             throw new InvalidAlgorithmParameterException(
                     "x25519 may only be used for key agreement.");
-        } else if (mEcCurveName.equalsIgnoreCase(CURVE_ED_25519)
+        } else if (mEcCurveName.equalsIgnoreCase(CURVE_ED25519)
                 && !hasOnlyAllowedPurposeForEd25519(spec.getPurposes())) {
             throw new InvalidAlgorithmParameterException(
                     "ed25519 may not be used for key agreement.");
@@ -417,8 +405,8 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         if (ecCurveName == null) {
             return false;
         }
-        return ecCurveName.equalsIgnoreCase(CURVE_X_25519)
-                || ecCurveName.equalsIgnoreCase(CURVE_ED_25519);
+        return ecCurveName.equalsIgnoreCase(CURVE_X25519)
+                || ecCurveName.equalsIgnoreCase(CURVE_ED25519);
     }
 
     private static boolean hasOnlyAllowedPurposeForEd25519(@KeyProperties.PurposeEnum int purpose) {
@@ -891,11 +879,10 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                     ));
                 });
 
-                /* If the MGF1 Digest setter is not set, fall back to the previous behaviour:
-                 * Add, as MGF1 Digest function, all the primary digests.
-                 * Avoid adding the default MGF1 digest as it will have been included in the
-                 * mKeymasterMgf1Digests field.
-                 */
+                // If the MGF1 digest setter flag isn't set (i.e. the caller can't specify a custom
+                // set of MGF1 digests), fall back to the previous behaviour: add all "primary"
+                // digests as MGF1 digests, except the default MGF1 digest (since it was already
+                // added during initialization).
                 if (!getMgf1DigestSetterFlag()) {
                     final int defaultMgf1Digest = KeyProperties.Digest.toKeymaster(
                             DEFAULT_MGF1_DIGEST);
@@ -962,7 +949,6 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                     mSpec.getCertificateSubject().getEncoded()
             ));
         }
-
         if (mSpec.getMaxUsageCount() != KeyProperties.UNRESTRICTED_USAGE_COUNT) {
             params.add(KeyStore2ParameterUtils.makeInt(
                     KeymasterDefs.KM_TAG_USAGE_COUNT_LIMIT,
@@ -989,7 +975,6 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             return false;
         }
     }
-
 
     private void addAlgorithmSpecificParameters(List<KeyParameter> params) {
         switch (mKeymasterAlgorithm) {
