@@ -684,6 +684,8 @@ public class AudioSystem
                 return "AUDIO_FORMAT_IAMF_BASE_ENHANCED_FLAC";
             case /* AUDIO_FORMAT_IAMF_BASE_ENHANCED_PCM */  0x34040008:
                 return "AUDIO_FORMAT_IAMF_BASE_ENHANCED_PCM";
+            case /* AUDIO_FORMAT_APTX_ADAPTIVE_PLUS */ 0x35000000:
+                return "AUDIO_FORMAT_APTX_ADAPTIVE_PLUS";
             default:
                 return "AUDIO_FORMAT_(" + audioFormat + ")";
         }
