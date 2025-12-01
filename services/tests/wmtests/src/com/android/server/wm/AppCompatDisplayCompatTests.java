@@ -176,96 +176,66 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_finishActivity() {
-        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                false /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.FINISH_ACTIVITY);
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mShouldRecoverFromSelfKill = true);
+            robot.selfKillOnDisplayMove();
+        });
     }
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_disconnectDisplay() {
-        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                true /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.FINISH_ACTIVITY);
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mRemoveDisplay = true);
+            robot.selfKillOnDisplayMove();
+        });
     }
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_finishAndRemoveTask() {
-        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                false /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.FINISH_AND_REMOVE_TASK);
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> {
+                s.mShouldRecoverFromSelfKill = true;
+                s.mSelfKillType = SelfKillType.FINISH_AND_REMOVE_TASK;
+            });
+            robot.selfKillOnDisplayMove();
+        });
     }
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_killProcess() {
-        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                false /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.KILL_PROCESS /* selfKillType */);
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> {
+                s.mShouldRecoverFromSelfKill = true;
+                s.mSelfKillType = SelfKillType.KILL_PROCESS;
+            });
+            robot.selfKillOnDisplayMove();
+        });
     }
 
     @DisableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_flagDisabled() {
-        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                false /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.FINISH_ACTIVITY);
+        runTestScenario(DisplayCompatRobotTest::selfKillOnDisplayMove);
     }
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryNotOnDisplayMove() {
-        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
-                false /* moveDisplays */,
-                false /* removeDisplay */,
-                true /* relaunchActivity */,
-                SelfKillType.FINISH_ACTIVITY);
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mMoveDisplays = false);
+            robot.selfKillOnDisplayMove();
+        });
     }
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
     public void testSelfKillRecoveryOnDisplayMove_noActivityRelaunch() {
-        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
-                true /* moveDisplays */,
-                false /* removeDisplay */,
-                false /* relaunchActivity */,
-                SelfKillType.FINISH_ACTIVITY);
-    }
-
-    // TODO(b/463781180): Consider using the builder pattern.
-    private void testSelfKillOnDisplayMoveInner(boolean shouldRecoverFromSelfKill,
-            boolean moveDisplays, boolean removeDisplay, boolean relaunchActivity,
-            SelfKillType selfKillType) {
         runTestScenario((robot) -> {
-            robot.activity().createActivityWithComponentInSecondaryDisplay();
-            robot.activity().setTopActivityResumed();
-            robot.activity().setTopActivityConfigChanges(
-                    relaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
-            robot.activity().clearInvocationsForActivity();
-
-            if (moveDisplays) {
-                if (removeDisplay) {
-                    robot.completeTransition();
-                    robot.activity().top().mRootWindowContainer
-                            .onDisplayRemoved(robot.activity().top().getDisplayId());
-                }
-                robot.activity().moveTaskBetweenDisplays();
-            } else {
-                robot.activity().setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
-            }
-
-            robot.emulateAndVerifySelfKill(selfKillType, shouldRecoverFromSelfKill);
+            robot.useSelfKillState(s -> s.mRelaunchActivity = false);
+            robot.selfKillOnDisplayMove();
         });
     }
 
@@ -274,7 +244,16 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         consumer.accept(robot);
     }
 
+    private static class SelfKillState {
+        boolean mShouldRecoverFromSelfKill = false;
+        boolean mMoveDisplays = true;
+        boolean mRemoveDisplay = false;
+        boolean mRelaunchActivity = true;
+        SelfKillType mSelfKillType = SelfKillType.FINISH_ACTIVITY;
+    }
+
     private static class DisplayCompatRobotTest extends AppCompatRobotBase {
+        private final SelfKillState mSelfKillState = new SelfKillState();
 
         DisplayCompatRobotTest(@NonNull WindowTestsBase windowTestBase) {
             super(windowTestBase);
@@ -304,6 +283,32 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
                     times(executed ? 1 : 0)).startActivityInPackage(anyInt(), anyInt(), anyInt(),
                     any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), any(), anyInt(),
                     any(), any(), anyBoolean(), any(), anyBoolean());
+        }
+
+        void useSelfKillState(Consumer<SelfKillState> consumer) {
+            consumer.accept(mSelfKillState);
+        }
+
+        void selfKillOnDisplayMove() {
+            activity().createActivityWithComponentInSecondaryDisplay();
+            activity().setTopActivityResumed();
+            activity().setTopActivityConfigChanges(
+                    mSelfKillState.mRelaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
+            activity().clearInvocationsForActivity();
+
+            if (mSelfKillState.mMoveDisplays) {
+                if (mSelfKillState.mRemoveDisplay) {
+                    completeTransition();
+                    activity().top().mRootWindowContainer
+                            .onDisplayRemoved(activity().top().getDisplayId());
+                }
+                activity().moveTaskBetweenDisplays();
+            } else {
+                activity().setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
+            }
+
+            emulateAndVerifySelfKill(mSelfKillState.mSelfKillType,
+                    mSelfKillState.mShouldRecoverFromSelfKill);
         }
 
         void emulateAndVerifySelfKill(SelfKillType selfKillType,
