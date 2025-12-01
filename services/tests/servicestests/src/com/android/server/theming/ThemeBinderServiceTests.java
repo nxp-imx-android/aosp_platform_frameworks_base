@@ -94,6 +94,8 @@ public class ThemeBinderServiceTests {
     private OverlayManagerInternal mOverlayManager;
     @Mock
     private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
+    private ThemeOverlayHelper mOverlayHelper;
 
     @Before
     public void setup() {
@@ -139,7 +141,7 @@ public class ThemeBinderServiceTests {
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor);
         mThemeStateManager.onServicesReady();
         mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader, mThemeStateManager);
+                systemPropertiesReader, mThemeStateManager, mOverlayHelper);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
                 systemPropertiesReader, mUserId);

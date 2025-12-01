@@ -166,7 +166,6 @@ public class ThemeManagerServiceTests {
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
         return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
-                mThemeStateManager,
-                mWallpaperManager);
+                mThemeStateManager, mWallpaperManager, mOverlayManager);
     }
 }
