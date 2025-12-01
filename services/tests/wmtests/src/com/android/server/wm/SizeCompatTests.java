@@ -5560,9 +5560,6 @@ public class SizeCompatTests extends WindowTestsBase {
             overrides.resetSystemFullscreenOverrideCache();
 
             assertTrue(overrides.isSystemOverrideToFullscreenEnabled());
-            if (!com.android.window.flags.Flags.optOutOverrideOrientationToUser()) {
-                return;
-            }
 
             final AppCompatResizeOverrides resizeOverrides =
                     mActivity.mAppCompatController.getResizeOverrides();
