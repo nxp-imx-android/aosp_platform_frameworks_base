@@ -210,6 +210,7 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AlarmManager;
+import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.AutomaticZenRule;
 import android.app.IActivityManager;
@@ -326,6 +327,7 @@ import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.util.Xml;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.RemoteViews;
@@ -409,6 +411,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -576,6 +579,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Mock
     UserManagerInternal mUmInternal;
     @Mock
+    AppLockInternal mAppLockInternal;
+    @Mock
     NotificationHistoryManager mHistoryManager;
     @Mock
     StatsManager mStatsManager;
@@ -662,6 +667,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mUiEventLogger = new UiEventLoggerFake();
         when(mActivityManager.getUidImportance(anyInt())).thenReturn(IMPORTANCE_VISIBLE);
 
+        SparseArray<Set<String>> appLockedPackages = new SparseArray<>();
+        Set<String> lockedPackages = new ArraySet<>(1);
+        lockedPackages.add(mPkg);
+        appLockedPackages.put(mUserId, lockedPackages);
+        when(mAppLockInternal.getAppLockEnabledPackages()).thenReturn(appLockedPackages);
+
         DeviceIdleInternal deviceIdleInternal = mock(DeviceIdleInternal.class);
         when(deviceIdleInternal.getNotificationAllowlistDuration()).thenReturn(3000L);
 
@@ -689,6 +700,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         LocalServices.removeServiceForTest(PersonalContextManagerInternal.class);
         LocalServices.addService(PersonalContextManagerInternal.class,
                 mPersonalContextManagerInternal);
+        LocalServices.removeServiceForTest(AppLockInternal.class);
+        LocalServices.addService(AppLockInternal.class, mAppLockInternal);
         mContext.addMockSystemService(Context.ALARM_SERVICE, mAlarmManager);
         mContext.addMockSystemService(NotificationManager.class, mMockNm);
         mContext.addMockSystemService(RoleManager.class, mock(RoleManager.class));
@@ -15468,7 +15481,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mListeners.isUidTrusted(anyInt())).thenReturn(false);
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         StatusBarNotification redacted = generateRedactedSbn(mTestNotificationChannel, 1, 1);
-        when(mListeners.redactStatusBarNotification(any())).thenReturn(redacted);
+        when(mListeners.redactSbnForOtp(any())).thenReturn(redacted);
         ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
         info.userid = 0;
         when(info.isSameUser(anyInt())).thenReturn(true);
@@ -15498,7 +15511,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mListeners.isUidTrusted(anyInt())).thenReturn(false);
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         StatusBarNotification redacted = generateRedactedSbn(mTestNotificationChannel, 1, 1);
-        when(mListeners.redactStatusBarNotification(any())).thenReturn(redacted);
+        when(mListeners.redactSbnForOtp(any())).thenReturn(redacted);
         ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
         info.userid = 0;
         when(info.isSameUser(anyInt())).thenReturn(true);
@@ -15869,6 +15882,47 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         ranking = nru.getRankingMap().getRawRankingObject(pkgA.getSbn().getKey());
         assertEquals(1, ranking.getSmartActions().size());
         assertEquals(1, ranking.getSmartReplies().size());
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testMakeRankingUpdate_forLockedApp_redactsSmartRepliesAndActions()
+            throws Exception {
+        mService.onBootPhase(SystemService.PHASE_ACTIVITY_MANAGER_READY);
+        final NotificationRecord record = generateNotificationRecord(mTestNotificationChannel);
+        final ArrayList<CharSequence> smartReplies = new ArrayList<>(List.of("reply"));
+        final ArrayList<Notification.Action> smartActions = new ArrayList<>(List.of(
+                new Notification.Action.Builder(null, "action", null).build()));
+        record.setSystemGeneratedSmartActions(smartActions);
+        record.setSmartReplies(smartReplies);
+        mService.addNotification(record);
+
+        // Standard, non-assistant listener, smart replies/actions are redacted
+        ManagedServices.ManagedServiceInfo listenerInfo = mListeners.new ManagedServiceInfo(
+                null, new ComponentName(mPkg, "com.android.package.test"), mUserId, true, null, 0,
+                mUid);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(false);
+
+        NotificationRankingUpdate update = mService.makeRankingUpdateLocked(listenerInfo);
+
+        NotificationListenerService.Ranking ranking =
+                update.getRankingMap().getRawRankingObject(record.getKey());
+        assertThat(ranking.getSmartReplies()).isEmpty();
+        assertThat(ranking.getSmartActions()).isEmpty();
+
+        // NotificationAssistantService needs access to smart replies/actions for when the
+        // notification becomes unredacted
+        ManagedServices.ManagedServiceInfo assistantInfo = mAssistants.new ManagedServiceInfo(
+                null, new ComponentName(mPkg, "com.android.package.test"), mUserId, true, null, 0,
+                mUid);
+        when(mAssistants.isServiceTokenValidLocked(assistantInfo.getService())).thenReturn(true);
+
+        NotificationRankingUpdate assistantUpdate = mService.makeRankingUpdateLocked(assistantInfo);
+
+        NotificationListenerService.Ranking assistantRanking =
+                assistantUpdate.getRankingMap().getRawRankingObject(record.getKey());
+        assertThat(assistantRanking.getSmartReplies()).isEqualTo(smartReplies);
+        assertThat(assistantRanking.getSmartActions()).isEqualTo(smartActions);
     }
 
     private void addSmartActionsAndReplies(NotificationRecord record) {

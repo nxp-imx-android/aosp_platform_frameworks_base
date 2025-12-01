@@ -6894,6 +6894,11 @@
     <!-- Label for private space biometric prompt logo description [CHAR LIMIT=30] -->
     <string name="private_space_biometric_prompt_title">Private space</string>
 
+    <!-- Notification message used when the app that posted a notification is locked by App Lock [CHAR_LIMIT=NOTIF_BODY] -->
+    <string name="app_locked_new_notification">New notification</string>
+    <!-- Notification message used when the app that posted a notification is locked by App Lock [CHAR_LIMIT=NOTIF_BODY] -->
+    <string name="app_locked_notification_message">New message</string>
+
     <!-- Notification message used when a notification's normal message contains sensitive information [CHAR_LIMIT=NOTIF_BODY] -->
     <string name="redacted_notification_message">Sensitive notification content hidden</string>
     <!-- Notification action title used instead of a notification's normal title sensitive [CHAR_LIMIT=NOTIF_BODY] -->

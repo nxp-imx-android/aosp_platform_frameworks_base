@@ -5609,6 +5609,8 @@
   <java-symbol type="string" name="keyboard_layout_notification_multiple_selected_message"/>
 
   <!-- For redacted notifications and screen sharing-->
+  <java-symbol type="string" name="app_locked_new_notification"/>
+  <java-symbol type="string" name="app_locked_notification_message"/>
   <java-symbol type="string" name="redacted_notification_message"/>
   <java-symbol type="string" name="redacted_notification_action_title"/>
   <java-symbol type="string" name="screen_not_shared_sensitive_content"/>
