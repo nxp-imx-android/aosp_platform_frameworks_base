@@ -12449,11 +12449,16 @@ public class Notification implements Parcelable
                     .hideProgress(true)
                     .hideRightIcon(true)
                     .needsExtraTextMargin(false);
-            return buildMetricView(
+            final RemoteViews result = buildMetricView(
                     mBuilder.getCompactHeadsUpMetricLayoutResource(),
                     p,
                     /* isExpandedView = */ false,
                     getCompactHeadsUpMetrics());
+
+            result.setInt(R.id.extra_topline_content,
+                    "setGravity", Gravity.CENTER_VERTICAL);
+
+            return result;
         }
 
         private List<Metric> getCompactHeadsUpMetrics() {
