@@ -28,77 +28,47 @@ import java.util.UUID;
 public enum ShellProtoLogGroup implements IProtoLogGroup {
     // NOTE: Since we enable these from the same WM ShellCommand, these names should not conflict
     // with those in the framework ProtoLogGroup
-    WM_SHELL(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_INIT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_TASK_ORG(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            "ShellTaskOrganizer"),
-    WM_SHELL_TASK_ORG_NOISY(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            "ShellTaskOrganizer"),
-    WM_SHELL_TRANSITIONS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_IME_CONTROLLER(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            "ShellIme"),
-    WM_SHELL_RECENTS_TRANSITION(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            "ShellRecents"),
-    WM_SHELL_DRAG_AND_DROP(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            "ShellDragAndDrop"),
-    WM_SHELL_STARTING_WINDOW(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_STARTING_WINDOW),
-    WM_SHELL_REMOVE_STARTING_TRACKER(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_STARTING_WINDOW),
-    WM_SHELL_BACK_PREVIEW(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            "ShellBackPreview"),
-    WM_SHELL_RECENT_TASKS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_TASK_OBSERVER(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SHELL),
+    WM_SHELL(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
+    WM_SHELL_INIT(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
+    WM_SHELL_TASK_ORG(Consts.ENABLE_DEBUG, true, "ShellTaskOrganizer"),
+    WM_SHELL_TASK_ORG_NOISY(Consts.ENABLE_DEBUG, false, "ShellTaskOrganizer"),
+    WM_SHELL_TRANSITIONS(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
+    WM_SHELL_IME_CONTROLLER(Consts.ENABLE_DEBUG, false, "ShellIme"),
+    WM_SHELL_RECENTS_TRANSITION(Consts.ENABLE_DEBUG, true, "ShellRecents"),
+    WM_SHELL_DRAG_AND_DROP(Consts.ENABLE_DEBUG, true, "ShellDragAndDrop"),
+    WM_SHELL_STARTING_WINDOW(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_STARTING_WINDOW),
+    WM_SHELL_REMOVE_STARTING_TRACKER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_STARTING_WINDOW),
+    WM_SHELL_BACK_PREVIEW(Consts.ENABLE_DEBUG, true, "ShellBackPreview"),
+    WM_SHELL_RECENT_TASKS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
+    WM_SHELL_TASK_OBSERVER(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
     // TODO(b/282232877): turn logToLogcat to false.
-    WM_SHELL_PICTURE_IN_PICTURE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_SPLIT_SCREEN(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_SPLIT_SCREEN),
-    WM_SHELL_SYSUI_EVENTS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_DESKTOP_MODE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_DESKTOP_MODE),
-  WM_SHELL_WINDOW_DECORATION(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_WINDOW_DECORATION),
-    WM_SHELL_FLOATING_APPS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_FOLDABLE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_SHELL),
-    WM_SHELL_BUBBLES_NOISY(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_BUBBLES),
-    WM_SHELL_BUBBLES(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_BUBBLES),
-    WM_SHELL_COMPAT_UI(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_COMPAT_UI),
-    WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
-            Consts.TAG_WM_APP_COMPAT),
-    WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_APP_HANDLES),
-    WM_SHELL_WINDOWING_LAYER(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            Consts.TAG_WM_WINDOWING_LAYER),
-    TEST_GROUP(true, true, false, "WindowManagerShellProtoLogTest");
+    WM_SHELL_PICTURE_IN_PICTURE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
+    WM_SHELL_SPLIT_SCREEN(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SPLIT_SCREEN),
+    WM_SHELL_SYSUI_EVENTS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
+    WM_SHELL_DESKTOP_MODE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_DESKTOP_MODE),
+    WM_SHELL_WINDOW_DECORATION(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_WINDOW_DECORATION),
+    WM_SHELL_FLOATING_APPS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
+    WM_SHELL_FOLDABLE(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
+    WM_SHELL_BUBBLES_NOISY(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_BUBBLES),
+    WM_SHELL_BUBBLES(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_BUBBLES),
+    WM_SHELL_COMPAT_UI(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_COMPAT_UI),
+    WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_APP_COMPAT),
+    WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_APP_HANDLES),
+    WM_SHELL_WINDOWING_LAYER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_WINDOWING_LAYER),
+    TEST_GROUP(true, false, "WindowManagerShellProtoLogTest");
 
     private final boolean mEnabled;
-    private volatile boolean mLogToProto;
     private volatile boolean mLogToLogcat;
     private final String mTag;
 
     /**
      * @param enabled     set to false to exclude all log statements for this group from
-     *                    compilation,
-     *                    they will not be available in runtime.
-     * @param logToProto  enable binary logging for the group
+     *                    compilation, they will not be available in runtime.
      * @param logToLogcat enable text logging for the group
      * @param tag         name of the source of the logged message
      */
-    ShellProtoLogGroup(boolean enabled, boolean logToProto, boolean logToLogcat, String tag) {
+    ShellProtoLogGroup(boolean enabled, boolean logToLogcat, String tag) {
         this.mEnabled = enabled;
-        this.mLogToProto = logToProto;
         this.mLogToLogcat = logToLogcat;
         this.mTag = tag;
     }
