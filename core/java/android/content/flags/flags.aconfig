@@ -11,8 +11,9 @@ flag {
 
 flag {
     name: "enable_content_provider_client_anr_on_cancel"
+    is_exported: true
     namespace: "backstage_power"
-    description: "Enables the ContentProviderClient.setDetectNotResponding system API variant that set timeout on cancellation."
+    description: "Enables the ContentProviderClient.setDetectNotRespondingOnCancel system API variant that set timeout on cancellation."
     bug: "457843307"
 }
 
