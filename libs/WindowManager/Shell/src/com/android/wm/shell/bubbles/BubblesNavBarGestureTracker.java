@@ -34,7 +34,7 @@ import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 /**
  * Set up tracking bubbles gestures that begin in navigation bar
  */
-class BubblesNavBarGestureTracker {
+public class BubblesNavBarGestureTracker {
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "BubblesGestureTracker" : TAG_BUBBLES;
 
@@ -48,7 +48,7 @@ class BubblesNavBarGestureTracker {
     @Nullable
     private InputEventReceiver mInputEventReceiver;
 
-    BubblesNavBarGestureTracker(Context context, BubblePositioner positioner) {
+    public BubblesNavBarGestureTracker(Context context, BubblePositioner positioner) {
         mContext = context;
         mInputManager = mContext.getSystemService(InputManager.class);
         mPositioner = positioner;
@@ -59,7 +59,7 @@ class BubblesNavBarGestureTracker {
      *
      * @param listener listener that is notified of touch events
      */
-    void start(MotionEventListener listener) {
+    public void start(MotionEventListener listener) {
         BubbleLog.d(
                 "BubblesNavBarGestureTracker.start() start monitoring bubbles swipe up gesture");
 
@@ -75,7 +75,10 @@ class BubblesNavBarGestureTracker {
                 Choreographer.getInstance(), motionEventHandler);
     }
 
-    void stop() {
+    /**
+     * Stop tracking gestures
+     */
+    public void stop() {
         BubbleLog.d("BubblesNavBarGestureTracker.stop() stop monitoring bubbles swipe up gesture");
         stopInternal();
     }
