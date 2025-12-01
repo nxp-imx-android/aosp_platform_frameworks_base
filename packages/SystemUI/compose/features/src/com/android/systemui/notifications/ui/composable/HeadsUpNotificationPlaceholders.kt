@@ -156,16 +156,22 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     }
 
     val snoozeScrollConnection =
-        object : NestedScrollConnection {
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                if (
-                    velocityOrPositionalThresholdReached(scrollOffset, minScrollOffset, available.y)
-                ) {
-                    scrollableState.animateScrollBy(minScrollOffset, tween())
-                } else {
-                    scrollableState.animateScrollBy(-minScrollOffset, tween())
+        remember(minScrollOffset) {
+            object : NestedScrollConnection {
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    if (
+                        velocityOrPositionalThresholdReached(
+                            scrollOffset,
+                            minScrollOffset,
+                            available.y,
+                        )
+                    ) {
+                        scrollableState.animateScrollBy(minScrollOffset, tween())
+                    } else {
+                        scrollableState.animateScrollBy(-minScrollOffset, tween())
+                    }
+                    return available
                 }
-                return available
             }
         }
 
