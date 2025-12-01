@@ -47,6 +47,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.android.internal.telephony.flags.Flags;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +86,9 @@ public final class SmsApplication {
             AppOpsManager.OPSTR_SEND_SMS,
             AppOpsManager.OPSTR_READ_CELL_BROADCASTS
     };
+
+    private static Collection<SmsApplicationData> sSmsAppsCache;
+    private static final Object sSmsAppsCacheLock = new Object();
 
     private static SmsPackageMonitor sSmsPackageMonitor = null;
 
@@ -253,8 +258,27 @@ public final class SmsApplication {
         }
     }
 
+    /**
+     * Invalidates cached SMS application data on package change events
+     */
+    public static void invalidateSmsAppsCache() {
+        synchronized (sSmsAppsCacheLock) {
+            Log.d(LOG_TAG, "invalidateSmsAppsCache: clearing sms app data cache");
+            sSmsAppsCache = null;
+        }
+    }
     private static Collection<SmsApplicationData> getApplicationCollectionInternal(
             Context context, int userId) {
+
+        if (Flags.cacheSmsApplicationData()) {
+            synchronized (sSmsAppsCacheLock) {
+                if (sSmsAppsCache != null) {
+                    Log.d(LOG_TAG, "getApplicationCollectionInternal: returning from cache");
+                    return sSmsAppsCache;
+                }
+            }
+        }
+
         PackageManager packageManager = context.getPackageManager();
         UserHandle userHandle = UserHandle.of(userId);
 
@@ -440,6 +464,12 @@ public final class SmsApplication {
                 if (!smsApplicationData.isComplete()) {
                     receivers.remove(packageName);
                 }
+            }
+        }
+
+        if (Flags.cacheSmsApplicationData()) {
+            synchronized (sSmsAppsCacheLock) {
+                sSmsAppsCache = receivers.values();
             }
         }
         return receivers.values();
@@ -836,6 +866,9 @@ public final class SmsApplication {
         }
 
         private void onPackageChanged() {
+            if (Flags.cacheSmsApplicationData()) {
+                invalidateSmsAppsCache();
+            }
             int userId;
             try {
                 userId = getSendingUser().getIdentifier();
@@ -891,6 +924,9 @@ public final class SmsApplication {
         public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
             if (!Objects.equals(roleName, RoleManager.ROLE_SMS)) {
                 return;
+            }
+            if (Flags.cacheSmsApplicationData()) {
+                invalidateSmsAppsCache();
             }
             final int userId = user.getIdentifier();
             final String newSmsPackageName = getSmsPackageName(user);

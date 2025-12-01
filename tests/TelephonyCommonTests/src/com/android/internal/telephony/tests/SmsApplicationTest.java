@@ -18,6 +18,7 @@ package com.android.internal.telephony.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNotNull;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import android.Manifest;
 import android.app.AppOpsManager;
+import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -54,6 +56,7 @@ import android.telephony.TelephonyManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.internal.hidden_from_bootclasspath.com.android.internal.telephony.flags.Flags;
 import com.android.internal.telephony.SmsApplication;
 
 import org.junit.Before;
@@ -61,6 +64,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
@@ -116,6 +120,7 @@ public class SmsApplicationTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(mContext.getMainExecutor()).thenReturn(Runnable::run);
         when(mContext.getSystemService(Context.TELEPHONY_SERVICE)).thenReturn(mTelephonyManager);
         when(mContext.getSystemService(Context.ROLE_SERVICE)).thenReturn(mRoleManager);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
@@ -162,6 +167,20 @@ public class SmsApplicationTest {
                         UserHandle.SYSTEM));
     }
 
+    @Test
+    public void testGetDefaultSmsApplicationAsUser_cacheIsUsed() {
+        assumeTrue(Flags.cacheSmsApplicationData());
+        SmsApplication.invalidateSmsAppsCache();
+
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(5)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(5)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+
+        SmsApplication.invalidateSmsAppsCache();
+    }
 
     @Test
     public void testGetDefaultMmsApplicationAsUser() {
@@ -240,6 +259,78 @@ public class SmsApplicationTest {
         assertEquals(SCHEMES_FOR_PREFERRED_APP.size(), capturedSchemes.size());
         assertTrue(SCHEMES_FOR_PREFERRED_APP.containsAll(capturedSchemes));
     }
+
+    @Test
+    public void testPackageChanged_cacheIsInvalidated() throws Exception {
+        assumeTrue(Flags.cacheSmsApplicationData());
+        SmsApplication.invalidateSmsAppsCache();
+
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(5)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+
+        setupPackageInfosForCoreApps();
+        SmsApplication.initSmsPackageMonitor(mContext);
+        verify(mContext).createContextAsUser(eq(UserHandle.ALL), anyInt());
+        ArgumentCaptor<BroadcastReceiver> captor = ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mContext).registerReceiver(captor.capture(), isNotNull(),
+                isNull(), nullable(Handler.class));
+        BroadcastReceiver smsPackageMonitor = captor.getValue();
+
+        Intent packageChangedIntent = new Intent(Intent.ACTION_PACKAGE_CHANGED);
+        packageChangedIntent.setData(
+                Uri.fromParts("package", TEST_COMPONENT_NAME.getPackageName(), null));
+        smsPackageMonitor.onReceive(mContext, packageChangedIntent);
+
+        ArgumentCaptor<IntentFilter> intentFilterCaptor =
+                ArgumentCaptor.forClass(IntentFilter.class);
+        verify(mPackageManager, times(SCHEMES_FOR_PREFERRED_APP.size()))
+                .replacePreferredActivity(intentFilterCaptor.capture(),
+                        eq(IntentFilter.MATCH_CATEGORY_SCHEME
+                                | IntentFilter.MATCH_ADJUSTMENT_NORMAL),
+                        (List<ComponentName>)isNotNull(),
+                        eq(new ComponentName(TEST_COMPONENT_NAME.getPackageName(), SEND_TO_NAME)));
+
+        Set<String> capturedSchemes = intentFilterCaptor.getAllValues().stream()
+                .map(intentFilter -> intentFilter.getDataScheme(0))
+                .collect(Collectors.toSet());
+        assertEquals(SCHEMES_FOR_PREFERRED_APP.size(), capturedSchemes.size());
+        assertTrue(SCHEMES_FOR_PREFERRED_APP.containsAll(capturedSchemes));
+
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(10)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+
+        SmsApplication.invalidateSmsAppsCache();
+    }
+
+    @Test
+    public void defaultSmsAppChanged_cacheIsInvalidated() throws Exception {
+        assumeTrue(Flags.cacheSmsApplicationData());
+        SmsApplication.invalidateSmsAppsCache();
+
+        setupPackageInfosForCoreApps();
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(5)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+
+        SmsApplication.initSmsPackageMonitor(mContext);
+        ArgumentCaptor<OnRoleHoldersChangedListener> captor =
+                ArgumentCaptor.forClass(OnRoleHoldersChangedListener.class);
+        verify(mRoleManager).addOnRoleHoldersChangedListenerAsUser(
+                isNotNull(), captor.capture(), eq(UserHandle.ALL));
+        OnRoleHoldersChangedListener roleListener = captor.getValue();
+        roleListener.onRoleHoldersChanged(RoleManager.ROLE_SMS, UserHandle.SYSTEM);
+
+        SmsApplication.getDefaultSmsApplicationAsUser(mContext, false, UserHandle.SYSTEM);
+        verify(mPackageManager, times(10)).queryBroadcastReceiversAsUser(
+                nullable(Intent.class), anyInt(), nullable(UserHandle.class));
+
+        Mockito.reset(mRoleManager);
+        SmsApplication.invalidateSmsAppsCache();
+    }
+
+
 
     private void setupPackageInfosForCoreApps() throws Exception {
         PackageInfo phonePackageInfo = new PackageInfo();
