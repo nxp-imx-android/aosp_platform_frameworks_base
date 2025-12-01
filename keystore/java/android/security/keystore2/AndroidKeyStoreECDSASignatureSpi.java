@@ -243,11 +243,6 @@ abstract class AndroidKeyStoreECDSASignatureSpi extends AndroidKeyStoreSignature
         ));
     }
 
-    @Override
-    protected final int getAdditionalEntropyAmountForSign() {
-        return (mGroupSizeBits + 7) / 8;
-    }
-
     protected final int getGroupSizeBits() {
         if (mGroupSizeBits == -1) {
             throw new IllegalStateException("Not initialized");

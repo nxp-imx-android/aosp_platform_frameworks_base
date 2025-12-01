@@ -36,12 +36,6 @@ abstract class AndroidKeyStoreRSASignatureSpi extends AndroidKeyStoreSignatureSp
         PKCS1Padding(int keymasterDigest) {
             super(keymasterDigest, KeymasterDefs.KM_PAD_RSA_PKCS1_1_5_SIGN);
         }
-
-        @Override
-        protected final int getAdditionalEntropyAmountForSign() {
-            // No entropy required for this deterministic signature scheme.
-            return 0;
-        }
     }
 
     public static final class NONEWithPKCS1Padding extends PKCS1Padding {
@@ -115,15 +109,8 @@ abstract class AndroidKeyStoreRSASignatureSpi extends AndroidKeyStoreSignatureSp
     }
 
     abstract static class PSSPadding extends AndroidKeyStoreRSASignatureSpi {
-        private static final int SALT_LENGTH_BYTES = 20;
-
         PSSPadding(int keymasterDigest) {
             super(keymasterDigest, KeymasterDefs.KM_PAD_RSA_PSS);
-        }
-
-        @Override
-        protected final int getAdditionalEntropyAmountForSign() {
-            return SALT_LENGTH_BYTES;
         }
     }
 
