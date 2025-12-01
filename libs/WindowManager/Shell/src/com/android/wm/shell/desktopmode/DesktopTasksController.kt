@@ -2935,7 +2935,7 @@ class DesktopTasksController(
                             }
                         wct.setAppBounds(task.token, appBounds)
                     }
-                } else {
+                } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
                     applyFreeformDisplayChange(
                         wct,
                         task,
@@ -3010,7 +3010,10 @@ class DesktopTasksController(
      * No-op if task is already on that display per [RunningTaskInfo.displayId].
      */
     private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
-        if (!ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue) {
+        if (
+            !ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue ||
+                !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue
+        ) {
             return
         }
 

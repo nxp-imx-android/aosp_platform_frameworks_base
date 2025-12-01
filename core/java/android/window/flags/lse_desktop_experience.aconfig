@@ -935,6 +935,13 @@ flag {
 }
 
 flag {
+    name: "enable_move_to_next_display_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Add new keyboard shortcut of moving a task into next display"
+    bug: "364154795"
+}
+
+flag {
     name: "enable_multi_display_home_focus_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Fix home focus behavior in multi display environment"
