@@ -4702,6 +4702,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "getTaskSnapshot()");
         final long ident = Binder.clearCallingIdentity();
         try {
+            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+                Slog.w(TAG, "IActivityTaskManager#getTaskSnapshot is deprecated.");
+                return null;
+            }
             final Task task;
             synchronized (mGlobalLock) {
                 task = mRootWindowContainer.anyTaskForId(taskId,
@@ -4731,6 +4735,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "takeTaskSnapshot()");
         final long ident = Binder.clearCallingIdentity();
         try {
+            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+                Slog.w(TAG, "IActivityTaskManager#takeTaskSnapshot is deprecated.");
+                return null;
+            }
             final Supplier<TaskSnapshot> supplier;
             synchronized (mGlobalLock) {
                 final Task task = mRootWindowContainer.anyTaskForId(taskId,
