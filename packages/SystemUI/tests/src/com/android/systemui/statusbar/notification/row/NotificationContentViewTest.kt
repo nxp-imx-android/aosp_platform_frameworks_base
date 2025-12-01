@@ -20,6 +20,7 @@ import android.annotation.DimenRes
 import android.content.res.Resources
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
 import android.testing.ViewUtils
@@ -809,6 +810,59 @@ class NotificationContentViewTest : SysuiTestCase() {
 
         val result = view.calculateVisibleType()
         assertThat(result).isEqualTo(NotificationContentView.VISIBLE_TYPE_EXPANDED)
+    }
+
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    @Test
+    fun getVisualTypeForHeight_promoted_canShowExpanded_returnsExpanded() {
+        // GIVEN: is promoted, can show expanded, and has expanded child
+        val view = createContentView()
+        view.contractedChild = createViewWithSpecificHeight(100)
+        view.expandedChild = createViewWithSpecificHeight(200)
+        whenever(row.isPromotedOngoing).thenReturn(true)
+        whenever(row.canPromotedNotificationShowExpanded(false)).thenReturn(true)
+
+        // WHEN height would normally be contracted
+        view.contentHeight = 100
+        val result = view.calculateVisibleType()
+
+        // THEN returns EXPANDED due to rich ongoing
+        assertEquals(NotificationContentView.VISIBLE_TYPE_EXPANDED, result)
+    }
+
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    @Test
+    fun getVisualTypeForHeight_promoted_cannotShowExpanded_returnsContracted() {
+        // GIVEN: cannot show promoted notification expanded
+        // Flag.richOngoingImprovements is ENABLED externally
+        val view = createContentView()
+        view.contractedChild = createViewWithSpecificHeight(100)
+        view.expandedChild = createViewWithSpecificHeight(200)
+        whenever(row.isPromotedOngoing).thenReturn(true)
+        whenever(row.canPromotedNotificationShowExpanded(false)).thenReturn(false)
+
+        view.contentHeight = 100
+        val result = view.calculateVisibleType()
+
+        // THEN returns CONTRACTED
+        assertThat(result).isEqualTo(NotificationContentView.VISIBLE_TYPE_CONTRACTED)
+    }
+
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    @Test
+    fun getVisualTypeForHeight_promoted_noExpandedChild_returnsContracted() {
+        // GIVEN: no expanded child
+        val view = createContentView()
+        view.expandedChild = null
+        view.contractedChild = createViewWithSpecificHeight(100)
+        whenever(row.isPromotedOngoing).thenReturn(true)
+        whenever(row.canPromotedNotificationShowExpanded(false)).thenReturn(true)
+
+        view.contentHeight = 100
+        val result = view.calculateVisibleType()
+
+        // THEN returns CONTRACTED
+        assertThat(result).isEqualTo(NotificationContentView.VISIBLE_TYPE_CONTRACTED)
     }
 
     private fun createMockContainingNotification(notificationEntry: NotificationEntry) =
