@@ -111,6 +111,7 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
+import static com.android.window.flags.Flags.commitKeyguardOcclusionBeforeWakingUp;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -5485,6 +5486,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mDefaultDisplayRotation.updateOrientationListener();
 
         if (mKeyguardDelegate != null) {
+            if (commitKeyguardOcclusionBeforeWakingUp()) {
+                applyKeyguardOcclusionChange();
+            }
             mKeyguardDelegate.onStartedWakingUp(pmWakeReason, mPowerButtonLaunchGestureTriggered);
         }
 
