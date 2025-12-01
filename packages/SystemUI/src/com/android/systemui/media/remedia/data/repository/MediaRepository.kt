@@ -90,6 +90,8 @@ interface MediaRepository {
     /** Whether guts state should show on carousel. */
     val isGutsVisible: Boolean
 
+    val allowMediaOnLockscreen: Boolean
+
     val visualStabilityListenerFlow: Flow<Unit>
 
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
@@ -152,6 +154,17 @@ constructor(
     // To store active polling jobs
     private val positionPollers = mutableMapOf<InstanceId, Job>()
     private val mediaMutex = Mutex()
+
+    private var _allowMediaOnLockscreen by mutableStateOf(super.allowMediaPlayerOnLockscreen.value)
+
+    override val allowMediaOnLockscreen: Boolean
+        get() = _allowMediaOnLockscreen
+
+    init {
+        applicationScope.launch {
+            super.allowMediaPlayerOnLockscreen.collect { _allowMediaOnLockscreen = it }
+        }
+    }
 
     override val visualStabilityListenerFlow: Flow<Unit> = callbackFlow {
         val listener = OnReorderingAllowedListener { trySend(Unit) }

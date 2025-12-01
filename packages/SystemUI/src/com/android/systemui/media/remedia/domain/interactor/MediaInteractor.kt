@@ -36,6 +36,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.getNotificationActions
 import com.android.systemui.media.controls.shared.model.MediaAction
@@ -55,7 +56,9 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
 /**
@@ -75,6 +78,17 @@ interface MediaInteractor {
 
     /** Whether guts state should show on carousel. */
     val isGutsVisible: Boolean
+
+    /** Are there any media notifications active? */
+    val hasActiveMedia: Boolean
+
+    /** Are there any media entries, including inactive ones? */
+    val hasAnyMedia: Boolean
+
+    val allowMediaOnLockscreen: Boolean
+
+    /** Is the device on lockscreen? */
+    val isOnLockscreen: Flow<Boolean>
 
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: Any, to: Long)
@@ -107,6 +121,7 @@ constructor(
     private val activityIntentHelper: ActivityIntentHelper,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val mediaOutputDialogManager: MediaOutputDialogManager,
+    private val deviceEntryInteractor: DeviceEntryInteractor,
 ) : MediaInteractor {
 
     override val sessions: List<MediaSessionModel>
@@ -128,6 +143,19 @@ constructor(
 
     override val isGutsVisible: Boolean
         get() = repository.isGutsVisible
+
+    /** Are there any media notifications active? */
+    override val hasActiveMedia: Boolean
+        get() = repository.currentMedia.any { dataModel -> dataModel.isActive }
+
+    /** Are there any media entries, including inactive ones? */
+    override val hasAnyMedia: Boolean
+        get() = repository.currentMedia.isNotEmpty()
+
+    override val allowMediaOnLockscreen: Boolean
+        get() = repository.allowMediaOnLockscreen
+
+    override val isOnLockscreen: Flow<Boolean> = deviceEntryInteractor.isDeviceEntered.map { !it }
 
     init {
         repository.visualStabilityListenerFlow

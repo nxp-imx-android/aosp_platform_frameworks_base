@@ -32,6 +32,7 @@ import com.android.systemui.classifier.Classifier
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
 import com.android.systemui.media.remedia.domain.model.MediaActionModel
@@ -47,7 +48,6 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.awaitCancellation
 
 /** Models UI state for a media element. */
 class MediaViewModel
@@ -60,6 +60,8 @@ constructor(
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
 ) : ExclusiveActivatable() {
+
+    private val hydrator = Hydrator("MediaViewModel.hydrator")
 
     /** Whether the user is actively moving the thumb of the seek bar. */
     private var isScrubbing: Boolean by mutableStateOf(false)
@@ -81,6 +83,13 @@ constructor(
 
     private var latestVersion = emptyList<MediaCardViewModel>()
     private var isVisible: () -> Boolean = { true }
+
+    private val isOnLockscreen: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isOnLockscreen",
+            initialValue = true,
+            source = interactor.isOnLockscreen,
+        )
 
     /** The current list of cards to show in the UI. */
     val cards: List<MediaCardViewModel> by derivedStateOf {
@@ -339,10 +348,12 @@ constructor(
     val isCarouselVisible: Boolean
         get() =
             when (carouselVisibility) {
-                MediaCarouselVisibility.WhenNotEmpty -> interactor.sessions.isNotEmpty()
+                MediaCarouselVisibility.WhenNotEmpty ->
+                    interactor.hasAnyMedia && (!isOnLockscreen || interactor.allowMediaOnLockscreen)
 
                 MediaCarouselVisibility.WhenAnyCardIsActive ->
-                    interactor.sessions.any { session -> session.isActive }
+                    interactor.hasActiveMedia &&
+                        (!isOnLockscreen || interactor.allowMediaOnLockscreen)
             }
 
     fun setVisibility(visible: () -> Boolean) {
@@ -365,7 +376,7 @@ constructor(
     }
 
     override suspend fun onActivated(): Nothing {
-        awaitCancellation()
+        hydrator.activate()
     }
 
     private fun MediaActionModel.toPlayPauseActionViewModel(
