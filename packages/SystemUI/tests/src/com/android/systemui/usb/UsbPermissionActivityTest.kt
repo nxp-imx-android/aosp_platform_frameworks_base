@@ -13,94 +13,164 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
+
 package com.android.systemui.usb
 
-import android.app.PendingIntent
-import android.content.Intent
-import android.hardware.usb.IUsbSerialReader
-import android.hardware.usb.UsbAccessory
-import android.hardware.usb.UsbManager
 import android.testing.TestableLooper
-import android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS
+import android.widget.CheckBox
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import androidx.test.rule.ActivityTestRule
-import com.android.systemui.SysuiTestCase
-import com.android.systemui.activity.SingleActivityFactory
+import com.android.internal.app.AlertController
+import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
-
 import javax.inject.Inject
-
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * UsbPermissionActivityTest
- */
+/** UsbPermissionActivityTest */
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @TestableLooper.RunWithLooper
-class UsbPermissionActivityTest : SysuiTestCase() {
+class UsbPermissionActivityTest :
+    UsbDialogActivityTest<UsbPermissionActivityTest.UsbPermissionActivityTestable>() {
 
-    private var mMessage: UsbAudioWarningDialogMessage = UsbAudioWarningDialogMessage()
-
-    open class UsbPermissionActivityTestable @Inject constructor (
-        val message: UsbAudioWarningDialogMessage
-    ) : UsbPermissionActivity(UsbAudioWarningDialogMessage())
-
-    @Rule
-    @JvmField
-    var activityRule = ActivityTestRule(
-            /* activityFactory= */ SingleActivityFactory {
-                UsbPermissionActivityTestable(mMessage)
-            },
-            /* initialTouchMode= */ false,
-            /* launchActivity= */ false,
-    )
-
-    private val activityIntent = Intent(mContext, UsbPermissionActivityTestable::class.java)
-            .apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                putExtra(UsbManager.EXTRA_PACKAGE, "com.android.systemui")
-                putExtra(Intent.EXTRA_INTENT, PendingIntent.getBroadcast(
-                        mContext,
-                        334,
-                        Intent("NO_ACTION").apply {
-                                setPackage("com.android.systemui.tests")
-                        },
-                        PendingIntent.FLAG_MUTABLE))
-                putExtra(UsbManager.EXTRA_ACCESSORY, UsbAccessory(
-                        "manufacturer",
-                        "model",
-                        "description",
-                        "version",
-                        "uri",
-                        object : IUsbSerialReader.Stub() {
-                            override fun getSerial(packageName: String): String {
-                                return "serial"
-                            }
-                        }))
-            }
-
-    @Before
-    fun setUp() {
-        UsbPermissionActivityTestable(mMessage)
-        activityRule.launchActivity(activityIntent)
+    class UsbPermissionActivityTestable
+    @Inject
+    constructor(val message: UsbAudioWarningDialogMessage) :
+        UsbPermissionActivity(message), UsbDialogActivityTestable {
+        override fun getAlertParams(): AlertController.AlertParams {
+            return mAlertParams
+        }
     }
 
-    @After
-    fun tearDown() {
-        activityRule.finishActivity()
+    override fun createActivity(): UsbPermissionActivityTestable {
+        return UsbPermissionActivityTestable(mMessage)
+    }
+
+    override fun getActivityClass(): Class<UsbPermissionActivityTestable> {
+        return UsbPermissionActivityTestable::class.java
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testHideNonSystemOverlay() {
-        assertThat(activityRule.activity.window.attributes.privateFlags and
-                SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS)
-                .isEqualTo(SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS)
+    fun testUsbAccessoryDialogTitleAndMessage() {
+        deviceConfiguration(isUsbDevice = false)
+
+        val expectedTitle: String =
+            context.getString(
+                R.string.usb_audio_device_permission_prompt_title,
+                mAppName,
+                USB_ACCESSORY_DESCRIPTION,
+            )
+        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+
+        val expectedMessage: String =
+            context.getString(
+                R.string.usb_accessory_permission_prompt,
+                mAppName,
+                USB_ACCESSORY_DESCRIPTION,
+            )
+        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+
+        // Dialog shouldn't have a checkbox, if it can't be default.
+        assertThat(mAlertParams.mView).isNull()
+    }
+
+    @Test
+    fun testUsbAccessoryDialog() {
+        deviceConfiguration(isUsbDevice = false, canBeDefault = true)
+
+        val expectedTitle: String =
+            context.getString(
+                R.string.usb_audio_device_permission_prompt_title,
+                mAppName,
+                USB_ACCESSORY_DESCRIPTION,
+            )
+        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+
+        val expectedMessage: String =
+            context.getString(
+                R.string.usb_accessory_permission_prompt,
+                mAppName,
+                USB_ACCESSORY_DESCRIPTION,
+            )
+        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+
+        val alwaysUseView: CheckBox? =
+            mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
+        assertThat(alwaysUseView!!.text)
+            .isEqualTo(
+                context.getString(
+                    R.string.always_use_accessory,
+                    mAppName,
+                    USB_ACCESSORY_DESCRIPTION,
+                )
+            )
+    }
+
+    @Test
+    fun testUsbDeviceDialogTitle() {
+        deviceConfiguration(isUsbDevice = true)
+
+        val expectedTitle: String =
+            context.getString(
+                R.string.usb_audio_device_permission_prompt_title,
+                mAppName,
+                USB_DEVICE_PRODUCT_NAME,
+            )
+        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+
+        // Dialog shouldn't have a message, if it is not an audio device.
+        assertThat(mAlertParams.mMessage).isNull()
+        // Dialog shouldn't have a checkbox, if it is not an audio device.
+        assertThat(mAlertParams.mView).isNull()
+    }
+
+    @Test
+    fun testUsbDeviceDialogTitleAndMessage() {
+        deviceConfiguration(isUsbDevice = true, hasAudioPlayback = true)
+
+        val expectedTitle: String =
+            context.getString(
+                R.string.usb_audio_device_permission_prompt_title,
+                mAppName,
+                USB_DEVICE_PRODUCT_NAME,
+            )
+        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+
+        val expectedMessage: String =
+            context.getString(R.string.usb_audio_device_prompt, mAppName, USB_DEVICE_PRODUCT_NAME)
+        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+
+        // Dialog shouldn't have a checkbox, if it can't be default.
+        assertThat(mAlertParams.mView).isNull()
+    }
+
+    @Test
+    fun testUsbDeviceDialog() {
+        deviceConfiguration(
+            canBeDefault = true,
+            isUsbDevice = true,
+            hasAudioCapture = true,
+            audioRecordingPermissionStatus = android.content.pm.PackageManager.PERMISSION_GRANTED,
+        )
+
+        val expectedTitle: String =
+            context.getString(
+                R.string.usb_audio_device_permission_prompt_title,
+                mAppName,
+                USB_DEVICE_PRODUCT_NAME,
+            )
+        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+
+        val expectedMessage: String =
+            context.getString(R.string.usb_audio_device_prompt, mAppName, USB_DEVICE_PRODUCT_NAME)
+        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+
+        val alwaysUseView: CheckBox? =
+            mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
+        assertThat(alwaysUseView!!.text)
+            .isEqualTo(
+                context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
+            )
     }
 }
