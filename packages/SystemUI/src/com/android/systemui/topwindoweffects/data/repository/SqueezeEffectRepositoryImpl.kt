@@ -17,6 +17,7 @@
 package com.android.systemui.topwindoweffects.data.repository
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
@@ -29,6 +30,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.Flags
+import com.android.systemui.shared.system.TaskStackChangeListener
+import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
@@ -50,6 +53,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 
@@ -63,6 +67,8 @@ constructor(
     @Background coroutineContext: CoroutineContext,
     @Background executor: Executor,
     private val preferences: InvocationEffectPreferences,
+    private val taskStackChangeListeners: TaskStackChangeListeners,
+    private val activityManager: ActivityManager,
 ) :
     SqueezeEffectRepository,
     InvocationEffectSetUiHintsHandler,
@@ -202,7 +208,30 @@ constructor(
     private val _gestureProgress = MutableStateFlow(GestureProgress(0f, PARTIAL))
     override val gestureProgress = _gestureProgress.asStateFlow()
 
-    override val isEffectEnabled: Flow<Boolean> = preferences.isInvocationEffectEnabledByAssistant
+    private val lockTaskMode: Flow<Int> =
+        conflatedCallbackFlow {
+                val listener =
+                    object : TaskStackChangeListener {
+                        override fun onLockTaskModeChanged(mode: Int) {
+                            trySendWithFailureLogging(mode, "failed to update lockTaskMode")
+                        }
+                    }
+                trySendWithFailureLogging(
+                    activityManager.lockTaskModeState,
+                    "failed to update lockTaskMode",
+                )
+                taskStackChangeListeners.registerTaskStackListener(listener)
+                awaitClose { taskStackChangeListeners.unregisterTaskStackListener(listener) }
+            }
+            .flowOn(coroutineContext)
+            .distinctUntilChanged()
+
+    override val isEffectEnabled: Flow<Boolean> =
+        combine(preferences.isInvocationEffectEnabledByAssistant, lockTaskMode) {
+            invocationEnabledByAssistant,
+            lockTaskMode ->
+            invocationEnabledByAssistant && lockTaskMode == ActivityManager.LOCK_TASK_MODE_NONE
+        }
 
     @SuppressLint("MissingPermission")
     override val isPowerButtonPressedAsSingleGesture: Flow<Boolean> =
@@ -245,6 +274,9 @@ constructor(
         pw.println("  isPowerButtonLongPressed=${_isPowerButtonLongPressed.value}")
         pw.println(
             "  isPowerButtonDownAndPowerKeySingleGestureActive=$isPowerButtonDownAndPowerKeySingleGestureActive"
+        )
+        pw.println(
+            "  isLockTaskModeNone=${activityManager.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE}"
         )
         pw.println(
             "  longPressPowerDurationFromSettings=${getLongPressPowerDurationFromSettings()}"
