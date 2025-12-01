@@ -24,6 +24,7 @@ android_test {
         "androidx.test.ext.junit",
         "frameworks-base-testutils",
         "junit",
+        "mockito-target-inline-minus-junit4",
         "platform-test-annotations",
         "services.core",
     ],
