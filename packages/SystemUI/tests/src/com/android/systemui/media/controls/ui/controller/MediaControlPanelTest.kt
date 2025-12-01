@@ -87,10 +87,10 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.surfaceeffects.loadingeffect.LoadingEffectView
-import com.android.systemui.surfaceeffects.ripple.MultiRippleView
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseAnimationConfig
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseView
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseAnimationConfig
+import com.android.systemui.surfaceeffects.view.loadingeffect.LoadingEffectView
+import com.android.systemui.surfaceeffects.view.ripple.MultiRippleView
+import com.android.systemui.surfaceeffects.view.turbulencenoise.TurbulenceNoiseView
 import com.android.systemui.util.animation.TransitionLayout
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.GlobalSettings

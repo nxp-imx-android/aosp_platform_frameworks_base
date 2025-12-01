@@ -23,7 +23,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
-import com.android.systemui.surfaceeffects.PaintDrawCallback
+import com.android.systemui.surfaceeffects.core.glowboxeffect.GlowBoxConfig
+import com.android.systemui.surfaceeffects.view.PaintDrawCallback
+import com.android.systemui.surfaceeffects.view.glowboxeffect.GlowBoxEffect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule

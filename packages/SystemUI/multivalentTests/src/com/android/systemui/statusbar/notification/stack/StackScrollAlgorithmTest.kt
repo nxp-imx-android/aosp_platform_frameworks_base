@@ -36,7 +36,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
-import com.android.systemui.surfaceeffects.utils.MathUtils
+import com.android.systemui.surfaceeffects.core.utils.MathUtils
 import com.android.systemui.testKosmos
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
