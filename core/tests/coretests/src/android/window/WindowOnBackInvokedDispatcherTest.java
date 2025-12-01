@@ -101,6 +101,9 @@ public class WindowOnBackInvokedDispatcherTest {
     private OnBackAnimationCallback mCallback1;
     @Mock
     private OnBackAnimationCallback mCallback2;
+    // This callback type can only be created by the system as it is a hidden interface.
+    @Mock
+    private ObserverOnBackAnimationCallback mSystemObserverCallback;
     @Mock
     private ImeBackCallbackProxy.ImeOnBackInvokedCallback mImeCallback;
     @Mock
@@ -720,6 +723,43 @@ public class WindowOnBackInvokedDispatcherTest {
         waitForIdle();
         verify(mCallback1, timeout(1000)).onBackInvoked();
         verify(mCallback2, never()).onBackInvoked();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER)
+    public void testObserverOnBackAnimationCallback_invokedWithNonSystemCallback()
+            throws RemoteException {
+        mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);
+        mDispatcher.registerOnBackInvokedCallback(
+                PRIORITY_SYSTEM_NAVIGATION_OBSERVER, mSystemObserverCallback);
+
+        OnBackInvokedCallbackInfo callbackInfo = assertSetCallbackInfo();
+
+        // Test onBackStarted
+        callbackInfo.getCallback().onBackStarted(mBackEvent);
+        waitForIdle();
+        verify(mCallback1).onBackStarted(any());
+        verify(mSystemObserverCallback).onBackStarted(any());
+
+        // Test onBackProgressed
+        callbackInfo.getCallback().onBackProgressed(mBackEvent);
+        waitForIdle();
+        verify(mCallback1, atLeast(1)).onBackProgressed(any());
+        verify(mSystemObserverCallback, never()).onBackProgressed(any());
+
+        // Test onBackCancelled
+        callbackInfo.getCallback().onBackCancelled();
+        waitForIdle();
+        verify(mCallback1, timeout(1000)).onBackCancelled();
+        verify(mSystemObserverCallback, timeout(1000)).onBackCancelled();
+
+        // Test onBackInvoked
+        // start new gesture to test onBackInvoked case
+        callbackInfo.getCallback().onBackStarted(mBackEvent);
+        callbackInfo.getCallback().onBackInvoked();
+        waitForIdle();
+        verify(mCallback1, timeout(1000)).onBackInvoked();
+        verify(mSystemObserverCallback).onBackInvoked();
     }
 
     @Test
