@@ -391,8 +391,7 @@ public class StackScrollAlgorithm {
                     && !firstHeadsUp
                     && (isHeadsUp || child.isHeadsUpAnimatingAway())
                     && newNotificationEnd > firstHeadsUpEnd
-                    && !ambientState.isShadeExpanded()
-                    && !skipClipBottomForCycling(child, ambientState)) {
+                    && !ambientState.isShadeExpanded()) {
                 // The bottom of this view is peeking out from under the previous view.
                 // Clip the part that is peeking out.
                 float overlapAmount = newNotificationEnd - firstHeadsUpEnd;
@@ -412,17 +411,6 @@ public class StackScrollAlgorithm {
                 clipStart = Math.max(clipStart, isHeadsUp ? newYTranslation : newNotificationEnd);
             }
         }
-    }
-
-    /**
-     * @return Should we skip clipping the bottom clipping when new hun has lower bottom line for
-     *         the hun cycling animation.
-     */
-    private boolean skipClipBottomForCycling(ExpandableView view, AmbientState ambientState) {
-        if (!NotificationHeadsUpCycling.isEnabled()) return false;
-        if (!isCyclingOut(view, ambientState)) return false;
-        // skip bottom clipping if we animate the bottom line
-        return NotificationHeadsUpCycling.getAnimateTallToShort();
     }
 
     /**
@@ -1132,16 +1120,8 @@ public class StackScrollAlgorithm {
                     // If the two HUNs in the cycling animation have different heights, we need
                     // an extra y translation to align the animation.
                     int extraTranslation;
-                    if (NotificationHeadsUpCycling.getAnimateTallToShort()) {
-                        if (cyclingInHunHeight > 0) {
-                            extraTranslation = cyclingInHunHeight - childState.height;
-                        } else {
-                            extraTranslation = 0;
-                        }
-                    } else {
-                        extraTranslation = cyclingInHunHeight >= childState.height
-                                ? cyclingInHunHeight - childState.height : 0;
-                    }
+                    extraTranslation = cyclingInHunHeight >= childState.height
+                            ? cyclingInHunHeight - childState.height : 0;
                     extraTranslation += mHeadsUpCyclingPadding;
                     float inSpaceTranslation = Math.max(childState.getYTranslation(),
                             headsUpTranslation);
