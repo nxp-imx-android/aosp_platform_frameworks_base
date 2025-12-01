@@ -101,18 +101,15 @@ import android.window.ITaskFragmentOrganizer;
 import android.window.ITaskOrganizer;
 import android.window.IWindowContainerTransactionCallback;
 import android.window.RemoteTransition;
-import android.window.StartingWindowInfo;
-import android.window.StartingWindowRemovalInfo;
 import android.window.TaskAppearedInfo;
 import android.window.TaskFragmentOrganizer;
-import android.window.TransitionInfo;
-import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
 import com.android.server.wm.TaskOrganizerController.PendingTaskEvent;
+import com.android.server.wm.utils.StubOrganizer;
 import com.android.window.flags.Flags;
 
 import org.junit.Test;
@@ -1356,44 +1353,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
         verify(transactionListener).onTransactionReady(anyInt(), any());
     }
 
-    static class StubOrganizer extends ITaskOrganizer.Stub {
-        RunningTaskInfo mInfo;
-
-        @Override
-        public void addStartingWindow(StartingWindowInfo info) { }
-        @Override
-        public void removeStartingWindow(StartingWindowRemovalInfo removalInfo) { }
-        @Override
-        public void copySplashScreenView(int taskId) { }
-        @Override
-        public void onTaskAppeared(RunningTaskInfo info, SurfaceControl leash)
-                throws RemoteException {
-            mInfo = info;
-        }
-        @Override
-        public void onTaskVanished(RunningTaskInfo info) {
-        }
-        @Override
-        public void onTaskInfoChanged(RunningTaskInfo info) {
-        }
-        @Override
-        public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {
-        }
-        @Override
-        public void onImeDrawnOnTask(int taskId) throws RemoteException {
-        }
-        @Override
-        public void onAppSplashScreenViewRemoved(int taskId) {
-        }
-        @Override
-        public void onTransitionReady(IBinder iBinder, TransitionInfo transitionInfo,
-                SurfaceControl.Transaction t, SurfaceControl.Transaction finishT) {
-        }
-        @Override
-        public void requestStartTransition(IBinder iBinder, TransitionRequestInfo request) {
-        }
-    };
-
     private ActivityRecord makePipableActivity() {
         final ActivityRecord record = createActivityRecordWithParentTask(mDisplayContent,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
@@ -1533,7 +1492,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Enable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1544,7 +1503,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any());
+        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Disable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1555,7 +1514,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any());
+        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean());
     }
 
     @Test
@@ -1574,7 +1533,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Enable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1585,7 +1544,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
     }
 
     @Test

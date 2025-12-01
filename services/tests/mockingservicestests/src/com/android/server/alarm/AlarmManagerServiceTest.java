@@ -54,6 +54,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.server.SystemClockTime.TIME_CONFIDENCE_HIGH;
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
 import static com.android.server.alarm.Alarm.EXACT_ALLOW_REASON_ALLOW_LIST;
 import static com.android.server.alarm.Alarm.EXACT_ALLOW_REASON_COMPAT;
@@ -94,6 +95,7 @@ import static com.android.server.alarm.Constants.TEST_CALLING_UID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -112,6 +114,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.Manifest;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
@@ -197,11 +201,17 @@ import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.zone.ZoneOffsetTransition;
+import java.time.zone.ZoneRules;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongConsumer;
@@ -216,6 +226,16 @@ public final class AlarmManagerServiceTest {
     private static final int TEST_CALLING_UID_2 = TEST_CALLING_UID + 1;
     private static final int[] ALARM_TYPES =
             {RTC_WAKEUP, RTC, ELAPSED_REALTIME_WAKEUP, ELAPSED_REALTIME};
+    private static final String TZ_ID_LA = "America/Los_Angeles";
+    private static final String TZ_ID_NY = "America/New_York";
+
+    // This time zone has no DST transition
+    private static final String TZ_ID_GMT = "Etc/GMT";
+
+    // 2025-01-01 00:00:00 UTC
+    private static final long TEST_TIME_JAN_1_2025 = 1735732800000L;
+
+    private static final String TIME_UPDATE_LOG_MSG = "test log message";
 
     private long mAppStandbyWindow;
     private long mAllowWhileIdleWindow;
@@ -272,6 +292,8 @@ public final class AlarmManagerServiceTest {
     private volatile int mTestCallingUid = TEST_CALLING_UID;
     @GuardedBy("mTestTimer")
     private TestTimer mTestTimer = new TestTimer();
+
+    private TimeZone mOriginalTimeZone;
 
     static class TestTimer {
         private long mElapsed;
@@ -428,6 +450,7 @@ public final class AlarmManagerServiceTest {
 
     @Before
     public void setUp() {
+        mOriginalTimeZone = TimeZone.getDefault();
         doReturn(mIActivityManager).when(ActivityManager::getService);
         doReturn(mDeviceIdleInternal).when(
                 () -> LocalServices.getService(DeviceIdleInternal.class));
@@ -569,12 +592,17 @@ public final class AlarmManagerServiceTest {
         }
         mIAppOpsCallback = appOpsCallbackCaptor.getValue();
         setTestableQuotas();
+
+        // Remove all existing alarms to avoid cross-test pollution.
+        mService.mAlarmStore.remove(unused -> true);
+        mService.mAlarmsPerUid.clear();
     }
 
     @After
     public void tearDown() {
         // Clean up test dir to remove persisted user files.
         FileUtils.deleteContentsAndDir(mTestDir);
+        TimeZone.setDefault(mOriginalTimeZone);
     }
 
     private void setTestAlarm(int type, long triggerTime, PendingIntent operation) {
@@ -3938,5 +3966,237 @@ public final class AlarmManagerServiceTest {
         for (String p : packages) {
             verify(mService).lookForPackageLocked(p, uid);
         }
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_schedulesAndFires() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+
+        final Alarm dstAlarm = findTimeZoneOffsetAlarm();
+        assertNotNull("Time zone offset change alarm not found", dstAlarm);
+
+        final long now = mInjector.getCurrentTimeMillis();
+        final ZoneOffsetTransition transition =
+                getNextTzOffsetChange(TZ_ID_LA, Instant.ofEpochMilli(now));
+        final long nextRtc = transitionTimeMillis(transition);
+        final long expectedTriggerElapsed = nextRtc - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(expectedTriggerElapsed, dstAlarm.getWhenElapsed(), 2000);
+
+        final long triggerAt = dstAlarm.getWhenElapsed();
+        mNowElapsedTest = triggerAt + 1;
+        mTestTimer.expire();
+        final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mService.mHandler).post(runnableCaptor.capture());
+
+        runnableCaptor.getValue().run();
+        final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext)
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.ALL), isNull());
+
+        final Intent capturedIntent = intentCaptor.getValue();
+        assertEquals(Intent.ACTION_TIMEZONE_OFFSET_CHANGED, capturedIntent.getAction());
+        assertEquals(
+                transition.getOffsetAfter().getTotalSeconds(),
+                capturedIntent.getIntExtra(Intent.EXTRA_NEW_TIMEZONE_OFFSET, -1));
+        assertEquals(
+                transition.getOffsetBefore().getTotalSeconds(),
+                capturedIntent.getIntExtra(Intent.EXTRA_OLD_TIMEZONE_OFFSET, -1));
+    }
+
+    @Test
+    @DisableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_notScheduledWhenFlagDisabled() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        assertNull(
+                "DST transition alarm should not be scheduled when flag is disabled",
+                findTimeZoneOffsetAlarm());
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_notScheduledForNonDstTimezone() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_GMT, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+
+        assertNull(
+                "DST transition alarm should not be scheduled for timezone without DST",
+                findTimeZoneOffsetAlarm());
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_rescheduledOnTimezoneChange() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+
+        final Alarm dstAlarm1 = findTimeZoneOffsetAlarm();
+        assertNotNull("DST transition alarm not found for " + TZ_ID_LA, dstAlarm1);
+
+        final long now = mInjector.getCurrentTimeMillis();
+        final long nextRtc =
+                transitionTimeMillis(getNextTzOffsetChange(TZ_ID_LA, Instant.ofEpochMilli(now)));
+        final long expectedTriggerElapsed1 = nextRtc - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(expectedTriggerElapsed1, dstAlarm1.getWhenElapsed(), 2000);
+
+        mService.setTimeZoneImpl(TZ_ID_NY, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        final Alarm dstAlarm2 = findTimeZoneOffsetAlarm();
+        assertNotNull("DST transition alarm not found for " + TZ_ID_NY, dstAlarm2);
+
+        final long nextRtc2 =
+                transitionTimeMillis(getNextTzOffsetChange(TZ_ID_NY, Instant.ofEpochMilli(now)));
+        final long expectedTriggerElapsed2 = nextRtc2 - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(expectedTriggerElapsed2, dstAlarm2.getWhenElapsed(), 2000);
+        assertNotEquals(
+                "Alarm should have been rescheduled for new timezone",
+                dstAlarm1.getWhenElapsed(),
+                dstAlarm2.getWhenElapsed());
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_cancelledOnNonDstTimezoneChange() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        assertNotNull(
+                "Time zone offset change alarm not found for " + TZ_ID_LA,
+                findTimeZoneOffsetAlarm());
+
+        // Change to a non-DST timezone
+        mService.setTimeZoneImpl(TZ_ID_GMT, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        assertNull(
+                "Time zone offset change alarm should be cancelled for non-DST timezone",
+                findTimeZoneOffsetAlarm());
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_rescheduledOnTimeCorrection() throws Exception {
+        final long incorrectTime = 1704067200000L; // 2024-01-01
+        mInjector.setCurrentTimeMillis(incorrectTime, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+
+        // This is required as setTimeZoneImpl() calls TimeZone.setDefault(null).
+        TimeZone.setDefault(TimeZone.getTimeZone(TZ_ID_LA));
+
+        final Alarm dstAlarm1 = findTimeZoneOffsetAlarm();
+        assertNotNull("Time zone offset change alarm not found", dstAlarm1);
+
+        mService.setTimeImpl(TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, "test time correction");
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        final Alarm dstAlarm2 = findTimeZoneOffsetAlarm();
+        assertNotNull("Time zone offset change alarm not found after time correction", dstAlarm2);
+
+        assertNotEquals(
+                "Alarm should have been rescheduled",
+                dstAlarm1.getWhenElapsed(),
+                dstAlarm2.getWhenElapsed());
+
+        final Instant now = Instant.ofEpochMilli(mInjector.getCurrentTimeMillis());
+        final long nextRtc = transitionTimeMillis(getNextTzOffsetChange(TZ_ID_LA, now));
+        final long expectedTriggerElapsed = nextRtc - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(expectedTriggerElapsed, dstAlarm2.getWhenElapsed(), 2000);
+    }
+
+    @Test
+    @EnableFlags("android.timezone.flags.enable_time_zone_offset_change_broadcast")
+    public void testTzOffsetChangeAlarm_rescheduledAfterFiring() throws Exception {
+        mInjector.setCurrentTimeMillis(
+                TEST_TIME_JAN_1_2025, TIME_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+        mTestTimer.expire(TIME_CHANGED_MASK);
+
+        mService.setTimeZoneImpl(TZ_ID_LA, TIME_ZONE_CONFIDENCE_HIGH, TIME_UPDATE_LOG_MSG);
+
+        // This is required as setTimeZoneImpl() calls TimeZone.setDefault(null).
+        TimeZone.setDefault(TimeZone.getTimeZone(TZ_ID_LA));
+
+        final Alarm initialDstAlarm = findTimeZoneOffsetAlarm();
+        assertNotNull("Initial time zone offset change alarm not found", initialDstAlarm);
+
+        final long initialExpectedRtc =
+                transitionTimeMillis(
+                        getNextTzOffsetChange(
+                                TZ_ID_LA, Instant.ofEpochMilli(mInjector.getCurrentTimeMillis())));
+        final long initialExpectedElapsed = initialExpectedRtc - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(initialExpectedElapsed, initialDstAlarm.getWhenElapsed(), 2000);
+
+        // Advance time past the initial alarm's trigger
+        mNowElapsedTest = initialDstAlarm.getWhenElapsed() + 1;
+        mTestTimer.expire();
+
+        final long triggerAt = initialDstAlarm.getWhenElapsed();
+        mNowElapsedTest = triggerAt + 1;
+        mTestTimer.expire();
+        final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mService.mHandler).post(runnableCaptor.capture());
+        runnableCaptor.getValue().run();
+        final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext)
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.ALL), isNull());
+        final Intent capturedIntent = intentCaptor.getValue();
+        assertEquals(Intent.ACTION_TIMEZONE_OFFSET_CHANGED, capturedIntent.getAction());
+
+        final Alarm rescheduledDstAlarm = findTimeZoneOffsetAlarm();
+        assertNotNull("Rescheduled time zone offset change alarm not found", rescheduledDstAlarm);
+        assertNotEquals(
+                "Alarm should have been rescheduled to a different time",
+                initialDstAlarm.getWhenElapsed(),
+                rescheduledDstAlarm.getWhenElapsed());
+
+        final long currentRtc = mInjector.getCurrentTimeMillis();
+        final long nextExpectedRtc =
+                transitionTimeMillis(
+                        getNextTzOffsetChange(TZ_ID_LA, Instant.ofEpochMilli(currentRtc)));
+        final long expectedRescheduledElapsed = nextExpectedRtc - (mNowRtcTest - mNowElapsedTest);
+        assertEquals(expectedRescheduledElapsed, rescheduledDstAlarm.getWhenElapsed(), 2000);
+    }
+
+    private Alarm findTimeZoneOffsetAlarm() {
+        final List<Alarm> allAlarms = mService.mAlarmStore.asList();
+        for (Alarm alarm : allAlarms) {
+            if ("*tz_offset_change*".equals(alarm.listenerTag)) {
+                return alarm;
+            }
+        }
+        return null;
+    }
+
+    private static Long transitionTimeMillis(ZoneOffsetTransition transition) {
+        if (transition == null) {
+            return null;
+        }
+
+        return transition.toEpochSecond() * 1000;
+    }
+
+    private static ZoneOffsetTransition getNextTzOffsetChange(String timeZoneId, Instant instant) {
+        ZoneRules rules;
+        try {
+            rules = ZoneId.of(timeZoneId).getRules();
+        } catch (Exception e) {
+            return null;
+        }
+
+        return rules.nextTransition(instant);
     }
 }

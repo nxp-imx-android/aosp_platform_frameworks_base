@@ -37,14 +37,17 @@ public final class InsightDisplayDetails implements Parcelable {
     private final CharSequence mTitle;
     private final Icon mIcon;
     private final CharSequence mContentDescription;
+    private final CharSequence mSubtitle;
 
     private InsightDisplayDetails(
             @Nullable CharSequence title,
             @Nullable Icon icon,
-            @Nullable CharSequence contentDescription) {
+            @Nullable CharSequence contentDescription,
+            @Nullable CharSequence subtitle) {
         this.mTitle = title;
         this.mIcon = icon;
         this.mContentDescription = contentDescription;
+        this.mSubtitle = subtitle;
     }
 
     /**
@@ -77,6 +80,16 @@ public final class InsightDisplayDetails implements Parcelable {
         return mContentDescription;
     }
 
+    /**
+     * Returns the subtitle of the insight.
+     *
+     * @return the subtitle of the insight.
+     */
+    @Nullable
+    public CharSequence getSubtitle() {
+        return mSubtitle;
+    }
+
     @Override
     public boolean equals(@Nullable Object o) {
         if (this == o) return true;
@@ -84,12 +97,13 @@ public final class InsightDisplayDetails implements Parcelable {
         InsightDisplayDetails that = (InsightDisplayDetails) o;
         return TextUtils.equals(mTitle, that.mTitle)
                 && Objects.equals(mIcon, that.mIcon)
-                && TextUtils.equals(mContentDescription, that.mContentDescription);
+                && TextUtils.equals(mContentDescription, that.mContentDescription)
+                && TextUtils.equals(mSubtitle, that.mSubtitle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mTitle, mIcon, mContentDescription);
+        return Objects.hash(mTitle, mIcon, mContentDescription, mSubtitle);
     }
 
     @Override
@@ -102,12 +116,14 @@ public final class InsightDisplayDetails implements Parcelable {
         dest.writeCharSequence(mTitle);
         dest.writeTypedObject(mIcon, flags);
         dest.writeCharSequence(mContentDescription);
+        dest.writeCharSequence(mSubtitle);
     }
 
     private InsightDisplayDetails(@NonNull Parcel in) {
         mTitle = in.readCharSequence();
         mIcon = in.readTypedObject(Icon.CREATOR);
         mContentDescription = in.readCharSequence();
+        mSubtitle = in.readCharSequence();
     }
 
     public static final @NonNull Creator<InsightDisplayDetails> CREATOR =
@@ -129,6 +145,7 @@ public final class InsightDisplayDetails implements Parcelable {
         private CharSequence mTitle;
         private Icon mIcon;
         private CharSequence mContentDescription;
+        private CharSequence mSubtitle;
 
         /**
          * Creates a new builder for the insight display details. Used when only the title is
@@ -179,13 +196,25 @@ public final class InsightDisplayDetails implements Parcelable {
         }
 
         /**
+         * Sets the subtitle of the insight.
+         *
+         * @param subtitle the subtitle of the insight. {@code null} can be specified to clear the
+         * subtitle.
+         */
+        @NonNull
+        public Builder setSubtitle(@Nullable CharSequence subtitle) {
+            mSubtitle = subtitle;
+            return this;
+        }
+
+        /**
          * Builds the {@link InsightDisplayDetails}.
          *
          * @return the {@link InsightDisplayDetails}.
          */
         @NonNull
         public InsightDisplayDetails build() {
-            return new InsightDisplayDetails(mTitle, mIcon, mContentDescription);
+            return new InsightDisplayDetails(mTitle, mIcon, mContentDescription, mSubtitle);
         }
     }
 }

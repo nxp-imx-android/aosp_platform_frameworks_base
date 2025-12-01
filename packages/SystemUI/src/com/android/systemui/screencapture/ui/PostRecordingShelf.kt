@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -115,7 +116,6 @@ constructor(
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-            setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
             setWindowAnimations(-1)
         }
     }
@@ -164,7 +164,12 @@ constructor(
                                 contentDescription = null,
                             )
                             .value,
-                    onClick = {},
+                    onClick = {
+                        coroutineScope.launch {
+                            postRecordingViewModel.openInFolder()
+                            hide()
+                        }
+                    },
                 ),
                 ActionButtonGroupItem(
                     icon =
@@ -197,7 +202,8 @@ constructor(
         Box(
             modifier =
                 Modifier.fillMaxSize()
-                    .clickable(onClick = { hide() }, indication = null, interactionSource = null),
+                    .clickable(onClick = { hide() }, indication = null, interactionSource = null)
+                    .safeDrawingPadding(),
             contentAlignment = Alignment.BottomStart,
         ) {
             AnimatedVisibility(
@@ -223,7 +229,11 @@ constructor(
                             Modifier.clip(RoundedCornerShape(12.dp))
                                 .border(3.dp, MaterialTheme.colorScheme.surfaceVariant)
                                 .width(190.dp)
-                                .height(107.dp),
+                                .height(107.dp)
+                                .clickable {
+                                    postRecordingViewModel.edit()
+                                    hide()
+                                },
                     )
                     PostCaptureToastBar(
                         actionButtonGroup = actionButtonItems,

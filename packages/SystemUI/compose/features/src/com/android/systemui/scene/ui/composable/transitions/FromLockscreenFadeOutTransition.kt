@@ -26,6 +26,8 @@ fun TransitionBuilder.lockscreenFadeOutTransition(durationScale: Double = 1.0) {
 
     fractionRange(end = 0.05f) { fade(LockscreenElementKeys.StatusBar) }
     fractionRange(end = 0.2f) { fade(LockscreenElementKeys.Root) }
+
+    fade(LockscreenElementKeys.BehindScrim)
 }
 
 private val DefaultDuration = 500.milliseconds

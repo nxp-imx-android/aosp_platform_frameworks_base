@@ -499,7 +499,7 @@ public abstract class DisplayManagerInternal {
     /**
      * Get all available display ids.
      */
-    public abstract IntArray getDisplayIds();
+    public abstract int[] getDisplayIds(boolean includeDisabled);
 
     /**
      * Get group id for given display id

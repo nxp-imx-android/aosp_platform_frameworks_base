@@ -55,6 +55,7 @@ import android.window.TaskAppearedInfo;
 import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransactionCallback;
 
@@ -120,8 +121,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          * organized, there will be no callback.
          *
          * @param taskInfo The RunningTaskInfo for the Task which received back event.
+         * @param isFromMoveActivityTaskToBack {@code true} if this is from an app calling
+         *                                     Activity#moveTaskToBack(), {@code false} if this is
+         *                                     from back button press.
          */
-        default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {}
+        default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
+                boolean isFromMoveActivityTaskToBack) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
             // All TaskListeners should support compat UI except PIP and StageCoordinator.
@@ -472,16 +477,19 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * Creates a persistent root task in WM for a particular windowing-mode.
      * @param request The data for this request
      * @param listener The listener to get the created task callback.
+     * @return the WindowContainerToken of the newly created root task.
      *
      * @hide
      */
-    public void createRootTask(@NonNull CreateRootTaskRequest request, TaskListener listener) {
+    @Nullable
+    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request,
+            TaskListener listener) {
         ProtoLog.v(WM_SHELL_TASK_ORG, "createRootTask() displayId=%d winMode=%d listener=%s" ,
                 request.displayId, request.windowingMode, listener.toString());
         final IBinder cookie = new Binder();
         request.setLaunchCookie(cookie);
         setPendingLaunchCookieListener(cookie, listener);
-        super.createRootTask(request);
+        return super.createRootTask(request);
     }
 
     /**
@@ -910,12 +918,13 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     @Override
-    public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {
+    public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
+            boolean isFromMoveActivityTaskToBack) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d", taskInfo.taskId);
             final TaskListener listener = getTaskListener(taskInfo);
             if (listener != null) {
-                listener.onBackPressedOnTaskRoot(taskInfo);
+                listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack);
             }
         }
     }
@@ -1305,6 +1314,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             throw new IllegalStateException("No transition player registered!");
         }
         mTransitions.requestStartTransition(iBinder, request);
+    }
+
+    @Override
+    public void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks) {
+        super.onPackageUpdateRequested(updatingTasks);
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {

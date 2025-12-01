@@ -371,6 +371,10 @@ java_defaults {
 java_library {
     name: "android-non-updatable.stubs",
     defaults: ["android-non-updatable_defaults"],
+    visibility: [
+        // Needed for android.test.mock.
+        "//frameworks/base/test-mock",
+    ],
     static_libs: select(product_variable("build_from_text_stub"), {
         true: [
             "android-non-updatable.stubs.from-text",
@@ -392,6 +396,10 @@ java_library {
 java_library {
     name: "android-non-updatable.stubs.system",
     defaults: ["android-non-updatable_defaults"],
+    visibility: [
+        // Needed for android.test.mock.
+        "//frameworks/base/test-mock",
+    ],
     static_libs: select(product_variable("build_from_text_stub"), {
         true: [
             "android-non-updatable.stubs.system.from-text",
@@ -434,6 +442,10 @@ java_library {
 java_library {
     name: "android-non-updatable.stubs.test",
     defaults: ["android-non-updatable_defaults"],
+    visibility: [
+        // Needed for android.test.mock.
+        "//frameworks/base/test-mock",
+    ],
     static_libs: select(product_variable("build_from_text_stub"), {
         true: [
             "android-non-updatable.stubs.test.from-text",
@@ -1094,6 +1106,7 @@ droidstubs {
             tag: ".api_versions.xml",
         },
     ],
+    visibility: ["//development/build"],
 }
 
 // Defaults for `droidstubs` modules that generate `api-versions.xml` files that
@@ -1131,6 +1144,7 @@ droidstubs {
             removed_api_file: ":android-removed.api.combined.module-lib.latest",
         },
     },
+    visibility: ["//development/build"],
 }
 
 // Create a single jar containing the whole module-lib API surface.
@@ -1167,6 +1181,7 @@ droidstubs {
             removed_api_file: ":android-removed.api.combined.module-lib.latest",
         },
     },
+    visibility: ["//development/build"],
 }
 
 // Produces an `api-versions.xml` file that includes up-to-date information
@@ -1189,6 +1204,7 @@ droidstubs {
             removed_api_file: ":android-removed.api.combined.system-server.latest",
         },
     },
+    visibility: ["//development/build"],
 }
 
 // Create a single jar containing the whole system-server API surface.
@@ -1229,6 +1245,7 @@ droidstubs {
             removed_api_file: ":android-removed.api.combined.system-server.latest",
         },
     },
+    visibility: ["//development/build"],
 }
 
 /////////////////////////////////////////////////////////////////////

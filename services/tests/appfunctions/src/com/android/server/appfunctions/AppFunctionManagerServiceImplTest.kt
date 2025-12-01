@@ -38,6 +38,7 @@ import com.android.internal.R
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.SystemService
+import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
@@ -79,6 +80,8 @@ class AppFunctionManagerServiceImplTest {
     private val dynamicRegistry = mock<MultiUserDynamicAppFunctionRegistry>()
     private val agentAllowlistCaptor = argumentCaptor<Set<SignedPackage>>()
 
+    private val appInteractionService = mock<AppInteractionService>()
+
     private val serviceImpl =
         AppFunctionManagerServiceImpl(
             context,
@@ -91,6 +94,7 @@ class AppFunctionManagerServiceImplTest {
             mock<AppFunctionsLoggerWrapper>(),
             agentAllowlistStorage,
             dynamicRegistry,
+            appInteractionService,
             MoreExecutors.directExecutor(),
         )
 

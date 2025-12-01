@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createRowWithEntry
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.notification.stack.NotificationRoundnessManager
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
 import com.android.systemui.testKosmos
@@ -93,20 +92,6 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
                 phoneStatusBarView,
             )
         underTest.setAppearFraction(0.0f, 0.0f)
-    }
-
-    @Test
-    @DisableFlags(AsyncGroupHeaderViewInflation.FLAG_NAME)
-    fun testHeaderUpdated() {
-        row.setPinnedStatus(PinnedStatus.PinnedBySystem)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-        assertThat(row.headerVisibleAmount).isEqualTo(0.0f)
-
-        row.setPinnedStatus(PinnedStatus.NotPinned)
-        setHeadsUpNotifOnManager(null)
-        underTest.onHeadsUpUnPinned(entry)
-        assertThat(row.headerVisibleAmount).isEqualTo(1.0f)
     }
 
     @Test

@@ -58,7 +58,6 @@ import com.android.systemui.notetask.shortcut.CreateNoteTaskShortcutActivity
 import com.android.systemui.notetask.shortcut.LaunchNoteTaskActivity
 import com.android.systemui.res.R
 import com.android.systemui.settings.FakeUserTracker
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.eq
@@ -86,6 +85,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
 /** atest SystemUITests:NoteTaskControllerTest */
@@ -513,6 +513,28 @@ internal class NoteTaskControllerTest : SysuiTestCase() {
     fun showNoteTask_noUIRecommendation_tailButton_shouldStartInStylusUIMode() {
         `when`(spiedResources.getInteger(R.integer.config_preferredNotesMode)).thenReturn(0)
         val expectedInfo = NOTE_TASK_INFO.copy(entryPoint = TAIL_BUTTON, isKeyguardLocked = true)
+        whenever(keyguardManager.isKeyguardLocked).thenReturn(expectedInfo.isKeyguardLocked)
+        whenever(resolver.resolveInfo(any(), any(), any())).thenReturn(expectedInfo)
+
+        createNoteTaskController().showNoteTask(entryPoint = expectedInfo.entryPoint!!)
+
+        val intentCaptor = argumentCaptor<Intent>()
+        val userCaptor = argumentCaptor<UserHandle>()
+        verify(context).startActivityAsUser(capture(intentCaptor), capture(userCaptor))
+        assertThat(intentCaptor.value).run {
+            hasAction(ACTION_CREATE_NOTE)
+            hasPackage(NOTE_TASK_PACKAGE_NAME)
+            extras().bool(EXTRA_USE_STYLUS_MODE).isTrue()
+        }
+    }
+
+    @Test
+    fun showNoteTask_actionCorner_shouldStartInStylusUIMode() {
+        val expectedInfo =
+            NOTE_TASK_INFO.copy(
+                entryPoint = NoteTaskEntryPoint.ACTION_CORNER,
+                isKeyguardLocked = true,
+            )
         whenever(keyguardManager.isKeyguardLocked).thenReturn(expectedInfo.isKeyguardLocked)
         whenever(resolver.resolveInfo(any(), any(), any())).thenReturn(expectedInfo)
 

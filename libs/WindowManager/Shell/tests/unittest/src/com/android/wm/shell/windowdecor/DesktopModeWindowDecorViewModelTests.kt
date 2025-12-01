@@ -388,7 +388,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING)
     fun testInsetsStateChanged_notifiesAllDecorsInDisplay() {
         val task1 = createTask(windowingMode = WINDOWING_MODE_FREEFORM, displayId = 1)
         val decoration1 = setUpMockDecorationForTask(task1)
@@ -707,6 +706,31 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 any(),
                 eq(mockUserHandle),
             )
+    }
+
+    @Test
+    fun testOnSwitchToBrowser_opensBrowserAndClosesTask() {
+        val windowDecorationActions = createDefaultWindowActions()
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FULLSCREEN)
+        val taskInfo = decor.taskInfo
+        val uri = Uri.parse("https://www.google.com")
+        val intent = Intent(ACTION_MAIN, uri)
+        whenever(mockDesktopTasksController.closeTask(taskInfo))
+            .thenReturn(DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP)
+
+        windowDecorationActions.onSwitchToBrowser(taskInfo, intent)
+
+        // Verify that the browser is opened.
+        verify(spyContext)
+            .startActivityAsUser(
+                argThat { intentArg ->
+                    uri.equals(intentArg.data) && intentArg.action == ACTION_MAIN
+                },
+                any(),
+                eq(mockUserHandle),
+            )
+        // Verify that the task is closed.
+        verify(mockDesktopTasksController).closeTask(taskInfo)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

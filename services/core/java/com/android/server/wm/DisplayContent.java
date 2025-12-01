@@ -162,6 +162,7 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFi
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
 
+import android.annotation.CallSuper;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1266,6 +1267,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         mDeviceStateController = deviceStateController;
+
+        // If the display cannot host task, make sure there is no system decoration initially.
+        // This needs to be applied before the DisplayPolicy is created, as this is where it is
+        // first used.
+        if (!display.canHostTasks()) {
+            // Using the internal version as the DisplayPolicy hasn't been created yet.
+            mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsInternalLocked(this, false);
+        }
 
         mAppCompatCameraPolicy = new AppCompatCameraPolicy(mWmService, this);
         mDisplayPolicy = new DisplayPolicy(mWmService, this);
@@ -3820,6 +3829,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
+    @CallSuper
     @Override
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
@@ -3941,6 +3951,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         pw.print(prefix); pw.print("mHasSetIgnoreOrientationRequest=");
         pw.print(mHasSetIgnoreOrientationRequest);
         pw.print(" ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
+        pw.print(prefix); pw.print("mSleeping="); pw.print(mSleeping);
+        pw.print(" mAllSleepTokens="); pw.println(mAllSleepTokens);
         pw.print(prefix); pw.print("mLayoutSeq="); pw.println(mLayoutSeq);
 
         pw.print(prefix); pw.print("mImeWindow="); pw.println(mImeWindow);
@@ -4501,16 +4513,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     private DisplayContent getUserMainDisplayContent() {
-        final DisplayContent defaultDc;
-        if (android.view.inputmethod.Flags.fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-            final int userId = mWmService.mUmInternal.getUserAssignedToDisplay(mDisplayId);
-            defaultDc = mWmService.getUserMainDisplayContentLocked(userId);
-            if (defaultDc == null) {
-                throw new IllegalStateException(
-                        "No default display was assigned to user " + userId);
-            }
-        } else {
-            defaultDc = mWmService.getDefaultDisplayContentLocked();
+        final int userId = mWmService.mUmInternal.getUserAssignedToDisplay(mDisplayId);
+        final DisplayContent defaultDc = mWmService.getUserMainDisplayContentLocked(userId);
+        if (defaultDc == null) {
+            throw new IllegalStateException(
+                    "No default display was assigned to user " + userId);
         }
         return defaultDc;
     }
@@ -5001,17 +5008,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // has been settled down after IME control target changed.
         final boolean imeControlChanged = prevImeControlTarget != mImeControlTarget;
         if (imeControlChanged || forceUpdateImeParent) {
-            final WindowContainer originalParent = mImeParent;
             updateImeParent();
-            final ImeInsetsSourceProvider imeInsetsSourceProvider =
-                    mInsetsStateController.getImeSourceProvider();
-            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
-            // proceed with starting window removal after a task or activity switch.
-            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
-                    && mImeControlTarget != null && originalParent != mImeParent
-                    && imeInsetsSourceProvider.getSource().isVisible()) {
-                imeInsetsSourceProvider.reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
-            }
         }
 
         final WindowState win = InsetsControlTarget.asWindowOrNull(mImeControlTarget);
@@ -5040,7 +5037,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mImeParent = null;
             return;
         }
-
         final var newParent = computeImeParent();
         final var newParentSurface =
                 newParent != null ? newParent.getSurfaceControl() : null;
@@ -5048,6 +5044,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mImeParent != null ? mImeParent.getSurfaceControl() : null;
         ProtoLog.i(WM_DEBUG_IME, "updateImeParent %s", newParent);
         if (newParentSurface != null && newParentSurface != parentSurface) {
+            final WindowContainer originalParent = mImeParent;
             mImeParent = newParent;
             final var t = getSyncTransaction();
             t.reparent(mImeContainer.mSurfaceControl, newParentSurface);
@@ -5059,6 +5056,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             assignRelativeLayerForIme(t, true /* forceUpdate */);
             scheduleAnimation();
 
+            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
+            // proceed with starting window removal after a task or activity switch.
+            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
+                    && mImeControlTarget != null && originalParent != newParent
+                    && mInsetsStateController.getImeSourceProvider().isImeShowing()) {
+                mInsetsStateController.getImeSourceProvider()
+                        .reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
+            }
             mWmService.mH.post(
                     () -> InputMethodManagerInternal.get().onImeParentChanged(getDisplayId()));
         } else if (mImeControlTarget != null && mImeControlTarget == mImeLayeringTarget) {
@@ -5090,15 +5095,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The control target could be the RemoteInsetsControlTarget if the focussed
             // view is on a virtual display that can not show the IME (and therefore it will
             // be shown on the default display)
-            if (android.view.inputmethod.Flags
-                    .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-                if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
-                    return mRemoteInsetsControlTarget;
-                }
-            } else {
-                if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
-                    return mRemoteInsetsControlTarget;
-                }
+            if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
+                return mRemoteInsetsControlTarget;
             }
             return null;
         }
@@ -5515,21 +5513,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Creates a {@link LayerCaptureArgs} object.
+     * Creates a {@link LayerCaptureArgs} object with windowing layer as screenshot root.
      *
-     * If {@code useWindowingLayerAsScreenshotRoot} is false, the returned
-     * {@code LayerCaptureArgs} will represent the entire DisplayContent.
-     *
-     * If {@code useWindowingLayerAsScreenshotRoot} is true, the
-     * {@code LayerCaptureArgs} will represent the surface area of the windowing layer.
      * @param predicate An optional filter function to determine which windows are captured. If
-     *                  null, all windows are included.
-     * @param useWindowingLayerAsScreenshotRoot Whether to use the windowing layer's
-     * surface area as the screenshot root.
-     * @return A {@code LayerCaptureArgs} object configured according to the parameters.
+     * null, all windows are included.
+     *
+     * @return A {@code LayerCaptureArgs} object representing the entire surface area of the
+     * windowing layer.
      */
-    LayerCaptureArgs getLayerCaptureArgs(@Nullable ToBooleanFunction<WindowState> predicate,
-            boolean useWindowingLayerAsScreenshotRoot) {
+    LayerCaptureArgs getWindowingLayerCaptureArgs(
+            @Nullable ToBooleanFunction<WindowState> predicate) {
         if (!mWmService.mPolicy.isScreenOn(mDisplayId)) {
             if (DEBUG_SCREENSHOT) {
                 Slog.i(TAG_WM, "Attempted to take screenshot while display " + mDisplayId
@@ -5540,9 +5533,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         getBounds(mTmpRect);
         mTmpRect.offsetTo(0, 0);
-        SurfaceControl sc =
-                useWindowingLayerAsScreenshotRoot ? getWindowingLayer() : getSurfaceControl();
-        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(sc).setSourceCrop(mTmpRect);
+
+        // Using windowing layer as screenshot root causes windows of TYPE_SECURE_SYSTEM_OVERLAY or
+        // higher to be excluded from the screenshot. If TYPE_SECURE_SYSTEM_OVERLAY (and higher)
+        // windows need to be included in a screenshot, please consider using getSurfaceControl().
+        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(getWindowingLayer())
+                .setSourceCrop(mTmpRect);
 
         if (predicate != null) {
             ArrayList<SurfaceControl> excludeLayers = new ArrayList<>();
@@ -5909,6 +5905,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * also check {@link #isSystemDecorationsSupported()} to avoid breaking any security policy.
      */
     boolean isPublicSecondaryDisplayWithDesktopModeForceEnabled() {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+            return false;
+        }
         if (!mWmService.mForceDesktopModeOnExternalDisplays || isDefaultDisplay || isPrivate()) {
             return false;
         }

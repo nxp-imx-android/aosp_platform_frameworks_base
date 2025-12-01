@@ -402,6 +402,7 @@ java_defaults {
         "bouncycastle-repackaged-unbundled",
         "com.android.sysprop.view",
         "framework-internal-utils",
+        "aisealhostservice_aidl-java",
         "dropboxmanager_aidl-java",
         "dynamic_instrumentation_manager_aidl-java",
         "process_info_service_aidl-java",

@@ -66,8 +66,8 @@ public class TextFromFloat extends Operation implements VariableSupport, Seriali
     public static final int GROUPING_BY3 = 1 << 4;   // e.g. 1,234,567,890.12
     public static final int GROUPING_BY4 = 2 << 4;  // e.g. 12,3456,7890.12
     public static final int GROUPING_BY32 = 3 << 4; // e.g. 1,23,45,67,890.12
-    public static final int SEPARATOR_PERIOD_COMMA = 0; // e.g. 123,456.12
-    public static final int SEPARATOR_COMMA_PERIOD = 1 << 6; // e.g. 123.456,12
+    public static final int SEPARATOR_COMMA_PERIOD = 0; // e.g. 123,456.12
+    public static final int SEPARATOR_PERIOD_COMMA = 1 << 6; // e.g. 123.456,12
     public static final int SEPARATOR_SPACE_COMMA = 2 << 6;  // e.g. 123 456,12
     public static final int SEPARATOR_UNDER_PERIOD = 3 << 6; // e.g. 123_456.12
     public static final int OPTIONS_NONE = 0;         // e.g. -890.12
@@ -140,16 +140,11 @@ public class TextFromFloat extends Operation implements VariableSupport, Seriali
                 mSeparator = SEPARATOR_UNDER_PERIOD >> 6;
                 break;
         }
-        switch (mFlags & (3 << 8)) { // pre pad bits 000
-            case OPTIONS_NONE:
-                mOptions = OPTIONS_NONE >> 8;
-                break;
-            case OPTIONS_NEGATIVE_PARENTHESES:
-                mOptions = OPTIONS_NEGATIVE_PARENTHESES >> 8;
-                break;
-            case OPTIONS_ROUNDING:
-                mOptions = OPTIONS_ROUNDING >> 8;
-                break;
+        if ((mFlags & OPTIONS_ROUNDING) != 0) {
+            mOptions |= OPTIONS_ROUNDING >> 8;
+        }
+        if ((mFlags & OPTIONS_NEGATIVE_PARENTHESES) != 0) {
+            mOptions |= OPTIONS_NEGATIVE_PARENTHESES >> 8;
         }
         mLegacy = (mFlags & LEGACY_MODE) != 0;
     }

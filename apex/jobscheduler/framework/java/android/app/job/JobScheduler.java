@@ -38,6 +38,7 @@ import android.os.PersistableBundle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -517,6 +518,41 @@ public abstract class JobScheduler {
     @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASONS_HISTORY_API)
     @NonNull
     public List<PendingJobReasonsInfo> getPendingJobReasonsHistory(int jobId) {
+        throw new UnsupportedOperationException("Not implemented by " + getClass());
+    }
+
+    /**
+     * For the given {@code jobId}, returns an aggregated view of why the job has been pending
+     * execution over its lifetime. The returned map is composed of
+     * {@link PendingJobReason PendingJobReasons} mapped to a duration representing the total time
+     * the job has been pending for that reason.
+     * <p>
+     * Note that these durations can overlap, as a job may be pending for multiple reasons
+     * simultaneously.
+     * <p>
+     * These pending job reasons represent either explicitly set constraints on the job or implicit
+     * constraints imposed by the system due to various reasons.
+     * The results can be used to debug which constraints contribute the most to why a given job
+     * has been pending execution.
+     * <p>
+     * If the returned map is empty, it could indicate that the job was executed immediately and
+     * never had to wait for any constraints to be met or that there was an issue retrieving the
+     * stats from the system.
+     * <p>
+     * Note: The pending job reason stats are not persisted across device reboots. The stats are
+     * also cleared when the job successfully completes or is canceled. Apps should query this
+     * information when they observe a scheduled job is not executing as expected to understand
+     * the reasons for the delay.
+     * <p>
+     * @param jobId The ID of the job to query.
+     * @return A map of pending reasons to the total duration the job was pending for that reason.
+     * @throws IllegalArgumentException if the {@code jobId} does not correspond to a pending job.
+     * @see #getPendingJobReasons(int)
+     * @see #getPendingJobReasonsHistory(int)
+     */
+    @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASON_STATS_API)
+    @NonNull
+    public Map<Integer, Duration> getPendingJobReasonStats(int jobId) {
         throw new UnsupportedOperationException("Not implemented by " + getClass());
     }
 

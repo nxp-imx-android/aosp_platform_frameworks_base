@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
 import android.app.WallpaperColors;
+import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
@@ -62,9 +63,15 @@ public class ThemeManagerInternalTests {
     @Rule
     public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
 
-    private final IThemeSettingsCallback mCallback = new IThemeSettingsCallback.Stub() {
+    private final IThemeSettingsCallback mSettingsCallback = new IThemeSettingsCallback.Stub() {
         @Override
         public void onSettingsChanged(ThemeSettings oldSettings, ThemeSettings newSettings) {
+        }
+    };
+
+    private final IThemeChangedCallback mThemeChangedCallback = new IThemeChangedCallback.Stub() {
+        @Override
+        public void onThemeChanged(ThemeInfo newTheme) {
         }
     };
 
@@ -133,7 +140,7 @@ public class ThemeManagerInternalTests {
 
     @Test
     public void testRegisterThemeSettingsCallback_success() {
-        boolean result = mUnderTest.registerThemeSettingsCallback(mUserId, mCallback);
+        boolean result = mUnderTest.registerThemeSettingsCallback(mUserId, mSettingsCallback);
         assertThat(result).isTrue();
     }
 
@@ -145,15 +152,15 @@ public class ThemeManagerInternalTests {
 
     @Test
     public void testUnregisterThemeSettingsCallback_success() {
-        boolean didRegister = mUnderTest.registerThemeSettingsCallback(mUserId, mCallback);
+        boolean didRegister = mUnderTest.registerThemeSettingsCallback(mUserId, mSettingsCallback);
         assertThat(didRegister).isTrue();
-        boolean result = mUnderTest.unregisterThemeSettingsCallback(mUserId, mCallback);
+        boolean result = mUnderTest.unregisterThemeSettingsCallback(mUserId, mSettingsCallback);
         assertThat(result).isTrue();
     }
 
     @Test
     public void testUnregisterThemeSettingsCallback_callbackNotRegistered_returnsFalse() {
-        boolean result = mUnderTest.unregisterThemeSettingsCallback(mUserId, mCallback);
+        boolean result = mUnderTest.unregisterThemeSettingsCallback(mUserId, mSettingsCallback);
         assertThat(result).isFalse();
     }
 
@@ -164,7 +171,7 @@ public class ThemeManagerInternalTests {
     }
 
     @Test
-    public void testCallback_receivesNewValue() {
+    public void testSettingsCallback_receivesNewValue() {
         final Color testColor = Color.valueOf(Color.parseColor("#FF0000"));
         final ThemeSettings newPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
@@ -192,7 +199,7 @@ public class ThemeManagerInternalTests {
     }
 
     @Test
-    public void testCallback_receivesOldAndNewValue() {
+    public void testSettingsCallback_receivesOldAndNewValue() {
         final Color oldColor = Color.valueOf(Color.BLUE);
         final ThemeSettings oldPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
@@ -237,6 +244,33 @@ public class ThemeManagerInternalTests {
                 oldPayload.timeStamp().toEpochMilli());
         assertThat(returnedOldPreset.themeStyle()).isEqualTo(oldPayload.themeStyle());
         assertThat(returnedOldPreset.systemPalette()).isEqualTo(oldPayload.systemPalette());
+    }
+
+    @Test
+    public void testUnregisterThemeChangedCallback_success() {
+        mUnderTest.registerThemeChangedCallback(mUserId, mThemeChangedCallback);
+        mUnderTest.unregisterThemeChangedCallback(mUserId, mThemeChangedCallback);
+    }
+
+    @Test
+    public void testThemeChangedCallback_receivesNewValue() {
+        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
+        final ThemeInfo[] returnedValue = {null};
+        mUnderTest.registerThemeChangedCallback(mUserId, new IThemeChangedCallback.Stub() {
+            @Override
+            public void onThemeChanged(ThemeInfo newTheme) {
+                returnedValue[0] = newTheme;
+            }
+        });
+
+        mUnderTest.notifyThemeChanged(mUserId);
+
+        assertThat(returnedValue[0]).isNotNull();
+        assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
+        assertThat(returnedValue[0].style).isEqualTo(TEST_STYLE);
+        assertThat(returnedValue[0].contrast).isEqualTo(TEST_CONTRAST);
+        assertThat(returnedValue[0].specVersion).isEqualTo(TEST_SPEC_VERSION);
+        assertThat(returnedValue[0].platform).isEqualTo(TEST_PLATFORM);
     }
 
     @Test

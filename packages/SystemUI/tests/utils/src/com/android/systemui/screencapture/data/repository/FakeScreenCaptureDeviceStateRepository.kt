@@ -18,12 +18,13 @@ package com.android.systemui.screencapture.data.repository
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class FakeScreenCaptureDeviceStateRepository : ScreenCaptureDeviceStateRepository {
-    private val _isLargeScreen: MutableStateFlow<Boolean?> = MutableStateFlow(false)
-    override val isLargeScreen: StateFlow<Boolean?> = _isLargeScreen
+    private val _isLargeScreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isLargeScreen: StateFlow<Boolean> = _isLargeScreen.asStateFlow()
 
-    fun setLargeScreen(value: Boolean?) {
+    fun setLargeScreen(value: Boolean) {
         _isLargeScreen.value = value
     }
 }

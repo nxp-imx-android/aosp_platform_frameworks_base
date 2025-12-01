@@ -22,6 +22,10 @@ import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assert.fail;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.inputmethod.Flags;
@@ -48,52 +52,77 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
      * (in contrast with the normal WindowToken).
      */
     @Test
-    public void testSetVisible_independentOfChildrenVisibility() {
+    public void testVisibilityIndependentOfChildren() {
         final ImeWindowToken token = createImeWindowToken(mDisplayContent);
-        assertWithMessage("Token should be initially hidden with no child")
+        assertWithMessage("Token should be initially not visible")
                 .that(token.isVisible())
                 .isFalse();
 
         final WindowState win = newWindowBuilder("win", TYPE_APPLICATION).setWindowToken(token)
                 .build();
-        token.addWindow(win);
-        assertWithMessage("Token should still be not visible with initially hidden child")
-                .that(token.isVisible())
-                .isFalse();
-        assertWithMessage("Window should not be initially visibleRequested with hidden token")
-                .that(win.isVisibleRequested())
-                .isFalse();
+        verifyTokenAndChildVisibility(token, win, false /* clientVisible */, false /* visible */,
+                "Initially");
 
-        token.setVisible(true);
-        assertWithMessage("Token should be visible after setVisible")
-                .that(token.isVisible())
-                .isTrue();
-        assertWithMessage("Window should be visibleRequested with visible token, before hiding")
-                .that(win.isVisibleRequested())
-                .isTrue();
+        token.setClientVisible(true);
+        verifyTokenAndChildVisibility(token, win, true /* clientVisible */, false /* visible */,
+                "After token became clientVisible");
+
+        makeWindowVisibleAndDrawn(win);
+        verifyTokenAndChildVisibility(token, win, true /* clientVisible */, true /* visible */,
+                "After window became visible and drawn");
+
+        token.setClientVisible(false);
+        verifyTokenAndChildVisibility(token, win, false /* clientVisible */, false /* visible */,
+                "After token became not client visible");
 
         win.hide(false, false);
-        assertWithMessage("Token should still be visible with hidden child")
-                .that(token.isVisible())
-                .isTrue();
-        assertWithMessage("Window should not be visibleRequested with visible token, after hiding")
-                .that(win.isVisibleRequested())
-                .isFalse();
-
-        token.setVisible(false);
-        assertWithMessage("Token should be not be visible after setVisible")
-                .that(token.isVisible())
-                .isFalse();
-        assertWithMessage("Window should not be visible with hidden token")
-                .that(win.isVisibleRequested())
-                .isFalse();
+        verifyTokenAndChildVisibility(token, win, false /* clientVisible */, false /* visible */,
+                "After window was hidden");
 
         win.show(false, false);
-        assertWithMessage("Token should still be not visible with hidden child")
-                .that(token.isVisible())
+        verifyTokenAndChildVisibility(token, win, false /* clientVisible */, false /* visible */,
+                "After window was shown while token was not clientVisible");
+    }
+
+    /**
+     * Verifies that the {@link ImeContainer} is only visible if the ImeWindowToken has a visible
+     * child window.
+     */
+    @Test
+    public void testImeContainerVisibility() {
+        final ImeContainer imeContainer = mDisplayContent.getImeContainer();
+        assertWithMessage("IME Container should be initially not visible")
+                .that(imeContainer.isVisible())
                 .isFalse();
-        assertWithMessage("Window should not be visibleRequested with hidden token")
-                .that(win.isVisibleRequested())
+
+        final ImeWindowToken token = createImeWindowToken(mDisplayContent);
+        imeContainer.setImeWindowToken(token);
+        verifyTokenAndChildVisibility(token, null /* child */, true /* clientVisible */,
+                false /* visible */, "Initially");
+        assertWithMessage("IME Container should still be not visible")
+                .that(imeContainer.isVisible())
+                .isFalse();
+
+        final WindowState imeWin = newWindowBuilder("imeWin", TYPE_INPUT_METHOD)
+                .setWindowToken(token).build();
+        verifyTokenAndChildVisibility(token, imeWin, true /* clientVisible */, false /* visible */,
+                "After imeWin was added");
+        assertWithMessage("IME Container should still not be visible with no visible window")
+                .that(imeContainer.isVisible())
+                .isFalse();
+
+        makeWindowVisibleAndDrawn(imeWin);
+        verifyTokenAndChildVisibility(token, imeWin, true /* clientVisible */, true /* visible */,
+                "After imeWin became visible and drawn");
+        assertWithMessage("IME Container should become visible")
+                .that(imeContainer.isVisible())
+                .isTrue();
+
+        token.setClientVisible(false);
+        verifyTokenAndChildVisibility(token, imeWin, false /* clientVisible */,
+                false /* visible */, "After token became not clientVisible");
+        assertWithMessage("IME Container become not visible")
+                .that(imeContainer.isVisible())
                 .isFalse();
     }
 
@@ -137,20 +166,17 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
         assertWithMessage("Token1 should be the current display token")
                 .that(imeContainer.getImeWindowToken())
                 .isEqualTo(token1);
-        assertWithMessage("Token1 should be visible")
-                .that(token1.isVisible())
-                .isTrue();
+        verifyTokenAndChildVisibility(token1, null /* child */, true /* clientVisible */,
+                false /* visible */, "Initially");
 
         imeContainer.setImeWindowToken(token2);
         assertWithMessage("Token2 should be the current display token")
                 .that(imeContainer.getImeWindowToken())
                 .isEqualTo(token2);
-        assertWithMessage("Token2 should be visible")
-                .that(token2.isVisible())
-                .isTrue();
-        assertWithMessage("Token1 should no longer be visible")
-                .that(token1.isVisible())
-                .isFalse();
+        verifyTokenAndChildVisibility(token2, null /* child */, true /* clientVisible */,
+                false /* visible */, "After token2 became the current token");
+        verifyTokenAndChildVisibility(token1, null /* child */, false /* clientVisible */,
+                false /* visible */, "After token1 was not the current token");
     }
 
     /** Verifies that setting a null ImeWindowToken will also set the IME window to null. */
@@ -163,7 +189,6 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
         final ImeWindowToken token = createImeWindowToken(mDisplayContent);
         final WindowState imeWin = newWindowBuilder("imeWin", TYPE_INPUT_METHOD)
                 .setWindowToken(token).build();
-        token.addWindow(imeWin);
         final ImeContainer imeContainer = mDisplayContent.getImeContainer();
         imeContainer.setImeWindowToken(token);
         assertWithMessage("IME window should be set on the display")
@@ -205,7 +230,6 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
         final ImeWindowToken token1 = createImeWindowToken(mDisplayContent);
         final WindowState imeWin1 = newWindowBuilder("imeWin1", TYPE_INPUT_METHOD)
                 .setWindowToken(token1).build();
-        token1.addWindow(imeWin1);
         final ImeContainer imeContainer = mDisplayContent.getImeContainer();
         imeContainer.setImeWindowToken(token1);
         assertWithMessage("Token 1 should be the current one")
@@ -216,9 +240,7 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
                 .isEqualTo(imeWin1);
 
         final ImeWindowToken token2 = createImeWindowToken(mDisplayContent);
-        final WindowState imeWin2 = newWindowBuilder("imeWin2", TYPE_INPUT_METHOD)
-                .setWindowToken(token2).build();
-        token2.addWindow(imeWin2);
+        newWindowBuilder("imeWin2", TYPE_INPUT_METHOD).setWindowToken(token2).build();
         imeContainer.setImeWindowToken(token2);
         assertWithMessage("Token 2 should be the current one")
                 .that(imeContainer.getImeWindowToken())
@@ -239,16 +261,12 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
                 .isNull();
 
         final ImeWindowToken token = createImeWindowToken(mDisplayContent);
-        final WindowState appWin = newWindowBuilder("appWin", TYPE_APPLICATION)
-                .setWindowToken(token).build();
-        token.addWindow(appWin);
+        newWindowBuilder("appWin", TYPE_APPLICATION).setWindowToken(token).build();
         final WindowState inkWin = newWindowBuilder("inkWin", TYPE_INPUT_METHOD)
                 .setWindowToken(token).build();
         inkWin.mAttrs.flags |= FLAG_NOT_TOUCHABLE;
-        token.addWindow(inkWin);
         final WindowState imeWin = newWindowBuilder("imeWin", TYPE_INPUT_METHOD)
                 .setWindowToken(token).build();
-        token.addWindow(imeWin);
         mDisplayContent.getImeContainer().setImeWindowToken(token);
         assertWithMessage("IME window 1 should be set on the display")
                 .that(mDisplayContent.getImeWindow())
@@ -266,15 +284,68 @@ public final class ImeWindowTokenTests extends WindowTestsBase {
                 .isNull();
 
         final ImeWindowToken token = createImeWindowToken(mDisplayContent);
-        final WindowState imeWin1 = newWindowBuilder("imeWin1", TYPE_INPUT_METHOD)
-                .setWindowToken(token).build();
-        token.addWindow(imeWin1);
+        newWindowBuilder("imeWin1", TYPE_INPUT_METHOD).setWindowToken(token).build();
         final WindowState imeWin2 = newWindowBuilder("imeWin2", TYPE_INPUT_METHOD)
                 .setWindowToken(token).build();
-        token.addWindow(imeWin2);
         mDisplayContent.getImeContainer().setImeWindowToken(token);
         assertWithMessage("IME window 2 should be set on the display")
                 .that(mDisplayContent.getImeWindow())
                 .isEqualTo(imeWin2);
+    }
+
+    /**
+     * Verifies the expected visibility of the given token and child window.
+     *
+     * @param token         the token to verify the visibility of.
+     * @param child         the child to verify the visibility or, or {@code null} if there is no
+     *                      child.
+     * @param clientVisible the expected client visibility.
+     * @param visible       the expected visibility.
+     * @param message       the assertion message as a prefix to the failed state.
+     */
+    private static void verifyTokenAndChildVisibility(@NonNull ImeWindowToken token,
+            @Nullable WindowState child, boolean clientVisible, boolean visible,
+            @NonNull String message) {
+        if (token.isClientVisible() != clientVisible || token.isVisible() != visible
+                || (child != null && child.isVisibleRequested() != clientVisible)
+                || (child != null && child.isVisible() != visible)) {
+            final var sb = new StringBuilder(message);
+            sb.append("\nExpected: {").append(getTokenVisibilityString(clientVisible, visible));
+            if (child != null) {
+                sb.append(" && ").append(getWindowVisibilityString(clientVisible, visible));
+            }
+            sb.append("}\nActual: {")
+                    .append(getTokenVisibilityString(token.isClientVisible(), token.isVisible()));
+            if (child != null) {
+                sb.append(" && ").append(getWindowVisibilityString(child.isVisibleRequested(),
+                        child.isVisible()));
+            }
+            sb.append("}");
+            fail(sb.toString());
+        }
+    }
+
+    /**
+     * Gets a string describing the visibility of a {@link WindowToken}.
+     *
+     * @param clientVisible the client visibility.
+     * @param visible       the visibility.
+     */
+    @NonNull
+    private static String getTokenVisibilityString(boolean clientVisible, boolean visible) {
+        return "token=" + (clientVisible ? "" : "!") + "clientVisible,"
+                + (visible ? "" : "!") + "visible";
+    }
+
+    /**
+     * Gets a string describing the visibility of a {@link WindowState}.
+     *
+     * @param visibleRequested the visibleRequested state.
+     * @param visible          the visibility.
+     */
+    @NonNull
+    private static String getWindowVisibilityString(boolean visibleRequested, boolean visible) {
+        return "win=" + (visibleRequested ? "" : "!") + "visibleRequested,"
+                + (visible ? "" : "!") + "visible";
     }
 }

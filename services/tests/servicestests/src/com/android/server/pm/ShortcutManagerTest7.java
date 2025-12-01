@@ -25,6 +25,11 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.readAll;
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.resultContains;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import android.content.ComponentName;
 import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutManager;
@@ -36,6 +41,7 @@ import android.os.ResultReceiver;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.frameworks.servicestests.R;
 import com.android.server.pm.ShortcutService.ConfigConstants;
@@ -45,6 +51,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.runner.RunWith;
+import org.junit.Test;
+
 /**
  * Unit test for "cmd shortcut" and "dumpsys shortcut".
  *
@@ -52,6 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Presubmit
 @SmallTest
+@RunWith(AndroidJUnit4.class)
 public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
 
     private static final int CACHE_OWNER = LauncherApps.FLAG_CACHE_NOTIFICATION_SHORTCUTS;
@@ -86,6 +96,7 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         }
     }
 
+    @Test
     public void testNonShell() throws Exception {
         mService.mMaxUpdatesPerInterval = 99;
 
@@ -118,6 +129,7 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         assertEquals(3, mService.mMaxUpdatesPerInterval);
     }
 
+    @Test
     public void testOverrideConfig() throws Exception {
         mService.mMaxUpdatesPerInterval = 99;
 
@@ -335,6 +347,7 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         });
     }
 
+    @Test
     public void testGetShortcuts() throws Exception {
 
         mRunningUsers.put(USER_11, true);

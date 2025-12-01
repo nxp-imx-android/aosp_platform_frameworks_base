@@ -191,6 +191,7 @@ public final class ColorDisplayService extends SystemService {
 
     private ContentObserver mContentObserver;
     private boolean mColorInversionObserverRegistered;
+    private boolean mColorDaltonizerObserverRegistered;
 
     private DisplayWhiteBalanceListener mDisplayWhiteBalanceListener;
     private ReduceBrightColorsListener mReduceBrightColorsListener;
@@ -284,13 +285,20 @@ public final class ColorDisplayService extends SystemService {
         mCurrentUser = userHandle;
 
         if (mCurrentUser != UserHandle.USER_NULL) {
-            // Reset mColorInversionObserverRegistered to false when user switch happens.
+            // Reset mColorInversionObserverRegistered and mColorDaltonizerObserverRegistered to
+            // false when user switch happens.
             mColorInversionObserverRegistered = false;
+            mColorDaltonizerObserverRegistered = false;
             if (!isUserSetupCompleted(cr, mCurrentUser)) {
                 if (isColorInversionInSetupWizardEnabled()) {
                     createContentObserver();
                     setUpColorInversionAccessibility();
                     onAccessibilityInversionChanged();
+                }
+                if (isColorDaltonizerInSetupWizardEnabled()) {
+                    createContentObserver();
+                    setUpDaltonizerAccessibility();
+                    onAccessibilityDaltonizerChanged();
                 }
                 mUserSetupObserver = new ContentObserver(mHandler) {
                     @Override
@@ -299,10 +307,13 @@ public final class ColorDisplayService extends SystemService {
                             cr.unregisterContentObserver(this);
                             mUserSetupObserver = null;
 
-                            // If the user setup is completed, set up the color inversion
-                            // accessibility.
+                            // If the user setup is completed, set up the color inversion and
+                            // daltonizer accessibility.
                             if (isColorInversionInSetupWizardEnabled()) {
                                 convertRestoredColorInversionSettings();
+                            }
+                            if (isColorDaltonizerInSetupWizardEnabled()) {
+                                convertRestoredColorDaltonizerSettings();
                             }
                             if (mBootCompleted) {
                                 setUp();
@@ -324,6 +335,12 @@ public final class ColorDisplayService extends SystemService {
                && Flags.enableColorInversionInSuw();
     }
 
+    private boolean isColorDaltonizerInSetupWizardEnabled() {
+        return getContext().getResources()
+               .getBoolean(R.bool.config_enableColorDaltonizerInSetupWizard)
+               && Flags.enableColorDaltonizerInSuw();
+    }
+
     private void convertRestoredColorInversionSettings() {
         Slog.d(TAG, "convertRestoredColorInversionSettings");
         final ContentResolver cr = getContext().getContentResolver();
@@ -339,6 +356,37 @@ public final class ColorDisplayService extends SystemService {
         Slog.d(TAG, "convertRestoredSettings: restoredColorInversion is "
                 + (newInversionValue == SETTINGS_ENABLED_VALUE ? "enabled" : "disabled"));
         Secure.putIntForUser(cr, Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED, newInversionValue,
+                mCurrentUser);
+    }
+
+    /**
+     * Restored settings have a different value to avoid color correction being applied during
+     * setup. This method maps the restored value to the correct value.
+     */
+    private void convertRestoredColorDaltonizerSettings() {
+        Slog.d(TAG, "convertRestoredColorDaltonizerSettings");
+        final ContentResolver cr = getContext().getContentResolver();
+        final int restoredColorDaltonizerEnabled =
+                Secure.getIntForUser(
+                        cr,
+                        Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+                        /* default= */ SETTINGS_DISABLED_VALUE,
+                        mCurrentUser);
+        final int newDaltonizerEnabled =
+                (restoredColorDaltonizerEnabled == RESTORED_SETTINGS_ENABLED
+                                || restoredColorDaltonizerEnabled == SETTINGS_ENABLED_VALUE)
+                        ? SETTINGS_ENABLED_VALUE
+                        : SETTINGS_DISABLED_VALUE;
+        Slog.d(
+                TAG,
+                "convertRestoredSettings: restoredColorDaltonizerEnabled is "
+                        + (newDaltonizerEnabled == SETTINGS_ENABLED_VALUE
+                                ? "enabled"
+                                : "disabled"));
+        Secure.putIntForUser(
+                cr,
+                Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+                newDaltonizerEnabled,
                 mCurrentUser);
     }
 
@@ -466,11 +514,6 @@ public final class ColorDisplayService extends SystemService {
                 false /* notifyForDescendants */, mContentObserver, mCurrentUser);
         cr.registerContentObserver(System.getUriFor(System.DISPLAY_COLOR_MODE),
                 false /* notifyForDescendants */, mContentObserver, mCurrentUser);
-        cr.registerContentObserver(
-                Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED),
-                false /* notifyForDescendants */, mContentObserver, mCurrentUser);
-        cr.registerContentObserver(Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_DALTONIZER),
-                false /* notifyForDescendants */, mContentObserver, mCurrentUser);
         cr.registerContentObserver(Secure.getUriFor(Secure.DISPLAY_WHITE_BALANCE_ENABLED),
                 false /* notifyForDescendants */, mContentObserver, mCurrentUser);
         cr.registerContentObserver(Secure.getUriFor(Secure.REDUCE_BRIGHT_COLORS_ACTIVATED),
@@ -485,6 +528,7 @@ public final class ColorDisplayService extends SystemService {
 
         // Apply the accessibility settings first, since they override most other settings.
         setUpColorInversionAccessibility();
+        setUpDaltonizerAccessibility();
         onAccessibilityInversionChanged();
         onAccessibilityDaltonizerChanged();
 
@@ -543,6 +587,25 @@ public final class ColorDisplayService extends SystemService {
                 mContentObserver,
                 mCurrentUser);
         mColorInversionObserverRegistered = true;
+    }
+
+    private void setUpDaltonizerAccessibility() {
+        if (mColorDaltonizerObserverRegistered) {
+            return;
+        }
+        final ContentResolver cr = getContext().getContentResolver();
+        cr.registerContentObserver(
+                Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED),
+                false /* notifyForDescendants */,
+                mContentObserver,
+                mCurrentUser);
+        cr.registerContentObserver(
+                Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_DALTONIZER),
+                false /* notifyForDescendants */,
+                mContentObserver,
+                mCurrentUser);
+        mColorDaltonizerObserverRegistered = true;
+
     }
 
     private void tearDown() {

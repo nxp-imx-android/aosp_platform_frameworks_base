@@ -159,7 +159,7 @@ constructor(
             }
         val hunPlaceholderViewModel =
             rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
-                notificationsPlaceholderViewModelFactory.create()
+                notificationsPlaceholderViewModelFactory.create(Overlays.QuickSettingsShade)
             }
 
         val showBrightnessMirror =

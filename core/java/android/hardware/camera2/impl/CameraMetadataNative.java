@@ -2274,8 +2274,14 @@ public class CameraMetadataNative implements Parcelable {
      */
     public void setMultiResolutionStreamConfigurationMap(
             @NonNull Map<String, StreamConfiguration[]> multiResolutionMap) {
+        int[] concurrentReaderFormats = null;
+        if (Flags.multiResolutionConcurrentReaders()) {
+            concurrentReaderFormats = get(
+                    CameraCharacteristics.SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS);
+        }
         mMultiResolutionStreamConfigurationMap =
-                new MultiResolutionStreamConfigurationMap(multiResolutionMap);
+                new MultiResolutionStreamConfigurationMap(multiResolutionMap,
+                        concurrentReaderFormats);
     }
 
     /**

@@ -46,12 +46,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.ShortcutUtils
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.res.R
 
 @Composable

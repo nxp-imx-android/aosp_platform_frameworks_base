@@ -41,6 +41,6 @@ val Kosmos.sceneInteractor: SceneInteractor by
             shadeModeInteractor = shadeModeInteractor,
             authenticationInteractor = { authenticationInteractor },
             lockscreenSceneTransitionInteractor = { lockscreenSceneTransitionInteractor },
-            restrictedModeInteractor = restrictedModeInteractor,
+            restrictedModeInteractor = { restrictedModeInteractor },
         )
     }

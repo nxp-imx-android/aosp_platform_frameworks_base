@@ -183,6 +183,7 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_LOCALE = "android.permission.MANAGE_DEVICE_POLICY_LOCALE";
     field public static final String MANAGE_DEVICE_POLICY_LOCATION = "android.permission.MANAGE_DEVICE_POLICY_LOCATION";
     field public static final String MANAGE_DEVICE_POLICY_LOCK = "android.permission.MANAGE_DEVICE_POLICY_LOCK";
+    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO = "android.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS = "android.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_TASK = "android.permission.MANAGE_DEVICE_POLICY_LOCK_TASK";
     field public static final String MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS = "android.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS";
@@ -1067,6 +1068,7 @@ package android {
     field public static final int isIndicator = 16843079; // 0x1010147
     field public static final int isLightTheme = 16844176; // 0x1010590
     field @Deprecated public static final int isModifier = 16843334; // 0x1010246
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int isPrivateComputeCoreProcess;
     field @Deprecated public static final int isRepeatable = 16843336; // 0x1010248
     field public static final int isScrollContainer = 16843342; // 0x101024e
     field @Deprecated public static final int isSplitRequired = 16844177; // 0x1010591
@@ -1873,7 +1875,7 @@ package android {
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistData;
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistScreenshots;
     field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistStructureScreenContent;
-    field @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic") public static final int usesCleartextTraffic = 16844012; // 0x10104ec
+    field @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic2") public static final int usesCleartextTraffic = 16844012; // 0x10104ec
     field public static final int usesPermissionFlags = 16844356; // 0x1010644
     field public static final int value = 16842788; // 0x1010024
     field public static final int valueFrom = 16843486; // 0x10102de
@@ -6841,6 +6843,7 @@ package android.app {
     ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactIcon, @NonNull android.app.Notification.CompactText);
     ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactText);
     method public int describeContents();
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.BasicCompactContent setSemanticStyle(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BasicCompactContent> CREATOR;
   }
@@ -7056,7 +7059,6 @@ package android.app {
     method public int describeContents();
     method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText fromMetricValue(@NonNull android.app.Notification.Metric.MetricValue);
     method @NonNull public static android.app.Notification.CompactText none();
-    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.CompactText setSemanticStyle(int);
     method @NonNull public static android.app.Notification.CompactText useShortCriticalText();
     method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText useStyleMetric(int);
     method @NonNull public static android.app.Notification.CompactText useWhenAsChronometer(boolean);
@@ -8425,7 +8427,7 @@ package android.app.admin {
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method public void acknowledgeDeviceCompliant();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public void addCrossProfileIntentFilter(@Nullable android.content.ComponentName, android.content.IntentFilter, int);
-    method @Deprecated @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
+    method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
     method public int addOverrideApn(@NonNull android.content.ComponentName, @NonNull android.telephony.data.ApnSetting);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK, conditional=true) public void addPersistentPreferredActivity(@Nullable android.content.ComponentName, android.content.IntentFilter, @NonNull android.content.ComponentName);
     method public void addUserRestriction(@Nullable android.content.ComponentName, String);
@@ -9202,27 +9204,6 @@ package android.app.appfunctions {
     method public void onExecuteAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
   }
 
-  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public final class AppFunctionAttribution implements android.os.Parcelable {
-    method public int describeContents();
-    method @Nullable public String getCustomInteractionType();
-    method public int getInteractionType();
-    method @Nullable public android.net.Uri getInteractionUri();
-    method @Nullable public String getThreadId();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionAttribution> CREATOR;
-    field public static final int INTERACTION_TYPE_OTHER = 0; // 0x0
-    field public static final int INTERACTION_TYPE_USER_QUERY = 1; // 0x1
-    field public static final int INTERACTION_TYPE_USER_SCHEDULED = 2; // 0x2
-  }
-
-  public static final class AppFunctionAttribution.Builder {
-    ctor public AppFunctionAttribution.Builder(int);
-    method @NonNull public android.app.appfunctions.AppFunctionAttribution build();
-    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setCustomInteractionType(@NonNull String);
-    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setInteractionUri(@Nullable android.net.Uri);
-    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setThreadId(@Nullable String);
-  }
-
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionException extends java.lang.Exception implements android.os.Parcelable {
     ctor public AppFunctionException(int, @Nullable String);
     ctor public AppFunctionException(int, @Nullable String, @NonNull android.os.Bundle);
@@ -9355,7 +9336,7 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class ExecuteAppFunctionRequest implements android.os.Parcelable {
     method public int describeContents();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @Nullable public android.app.appfunctions.AppFunctionAttribution getAttribution();
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") @Nullable public android.app.AppInteractionAttribution getAttribution();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getFunctionIdentifier();
     method @NonNull public android.app.appsearch.GenericDocument getParameters();
@@ -9367,7 +9348,7 @@ package android.app.appfunctions {
   public static final class ExecuteAppFunctionRequest.Builder {
     ctor public ExecuteAppFunctionRequest.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest build();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setAttribution(@NonNull android.app.appfunctions.AppFunctionAttribution);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setAttribution(@NonNull android.app.AppInteractionAttribution);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setExtras(@NonNull android.os.Bundle);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setParameters(@NonNull android.app.appsearch.GenericDocument);
   }
@@ -9844,6 +9825,7 @@ package android.app.job {
     method @Nullable public String getNamespace();
     method @Nullable public abstract android.app.job.JobInfo getPendingJob(int);
     method public int getPendingJobReason(int);
+    method @FlaggedApi("android.app.job.get_pending_job_reason_stats_api") @NonNull public java.util.Map<java.lang.Integer,java.time.Duration> getPendingJobReasonStats(int);
     method @FlaggedApi("android.app.job.get_pending_job_reasons_api") @NonNull public int[] getPendingJobReasons(int);
     method @FlaggedApi("android.app.job.get_pending_job_reasons_history_api") @NonNull public java.util.List<android.app.job.PendingJobReasonsInfo> getPendingJobReasonsHistory(int);
     method @NonNull public java.util.Map<java.lang.String,java.util.List<android.app.job.JobInfo>> getPendingJobsInAllNamespaces();
@@ -9995,7 +9977,7 @@ package android.app.privatecompute {
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class PccService extends android.app.Service {
-    ctor public PccService();
+    ctor protected PccService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onReceiveData(@NonNull android.os.Bundle, @NonNull String);
   }
@@ -10309,6 +10291,7 @@ package android.app.usage {
 package android.app.voiceinteraction {
 
   @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public boolean canReadAssistStructure();
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
   }
 
@@ -12192,6 +12175,7 @@ package android.content {
     field public static final String ACTION_SYNC = "android.intent.action.SYNC";
     field public static final String ACTION_SYSTEM_TUTORIAL = "android.intent.action.SYSTEM_TUTORIAL";
     field public static final String ACTION_TIMEZONE_CHANGED = "android.intent.action.TIMEZONE_CHANGED";
+    field @FlaggedApi("android.timezone.flags.enable_time_zone_offset_change_broadcast") public static final String ACTION_TIMEZONE_OFFSET_CHANGED = "android.intent.action.TIMEZONE_OFFSET_CHANGED";
     field public static final String ACTION_TIME_CHANGED = "android.intent.action.TIME_SET";
     field public static final String ACTION_TIME_TICK = "android.intent.action.TIME_TICK";
     field public static final String ACTION_TRANSLATE = "android.intent.action.TRANSLATE";
@@ -12320,7 +12304,9 @@ package android.content {
     field public static final String EXTRA_LOCUS_ID = "android.intent.extra.LOCUS_ID";
     field public static final String EXTRA_METADATA_TEXT = "android.intent.extra.METADATA_TEXT";
     field public static final String EXTRA_MIME_TYPES = "android.intent.extra.MIME_TYPES";
+    field @FlaggedApi("android.timezone.flags.enable_time_zone_offset_change_broadcast") public static final String EXTRA_NEW_TIMEZONE_OFFSET = "android.intent.extra.NEW_TIMEZONE_OFFSET";
     field public static final String EXTRA_NOT_UNKNOWN_SOURCE = "android.intent.extra.NOT_UNKNOWN_SOURCE";
+    field @FlaggedApi("android.timezone.flags.enable_time_zone_offset_change_broadcast") public static final String EXTRA_OLD_TIMEZONE_OFFSET = "android.intent.extra.OLD_TIMEZONE_OFFSET";
     field public static final String EXTRA_ORIGINATING_URI = "android.intent.extra.ORIGINATING_URI";
     field public static final String EXTRA_PACKAGES = "android.intent.extra.PACKAGES";
     field public static final String EXTRA_PACKAGE_NAME = "android.intent.extra.PACKAGE_NAME";
@@ -14076,6 +14062,7 @@ package android.content.pm {
     field public static final String FEATURE_CONTROLS = "android.software.controls";
     field public static final String FEATURE_CREDENTIALS = "android.software.credentials";
     field public static final String FEATURE_DEVICE_ADMIN = "android.software.device_admin";
+    field @FlaggedApi("android.security.keystore2.make_id_attestation_feature_public") public static final String FEATURE_DEVICE_ID_ATTESTATION = "android.software.device_id_attestation";
     field public static final String FEATURE_DEVICE_LOCK = "android.software.device_lock";
     field public static final String FEATURE_EMBEDDED = "android.hardware.type.embedded";
     field public static final String FEATURE_ETHERNET = "android.hardware.ethernet";
@@ -14374,6 +14361,7 @@ package android.content.pm {
     method public int getProtectionFlags();
     method @Nullable public CharSequence loadDescription(@NonNull android.content.pm.PackageManager);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PermissionInfo> CREATOR;
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE = 32; // 0x20
     field public static final int FLAG_COSTS_MONEY = 1; // 0x1
     field public static final int FLAG_HARD_RESTRICTED = 4; // 0x4
     field public static final int FLAG_IMMUTABLY_RESTRICTED = 16; // 0x10
@@ -20249,6 +20237,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> FLASH_TORCH_STRENGTH_MAX_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<int[]> HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<android.hardware.camera2.params.DeviceStateSensorOrientationMap> INFO_DEVICE_STATE_SENSOR_ORIENTATION_MAP;
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_DEVICE_TYPE;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SESSION_CONFIGURATION_QUERY_VERSION;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SUPPORTED_HARDWARE_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.String> INFO_VERSION;
@@ -20655,6 +20644,10 @@ package android.hardware.camera2 {
     field public static final int HOT_PIXEL_MODE_FAST = 1; // 0x1
     field public static final int HOT_PIXEL_MODE_HIGH_QUALITY = 2; // 0x2
     field public static final int HOT_PIXEL_MODE_OFF = 0; // 0x0
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_BUILT_IN = 0; // 0x0
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_EXTERNAL = 1; // 0x1
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_UNKNOWN = 3; // 0x3
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") public static final int INFO_DEVICE_TYPE_VIRTUAL = 2; // 0x2
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_3 = 3; // 0x3
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL = 4; // 0x4
     field public static final int INFO_SUPPORTED_HARDWARE_LEVEL_FULL = 1; // 0x1
@@ -20954,6 +20947,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> FLASH_STATE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> FLASH_STRENGTH_LEVEL;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> HOT_PIXEL_MODE;
+    field @FlaggedApi("com.android.internal.camera.flags.camera_device_type_api") @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> INFO_DEVICE_TYPE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<android.location.Location> JPEG_GPS_LOCATION;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> JPEG_ORIENTATION;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Byte> JPEG_QUALITY;
@@ -21033,12 +21027,18 @@ package android.hardware.camera2 {
   public class MultiResolutionImageReader implements java.lang.AutoCloseable {
     ctor public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int);
     ctor @FlaggedApi("com.android.internal.camera.flags.multiresolution_imagereader_usage_public") public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int, long);
+    ctor @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public MultiResolutionImageReader(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int, @IntRange(from=1) int, long, boolean);
     method public void close();
     method protected void finalize();
     method public void flush();
     method @NonNull public android.hardware.camera2.params.MultiResolutionStreamInfo getStreamInfoForImageReader(@NonNull android.media.ImageReader);
     method @NonNull public android.view.Surface getSurface();
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public void setOnActiveOutputSurfacesListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.MultiResolutionImageReader.OnActiveOutputSurfacesListener);
     method public void setOnImageAvailableListener(@Nullable android.media.ImageReader.OnImageAvailableListener, @Nullable java.util.concurrent.Executor);
+  }
+
+  @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public static interface MultiResolutionImageReader.OnActiveOutputSurfacesListener {
+    method public void onActiveOutputSurfaces(@NonNull java.util.List<android.view.Surface>, long, long);
   }
 
   public final class TotalCaptureResult extends android.hardware.camera2.CaptureResult {
@@ -21230,6 +21230,7 @@ package android.hardware.camera2.params {
     method @NonNull public java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo> getInputInfo(int);
     method @NonNull public int[] getOutputFormats();
     method @NonNull public java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo> getOutputInfo(int);
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public boolean isConcurrentReadersSupported(int);
   }
 
   public class MultiResolutionStreamInfo {
@@ -41895,6 +41896,9 @@ package android.security.keystore {
     field public static final String KEY_ALGORITHM_HMAC_SHA256 = "HmacSHA256";
     field public static final String KEY_ALGORITHM_HMAC_SHA384 = "HmacSHA384";
     field public static final String KEY_ALGORITHM_HMAC_SHA512 = "HmacSHA512";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA = "ML-DSA";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA_65 = "ML-DSA-65";
+    field @FlaggedApi("android.security.keystore2.mldsa_support") public static final String KEY_ALGORITHM_ML_DSA_87 = "ML-DSA-87";
     field public static final String KEY_ALGORITHM_RSA = "RSA";
     field public static final int ORIGIN_GENERATED = 1; // 0x1
     field public static final int ORIGIN_IMPORTED = 2; // 0x2
@@ -42629,7 +42633,7 @@ package android.service.chooser {
     method public void addStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.ChooserSession.StateListener);
     method public void endSession();
     method @Nullable public android.graphics.Rect getBounds();
-    method @FlaggedApi("android.service.chooser.interactive_chooser_default_bounds") @Nullable public android.graphics.Rect getDefaultLaunchBounds();
+    method @FlaggedApi("android.service.chooser.interactive_chooser_default_bounds") @Nullable public android.graphics.Rect getInitialRestingBounds();
     method public int getState();
     method @NonNull public android.service.chooser.ChooserSessionToken getToken();
     method public void removeStateListener(@NonNull android.service.chooser.ChooserSession.StateListener);
@@ -43887,6 +43891,7 @@ package android.service.personalcontext.insight {
     method public int describeContents();
     method @Nullable public CharSequence getContentDescription();
     method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
     method @Nullable public CharSequence getTitle();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightDisplayDetails> CREATOR;
@@ -43898,6 +43903,7 @@ package android.service.personalcontext.insight {
     ctor public InsightDisplayDetails.Builder(@NonNull CharSequence, @NonNull android.graphics.drawable.Icon);
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setSubtitle(@Nullable CharSequence);
   }
 
 }

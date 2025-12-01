@@ -28,6 +28,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
 import static android.content.pm.ActivityInfo.FLAG_RELINQUISH_TASK_IDENTITY;
+import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
@@ -46,6 +47,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.policy.WindowManagerPolicy.USER_ROTATION_FREE;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
+import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
@@ -337,7 +339,7 @@ public class TaskTests extends WindowTestsBase {
         final ActivityRecord activityA = new ActivityBuilder(mAtm).setTask(task).build();
         final ActivityRecord activityB = new ActivityBuilder(mAtm).setTask(task).build();
         final ActivityRecord activityC = new ActivityBuilder(mAtm).setTask(task).build();
-        activityA.setState(ActivityRecord.State.STOPPED, "test");
+        activityA.setState(STOPPED, "test");
         activityB.setState(ActivityRecord.State.PAUSED, "test");
         activityC.setState(ActivityRecord.State.RESUMED, "test");
         doReturn(true).when(activityB).shouldBeVisibleUnchecked();
@@ -2311,6 +2313,77 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(originalParent, task.getParent());
         // Verify the windowing mode was still restored.
         assertEquals(WINDOWING_MODE_FREEFORM, task.getWindowingMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdateHandled_handlePackageUpdateFalse_doesNothing() {
+        final Task task = getTestTask();
+        final ActivityRecord activity = task.getTopMostActivity();
+        spyOn(activity);
+        activity.app = mock(WindowProcessController.class);
+        task.mHandlePackageUpdate = false;
+
+        task.continuePackageUpdate();
+
+        verify(activity.app, never()).onTaskPackageUpdateHandled(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdate_noRootActivity_doesNothing() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(false).build();
+        task.mHandlePackageUpdate = true;
+
+        // Should not crash
+        task.continuePackageUpdate();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnPackageUpdateHandled_callsContinueTask() {
+        final Task task = getTestTask();
+        final ActivityRecord activity = task.getTopMostActivity();
+        task.mHandlePackageUpdate = true;
+        activity.app = mock(WindowProcessController.class);
+
+        task.continuePackageUpdate();
+
+        verify(activity.app).onTaskPackageUpdateHandled(task);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdate_resumedActivityNotPersistable_callsHandled() {
+        final Task task = getTestTask();
+        final ActivityRecord activity = task.getTopMostActivity();
+        activity.app = mock(WindowProcessController.class);
+        spyOn(activity);
+        task.mHandlePackageUpdate = true;
+        activity.info.persistableMode = 0; // Not persistable
+        doReturn(true).when(activity).isRootOfTask();
+        activity.setState(RESUMED, "test");
+
+        task.continuePackageUpdate();
+
+        verify(activity.app).onTaskPackageUpdateHandled(task);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdate_resumedRootPersistableActivity_callsHandled() {
+        final Task task = getTestTask();
+        final ActivityRecord activity = task.getTopMostActivity();
+        spyOn(activity);
+        task.mHandlePackageUpdate = true;
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity.setState(RESUMED, "test");
+        doReturn(true).when(activity).isRootOfTask();
+        activity.app = mock(WindowProcessController.class);
+
+        task.continuePackageUpdate();
+
+        verify(activity.app).onTaskPackageUpdateHandled(task);
     }
 
     private Task getTestTask() {

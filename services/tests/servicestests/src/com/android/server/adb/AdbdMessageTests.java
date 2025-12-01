@@ -71,6 +71,24 @@ public final class AdbdMessageTests {
     }
 
     @Test
+    public void testReadRegisterMessage() {
+        byte[] buffer = {'T', 'S', 0x05, 'H', 'E', 'L', 'L', 'O', 0x03, 'F' , 'O', 'O'};
+        AdbdMessage message = new AdbdMessage(buffer);
+
+        Optional<String> type = message.readType();
+        assertTrue(type.isPresent());
+        assertEquals("TS", type.get());
+
+        Optional<String> instance = message.readU8String();
+        assertTrue(instance.isPresent());
+        assertEquals("HELLO", instance.get());
+
+        Optional<String> service = message.readU8String();
+        assertTrue(service.isPresent());
+        assertEquals("FOO", service.get());
+    }
+
+    @Test
     public void testReadU8StringMissingStringContent() {
         byte[] buffer = {0x03, 'A', 'B'};
         AdbdMessage message = new AdbdMessage(buffer);

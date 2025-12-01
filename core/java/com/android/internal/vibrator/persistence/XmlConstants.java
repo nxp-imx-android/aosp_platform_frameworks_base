@@ -32,6 +32,7 @@ import java.util.Locale;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class XmlConstants {
 
     public static final String NAMESPACE = null;

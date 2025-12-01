@@ -40,6 +40,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -167,7 +168,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             }
         }
 
-        void onBackPressedOnTaskRoot(Task task) {
+        private void onBackPressedOnTaskRoot(Task task, boolean isFromMoveActivityTaskToBack) {
             ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Task back pressed on root taskId=%d",
                     task.mTaskId);
             if (!task.mTaskAppearedSent) {
@@ -179,7 +180,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 return;
             }
             try {
-                mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo());
+                mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo(),
+                        isFromMoveActivityTaskToBack);
             } catch (Exception e) {
                 Slog.e(TAG, "Exception sending onBackPressedOnTaskRoot callback", e);
             }
@@ -293,7 +295,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     dispatchTaskInfoChanged(event.mTask, event.mForce);
                     break;
                 case PendingTaskEvent.EVENT_ROOT_BACK_PRESSED:
-                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task);
+                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
+                            /* isFromMoveActivityTaskToBack= */ false);
+                    break;
+                case PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK:
+                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
+                            /* isFromMoveActivityTaskToBack= */ true);
                     break;
             }
         }
@@ -460,6 +467,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         static final int EVENT_VANISHED = 1;
         static final int EVENT_INFO_CHANGED = 2;
         static final int EVENT_ROOT_BACK_PRESSED = 3;
+        static final int EVENT_MOVE_TASK_TO_BACK = 4;
 
         final int mEventType;
         final Task mTask;
@@ -884,10 +892,11 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 organizerState.mOrganizer.mTaskOrganizer, PendingTaskEvent.EVENT_VANISHED));
     }
 
+    @Nullable
     @Override
-    public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
-            boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
-            @Nullable String name) {
+    public WindowContainerToken createRootTask(int displayId, int windowingMode,
+            @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
+            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque) {
         enforceTaskPermission("createRootTask()");
         final long origId = Binder.clearCallingIdentity();
         try {
@@ -896,11 +905,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 if (display == null) {
                     ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
                             "createRootTask unknown displayId=%d", displayId);
-                    return;
+                    return null;
                 }
 
-                createRootTask(display, windowingMode, launchCookie, removeWithTaskOrganizer,
-                        reparentOnDisplayRemoval, name);
+                final Task task = createRootTask(display, windowingMode, launchCookie,
+                        removeWithTaskOrganizer, reparentOnDisplayRemoval, name, isForceOpaque);
+                return task.mRemoteToken.toWindowContainerToken();
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -911,12 +921,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     Task createRootTask(DisplayContent display, int windowingMode, @Nullable IBinder launchCookie) {
         return createRootTask(display, windowingMode, launchCookie,
                 false /* removeWithTaskOrganizer */, false /* reparentOnDisplayRemoval */,
-                "test");
+                "test", false /* isForceOpaque */);
     }
 
     private Task createRootTask(DisplayContent display, int windowingMode,
             @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name) {
+            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque) {
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Create root task displayId=%d winMode=%d",
                 display.mDisplayId, windowingMode);
         // We want to defer the task appear signal until the task is fully created and attached to
@@ -932,6 +942,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 .setParent(display.getDefaultTaskDisplayArea())
                 .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
                 .setReparentOnDisplayRemoval(reparentOnDisplayRemoval)
+                .setForceOpaque(isForceOpaque)
                 .build();
         task.setDeferTaskAppear(false /* deferTaskAppear */);
         return task;
@@ -979,6 +990,33 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 state.mOrganizer.mTaskOrganizer.onImeDrawnOnTask(task.mTaskId);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception sending onImeDrawnOnTask callback", e);
+            }
+        }
+    }
+
+    void onPackageUpdateRequest(ArraySet<Task> tasks) {
+        final ArrayMap<TaskOrganizerState, ArrayList<ActivityManager.RunningTaskInfo>>
+                stateToTasks = new ArrayMap<>();
+        // Group the given tasks per state
+        for (int i = 0; i < tasks.size(); i++) {
+            final Task task = tasks.valueAt(i);
+            final TaskOrganizerState state = mTaskOrganizerStates.get(
+                    task.mTaskOrganizer.asBinder());
+
+            if (state != null) {
+                stateToTasks.computeIfAbsent(state, k -> new ArrayList<>()).add(task.getTaskInfo());
+            }
+        }
+        for (int i = 0; i < stateToTasks.size(); i++) {
+            final TaskOrganizerState state = stateToTasks.keyAt(i);
+            final ArrayList<ActivityManager.RunningTaskInfo> updatingTasks = stateToTasks.valueAt(
+                    i);
+            if (state != null) {
+                try {
+                    state.mOrganizer.mTaskOrganizer.onPackageUpdateRequested(updatingTasks);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Exception sending onPackageUpdate callback", e);
+                }
             }
         }
     }
@@ -1215,7 +1253,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
-    public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r) {
+    public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r,
+            boolean isFromMoveActivityTaskToBack) {
         // Intercept are set on the root task
         if (!shouldInterceptBackPressedOnRootTask(r.getRootTask())) {
             return false;
@@ -1247,10 +1286,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return false;
         }
 
-        PendingTaskEvent pending = pendingEventsQueue.getPendingTaskEvent(
-                task, PendingTaskEvent.EVENT_ROOT_BACK_PRESSED);
+        final int eventType = isFromMoveActivityTaskToBack
+                ? PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK
+                : PendingTaskEvent.EVENT_ROOT_BACK_PRESSED;
+        PendingTaskEvent pending = pendingEventsQueue.getPendingTaskEvent(task, eventType);
         if (pending == null) {
-            pending = new PendingTaskEvent(task, PendingTaskEvent.EVENT_ROOT_BACK_PRESSED);
+            pending = new PendingTaskEvent(task, eventType);
         } else {
             // Pending already exist, remove and add for re-ordering.
             pendingEventsQueue.removePendingTaskEvent(pending);

@@ -256,6 +256,7 @@ android_ravenwood_test {
     srcs: [
         "src/android/app/ActivityManagerTest.java",
         "src/android/app/PropertyInvalidatedCacheTests.java",
+        "src/android/app/QueuedWorkTest.java",
         "src/android/colormodel/CamTest.java",
         "src/android/content/ContextTest.java",
         "src/android/content/ContentResolverUtilsTest.java",
@@ -311,21 +312,6 @@ test_module_config {
         "device-tests",
     ],
     include_annotations: ["android.platform.test.annotations.Presubmit"],
-}
-
-test_module_config {
-    name: "FrameworksCoreTests_inputmethod",
-    base: "FrameworksCoreTests",
-    test_suites: [
-        "automotive-tests",
-        "device-platinum-tests",
-        "device-tests",
-    ],
-    include_filters: [
-        "android.view.inputmethod",
-        "com.android.internal.inputmethod",
-    ],
-    exclude_annotations: ["androidx.test.filters.FlakyTest"],
 }
 
 test_module_config {

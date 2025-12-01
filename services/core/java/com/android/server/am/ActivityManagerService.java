@@ -136,8 +136,6 @@ import static android.provider.Settings.Global.WAIT_FOR_DEBUGGER;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.security.Flags.preventIntentRedirect;
 import static android.security.Flags.preventIntentRedirectCollectNestedKeysOnServerIfNotCollected;
-import static android.security.Flags.preventIntentRedirectShowToastIfNestedKeysNotCollectedRW;
-import static android.security.Flags.preventIntentRedirectThrowExceptionIfNestedKeysNotCollected;
 import static android.server.Flags.enableThemeService;
 import static android.util.FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -175,6 +173,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason;
 import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
+import static com.android.server.am.Flags.FLAG_FGS_DELEGATE_SYSTEM_API;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
@@ -8149,10 +8148,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 false, pr -> {
                     if (pr.uid == callingUid) {
                         final ProcessServiceRecord psr = pr.mServices;
-                        final int serviceCount = psr.mServices.size();
+                        final int serviceCount = psr.numberOfRunningServices();
                         for (int svc = 0; svc < serviceCount; svc++) {
                             final ArrayMap<IBinder, ArrayList<ConnectionRecord>> conns =
-                                    psr.mServices.valueAt(svc).getConnections();
+                                    psr.getRunningServiceAt(svc).getConnections();
                             final int size = conns.size();
                             for (int conni = 0; conni < size; conni++) {
                                 final ArrayList<ConnectionRecord> crs = conns.valueAt(conni);
@@ -18354,10 +18353,39 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        @FlaggedApi(FLAG_FGS_DELEGATE_SYSTEM_API)
+        public boolean startForegroundServiceDelegate(
+                @NonNull ForegroundServiceDelegationParams params,
+                @Nullable ServiceConnection connection) {
+            synchronized (ActivityManagerService.this) {
+                if (params == null) {
+                    throw new IllegalArgumentException(
+                        "ForegroundServiceDelegationParams is null!");
+                }
+                return mServices.startForegroundServiceDelegateLocked(
+                        params.getForegroundServiceDelegationOptions(), connection);
+            }
+        }
+
+        @Override
         public void stopForegroundServiceDelegate(
                 @NonNull ForegroundServiceDelegationOptions options) {
             synchronized (ActivityManagerService.this) {
                 mServices.stopForegroundServiceDelegateLocked(options);
+            }
+        }
+
+        @Override
+        @FlaggedApi(FLAG_FGS_DELEGATE_SYSTEM_API)
+        public void stopForegroundServiceDelegate(
+                @NonNull ForegroundServiceDelegationParams params) {
+            synchronized (ActivityManagerService.this) {
+                if (params == null) {
+                    throw new IllegalArgumentException(
+                        "ForegroundServiceDelegationParams is null!");
+                }
+                mServices.stopForegroundServiceDelegateLocked(
+                        params.getForegroundServiceDelegationOptions());
             }
         }
 
@@ -20306,19 +20334,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                             + "preparation for creating intent creator tokens. Intent: "
                             + intent + "; creatorPackage: " + creatorPackage);
             FrameworkStatsLog.write(EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER, callingUid);
-            if (preventIntentRedirectShowToastIfNestedKeysNotCollectedRW()) {
-                UiThread.getHandler().post(
-                        () -> Toast.makeText(mContext,
-                                "Nested keys not collected, activity launch won't be blocked. go/report-bug-intentRedir to report a"
-                                        + " bug", Toast.LENGTH_LONG).show());
-            }
-            if (preventIntentRedirectThrowExceptionIfNestedKeysNotCollected()) {
-                // this flag will be internal only, not ramped to public.
-                throw new SecurityException(
-                        "The intent does not have its nested keys collected as a preparation for "
-                                + "creating intent creator tokens. Intent: "
-                                + intent + "; creatorPackage: " + creatorPackage);
-            }
+
             if (preventIntentRedirectCollectNestedKeysOnServerIfNotCollected()) {
                 // this flag will be ramped to public.
                 intent.collectExtraIntentKeys(true);

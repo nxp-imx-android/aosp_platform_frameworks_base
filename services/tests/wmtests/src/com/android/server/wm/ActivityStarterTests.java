@@ -596,7 +596,6 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
     @Test
     public void testActivityStartsLogging_noLoggingWhenDisabled() {
         doReturn(false).when(mAtm).isActivityStartsLoggingEnabled();
-        doReturn(mActivityMetricsLogger).when(mAtm.mTaskSupervisor).getActivityMetricsLogger();
 
         ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
         starter.execute();
@@ -613,7 +612,6 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
     public void testActivityStartsLogging_logsWhenEnabled() {
         // note: conveniently this package doesn't have any activity visible
         doReturn(true).when(mAtm).isActivityStartsLoggingEnabled();
-        doReturn(mActivityMetricsLogger).when(mAtm.mTaskSupervisor).getActivityMetricsLogger();
 
         ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK)
                 .setCallingUid(FAKE_CALLING_UID)
@@ -832,7 +830,6 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         final Task topTask = new TaskBuilder(mSupervisor).setParentTask(topStack).build();
         new ActivityBuilder(mAtm).setTask(topTask).build();
 
-        doReturn(mActivityMetricsLogger).when(mSupervisor).getActivityMetricsLogger();
         // Start activity with the same intent as {@code singleTaskActivity} on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);

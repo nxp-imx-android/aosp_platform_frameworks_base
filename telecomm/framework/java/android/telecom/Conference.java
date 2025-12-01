@@ -1207,7 +1207,9 @@ public abstract class Conference extends Conferenceable {
      * @param callDirection The direction of the conference.
      * @hide
      */
+    @SystemApi
     @RequiresPermission(MODIFY_PHONE_STATE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
     public final void setCallDirection(@Call.Details.CallDirection int callDirection) {
         Log.d(this, "setDirection %d", callDirection);
         mCallDirection = callDirection;
@@ -1227,7 +1229,9 @@ public abstract class Conference extends Conferenceable {
      * {@code false} if it should emulate a standalone call (i.e. not multiparty).
      * @hide
      */
-    public boolean isMultiparty() {
+    @SystemApi
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public boolean isConferenceState() {
         return mIsMultiparty;
     }
 

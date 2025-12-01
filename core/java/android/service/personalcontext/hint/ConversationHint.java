@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 
@@ -69,6 +70,12 @@ public final class ConversationHint extends ContextHint {
     @NonNull
     public ConversationEvent getConversationEvent() {
         return mConversationEvent;
+    }
+
+    /** @hide */
+    @Override
+    public void writeToSignatureParcel(@NonNull Parcel dest) {
+        mConversationEvent.writeToSignatureParcel(dest);
     }
 
     @NonNull

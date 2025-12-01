@@ -31,7 +31,6 @@ import android.os.Trace;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.NotificationHeaderView;
 import android.view.View;
@@ -59,7 +58,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.HybridGroupManager;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.BundleHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
@@ -435,57 +433,6 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     /**
-     * Re-create the Notification header view
-     * @param listener OnClickListener of the header view
-     */
-    public void recreateNotificationHeader(
-            OnClickListener listener
-    ) {
-        // We don't want to inflate headers from the main thread when async inflation enabled
-        AsyncGroupHeaderViewInflation.assertInLegacyMode();
-        // TODO(b/217799515): remove traces from this function in a follow-up change
-        Trace.beginSection("NotifChildCont#recreateHeader");
-        mHeaderClickListener = listener;
-        StatusBarNotification notification = NotificationBundleUi.isEnabled()
-                ? mContainingNotification.getEntryAdapter().getSbn()
-                : mContainingNotification.getEntryLegacy().getSbn();
-        if (notification == null) {
-            return;
-        }
-        final Notification.Builder builder = Notification.Builder.recoverBuilder(getContext(),
-                notification.getNotification());
-        Trace.beginSection("recreateHeader#makeNotificationGroupHeader");
-        RemoteViews header = builder.makeNotificationGroupHeader();
-        Trace.endSection();
-        if (mGroupHeader == null) {
-            Trace.beginSection("recreateHeader#apply");
-            mGroupHeader = (NotificationHeaderView) header.apply(getContext(), this);
-            Trace.endSection();
-            mGroupHeader.findViewById(com.android.internal.R.id.expand_button)
-                    .setVisibility(VISIBLE);
-            mGroupHeader.setOnClickListener(mHeaderClickListener);
-            mGroupHeaderWrapper =
-                    (NotificationHeaderViewWrapper) NotificationViewWrapper.wrap(
-                            getContext(),
-                            mGroupHeader,
-                            mContainingNotification);
-            mGroupHeaderWrapper.setOnRoundnessChangedListener(this::invalidate);
-            addView(mGroupHeader, 0);
-            invalidate();
-        } else {
-            Trace.beginSection("recreateHeader#reapply");
-            header.reapply(getContext(), mGroupHeader);
-            Trace.endSection();
-        }
-        mGroupHeaderWrapper.setExpanded(mChildrenExpanded);
-        mGroupHeaderWrapper.onContentUpdated(mContainingNotification);
-        recreateLowPriorityHeader(builder);
-        updateHeaderVisibility(false /* animate */);
-        updateChildrenAppearance();
-        Trace.endSection();
-    }
-
-    /**
      * Update the expand state of the group header.
      */
     public void updateGroupHeaderExpandState() {
@@ -511,6 +458,7 @@ public class NotificationChildrenContainer extends ViewGroup
         mMinimizedGroupHeader = null;
         mMinimizedGroupHeaderWrapper = null;
     }
+
     public void setBundleHeaderView(@NonNull ComposeView view) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         initBundleDimens();
@@ -547,7 +495,6 @@ public class NotificationChildrenContainer extends ViewGroup
             NotificationHeaderView headerView,
             OnClickListener onClickListener
     ) {
-        if (AsyncGroupHeaderViewInflation.isUnexpectedlyInLegacyMode()) return;
         mHeaderClickListener = onClickListener;
 
         removeGroupHeader();
@@ -588,7 +535,6 @@ public class NotificationChildrenContainer extends ViewGroup
             NotificationHeaderView headerViewLowPriority,
             OnClickListener onClickListener
     ) {
-        if (AsyncGroupHeaderViewInflation.isUnexpectedlyInLegacyMode()) return;
         removeLowPriorityGroupHeader();
         if (headerViewLowPriority == null) {
             return;
@@ -624,7 +570,6 @@ public class NotificationChildrenContainer extends ViewGroup
      */
     @VisibleForTesting
     void recreateLowPriorityHeader(Notification.Builder builder) {
-        AsyncGroupHeaderViewInflation.assertInLegacyMode();
         RemoteViews header;
         StatusBarNotification notification = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getSbn()
@@ -782,11 +727,7 @@ public class NotificationChildrenContainer extends ViewGroup
      */
     private int getIntrinsicHeight(float maxAllowedVisibleChildren) {
         if (showingAsLowPriority()) {
-            if (AsyncGroupHeaderViewInflation.isEnabled()) {
-                return getHeaderHeight();
-            } else {
-                return mMinimizedGroupHeader.getHeight();
-            }
+            return getHeaderHeight();
         }
         int intrinsicHeight = getCollapsedHeaderMargin() + mCurrentHeaderTranslation;
         int visibleChildren = 0;
@@ -1357,11 +1298,6 @@ public class NotificationChildrenContainer extends ViewGroup
         return mMinimizedGroupHeaderWrapper;
     }
 
-    @VisibleForTesting
-    public ViewGroup getCurrentHeaderView() {
-        return mCurrentHeader;
-    }
-
     @Nullable
     public NotificationHeaderView getGroupHeader() {
         return mGroupHeader;
@@ -1382,7 +1318,7 @@ public class NotificationChildrenContainer extends ViewGroup
             return;
         }
 
-        if (AsyncGroupHeaderViewInflation.isEnabled() && desiredHeader == null) {
+        if (desiredHeader == null) {
             return;
         }
 
@@ -1640,14 +1576,7 @@ public class NotificationChildrenContainer extends ViewGroup
             boolean likeHighPriority,
             int headerTranslation) {
         if (!likeHighPriority && showingAsLowPriority()) {
-            if (AsyncGroupHeaderViewInflation.isEnabled()) {
-                return getHeaderHeight();
-            }
-            if (mMinimizedGroupHeader == null) {
-                Log.e(TAG, "getMinHeight: low priority header is null", new Exception());
-                return 0;
-            }
-            return mMinimizedGroupHeader.getHeight();
+            return getHeaderHeight();
         }
         int minExpandHeight = getCollapsedHeaderMargin() + headerTranslation;
         int visibleChildren = 0;
@@ -1689,25 +1618,7 @@ public class NotificationChildrenContainer extends ViewGroup
         return mIsMinimized && !mContainingNotification.isExpanded();
     }
 
-    public void reInflateViews(OnClickListener listener) {
-        if (!AsyncGroupHeaderViewInflation.isEnabled()) {
-            // When Async header inflation is enabled, we do not reinflate headers because they are
-            // inflated from the background thread
-            if (mGroupHeader != null) {
-                removeView(mGroupHeader);
-                mGroupHeader = null;
-            }
-            if (mMinimizedGroupHeader != null) {
-                removeView(mMinimizedGroupHeader);
-                mMinimizedGroupHeader = null;
-            }
-            recreateNotificationHeader(listener);
-
-            removeView(mOverflowNumber);
-            mOverflowNumber = null;
-            mGroupOverFlowState = null;
-            updateGroupOverflow();
-        }
+    public void reInflateViews() {
         initDimens();
         for (int i = 0; i < mDividers.size(); i++) {
             View prevDivider = mDividers.get(i);
@@ -1778,9 +1689,6 @@ public class NotificationChildrenContainer extends ViewGroup
     public void setIsMinimized(boolean isMinimized) {
         mIsMinimized = isMinimized;
         if (mContainingNotification != null) { /* we're not yet set up yet otherwise */
-            if (!AsyncGroupHeaderViewInflation.isEnabled()) {
-                recreateLowPriorityHeader(null /* existingBuilder */);
-            }
             updateHeaderVisibility(false /* animate */);
         }
         if (mIsUserSwipingToExpandRow) {

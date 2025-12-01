@@ -16,6 +16,7 @@
 
 package android.app;
 
+import static android.aiseal.Flags.aisealHostApis;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
@@ -27,6 +28,8 @@ import static android.service.chooser.Flags.interactiveChooser;
 import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
 import android.adservices.AdServicesFrameworkInitializer;
+import android.aiseal.AiSealManager;
+import android.aiseal.IAiSealHostService;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -50,6 +53,7 @@ import android.app.ecm.EnhancedConfirmationFrameworkInitializer;
 import android.app.job.JobSchedulerFrameworkInitializer;
 import android.app.lskfreset.ILskfResetManager;
 import android.app.lskfreset.LskfResetManager;
+import android.app.modes.ContextualModeManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
@@ -109,6 +113,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutManager;
 import android.content.pm.verify.domain.DomainVerificationManager;
 import android.content.pm.verify.domain.IDomainVerificationManager;
+import android.content.pm.webapp.WebAppFrameworkInitializer;
 import android.content.res.Resources;
 import android.content.rollback.RollbackManagerFrameworkInitializer;
 import android.credentials.CredentialManager;
@@ -692,6 +697,16 @@ public final class SystemServiceRegistry {
                                     com.android.internal.R.style.Theme_DeviceDefault_Light_Dialog))
                 );
             }});
+
+        if (android.service.notification.Flags.enableDndSync()) {
+            registerService(Context.CONTEXTUAL_MODE_SERVICE, ContextualModeManager.class,
+                    new CachedServiceFetcher<ContextualModeManager>() {
+                @Override
+                public ContextualModeManager createService(ContextImpl ctx) {
+                    return new ContextualModeManager(ctx);
+                }
+            });
+        }
 
         registerService(Context.PEOPLE_SERVICE, PeopleManager.class,
                 new CachedServiceFetcher<PeopleManager>() {
@@ -2014,6 +2029,19 @@ public final class SystemServiceRegistry {
                     });
         }
 
+        if (aisealHostApis()) {
+            registerService(
+                    Context.AISEAL_HOST_SERVICE,
+                    AiSealManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public AiSealManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            return new AiSealManager(ctx);
+                        }
+                    });
+        }
+
         sInitializing = true;
         try {
             // Note: the following functions need to be @SystemApis, once they become mainline
@@ -2045,6 +2073,10 @@ public final class SystemServiceRegistry {
             NpuManagerFrameworkInitializer.registerServiceWrappers();
             VirtualizationFrameworkInitializer.registerServiceWrappers();
             ConnectivityFrameworkInitializerBaklava.registerServiceWrappers();
+
+            if (com.android.webapp.flags.Flags.enableWebAppService()) {
+                WebAppFrameworkInitializer.registerServiceWrappers();
+            }
 
             if (newStoragePublicApi()) {
                 ConfigInfrastructureFrameworkInitializer.registerServiceWrappers();

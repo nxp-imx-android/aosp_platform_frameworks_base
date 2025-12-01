@@ -42,7 +42,6 @@ import com.android.systemui.model.SysUiState;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
-import com.android.systemui.shared.Flags;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectEnabler;
@@ -463,16 +462,10 @@ public class AssistManager {
     }
 
     private void startVoiceInteractor(Bundle args) {
-        if (Flags.enableLppAssistInvocationEffect()) {
-            // Use background thread to prevent the binder call from blocking the UI thread
-            mBgHandler.post(() -> mAssistUtils.showSessionForActiveService(args,
-                    VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
-                    mContext.getAttributionTag(), null, null));
-        } else {
-            mAssistUtils.showSessionForActiveService(args,
-                    VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
-                    mContext.getAttributionTag(), null, null);
-        }
+        // Use background thread to prevent the binder call from blocking the UI thread
+        mBgHandler.post(() -> mAssistUtils.showSessionForActiveService(args,
+                VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
+                mContext.getAttributionTag(), null, null));
     }
 
     private void registerVisualQueryRecognitionStatusListener() {

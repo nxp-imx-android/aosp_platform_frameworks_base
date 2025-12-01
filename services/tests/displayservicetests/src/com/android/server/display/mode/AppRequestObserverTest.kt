@@ -79,7 +79,7 @@ class AppRequestObserverTest {
                 1000, 1000, 45f, 45f, floatArrayOf(), intArrayOf())
         )
 
-        displayModeDirector.injectAppSupportedModesByDisplay(
+        displayModeDirector.injectSupportedModesByDisplay(
             SparseArray<Array<Display.Mode>>().apply {
                 append(Display.DEFAULT_DISPLAY, modes)
             })
@@ -115,7 +115,7 @@ class AppRequestObserverTest {
             Display.Mode(2, 1000, 1000, 90f),
         )
 
-        displayModeDirector.injectAppSupportedModesByDisplay(
+        displayModeDirector.injectSupportedModesByDisplay(
             SparseArray<Array<Display.Mode>>().apply {
                 append(Display.DEFAULT_DISPLAY, modes)
             })
@@ -152,7 +152,7 @@ class AppRequestObserverTest {
             Display.Mode(2, 2000, 2000, 90f),
         )
 
-        displayModeDirector.injectAppSupportedModesByDisplay(
+        displayModeDirector.injectSupportedModesByDisplay(
             SparseArray<Array<Display.Mode>>().apply {
                 append(Display.DEFAULT_DISPLAY, modes)
             })
@@ -180,7 +180,7 @@ class AppRequestObserverTest {
             Display.Mode(2, 2000, 2000, 90f),
         )
 
-        displayModeDirector.injectAppSupportedModesByDisplay(
+        displayModeDirector.injectSupportedModesByDisplay(
             SparseArray<Array<Display.Mode>>().apply {
                 append(Display.DEFAULT_DISPLAY, modes)
             })

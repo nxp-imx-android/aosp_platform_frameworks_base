@@ -38,7 +38,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
@@ -177,7 +176,6 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncGroupHeaderViewInflation.FLAG_NAME)
     fun changeIsGroupSummary_needReInflation() {
         // Given: an Entry that is not a group summary
         val oldAdjustment = adjustmentProvider.calculateAdjustment(entry)

@@ -49,6 +49,7 @@ import java.util.Arrays;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class VibrationConfig {
 
     /**

@@ -35,7 +35,9 @@ import android.annotation.UserIdInt;
 import android.app.supervision.flags.Flags;
 import android.content.Context;
 import android.content.Intent;
+import android.os.IpcDataCache;
 import android.os.RemoteException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +50,15 @@ import java.util.List;
 @SystemApi
 @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
 public class SupervisionManager {
+
+    private static final int GET_POLICIES_CACHE_SIZE = 8;
+    private final static String GET_POLICIES_API = "get_supervision_policies";
+    private final static String GET_POLICIES_CACHE_NAME = "SupervisionManagerPolicies";
+    private static final IpcDataCache.Config sSupervisionManagerCache = new IpcDataCache.Config(
+            GET_POLICIES_CACHE_SIZE, IpcDataCache.MODULE_SYSTEM,  GET_POLICIES_API);
+    private final IpcDataCache<Integer, List<Policy>> mGetPoliciesCache;
+
+
     /**
      * Listener for supervision state changes.
      *
@@ -154,6 +165,19 @@ public class SupervisionManager {
     public SupervisionManager(Context context, @Nullable ISupervisionManager service) {
         mContext = context;
         mService = service;
+
+        mGetPoliciesCache = new IpcDataCache<>(
+                sSupervisionManagerCache.child(GET_POLICIES_CACHE_NAME),
+                (userId) -> {
+                    try {
+                        if (service == null) {
+                            return new ArrayList<>();
+                        }
+                        return service.getPolicies((int) userId);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                });
     }
 
     /**
@@ -396,15 +420,28 @@ public class SupervisionManager {
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     @NonNull
     public List<Policy> getPolicies() {
-        if (mService != null) {
-            try {
-                return mService.getPolicies(mContext.getUserId());
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
+        if (Flags.enableSupervisionManagerCache()) {
+            List<Policy> policies = mGetPoliciesCache.query(mContext.getUserId());
+            if (policies != null) {
+                return policies;
+            }
+        } else {
+            if (mService != null) {
+                try {
+                    return mService.getPolicies(mContext.getUserId());
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
             }
         }
-
         return new ArrayList<>();
+    }
+
+    /** @hide */
+    public static void invalidateGetPoliciesCache() {
+        if (Flags.enableSupervisionManagerCache()) {
+            sSupervisionManagerCache.invalidateCache();
+        }
     }
 
     /**

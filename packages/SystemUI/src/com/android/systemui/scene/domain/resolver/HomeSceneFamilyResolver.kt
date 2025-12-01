@@ -23,6 +23,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.data.model.SceneStack
 import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
@@ -51,6 +52,7 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
+    powerInteractor: PowerInteractor,
     sceneBackInteractor: SceneBackInteractor,
 ) : SceneResolver {
     override val targetFamily: SceneKey = SceneFamilies.Home
@@ -64,6 +66,8 @@ constructor(
                 deviceEntryInteractor.isUnlocked,
                 keyguardInteractor.isDreamingWithOverlay,
                 keyguardInteractor.isAbleToDream,
+                keyguardInteractor.isAodAvailable,
+                powerInteractor.isAwake,
                 sceneBackInteractor.backStack,
                 transform = ::homeScene,
             )
@@ -79,6 +83,8 @@ constructor(
                         isUnlocked = deviceEntryInteractor.isUnlocked.value,
                         isDreamingWithOverlay = false,
                         isAbleToDream = false,
+                        isAodAvailable = false,
+                        isAwake = true,
                         backStack = sceneBackInteractor.backStack.value,
                     ),
             )
@@ -93,12 +99,16 @@ constructor(
         isUnlocked: Boolean,
         isDreamingWithOverlay: Boolean,
         isAbleToDream: Boolean,
+        isAodAvailable: Boolean,
+        isAwake: Boolean,
         backStack: SceneStack,
     ): SceneKey {
         return when {
             // Dream can run even if Keyguard is disabled, thus it has the highest priority here.
             isDreamingWithOverlay && isAbleToDream -> Scenes.Dream
             isKeyguardOccluded -> Scenes.Occluded
+            // If we're asleep on AOD, show Lockscreen scene even if keyguard is disabled.
+            !isAwake && isAodAvailable -> Scenes.Lockscreen
             !isKeyguardEnabled -> Scenes.Gone
             canSwipeToEnter == true -> Scenes.Lockscreen
             !isDeviceEntered -> Scenes.Lockscreen
@@ -113,14 +123,15 @@ constructor(
     }
 
     companion object {
-        val homeScenes =
+        private val homeScenes =
             setOf(
-                Scenes.Occluded,
-                Scenes.Gone,
-                Scenes.Lockscreen,
+                Scenes.Communal,
                 // Dream is a home scene as the dream activity occludes keyguard and can show the
                 // shade on top.
                 Scenes.Dream,
+                Scenes.Gone,
+                Scenes.Lockscreen,
+                Scenes.Occluded,
             )
     }
 }

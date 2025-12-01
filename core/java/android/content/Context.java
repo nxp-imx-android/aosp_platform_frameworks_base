@@ -1449,6 +1449,7 @@ public abstract class Context {
      */
     @Deprecated
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public File getSharedPrefsFile(String name) {
         return getSharedPreferencesPath(name);
     }
@@ -1477,6 +1478,7 @@ public abstract class Context {
      *
      * @see #MODE_PRIVATE
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract SharedPreferences getSharedPreferences(String name, @PreferencesMode int mode);
 
     /**
@@ -1499,6 +1501,7 @@ public abstract class Context {
      * @removed
      */
     @SuppressWarnings("HiddenAbstractMethod")
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract SharedPreferences getSharedPreferences(File file, @PreferencesMode int mode);
 
     /**
@@ -4534,6 +4537,7 @@ public abstract class Context {
                 ACTIVITY_SERVICE,
                 ALARM_SERVICE,
                 NOTIFICATION_SERVICE,
+                // @hide: CONTEXTUAL_MODE_SERVICE,
                 ACCESSIBILITY_SERVICE,
                 CAPTIONING_SERVICE,
                 KEYGUARD_SERVICE,
@@ -5038,6 +5042,17 @@ public abstract class Context {
      * @see android.app.NotificationManager
      */
     public static final String NOTIFICATION_SERVICE = "notification";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.app.modes.ContextualModeManager} for controlling modes.
+     *
+     * @see #getSystemService(String)
+     * @see android.app.modes.ContextualModeManager
+     * @hide
+     */
+    @FlaggedApi(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public static final String CONTEXTUAL_MODE_SERVICE = "contextual_mode";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
@@ -7301,6 +7316,21 @@ public abstract class Context {
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
     public static final String ANOMALY_DETECTOR_SERVICE = "anomaly_detector";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.aiseal.AiSealManager}.
+     *
+     * <p>On devices without {@link PackageManager#FEATURE_AISEAL} system
+     * feature the {@link #getSystemService(String)} will return {@code null}.
+     *
+     * @see #getSystemService(String)
+     * @see android.aiseal.AiSealManager
+     * @hide
+     */
+    @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
+    @SystemApi
+    public static final String AISEAL_HOST_SERVICE = "aiseal_host";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

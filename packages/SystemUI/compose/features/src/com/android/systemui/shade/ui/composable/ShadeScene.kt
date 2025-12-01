@@ -162,7 +162,7 @@ constructor(
             }
         val notificationsPlaceholderViewModel =
             rememberViewModel("ShadeScene-notifPlaceholderViewModel") {
-                notificationsPlaceholderViewModelFactory.create()
+                notificationsPlaceholderViewModelFactory.create(Scenes.Shade)
             }
         val targetBlur by
             remember(layoutState) {

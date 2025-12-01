@@ -45,7 +45,6 @@ import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodManager;
 
@@ -204,8 +203,7 @@ public final class ImeVisibilityStateComputer {
         final int displayToShowIme;
         final PackageManager pm = mService.mContext.getPackageManager();
         if (pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
-                && mUserManagerInternal.isVisibleBackgroundFullUser(mUserId)
-                && Flags.fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
+                && mUserManagerInternal.isVisibleBackgroundFullUser(mUserId)) {
             displayToShowIme = mService.computeImeDisplayIdForVisibleBackgroundUserOnAutomotive(
                     displayId, mUserId, mImeDisplayValidator);
         } else {

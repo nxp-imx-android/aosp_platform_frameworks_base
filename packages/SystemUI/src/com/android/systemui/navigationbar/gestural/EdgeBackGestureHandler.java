@@ -21,6 +21,7 @@ import static android.view.InputDevice.SOURCE_TOUCHPAD;
 import static android.view.MotionEvent.TOOL_TYPE_FINGER;
 import static android.view.MotionEvent.TOOL_TYPE_MOUSE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION;
+
 import static com.android.systemui.Flags.edgebackGestureHandlerGetRunningTasksBackground;
 import static com.android.systemui.classifier.Classifier.BACK_GESTURE;
 import static com.android.systemui.navigationbar.gestural.Utilities.isTrackpadThreeFingerSwipe;
@@ -823,7 +824,7 @@ public class EdgeBackGestureHandler {
                 DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_SYSTEMUI,
                         mUiThreadContext.getExecutor()::execute, mOnPropertiesChangedListener);
                 mPipOptional.ifPresent(pip -> pip.addOnIsInPipStateChangedListener(
-                        mOnIsInPipStateChangedListener));
+                        mUiThreadContext.getExecutor(), mOnIsInPipStateChangedListener));
                 mDesktopModeOptional.ifPresent(
                         dm -> dm.addDesktopGestureExclusionRegionListener(
                                 mDesktopCornersChangedListener, mUiThreadContext.getExecutor()));

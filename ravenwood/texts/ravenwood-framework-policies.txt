@@ -82,7 +82,6 @@ package com.android.internal exp
 package android.appwidget exp
 package android.media exp
 package android.audio exp
-package android.os.vibrator exp
 package android.service.dreams exp
 package android.service.notification exp
 package android.service.quicksettings exp
@@ -126,8 +125,6 @@ class android.view.animation.AnimationUtils exp
 
 class android.view.Display exp
 
-class android.os.Vibrator exp
-class android.os.VibrationEffect exp
 class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp

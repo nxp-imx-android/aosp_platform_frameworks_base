@@ -210,3 +210,13 @@ flag {
     description: "Enable the alwaysMoveTaskToBackOnBackPressed feature"
     bug: "444439703"
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "enable_force_opaque"
+    description: "Enable to make task force opaque"
+    bug: "441101757"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

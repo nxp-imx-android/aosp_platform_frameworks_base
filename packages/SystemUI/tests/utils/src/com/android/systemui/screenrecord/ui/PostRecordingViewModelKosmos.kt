@@ -22,6 +22,7 @@ import com.android.systemui.broadcast.broadcastSender
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.parentUriInteractorKosmos
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.settings.userTracker
@@ -37,6 +38,7 @@ val Kosmos.postRecordingViewModelFactory by
                     userTracker = userTracker,
                     drawableLoaderViewModel = drawableLoaderViewModel,
                     screenCaptureUiInteractor = screenCaptureUiInteractor,
+                    parentUriInteractor = parentUriInteractorKosmos,
                     screenRecordingServiceInteractor = screenRecordingServiceInteractor,
                 )
             }

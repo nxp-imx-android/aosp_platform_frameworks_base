@@ -556,4 +556,26 @@
             column="10"/>
     </issue>
 
+    <issue
+        id="NewApi"
+        message="Call requires API level 36 (current min is 23): `android.service.settings.preferences.SetValueRequest#getScreenKey`"
+        errorLine1="            screenKey = request.screenKey,"
+        errorLine2="                                ~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SettingsLib/Service/src/com/android/settingslib/service/PreferenceServiceRequestTransformer.kt"
+            line="173"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36 (current min is 23): `android.service.settings.preferences.SetValueRequest#getPreferenceKey`"
+        errorLine1="            request.preferenceKey,"
+        errorLine2="                    ~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SettingsLib/Service/src/com/android/settingslib/service/PreferenceServiceRequestTransformer.kt"
+            line="178"
+            column="21"/>
+    </issue>
+
 </issues>

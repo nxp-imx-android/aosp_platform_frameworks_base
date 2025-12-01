@@ -25,6 +25,9 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AutomaticZenRule;
 import android.app.NotificationManager;
+import android.app.modes.ContextualModeManager;
+import android.companion.AssociationInfo;
+import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.net.Uri;
 import android.provider.Settings;
@@ -41,6 +44,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Class used for Settings-NMS interactions related to Mode management.
@@ -52,10 +56,16 @@ public class ZenModesBackend {
 
     private static final String TAG = "ZenModeBackend";
 
+    @VisibleForTesting
+    static final String CDM_METADATA_KEY_CONTEXTUAL_MODE_SYNC_SUPPORTED =
+            "contextual_mode_sync_supported";
+
     @Nullable // Until first usage
     private static ZenModesBackend sInstance;
 
     private final NotificationManager mNotificationManager;
+    @Nullable private final ContextualModeManager mCtxModeManager;
+    @Nullable private final CompanionDeviceManager mCompanionDeviceManager;
 
     private final Context mContext;
 
@@ -73,8 +83,29 @@ public class ZenModesBackend {
     }
 
     ZenModesBackend(Context context) {
+        this(
+                context,
+                () -> context.getSystemService(NotificationManager.class),
+                () -> context.getSystemService(CompanionDeviceManager.class),
+                () -> context.getSystemService(ContextualModeManager.class));
+    }
+
+    @VisibleForTesting
+    ZenModesBackend(
+            Context context,
+            Supplier<NotificationManager> nmSupplier,
+            Supplier<CompanionDeviceManager> cdmSupplier,
+            Supplier<ContextualModeManager> cmmSupplier) {
         mContext = context;
-        mNotificationManager = context.getSystemService(NotificationManager.class);
+        mNotificationManager = nmSupplier.get();
+        if (android.service.notification.Flags.enableDndSync()
+                && android.companion.Flags.enableDataSync()) {
+            mCtxModeManager = cmmSupplier.get();
+            mCompanionDeviceManager = cdmSupplier.get();
+        } else {
+            mCtxModeManager = null;
+            mCompanionDeviceManager = null;
+        }
     }
 
     public List<ZenMode> getModes() {
@@ -210,5 +241,42 @@ public class ZenModesBackend {
         AutomaticZenRule rule = ZenMode.newCustomManual(name, iconResId).getRule();
         String ruleId = mNotificationManager.addAutomaticZenRule(rule);
         return getMode(ruleId);
+    }
+
+    /** Check if mode sync is supported. */
+    public boolean isModeSyncSupported() {
+        if (mCtxModeManager == null || mCompanionDeviceManager == null) {
+            // Flag disabled.
+            return false;
+        }
+        if (!mCtxModeManager.isModeSyncSupported()) {
+            // Disabled by API.
+            return false;
+        }
+        for (AssociationInfo associationInfo :
+                mCompanionDeviceManager.getAllAssociations(mContext.getUserId())) {
+            if (associationInfo
+                    .getMetadata(CompanionDeviceManager.FEATURE_CROSS_DEVICE_SYNC)
+                    .getBoolean(
+                            CDM_METADATA_KEY_CONTEXTUAL_MODE_SYNC_SUPPORTED,
+                            /* defaultValue= */ false)) {
+                // Found a remote device that also supports mode sync.
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Check if mode sync is enabled. */
+    public boolean isModeSyncEnabled() {
+        return mCtxModeManager != null && mCtxModeManager.isModeSyncEnabled();
+    }
+
+    /** Set mode sync enabled state. */
+    public void setModeSyncEnabled(boolean enabled) {
+        if (mCtxModeManager == null) {
+            throw new UnsupportedOperationException("Unable to change mode sync enabled state.");
+        }
+        mCtxModeManager.setModeSyncEnabled(enabled);
     }
 }

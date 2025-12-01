@@ -20,6 +20,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.platform.LocalView
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.offset
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
+import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
 import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.internal.jank.InteractionJankMonitor
@@ -128,6 +131,16 @@ fun ContentScope.SingleShadeNestedScrollLayout(
             }
         }
     LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+
+    val isContentOverscrolledOnTop by
+        remember(scrollState) {
+            derivedStateOf {
+                // When the scrim cannot moved further up, scrolling takes over to move the content.
+                scrollState.value > 0
+            }
+        }
+
+    /** Is the content taller than the scrim at rest (when QQS, Media can be fully visible). */
     fun isContentTallerThanScrimAtRest(): Boolean {
         return minScrimHeight.intValue < contentHeight.intValue
     }
@@ -141,12 +154,33 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         modifier = modifier,
         contents =
             listOf(
-                { statusBarHeader() },
+                {
+                    Box( // TODO(b/460517708) remove this modifier and route these swipes to scroll
+                        // the notification scrim instead, when the list is scrolled to the top.
+                        Modifier.thenIf(isContentOverscrolledOnTop) {
+                            // Consume all drags on the StatusBar area to prevent Scene changes from
+                            // swipes, while the list is scrolled to the top.
+                            Modifier.pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDrag = { change, _ -> change.consume() },
+                                    onDragStart = {},
+                                    onDragEnd = {},
+                                    onDragCancel = {},
+                                )
+                            }
+                        }
+                    ) {
+                        statusBarHeader()
+                    }
+                },
                 { mediaAndQqsHeader() },
                 {
                     val flingBehavior = ScrollableDefaults.flingBehavior()
                     Box(
-                        Modifier.disableSwipesWhenScrolling()
+                        Modifier
+                            // When part of the gesture was used to scroll Notifications, don't
+                            // allow Scene changes by swipes.
+                            .disableSwipesWhenScrolling()
                             .nestedScroll(
                                 remember(scrimOffset, flingBehavior) {
                                     scrimNestedScrollConnection(

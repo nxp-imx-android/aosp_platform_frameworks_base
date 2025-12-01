@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"اسکرین شاٹ کو محفوظ نہیں کیا جا سکا"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"اس میں محفوظ کریں"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"فولڈر منتخب کریں"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"‏‫%1$s فولڈر میں محفوظ کیا گیا"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"‏کچھ غلط ہو گیا۔ ‫\"%1$s\" فولڈر میں محفوظ نہیں کیا جا سکتا۔"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"خارجی ڈسپلے"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"اسکرین شاٹ محفوظ کرنے سے پہلے آلے کو غیر مقفل کرنا ضروری ہے"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"دوبارہ اسکرین شاٹ لینے کی کوشش کریں"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"اسکرین شاٹ کو محفوظ نہیں کیا جا سکتا"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ایپ یا آپ کی تنظیم کی جانب سے اسکرین شاٹس لینے کی اجازت نہیں ہے"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"‏IT منتظم نے اسکرین شاٹس لینا مسدود کر دیا ہے"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ترمیم کریں"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"اسکرین شاٹ میں ترمیم کریں بٹن"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"اشتراک کریں"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ہو گیا"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"لاگو کریں"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"آف کریں"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"خاموش"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ڈیفالٹ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"خودکار"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"کوئی آواز یا وائبریشن نہیں"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"کوئی آواز یا وائبریشن نہیں ہے لیکن پھر بھی گفتگو کے سیکشن میں ظاہر ہوتا ہے"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"آلے کی ترتیبات کی بنیاد پر وائبریٹ یا گھنٹی بج سکتی ہے"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"آلے کی ترتیبات بنیاد پر وائبریٹ یا گھنٹی بج سکتی ہے۔ بذریعہ ڈیفالٹ <xliff:g id="APP_NAME">%1$s</xliff:g> بلبلہ سے گفتگوئیں۔"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"سسٹم کو اس بات کا تعین کرنے دیں کہ آیا اس اطلاع کی آواز ہو یا وائبریٹ ہونا چاہیے"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"‏&lt;b&gt;Status:&lt;/b&gt; ڈیفالٹ پر درجہ بند کیا گیا"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"‏&lt;b&gt;اسٹیٹس:&lt;/b&gt; کو خاموش پر درجہ بند کیا گیا"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"‏&lt;b&gt;اسٹیٹس:&lt;/b&gt; کو اعلی درجہ دیا گیا"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"‏&lt;b&gt;اسٹیٹس:&lt;/b&gt; کو کم درجہ دیا گیا"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"مقام"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"مائیکروفون"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"اسکرین ریکارڈنگ"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"رازداری"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"کوئی عنوان نہیں ہے"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"اسٹینڈ بائی"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"فونٹ سائز"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"آڈیو آؤٹ پٹ کے لیے دستیاب آلات۔"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"والیوم"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"کچھ آلات نظر نہیں آ رہے ہیں۔ اپنی ایپ کی اجازتوں کو اپ ڈیٹ کریں"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"درست کریں"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"منسلک اسپیکرز"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"اسپیکرز اور ڈسپلیز"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"تجویز کردہ"</string>

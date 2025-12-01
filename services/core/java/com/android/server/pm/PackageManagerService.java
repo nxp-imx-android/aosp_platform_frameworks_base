@@ -260,6 +260,7 @@ import com.android.server.utils.WatchedArrayMap;
 import com.android.server.utils.WatchedSparseBooleanArray;
 import com.android.server.utils.WatchedSparseIntArray;
 import com.android.server.utils.Watcher;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import libcore.util.EmptyArray;
 import libcore.util.HexEncoding;
@@ -401,6 +402,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     static final int SCAN_AS_FACTORY = 1 << 25;
     static final int SCAN_AS_APEX = 1 << 26;
     static final int SCAN_AS_STOPPED_SYSTEM_APP = 1 << 27;
+
+    private static final int STOP_AND_KILL_APP_TIMEOUT_MS = 15000;
 
     @IntDef(flag = true, prefix = { "SCAN_" }, value = {
             SCAN_NO_DEX,
@@ -3193,6 +3196,35 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 blocker.register();
                 mAmi.killApplicationSync(pkgName, appId, userId, reason, exitInfoReason);
                 blocker.waitAppProcessGone(mAmi, snapshotComputer(), mUserManager, pkgName);
+            } finally {
+                blocker.unregister();
+            }
+        }
+    }
+
+    void stopAndKillApplication(String pkgName, @AppIdInt int appId,
+            @CanBeALL @UserIdInt int userId, String reason, int exitInfoReason) {
+        ActivityManagerInternal ami = LocalServices.getService(ActivityManagerInternal.class);
+        ActivityTaskManagerInternal atmi =
+                LocalServices.getService(ActivityTaskManagerInternal.class);
+        if (Thread.holdsLock(mLock) || ami == null || atmi == null) {
+            // holds PM's lock, go back killApplication to avoid it run into watchdog reset.
+            Slog.e(TAG, "Holds PM's lock, unable kill application synchronized");
+            killApplication(pkgName, appId, userId, reason, exitInfoReason);
+        } else {
+            KillAppBlocker blocker = new KillAppBlocker(STOP_AND_KILL_APP_TIMEOUT_MS);
+            try {
+                blocker.register();
+                /* stopAndKillApp is non-blocking. It blocks, but only until it sends stop signal
+                 * to the application. After it returns, the stopping and killing happens in
+                 * async manner.
+                 *
+                 * Even for killApplicationSync method above, only the signal sent to application
+                 * is sync. The killing always happens in async manner, which is why we have
+                 * to wait for the process itself to be gone to be assured of its death.
+                 */
+                atmi.stopAndKillAppForUpdate(pkgName, userId, appId);
+                blocker.waitAppProcessGone(ami, snapshotComputer(), mUserManager, pkgName);
             } finally {
                 blocker.unregister();
             }

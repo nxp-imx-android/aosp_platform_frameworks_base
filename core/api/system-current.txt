@@ -170,6 +170,7 @@ package android {
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FACE_TRACKING_CALIBRATION = "android.permission.FACE_TRACKING_CALIBRATION";
     field public static final String FORCE_BACK = "android.permission.FORCE_BACK";
     field public static final String FORCE_STOP_PACKAGES = "android.permission.FORCE_STOP_PACKAGES";
+    field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String FORCE_USE_LOOPBACK_INTERFACE = "android.permission.FORCE_USE_LOOPBACK_INTERFACE";
     field public static final String GET_APP_METADATA = "android.permission.GET_APP_METADATA";
     field public static final String GET_APP_OPS_STATS = "android.permission.GET_APP_OPS_STATS";
     field @FlaggedApi("android.app.bic_client") public static final String GET_BACKGROUND_INSTALLED_PACKAGES = "android.permission.GET_BACKGROUND_INSTALLED_PACKAGES";
@@ -337,6 +338,7 @@ package android {
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
     field public static final String READ_ACTIVE_EMERGENCY_SESSION = "android.permission.READ_ACTIVE_EMERGENCY_SESSION";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final String READ_APP_INTERACTION = "android.permission.READ_APP_INTERACTION";
     field public static final String READ_APP_SPECIFIC_LOCALES = "android.permission.READ_APP_SPECIFIC_LOCALES";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String READ_BLOCKED_NUMBERS = "android.permission.READ_BLOCKED_NUMBERS";
     field public static final String READ_CARRIER_APP_INFO = "android.permission.READ_CARRIER_APP_INFO";
@@ -630,6 +632,17 @@ package android.accounts {
 
 }
 
+package android.aiseal {
+
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealException extends java.lang.Exception {
+  }
+
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealManager {
+    method @FlaggedApi("android.aiseal.aiseal_host_apis") @NonNull @RequiresPermission("android.permission.MANAGE_AISEAL_VIRTUAL_MACHINE") @WorkerThread public android.os.IBinder connectService(@NonNull String) throws android.aiseal.AiSealException;
+  }
+
+}
+
 package android.app {
 
   @UiContext public class Activity extends android.view.ContextThemeWrapper implements android.content.ComponentCallbacks2 android.view.KeyEvent.Callback android.view.LayoutInflater.Factory2 android.view.View.OnCreateContextMenuListener android.view.Window.Callback {
@@ -697,6 +710,17 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.UPDATE_DEVICE_STATS) public void setExactAndAllowWhileIdle(int, long, @Nullable String, @NonNull java.util.concurrent.Executor, @Nullable android.os.WorkSource, @NonNull android.app.AlarmManager.OnAlarmListener);
     method @RequiresPermission(android.Manifest.permission.SCHEDULE_PRIORITIZED_ALARM) public void setPrioritized(int, long, long, @Nullable String, @NonNull java.util.concurrent.Executor, @NonNull android.app.AlarmManager.OnAlarmListener);
     method @RequiresPermission(android.Manifest.permission.UPDATE_DEVICE_STATS) public void setWindow(int, long, long, @Nullable String, @NonNull java.util.concurrent.Executor, @Nullable android.os.WorkSource, @NonNull android.app.AlarmManager.OnAlarmListener);
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public final class AppInteractionContract implements android.provider.BaseColumns {
+    method @NonNull public static android.net.Uri getInteractionHistoryUriAsUser(@NonNull android.os.UserHandle);
+    field public static final String COLUMN_ACCESS_TIME = "access_time";
+    field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
+    field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
+    field public static final String COLUMN_DURATION = "access_duration";
+    field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
+    field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
+    field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
   }
 
   public class AppOpsManager {
@@ -775,6 +799,7 @@ package android.app {
     field public static final String OPSTR_READ_MEDIA_VISUAL_USER_SELECTED = "android:read_media_visual_user_selected";
     field public static final String OPSTR_READ_OXYGEN_SATURATION = "android:read_oxygen_saturation";
     field @FlaggedApi("android.permission.flags.granular_health_permissions_phase_two_enabled") public static final String OPSTR_READ_RESPIRATORY_RATE = "android:read_respiratory_rate";
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String OPSTR_READ_RESTRICTED_MESSAGES = "android:read_restricted_messages";
     field public static final String OPSTR_READ_SKIN_TEMPERATURE = "android:read_skin_temperature";
     field @FlaggedApi("android.permission.flags.granular_health_permissions_phase_two_enabled") public static final String OPSTR_READ_VO2_MAX = "android:read_vo2_max";
     field public static final String OPSTR_READ_WRITE_HEALTH_DATA = "android:read_write_health_data";
@@ -800,6 +825,7 @@ package android.app {
     field public static final String OPSTR_WRITE_MEDIA_AUDIO = "android:write_media_audio";
     field public static final String OPSTR_WRITE_MEDIA_IMAGES = "android:write_media_images";
     field public static final String OPSTR_WRITE_MEDIA_VIDEO = "android:write_media_video";
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String OPSTR_WRITE_RESTRICTED_MESSAGES = "android:write_restricted_messages";
     field public static final String OPSTR_WRITE_SMS = "android:write_sms";
     field public static final String OPSTR_WRITE_WALLPAPER = "android:write_wallpaper";
     field public static final int OP_FLAGS_ALL = 31; // 0x1f
@@ -1862,7 +1888,6 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void addAccessChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunctionManager.OnAppFunctionAccessChangedListener);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public int getAccessFlags(@NonNull String, @NonNull String);
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull public android.net.Uri getAccessHistoryContentUri();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(value=android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS, conditional=true) public int getAccessRequestState(@NonNull String, @NonNull String);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public java.util.List<java.lang.String> getValidAgents();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public java.util.List<java.lang.String> getValidTargets();
@@ -1875,17 +1900,6 @@ package android.app.appfunctions {
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_USER_DENIED = 8; // 0x8
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_USER_GRANTED = 4; // 0x4
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_REQUEST_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.REQUEST_APP_FUNCTION_ACCESS";
-  }
-
-  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final class AppFunctionManager.AccessHistory implements android.provider.BaseColumns {
-    field public static final String COLUMN_ACCESS_TIME = "access_time";
-    field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
-    field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
-    field public static final String COLUMN_DURATION = "access_duration";
-    field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
-    field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
-    field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
-    field public static final String COLUMN_THREAD_ID = "thread_id";
   }
 
   @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static interface AppFunctionManager.OnAppFunctionAccessChangedListener {
@@ -2445,6 +2459,18 @@ package android.app.job {
 
   public class JobSchedulerFrameworkInitializer {
     method public static void registerServiceWrappers();
+  }
+
+}
+
+package android.app.modes {
+
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public final class ContextualModeManager {
+    method public boolean isModeSyncEnabled();
+    method public boolean isModeSyncSupported();
+    method public void registerModeSyncEnabledListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setModeSyncEnabled(boolean);
+    method public void unregisterModeSyncEnabledListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
   }
 
 }
@@ -4158,6 +4184,7 @@ package android.content {
     method @FlaggedApi("android.os.ordered_broadcast_multiple_permissions") public void sendOrderedBroadcastMultiplePermissions(@NonNull android.content.Intent, @NonNull String[], @Nullable String, @Nullable android.content.BroadcastReceiver, @Nullable android.os.Handler, int, @Nullable String, @Nullable android.os.Bundle, @Nullable android.os.Bundle);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS) public void startActivityAsUser(@NonNull @RequiresPermission android.content.Intent, @NonNull android.os.UserHandle);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS) public void startActivityAsUser(@NonNull @RequiresPermission android.content.Intent, @Nullable android.os.Bundle, @NonNull android.os.UserHandle);
+    field @FlaggedApi("android.aiseal.aiseal_host_apis") public static final String AISEAL_HOST_SERVICE = "aiseal_host";
     field public static final String AMBIENT_CONTEXT_SERVICE = "ambient_context";
     field public static final String APP_HIBERNATION_SERVICE = "app_hibernation";
     field public static final String APP_INTEGRITY_SERVICE = "app_integrity";
@@ -5003,6 +5030,7 @@ package android.content.pm.verify.developer {
     method @NonNull public android.content.pm.SigningInfo getSigningInfo();
     method @NonNull public android.net.Uri getStagedPackageUri();
     method @NonNull public java.time.Instant getTimeoutTime();
+    method @FlaggedApi("android.content.pm.verification_service_adb") public int getVerificationFlags();
     method public void reportVerificationBypassed(int);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
@@ -5015,6 +5043,8 @@ package android.content.pm.verify.developer {
     field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST = 3; // 0x3
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.content.pm.verification_service_adb") public static final int FLAG_VERIFICATION_FORCED_ON_ADB = 2; // 0x2
+    field @FlaggedApi("android.content.pm.verification_service_adb") public static final int FLAG_VERIFICATION_IS_ADB = 1; // 0x1
   }
 
   @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationStatus implements android.os.Parcelable {
@@ -7754,6 +7784,39 @@ package android.hardware.usb {
     field public static final int LINK_TRAINING_STATUS_UNKNOWN = 0; // 0x0
   }
 
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public final class PowerProfileInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingProfiles();
+    method @CheckResult public int getMaxCurrentMa();
+    method @CheckResult public int getMaxPowerMw();
+    method @CheckResult public int getMaxVoltageMv();
+    method @CheckResult public int getMinCurrentMa();
+    method @CheckResult public int getMinVoltageMv();
+    method @Nullable public String getName();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @CheckResult public int getPowerProfileType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.PowerProfileInfo> CREATOR;
+    field public static final int POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED = -2; // 0xfffffffe
+    field public static final int POWER_PROFILE_ERROR_NO_MATCH = -3; // 0xfffffffd
+    field public static final int POWER_PROFILE_ERROR_OTHER = -1; // 0xffffffff
+    field public static final int POWER_PROFILE_TYPE_BATTERY = 7; // 0x7
+    field public static final int POWER_PROFILE_TYPE_FIXED = 6; // 0x6
+    field public static final int POWER_PROFILE_TYPE_NONE = 0; // 0x0
+    field public static final int POWER_PROFILE_TYPE_OTHER = 1; // 0x1
+    field public static final int POWER_PROFILE_TYPE_RP_1_5A = 4; // 0x4
+    field public static final int POWER_PROFILE_TYPE_RP_3_0A = 5; // 0x5
+    field public static final int POWER_PROFILE_TYPE_RP_DEFAULT = 3; // 0x3
+    field public static final int POWER_PROFILE_TYPE_SPR_AVS = 10; // 0xa
+    field public static final int POWER_PROFILE_TYPE_SPR_PPS = 9; // 0x9
+    field public static final int POWER_PROFILE_TYPE_VARIABLE = 8; // 0x8
+    field public static final int POWER_PROFILE_TYPE_VENDOR = 2; // 0x2
+  }
+
   public class UsbDeviceConnection {
     method public boolean resetDevice();
   }
@@ -7764,10 +7827,14 @@ package android.hardware.usb {
     method @FlaggedApi("android.hardware.usb.flags.expose_usb_speed_system_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbBandwidthMbps();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void grantPermission(android.hardware.usb.UsbDevice, String);
     method public static boolean isUvcSupportEnabled();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerBc12TypeListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.Bc12TypeListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerDisplayPortAltModeInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerPowerProfileInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbGadget();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setCurrentFunctions(long);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterBc12TypeListener(@NonNull android.hardware.usb.UsbManager.Bc12TypeListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterDisplayPortAltModeInfoListener(@NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterPowerProfileInfoListener(@NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_ACCESSORY_HANDSHAKE = "android.hardware.usb.action.USB_ACCESSORY_HANDSHAKE";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_CHANGED = "android.hardware.usb.action.USB_PORT_CHANGED";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_COMPLIANCE_CHANGED = "android.hardware.usb.action.USB_PORT_COMPLIANCE_CHANGED";
@@ -7800,8 +7867,16 @@ package android.hardware.usb {
     field public static final String USB_FUNCTION_RNDIS = "rndis";
   }
 
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static interface UsbManager.Bc12TypeListener {
+    method public void onPartnerBc12TypeChanged(@NonNull android.hardware.usb.UsbPort, int);
+  }
+
   public static interface UsbManager.DisplayPortAltModeInfoListener {
     method public void onDisplayPortAltModeInfoChanged(@NonNull String, @NonNull android.hardware.usb.DisplayPortAltModeInfo);
+  }
+
+  @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static interface UsbManager.PowerProfileInfoListener {
+    method public void onPowerProfileInfoChanged(@NonNull android.hardware.usb.UsbPort, @NonNull android.hardware.usb.UsbPortStatus);
   }
 
   public final class UsbPort {
@@ -7813,6 +7888,8 @@ package android.hardware.usb {
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbPort(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setRoles(int, int);
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean supportsComplianceWarnings();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public boolean supportsPartnerBc12Type();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public boolean supportsPowerProfiles();
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_INTERNAL = 1; // 0x1
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_NOT_SUPPORTED = 2; // 0x2
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_OTHER = 4; // 0x4
@@ -7844,7 +7921,12 @@ package android.hardware.usb {
     method public int getCurrentMode();
     method public int getCurrentPowerRole();
     method @Nullable public android.hardware.usb.DisplayPortAltModeInfo getDisplayPortAltModeInfo();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public int getPartnerBc12Type();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPartnerSinkPowerProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPartnerSourcePowerProfiles();
     method public int getPlugState();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPortSinkPowerProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getPortSourcePowerProfiles();
     method public int getPowerBrickConnectionStatus();
     method public int getSupportedRoleCombinations();
     method public int getUsbDataStatus();
@@ -7853,6 +7935,10 @@ package android.hardware.usb {
     method public boolean isPowerTransferLimited();
     method public boolean isRoleCombinationSupported(int, int);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_CDP = 2; // 0x2
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_DCP = 3; // 0x3
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_SDP = 1; // 0x1
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_UNKNOWN = 0; // 0x0
     field public static final int COMPLIANCE_WARNING_BC_1_2 = 3; // 0x3
     field public static final int COMPLIANCE_WARNING_DEBUG_ACCESSORY = 2; // 0x2
     field @FlaggedApi("android.hardware.usb.flags.enable_usb_data_compliance_warning") public static final int COMPLIANCE_WARNING_ENUMERATION_FAIL = 7; // 0x7
@@ -14359,6 +14445,7 @@ package android.service.personalcontext.embedded {
     method public void close();
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHint> getHints();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
+    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method public void register(int, int);
     method public void unregister();
   }
@@ -15730,7 +15817,7 @@ package android.telephony {
     method public int getAlertStatus();
     method public int getArfcn();
     method public int getCellId();
-    method public int getPhysCellId();
+    method public int getPhysicalCellId();
     method @NonNull public String getPlmn();
     method public int getRat();
     method @NonNull public int[] getReasonCodes();
@@ -19529,7 +19616,7 @@ package android.view.contentcapture {
     method @Nullable public android.view.contentcapture.ContentCaptureSessionId getParentSessionId();
     method public int getTaskId();
     method @Nullable public android.os.IBinder getWindowToken();
-    field public static final int FLAG_DISABLED_BY_APP = 1; // 0x1
+    field @Deprecated @FlaggedApi("android.view.contentcapture.flags.deprecate_set_content_capture_enabled") public static final int FLAG_DISABLED_BY_APP = 1; // 0x1
     field public static final int FLAG_DISABLED_BY_FLAG_SECURE = 2; // 0x2
     field public static final int FLAG_RECONNECTED = 4; // 0x4
   }

@@ -8803,7 +8803,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private void dumpActivitiesPerUserAllowlist(IndentingPrintWriter ipw) {
         ipw.print("Activities per user allowlist:");
-        if (mPerUserActivitiesAllowlist == null) {
+        if (mPerUserActivitiesAllowlist == null || mPerUserActivitiesAllowlist.isEmpty()) {
             ipw.println(" not set");
             return;
         }

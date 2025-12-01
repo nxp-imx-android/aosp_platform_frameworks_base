@@ -355,6 +355,16 @@ interface IWindowSession {
             IWindow window, in OnBackInvokedCallbackInfo callbackInfo);
 
     /**
+     * Sets the {@link OnBackInvokedCallbackInfo} containing the callback to be invoked for
+     * a embedded window when back is triggered.
+     *
+     * @param inputToken - token identifying the embedded window set the callback to.
+     * @param callbackInfo The {@link OnBackInvokedCallbackInfo} to set.
+     */
+    oneway void setOnBackInvokedCallbackInfoToEmbedded(
+            in InputTransferToken inputToken, in OnBackInvokedCallbackInfo callbackInfo);
+
+    /**
      * Clears a touchable region set by {@link #setInsets}.
      */
     void clearTouchableRegion(IWindow window);

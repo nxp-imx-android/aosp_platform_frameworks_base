@@ -16,6 +16,7 @@
 
 package android.security.keystore;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -195,6 +196,9 @@ public abstract class KeyProperties {
         KEY_ALGORITHM_EC,
         KEY_ALGORITHM_XDH,
         KEY_ALGORITHM_AES,
+        KEY_ALGORITHM_ML_DSA,
+        KEY_ALGORITHM_ML_DSA_65,
+        KEY_ALGORITHM_ML_DSA_87,
         KEY_ALGORITHM_HMAC_SHA1,
         KEY_ALGORITHM_HMAC_SHA224,
         KEY_ALGORITHM_HMAC_SHA256,
@@ -216,6 +220,27 @@ public abstract class KeyProperties {
 
     /** Advanced Encryption Standard (AES) key. */
     public static final String KEY_ALGORITHM_AES = "AES";
+
+    /**
+     * Module-Lattice-Based Digital Signature Algorithm (ML-DSA) key.
+     * Per https://openjdk.org/jeps/497, this defaults to the ML-DSA-65 variant.
+     */
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final String KEY_ALGORITHM_ML_DSA = "ML-DSA";
+
+    /**
+     * Module-Lattice-Based Digital Signature Algorithm (ML-DSA) key, with the parameter set
+     * corresponding to the ML-DSA-65 variant.
+     */
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final String KEY_ALGORITHM_ML_DSA_65 = "ML-DSA-65";
+
+    /**
+     * Module-Lattice-Based Digital Signature Algorithm (ML-DSA) key, with the parameter set
+     * corresponding to the ML-DSA-87 variant.
+     */
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final String KEY_ALGORITHM_ML_DSA_87 = "ML-DSA-87";
 
     /**
      * Triple Data Encryption Algorithm (3DES) key.

@@ -134,17 +134,6 @@ flag {
 }
 
 flag {
-  name: "fallback_display_for_secondary_user_on_secondary_display"
-  namespace: "input_method"
-  description: "Feature flag to fix the fallback display bug for visible background users"
-  bug: "383228193"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "report_animating_insets_types"
   namespace: "input_method"
   description: "Adding animating insets types and report IME visibility at the beginning of hiding"
@@ -160,16 +149,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-  name: "invalidate_input_calls_restart"
-  namespace: "input_method"
-  description: "Feature flag to fix the race between invalidateInput and restartInput"
-  bug: "396066692"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {

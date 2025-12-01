@@ -691,7 +691,26 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public void setOnBackInvokedCallbackInfo(IWindow iWindow,
+    public void setOnBackInvokedCallbackInfo(IWindow window,
+            OnBackInvokedCallbackInfo callbackInfo) throws RemoteException {
+        final State state;
+        synchronized (this) {
+            state = mStateForWindow.get(window.asBinder());
+        }
+        if (state == null) {
+            throw new IllegalArgumentException(
+                    "Invalid window token (never added or removed already)");
+        }
+        try {
+            mRealWm.setOnBackInvokedCallbackInfoToEmbedded(state.mInputTransferToken,
+                    callbackInfo);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to register onBackInvokedCallback on embedded window", e);
+        }
+    }
+
+    @Override
+    public void setOnBackInvokedCallbackInfoToEmbedded(InputTransferToken token,
             OnBackInvokedCallbackInfo callbackInfo) throws RemoteException { }
 
     @Override
@@ -724,9 +743,17 @@ public class WindowlessWindowManager implements IWindowSession {
 
     @Override
     public boolean moveFocusToAdjacentWindow(IWindow fromWindow, @FocusDirection int direction) {
-        Log.e(TAG, "Received request to moveFocusToAdjacentWindow on"
-                + " WindowlessWindowManager. We shouldn't get here!");
-        return false;
+        if (mHostInputTransferToken == null || mParentInterface == null) {
+            // we don't have a host or an interface to the host drop this for now.
+            return false;
+        }
+        try {
+            mParentInterface.transferFocusToParent(direction);
+            return true;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to forward focus move to Parent: ", e);
+            return false;
+        }
     }
 
     @Override

@@ -1008,7 +1008,7 @@ class RecentTasks {
 
             if (isVisibleRecentTask(task)) {
                 numVisibleTasks++;
-                if (isInVisibleRange(task, i, numVisibleTasks, withExcluded)) {
+                if (isInVisibleRange(task, numVisibleTasks, withExcluded)) {
                     // Fall through
                 } else {
                     // Not in visible range
@@ -1113,7 +1113,7 @@ class RecentTasks {
             final Task task = mTasks.get(i);
             if (isVisibleRecentTask(task)) {
                 numVisibleTasks++;
-                if (isInVisibleRange(task, i, numVisibleTasks, false /* skipExcludedCheck */)) {
+                if (isInVisibleRange(task, numVisibleTasks, false /* skipExcludedCheck */)) {
                     res.put(task.mTaskId, true);
                 }
             }
@@ -1411,7 +1411,7 @@ class RecentTasks {
                     continue;
                 } else {
                     numVisibleTasks++;
-                    if (isInVisibleRange(task, i, numVisibleTasks, false /* skipExcludedCheck */)
+                    if (isInVisibleRange(task, numVisibleTasks, false /* skipExcludedCheck */)
                             || !isTrimmable(task)) {
                         // Keep visible tasks in range
                         i++;
@@ -1538,10 +1538,9 @@ class RecentTasks {
     /**
      * @return whether the given visible task is within the policy range.
      */
-    private boolean isInVisibleRange(Task task, int taskIndex, int numVisibleTasks,
-            boolean skipExcludedCheck) {
+    private boolean isInVisibleRange(Task task, int numVisibleTasks, boolean skipExcludedCheck) {
         if (!skipExcludedCheck) {
-            // Keep the most recent task of home display even if it is excluded from recents.
+            // Keep the top visible task even if it is excluded from recents.
             final boolean isExcludeFromRecents = task.getBaseIntent() != null
                     && (task.getBaseIntent().getFlags() & FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
                     == FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
@@ -1549,14 +1548,9 @@ class RecentTasks {
                 if (DEBUG_RECENTS_TRIM_TASKS) {
                     Slog.d(TAG,
                             "\texcludeFromRecents=true,"
-                                + " taskIndex: " + taskIndex
-                                + " getTopVisibleActivity: " + task.getTopVisibleActivity()
-                                + " isOnHomeDisplay: " + task.isOnHomeDisplay());
+                                + " getTopVisibleActivity: " + task.getTopVisibleActivity());
                 }
-                // The Recents is only supported on default display now, we should only keep the
-                // most recent task of home display.
-                boolean isMostRecentTask = task.getTopVisibleActivity() != null;
-                return (task.isOnHomeDisplay() && isMostRecentTask);
+                return task.getTopVisibleActivity() != null;
             }
         }
 

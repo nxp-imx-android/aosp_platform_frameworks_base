@@ -48,7 +48,7 @@ import java.util.List;
  * The container view displays the accessibility features.
  */
 @SuppressLint("ViewConstructor")
-class MenuView extends FrameLayout implements
+public class MenuView extends FrameLayout implements
         ViewTreeObserver.OnComputeInternalInsetsListener, ComponentCallbacks {
     private static final int INDEX_MENU_ITEM = 0;
     private final List<AccessibilityTarget> mTargetFeatures = new ArrayList<>();

@@ -408,6 +408,16 @@ object TileBounceMotionTestKeys {
 }
 
 object CommonTileDefaults {
+    val ActiveIconCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_active_icon_corner_radius)
+
+    val ActiveTileCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_active_tile_corner_radius)
+
     val DualTargetEndPadding: Dp
         @Composable
         @ReadOnlyComposable

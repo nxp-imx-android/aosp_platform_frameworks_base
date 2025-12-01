@@ -80,6 +80,7 @@ import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_WILL_PLACE
 
 import static java.lang.Integer.MAX_VALUE;
 
+import android.annotation.CallSuper;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1066,9 +1067,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
+    @CallSuper
     @Override
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
             return;
         }
@@ -1848,29 +1851,24 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // will also cause all tasks to be moved to the fullscreen root task at a position that is
         // appropriate.
         removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
-
-        if (DesktopModeFlags.ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING.isTrue()) {
-            final IntArray visibleRootTasks = new IntArray();
-            forAllRootTasks(rootTask -> {
-                final boolean restoreTask;
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                    // If the task is visible, it should have activities that are visible to
-                    // the current user, so don't check for task's user id since it is
-                    // redundant and might accidentally exclude a non-leaf tasks that
-                    // aren't associated with one particular user.
-                    restoreTask = rootTask.isVisible();
-                } else {
-                    restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
-                            && rootTask.isVisible();
-                }
-                if (restoreTask) {
-                    visibleRootTasks.add(rootTask.getRootTaskId());
-                }
-            }, /* traverseTopToBottom */ false);
-            mUserVisibleRootTasks.put(mCurrentUser, visibleRootTasks);
-        } else {
-            mUserRootTaskInFront.put(mCurrentUser, focusRootTaskId);
-        }
+        final IntArray visibleRootTasks = new IntArray();
+        forAllRootTasks(rootTask -> {
+            final boolean restoreTask;
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                // If the task is visible, it should have activities that are visible to
+                // the current user, so don't check for task's user id since it is
+                // redundant and might accidentally exclude a non-leaf tasks that
+                // aren't associated with one particular user.
+                restoreTask = rootTask.isVisible();
+            } else {
+                restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
+                        && rootTask.isVisible();
+            }
+            if (restoreTask) {
+                visibleRootTasks.add(rootTask.getRootTaskId());
+            }
+        }, /* traverseTopToBottom */ false);
+        mUserVisibleRootTasks.put(mCurrentUser, visibleRootTasks);
 
         mCurrentUser = userId;
 
@@ -1884,37 +1882,26 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             Slog.i(TAG, "Persisting top task because it belongs to an always-visible user");
             // For a normal user-switch, we will restore the new user's task. But if the pre-switch
             // top task is an always-visible (Communal) one, keep it even after the switch.
-            if (Flags.enableTopVisibleRootTaskPerUserTracking()) {
-                final IntArray rootTasks = mUserVisibleRootTasks.get(mCurrentUser);
-                rootTasks.add(focusRootTaskId);
-                mUserVisibleRootTasks.put(mCurrentUser, rootTasks);
-            } else {
-                mUserRootTaskInFront.put(mCurrentUser, focusRootTaskId);
-            }
+            final IntArray rootTasks = mUserVisibleRootTasks.get(mCurrentUser);
+            rootTasks.add(focusRootTaskId);
+            mUserVisibleRootTasks.put(mCurrentUser, rootTasks);
 
         }
 
-        final int restoreRootTaskId = mUserRootTaskInFront.get(userId);
         final IntArray rootTaskIdsToRestore = mUserVisibleRootTasks.get(userId);
         boolean homeInFront = false;
-        if (Flags.enableTopVisibleRootTaskPerUserTracking()) {
-            if (rootTaskIdsToRestore == null || rootTaskIdsToRestore.size() == 0) {
-                // If there are no root tasks saved, try restore id 0 which should create and launch
-                // the home task.
-                handleRootTaskLaunchOnUserSwitch(/* restoreRootTaskId */INVALID_TASK_ID);
-                homeInFront = true;
-            } else {
-                for (int i = 0; i < rootTaskIdsToRestore.size(); i++) {
-                    handleRootTaskLaunchOnUserSwitch(rootTaskIdsToRestore.get(i));
-                }
-                // Check if the top task is type home
-                final int topRootTaskId = rootTaskIdsToRestore.get(rootTaskIdsToRestore.size() - 1);
-                homeInFront = isHomeTask(topRootTaskId);
-            }
+        if (rootTaskIdsToRestore == null || rootTaskIdsToRestore.size() == 0) {
+            // If there are no root tasks saved, try restore id 0 which should create and launch
+            // the home task.
+            handleRootTaskLaunchOnUserSwitch(/* restoreRootTaskId */INVALID_TASK_ID);
+            homeInFront = true;
         } else {
-            handleRootTaskLaunchOnUserSwitch(restoreRootTaskId);
+            for (int i = 0; i < rootTaskIdsToRestore.size(); i++) {
+                handleRootTaskLaunchOnUserSwitch(rootTaskIdsToRestore.get(i));
+            }
             // Check if the top task is type home
-            homeInFront = isHomeTask(restoreRootTaskId);
+            final int topRootTaskId = rootTaskIdsToRestore.get(rootTaskIdsToRestore.size() - 1);
+            homeInFront = isHomeTask(topRootTaskId);
         }
         return homeInFront;
     }
@@ -1945,11 +1932,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     void removeUser(int userId) {
-        if (Flags.enableTopVisibleRootTaskPerUserTracking()) {
-            mUserVisibleRootTasks.delete(userId);
-        } else {
-            mUserRootTaskInFront.delete(userId);
-        }
+        mUserVisibleRootTasks.delete(userId);
     }
 
     /**
@@ -1962,18 +1945,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 rootTask = getDefaultTaskDisplayArea().getOrCreateRootHomeTask();
             }
 
-            if (Flags.enableTopVisibleRootTaskPerUserTracking()) {
-                final IntArray rootTasks = mUserVisibleRootTasks.get(userId, new IntArray());
-                // If root task already exists in the list, move it to the top instead.
-                final int rootTaskIndex = rootTasks.indexOf(rootTask.getRootTaskId());
-                if (rootTaskIndex != -1) {
-                    rootTasks.remove(rootTaskIndex);
-                }
-                rootTasks.add(rootTask.getRootTaskId());
-                mUserVisibleRootTasks.put(userId, rootTasks);
-            } else {
-                mUserRootTaskInFront.put(userId, rootTask.getRootTaskId());
+            final IntArray rootTasks = mUserVisibleRootTasks.get(userId, new IntArray());
+            // If root task already exists in the list, move it to the top instead.
+            final int rootTaskIndex = rootTasks.indexOf(rootTask.getRootTaskId());
+            if (rootTaskIndex != -1) {
+                rootTasks.remove(rootTaskIndex);
             }
+            rootTasks.add(rootTask.getRootTaskId());
+            mUserVisibleRootTasks.put(userId, rootTasks);
         }
     }
 

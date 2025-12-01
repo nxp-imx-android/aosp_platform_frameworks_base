@@ -21,6 +21,7 @@ import static android.content.flags.Flags.FLAG_STOP_VOICE_COMMAND;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.security.Flags.FLAG_PREVENT_INTENT_REDIRECT;
 import static android.security.Flags.preventIntentRedirect;
+import static android.timezone.flags.Flags.FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST;
 
 import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED;
 import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__READ;
@@ -586,6 +587,7 @@ import java.util.function.Consumer;
  *     <li> {@link #ACTION_TIME_TICK}
  *     <li> {@link #ACTION_TIME_CHANGED}
  *     <li> {@link #ACTION_TIMEZONE_CHANGED}
+ *     <li> {@link #ACTION_TIMEZONE_OFFSET_CHANGED}
  *     <li> {@link #ACTION_BOOT_COMPLETED}
  *     <li> {@link #ACTION_PACKAGE_ADDED}
  *     <li> {@link #ACTION_PACKAGE_CHANGED}
@@ -2719,6 +2721,25 @@ public class Intent implements Parcelable, Cloneable {
      */
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_TIMEZONE_CHANGED = "android.intent.action.TIMEZONE_CHANGED";
+
+    /**
+     * Broadcast Action: Indicates that the system's time zone offset has changed without the time
+     * zone having changed. This happens for example during seasonal clock changes, or when a
+     * region changes offset.
+     *
+     * <ul>
+     *   <li>{@link #EXTRA_OLD_TIMEZONE_OFFSET} - The old time zone offset in seconds.
+     *   <li>{@link #EXTRA_NEW_TIMEZONE_OFFSET} - The new time zone offset in seconds.
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent by the system.
+     */
+    @FlaggedApi(FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST)
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(includeBackground = true, protectedBroadcast = true)
+    public static final String ACTION_TIMEZONE_OFFSET_CHANGED =
+            "android.intent.action.TIMEZONE_OFFSET_CHANGED";
+
     /**
      * Alarm Changed Action: This is broadcast when the AlarmClock
      * application's alarm is set or unset.  It is used by the
@@ -6961,6 +6982,26 @@ public class Intent implements Parcelable, Cloneable {
      */
     @SuppressLint("ActionValue")
     public static final String EXTRA_TIMEZONE = "time-zone";
+
+    /**
+     * Extra sent with {@link #ACTION_TIMEZONE_OFFSET_CHANGED} specifying the time zone offset of
+     * the device after the time zone offset change.
+     *
+     * <p>Type: int, the offset in seconds.
+     */
+    @FlaggedApi(FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST)
+    public static final String EXTRA_NEW_TIMEZONE_OFFSET =
+            "android.intent.extra.NEW_TIMEZONE_OFFSET";
+
+    /**
+     * Extra sent with {@link #ACTION_TIMEZONE_OFFSET_CHANGED} specifying the time zone offset of
+     * the device before the time zone offset change.
+     *
+     * <p>Type: int, the offset in seconds.
+     */
+    @FlaggedApi(FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST)
+    public static final String EXTRA_OLD_TIMEZONE_OFFSET =
+            "android.intent.extra.OLD_TIMEZONE_OFFSET";
 
     /**
      * Optional int extra for {@link #ACTION_TIME_CHANGED} that indicates the

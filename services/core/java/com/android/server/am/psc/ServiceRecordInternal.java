@@ -31,6 +31,8 @@ import java.util.ArrayList;
 public abstract class ServiceRecordInternal extends Binder {
     /** The service component's per-instance name. */
     public final ComponentName instanceName;
+    /** whether this is a sdk sandbox service */
+    public final boolean isSdkSandbox;
     private final OomAdjuster.Constants mOomConstants;
 
     /** Whether the service has been explicitly requested to start by an application. */
@@ -62,9 +64,11 @@ public abstract class ServiceRecordInternal extends Binder {
      */
     private long mShortFgsStartTime = NO_SHORT_FGS_START_TIME;
 
-    public ServiceRecordInternal(ComponentName instanceName, OomAdjuster.Constants oomConstants,
+    public ServiceRecordInternal(ComponentName instanceName, final boolean isSdkSandbox,
+            OomAdjuster.Constants oomConstants,
             long lastActivity) {
         this.instanceName = instanceName;
+        this.isSdkSandbox = isSdkSandbox;
         mOomConstants = oomConstants;
         mLastActivity = lastActivity;
     }

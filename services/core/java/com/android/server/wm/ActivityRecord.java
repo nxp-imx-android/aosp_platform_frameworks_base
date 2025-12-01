@@ -231,6 +231,7 @@ import static org.xmlpull.v1.XmlPullParser.END_TAG;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 import android.Manifest;
+import android.annotation.CallSuper;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -2528,7 +2529,6 @@ final class ActivityRecord extends WindowToken {
                 Slog.w(TAG, "Activity transferring splash screen timeout for "
                         + ActivityRecord.this + " state " + mTransferringSplashScreenState);
                 if (isTransferringSplashScreen()) {
-                    mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
                     cleanUpSplashScreen();
                     removeStartingWindow();
                 }
@@ -2590,7 +2590,7 @@ final class ActivityRecord extends WindowToken {
      * Receive the splash screen data from shell, sending to client.
      * @param parcelable The data to reconstruct the splash screen view, null mean unable to copy.
      */
-    void onCopySplashScreenFinish(@Nullable SplashScreenViewParcelable parcelable) {
+    boolean onCopySplashScreenFinish(@Nullable SplashScreenViewParcelable parcelable) {
         removeTransferSplashScreenTimeout();
         final SurfaceControl windowAnimationLeash = (parcelable == null
                 || mTransferringSplashScreenState != TRANSFER_SPLASH_SCREEN_COPYING
@@ -2600,13 +2600,9 @@ final class ActivityRecord extends WindowToken {
         if (windowAnimationLeash == null) {
             // Unable to copy from shell, maybe it's not a splash screen, or something went wrong.
             // Either way, abort and reset the sequence.
-            if (parcelable != null) {
-                parcelable.clearIfNeeded();
-            }
-            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             cleanUpSplashScreen();
             removeStartingWindow();
-            return;
+            return false;
         }
         mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_ATTACH_TO_CLIENT;
         final TransferSplashScreenViewStateItem item =
@@ -2617,10 +2613,9 @@ final class ActivityRecord extends WindowToken {
             scheduleTransferSplashScreenTimeout();
         } else {
             mStartingWindow.cancelAnimation();
-            parcelable.clearIfNeeded();
-            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             cleanUpSplashScreen();
         }
+        return isSuccessful;
     }
 
     private void onSplashScreenAttachComplete() {
@@ -2642,9 +2637,12 @@ final class ActivityRecord extends WindowToken {
      */
     void cleanUpSplashScreen() {
         // Clean up the splash screen if client were supposed to handle it.
-        if (mHandleExitSplashScreen
+        if (mHandleExitSplashScreen && isAttached()
                 && mTransferringSplashScreenState != TRANSFER_SPLASH_SCREEN_IDLE) {
             ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "Cleaning splash screen token=%s", this);
+            removeTransferSplashScreenTimeout();
+            mHandleExitSplashScreen = false;
+            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
             mAtmService.mTaskOrganizerController.onAppSplashScreenViewRemoved(getTask(),
                     mStartingSurface != null ? mStartingSurface.mTaskOrganizer : null);
         }
@@ -4390,6 +4388,9 @@ final class ActivityRecord extends WindowToken {
                 + " delayed=%b Callers=%s", this, delayed, Debug.getCallers(4));
 
         if (mStartingData != null) {
+            if (isTransferringSplashScreen()) {
+                cleanUpSplashScreen();
+            }
             removeStartingWindow();
         }
 
@@ -5351,6 +5352,11 @@ final class ActivityRecord extends WindowToken {
                 }
             }
         }
+        return true;
+    }
+
+    @Override
+    boolean shouldCheckTokenVisibleRequested() {
         return true;
     }
 
@@ -7386,6 +7392,9 @@ final class ActivityRecord extends WindowToken {
      * orientation is updated before the app becomes visible.
      */
     void reportDescendantOrientationChangeIfNeeded() {
+        if (com.android.window.flags.Flags.removeLegacyOrientationReport()) {
+            return;
+        }
         // Orientation request is exposed only when we're visible. Therefore visibility change
         // will change requested orientation. Notify upward the hierarchy ladder to adjust
         // configuration. This is important to cases where activities with incompatible
@@ -9265,11 +9274,21 @@ final class ActivityRecord extends WindowToken {
         return stringName;
     }
 
-    /**
-     * Write all fields to an {@code ActivityRecordProto}. This assumes the
-     * {@code ActivityRecordProto} is the outer-most proto data.
-     */
-    void dumpDebug(ProtoOutputStream proto, @WindowTracingLogLevel int logLevel) {
+    @Override
+    long getProtoFieldId() {
+        return ACTIVITY;
+    }
+
+    @CallSuper
+    @Override
+    public void dumpDebug(ProtoOutputStream proto, long fieldId,
+            @WindowTracingLogLevel int logLevel) {
+        // Critical log level logs only visible elements to mitigate performance overheard
+        if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
+            return;
+        }
+
+        final long token = proto.start(fieldId);
         writeNameToProto(proto, NAME);
         super.dumpDebug(proto, WINDOW_TOKEN, logLevel);
         proto.write(IS_ANIMATING, isAnimating(PARENTS | CHILDREN,
@@ -9309,23 +9328,6 @@ final class ActivityRecord extends WindowToken {
                 mRequestOpenInBrowserEducationTimestamp);
 
         mAppCompatController.dumpDebug(proto);
-    }
-
-    @Override
-    long getProtoFieldId() {
-        return ACTIVITY;
-    }
-
-    @Override
-    public void dumpDebug(ProtoOutputStream proto, long fieldId,
-            @WindowTracingLogLevel int logLevel) {
-        // Critical log level logs only visible elements to mitigate performance overheard
-        if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
-            return;
-        }
-
-        final long token = proto.start(fieldId);
-        dumpDebug(proto, logLevel);
         proto.end(token);
     }
 

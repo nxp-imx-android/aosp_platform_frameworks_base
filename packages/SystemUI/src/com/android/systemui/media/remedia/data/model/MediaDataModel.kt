@@ -76,4 +76,5 @@ data class MediaDataModel(
     /** Device suggestions data */
     val suggestionData: SuggestionData?,
     val token: MediaSession.Token?,
+    val needsImmediateRemoval: Boolean,
 )

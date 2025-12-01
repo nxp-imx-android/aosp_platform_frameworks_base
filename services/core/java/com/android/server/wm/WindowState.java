@@ -912,7 +912,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Starting window doesn't consider insets.
             return false;
         }
-        final boolean visible = shouldCheckTokenVisibleRequested()
+        final boolean visible = mToken.shouldCheckTokenVisibleRequested()
                 ? isVisibleRequested() : isVisible();
         return visible && mFrozenInsetsState == null;
     }
@@ -1729,28 +1729,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Override
     boolean isVisible() {
-        return wouldBeVisibleIfPolicyIgnored() && isVisibleByPolicyOrInsets();
+        return wouldBeVisibleIfPolicyIgnored() && isVisibleByPolicyOrInsets()
+                && (!mToken.shouldCheckTokenClientVisible() || mToken.isClientVisible());
     }
 
     @Override
     boolean isVisibleRequested() {
-        final boolean localVisibleRequested =
-                wouldBeVisibleRequestedIfPolicyIgnored() && isVisibleByPolicyOrInsets();
-        if (localVisibleRequested && shouldCheckTokenVisibleRequested()) {
-            return mToken.isVisibleRequested();
-        }
-        return localVisibleRequested;
-    }
-
-    /**
-     * Returns {@code true} if {@link WindowToken#isVisibleRequested()} should be considered
-     * before dispatching the latest configuration. Currently only {@link
-     * ActivityRecord#isVisibleRequested()}, {@link WallpaperWindowToken#isVisibleRequested()} and
-     * {@link ImeWindowToken#isVisibleRequested()} implement explicit visible-requested.
-     */
-    boolean shouldCheckTokenVisibleRequested() {
-        return mActivityRecord != null || mToken.asWallpaperToken() != null
-                || mToken.asImeToken() != null;
+        return wouldBeVisibleRequestedIfPolicyIgnored() && isVisibleByPolicyOrInsets()
+                && (!mToken.shouldCheckTokenVisibleRequested() || mToken.isVisibleRequested());
     }
 
     /**
@@ -3748,7 +3734,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // If this is an activity or wallpaper and is invisible or going invisible, don't report
         // either since it is going away. This is likely during a transition so we want to preserve
         // the original state.
-        if (shouldCheckTokenVisibleRequested() && !mToken.isVisibleRequested()) {
+        if (mToken.shouldCheckTokenVisibleRequested() && !mToken.isVisibleRequested()) {
             return;
         }
 
@@ -4084,6 +4070,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
         boolean isVisible = isVisible();
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible) {
             return;
         }
@@ -5420,9 +5407,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             outPoint.offset(-parent.mWindowFrames.mFrame.left, -parent.mWindowFrames.mFrame.top);
             // Undo the scale of window position because the relative coordinates for child are
             // based on the scaled parent.
-            if (mInvGlobalScale != 1f) {
-                outPoint.x = (int) (outPoint.x * mInvGlobalScale + 0.5f);
-                outPoint.y = (int) (outPoint.y * mInvGlobalScale + 0.5f);
+            if (parent.mInvGlobalScale != 1f) {
+                outPoint.x = (int) (outPoint.x * parent.mInvGlobalScale + 0.5f);
+                outPoint.y = (int) (outPoint.y * parent.mInvGlobalScale + 0.5f);
             }
             // Since the parent was outset by its surface insets, we need to undo the outsetting
             // with insetting by the same amount.
@@ -6224,12 +6211,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     public boolean isInputMethodClientFocus(int uid, int pid) {
         return getDisplayContent().isInputMethodClientFocus(uid, pid);
-    }
-
-    @Override
-    public void dumpProto(ProtoOutputStream proto, long fieldId,
-                          @WindowTracingLogLevel int logLevel) {
-        dumpDebug(proto, fieldId, logLevel);
     }
 
     public boolean cancelAndRedraw(int seqId) {

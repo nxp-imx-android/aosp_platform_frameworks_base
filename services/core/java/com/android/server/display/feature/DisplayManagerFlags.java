@@ -41,10 +41,6 @@ public class DisplayManagerFlags {
     // 'adb shell setprop persist.log.tag.DisplayManagerFlags DEBUG && adb reboot'
     private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
 
-    private final FlagState mDisplayOffloadFlagState = new FlagState(
-            Flags.FLAG_ENABLE_DISPLAY_OFFLOAD,
-            Flags::enableDisplayOffload);
-
     private final FlagState mDisplayTopology = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY,
             DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
@@ -196,11 +192,6 @@ public class DisplayManagerFlags {
             Flags::minmodeCapBrightnessEnabled
     );
 
-    private final FlagState mSyntheticModesV2 = new FlagState(
-            Flags.FLAG_ENABLE_SYNTHETIC_MODES_V2,
-            Flags::enableSyntheticModesV2
-    );
-
     private final FlagState mIsDisplayMirrorInLockTaskModeEnabled = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE,
             DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
@@ -219,11 +210,6 @@ public class DisplayManagerFlags {
 
     public boolean isDisplayTopologyEnabled() {
         return mDisplayTopology.isEnabled();
-    }
-
-    /** Returns whether displayoffload is enabled on not */
-    public boolean isDisplayOffloadEnabled() {
-        return mDisplayOffloadFlagState.isEnabled();
     }
 
     public boolean isSyncedResolutionSwitchEnabled() {
@@ -394,10 +380,6 @@ public class DisplayManagerFlags {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
     }
 
-    public boolean isSyntheticModesV2Enabled() {
-        return mSyntheticModesV2.isEnabled();
-    }
-
     public boolean isDisplayMirrorInLockTaskModeEnabled() {
         return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
     }
@@ -413,7 +395,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
@@ -445,7 +426,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
-        pw.println(" " + mSyntheticModesV2);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
         pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);
     }

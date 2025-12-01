@@ -175,10 +175,10 @@ constructor(
     }
 
     private fun transitionProgressToBlurRadius(
-        starBlurRadius: Float,
+        startBlurRadius: Float,
         endBlurRadius: Float,
         transitionProgress: Float,
-    ): Float = lerp(starBlurRadius, endBlurRadius, transitionProgress)
+    ): Float = lerp(startBlurRadius, endBlurRadius, transitionProgress)
 
     private fun computeBackgroundBlurScale(state: TransitionState): Float {
         return when {

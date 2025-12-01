@@ -19,11 +19,21 @@ package com.android.server.inputmethod;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.inputmethodservice.InputMethodService.BACK_DISPOSITION_DEFAULT;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.BACK_DISPOSITION;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.CUR_ID;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.CUR_METHOD_ID;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.CUR_SEQ;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.CUR_TOKEN;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.CUR_TOKEN_DISPLAY_ID;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.HAVE_CONNECTION;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.IME_WINDOW_VISIBILITY;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.INVALID_DISPLAY;
 
+import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UptimeMillisLong;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
@@ -44,6 +54,7 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.EventLog;
 import android.util.Slog;
+import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 import android.view.WindowManager;
 import android.view.inputmethod.Flags;
@@ -63,89 +74,223 @@ import com.android.server.EventLogTags;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.io.PrintWriter;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 /**
  * A controller managing the state of the input method binding.
  */
 final class InputMethodBindingController {
-    static final boolean DEBUG = false;
+
+    private static final boolean DEBUG = false;
+
     private static final String TAG = InputMethodBindingController.class.getSimpleName();
 
-    /** Time in milliseconds that the IME service has to bind before it is reconnected. */
-    static final long TIME_TO_RECONNECT = 3 * 1000;
+    /**
+     * The threshold in milliseconds since {@link #mLastBindTime} after which we should try to
+     * reconnect (unbind and rebind) the IME.
+     */
+    @DurationMillisLong
+    private static final long TIME_TO_RECONNECT_MS = 3 * 1000;
 
-    @UserIdInt private final int mUserId;
-    @NonNull private final InputMethodManagerService mService;
-    @NonNull private final Context mContext;
-    @NonNull private final AutofillSuggestionsController mAutofillController;
-    @NonNull private final PackageManagerInternal mPackageManagerInternal;
-    @NonNull private final WindowManagerInternal mWindowManagerInternal;
+    /** The ID of the user tied to this binding controller. */
+    @UserIdInt
+    private final int mUserId;
 
-    @GuardedBy("ImfLock.class") private long mLastBindTime;
-    /**
-     * Whether the {@link #mMainConnection} binding was created. This is {@code true} when binding
-     * the IME and when the controller becomes {@link #mActive} (if it was not unbound while
-     * inactive), and {@code false} when unbinding the IME and when the controller becomes not
-     * {@link #mActive}.
-     *
-     * <p>This will be {@code true} before the {@link ServiceConnection#onServiceConnected} callback
-     * is received.
-     */
-    @GuardedBy("ImfLock.class") private boolean mHasMainConnection;
-    @GuardedBy("ImfLock.class") @Nullable private String mCurId;
-    @GuardedBy("ImfLock.class") @Nullable private String mSelectedMethodId;
-    @GuardedBy("ImfLock.class") @Nullable private Intent mCurIntent;
-    @GuardedBy("ImfLock.class") @Nullable private IInputMethodInvoker mCurMethod;
-    @GuardedBy("ImfLock.class") private int mCurMethodUid = Process.INVALID_UID;
-    @GuardedBy("ImfLock.class") @Nullable private IBinder mCurToken;
-    @GuardedBy("ImfLock.class") @Nullable private InputMethodSubtype mCurrentSubtype;
-    @GuardedBy("ImfLock.class") private int mCurTokenDisplayId = INVALID_DISPLAY;
-    /**
-     * Whether this controller is active. This is {@code true} by default.
-     *
-     * <p>When this becomes {@code false}, only {@link #mHasBackgroundConnection} is {@code true},
-     * and {@link #mHasMainConnection} and {@link #mVisibleConnection} are both {@code false}, to
-     * enable warm starts while lowering the binding priority of the IME. When this becomes
-     * {@code true}, the {@link #mMainConnection} binding is re-created if the IME was not unbound
-     * while inactive.
-     *
-     * <p>The IME cannot be bound while this is {@code false}.
-     */
-    @GuardedBy("ImfLock.class") private boolean mActive = true;
-    @GuardedBy("ImfLock.class") private int mCurSeq;
-    /**
-     * Whether the {@link #mBackgroundConnection} binding was created. This is {@code true} together
-     * with {@link #mHasMainConnection} when binding the IME, and {@code false} when unbinding the
-     * IME.
-     *
-     * <p>This can be {@code true} even if {@link #mHasMainConnection} is {@code false}, when the
-     * controller is not {@link #mActive}.
-     */
-    @GuardedBy("ImfLock.class") private boolean mHasBackgroundConnection;
-    /**
-     * Whether the {@link #mVisibleConnection} binding was created. This is {@code true} when the
-     * IME is bound and visible, and {@code false} when it is hidden or unbound.
-     */
-    @GuardedBy("ImfLock.class") private boolean mVisibleBound;
-    @GuardedBy("ImfLock.class") private boolean mSupportsStylusHw;
-    @GuardedBy("ImfLock.class") private boolean mSupportsConnectionlessStylusHw;
-    @GuardedBy("ImfLock.class") @Nullable private String mImeIdToRestoreOnNextSession;
+    @NonNull
+    private final InputMethodManagerService mService;
 
-    /** The display id for which the latest startInput was called. */
-    @GuardedBy("ImfLock.class") private int mDisplayIdToShowIme = INVALID_DISPLAY;
-    @GuardedBy("ImfLock.class") private int mDeviceIdToShowIme = DEVICE_ID_DEFAULT;
+    @NonNull
+    private final Context mContext;
+
+    @NonNull
+    private final AutofillSuggestionsController mAutofillController;
+
+    @NonNull
+    private final PackageManagerInternal mPackageManagerInternal;
+
+    @NonNull
+    private final WindowManagerInternal mWindowManagerInternal;
 
     /**
-     * A set of status bits regarding the active IME.
+     * The time when the latest IME binding was created. Used to determine whether we should try to
+     * reconnect (unbind and rebind) if we didn't receive the
+     * {@link ServiceConnection#onServiceConnected} callback from the IME after
+     * {@link #TIME_TO_RECONNECT_MS} milliseconds.
+     */
+    @GuardedBy("ImfLock.class")
+    @UptimeMillisLong
+    private long mLastBindTime;
+
+    /**
+     * Whether the {@link #mMainConnection} binding was created. This is {@code true} only while the
+     * binding controller is {@link #mActive} and the IME is bound or in the process of binding, as
+     * it is set before the {@link ServiceConnection#onServiceConnected} callback is received.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean mHasMainConnection;
+
+    /**
+     * The {@link InputMethodInfo#getId ID} of the bound IME. If no IME is currently bound, or in
+     * the process of binding, this is {@code null}.
      *
-     * <em>Do not update this value outside of {@link #setImeWindowVis} and
-     * {@link InputMethodBindingController#unbindCurrentMethod}.</em>
+     * <p>This is temporarily different from {@link #mSelectedImeId} when the selected IME just
+     * changed, until that IME is bound.
+     *
+     * @see #mSelectedImeId
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private String mCurImeId;
+
+    /**
+     * The {@link InputMethodInfo#getId ID} of the selected IME. This can be non-{@code null} even
+     * when no IME is bound.
+     *
+     * <p>This must be synchronized with the value of
+     * {@link android.provider.Settings.Secure#DEFAULT_INPUT_METHOD}.
+     *
+     * <p>This is temporarily {@code null} while re-initializing IME settings (e.g. system locale
+     * changed).
+     *
+     * <p>This is temporarily different from {@link #mCurImeId} when the selected IME just changed,
+     * until that IME is bound.
+     *
+     * @see #mCurImeId
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private String mSelectedImeId;
+
+    /**
+     * The intent used to bind the selected IME. If no IME is currently bound or in the process of
+     * binding, this is {@code null}.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private Intent mCurImeIntent;
+
+    /**
+     * The interface used to make calls on the bound IME. This is set when the
+     * {@link ServiceConnection#onServiceConnected} callback is received, therefore it can be
+     * {@code null} while {@link #mHasMainConnection} is {@code true}. If no IME is currently bound,
+     * this is {@code null}.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private IInputMethodInvoker mCurIme;
+
+    /**
+     * The UID of the bound IME. If no IME is currently bound, this is {@link Process#INVALID_UID}.
+     */
+    @GuardedBy("ImfLock.class")
+    private int mCurImeUid = Process.INVALID_UID;
+
+    /**
+     * The token used to uniquely identify the bound IME and the WindowToken created for it. This is
+     * also used to validate that the IME calling privileged operations is the currently bound IME
+     * for the user. If no IME is currently bound or in the process of binding, this is
+     * {@code null}.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private IBinder mCurToken;
+
+    /**
+     * The current {@link InputMethodSubtype} of the current IME. If no subtype is currently
+     * selected, this is {@code null}.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private InputMethodSubtype mCurrentSubtype;
+
+    /**
+     * The ID of the display where the bound IME should be shown. If no IME is currently bound, or
+     * in the process of binding, this is {@link Display#INVALID_DISPLAY}.
+     *
+     * <p>This is temporarily different from {@link #mSelectedDisplayId} when the selected display
+     * just changed, until the IME is bound on that display.
+     *
+     * @see #mSelectedDisplayId
+     */
+    @GuardedBy("ImfLock.class")
+    private int mCurDisplayId = INVALID_DISPLAY;
+
+    /**
+     * Whether this binding controller is active. This is {@code true} by default. The IME cannot be
+     * bound while this is {@code false}. At most one binding controller across the profiles of each
+     * running user may be active and have an IME bound at any given time.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean mActive = true;
+
+    /** The binding sequence number, incremented every time there is a new bind. */
+    @GuardedBy("ImfLock.class")
+    private int mCurSeq;
+
+    /**
+     * Whether the {@link #mBackgroundConnection} binding was created. This is {@code true} only
+     * while the IME is bound or in the process of binding, as it is set before the
+     * {@link ServiceConnection#onServiceConnected} callback is received. This is similar to
+     * {@link #mHasMainConnection}, except it can also be {@code true} while not {@link #mActive}.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean mHasBackgroundConnection;
+
+    /**
+     * Whether the {@link #mVisibleConnection} binding was created. This is {@code true} only while
+     * the IME is visible.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean mHasVisibleConnection;
+
+    /** Whether the bound IME supports Stylus Handwriting. */
+    @GuardedBy("ImfLock.class")
+    private boolean mSupportsStylusHw;
+
+    /** Whether the bound IME supports connectionless Stylus Handwriting sessions. */
+    @GuardedBy("ImfLock.class")
+    private boolean mSupportsConnectionlessStylusHw;
+
+    /**
+     * The {@link InputMethodInfo#getId ID} of the IME to restore on the next session (i.e.
+     * startInput). This tracks the current IME when the system temporarily switches to a different
+     * one to enforce the device policy of the editor.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    private String mImeIdToRestoreOnNextSession;
+
+    /**
+     * The ID of the selected display where the IME should be shown. This can be
+     * non-{@link Display#INVALID_DISPLAY} even when no IME is bound.
+     *
+     * <p>This is temporarily different from {@link #mCurDisplayId} when the selected display just
+     * changed, until the IME is bound on that display.
+     *
+     * @see #mCurDisplayId
+     */
+    @GuardedBy("ImfLock.class")
+    private int mSelectedDisplayId = INVALID_DISPLAY;
+
+    /** The ID of the device where the IME should be shown. */
+    @GuardedBy("ImfLock.class")
+    private int mDeviceId = DEVICE_ID_DEFAULT;
+
+    /**
+     * The IME window visibility state of the bound IME.
+     *
+     * <p>This must be updated only from {@link #setImeWindowVis} and {@link #unbindIme}.
      */
     @ImeWindowVisibility
     @GuardedBy("ImfLock.class")
     private int mImeWindowVis;
 
+    /**
+     * The disposition mode that indicates the expected back button affordance of the bound IME.
+     *
+     * <p>This must be updated only from {@link #setBackDisposition} and {@link #unbindIme}.
+     */
     @BackDispositionMode
     @GuardedBy("ImfLock.class")
     private int mBackDisposition = BACK_DISPOSITION_DEFAULT;
@@ -158,16 +303,14 @@ final class InputMethodBindingController {
     private CountDownLatch mLatchForTesting;
 
     /**
-     * Binding flags used only while the controller is not {@link #mActive}.
+     * Binding flags used only while the binding controller is not {@link #mActive}.
      */
     static final long IME_BACKGROUND_BIND_FLAGS =
             Context.BIND_AUTO_CREATE
                 | Context.BIND_REDUCTION_FLAGS
                 | Context.BIND_ALLOW_FREEZE;
 
-    /**
-     * Binding flags for establishing connection to the {@link InputMethodService}.
-     */
+    /** The set of binding flags used for the {@link #mMainConnection} binding. */
     @VisibleForTesting
     static final int IME_CONNECTION_BIND_FLAGS;
     static {
@@ -187,9 +330,7 @@ final class InputMethodBindingController {
 
     private final int mImeConnectionBindFlags;
 
-    /**
-     * Binding flags used only while the {@link InputMethodService} is showing window.
-     */
+    /** The set of binding flags used for the {@link #mVisibleConnection} binding. */
     @VisibleForTesting
     static final int IME_VISIBLE_BIND_FLAGS =
             Context.BIND_AUTO_CREATE
@@ -214,17 +355,9 @@ final class InputMethodBindingController {
     }
 
     /**
-     * Time that we last initiated a bind to the input method, to determine
-     * if we should try to disconnect and reconnect to it.
-     */
-    @GuardedBy("ImfLock.class")
-    long getLastBindTime() {
-        return mLastBindTime;
-    }
-
-    /**
-     * Set to true if our ServiceConnection is currently actively bound to
-     * a service (whether or not we have gotten its IBinder back yet).
+     * Returns whether the {@link #mMainConnection} binding was created. Returns {@code true} only
+     * while the IME is bound or in the process of binding, as it is set before the
+     * {@link ServiceConnection#onServiceConnected} callback is received.
      */
     @GuardedBy("ImfLock.class")
     boolean hasMainConnection() {
@@ -232,58 +365,54 @@ final class InputMethodBindingController {
     }
 
     /**
-     * Id obtained with {@link InputMethodInfo#getId()} for the input method that we are currently
-     * connected to or in the process of connecting to.
+     * The {@link InputMethodInfo#getId ID} of the bound IME. If no IME is currently bound or in
+     * the process of binding, returns {@code null}.
      *
-     * <p>This can be {@code null} when no input method is connected.</p>
+     * <p>This is temporarily different from {@link #getSelectedImeId} when the selected IME just
+     * changed, until that IME is bound.
      *
-     * @see #getSelectedMethodId()
+     * @see #getSelectedImeId
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    String getCurId() {
-        return mCurId;
+    String getCurImeId() {
+        return mCurImeId;
     }
 
     /**
-     * Id obtained with {@link InputMethodInfo#getId()} for the currently selected input method.
-     * This is to be synchronized with the secure settings keyed with
+     * The {@link InputMethodInfo#getId ID} of the selected IME. This can be non-{@code null} even
+     * when no IME is bound.
+     *
+     * <p>This must be synchronized with the value of
      * {@link android.provider.Settings.Secure#DEFAULT_INPUT_METHOD}.
      *
-     * <p>This can be transiently {@code null} when the system is re-initializing input method
-     * settings, e.g., the system locale is just changed.</p>
+     * <p>This is temporarily {@code null} while re-initializing IME settings (e.g. system locale
+     * changed).
      *
-     * <p>Note that {@link #getCurId()} is used to track which IME is being connected to
-     * {@link com.android.server.inputmethod.InputMethodManagerService}.</p>
+     * <p>This is temporarily different from {@link #getCurImeId} when the selected IME just
+     * changed, until that IME is bound.
      *
-     * @see #getCurId()
+     * @see #mCurImeId
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    String getSelectedMethodId() {
-        return mSelectedMethodId;
-    }
-
-    @GuardedBy("ImfLock.class")
-    void setSelectedMethodId(@Nullable String selectedMethodId) {
-        mSelectedMethodId = selectedMethodId;
+    String getSelectedImeId() {
+        return mSelectedImeId;
     }
 
     /**
-     * Returns {@link InputMethodInfo} that is queried from {@link #getSelectedMethodId()}.
+     * Sets the {@link InputMethodInfo#getId ID} of the selected IME.
      *
-     * @return {@link InputMethodInfo} whose IME ID is the same as {@link #getSelectedMethodId()}.
-     *         {@code null} otherwise
+     * @param imeId the ID of the IME to set.
      */
     @GuardedBy("ImfLock.class")
-    @Nullable
-    InputMethodInfo getSelectedMethod() {
-        return InputMethodSettingsRepository.get(mUserId).getMethodMap().get(mSelectedMethodId);
+    void setSelectedImeId(@Nullable String imeId) {
+        mSelectedImeId = imeId;
     }
 
     /**
-     * The token we have made for the currently active input method, to
-     * identify it in the future.
+     * Returns the token used to uniquely identify the bound IME and the WindowToken created for it.
+     * If no IME is currently bound or in the process of binding, returns {@code null}.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
@@ -292,10 +421,8 @@ final class InputMethodBindingController {
     }
 
     /**
-     * The current {@link InputMethodSubtype} of the current input method.
-     *
-     * @return the current {@link InputMethodSubtype} of the current input method. {@code null}
-     *         means that there is no {@link InputMethodSubtype} currently selected
+     * Returns the current {@link InputMethodSubtype} of the current IME. If no subtype is currently
+     * selected, returns {@code null}.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
@@ -304,48 +431,46 @@ final class InputMethodBindingController {
     }
 
     /**
-     * Sets the current {@link InputMethodSubtype} of the current input method.
+     * Sets the current {@link InputMethodSubtype} of the current IME.
      *
-     * @param currentSubtype the current {@link InputMethodSubtype} of the current input method
+     * @param subtype the subtype to set.
      */
     @GuardedBy("ImfLock.class")
-    void setCurrentSubtype(@Nullable InputMethodSubtype currentSubtype) {
-        mCurrentSubtype = currentSubtype;
+    void setCurrentSubtype(@Nullable InputMethodSubtype subtype) {
+        mCurrentSubtype = subtype;
     }
 
     /**
-     * Returns the displayId associated with {@link #getCurToken()}.
+     * The ID of the display where the bound IME should be shown. If no IME is currently bound or
+     * in the process of binding, returns {@link Display#INVALID_DISPLAY}.
      *
-     * @return the displayId associated with {@link #getCurToken()}. {@link Display#INVALID_DISPLAY}
-     *         while {@link #getCurToken()} returns {@code null}
+     * <p>This is temporarily different from {@link #getSelectedDisplayId} when the selected display
+     * just changed, until the IME is bound on that display.
+     *
+     * @see #getSelectedDisplayId
      */
     @GuardedBy("ImfLock.class")
-    int getCurTokenDisplayId() {
-        return mCurTokenDisplayId;
+    int getCurDisplayId() {
+        return mCurDisplayId;
     }
 
     /**
-     * The Intent used to connect to the current input method.
+     * Returns the intent used to bind the selected IME. If no IME is currently bound, or in the
+     * process of binding, returns {@code null}.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    Intent getCurIntent() {
-        return mCurIntent;
+    Intent getCurImeIntent() {
+        return mCurImeIntent;
     }
 
-    /**
-     * The current binding sequence number, incremented every time there is
-     * a new bind performed.
-     */
+    /** Returns the binding sequence number. */
     @GuardedBy("ImfLock.class")
     int getSequenceNumber() {
         return mCurSeq;
     }
 
-    /**
-     * Increase the current binding sequence number by one.
-     * Reset to 1 on overflow.
-     */
+    /** Increases the {@link #mCurSeq} by one. Reset to 1 on overflow. */
     @GuardedBy("ImfLock.class")
     void advanceSequenceNumber() {
         mCurSeq += 1;
@@ -355,21 +480,24 @@ final class InputMethodBindingController {
     }
 
     /**
-     * If non-null, this is the input method service we are currently connected
-     * to.
+     * Returns the interface used to make calls on the bound IME. This is set when the
+     * {@link ServiceConnection#onServiceConnected} callback is received, therefore it can return
+     * {@code null} while {@link #hasMainConnection} returns {@code true}. If no IME is currently
+     * bound, returns {@code null}.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    IInputMethodInvoker getCurMethod() {
-        return mCurMethod;
+    IInputMethodInvoker getCurIme() {
+        return mCurIme;
     }
 
     /**
-     * If not {@link Process#INVALID_UID}, then the UID of {@link #getCurIntent()}.
+     * Returns the UID of the bound IME. If no IME is currently bound, returns
+     * {@link Process#INVALID_UID}.
      */
     @GuardedBy("ImfLock.class")
-    int getCurMethodUid() {
-        return mCurMethodUid;
+    int getCurImeUid() {
+        return mCurImeUid;
     }
 
     /**
@@ -378,7 +506,7 @@ final class InputMethodBindingController {
      * unbinding the IME.
      *
      * <p>This can return {@code true} even if {@link #hasMainConnection} returns {@code false},
-     * when the controller is not {@link #mActive}.
+     * when the binding controller is not {@link #mActive}.
      */
     @GuardedBy("ImfLock.class")
     boolean hasBackgroundConnection() {
@@ -386,23 +514,21 @@ final class InputMethodBindingController {
     }
 
     /**
-     * Returns whether the {@link #mVisibleConnection} binding was created. This is {@code true}
-     * when the IME is bound and visible, and {@code false} when it is hidden or unbound.
+     * Returns whether the {@link #mVisibleConnection} binding was created. Returns {@code true}
+     * only while the IME is visible.
      */
     @GuardedBy("ImfLock.class")
-    boolean isVisibleBound() {
-        return mVisibleBound;
+    boolean hasVisibleConnection() {
+        return mHasVisibleConnection;
     }
 
-    /**
-     * Returns {@code true} if current IME supports Stylus Handwriting.
-     */
+    /** Returns whether the bound IME supports Stylus Handwriting. */
     @GuardedBy("ImfLock.class")
     boolean supportsStylusHandwriting() {
         return mSupportsStylusHw;
     }
 
-    /** Returns whether the current IME supports connectionless stylus handwriting sessions. */
+    /** Returns whether the bound IME supports connectionless Stylus Handwriting sessions. */
     @GuardedBy("ImfLock.class")
     boolean supportsConnectionlessStylusHandwriting() {
         return mSupportsConnectionlessStylusHw;
@@ -410,20 +536,20 @@ final class InputMethodBindingController {
 
     /**
      * The background service connection, used to lower the binding flags of the IME process to
-     * background adjustment (allows freezing) while the controller is not {@link #mActive}.
+     * background adjustment (allows freezing) while the binding controller is not {@link #mActive}.
      */
     private final ServiceConnection mBackgroundConnection = new ServiceConnection() {
 
         @Override
         public void onBindingDied(ComponentName name) {
             synchronized (ImfLock.class) {
-                unbindCurrentMethod();
+                unbindIme();
             }
         }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            // This is handled only by the mMainConnection.
+            // This is handled by the mMainConnection.
         }
 
         @Override
@@ -437,14 +563,15 @@ final class InputMethodBindingController {
             // would be a good way to trigger such a situation.
             synchronized (ImfLock.class) {
                 if (DEBUG) {
-                    Slog.v(TAG, "Service disconnected: " + name + " mCurIntent=" + mCurIntent);
+                    Slog.v(TAG, "Service disconnected: " + name + " mCurImeIntent: "
+                            + mCurImeIntent);
                 }
-                if (mCurMethod != null && mCurIntent != null
-                        && name.equals(mCurIntent.getComponent())) {
+                if (mCurIme != null && mCurImeIntent != null
+                        && name.equals(mCurImeIntent.getComponent())) {
                     // We consider this to be a new bind attempt, since the system
                     // should now try to restart the service for us.
                     mLastBindTime = SystemClock.uptimeMillis();
-                    clearCurMethodAndSessions();
+                    clearIme();
                     mService.unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, mUserId);
                 }
             }
@@ -452,85 +579,93 @@ final class InputMethodBindingController {
     };
 
     /**
-     * Used to bring IME service up to visible adjustment while it is being shown.
+     * The visible service connection, used to increase the binding flags of the IME process to
+     * visible adjustment while the IME is visible. This avoids killing the IME process while it is
+     * visible in low memory scenarios.
      */
     @GuardedBy("ImfLock.class")
     private final ServiceConnection mVisibleConnection = new ServiceConnection() {
-        @Override public void onBindingDied(ComponentName name) {
+
+        @Override
+        public void onBindingDied(@NonNull ComponentName name) {
             synchronized (ImfLock.class) {
                 mAutofillController.invalidateAutofillSession();
-                if (isVisibleBound()) {
+                if (mHasVisibleConnection) {
                     unbindVisibleConnection();
                 }
             }
         }
 
-        @Override public void onServiceConnected(ComponentName name, IBinder service) {
+        @Override
+        public void onServiceConnected(@NonNull ComponentName name, @NonNull IBinder service) {
+            // This is handled by the mMainConnection.
         }
 
-        @Override public void onServiceDisconnected(ComponentName name) {
+        @Override
+        public void onServiceDisconnected(@NonNull ComponentName name) {
             synchronized (ImfLock.class) {
                 mAutofillController.invalidateAutofillSession();
             }
         }
     };
 
-    /**
-     * Used to bind the IME while it is not currently being shown.
-     */
+    /** The main service connection, used to start the IME process. */
     @GuardedBy("ImfLock.class")
     private final ServiceConnection mMainConnection = new ServiceConnection() {
+
         @Override
-        public void onBindingDied(ComponentName name) {
+        public void onBindingDied(@NonNull ComponentName name) {
             if (Flags.warmWorkProfileIme()) {
                 // This is now handled in the mBackgroundConnection, as that is the new
                 // "guaranteed" connection.
                 return;
             }
             synchronized (ImfLock.class) {
-                unbindCurrentMethod();
+                unbindIme();
             }
         }
+
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(@NonNull ComponentName name, @NonNull IBinder service) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.onServiceConnected");
             synchronized (ImfLock.class) {
-                if (mCurMethod != null && Flags.warmWorkProfileIme()) {
+                if (mCurIme != null && Flags.warmWorkProfileIme()) {
                     // IME was bound, binding became inactive and now active again without unbinding
                     // so the IME can be re-used.
                     return;
                 }
-                if (mCurIntent != null && name.equals(mCurIntent.getComponent())) {
-                    mCurMethod = IInputMethodInvoker.create(IInputMethod.Stub.asInterface(service));
-                    updateCurrentMethodUid();
+                if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
+                    mCurIme = IInputMethodInvoker.create(IInputMethod.Stub.asInterface(service));
+                    mCurImeUid = getPackageUid(name.getPackageName());
                     if (mCurToken == null) {
-                        Slog.w(TAG, "Service connected without a token!");
-                        unbindCurrentMethod();
+                        Slog.w(TAG, "Service connected: " + name + " without a token");
+                        unbindIme();
                         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
                         return;
                     }
-                    if (DEBUG) Slog.v(TAG, "Initiating attach with token: " + mCurToken);
-                    final InputMethodInfo info =
-                            InputMethodSettingsRepository.get(mUserId).getMethodMap().get(
-                                    mSelectedMethodId);
-                    boolean supportsStylusHwChanged =
-                            mSupportsStylusHw != info.supportsStylusHandwriting();
-                    mSupportsStylusHw = info.supportsStylusHandwriting();
+                    final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(mUserId)
+                            .getMethodMap().get(mSelectedImeId);
+                    final boolean supportsStylusHwChanged =
+                            mSupportsStylusHw != selectedImi.supportsStylusHandwriting();
+                    mSupportsStylusHw = selectedImi.supportsStylusHandwriting();
                     if (supportsStylusHwChanged) {
                         InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
                     }
-                    boolean supportsConnectionlessStylusHwChanged =
+                    final boolean supportsConnectionlessStylusHwChanged =
                             mSupportsConnectionlessStylusHw
-                                    != info.supportsConnectionlessStylusHandwriting();
+                                    != selectedImi.supportsConnectionlessStylusHandwriting();
                     if (supportsConnectionlessStylusHwChanged) {
                         mSupportsConnectionlessStylusHw =
-                                info.supportsConnectionlessStylusHandwriting();
+                                selectedImi.supportsConnectionlessStylusHandwriting();
                         InputMethodManager
                                 .invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
                     }
-                    mService.initializeImeLocked(mCurMethod, mCurToken,
-                            InputMethodBindingController.this);
-                    mService.scheduleNotifyImeUidToAudioService(mCurMethodUid);
+                    if (DEBUG) {
+                        Slog.v(TAG, "Initializing IME with token: " + mCurToken + " on display: "
+                                + mCurDisplayId);
+                    }
+                    mService.initializeImeLocked(mCurIme, mCurToken, mUserId);
+                    mService.scheduleNotifyImeUidToAudioService(mCurImeUid);
                     mService.reRequestCurrentClientSessionLocked(mUserId);
                     mAutofillController.performOnCreateInlineSuggestionsRequest();
                 }
@@ -548,16 +683,21 @@ final class InputMethodBindingController {
             }
         }
 
+        /**
+         * Returns the UID of the package with the given name, or {@link Process#INVALID_UID} if
+         * this fails.
+         *
+         * @param packageName the name of the package to get the UID of.
+         */
         @GuardedBy("ImfLock.class")
-        private void updateCurrentMethodUid() {
-            final String curMethodPackage = mCurIntent.getComponent().getPackageName();
-            final int curMethodUid = mPackageManagerInternal.getPackageUid(
-                    curMethodPackage, 0 /* flags */, mUserId);
-            if (curMethodUid < 0) {
-                Slog.e(TAG, "Failed to get UID for package=" + curMethodPackage);
-                mCurMethodUid = Process.INVALID_UID;
+        private int getPackageUid(@NonNull String packageName) {
+            final int uid = mPackageManagerInternal.getPackageUid(packageName, 0 /* flags */,
+                    mUserId);
+            if (uid < 0) {
+                Slog.e(TAG, "Failed to get UID for package: " + packageName);
+                return Process.INVALID_UID;
             } else {
-                mCurMethodUid = curMethodUid;
+                return uid;
             }
         }
 
@@ -581,14 +721,15 @@ final class InputMethodBindingController {
             // would be a good way to trigger such a situation.
             synchronized (ImfLock.class) {
                 if (DEBUG) {
-                    Slog.v(TAG, "Service disconnected: " + name + " mCurIntent=" + mCurIntent);
+                    Slog.v(TAG, "Service disconnected: " + name + " mCurImeIntent: "
+                            + mCurImeIntent);
                 }
-                if (mCurMethod != null && mCurIntent != null
-                        && name.equals(mCurIntent.getComponent())) {
+                if (mCurIme != null && mCurImeIntent != null
+                        && name.equals(mCurImeIntent.getComponent())) {
                     // We consider this to be a new bind attempt, since the system
                     // should now try to restart the service for us.
                     mLastBindTime = SystemClock.uptimeMillis();
-                    clearCurMethodAndSessions();
+                    clearIme();
                     mService.unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, mUserId);
                 }
             }
@@ -601,25 +742,35 @@ final class InputMethodBindingController {
     }
 
     @GuardedBy("ImfLock.class")
-    void onCreateInlineSuggestionsRequest(InlineSuggestionsRequestInfo requestInfo,
-            InlineSuggestionsRequestCallback callback, boolean touchExplorationEnabled) {
+    void onCreateInlineSuggestionsRequest(@NonNull InlineSuggestionsRequestInfo requestInfo,
+            @NonNull InlineSuggestionsRequestCallback callback, boolean touchExplorationEnabled) {
         mAutofillController.onCreateInlineSuggestionsRequest(requestInfo, callback,
                 touchExplorationEnabled);
     }
 
+    /**
+     * Returns the host input token of the IME that is currently associated with the autofill
+     * controller.
+     */
     @GuardedBy("ImfLock.class")
     @Nullable
     IBinder getCurHostInputToken() {
         return mAutofillController.getCurHostInputToken();
     }
 
+    /**
+     * Unbinds the IME by removing the {@link #mVisibleConnection}, {@link #mMainConnection} and
+     * {@link #mBackgroundConnection} bindings, allowing the service to be destroyed and the process
+     * to be killed. Also removes the WindowToken of the IME, resets the binding state, and finishes
+     * and clears the IME sessions from the user's IME client.
+     */
     @GuardedBy("ImfLock.class")
-    void unbindCurrentMethod() {
-        if (isVisibleBound()) {
+    void unbindIme() {
+        if (mHasVisibleConnection) {
             unbindVisibleConnection();
         }
 
-        if (hasMainConnection()) {
+        if (mHasMainConnection) {
             unbindMainConnection();
         }
 
@@ -627,102 +778,120 @@ final class InputMethodBindingController {
             unbindBackgroundConnection();
         }
 
-        if (getCurToken() != null) {
-            mService.resetSystemUiLocked(this);
-            removeCurrentToken();
-            mAutofillController.onResetSystemUi();
+        if (mCurToken != null) {
+            // Reset IME window status when unbinding.
+            mImeWindowVis = 0;
+            mBackDisposition = BACK_DISPOSITION_DEFAULT;
+            mService.updateSystemUiLocked(mImeWindowVis, mBackDisposition, mUserId);
+            removeWindowToken();
+            mAutofillController.clearHostInputToken();
         }
 
-        mCurId = null;
-        clearCurMethodAndSessions();
+        mCurImeId = null;
+        clearIme();
     }
 
+    /**
+     * Notifies the system that the IME has disconnected, and then clears the state of the bound
+     * IME.
+     */
     @GuardedBy("ImfLock.class")
-    private void clearCurMethodAndSessions() {
+    private void clearIme() {
         final var userData = mService.getUserData(mUserId);
         userData.mVisibilityStateComputer.setInputShown(false);
-        mService.clearClientSessionsLocked(mUserId);
-        mCurMethod = null;
-        mCurMethodUid = Process.INVALID_UID;
+        mService.onImeDisconnected(mUserId);
+        mCurIme = null;
+        mCurImeUid = Process.INVALID_UID;
     }
 
+    /** Removes the window token of the current IME. */
     @GuardedBy("ImfLock.class")
-    private void removeCurrentToken() {
+    private void removeWindowToken() {
         if (DEBUG) {
-            Slog.v(TAG,
-                    "Removing window token: " + mCurToken + " for display: " + mCurTokenDisplayId);
+            Slog.v(TAG, "Removing window token: " + mCurToken + " on display: " + mCurDisplayId);
         }
         mWindowManagerInternal.removeWindowToken(mCurToken, true /* removeWindows */,
-                false /* animateExit */, mCurTokenDisplayId);
+                false /* animateExit */, mCurDisplayId);
         // ImeWindowToken#removeImmediately will call setImeWindowToken if it was the current one.
         mCurToken = null;
-        mCurTokenDisplayId = INVALID_DISPLAY;
+        mCurDisplayId = INVALID_DISPLAY;
     }
 
+    /**
+     * Binds the selected IME by creating the {@link #mMainConnection} binding, allowing the process
+     * to be started and the service to be created. If successful, also creates a WindowToken for
+     * the IME.
+     *
+     * @return the binding result.
+     */
     @GuardedBy("ImfLock.class")
     @NonNull
-    InputBindResult bindCurrentMethod() {
+    InputBindResult bindIme() {
         if (!mActive && Flags.warmWorkProfileIme()) {
             Slog.e(TAG, "Cannot bind IME on inactive binding controller");
             return InputBindResult.NO_IME;
         }
-        if (mSelectedMethodId == null) {
-            Slog.e(TAG, "mSelectedMethodId is null!");
+        if (mSelectedImeId == null) {
+            Slog.e(TAG, "Binding IME failed, mSelectedImeId is null");
             return InputBindResult.NO_IME;
         }
 
-        InputMethodInfo info = InputMethodSettingsRepository.get(mUserId).getMethodMap().get(
-                mSelectedMethodId);
-        if (info == null) {
-            throw new IllegalArgumentException("Unknown id: " + mSelectedMethodId);
+        final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(mUserId)
+                .getMethodMap().get(mSelectedImeId);
+        if (selectedImi == null) {
+            throw new IllegalArgumentException("Binding IME with unknown mSelectedImeId: "
+                    + mSelectedImeId);
         }
 
-        mCurIntent = createImeBindingIntent(info.getComponent());
+        mCurImeIntent = createIntent(selectedImi.getComponent());
 
-        if (bindCurrentInputMethodServiceMainConnection()) {
+        if (bindMainConnection()) {
             if (!mHasBackgroundConnection && Flags.warmWorkProfileIme()) {
                 // Always bind the background connection together with the main connection.
                 // TODO(b/456469810): combine the three bindings into one.
-                mHasBackgroundConnection = bindCurrentInputMethodService(mBackgroundConnection,
+                mHasBackgroundConnection = bindConnection(mBackgroundConnection,
                         mImeBackgroundBindFlags);
             }
-            mCurId = info.getId();
+            // Selected state becomes current (bound or in process of binding).
+            mCurImeId = selectedImi.getId();
             mLastBindTime = SystemClock.uptimeMillis();
 
             mCurToken = new Binder();
-            mCurTokenDisplayId = mDisplayIdToShowIme;
+            mCurDisplayId = mSelectedDisplayId;
             if (DEBUG) {
-                Slog.v(TAG, "Adding window token: " + mCurToken + " for display: "
-                        + mDisplayIdToShowIme);
+                Slog.v(TAG, "Adding window token: " + mCurToken + " on display: " + mCurDisplayId);
             }
-
             if (Flags.warmWorkProfileIme()) {
-                mWindowManagerInternal.addImeWindowToken(mCurToken, mDisplayIdToShowIme, mUserId,
+                mWindowManagerInternal.addImeWindowToken(mCurToken, mCurDisplayId, mUserId,
                         null /* options */);
-                mWindowManagerInternal.setImeWindowToken(mCurToken, mCurTokenDisplayId);
+                mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
             } else {
                 mWindowManagerInternal.addWindowToken(mCurToken,
-                        WindowManager.LayoutParams.TYPE_INPUT_METHOD,
-                        mDisplayIdToShowIme, null /* options */);
+                        WindowManager.LayoutParams.TYPE_INPUT_METHOD, mCurDisplayId,
+                        null /* options */);
             }
-            return new InputBindResult(
-                    InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
-                    null, null, null, mCurId, mCurSeq, false);
+            return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
+                    null /* method */, null /* accessibilitySessions */, null /* channel */,
+                    mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
         }
 
-        Slog.w(InputMethodManagerService.TAG,
-                "Failure connecting to input method service: " + mCurIntent);
-        mCurIntent = null;
+        Slog.w(TAG, "Binding IME failed for: " + mCurImeIntent);
+        mCurImeIntent = null;
         return InputBindResult.IME_NOT_CONNECTED;
     }
 
+    /**
+     * Creates an intent to bind to an IME with the given component name.
+     *
+     * @param component the component name of the IME to create the binding intent for.
+     */
     @NonNull
-    private Intent createImeBindingIntent(ComponentName component) {
-        Intent intent = new Intent(InputMethod.SERVICE_INTERFACE);
+    private Intent createIntent(@NonNull ComponentName component) {
+        final Intent intent = new Intent(InputMethod.SERVICE_INTERFACE);
         intent.setComponent(component);
         intent.putExtra(Intent.EXTRA_CLIENT_LABEL,
                 com.android.internal.R.string.input_method_binding_label);
-        var options = ActivityOptions.makeBasic()
+        final var options = ActivityOptions.makeBasic()
                 .setPendingIntentCreatorBackgroundActivityStartMode(
                         MODE_BACKGROUND_ACTIVITY_START_DENIED);
         intent.putExtra(Intent.EXTRA_CLIENT_INTENT, PendingIntent.getActivity(
@@ -731,116 +900,155 @@ final class InputMethodBindingController {
         return intent;
     }
 
+    /** Removes the {@link #mBackgroundConnection} binding. */
     @GuardedBy("ImfLock.class")
     private void unbindBackgroundConnection() {
         mContext.unbindService(mBackgroundConnection);
         mHasBackgroundConnection = false;
     }
 
+    /** Removes the {@link #mMainConnection} binding. */
     @GuardedBy("ImfLock.class")
     private void unbindMainConnection() {
         mContext.unbindService(mMainConnection);
         mHasMainConnection = false;
     }
 
+    /** Removes the {@link #mVisibleConnection} binding. */
     @GuardedBy("ImfLock.class")
-    void unbindVisibleConnection() {
+    private void unbindVisibleConnection() {
         mContext.unbindService(mVisibleConnection);
-        mVisibleBound = false;
+        mHasVisibleConnection = false;
     }
 
+    /**
+     * Creates the binding on the given connection to the IME specified by {@link #mCurImeIntent}.
+     *
+     * @param conn  the connection to receive the IME binding on.
+     * @param flags the binding flags.
+     * @return whether the binding was successful.
+     */
     @GuardedBy("ImfLock.class")
-    private boolean bindCurrentInputMethodService(ServiceConnection conn, int flags) {
-        if (mCurIntent == null || conn == null) {
-            Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
+    private boolean bindConnection(@NonNull ServiceConnection conn, int flags) {
+        if (mCurImeIntent == null) {
+            Slog.e(TAG, "bindConnection failed, mCurImeIntent is null, conn: " + conn);
             return false;
         }
-        final boolean hasBound = mContext.bindServiceAsUser(mCurIntent, conn, flags,
-                new UserHandle(mUserId));
+        final boolean hasBound = mContext.bindServiceAsUser(mCurImeIntent, conn, flags,
+                UserHandle.of(mUserId));
         if (!hasBound) {
-            Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
+            Slog.e(TAG, "bindConnection failed, mCurImeIntent: " + mCurImeIntent + ", conn: "
+                    + conn);
             // As per javadoc, unbind even if the binding failed.
             mContext.unbindService(conn);
         }
         return hasBound;
     }
 
+    /**
+     * Creates the binding on the given connection to the IME specified by {@link #mCurImeIntent}.
+     *
+     * @param conn  the connection to receive the IME binding on.
+     * @param flags the binding flags.
+     * @return whether the binding was successful.
+     */
     @GuardedBy("ImfLock.class")
-    private boolean bindCurrentInputMethodService(@NonNull ServiceConnection conn, long flags) {
-        if (mCurIntent == null) {
-            Slog.e(TAG, "--- bind failed: service = null, conn = " + conn);
+    private boolean bindConnection(@NonNull ServiceConnection conn, long flags) {
+        if (mCurImeIntent == null) {
+            Slog.e(TAG, "bindConnection failed, mCurImeIntent is null, conn: " + conn);
             return false;
         }
-        return mContext.bindServiceAsUser(mCurIntent, conn, Context.BindServiceFlags.of(flags),
-                new UserHandle(mUserId));
+        final boolean hasBound = mContext.bindServiceAsUser(mCurImeIntent, conn,
+                Context.BindServiceFlags.of(flags), UserHandle.of(mUserId));
+        if (!hasBound) {
+            Slog.e(TAG, "bindConnection failed, mCurImeIntent: " + mCurImeIntent + ", conn: "
+                    + conn);
+            // As per javadoc, unbind even if the binding failed.
+            mContext.unbindService(conn);
+        }
+        return hasBound;
     }
 
+    /**
+     * Creates the {@link #mMainConnection} binding to the IME specified by {@link #mCurImeIntent}.
+     *
+     * @return whether the binding was created successfully.
+     */
     @GuardedBy("ImfLock.class")
-    private boolean bindCurrentInputMethodServiceMainConnection() {
-        mHasMainConnection = bindCurrentInputMethodService(mMainConnection,
-                mImeConnectionBindFlags);
+    private boolean bindMainConnection() {
+        mHasMainConnection = bindConnection(mMainConnection, mImeConnectionBindFlags);
         return mHasMainConnection;
     }
 
     /**
-     * Bind the IME so that it can be shown.
+     * Sets the bound IME as visible, raising its binding priority by creating the
+     * {@link #mVisibleConnection} binding, or reconnects the IME if needed.
      *
-     * <p>
-     * Performs a rebind if no binding is achieved in {@link #TIME_TO_RECONNECT} milliseconds.
+     * <p>If no IME is currently bound or in the process of binding, this re-binds it.
+     *
+     * <p>If the IME is not bound, but in the process of binding, this will reconnect the
+     * {@link #mMainConnection} binding if at least {@link #TIME_TO_RECONNECT_MS} milliseconds
+     * passed since the binding was created. Otherwise, this won't have any effect.
      */
     @GuardedBy("ImfLock.class")
-    void setCurrentMethodVisible() {
-        if (mCurMethod != null) {
-            if (DEBUG) Slog.d(TAG, "setCurrentMethodVisible: mCurToken=" + mCurToken);
-            if (hasMainConnection() && !isVisibleBound()) {
-                mVisibleBound = bindCurrentInputMethodService(mVisibleConnection,
-                        IME_VISIBLE_BIND_FLAGS);
-            }
-            return;
-        }
-
-        // No IME is currently connected. Reestablish the main connection.
-        if (!hasMainConnection()) {
+    void setImeVisibleOrReconnect() {
+        if (mCurIme != null) {
+            // IME is bound, create mVisibleConnection binding.
             if (DEBUG) {
-                Slog.d(TAG, "Cannot show input: no IME bound. Rebinding.");
+                Slog.d(TAG, "setImeVisibleOrReconnect: mCurToken=" + mCurToken);
             }
-            bindCurrentMethod();
+            if (mHasMainConnection && !mHasVisibleConnection) {
+                mHasVisibleConnection = bindConnection(mVisibleConnection, IME_VISIBLE_BIND_FLAGS);
+            }
             return;
         }
 
-        long bindingDuration = SystemClock.uptimeMillis() - mLastBindTime;
-        if (bindingDuration >= TIME_TO_RECONNECT) {
-            // The client has asked to have the input method shown, but
-            // we have been sitting here too long with a connection to the
-            // service and no interface received, so let's disconnect/connect
-            // to try to prod things along.
-            EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, getSelectedMethodId(),
-                    bindingDuration, 1);
-            Slog.w(TAG, "Force disconnect/connect to the IME in setCurrentMethodVisible()");
+        if (!mHasMainConnection) {
+            // IME is not bound and not in the process of binding, re-bind it.
+            if (DEBUG) {
+                Slog.d(TAG, "setImeVisibleOrReconnect with no IME bound or in the process of"
+                        + " binding, re-binding.");
+            }
+            bindIme();
+            return;
+        }
+
+        // IME is not bound, but in the process of binding.
+        final long bindingDuration = SystemClock.uptimeMillis() - mLastBindTime;
+        if (bindingDuration >= TIME_TO_RECONNECT_MS) {
+            // It has been too long since the binding was created, reconnect (unbind and rebind) the
+            // main connection.
+            EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mSelectedImeId,
+                    bindingDuration, 1 /* showing */);
+            Slog.w(TAG, "setImeVisibleOrReconnect will reconnect the main connection"
+                    + ", bindingDuration: " + bindingDuration);
             unbindMainConnection();
-            bindCurrentInputMethodServiceMainConnection();
+            bindMainConnection();
         } else {
+            // It hasn't been too long since the binding was created.
             if (DEBUG) {
-                Slog.d(TAG, "Can't show input: connection = " + mHasMainConnection + ", time = "
-                        + (TIME_TO_RECONNECT - bindingDuration));
+                Slog.d(TAG, "setImeVisibleOrReconnect failed with main connection created, time"
+                        + " until reconnect: " + (TIME_TO_RECONNECT_MS - bindingDuration));
             }
         }
     }
 
     /**
-     * Remove the binding needed for the IME to be shown.
+     * Sets the IME as not visible, lowering its binding priority by removing the
+     * {@link #mVisibleConnection} binding.
      */
     @GuardedBy("ImfLock.class")
-    void setCurrentMethodNotVisible() {
-        if (isVisibleBound()) {
+    void setImeNotVisible() {
+        if (mHasVisibleConnection) {
             unbindVisibleConnection();
         }
     }
 
     /**
-     * Sets the controller as inactive. This removes the {@link #mMainConnection} and
-     * {@link #mVisibleConnection} bindings, and disallows showing and binding the IME, but it keeps
-     * the {@link #mBackgroundConnection} binding to enable a warm start if this becomes active.
+     * Sets the binding controller as not {@link #mActive}. This removes the
+     * {@link #mMainConnection} and {@link #mVisibleConnection} bindings, and disallows showing and
+     * binding the IME, but it keeps the {@link #mBackgroundConnection} binding to enable a warm
+     * start if this becomes {@link #mActive}.
      */
     @GuardedBy("ImfLock.class")
     void setInactive() {
@@ -851,28 +1059,31 @@ final class InputMethodBindingController {
             return;
         }
         mActive = false;
-        if (mVisibleBound) {
+        if (mHasVisibleConnection) {
             unbindVisibleConnection();
         }
         if (mHasMainConnection) {
             unbindMainConnection();
         }
         if (mCurToken == null) {
-            // IME is not bound and not in the process of binding.
+            // No IME is currently bound, or in the process of binding.
             return;
         }
-        mService.resetSystemUiLocked(this);
-        mWindowManagerInternal.setImeWindowToken(null /* token */, mCurTokenDisplayId);
-        mAutofillController.onResetSystemUi();
+        // Reset IME window status when unbinding.
+        mImeWindowVis = 0;
+        mBackDisposition = BACK_DISPOSITION_DEFAULT;
+        mService.updateSystemUiLocked(mImeWindowVis, mBackDisposition, mUserId);
+        mWindowManagerInternal.setImeWindowToken(null /* token */, mCurDisplayId);
+        mAutofillController.clearHostInputToken();
         final var userData = mService.getUserData(mUserId);
         userData.mVisibilityStateComputer.setInputShown(false);
-        mService.clearClientSessionsLocked(mUserId);
+        mService.onImeDisconnected(mUserId);
     }
 
     /**
-     * Sets the controller as active. This re-allows binding and showing the IME. If the IME is
-     * still bound, this re-creates the {@link #mMainConnection} binding, enabling a warm start.
-     * Otherwise, the binding will be created when next requested by the system.
+     * Sets the binding controller as {@link #mActive}. This re-allows binding and showing the IME.
+     * If the IME is still bound, this re-creates the {@link #mMainConnection} binding, enabling a
+     * warm start. Otherwise, the binding will be created when next requested by the system.
      */
     @GuardedBy("ImfLock.class")
     void setActive() {
@@ -883,30 +1094,33 @@ final class InputMethodBindingController {
             return;
         }
         mActive = true;
-        if (mCurMethod == null) {
+        if (mCurIme == null) {
             // IME is not bound.
             return;
         }
         if (!mHasMainConnection) {
             // IME is bound while inactive, re-bind the main connection.
-            bindCurrentInputMethodServiceMainConnection();
+            bindMainConnection();
         }
-        mWindowManagerInternal.setImeWindowToken(mCurToken, mCurTokenDisplayId);
 
-        final InputMethodInfo info = InputMethodSettingsRepository.get(mUserId).getMethodMap()
-                .get(mSelectedMethodId);
-        boolean supportsStylusHwChanged = mSupportsStylusHw != info.supportsStylusHandwriting();
-        mSupportsStylusHw = info.supportsStylusHandwriting();
+        mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
+
+        final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(mUserId)
+                .getMethodMap().get(mSelectedImeId);
+        final boolean supportsStylusHwChanged =
+                mSupportsStylusHw != selectedImi.supportsStylusHandwriting();
+        mSupportsStylusHw = selectedImi.supportsStylusHandwriting();
         if (supportsStylusHwChanged) {
             InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
         }
-        boolean supportsConnectionlessStylusHwChanged =
-                mSupportsConnectionlessStylusHw != info.supportsConnectionlessStylusHandwriting();
+        final boolean supportsConnectionlessStylusHwChanged =
+                mSupportsConnectionlessStylusHw
+                        != selectedImi.supportsConnectionlessStylusHandwriting();
         if (supportsConnectionlessStylusHwChanged) {
-            mSupportsConnectionlessStylusHw = info.supportsConnectionlessStylusHandwriting();
+            mSupportsConnectionlessStylusHw = selectedImi.supportsConnectionlessStylusHandwriting();
             InputMethodManager.invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
         }
-        mService.scheduleNotifyImeUidToAudioService(mCurMethodUid);
+        mService.scheduleNotifyImeUidToAudioService(mCurImeUid);
         mService.reRequestCurrentClientSessionLocked(mUserId);
         mAutofillController.performOnCreateInlineSuggestionsRequest();
         // reset Handwriting event receiver.
@@ -916,20 +1130,60 @@ final class InputMethodBindingController {
     }
 
     /**
-     * IMMS may temporarily set a different IME based on device policy of the editor. Original IME
-     * will be restored in next startInput.
-     * @param methodId
+     * Attempt to re-use the existing connection (if any) to the IME.
+     *
+     * @return a non-{@code null} result if the connection should be reused. Otherwise {@code null},
+     * in which case the caller should reconnect (unbind and rebind).
      */
     @GuardedBy("ImfLock.class")
-    void setImeIdToRestoreOnNextSession(@Nullable String methodId) {
-        mImeIdToRestoreOnNextSession = methodId;
+    @Nullable
+    InputBindResult tryReuseConnection() {
+        if (mHasMainConnection) {
+            if (mCurIme != null) {
+                // IME is bound, re-use connection.
+                return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION,
+                        null /* method */, null /* accessibilitySessions */, null /* channel */,
+                        mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
+            } else {
+                // IME is not bound, but in the process of binding.
+                final long bindingDuration = SystemClock.uptimeMillis() - mLastBindTime;
+                if (bindingDuration < TIME_TO_RECONNECT_MS) {
+                    // It hasn't been too long since the binding was created, return to client
+                    // and wait for the IME to bind, to report back the connection.
+                    return new InputBindResult(
+                            InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
+                            null /* method */, null /* accessibilitySessions */, null /* channel */,
+                            mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
+                } else {
+                    // It has been too long since the binding was created, fall through to reconnect
+                    // (unbind and rebind) the IME.
+                    EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mSelectedImeId,
+                            bindingDuration, 0 /* showing */);
+                }
+            }
+        }
+        return null;
     }
 
     /**
-     * @see #setImeIdToRestoreOnNextSession(String)
+     * Sets the {@link InputMethodInfo#getId ID} of the IME to restore on the next session (i.e.
+     * startInput). This tracks the current IME when the system temporarily switches to a different
+     * one to enforce the device policy of the editor.
+     *
+     * @param imeId the ID of the IME to restore.
      */
     @GuardedBy("ImfLock.class")
-    @Nullable String getImeIdToRestoreOnNextSession() {
+    void setImeIdToRestoreOnNextSession(@Nullable String imeId) {
+        mImeIdToRestoreOnNextSession = imeId;
+    }
+
+    /**
+     * Returns the {@link InputMethodInfo#getId ID} of the IME to restore on the next session (i.e.
+     * startInput).
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    String getImeIdToRestoreOnNextSession() {
         return mImeIdToRestoreOnNextSession;
     }
 
@@ -947,79 +1201,113 @@ final class InputMethodBindingController {
     @GuardedBy("ImfLock.class")
     @Nullable
     InputMethodSubtype getCurrentInputMethodSubtype() {
-        final var selectedMethodId = getSelectedMethodId();
-        if (selectedMethodId == null) {
+        if (mSelectedImeId == null) {
             return null;
         }
         final InputMethodSettings settings = InputMethodSettingsRepository.get(mUserId);
-        final InputMethodInfo imi = settings.getMethodMap().get(selectedMethodId);
-        if (imi == null || imi.getSubtypeCount() == 0) {
+        final InputMethodInfo selectedImi = settings.getMethodMap().get(mSelectedImeId);
+        if (selectedImi == null || selectedImi.getSubtypeCount() == 0) {
             return null;
         }
-        final var subtype = SubtypeUtils.getCurrentInputMethodSubtype(imi, settings,
+        final var subtype = SubtypeUtils.getCurrentInputMethodSubtype(selectedImi, settings,
                 mCurrentSubtype);
         mCurrentSubtype = subtype;
         return subtype;
     }
 
     /**
-     * Returns whether this controller is active. This is {@code true} by default.
-     *
-     * <p>When this becomes {@code false}, only {@link #mHasBackgroundConnection} is {@code true},
-     * and {@link #mHasMainConnection} and {@link #mVisibleConnection} are both {@code false}, to
-     * enable warm starts while lowering the binding priority of the IME. When this becomes
-     * {@code true}, the {@link #mMainConnection} binding is re-created if the IME was not unbound
-     * while inactive.
-     *
-     * <p>The IME cannot be bound while this is {@code false}.
+     * Returns whether this binding controller is active. This is {@code true} by default. The IME
+     * cannot be bound while this is {@code false}. At most one binding controller across the
+     * profiles of each running user may be active and have an IME bound at any given time.
      */
     @GuardedBy("ImfLock.class")
     boolean isActive() {
         return mActive;
     }
 
+    /**
+     * Sets the ID of the selected display where the IME should be shown.
+     *
+     * @param displayId the display ID to set.
+     */
     @GuardedBy("ImfLock.class")
-    void setDisplayIdToShowIme(int displayId) {
-        mDisplayIdToShowIme = displayId;
+    void setSelectedDisplayId(int displayId) {
+        mSelectedDisplayId = displayId;
     }
 
+    /**
+     * Returns the ID of the selected display where the IME should be shown. This can be
+     * non-{@link Display#INVALID_DISPLAY} even when no IME is bound.
+     *
+     * <p>This is temporarily different from {@link #getCurDisplayId} when the selected display
+     * just changed, until the IME is bound on that display.
+     *
+     * @see #getCurDisplayId
+     */
     @GuardedBy("ImfLock.class")
-    int getDisplayIdToShowIme() {
-        return mDisplayIdToShowIme;
+    int getSelectedDisplayId() {
+        return mSelectedDisplayId;
     }
 
+    /**
+     * Sets the ID of the device where the IME should be shown.
+     *
+     * @param deviceId the device ID to set.
+     */
     @GuardedBy("ImfLock.class")
-    void setDeviceIdToShowIme(int deviceId) {
-        mDeviceIdToShowIme = deviceId;
+    void setDeviceId(int deviceId) {
+        mDeviceId = deviceId;
     }
 
+    /** Returns the ID of the device where the IME should be shown. */
     @GuardedBy("ImfLock.class")
-    int getDeviceIdToShowIme() {
-        return mDeviceIdToShowIme;
+    int getDeviceId() {
+        return mDeviceId;
     }
 
+    /** Returns the ID of the user tied to this binding controller. */
     @UserIdInt
     int getUserId() {
         return mUserId;
     }
 
+    /**
+     * Sets the IME window visibility state of the bound IME.
+     *
+     * @param vis the state to set.
+     */
     @GuardedBy("ImfLock.class")
-    void setImeWindowVis(@ImeWindowVisibility int imeWindowVis) {
-        mImeWindowVis = imeWindowVis;
+    void setImeWindowVis(@ImeWindowVisibility int vis) {
+        mImeWindowVis = vis;
     }
 
+    /**
+     * Returns the IME window visibility state of the bound IME. If no IME is currently bound,
+     * returns {@code 0}.
+     */
     @ImeWindowVisibility
     @GuardedBy("ImfLock.class")
     int getImeWindowVis() {
         return mImeWindowVis;
     }
 
+    /**
+     * Returns the disposition mode that indicates the expected back button affordance of the bound
+     * IME. If no IME is currently bound, returns
+     * {@link InputMethodService#BACK_DISPOSITION_DEFAULT}.
+     */
     @BackDispositionMode
     @GuardedBy("ImfLock.class")
     int getBackDisposition() {
         return mBackDisposition;
     }
 
+    /**
+     * Sets the disposition mode that indicates the expected back button affordance of the bound
+     * IME.
+     *
+     * @param backDisposition the back disposition to set.
+     */
     @GuardedBy("ImfLock.class")
     void setBackDisposition(@BackDispositionMode int backDisposition) {
         mBackDisposition = backDisposition;
@@ -1036,26 +1324,49 @@ final class InputMethodBindingController {
         mLatchForTesting = latch;
     }
 
+    /**
+     * Writes the current state to the given print writer.
+     *
+     * @param pw     the print writer to write the state to.
+     * @param prefix the prefix to add for output line.
+     */
     @GuardedBy("ImfLock.class")
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
-        pw.println(prefix + "mSelectedMethodId=" + mSelectedMethodId);
+        pw.println(prefix + "mSelectedImeId=" + mSelectedImeId);
         pw.println(prefix + "mCurrentSubtype=" + mCurrentSubtype);
         pw.println(prefix + "mCurSeq=" + mCurSeq);
-        pw.println(prefix + "mCurId=" + mCurId);
+        pw.println(prefix + "mCurImeId=" + mCurImeId);
         pw.println(prefix + "mHasBackgroundConnection=" + mHasBackgroundConnection);
         pw.println(prefix + "mHasMainConnection=" + mHasMainConnection);
-        pw.println(prefix + "mVisibleBound=" + mVisibleBound);
+        pw.println(prefix + "mVisibleBound=" + mHasVisibleConnection);
         pw.println(prefix + "mCurToken=" + mCurToken);
-        pw.println(prefix + "mCurTokenDisplayId=" + mCurTokenDisplayId);
+        pw.println(prefix + "mCurDisplayId=" + mCurDisplayId);
         pw.println(prefix + "mActive=" + mActive);
         pw.println(prefix + "mCurHostInputToken=" + getCurHostInputToken());
-        pw.println(prefix + "mCurIntent=" + mCurIntent);
-        pw.println(prefix + "mCurMethod=" + mCurMethod);
+        pw.println(prefix + "mCurImeIntent=" + mCurImeIntent);
+        pw.println(prefix + "mCurIme=" + mCurIme);
         pw.println(prefix + "mImeWindowVis=" + mImeWindowVis);
         pw.println(prefix + "mBackDisposition=" + mBackDisposition);
-        pw.println(prefix + "mDisplayIdToShowIme=" + mDisplayIdToShowIme);
-        pw.println(prefix + "mDeviceIdToShowIme=" + mDeviceIdToShowIme);
+        pw.println(prefix + "mSelectedDisplayId=" + mSelectedDisplayId);
+        pw.println(prefix + "mDeviceId=" + mDeviceId);
         pw.println(prefix + "mSupportsStylusHw=" + mSupportsStylusHw);
         pw.println(prefix + "mSupportsConnectionlessStylusHw=" + mSupportsConnectionlessStylusHw);
+    }
+
+    /**
+     * Writes the current state to the given proto output stream.
+     *
+     * @param proto the stream to write the state in.
+     */
+    @GuardedBy("ImfLock.class")
+    void dumpDebug(@NonNull ProtoOutputStream proto) {
+        proto.write(CUR_METHOD_ID, mSelectedImeId);
+        proto.write(CUR_SEQ, mCurSeq);
+        proto.write(CUR_ID, mCurImeId);
+        proto.write(CUR_TOKEN, Objects.toString(mCurToken));
+        proto.write(CUR_TOKEN_DISPLAY_ID, mCurDisplayId);
+        proto.write(HAVE_CONNECTION, mHasMainConnection);
+        proto.write(BACK_DISPOSITION, mBackDisposition);
+        proto.write(IME_WINDOW_VISIBILITY, mImeWindowVis);
     }
 }

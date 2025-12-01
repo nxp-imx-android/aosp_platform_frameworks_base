@@ -255,6 +255,8 @@ public class DpmMockContext extends MockContext {
                 return mMockSystemServices.usbManager;
             case Context.EUICC_SERVICE:
                 return mMockSystemServices.euiccManager;
+            case Context.ACCESSIBILITY_SERVICE:
+                return mMockSystemServices.accessibilityManagerInternal;
         }
         throw new UnsupportedOperationException();
     }

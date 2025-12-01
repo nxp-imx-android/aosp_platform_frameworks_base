@@ -20,4 +20,4 @@ import com.android.systemui.bouncer.domain.interactor.simBouncerInteractor
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.restrictedModeInteractor by
-    Kosmos.Fixture { RestrictedModeInteractor(simBouncerInteractor = simBouncerInteractor) }
+    Kosmos.Fixture { RestrictedModeInteractor(simBouncerInteractor = { simBouncerInteractor }) }

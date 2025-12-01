@@ -54,6 +54,7 @@ import java.util.function.BiConsumer;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class VibrationEffectSerializer {
     private static final String TAG = "VibrationEffectSerializer";
 

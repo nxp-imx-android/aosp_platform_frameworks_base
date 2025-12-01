@@ -44,7 +44,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Provides the layout resources information of the {@link MenuView}.
  */
-class MenuViewAppearance {
+public class MenuViewAppearance {
     private final WindowManager mWindowManager;
     private final Resources mRes;
     private final Position mPercentagePosition = new Position(/* percentageX= */

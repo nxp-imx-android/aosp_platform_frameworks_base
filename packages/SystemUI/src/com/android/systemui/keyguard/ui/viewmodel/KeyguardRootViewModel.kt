@@ -270,7 +270,7 @@ constructor(
             .distinctUntilChanged()
             .onStart { emit(false) }
             .flatMapLatest { isExpanding ->
-                if (Flags.deferDozeTransitionOnShadeDrag() && isExpanding) {
+                if (isExpanding) {
                     // If shade is expanding, switch to a flow that never emits.
                     emptyFlow()
                 } else {

@@ -20,6 +20,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
@@ -72,6 +73,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.Up)).isNull()
             assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
+            assertThat(actions?.get(Swipe.Down(fromSource = Edge.Top))).isNull()
             assertThat(actions?.get(Swipe.Start)).isNull()
             assertThat(actions?.get(Swipe.End)).isNull()
 

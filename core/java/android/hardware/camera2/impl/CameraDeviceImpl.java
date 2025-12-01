@@ -42,7 +42,9 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.ICameraDeviceCallbacks;
 import android.hardware.camera2.ICameraDeviceUser;
 import android.hardware.camera2.ICameraOfflineSession;
+import android.hardware.camera2.MultiResolutionImageReader;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.impl.MultiResConcurrentReadersStartInfo;
 import android.hardware.camera2.params.DynamicRangeProfiles;
 import android.hardware.camera2.params.ExtensionSessionConfiguration;
 import android.hardware.camera2.params.InputConfiguration;
@@ -53,6 +55,7 @@ import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.SharedSessionConfiguration;
 import android.hardware.camera2.params.SharedSessionConfiguration.SharedOutputConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.hardware.camera2.utils.ArrayUtils;
 import android.hardware.camera2.utils.SessionConfigurationAndStreamIds;
 import android.hardware.camera2.utils.ListUtils;
 import android.hardware.camera2.utils.OutputAndInputStreamIds;
@@ -2665,6 +2668,8 @@ public class CameraDeviceImpl extends CameraDevice
                     resultExtras.getLastCompletedZslFrameNumber();
             final boolean hasReadoutTimestamp = resultExtras.hasReadoutTimestamp();
             final long readoutTimestamp = resultExtras.getReadoutTimestamp();
+            final MultiResConcurrentReadersStartInfo[] multiResConcurrentReadersInfo =
+                    resultExtras.getMultiResConcurrentReadersStartInfo();
 
             if (DEBUG) {
                 Log.d(TAG, "Capture started for id " + requestId + " frame number " + frameNumber
@@ -2720,11 +2725,12 @@ public class CameraDeviceImpl extends CameraDevice
                                         final Range<Integer> fpsRange =
                                             request.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE);
                                         for (int i = 0; i < holder.getRequestCount(); i++) {
+                                            long timestampForReq = timestamp - (subsequenceId - i) *
+                                                    NANO_PER_SECOND / fpsRange.getUpper();
                                             holder.getCallback().onCaptureStarted(
                                                 CameraDeviceImpl.this,
                                                 holder.getRequest(i),
-                                                timestamp - (subsequenceId - i) *
-                                                NANO_PER_SECOND / fpsRange.getUpper(),
+                                                timestampForReq,
                                                 frameNumber - (subsequenceId - i));
                                             if (hasReadoutTimestamp) {
                                                 holder.getCallback().onReadoutStarted(
@@ -2734,6 +2740,12 @@ public class CameraDeviceImpl extends CameraDevice
                                                     NANO_PER_SECOND / fpsRange.getUpper(),
                                                     frameNumber - (subsequenceId - i));
                                             }
+
+                                            sendOnMultiResolutionOutputStarted(
+                                                    holder.getRequest(i),
+                                                    frameNumber - (subsequenceId - i),
+                                                    timestampForReq,
+                                                    multiResConcurrentReadersInfo);
                                         }
                                     } else {
                                         holder.getCallback().onCaptureStarted(
@@ -2744,6 +2756,9 @@ public class CameraDeviceImpl extends CameraDevice
                                                 CameraDeviceImpl.this, request,
                                                 readoutTimestamp, frameNumber);
                                         }
+                                        sendOnMultiResolutionOutputStarted(
+                                                request, frameNumber, timestamp,
+                                                multiResConcurrentReadersInfo);
                                     }
                                 }
                             }
@@ -2753,6 +2768,70 @@ public class CameraDeviceImpl extends CameraDevice
                 }
             }
         }
+
+        private void sendOnMultiResolutionOutputStarted(CaptureRequest request, long frameNumber,
+                long timestamp,
+                MultiResConcurrentReadersStartInfo[] multiResConcurrentReadersInfo) {
+            if (!Flags.multiResolutionConcurrentReaders()) {
+                return;
+            }
+            // Iterate through all MultiResolutionImageReaders' concurrent start info, and send
+            // callbacks.
+            for (MultiResConcurrentReadersStartInfo info : multiResConcurrentReadersInfo) {
+                Surface targetSurface = null;
+                MultiResolutionImageReader multiResImageReader = null;
+                ArrayList<Surface> activeOutputSurfaces = new ArrayList<Surface>();
+                for (int i = 0; i < mConfiguredOutputs.size(); ++i) {
+                    int streamId = mConfiguredOutputs.keyAt(i);
+                    OutputConfiguration config = mConfiguredOutputs.valueAt(i);
+
+                    if (config.getSurfaceGroupId() != info.groupId) {
+                        continue;
+                    }
+                    // The OutputConfiguration with matching groupId must
+                    // cache a MultiResolutionImageReader.
+                    MultiResolutionImageReader multiResReaderForConfig =
+                            config.getMultiResolutionReader();
+                    if (multiResReaderForConfig == null) {
+                        Log.e(TAG, "OutputConfiguration doesn't belong to "
+                                + "a MultiResolutionImageReader!");
+                        return;
+                    }
+                    // All cached MultiResolutionImageReaders with the same groupId
+                    // must match.
+                    if (multiResImageReader != null
+                            && multiResImageReader != multiResReaderForConfig) {
+                        Log.e(TAG, "OutputConfigurations having mismatch "
+                                + "MultiResolutionImageReader!");
+                        return;
+                    }
+                    multiResImageReader = multiResReaderForConfig;
+
+                    Surface surface = config.getSurface();
+                    if (request.containsTarget(surface)) {
+                        targetSurface = surface;
+                    }
+                    if (ArrayUtils.contains(info.streamIds, streamId)) {
+                        activeOutputSurfaces.add(surface);
+                    }
+                }
+                // The MultiResolutionOutputStartInfo must belong to a
+                // MultiResolutionImageReader the application requested on.
+                if (targetSurface == null) {
+                    Log.e(TAG, "MultiResolutionOutputStarted doesn't contain targetSurface!");
+                    return;
+                }
+                // The cached MultiResolutionImageReader object must be valid.
+                if (multiResImageReader == null) {
+                    Log.e(TAG, "MultiResolutionImageReader not found in OutputConfiguration!");
+                    return;
+                }
+
+                multiResImageReader.postOnActiveOutputSurfacesCallback(
+                        activeOutputSurfaces, timestamp, frameNumber);
+            }
+        }
+
         private PhysicalCaptureResultInfo[] readMetadata(
             PhysicalCaptureResultInfo[] srcPhysicalResults) {
             PhysicalCaptureResultInfo[] retVal =

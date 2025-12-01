@@ -91,8 +91,8 @@ public class ParsedActivityUtils {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public static ParseResult<ParsedActivity> parseActivityOrReceiver(String[] separateProcesses,
             ParsingPackage pkg, Resources res, XmlResourceParser parser, int flags,
-            boolean useRoundIcon, @Nullable String defaultSplitName, ParseInput input,
-            boolean runInPccSandbox) throws XmlPullParserException, IOException {
+            boolean useRoundIcon, @Nullable String defaultSplitName, ParseInput input)
+            throws XmlPullParserException, IOException {
         final String packageName = pkg.getPackageName();
         final ParsedActivityImpl activity = new ParsedActivityImpl();
 
@@ -147,10 +147,11 @@ public class ParsedActivityUtils {
                                 | flag(ActivityInfo.FLAG_SHOW_FOR_ALL_USERS, R.styleable.AndroidManifestActivity_showForAllUsers, sa)
                                 | flag(ActivityInfo.FLAG_SHOW_FOR_ALL_USERS, R.styleable.AndroidManifestActivity_showOnLockScreen, sa)
                                 | flag(ActivityInfo.FLAG_STATE_NOT_NEEDED, R.styleable.AndroidManifestActivity_stateNotNeeded, sa)
-                                | flag(ActivityInfo.FLAG_SYSTEM_USER_ONLY, R.styleable.AndroidManifestActivity_systemUserOnly, sa)));
-
-            if (runInPccSandbox) {
-                activity.setFlags(activity.getFlags() | ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
+                                | flag(ActivityInfo.FLAG_SYSTEM_USER_ONLY,
+                                        R.styleable.AndroidManifestActivity_systemUserOnly, sa)));
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                activity.setFlags(activity.getFlags() | flag(ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX,
+                        R.styleable.AndroidManifestActivity_isPrivateComputeCoreProcess, sa));
             }
 
             if (!receiver) {
@@ -269,7 +270,7 @@ public class ParsedActivityUtils {
     @NonNull
     public static ParseResult<ParsedActivity> parseActivityAlias(ParsingPackage pkg, Resources res,
             XmlResourceParser parser, boolean useRoundIcon, @Nullable String defaultSplitName,
-            @NonNull ParseInput input, boolean runInPccSandbox)
+            @NonNull ParseInput input)
             throws XmlPullParserException, IOException {
         TypedArray sa = res.obtainAttributes(parser, R.styleable.AndroidManifestActivityAlias);
         try {
@@ -307,10 +308,16 @@ public class ParsedActivityUtils {
 
             ParsedActivityImpl activity = ParsedActivityImpl.makeAlias(targetActivity, target);
 
-            // unset FLAG_RUN_IN_PCC_SANDBOX and set based on passed runInPccSandbox flag
-            activity.setFlags(activity.getFlags() & ~ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
-            if (runInPccSandbox) {
-                activity.setFlags(activity.getFlags() | ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                // unset FLAG_RUN_IN_PCC_SANDBOX and set based on isPrivateComputeCoreProcess
+                // value for alias
+                activity.setFlags(activity.getFlags() & ~ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
+                boolean aliasMarkedPcc = sa.getBoolean(
+                        R.styleable.AndroidManifestActivityAlias_isPrivateComputeCoreProcess,
+                        false);
+                if (aliasMarkedPcc) {
+                    activity.setFlags(activity.getFlags() | ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
+                }
             }
 
             String tag = "<" + parser.getName() + ">";

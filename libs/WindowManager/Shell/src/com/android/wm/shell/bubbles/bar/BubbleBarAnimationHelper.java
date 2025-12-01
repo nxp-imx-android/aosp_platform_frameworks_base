@@ -771,7 +771,6 @@ public class BubbleBarAnimationHelper {
         bbev.setY(rect.top);
         bbev.setScaleX(1f);
         bbev.setScaleY(1f);
-        bbev.updateLocation();
         bbev.maybeShowOverflow();
     }
 

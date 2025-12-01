@@ -325,7 +325,7 @@ constructor(
 
     @VisibleForTesting
     fun nonTintedIcon(icon: Icon): Icon =
-        if (Flags.clearShortcutIconTint() && icon is Icon.Loaded) {
+        if (icon is Icon.Loaded) {
             icon.apply { drawable.setTintList(null) }
         } else {
             icon

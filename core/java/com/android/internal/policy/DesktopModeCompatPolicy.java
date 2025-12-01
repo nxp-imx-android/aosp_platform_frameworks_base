@@ -282,7 +282,7 @@ public class DesktopModeCompatPolicy {
      * Returns true if the tasks base activity is part of the default home package, or there is
      * currently no default home package available.
      */
-    private boolean isPartOfDefaultHomePackageOrNoHomeAvailable(@NonNull String packageName,
+    public boolean isPartOfDefaultHomePackageOrNoHomeAvailable(@NonNull String packageName,
             int userId) {
         final String defaultHomePackage = getDefaultHomePackage(userId);
         return defaultHomePackage == null || packageName.equals(defaultHomePackage);

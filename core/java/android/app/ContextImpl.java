@@ -613,6 +613,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public SharedPreferences getSharedPreferences(String name, int mode) {
         // At least one application in the world actually passes in a null
         // name.  This happened to work because when we generated the file name
@@ -639,6 +640,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public SharedPreferences getSharedPreferences(File file, int mode) {
         SharedPreferencesImpl sp;
         synchronized (ContextImpl.class) {
@@ -646,21 +648,7 @@ class ContextImpl extends Context {
             sp = cache.get(file);
             if (sp == null) {
                 checkMode(mode);
-                if (getApplicationInfo().targetSdkVersion >= android.os.Build.VERSION_CODES.O) {
-                    if (isCredentialProtectedStorage()) {
-                        final UserManager um = getSystemService(UserManager.class);
-                        if (um == null) {
-                            throw new IllegalStateException("SharedPreferences cannot be accessed "
-                                    + "if UserManager is not available. "
-                                    + "(e.g. from inside an isolated process)");
-                        }
-                        if (!um.isUserUnlockingOrUnlocked(UserHandle.myUserId())) {
-                            throw new IllegalStateException("SharedPreferences in "
-                                    + "credential encrypted storage are not available until after "
-                                    + "user (id " + UserHandle.myUserId() + ") is unlocked");
-                        }
-                    }
-                }
+                credentialProtectedStorageCheck();
                 sp = new SharedPreferencesImpl(file, mode);
                 cache.put(file, sp);
                 return sp;
@@ -676,7 +664,27 @@ class ContextImpl extends Context {
         return sp;
     }
 
+    @RavenwoodIgnore(blockedBy = UserManager.class)
+    private void credentialProtectedStorageCheck() {
+        if (getApplicationInfo().targetSdkVersion >= android.os.Build.VERSION_CODES.O) {
+            if (isCredentialProtectedStorage()) {
+                final UserManager um = getSystemService(UserManager.class);
+                if (um == null) {
+                    throw new IllegalStateException("SharedPreferences cannot be accessed "
+                            + "if UserManager is not available. "
+                            + "(e.g. from inside an isolated process)");
+                }
+                if (!um.isUserUnlockingOrUnlocked(UserHandle.myUserId())) {
+                    throw new IllegalStateException("SharedPreferences in "
+                            + "credential encrypted storage are not available until after "
+                            + "user (id " + UserHandle.myUserId() + ") is unlocked");
+                }
+            }
+        }
+    }
+
     @GuardedBy("ContextImpl.class")
+    @RavenwoodKeep
     private ArrayMap<File, SharedPreferencesImpl> getSharedPreferencesCacheLocked() {
         if (sSharedPrefsCache == null) {
             sSharedPrefsCache = new ArrayMap<>();
@@ -786,6 +794,7 @@ class ContextImpl extends Context {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     private File getPreferencesDir() {
         synchronized (mPreferencesDirLock) {
             if (mPreferencesDir == null) {

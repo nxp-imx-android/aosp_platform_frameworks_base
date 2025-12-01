@@ -89,4 +89,16 @@ class ClientRegistry {
             return mClients.get(clientId);
         }
     }
+
+    /**
+     * Returns the {@link RenderToken} for the given client.
+     *
+     * @param clientInfo the {@link InsightSurfaceClientInfo} of the client
+     * @return the {@link RenderToken} for the client
+     */
+    public RenderToken getRenderTokenForClient(InsightSurfaceClientInfo clientInfo) {
+        synchronized (mClients) {
+            return mRenderTokensByClientId.get(clientInfo.getId());
+        }
+    }
 }

@@ -836,6 +836,8 @@ public class AuthControllerTest extends SysuiTestCase {
 
     @Test
     public void testOnBiometricPromptDismissedCallback() {
+        when(mLockPatternUtils.getCredentialTypeForUser(anyInt())).thenReturn(
+                LockPatternUtils.CREDENTIAL_TYPE_PATTERN);
         // GIVEN a callback is registered
         AuthController.Callback callback = mock(AuthController.Callback.class);
         mAuthController.addCallback(callback);
@@ -847,7 +849,9 @@ public class AuthControllerTest extends SysuiTestCase {
                 mAuthController.mCurrentDialog.getRequestId());
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_USER_CANCEL);
+        verify(callback).onBiometricPromptDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_USER_CANCEL),
+                eq(LockPatternUtils.CREDENTIAL_TYPE_PATTERN));
     }
 
     @Test
@@ -862,7 +866,7 @@ public class AuthControllerTest extends SysuiTestCase {
 
         // THEN callback should be received
         verify(callback).onBiometricPromptDismissed(
-                BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED);
+                eq(BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED), anyInt());
     }
 
     @Test

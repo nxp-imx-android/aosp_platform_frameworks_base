@@ -29,6 +29,7 @@
 #include <renderthread/CanvasContext.h>
 
 #include "GraphicsJNI.h"
+#include "Path.h"
 
 namespace android {
 
@@ -156,7 +157,7 @@ static jboolean android_view_RenderNode_setOutlineRoundRect(CRITICAL_JNI_PARAMS_
 static jboolean android_view_RenderNode_setOutlinePath(CRITICAL_JNI_PARAMS_COMMA jlong renderNodePtr,
         jlong outlinePathPtr, jfloat alpha) {
     RenderNode* renderNode = reinterpret_cast<RenderNode*>(renderNodePtr);
-    SkPath* outlinePath = reinterpret_cast<SkPath*>(outlinePathPtr);
+    SkPath* outlinePath = AsSkPath(outlinePathPtr);
     renderNode->mutateStagingProperties().mutableOutline().setPath(outlinePath, alpha);
     renderNode->setPropertyFieldsDirty(RenderNode::GENERIC);
     return true;

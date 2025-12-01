@@ -148,6 +148,11 @@ public final class ApkSigningBlockUtils {
             case SIGNATURE_VERITY_ECDSA_WITH_SHA256:
             case SIGNATURE_VERITY_DSA_WITH_SHA256:
                 return true;
+            case SIGNATURE_ML_DSA:
+                if (android.security.Flags.apkPqcHybridSigning()) {
+                    return true;
+                }
+                // Intentional fallthrough to the default case.
             default:
                 return false;
         }
@@ -435,6 +440,7 @@ public final class ApkSigningBlockUtils {
     static final int SIGNATURE_VERITY_RSA_PKCS1_V1_5_WITH_SHA256 = 0x0421;
     static final int SIGNATURE_VERITY_ECDSA_WITH_SHA256 = 0x0423;
     static final int SIGNATURE_VERITY_DSA_WITH_SHA256 = 0x0425;
+    static final int SIGNATURE_ML_DSA = 0x0501;
 
     public static final int CONTENT_DIGEST_CHUNKED_SHA256 = 1;
     public static final int CONTENT_DIGEST_CHUNKED_SHA512 = 2;
@@ -503,6 +509,11 @@ public final class ApkSigningBlockUtils {
             case SIGNATURE_VERITY_ECDSA_WITH_SHA256:
             case SIGNATURE_VERITY_DSA_WITH_SHA256:
                 return CONTENT_DIGEST_VERITY_CHUNKED_SHA256;
+            case SIGNATURE_ML_DSA:
+                if (android.security.Flags.apkPqcHybridSigning()) {
+                    return CONTENT_DIGEST_CHUNKED_SHA512;
+                }
+                // Intentional fallthrough to the default case.
             default:
                 throw new IllegalArgumentException(
                         "Unknown signature algorithm: 0x"
@@ -551,6 +562,11 @@ public final class ApkSigningBlockUtils {
             case SIGNATURE_DSA_WITH_SHA256:
             case SIGNATURE_VERITY_DSA_WITH_SHA256:
                 return "DSA";
+            case SIGNATURE_ML_DSA:
+                if (android.security.Flags.apkPqcHybridSigning()) {
+                    return "ML-DSA";
+                }
+                // Intentional fallthrough to the default case.
             default:
                 throw new IllegalArgumentException(
                         "Unknown signature algorithm: 0x"
@@ -584,6 +600,11 @@ public final class ApkSigningBlockUtils {
             case SIGNATURE_DSA_WITH_SHA256:
             case SIGNATURE_VERITY_DSA_WITH_SHA256:
                 return Pair.create("SHA256withDSA", null);
+            case SIGNATURE_ML_DSA:
+                if (android.security.Flags.apkPqcHybridSigning()) {
+                    return Pair.create("ML-DSA", null);
+                }
+                // Intentional fallthrough to the default case.
             default:
                 throw new IllegalArgumentException(
                         "Unknown signature algorithm: 0x"

@@ -33,6 +33,7 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Client facing access to the PersonalContext service.
@@ -156,6 +157,25 @@ public final class PersonalContextManager {
     public Token mintToken() {
         try {
             return mService.mintToken();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Publish hints from an embedded insight surface.
+     *
+     * @param clientInfo of the client to be unregistered
+     *
+     * @hide
+     */
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void publishInsightSurfaceHints(
+            @NonNull Set<ContextHint> hints, @NonNull InsightSurfaceClientInfo clientInfo) {
+        try {
+            mService.publishInsightSurfaceHints(
+                    ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

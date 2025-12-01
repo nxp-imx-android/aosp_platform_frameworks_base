@@ -213,12 +213,11 @@ public class InputMethodManagerServiceTestBase {
         mInputManagerGlobalSession = InputManagerGlobal.createTestSession(mMockIInputManager);
         when(mMockInputMethodBindingController.getUserId()).thenReturn(mUserId);
         synchronized (ImfLock.class) {
-            when(mMockInputMethodBindingController.getCurMethod())
-                    .thenReturn(mMockInputMethodInvoker);
-            when(mMockInputMethodBindingController.bindCurrentMethod())
+            when(mMockInputMethodBindingController.getCurIme()).thenReturn(mMockInputMethodInvoker);
+            when(mMockInputMethodBindingController.bindIme())
                     .thenReturn(SUCCESS_WAITING_IME_BINDING_RESULT);
-            doNothing().when(mMockInputMethodBindingController).unbindCurrentMethod();
-            when(mMockInputMethodBindingController.getSelectedMethodId())
+            doNothing().when(mMockInputMethodBindingController).unbindIme();
+            when(mMockInputMethodBindingController.getSelectedImeId())
                     .thenReturn(TEST_SELECTED_IME_ID);
         }
 
@@ -340,8 +339,7 @@ public class InputMethodManagerServiceTestBase {
     protected void verifyShowSoftInput(boolean showSoftInput)
             throws RemoteException {
         synchronized (ImfLock.class) {
-            verify(mMockInputMethodBindingController, never())
-                    .setCurrentMethodVisible();
+            verify(mMockInputMethodBindingController, never()).setImeVisibleOrReconnect();
         }
         verify(mMockInputMethod, times(showSoftInput ? 1 : 0))
                 .showSoftInput(notNull() /* statsToken */);
@@ -350,8 +348,7 @@ public class InputMethodManagerServiceTestBase {
     protected void verifyHideSoftInput(boolean hideSoftInput)
             throws RemoteException {
         synchronized (ImfLock.class) {
-            verify(mMockInputMethodBindingController, never())
-                    .setCurrentMethodNotVisible();
+            verify(mMockInputMethodBindingController, never()).setImeNotVisible();
         }
         verify(mMockInputMethod, times(hideSoftInput ? 1 : 0))
                 .hideSoftInput(notNull() /* statsToken */);

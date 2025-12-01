@@ -20,6 +20,8 @@ import android.annotation.EnforcePermission;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeManager;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
@@ -72,6 +74,16 @@ public class ThemeBinderService extends IThemeManager.Stub {
     }
 
     @Override
+    public void registerThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        mLocalService.registerThemeChangedCallback(getCallingUserId(), callback);
+    }
+
+    @Override
+    public void unregisterThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        mLocalService.unregisterThemeChangedCallback(getCallingUserId(), callback);
+    }
+
+    @Override
     @EnforcePermission(android.Manifest.permission.UPDATE_THEME_SETTINGS)
     public boolean updateThemeSettings(@NonNull ThemeSettings newSettings) {
         updateThemeSettings_enforcePermission();
@@ -94,6 +106,14 @@ public class ThemeBinderService extends IThemeManager.Stub {
 
     @Override
     public void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter pw, String[] args) {
+        if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
+                != PackageManager.PERMISSION_GRANTED) {
+            pw.println(
+                    "Permission Denial: can't dump theme service from pid=" + Binder.getCallingPid()
+                            + ", uid=" + Binder.getCallingUid() + " without permission "
+                            + android.Manifest.permission.DUMP);
+            return;
+        }
         super.dump(fd, pw, args);
         mLocalService.dump(pw);
     }

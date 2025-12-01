@@ -92,16 +92,6 @@ flag {
 }
 
 flag {
-    name: "check_application_thread_called_by_system"
-    namespace: "responsible_apis"
-    description: "Allow only the system to call methods on ApplicationThread."
-    bug: "317346668"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "content_uri_permission_apis"
     is_exported: true
     namespace: "responsible_apis"

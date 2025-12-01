@@ -4107,6 +4107,16 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
             new Key<android.hardware.camera2.params.MandatoryStreamCombination[]>("android.scaler.mandatoryUseCaseStreamCombinations", android.hardware.camera2.params.MandatoryStreamCombination[].class);
 
     /**
+     * <p>The MultiResolutionImageReader formats supporting concurrent readers.</p>
+     * <p>Among all of the MultiResolutionImageReader formats this camera device supports,
+     * this list contains the formats that support concurrent reader outputs.</p>
+     * <p><b>Optional</b> - The value for this key may be {@code null} on some devices.</p>
+     * @hide
+     */
+    public static final Key<int[]> SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS =
+            new Key<int[]>("android.scaler.concurrentMultiResolutionFormats", int[].class);
+
+    /**
      * <p>The area of the image sensor which corresponds to active pixels after any geometric
      * distortion correction has been applied.</p>
      * <p>This is the rectangle representing the size of the active region of the sensor (i.e.
@@ -5458,6 +5468,50 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      */
     public static final Key<Integer> INFO_DEVICE_ID =
             new Key<Integer>("android.info.deviceId", int.class);
+
+    /**
+     * <p>A classification of the underlying hardware and source of image data for this
+     * camera device, or for a specific camera output frame.</p>
+     * <p>Historically, camera devices listed by the camera2 API could be assumed to be built-in
+     * cameras on the Android device, or in the case of the <code>EXTERNAL</code>
+     * <code>{@link CameraCharacteristics#INFO_SUPPORTED_HARDWARE_LEVEL android.info.supportedHardwareLevel}</code>, USB webcams.</p>
+     * <p>However, it is increasingly possible for camera devices to not be restricted to
+     * device-internal sensors and processing pipelines. Such devices can provide a wide range
+     * of useful capabilities to applications, but may also not be suitable for all camera use
+     * cases.</p>
+     * <p>This key provides a basic classification of the type of camera this camera ID
+     * represents, so that applications may decide on the appropriate level of trust to extend
+     * to the image data produced by it.</p>
+     * <p>Note that in some cases, it is possible for the user to swap the definition of a camera
+     * ID to a different one, such as when connecting a remote camera to act as the front
+     * camera of the device. This is normally transparent to the camera-using application to
+     * minimize user friction, but applications that care about this possibility should always
+     * verify the value of this key in the
+     * {@link android.hardware.camera2.CameraCharacteristics CameraCharacteristics} before opening
+     * a camera, instead of caching it, and should also watch the value of this key in
+     * {@link android.hardware.camera2.CaptureResult CaptureResults} as well, since it may
+     * change mid-session.</p>
+     * <p><b>Possible values:</b></p>
+     * <ul>
+     *   <li>{@link #INFO_DEVICE_TYPE_BUILT_IN BUILT_IN}</li>
+     *   <li>{@link #INFO_DEVICE_TYPE_EXTERNAL EXTERNAL}</li>
+     *   <li>{@link #INFO_DEVICE_TYPE_VIRTUAL VIRTUAL}</li>
+     *   <li>{@link #INFO_DEVICE_TYPE_UNKNOWN UNKNOWN}</li>
+     * </ul>
+     *
+     * <p>This key is available on all devices.</p>
+     *
+     * @see CameraCharacteristics#INFO_SUPPORTED_HARDWARE_LEVEL
+     * @see #INFO_DEVICE_TYPE_BUILT_IN
+     * @see #INFO_DEVICE_TYPE_EXTERNAL
+     * @see #INFO_DEVICE_TYPE_VIRTUAL
+     * @see #INFO_DEVICE_TYPE_UNKNOWN
+     */
+    @PublicKey
+    @NonNull
+    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_TYPE_API)
+    public static final Key<Integer> INFO_DEVICE_TYPE =
+            new Key<Integer>("android.info.deviceType", int.class);
 
     /**
      * <p>The maximum number of frames that can occur after a request

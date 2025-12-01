@@ -107,7 +107,7 @@ class ConnectedDisplayCujSmokeTests {
     val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
 
     @get:Rule(order = 3)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @get:Rule(order = 4) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
@@ -118,6 +118,7 @@ class ConnectedDisplayCujSmokeTests {
     @Before
     fun setup() {
         Assume.assumeTrue(desktopState.canEnterDesktopMode)
+        Utils.clearAllRememberedDesktopBounds()
 
         // Ensure rotation in launcher.
         tapl.setEnableRotation(true)

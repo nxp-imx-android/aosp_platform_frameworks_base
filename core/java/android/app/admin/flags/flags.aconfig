@@ -588,7 +588,7 @@ flag {
   is_exported: true
   namespace: "enterprise"
   description: "Enable the multi user management user provisioning APIs."
-  bug: "425840472"
+  bug: "390162247"
 }
 
 flag {
@@ -599,4 +599,12 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "lockscreen_info_coexistence"
+  namespace: "enterprise"
+  description: "Enables coexistence support for setDeviceOwnerLockScreenInfo"
+  bug: "457343029"
+  is_exported: true
 }

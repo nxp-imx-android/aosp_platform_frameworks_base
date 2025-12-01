@@ -17,6 +17,11 @@ package android.platform.test.ravenwood;
 
 import static android.platform.test.ravenwood.RavenwoodAwareTestRunner.getCurrentRunner;
 
+import android.test.AndroidTestCase;
+import android.test.InstrumentationTestCase;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import junit.framework.AssertionFailedError;
 import junit.framework.Protectable;
 import junit.framework.Test;
@@ -92,13 +97,7 @@ public class RavenwoodAwareJUnit3Runner extends JUnit38ClassRunner {
     /**
      * Wraps around a TestCase to inject Ravenwood hooks.
      */
-    private static class TestCaseHookWrapper implements Test {
-
-        private final TestCase mTestCase;
-
-        private TestCaseHookWrapper(TestCase testCase) {
-            mTestCase = testCase;
-        }
+    private record TestCaseHookWrapper(TestCase mTestCase) implements Test {
 
         @Override
         public int countTestCases() {
@@ -107,6 +106,12 @@ public class RavenwoodAwareJUnit3Runner extends JUnit38ClassRunner {
 
         @Override
         public void run(TestResult result) {
+            if (mTestCase instanceof AndroidTestCase test) {
+                test.setContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
+            }
+            if (mTestCase instanceof InstrumentationTestCase test) {
+                test.injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+            }
             result.startTest(mTestCase);
             result.runProtected(mTestCase, getTestRunProtectable());
             result.endTest(mTestCase);

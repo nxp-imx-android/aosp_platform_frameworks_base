@@ -42,7 +42,7 @@ class TransitionInfoTest {
     private val token = WindowContainerToken(mock<IWindowContainerToken>())
     private val change = TransitionInfo.Change(token, SurfaceControl() /* leash */)
     private val activityTransitionInfo = ActivityTransitionInfo(component, TASK_ID)
-    private val appCompatTransitionInfo = AppCompatTransitionInfo(letterboxBounds)
+    private val appCompatTransitionInfo = AppCompatTransitionInfo(letterboxBounds, false)
     private val activityTransitionInfoWithAppCompat =
         ActivityTransitionInfo(component, TASK_ID, appCompatTransitionInfo)
     private val topCompatActivityLeash = SurfaceControl()

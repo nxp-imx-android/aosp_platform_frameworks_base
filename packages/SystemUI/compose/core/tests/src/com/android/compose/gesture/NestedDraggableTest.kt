@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -58,6 +59,8 @@ import androidx.compose.ui.unit.Velocity
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.ceil
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
@@ -1061,6 +1064,96 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
         rule.onRoot().performTouchInput { moveBy(1f.toOffset()) }
 
         assertThat(draggable.onDragStoppedCalled).isTrue()
+    }
+
+    @Test
+    // Regression test for b/458382766.
+    fun twoNestedScrollablesWithBadTiming() = runTest {
+        val draggable = TestDraggable()
+        val dispatcher = NestedScrollDispatcher()
+        val connection = object : NestedScrollConnection {}
+
+        /**
+         * Emulates a nested scroll through calls to [dispatcher] using the expected order of calls:
+         * - preScroll(source=UserInput)
+         * - postScroll(source=UserInput)
+         * - ...
+         * - preFling()
+         * - preScroll(source=SideEffect)
+         * - postScroll(source=SideEffect)
+         * - ...
+         * - postFling()
+         */
+        suspend fun emulateNestedScroll(
+            beforePreFling: suspend () -> Unit = {},
+            afterPreFling: suspend () -> Unit = {},
+        ) {
+            // Scroll.
+            val scroll = 20f.toOffset()
+            val preConsumed = dispatcher.dispatchPreScroll(scroll, NestedScrollSource.UserInput)
+            dispatcher.dispatchPostScroll(
+                preConsumed,
+                scroll - preConsumed,
+                NestedScrollSource.UserInput,
+            )
+
+            // Fling.
+            beforePreFling()
+            val velocity = 10f.toVelocity()
+            dispatcher.dispatchPreFling(velocity)
+            afterPreFling()
+
+            // Assumes the remaining velocity translates into a scroll of 5f.
+            val flingScroll = 5f.toOffset()
+            val flingPreConsumed =
+                dispatcher.dispatchPreScroll(flingScroll, NestedScrollSource.SideEffect)
+            dispatcher.dispatchPostScroll(
+                flingPreConsumed,
+                flingScroll - flingPreConsumed,
+                NestedScrollSource.SideEffect,
+            )
+            dispatcher.dispatchPostFling(Velocity.Zero, Velocity.Zero)
+        }
+
+        rule.setContent {
+            Box(
+                Modifier.fillMaxSize()
+                    .nestedDraggable(draggable, orientation)
+                    .nestedScroll(connection, dispatcher)
+            )
+        }
+
+        // Start a real touch down (otherwise nested scrolls are ignored).
+        rule.onRoot().performTouchInput { down(center) }
+
+        // Do one normal nested scroll to check that the drag is correctly started when emulating a
+        // nested scroll.
+        emulateNestedScroll()
+        assertThat(draggable.onDragStartedCalled).isTrue()
+        assertThat(draggable.onDragStoppedCalled).isTrue()
+
+        // Do one nested scroll and simulate bad timing where a second nested scroll is started
+        // right between the preFling() and preScroll(SideEffect) calls of the first scroll.
+        emulateNestedScroll(
+            afterPreFling = {
+                coroutineScope {
+                    val latch = CompletableDeferred<Unit>()
+                    val job = launch {
+                        emulateNestedScroll(
+                            beforePreFling = {
+                                // Unlock the first scroll and block this preFling so that
+                                // the firstScroll preScroll(SideEffect) runs.
+                                latch.complete(Unit)
+                                awaitCancellation()
+                            }
+                        )
+                    }
+
+                    latch.await()
+                    job.cancel()
+                }
+            }
+        )
     }
 
     private fun ComposeContentTestRule.setContentWithTouchSlop(

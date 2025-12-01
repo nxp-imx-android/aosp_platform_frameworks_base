@@ -30,6 +30,7 @@ class EnumReflectionDetectorTest : LintDetectorTest() {
         listOf(
             EnumReflectionDetector.ISSUE_GET_ENUM_CONSTANTS,
             EnumReflectionDetector.ISSUE_ENUM_VALUE_OF,
+            EnumReflectionDetector.ISSUE_ENUM_MAP_CONSTRUCTOR,
         )
 
     override fun lint(): TestLintTask = super.lint().allowMissingSdk(true)
@@ -44,6 +45,100 @@ class EnumReflectionDetectorTest : LintDetectorTest() {
             """
             )
             .indented()
+
+    fun testEnumMapConstructorFixable() {
+        lint()
+            .files(
+                java(
+                        """
+                    package test.pkg;
+                    import java.util.EnumMap;
+                    public class TestClass {
+                        private void testMethod(Class<MyEnum> clazz) {
+                            EnumMap<MyEnum, String> map = new EnumMap<>(clazz);
+                        }
+                    }
+                    """
+                    )
+                    .indented(),
+                enumStub,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.java:5: Error: Reflective usage of EnumMap is discouraged; use new EnumMap(MyEnum.class) instead. [EnumMapConstructor]
+                        EnumMap<MyEnum, String> map = new EnumMap<>(clazz);
+                                                      ~~~~~~~~~~~~~~~~~~~~
+                1 errors, 0 warnings
+                """
+                    .trimIndent()
+            )
+            .checkFix(
+                null,
+                after =
+                    java(
+                            """
+                    package test.pkg;
+                    import java.util.EnumMap;
+                    public class TestClass {
+                        private void testMethod(Class<MyEnum> clazz) {
+                            EnumMap<MyEnum, String> map = new EnumMap<>(MyEnum.class);
+                        }
+                    }
+                    """
+                        )
+                        .indented(),
+            )
+    }
+
+    fun testEnumMapConstructorGeneric() {
+        lint()
+            .files(
+                java(
+                        """
+                    package test.pkg;
+                    import java.util.EnumMap;
+                    public class TestClass {
+                        private <K extends Enum<K>> void createMap(Class<K> keyType) {
+                            EnumMap<K, String> map = new EnumMap<>(keyType);
+                        }
+                    }
+                    """
+                    )
+                    .indented()
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.java:5: Error: Reflective usage of EnumMap is discouraged; prefer new EnumMap(MyEnum.class) if possible. [EnumMapConstructor]
+                        EnumMap<K, String> map = new EnumMap<>(keyType);
+                                                 ~~~~~~~~~~~~~~~~~~~~~~
+                1 errors, 0 warnings
+                """
+                    .trimIndent()
+            )
+    }
+
+    fun testEnumMapConstructorValid() {
+        lint()
+            .files(
+                java(
+                        """
+                    package test.pkg;
+                    import java.util.EnumMap;
+                    public class TestClass {
+                        private void testMethod() {
+                            EnumMap<MyEnum, String> map = new EnumMap<>(MyEnum.class);
+                        }
+                    }
+                    """
+                    )
+                    .indented(),
+                enumStub,
+            )
+            .run()
+            .expectClean()
+    }
 
     fun testGetEnumConstantsFixable() {
         lint()

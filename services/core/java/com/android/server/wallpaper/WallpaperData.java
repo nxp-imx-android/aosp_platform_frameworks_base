@@ -130,7 +130,11 @@ class WallpaperData {
     boolean mIsColorExtractedFromDim;
 
     /**
-     * List of callbacks registered they should each be notified when the wallpaper is changed.
+     * List of callbacks notified when the wallpaper is changed.
+     * <p>
+     * When WallpaperManager.getBitmap or similar APIs are called, WallpaperManager will cache the
+     * result for the calling process and register a callback here. When the wallpaper changes,
+     * the callbacks are triggered to clear the cache of these processes.
      */
     RemoteCallbackList<IWallpaperManagerCallback> callbacks = new RemoteCallbackList<>();
 

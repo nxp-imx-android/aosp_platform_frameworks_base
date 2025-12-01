@@ -68,6 +68,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityManagerInternal;
+import android.app.ApplicationExitInfo;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
@@ -99,6 +100,8 @@ import android.view.IDisplayWindowListener;
 import android.view.WindowManager;
 
 import androidx.test.filters.MediumTest;
+
+import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -1651,7 +1654,17 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
-    public void testStopAndKillAppForUpdate_processWithActivities_stopsAndKillsProcess() {
+    public void testStopAndKillAppForUpdate_processWithActivities_callsOrganizer() {
+        class PackageUpdateOrganizer extends StubOrganizer {
+            List<ActivityManager.RunningTaskInfo> mUpdatingTaskInfos = new ArrayList<>();
+            @Override
+            public void onPackageUpdateRequested(
+                    List<ActivityManager.RunningTaskInfo> updatingTaskInfos) {
+                mUpdatingTaskInfos = updatingTaskInfos;
+            }
+        }
+        PackageUpdateOrganizer o = new PackageUpdateOrganizer();
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(o);
         mAtm.mAmInternal = mock(ActivityManagerInternal.class);
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity.getTask().mHandlePackageUpdate = true;
@@ -1663,11 +1676,31 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         int appId = activity.app.mUid;
         doReturn(true).when(mAtm).isCallerSystem(anyInt());
 
-        // When stopAndKillApp is called
         mAtm.mInternal.stopAndKillAppForUpdate(packageName, userId, appId);
-        activity.activityStopped(null, null, null, "test");
 
-        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, activity.app);
+        assertEquals(o.mUpdatingTaskInfos.get(0).taskId, activity.getTask().mTaskId);
+    }
+
+    @Test
+    public void testStopAndKillAppForUpdate_noActiveProcesses_killsImmediately() {
+        final String packageName = "com.example.test";
+        final int uid = 10001;
+        final int appId = 20001;
+        WindowProcessController wpc = createWindowProcessController(packageName, uid);
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        doReturn(true).when(mAtm).isCallerSystem(anyInt());
+        mAtm.mProcessMap.put(wpc.getPid(), wpc);
+
+        mAtm.mInternal.stopAndKillAppForUpdate(packageName, uid, appId);
+        waitHandlerIdle(mAtm.mH);
+
+        verify(mAtm.mAmInternal).killApplicationSync(
+                packageName,
+                appId,
+                uid,
+                "killDueToPackageUpdate",
+                ApplicationExitInfo.REASON_PACKAGE_UPDATED
+        );
     }
 
     private WindowProcessController createWindowProcessController(String packageName,

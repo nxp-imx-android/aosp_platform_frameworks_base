@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"نماگرفت ذخیره نشد"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"ذخیره در"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"انتخاب پوشه"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"‏در پوشه %1$s ذخیره شد"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"‏مشکلی پیش آمد. امکان ذخیره کردن در پوشه «%1$s» وجود ندارد."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"نمایشگر خارجی"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"برای ذخیره کردن نماگرفت، قفل دستگاه باید باز باشد"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"دوباره نماگرفت بگیرید"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"نماگرفت ذخیره نمی‌شود"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"برنامه یا سازمان شما اجازه نمی‌دهند نماگرفت بگیرید."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"سرپرست فناوری اطلاعات گرفتن نماگرفت را مسدود کرده است"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ویرایش"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"دکمه ویرایش نماگرفت"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"هم‌رسانی"</string>
@@ -163,8 +163,8 @@
     <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"حذف این ضبط موجب حذف دائم فایل ویدیویی از دستگاه می‌شود."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"پخش کردن"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"توقف موقت"</string>
-    <string name="screen_record_mute" msgid="8111682249858638168">"بی‌صدا کردن"</string>
-    <string name="screen_record_unmute" msgid="2207912659365156472">"باصدا کردن"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"صامت کردن"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"صدادار کردن"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"سرپرست فناوری اطلاعاتتان ضبط صفحه‌نمایش را مسدود کرده است"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"گرفتن اسکرین شات از کل صفحه"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ضبط کل صفحه‌نمایش"</string>
@@ -528,7 +528,7 @@
     <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"پیرامون راست"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ازهم بازکردن برای کنترل‌های جداگانه چپ و راست"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"جمع کردن برای کنترل یکپارچه"</string>
-    <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"بی‌صدا کردن پیرامون"</string>
+    <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"صامت کردن پیرامون"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"صدادار کردن پیرامون"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ابزارها"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"زیرنویس زنده ناشنوایان"</string>
@@ -662,7 +662,7 @@
     <string name="guest_wipe_session_title" msgid="7147965814683990944">"مهمان گرامی، بازگشتتان را خوش آمد می‌گوییم!"</string>
     <string name="guest_wipe_session_message" msgid="3393823610257065457">"آیا می‌خواهید جلسه‌تان را ادامه دهید؟"</string>
     <string name="guest_wipe_session_wipe" msgid="8056836584445473309">"شروع مجدد"</string>
-    <string name="guest_wipe_session_dontwipe" msgid="3211052048269304205">"بله، ادامه داده شود"</string>
+    <string name="guest_wipe_session_dontwipe" msgid="3211052048269304205">"بله، ادامه دادن"</string>
     <string name="guest_notification_app_name" msgid="2110425506754205509">"حالت مهمان"</string>
     <string name="guest_notification_session_active" msgid="5567273684713471450">"در حالت مهمان هستید"</string>
     <string name="user_add_user_message_guest_remove" msgid="5589286604543355007">\n\n"با افزودن کاربر جدید، از حالت مهمان خارج خواهید شد و همه برنامه‌ها و داده‌ها از جلسه مهمان کنونی حذف خواهند شد."</string>
@@ -831,7 +831,7 @@
     <string name="stream_media_unavailable" msgid="6823020894438959853">"دردسترس نیست زیرا «مزاحم نشوید» روشن است"</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"دردسترس نیست زیرا <xliff:g id="MODE">%s</xliff:g> روشن است"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"دردسترس نیست"</string>
-    <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. برای باصدا کردن تک‌ضرب بزنید."</string>
+    <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. برای صدادار کردن تک‌ضرب بزنید."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"‏%1$s. برای تنظیم روی لرزش تک‌ضرب بزنید. ممکن است سرویس‌های دسترس‌پذیری بی‌صدا شوند."</string>
     <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"‏%1$s. برای صامت کردن تک‌ضرب بزنید. ممکن است سرویس‌های دسترس‌پذیری صامت شود."</string>
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"‏%1$s. برای تنظیم روی لرزش، تک‌ضرب بزنید."</string>
@@ -845,7 +845,7 @@
     <string name="volume_ringer_mode" msgid="6867838048430807128">"حالت زنگ"</string>
     <string name="volume_ringer_drawer_closed_content_description" msgid="4737792429808781745">"<xliff:g id="VOLUME_RINGER_STATUS">%1$s</xliff:g>، برای تغییر حالت زنگ تک‌ضرب بزنید"</string>
     <string name="volume_ringer_hint_mute" msgid="4263821214125126614">"صامت کردن"</string>
-    <string name="volume_ringer_hint_unmute" msgid="6119086890306456976">"باصدا کردن"</string>
+    <string name="volume_ringer_hint_unmute" msgid="6119086890306456976">"صدادار کردن"</string>
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"لرزش"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"‏%s کنترل‌های میزان صدا"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"تماس‌ها و اعلان‌ها زنگ می‌خورند (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
@@ -853,8 +853,8 @@
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"تنظیمات خروجی را وارد کنید"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"لغزنده‌های صدا ازهم باز شدند"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"لغزنده‌های صدا جمع شدند"</string>
-    <string name="volume_panel_hint_mute" msgid="2153922288568199077">"‏بی‌صدا کردن %s"</string>
-    <string name="volume_panel_hint_unmute" msgid="4831850937582282340">"‏باصدا کردن %s"</string>
+    <string name="volume_panel_hint_mute" msgid="2153922288568199077">"‏صامت کردن %s"</string>
+    <string name="volume_panel_hint_unmute" msgid="4831850937582282340">"‏صدادار کردن %s"</string>
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"بی‌صدا شد"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"لرزش"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"درحال پخش <xliff:g id="LABEL">%s</xliff:g> در"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"تمام"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"اعمال"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"خاموش کردن"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"بی‌صدا"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"پیش‌فرض"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"خودکار"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"بدون صدا یا لرزش"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"«بدون صدا یا لرزش» همچنان در بخش مکالمه نشان داده می‌شود"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"بسته به تنظیمات دستگاه ممکن است زنگ بزند یا بلرزد"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"بسته به تنظیمات دستگاه ممکن است زنگ بزند یا بلرزد. مکالمه‌های <xliff:g id="APP_NAME">%1$s</xliff:g> به‌طور پیش‌فرض در حبابک نشان داده می‌شوند."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"سیستم را تنظیم کنید که تشخیص دهد اعلان صدا و لرزش داشته باشد یا نه"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"‏&lt;b&gt;وضعیت:&lt;/b&gt; به «پیش‌فرض» ارتقا یافت"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"‏&lt;b&gt;وضعیت:&lt;/b&gt; به «بی‌صدا» تنزل یافت"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"‏&lt;b&gt;وضعیت:&lt;/b&gt; در رده‌بندی بالاتری قرار گرفت"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"‏&lt;b&gt;وضعیت:&lt;/b&gt; در رده‌بندی پایین‌تری قرار گرفت"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"مکان"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"میکروفون"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"ضبط صفحه‌نمایش"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"حریم خصوصی"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"بی‌عنوان"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"آماده‌به‌کار"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"اندازه قلم"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"دستگاه‌های دردسترس برای خروجی صوتی."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"میزان صدا"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"برخی‌از دستگاه‌ها قابل‌مشاهده نیستند. به‌روز کردن اجازه‌های برنامه"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"اصلاح"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"پیشنهادی"</string>

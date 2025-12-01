@@ -82,7 +82,8 @@ public class TaskOrganizerMultiWindowTest extends Activity {
         }
 
         @Override
-        public void onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo taskInfo) {
+        public void onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo taskInfo,
+                boolean isFromMoveActivityTaskToBack) {
             getMainThreadHandler().post(() -> {
                 finish();
             });

@@ -18,6 +18,7 @@ package com.android.server.personalcontext;
 
 import android.annotation.NonNull;
 import android.service.personalcontext.hint.NotificationEvent;
+import android.view.textclassifier.TextClassification;
 
 /**
  * Personal context manager local system service interface.
@@ -31,4 +32,14 @@ public abstract class PersonalContextManagerInternal {
      * @param event The notification event.
      */
     public abstract void onNotificationEvent(@NonNull NotificationEvent event);
+
+    /**
+     * Called when a classify text request occurs.
+     *
+     * @param userId The userId that triggered this
+     * @param sessionId The TextClassification sessionId value for this request
+     * @param request The TextClassification request
+     */
+    public abstract void onTextClassifyRequest(
+            int userId, String sessionId, @NonNull TextClassification.Request request);
 }

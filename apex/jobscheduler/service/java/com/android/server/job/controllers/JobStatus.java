@@ -44,6 +44,7 @@ import android.content.ComponentName;
 import android.net.Network;
 import android.net.NetworkRequest;
 import android.net.Uri;
+import android.os.ParcelDuration;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -57,6 +58,7 @@ import android.util.Pair;
 import android.util.Patterns;
 import android.util.Range;
 import android.util.Slog;
+import android.util.SparseLongArray;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 
@@ -84,7 +86,9 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
@@ -673,6 +677,17 @@ public final class JobStatus {
     private final List<PendingJobReasonsInfo> mPendingJobReasonsHistory = new ArrayList<>();
     private static final int PENDING_JOB_HISTORY_RETURN_LIMIT = 10;
     private static final int PENDING_JOB_HISTORY_TRIM_THRESHOLD = 25;
+
+    /**
+     * Constraints (converted to the pending job reasons they represent) mapped to
+     * when they became unsatisfied.
+     */
+    private final SparseLongArray mLastTimesConstraintsUnsatisfied = new SparseLongArray();
+    /**
+     * Pending job reasons mapped to how long (aggregated) the job has been pending execution
+     * due to those reasons.
+     */
+    private final SparseLongArray mPendingJobReasonsStats = new SparseLongArray();
 
     /**
      * For use only by ContentObserverController: state it is maintaining about content URIs
@@ -2297,6 +2312,8 @@ public final class JobStatus {
                                      .clear();
         }
 
+        updatePendingJobReasonStats(constraint, state, nowElapsed);
+
         return true;
     }
 
@@ -2371,11 +2388,97 @@ public final class JobStatus {
         }
     }
 
+    /**
+     * Checks if the given bitmask has the specified constraint flag.
+     *
+     * @param bitmask The bitmask of constraints to check.
+     * @param flag    The constraint flag to look for.
+     * @return {@code true} if the bitmask contains the flag, {@code false} otherwise.
+     */
+    private static boolean hasConstraintFlag(int bitmask, int flag) {
+        return (bitmask & flag) != 0;
+    }
+
+    /**
+     * Maps the given constraint to the pending job reason.
+     * <p>
+     * TODO: b/448485520 - this method looks very similar to constraintsToPendingJobReasons() below
+     * and needs to be consolidated in a follow-up CL.
+     */
+    @JobScheduler.PendingJobReason
+    private int constraintToPendingJobReason(int constraint) {
+        if (hasConstraintFlag(constraint, CONSTRAINT_BACKGROUND_NOT_RESTRICTED)) {
+            if (mIsUserBgRestricted) {
+                return JobScheduler.PENDING_JOB_REASON_BACKGROUND_RESTRICTION;
+            } else {
+                return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE;
+            }
+        }
+
+        if (hasConstraintFlag(constraint, CONSTRAINT_DEVICE_NOT_DOZING)) {
+            return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE;
+        }
+
+        if (hasConstraintFlag(constraint, CONSTRAINT_BATTERY_NOT_LOW)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_BATTERY_NOT_LOW)) {
+                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_BATTERY_NOT_LOW;
+            } else {
+                return JobScheduler.PENDING_JOB_REASON_APP_STANDBY;
+            }
+        }
+
+        if (hasConstraintFlag(constraint, CONSTRAINT_CHARGING)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_CHARGING)) {
+                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING;
+            } else {
+                return JobScheduler.PENDING_JOB_REASON_APP_STANDBY;
+            }
+        }
+
+        if (hasConstraintFlag(constraint, CONSTRAINT_IDLE)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_IDLE)) {
+                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEVICE_IDLE;
+            } else {
+                return JobScheduler.PENDING_JOB_REASON_APP_STANDBY;
+            }
+        }
+
+        if (hasConstraintFlag(constraint, CONSTRAINT_CONNECTIVITY)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CONNECTIVITY;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_CONTENT_TRIGGER)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CONTENT_TRIGGER;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_FLEXIBLE)) {
+            return JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_PREFETCH)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_PREFETCH;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_STORAGE_NOT_LOW)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_STORAGE_NOT_LOW;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_TIMING_DELAY)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY;
+        }
+        if (hasConstraintFlag(constraint, CONSTRAINT_WITHIN_QUOTA)) {
+            return JobScheduler.PENDING_JOB_REASON_QUOTA;
+        }
+        if (android.app.job.Flags.getPendingJobReasonsApi()) {
+            if (hasConstraintFlag(constraint, CONSTRAINT_DEADLINE)) {
+                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE;
+            }
+        }
+
+        Slog.wtf(TAG, "Unhandled constraint (" + constraint + ") in constraintToPendingJobReason");
+        return JobScheduler.PENDING_JOB_REASON_UNDEFINED;
+    }
+
     @NonNull
     public ArrayList<Integer> constraintsToPendingJobReasons(int unsatisfiedConstraints) {
         final ArrayList<Integer> reasons = new ArrayList<>();
 
-        if ((CONSTRAINT_BACKGROUND_NOT_RESTRICTED & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_BACKGROUND_NOT_RESTRICTED)) {
             // The BACKGROUND_NOT_RESTRICTED constraint could be unsatisfied either because
             // the app is background restricted, or because we're restricting background work
             // in battery saver. Assume that background restriction is the reason apps that
@@ -2389,14 +2492,14 @@ public final class JobStatus {
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE);
             }
         }
-        if ((CONSTRAINT_DEVICE_NOT_DOZING & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_DEVICE_NOT_DOZING)) {
             if (!reasons.contains(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE)) {
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE);
             }
         }
 
-        if ((CONSTRAINT_BATTERY_NOT_LOW & unsatisfiedConstraints) != 0) {
-            if ((CONSTRAINT_BATTERY_NOT_LOW & requiredConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_BATTERY_NOT_LOW)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_BATTERY_NOT_LOW)) {
                 // The developer requested this constraint, so it makes sense to return the
                 // explicit constraint reason.
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_BATTERY_NOT_LOW);
@@ -2406,8 +2509,8 @@ public final class JobStatus {
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_APP_STANDBY);
             }
         }
-        if ((CONSTRAINT_CHARGING & unsatisfiedConstraints) != 0) {
-            if ((CONSTRAINT_CHARGING & requiredConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_CHARGING)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_CHARGING)) {
                 // The developer requested this constraint, so it makes sense to return the
                 // explicit constraint reason.
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING);
@@ -2419,8 +2522,8 @@ public final class JobStatus {
                 }
             }
         }
-        if ((CONSTRAINT_IDLE & unsatisfiedConstraints) != 0) {
-            if ((CONSTRAINT_IDLE & requiredConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_IDLE)) {
+            if (hasConstraintFlag(requiredConstraints, CONSTRAINT_IDLE)) {
                 // The developer requested this constraint, so it makes sense to return the
                 // explicit constraint reason.
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEVICE_IDLE);
@@ -2433,29 +2536,29 @@ public final class JobStatus {
             }
         }
 
-        if ((CONSTRAINT_CONNECTIVITY & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_CONNECTIVITY)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CONNECTIVITY);
         }
-        if ((CONSTRAINT_CONTENT_TRIGGER & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_CONTENT_TRIGGER)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CONTENT_TRIGGER);
         }
-        if ((CONSTRAINT_FLEXIBLE & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_FLEXIBLE)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION);
         }
-        if ((CONSTRAINT_PREFETCH & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_PREFETCH)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_PREFETCH);
         }
-        if ((CONSTRAINT_STORAGE_NOT_LOW & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_STORAGE_NOT_LOW)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_STORAGE_NOT_LOW);
         }
-        if ((CONSTRAINT_TIMING_DELAY & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_TIMING_DELAY)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY);
         }
-        if ((CONSTRAINT_WITHIN_QUOTA & unsatisfiedConstraints) != 0) {
+        if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_WITHIN_QUOTA)) {
             reasons.addLast(JobScheduler.PENDING_JOB_REASON_QUOTA);
         }
         if (android.app.job.Flags.getPendingJobReasonsApi()) {
-            if ((CONSTRAINT_DEADLINE & unsatisfiedConstraints) != 0) {
+            if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_DEADLINE)) {
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE);
             }
         }
@@ -2547,6 +2650,70 @@ public final class JobStatus {
         }
 
         return returnList;
+    }
+
+    /**
+     * Updates the statistics for how long the job has been pending due to various constraints.
+     * When a constraint becomes unsatisfied, this method records the timestamp. When the
+     * constraint is satisfied again, it calculates the duration for which the job was pending
+     * due to this constraint and adds it to the cumulative statistics.
+     *
+     * @param constraint The constraint that changed its state.
+     * @param satisfied  {@code true} if the constraint is now satisfied, {@code false} otherwise.
+     * @param timestamp  The elapsed realtime timestamp of when the change occurred.
+     */
+    private void updatePendingJobReasonStats(int constraint, boolean satisfied, long timestamp) {
+        final int pendingReason = constraintToPendingJobReason(constraint);
+        if (pendingReason == JobScheduler.PENDING_JOB_REASON_UNDEFINED) {
+            return;
+        }
+
+        // If the constraint was just unsatisfied, simply store it in the map.
+        if (!satisfied) {
+            mLastTimesConstraintsUnsatisfied.put(pendingReason, timestamp);
+            return;
+        }
+
+        final long lastUnmetElapsed = mLastTimesConstraintsUnsatisfied.get(pendingReason);
+        final long waitingTime;
+        if (lastUnmetElapsed == 0) {
+            // This is the first time the constraint became satisfied since job was enqueued.
+            waitingTime = timestamp - enqueueTime;
+        } else {
+            // Constraint was previously unsatisfied.
+            waitingTime = timestamp - lastUnmetElapsed;
+            mLastTimesConstraintsUnsatisfied.delete(pendingReason);
+        }
+
+        // Update stats with aggregated duration.
+        final long previousWaitTime = mPendingJobReasonsStats.get(pendingReason);
+        mPendingJobReasonsStats.put(pendingReason, previousWaitTime + waitingTime);
+    }
+
+    /**
+     * Returns a map of pending job reasons mapped to how long the job has been pending for because
+     * of each reason.
+     */
+    @NonNull
+    public Map<String, ParcelDuration> getPendingJobReasonStats() {
+        final Map<String, ParcelDuration> returnMap = new HashMap<>();
+        for (int i = mPendingJobReasonsStats.size() - 1; i >= 0; i--) {
+            returnMap.put(String.valueOf(mPendingJobReasonsStats.keyAt(i)),
+                    new ParcelDuration(mPendingJobReasonsStats.valueAt(i)));
+        }
+
+        final int unsatisfiedConstraints = ~satisfiedConstraints
+                & (requiredConstraints | mDynamicConstraints | IMPLICIT_CONSTRAINTS);
+        final ArrayList<Integer> reasons = constraintsToPendingJobReasons(unsatisfiedConstraints);
+        final long waitingTime = JobSchedulerService.sElapsedRealtimeClock.millis() - enqueueTime;
+        for (int i = reasons.size() - 1; i >= 0; i--) {
+            // Append each constraint that the job is still pending because of.
+            if (!returnMap.containsKey(String.valueOf((reasons.get(i))))) {
+                returnMap.put(String.valueOf(reasons.get(i)), new ParcelDuration(waitingTime));
+            }
+        }
+
+        return returnMap;
     }
 
     /** @return whether or not the @param constraint is satisfied */

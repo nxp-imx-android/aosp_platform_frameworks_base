@@ -153,14 +153,8 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             filteredChanges.add(change);
         }
 
-        if (DesktopExperienceFlags.ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX.isTrue()) {
-            for (TransitionInfo.Change change : filteredChanges.reversed()) {
-                notifyChange(transition, info, startT, finishT, change, taskInfoList);
-            }
-        } else {
-            for (TransitionInfo.Change change : filteredChanges) {
-                notifyChange(transition, info, startT, finishT, change, taskInfoList);
-            }
+        for (TransitionInfo.Change change : filteredChanges.reversed()) {
+            notifyChange(transition, info, startT, finishT, change, taskInfoList);
         }
 
         mTransitionToTaskInfo.put(transition, taskInfoList);

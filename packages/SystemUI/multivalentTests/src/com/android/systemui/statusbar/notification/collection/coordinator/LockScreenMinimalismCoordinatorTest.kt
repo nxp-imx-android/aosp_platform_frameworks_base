@@ -52,6 +52,7 @@ import com.android.systemui.util.settings.FakeSettings
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.StringSubject
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestCoroutineScheduler
@@ -359,26 +360,41 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
             assertThatTopUnseenKey().isEqualTo(solo2.key)
 
             // TEST: QS Expansion does not mark entries as seen
+            // Expand QS
             setShadeAndQsExpansionThenWait(0f, 1f)
+            // Collapse QS and back to KEYGUARD
+            setShadeAndQsExpansionThenWait(0f, 0f)
+            // Make sure the StatusBarState is KEYGUARD so that topUnseenKey can be updated
+            assertEquals(StatusBarState.KEYGUARD, statusBarState)
             onBeforeTransformGroupsListener.onBeforeTransformGroups(listEntryList)
             assertThatTopOngoingKey().isEqualTo(null)
             assertThatTopUnseenKey().isEqualTo(solo2.key)
 
             // TEST: Shade expansion does mark entries as seen
+            // Expand SHADE
             setShadeAndQsExpansionThenWait(1f, 0f)
+            // Collapse SHADE and back to KEYGUARD
+            setShadeAndQsExpansionThenWait(0f, 0f)
+            // Make sure the StatusBarState is KEYGUARD so that topUnseenKey can be updated
+            assertEquals(StatusBarState.KEYGUARD, statusBarState)
             onBeforeTransformGroupsListener.onBeforeTransformGroups(listEntryList)
             assertThatTopOngoingKey().isEqualTo(null)
             assertThatTopUnseenKey().isEqualTo(null)
 
             // TEST: Entries updated while shade is expanded are NOT marked unseen
+            // Expand SHADE
+            setShadeAndQsExpansionThenWait(1f, 0f)
             collectionListener.onEntryUpdated(solo1)
             collectionListener.onEntryUpdated(solo2)
+            // Collapse SHADE and back to KEYGUARD
+            setShadeAndQsExpansionThenWait(0f, 0f)
+            // Make sure the StatusBarState is KEYGUARD so that topUnseenKey can be updated
+            assertEquals(StatusBarState.KEYGUARD, statusBarState)
             onBeforeTransformGroupsListener.onBeforeTransformGroups(listEntryList)
             assertThatTopOngoingKey().isEqualTo(null)
             assertThatTopUnseenKey().isEqualTo(null)
 
             // TEST: Entries updated after shade is collapsed ARE marked unseen
-            setShadeAndQsExpansionThenWait(0f, 0f)
             collectionListener.onEntryUpdated(solo1)
             collectionListener.onEntryUpdated(solo2)
             onBeforeTransformGroupsListener.onBeforeTransformGroups(listEntryList)

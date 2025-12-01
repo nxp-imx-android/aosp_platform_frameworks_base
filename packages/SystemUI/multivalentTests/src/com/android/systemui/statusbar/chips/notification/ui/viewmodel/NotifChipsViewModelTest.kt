@@ -16,13 +16,16 @@
 
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
+import android.app.Flags.FLAG_API_NOTIFICATION_CHIP
+import android.app.Notification
+import android.app.Notification.Metric.TimeDifference
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags.FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY
@@ -42,7 +45,9 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
@@ -56,6 +61,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.NotificationChipApi
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
@@ -75,10 +81,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class NotifChipsViewModelTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+@EnableFlags(
+    android.app.Flags.FLAG_API_METRIC_STYLE,
+    android.app.Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE,
+)
+class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     @get:Rule val mockito: MockitoRule = MockitoJUnit.rule()
 
     @Mock private lateinit var pendingIntent: PendingIntent
@@ -92,6 +104,10 @@ class NotifChipsViewModelTest : SysuiTestCase() {
     private val activeNotificationListRepository = kosmos.activeNotificationListRepository
 
     private val underTest by lazy { kosmos.notifChipsViewModel }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -121,7 +137,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -142,7 +158,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -162,7 +178,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -183,7 +199,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         appName = "Fake App Name",
                         statusBarChipIcon = icon,
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -213,7 +229,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = notifKey,
                         appName = "Fake App Name",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                        promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                     )
                 )
             )
@@ -236,7 +252,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
@@ -265,7 +281,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
@@ -297,7 +313,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
@@ -333,13 +349,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif1",
                         packageName = "notif1",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                     ),
                     activeNotificationModel(
                         key = "notif2",
                         packageName = "notif2",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                     ),
                     activeNotificationModel(
                         key = "notif3",
@@ -371,13 +387,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = firstKey,
                         packageName = firstKey,
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder(firstKey).build(),
+                        promotedContent = newPromotedNotificationContentBuilder(firstKey).build(),
                     ),
                     activeNotificationModel(
                         key = secondKey,
                         packageName = secondKey,
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder(secondKey).build(),
+                        promotedContent = newPromotedNotificationContentBuilder(secondKey).build(),
                     ),
                     activeNotificationModel(
                         key = thirdKey,
@@ -405,7 +421,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "samePackage",
                     uid = 10,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
 
@@ -416,7 +432,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "samePackage",
                     uid = 20,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -436,7 +452,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "onePackage",
                     uid = 10,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
 
@@ -447,7 +463,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "anotherPackage",
                     uid = 10,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -467,7 +483,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "samePackage",
                     uid = 3,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
 
@@ -478,7 +494,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "samePackage",
                     uid = 3,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                    promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -499,7 +515,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "firstPackage",
                     uid = 1,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("firstPackage.1").build(),
+                    promotedContent =
+                        newPromotedNotificationContentBuilder("firstPackage.1").build(),
                 )
             )
 
@@ -510,7 +527,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "firstPackage",
                     uid = 1,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("firstPackage.2").build(),
+                    promotedContent =
+                        newPromotedNotificationContentBuilder("firstPackage.2").build(),
                 )
             )
 
@@ -522,7 +540,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "secondPackage",
                     uid = 2,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("secondPackage.1").build(),
+                    promotedContent =
+                        newPromotedNotificationContentBuilder("secondPackage.1").build(),
                 )
             )
 
@@ -533,7 +552,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "secondPackage",
                     uid = 20,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("secondPackage.2").build(),
+                    promotedContent =
+                        newPromotedNotificationContentBuilder("secondPackage.2").build(),
                 )
             )
 
@@ -544,7 +564,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     packageName = "secondPackage",
                     uid = 200,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentBuilder("secondPackage.3").build(),
+                    promotedContent =
+                        newPromotedNotificationContentBuilder("secondPackage.3").build(),
                 )
             )
 
@@ -563,7 +584,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val oldPromotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime)
                 }
             val icon = createStatusBarIconViewOrNull()
@@ -585,7 +606,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val newTime = currentTime + 2.minutes.inWholeMilliseconds
             fakeSystemClock.setCurrentTimeMillis(newTime)
             val newPromotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(newTime)
                 }
             setNotifs(
@@ -609,7 +630,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val oldPromotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.subText = "Old subtext"
                 }
             val icon = createStatusBarIconViewOrNull()
@@ -629,7 +650,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             // WHEN promoted content updates with an irrelevant field
             val newPromotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.subText = "New subtext"
                 }
             setNotifs(
@@ -661,7 +682,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         uid = uid,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -684,7 +705,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         uid = uid,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -707,7 +728,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         uid = uid,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -726,7 +747,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_hasShortCriticalText_usesTextInsteadOfTimeOrMetric() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -734,7 +755,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                     this.metrics =
@@ -763,7 +784,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_useMetricInsteadOfTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -771,7 +792,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                     this.metrics =
                         listOf(
@@ -805,7 +826,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                 }
             val instanceId = InstanceId.fakeInstanceId(30)
@@ -832,7 +853,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared { this.time = null }
+                newPromotedNotificationContentBuilder("notif").applyToShared { this.time = null }
             setNotifs(
                 listOf(
                     activeNotificationModel(
@@ -857,7 +878,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.wasPromotedAutomatically = true
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
@@ -885,9 +906,23 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.wasPromotedAutomatically = false
-                    this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 30.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
+                    }
                 }
             setNotifs(
                 listOf(
@@ -901,11 +936,15 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
+                .isInstanceOf(
+                    if (NotificationChipApi.isEnabled)
+                        OngoingActivityChipModel.Content.Timer::class.java
+                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
+                )
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_basicTime_timeInFuture_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -913,7 +952,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 13.minutes.inWholeMilliseconds)
                 }
 
@@ -942,8 +981,22 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time = When.Time(currentTime + 13.minutes.inWholeMilliseconds)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 13.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 13.minutes.inWholeMilliseconds)
+                    }
                 }
             val uid = 3
 
@@ -960,7 +1013,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
+                .isInstanceOf(
+                    if (NotificationChipApi.isEnabled)
+                        OngoingActivityChipModel.Content.Timer::class.java
+                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
+                )
             assertThat(latest!![0].isHidden).isFalse()
 
             activityManagerRepository.fake.setIsAppVisible(uid = uid, isAppVisible = true)
@@ -969,7 +1026,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_basicTime_timeLessThanOneMinInFuture_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -977,7 +1034,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 500)
                 }
 
@@ -1005,7 +1062,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime)
                 }
 
@@ -1033,7 +1090,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime - 2.minutes.inWholeMilliseconds)
                 }
 
@@ -1054,7 +1111,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
     // Not necessarily the behavior we *want* to have, but it's the currently implemented behavior.
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_basicTime_timeIsInFuture_thenTimeAdvances_stillShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1062,7 +1119,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 3.minutes.inWholeMilliseconds)
                 }
 
@@ -1088,7 +1145,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_countUpTime_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1102,7 +1159,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val whenElapsed = currentElapsed - 1.minutes.inWholeMilliseconds
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time =
                         When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = false)
                 }
@@ -1119,12 +1176,10 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
-                .isEqualTo(whenElapsed)
-            assertThat(
-                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(
+                    Chronometer.Running(EventTime.ElapsedRealtime(whenElapsed), isCountdown = false)
                 )
-                .isFalse()
         }
 
     @Test
@@ -1144,9 +1199,24 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val whenElapsed = currentElapsed - 1.minutes.inWholeMilliseconds
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time =
-                        When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = false)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forStopwatch(
+                                    whenElapsed,
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time =
+                            When.Chronometer(
+                                elapsedRealtimeMillis = whenElapsed,
+                                isCountDown = false,
+                            )
+                    }
                 }
             val uid = 6
             setNotifs(
@@ -1185,9 +1255,24 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val whenElapsed = currentElapsed + 10.minutes.inWholeMilliseconds
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time =
-                        When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = true)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    whenElapsed,
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time =
+                            When.Chronometer(
+                                elapsedRealtimeMillis = whenElapsed,
+                                isCountDown = true,
+                            )
+                    }
                 }
             setNotifs(
                 listOf(
@@ -1202,12 +1287,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
-                .isEqualTo(whenElapsed)
-            assertThat(
-                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).value)
+                .isEqualTo(
+                    Chronometer.Running(EventTime.ElapsedRealtime(whenElapsed), isCountdown = true)
                 )
-                .isTrue()
         }
 
     @Test
@@ -1225,7 +1309,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     fakeSystemClock.currentTimeMillis()
             val whenElapsed = currentElapsed + 10.minutes.inWholeMilliseconds
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time =
                         When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = true)
                 }
@@ -1246,7 +1330,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_adaptiveTimerMetric_systemClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1257,7 +1341,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1288,7 +1372,57 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentAdaptiveTimer_systemClock_isCountdownTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val timerLength = 12.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forTimer(
+                                Instant.ofEpochMilli(currentSystemTime + timerLength),
+                                TimeDifference.FORMAT_ADAPTIVE,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ClockTime(Instant.ofEpochMilli(currentSystemTime + timerLength)),
+                        isCountdown = true,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_adaptiveTimerMetric_realtimeClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1299,7 +1433,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1331,6 +1465,57 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentAdaptiveTimer_realtimeClock_isCountdown() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val timerLength = 12.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forTimer(
+                                currentElapsedTime + timerLength,
+                                TimeDifference.FORMAT_ADAPTIVE,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(currentElapsedTime + timerLength),
+                        isCountdown = true,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_chronometerTimerMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1341,7 +1526,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1367,12 +1552,69 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(15.minutes.inWholeMilliseconds)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(15.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentChronometerTimer_systemClock_isTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val timerLength = 12.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forTimer(
+                                Instant.ofEpochMilli(currentSystemTime + timerLength),
+                                TimeDifference.FORMAT_CHRONOMETER,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ClockTime(Instant.ofEpochMilli(52.minutes.inWholeMilliseconds)),
+                        isCountdown = true,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_chronometerTimerMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1383,7 +1625,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1409,12 +1651,69 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(15.minutes.inWholeMilliseconds)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(15.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentChronometerTimer_realtimeClock_isTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val timerLength = 12.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forTimer(
+                                currentElapsedTime + timerLength,
+                                TimeDifference.FORMAT_CHRONOMETER,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(15.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_chronometerStopwatchMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1425,7 +1724,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1451,12 +1750,69 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(1.minutes.inWholeMilliseconds)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(1.minutes.inWholeMilliseconds),
+                        isCountdown = true,
+                    )
+                )
         }
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentChronometerStopwatch_systemClock_isTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val stopwatchValue = 2.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forTimer(
+                                Instant.ofEpochMilli(currentSystemTime - stopwatchValue),
+                                TimeDifference.FORMAT_CHRONOMETER,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ClockTime(Instant.ofEpochMilli(38.minutes.inWholeMilliseconds)),
+                        isCountdown = true,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
     fun chips_chronometerStopwatchMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1467,7 +1823,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setElapsedRealtime(currentElapsedTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
@@ -1493,8 +1849,65 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.Timer
-            assertThat(timeDelta.startTimeMs).isEqualTo(1.minutes.inWholeMilliseconds)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(1.minutes.inWholeMilliseconds),
+                        isCountdown = false,
+                    )
+                )
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_compactContentChronometerStopwatch_realtimeClock_isTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+            val currentSystemTime = 40.minutes.inWholeMilliseconds
+            val currentElapsedTime = 3.minutes.inWholeMilliseconds
+            val stopwatchValue = 2.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentSystemTime)
+            fakeSystemClock.setElapsedRealtime(currentElapsedTime)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentSystemTime)
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            TimeDifference.forStopwatch(
+                                currentElapsedTime - stopwatchValue,
+                                TimeDifference.FORMAT_CHRONOMETER,
+                            ),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            val timer = latest!![0].content as OngoingActivityChipModel.Content.Timer
+            assertThat(timer.value)
+                .isEqualTo(
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(1.minutes.inWholeMilliseconds),
+                        isCountdown = false,
+                    )
+                )
+            assertThat(timer.format)
+                .isEqualTo(OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER)
         }
 
     @Test
@@ -1506,8 +1919,22 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 10.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                    }
                 }
             setNotifs(
                 listOf(
@@ -1524,7 +1951,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             // THEN the chip shows the time
             assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
+                .isInstanceOf(
+                    if (NotificationChipApi.isEnabled)
+                        OngoingActivityChipModel.Content.Timer::class.java
+                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
+                )
         }
 
     @Test
@@ -1536,8 +1967,22 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 10.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                    }
                 }
             setNotifs(
                 listOf(
@@ -1561,7 +2006,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             // (In real life the chip won't show at all, but that's handled in a different part of
             // the system. What we know here is that the chip shouldn't shrink to icon only.)
             assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
+                .isInstanceOf(
+                    if (NotificationChipApi.isEnabled)
+                        OngoingActivityChipModel.Content.Timer::class.java
+                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
+                )
         }
 
     @Test
@@ -1573,12 +2022,40 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
-                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 10.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                    }
                 }
             val otherPromotedContentBuilder =
-                PromotedNotificationContentBuilder("other notif").applyToShared {
-                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                newPromotedNotificationContentBuilder("other notif").applyToShared {
+                    if (NotificationChipApi.isEnabled) {
+                        this.compactContent =
+                            Notification.ResolvedBasicCompactContent(
+                                COMPACT_ICON,
+                                TimeDifference.forTimer(
+                                    Instant.ofEpochMilli(
+                                        currentTime + 10.minutes.inWholeMilliseconds
+                                    ),
+                                    TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                            )
+                    } else {
+                        this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
+                    }
                 }
             val icon = createStatusBarIconViewOrNull()
             val otherIcon = createStatusBarIconViewOrNull()
@@ -1608,7 +2085,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             // THEN the "notif" chip keeps showing time
             val chip = latest!![0]
             assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
+                .isInstanceOf(
+                    if (NotificationChipApi.isEnabled)
+                        OngoingActivityChipModel.Content.Timer::class.java
+                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
+                )
             assertIsNotifChip(chip, context, icon, "notif")
         }
 
@@ -1621,7 +2102,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentBuilder("notif").applyToShared {
+                newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
@@ -1663,7 +2144,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder(key).build(),
+                        promotedContent = newPromotedNotificationContentBuilder(key).build(),
                     )
                 )
             )
@@ -1690,7 +2171,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         "notif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -1713,7 +2194,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         "notif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -1741,7 +2222,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         "notif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -1769,7 +2250,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         "notif",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -1819,7 +2300,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     uid = uid,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
                     contentIntent = pendingIntent,
-                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                    promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
             )
             activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = true)
@@ -1870,7 +2351,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     uid = uid,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
                     contentIntent = pendingIntent,
-                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                    promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
             )
             kosmos.activityManagerRepository.fake.setIsAppVisible(uid, true)
@@ -1907,7 +2388,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     uid = uid,
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
                     contentIntent = pendingIntent,
-                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                    promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
             )
             activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = true)
@@ -1941,8 +2422,44 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 .build()
     }
 
+    private fun newPromotedNotificationContentBuilder(
+        key: String
+    ): PromotedNotificationContentBuilder {
+        val builder = PromotedNotificationContentBuilder(key)
+        if (NotificationChipApi.isEnabled) {
+            builder.applyToShared {
+                // If API_NOTIFICATION_CHIP is active, then PromotedNotificationContentModel must
+                // have SOME compactContent, otherwise toPrunedModel() will throw. We provide a
+                // default here. Tests that want to check chip icon/text should set an explicit
+                // one.
+                this.compactContent =
+                    Notification.ResolvedBasicCompactContent(
+                        COMPACT_ICON,
+                        null,
+                        Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                    )
+            }
+        }
+
+        return builder
+    }
+
     companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                android.app.Flags.FLAG_API_NOTIFICATION_CHIP
+            )
+        }
+
         private val COMPONENT = ComponentName("package", "class")
+
+        private val COMPACT_ICON =
+            Notification.ResolvedCompactIcon(
+                Notification.ResolvedCompactIcon.SOURCE_SMALL_ICON,
+                null,
+            )
 
         fun assertIsNotifChip(
             latest: OngoingActivityChipModel?,

@@ -19,7 +19,7 @@ package android.media;
 import static android.media.audio.Flags.FLAG_ENABLE_MULTICHANNEL_GROUP_DEVICE;
 import static android.media.audio.Flags.FLAG_SPEAKER_LAYOUT_API;
 import static android.media.audio.Flags.FLAG_BLE_HEARING_AID_DEVICE;
-
+import static android.media.audio.Flags.bleHearingAidDevice;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -249,7 +249,8 @@ public final class AudioDeviceInfo {
             TYPE_ECHO_REFERENCE,
             TYPE_BLE_BROADCAST,
             TYPE_DOCK_ANALOG,
-            TYPE_MULTICHANNEL_GROUP}
+            TYPE_MULTICHANNEL_GROUP,
+            TYPE_BLE_HEARING_AID}
     )
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioDeviceType {}
@@ -277,7 +278,8 @@ public final class AudioDeviceInfo {
             TYPE_HDMI_ARC,
             TYPE_HDMI_EARC,
             TYPE_ECHO_REFERENCE,
-            TYPE_DOCK_ANALOG}
+            TYPE_DOCK_ANALOG,
+            TYPE_BLE_HEARING_AID}
     )
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioDeviceTypeIn {}
@@ -311,7 +313,8 @@ public final class AudioDeviceInfo {
             TYPE_BLE_SPEAKER,
             TYPE_BLE_BROADCAST,
             TYPE_DOCK_ANALOG,
-            TYPE_MULTICHANNEL_GROUP}
+            TYPE_MULTICHANNEL_GROUP,
+            TYPE_BLE_HEARING_AID}
     )
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioDeviceTypeOut {}
@@ -346,6 +349,7 @@ public final class AudioDeviceInfo {
             case TYPE_BLE_SPEAKER:
             case TYPE_BLE_BROADCAST:
             case TYPE_DOCK_ANALOG:
+            case TYPE_BLE_HEARING_AID:
                 return true;
 
             default:
@@ -383,6 +387,7 @@ public final class AudioDeviceInfo {
             case TYPE_HDMI_EARC:
             case TYPE_ECHO_REFERENCE:
             case TYPE_DOCK_ANALOG:
+            case TYPE_BLE_HEARING_AID:
                 return true;
             default:
                 return false;
@@ -752,7 +757,10 @@ public final class AudioDeviceInfo {
             INT_TO_EXT_DEVICE_MAPPING.put(
                     AudioSystem.DEVICE_OUT_MULTICHANNEL_GROUP, TYPE_MULTICHANNEL_GROUP);
         }
-
+        if (bleHearingAidDevice()) {
+            INT_TO_EXT_DEVICE_MAPPING.put(
+                    AudioSystem.DEVICE_OUT_BLE_HEARING_AID, TYPE_BLE_HEARING_AID);
+        }
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_BUILTIN_MIC, TYPE_BUILTIN_MIC);
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_BLUETOOTH_SCO_HEADSET, TYPE_BLUETOOTH_SCO);
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_WIRED_HEADSET, TYPE_WIRED_HEADSET);
@@ -776,7 +784,10 @@ public final class AudioDeviceInfo {
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_HDMI_ARC, TYPE_HDMI_ARC);
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_HDMI_EARC, TYPE_HDMI_EARC);
         INT_TO_EXT_DEVICE_MAPPING.put(AudioSystem.DEVICE_IN_ECHO_REFERENCE, TYPE_ECHO_REFERENCE);
-
+        if (bleHearingAidDevice()) {
+            INT_TO_EXT_DEVICE_MAPPING.put(
+                    AudioSystem.DEVICE_IN_BLE_HEARING_AID, TYPE_BLE_HEARING_AID);
+        }
 
         // privileges mapping to output device
         EXT_TO_INT_DEVICE_MAPPING = new SparseIntArray();
@@ -812,7 +823,10 @@ public final class AudioDeviceInfo {
             EXT_TO_INT_DEVICE_MAPPING.put(
                     TYPE_MULTICHANNEL_GROUP, AudioSystem.DEVICE_OUT_MULTICHANNEL_GROUP);
         }
-
+        if (bleHearingAidDevice()) {
+            EXT_TO_INT_DEVICE_MAPPING.put(
+                    TYPE_BLE_HEARING_AID, AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
+        }
         // privileges mapping to input device
         EXT_TO_INT_INPUT_DEVICE_MAPPING = new SparseIntArray();
         EXT_TO_INT_INPUT_DEVICE_MAPPING.put(TYPE_BUILTIN_MIC, AudioSystem.DEVICE_IN_BUILTIN_MIC);
@@ -844,7 +858,10 @@ public final class AudioDeviceInfo {
         EXT_TO_INT_INPUT_DEVICE_MAPPING.put(TYPE_HDMI_EARC, AudioSystem.DEVICE_IN_HDMI_EARC);
         EXT_TO_INT_INPUT_DEVICE_MAPPING.put(
                 TYPE_ECHO_REFERENCE, AudioSystem.DEVICE_IN_ECHO_REFERENCE);
-
+        if (bleHearingAidDevice()) {
+            EXT_TO_INT_INPUT_DEVICE_MAPPING.put(
+                    TYPE_BLE_HEARING_AID, AudioSystem.DEVICE_IN_BLE_HEARING_AID);
+        }
     }
 
     @Override

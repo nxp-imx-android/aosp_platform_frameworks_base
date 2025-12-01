@@ -31,11 +31,18 @@ class CommandOptions(args: Array<String>) {
         private const val VIEWER_CONFIG_PARAM = "--viewer-config"
         private const val OUTPUT_SOURCE_JAR_PARAM = "--output-srcjar"
         private const val VIEWER_CONFIG_FILE_PATH_PARAM = "--viewer-config-file-path"
-        private val parameters = setOf(PROTOLOG_CLASS_PARAM, PROTOLOGGROUP_CLASS_PARAM,
-            PROTOLOGGROUP_JAR_PARAM, VIEWER_CONFIG_PARAM,
-            OUTPUT_SOURCE_JAR_PARAM, VIEWER_CONFIG_FILE_PATH_PARAM)
+        private val parameters =
+            setOf(
+                PROTOLOG_CLASS_PARAM,
+                PROTOLOGGROUP_CLASS_PARAM,
+                PROTOLOGGROUP_JAR_PARAM,
+                VIEWER_CONFIG_PARAM,
+                OUTPUT_SOURCE_JAR_PARAM,
+                VIEWER_CONFIG_FILE_PATH_PARAM,
+            )
 
-        val USAGE = """
+        val USAGE =
+            """
             Usage: ${Constants.NAME} <command> [<args>]
             Available commands:
 
@@ -48,7 +55,8 @@ class CommandOptions(args: Array<String>) {
                 $PROTOLOGGROUP_CLASS_PARAM <class name> $PROTOLOGGROUP_JAR_PARAM <config.jar>
                 $VIEWER_CONFIG_PARAM <viewer.pb> [<input.java>]
             - creates viewer config file from given java files.
-        """.trimIndent()
+        """
+                .trimIndent()
 
         private fun validateClassName(name: String): String {
             if (!Pattern.matches("^([a-z]+[A-Za-z0-9]*\\.)+([A-Za-z0-9$]+)$", name)) {
@@ -94,24 +102,28 @@ class CommandOptions(args: Array<String>) {
 
         private fun validateViewerConfigFilePath(name: String): String {
             if (!name.endsWith(".pb")) {
-                throw InvalidCommandException("Proto file (ending with .pb) required, " +
-                        "got $name instead")
+                throw InvalidCommandException(
+                    "Proto file (ending with .pb) required, " + "got $name instead"
+                )
             }
             return name
         }
 
         private fun validateOutputFilePath(name: String): String {
             if (!name.endsWith(".winscope")) {
-                throw InvalidCommandException("Winscope file (ending with .winscope) required, " +
-                        "got $name instead")
+                throw InvalidCommandException(
+                    "Winscope file (ending with .winscope) required, " + "got $name instead"
+                )
             }
             return name
         }
 
         private fun validateConfigFileName(name: String): String {
             if (!name.endsWith(".json") && !name.endsWith(".pb")) {
-                throw InvalidCommandException("Json file (ending with .json) or proto file " +
-                        "(ending with .pb) required, got $name instead")
+                throw InvalidCommandException(
+                    "Json file (ending with .json) or proto file " +
+                        "(ending with .pb) required, got $name instead"
+                )
             }
             return name
         }
@@ -119,8 +131,10 @@ class CommandOptions(args: Array<String>) {
         private fun validateConfigType(name: String): String {
             val validType = listOf("json", "proto")
             if (!validType.contains(name)) {
-                throw InvalidCommandException("Unexpected config file type. " +
-                        "Expected on of [${validType.joinToString()}], but got $name")
+                throw InvalidCommandException(
+                    "Unexpected config file type. " +
+                        "Expected on of [${validType.joinToString()}], but got $name"
+                )
             }
             return name
         }
@@ -201,8 +215,8 @@ class CommandOptions(args: Array<String>) {
                 protoLogGroupsJarArg = validateJarName(getParam(PROTOLOGGROUP_JAR_PARAM, params))
                 viewerConfigFileNameArg = validateNotSpecified(VIEWER_CONFIG_PARAM, params)
                 outputSourceJarArg = validateSrcJarName(getParam(OUTPUT_SOURCE_JAR_PARAM, params))
-                viewerConfigFilePathArg = validateViewerConfigFilePath(
-                    getParam(VIEWER_CONFIG_FILE_PATH_PARAM, params))
+                viewerConfigFilePathArg =
+                    validateViewerConfigFilePath(getParam(VIEWER_CONFIG_FILE_PATH_PARAM, params))
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
             }

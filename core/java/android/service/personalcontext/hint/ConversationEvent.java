@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.util.Log;
 import android.view.autofill.AutofillId;
@@ -27,7 +28,6 @@ import android.view.autofill.AutofillId;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 /** Base class for conversation-related events. */
@@ -109,12 +109,39 @@ public abstract class ConversationEvent {
      */
     @NonNull
     public Bundle toBundle() {
+        final Bundle bundle = toBundleBase();
+        bundle.putBundle(KEY_EVENT_DATA, toBundleImpl());
+        return bundle;
+    }
+
+    /**
+     * Writes this event to a bundle for use by {@link ConversationHint#toBundle()}, minus the event
+     * data itself, which might contain binders or file descriptors that aren't desired in {@link
+     * #writeToSignatureParcel(Parcel)}.
+     */
+    private Bundle toBundleBase() {
         final Bundle bundle = new Bundle();
         bundle.putInt(KEY_EVENT_TYPE, getEventType());
         bundle.putString(KEY_CONVERSATION_SESSION_ID, mConversationSessionId);
         bundle.putLong(KEY_EVENT_TIMESTAMP, mEventTimestamp.toEpochMilli());
-        bundle.putBundle(KEY_EVENT_DATA, toBundleImpl());
         return bundle;
+    }
+
+    void writeToSignatureParcel(@NonNull Parcel dest) {
+        dest.writeBundle(toBundleBase());
+        writeToSignatureParcelImpl(dest);
+    }
+
+    /**
+     * Writes marshallable data used to sign and verify the data contained in this event.
+     *
+     * <p>This should be overridden by subclasses if their data contains any binders or file
+     * descriptors, as these are not marshallable.
+     *
+     * @see ContextHint#writeToSignatureParcel(Parcel)
+     */
+    void writeToSignatureParcelImpl(@NonNull Parcel dest) {
+        dest.writeBundle(toBundleImpl());
     }
 
     /**
@@ -419,6 +446,11 @@ public abstract class ConversationEvent {
             final Bundle bundle = new Bundle();
             bundle.putParcelable(KEY_CONVERSATION_DATA, mConversationData);
             return bundle;
+        }
+
+        @Override
+        void writeToSignatureParcelImpl(@NonNull Parcel dest) {
+            mConversationData.writeToSignatureParcel(dest);
         }
 
         @Override

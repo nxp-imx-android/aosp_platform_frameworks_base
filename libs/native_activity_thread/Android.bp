@@ -19,33 +19,10 @@ package {
 }
 
 rust_bindgen {
-    name: "libdlext_bindgen",
-    crate_name: "dlext_bindgen",
-    wrapper_src: "src/bindings/dlext.h",
-    source_stem: "dlext_bindings",
-    shared_libs: [
-        "libdl_android",
-    ],
-}
-
-rust_bindgen {
-    name: "liblooper_bindgen",
-    crate_name: "looper_bindgen",
-    wrapper_src: "src/bindings/looper.h",
-    source_stem: "looper_bindings",
-    header_libs: [
-        "native_headers",
-    ],
-    shared_libs: [
-        "libandroid",
-    ],
-}
-
-rust_bindgen {
-    name: "libnative_service_bindgen",
-    crate_name: "native_service_bindgen",
-    wrapper_src: "src/bindings/native_service.h",
-    source_stem: "native_service_bindings",
+    name: "libnative_activity_thread_bindgen",
+    crate_name: "native_activity_thread_bindgen",
+    wrapper_src: "src/bindings.h",
+    source_stem: "native_activity_thread_bindings",
     header_libs: [
         "libandroid_headers_private",
         "native_headers",
@@ -53,14 +30,8 @@ rust_bindgen {
     shared_libs: [
         "libandroid",
         "libbinder_ndk",
+        "libdl_android",
     ],
-}
-
-rust_bindgen {
-    name: "libtime_bindgen",
-    crate_name: "time_bindgen",
-    wrapper_src: "src/bindings/time.h",
-    source_stem: "time_bindings",
 }
 
 rust_library {
@@ -76,16 +47,15 @@ rust_library {
         "libatrace_rust",
         "libbitflags",
         "libbinder_rs",
-        "libdlext_bindgen",
         "liblogger",
         "liblibc",
         "libnix",
         "liblog_rust",
-        "liblooper_bindgen",
-        "libnative_service_bindgen",
         "librustutils",
-        "libtime_bindgen",
         "native_application_thread_aidl-rust",
         "libactivity_manager_procstate_aidl-rust",
+    ],
+    rlibs: [
+        "libnative_activity_thread_bindgen",
     ],
 }

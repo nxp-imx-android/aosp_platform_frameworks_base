@@ -71,7 +71,8 @@ enum {
  */
 class RenderProxy {
 public:
-    RenderProxy(bool opaque, RenderNode* rootNode, IContextFactory* contextFactory);
+    RenderProxy(bool opaque, RenderNode* rootNode, IContextFactory* contextFactory,
+                bool useIpcCanvas = false);
     virtual ~RenderProxy();
 
     // Won't take effect until next EGLSurface creation

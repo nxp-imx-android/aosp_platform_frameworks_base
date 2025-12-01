@@ -80,7 +80,9 @@ constructor(
             },
             stackScrollView = notificationStackScrollView.get(),
             viewModel =
-                rememberViewModel("GoneScene") { notificationsPlaceholderViewModelFactory.create() },
+                rememberViewModel("GoneScene") {
+                    notificationsPlaceholderViewModelFactory.create(Scenes.Gone)
+                },
         )
     }
 }

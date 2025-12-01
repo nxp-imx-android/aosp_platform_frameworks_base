@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,7 +34,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.doOnLayout
+import androidx.compose.ui.viewinterop.NoOpUpdate
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
@@ -90,7 +90,7 @@ constructor(
             val isWeatherEnabled: Boolean by
                 keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
 
-            AndroidView(
+            LookaheadAndroidView(
                 factory = { ctx ->
                     setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.VERTICAL }
                 },
@@ -116,7 +116,7 @@ constructor(
             val isWeatherEnabled: Boolean by
                 keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
 
-            AndroidView(
+            LookaheadAndroidView(
                 factory = { ctx ->
                     setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.HORIZONTAL }
                 },
@@ -177,10 +177,6 @@ constructor(
 
             val clockPadding = dimensionResource(clocksR.dimen.clock_padding_start)
 
-            // If the AndroidView resizes, the Lookahead pass might remain in an old state.
-            // TODO(b/460044592) We track this to force Lookahead to update to the new size.
-            var lookaheadInvalidationTrigger by remember { mutableIntStateOf(0) }
-
             // In wide-layouts limit the maximum width of the card to be half the screen width
             val shadeMode by keyguardSmartspaceViewModel.shadeMode.collectAsStateWithLifecycle()
             val widthMod =
@@ -192,11 +188,9 @@ constructor(
                     }
                 }
 
-            AndroidView(
+            LookaheadAndroidView(
                 factory = { ctx ->
                     val view = smartspaceController.buildAndConnectView(ctx)!!
-                    lookaheadInvalidationTrigger = view.height
-                    view.doOnLayout { lookaheadInvalidationTrigger = it.height }
                     keyguardUnlockAnimationController.lockscreenSmartspace = view
                     view
                 },
@@ -213,7 +207,45 @@ constructor(
                             end = clockPadding,
                             bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                         )
-                        .layout { measurable, constraints ->
+                        .then(context.burnInModifier)
+                        .then(context.nonAuthUIModifier),
+            )
+        }
+    }
+
+    companion object {
+        @Composable
+        @Deprecated("This is a hack. Do not use generally.")
+        private fun <T : View> LookaheadAndroidView(
+            factory: (Context) -> T,
+            modifier: Modifier = Modifier,
+            onReset: ((T) -> Unit)? = null,
+            onRelease: (T) -> Unit = NoOpUpdate,
+            update: (T) -> Unit = NoOpUpdate,
+        ) {
+            // If the AndroidView resizes, the Lookahead pass might remain in an old state.
+            // TODO(b/460044592) We track this to force Lookahead to update to the new size.
+            var lookaheadInvalidationTrigger by remember { mutableStateOf(IntOffset(0, 0)) }
+            val listener = remember {
+                View.OnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+                    lookaheadInvalidationTrigger = IntOffset(view.width, view.height)
+                }
+            }
+
+            AndroidView(
+                factory = { ctx ->
+                    val view = factory(ctx)
+                    view.addOnLayoutChangeListener(listener)
+                    view
+                },
+                onRelease = { view ->
+                    onRelease(view)
+                    view.removeOnLayoutChangeListener(listener)
+                },
+                onReset = onReset,
+                update = update,
+                modifier =
+                    Modifier.layout { measurable, constraints ->
                             if (isLookingAhead) {
                                 // If the AndroidView resizes, this state changes, forcing Compose
                                 // to re-run this Lookahead measure block with the correct size.
@@ -224,8 +256,7 @@ constructor(
                                 layout(width, height) { place(IntOffset.Zero) }
                             }
                         }
-                        .then(context.burnInModifier)
-                        .then(context.nonAuthUIModifier),
+                        .then(modifier),
             )
         }
     }

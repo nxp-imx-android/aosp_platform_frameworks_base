@@ -2945,7 +2945,9 @@ public class SizeCompatTests extends WindowTestsBase {
 
         // Update with new activity requested orientation and recompute bounds with no previous
         // size compat cache.
-        verify(mTask).onDescendantOrientationChanged(same(newActivity));
+        if (!com.android.window.flags.Flags.removeLegacyOrientationReport()) {
+            verify(mTask).onDescendantOrientationChanged(same(newActivity));
+        }
 
         final Rect displayBounds = new Rect(display.getBounds());
         final Rect taskBounds = new Rect(mTask.getBounds());
@@ -3011,7 +3013,9 @@ public class SizeCompatTests extends WindowTestsBase {
 
         // Update with new activity requested orientation and recompute bounds with no previous
         // size compat cache.
-        verify(mTask).onDescendantOrientationChanged(same(newActivity));
+        if (!com.android.window.flags.Flags.removeLegacyOrientationReport()) {
+            verify(mTask).onDescendantOrientationChanged(same(newActivity));
+        }
 
         final Rect displayBounds = new Rect(display.getBounds());
         final Rect taskBounds = new Rect(mTask.getBounds());

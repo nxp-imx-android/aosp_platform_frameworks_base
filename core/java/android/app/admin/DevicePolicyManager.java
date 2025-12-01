@@ -12910,8 +12910,11 @@ public class DevicePolicyManager {
 
         if (mService != null) {
             try {
+                List<EnforcingAdmin> enforcingAdmins = mService.getEnforcingAdminsForPolicy(
+                        policyIdentifier, userId);
+                // In some test environments, service can return null. Guard against that.
                 return new PolicyEnforcementInfo(
-                        mService.getEnforcingAdminsForPolicy(policyIdentifier, userId));
+                        enforcingAdmins == null ? Collections.emptyList() : enforcingAdmins);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -14035,7 +14038,9 @@ public class DevicePolicyManager {
      * package may have zero or more provider components, where each component provides a different
      * widget type.
      * <p>
-     * <strong>Note:</strong> By default no widget provider package is allowlisted.
+     * <strong>Note:</strong> By default no widget provider package is allowlisted. This API updates
+     * the allowlist incrementally. For better performance when updating multiple providers, use
+     * {@link #setCrossProfileWidgetProviders}.
      *
      * @param admin Which {@link DeviceAdminReceiver} this request is associated with. Null if the
      *              caller is not a device admin.
@@ -14045,12 +14050,8 @@ public class DevicePolicyManager {
      * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_PROFILE_INTERACTION}.
      * @see #removeCrossProfileWidgetProvider(android.content.ComponentName, String)
      * @see #getCrossProfileWidgetProviders(android.content.ComponentName)
-     * @deprecated While this API still works to mutate the current allowlist, please consider
-     * switching to {@link #setCrossProfileWidgetProviders} for better performance.
      */
-    @Deprecated
     @RequiresPermission(value = MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional = true)
-    @FlaggedApi(FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS)
     public boolean addCrossProfileWidgetProvider(@Nullable ComponentName admin,
             String packageName) {
         throwIfParentInstance("addCrossProfileWidgetProvider");

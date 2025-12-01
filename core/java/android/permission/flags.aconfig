@@ -11,13 +11,6 @@ flag {
 }
 
 flag {
-  name: "bluetooth_permission_use_module_protection_level"
-  namespace: "bluetooth"
-  description: "Flag for change to all the Bluetooth ROLE permissions to be provided by the module instead"
-  bug: "395709071"
-}
-
-flag {
     name: "voice_activation_permission_apis"
     is_exported: true
     namespace: "permissions"
@@ -363,15 +356,6 @@ flag {
 }
 
 flag {
-    name: "record_all_runtime_appops_sqlite"
-    is_fixed_read_only: true
-    is_exported: true
-    namespace: "permissions"
-    description: "Enables recording of all runtime app ops into SQlite"
-    bug: "377584611"
-}
-
-flag {
     name: "ranging_permission_enabled"
     is_fixed_read_only: true
     is_exported: true
@@ -701,3 +685,18 @@ flag {
     bug: "437416500"
 }
 
+flag {
+    name: "location_permission_new_radio_buttons_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "When the flag is turned on, show new location permission radio buttons"
+    bug: "436314824"
+}
+
+flag {
+    name: "new_default_app_confirmation_dialog_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "This flag controls whether to enable the new default app confirmation dialog"
+    bug: "440579404"
+}

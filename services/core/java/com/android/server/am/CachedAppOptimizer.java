@@ -284,6 +284,7 @@ public class CachedAppOptimizer {
 
     private static final String ATRACE_COMPACTION_TRACK = "Compaction";
     public static final String ATRACE_FREEZER_TRACK = "Freezer";
+    public static final String ATRACE_ZRAM_WRITEBACK_TRACK = "ZramWriteback";
 
     private static final int FREEZE_BINDER_TIMEOUT_MS = 0;
     private static final int FREEZE_DEADLOCK_TIMEOUT_MS = 1000;
@@ -1783,6 +1784,19 @@ public class CachedAppOptimizer {
                                                     + "status="
                                                     + status);
                                 }
+                                Trace.asyncTraceForTrackEnd(
+                                        Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                        ATRACE_ZRAM_WRITEBACK_TRACK,
+                                        pid);
+                                Trace.instantForTrack(
+                                        Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                        ATRACE_ZRAM_WRITEBACK_TRACK,
+                                        "ZramWriteback: writeback completed for "
+                                                + processName
+                                                + ":"
+                                                + pid
+                                                + " status: "
+                                                + status);
                                 FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
                                         getZramWritebackEventType(status), uid, processName,
                                         hasActivities, zramUsedDeltaKb, bytesWritten,
@@ -1800,6 +1814,11 @@ public class CachedAppOptimizer {
                                             .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__DISABLED_BY_FLAG;
                             return;
                         }
+                        Trace.asyncTraceForTrackBegin(
+                                Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                ATRACE_ZRAM_WRITEBACK_TRACK,
+                                "asyncWritebackProcessZramMemory",
+                                pid);
                         eventTypeToLog =
                             FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__STARTED;
                         mmd.asyncWritebackProcessZramMemory(pfd, callback);
@@ -1814,6 +1833,16 @@ public class CachedAppOptimizer {
                 Slog.w(TAG_AM, "Failed to call mmd.", e);
             }
         } finally {
+            if (eventTypeToLog != FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__STARTED) {
+                Trace.instantForTrack(
+                        Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                        ATRACE_ZRAM_WRITEBACK_TRACK,
+                        "ZramWriteback: did not attempt writeback for "
+                                + processName
+                                + ":"
+                                + pid
+                                + " eventType: " + eventTypeToLog);
+            }
             FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
                     processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
                     dmaBufMemKb > 0, hasGpuMemory);

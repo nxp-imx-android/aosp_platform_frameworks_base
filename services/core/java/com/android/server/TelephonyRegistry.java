@@ -47,7 +47,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
-import android.telecom.TelecomManager;
 import android.telephony.AccessNetworkConstants;
 import android.telephony.Annotation;
 import android.telephony.Annotation.RadioPowerState;
@@ -449,6 +448,9 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
     private AtomicBoolean mIsSatelliteEnabled;
     private AtomicBoolean mWasSatelliteEnabledNotified;
 
+    private boolean[] mDomainSelectionCallEmergencyMode;
+    private boolean[] mDomainSelectionSmsEmergencyMode;
+
     private final int mPid = Process.myPid();
 
     /**
@@ -597,6 +599,10 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                         .EVENT_SIMULTANEOUS_CELLULAR_CALLING_SUBSCRIPTIONS_CHANGED)
                 || events.contains(TelephonyCallback.EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED)
                 || events.contains(TelephonyCallback.EVENT_SECURITY_ALGORITHMS_CHANGED);
+    }
+
+    private boolean isBasicPhoneStatePermissionRequired(Set<Integer> events) {
+        return events.contains(TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED);
     }
 
     private static final int MSG_USER_SWITCHED = 1;
@@ -759,6 +765,9 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
             } else {
                 mCarrierRoamingNtnSignalStrength = new NtnSignalStrength[mNumPhones];
             }
+            mDomainSelectionCallEmergencyMode =
+                    copyOf(mDomainSelectionCallEmergencyMode, mNumPhones);
+            mDomainSelectionSmsEmergencyMode = copyOf(mDomainSelectionSmsEmergencyMode, mNumPhones);
             // ds -> ss switch.
             if (mNumPhones < oldNumPhones) {
                 cutListToSize(mCellInfo, mNumPhones);
@@ -823,6 +832,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 mCarrierRoamingNtnAvailableServices.add(i, new IntArray());
                 mCarrierRoamingNtnSignalStrength[i] = new NtnSignalStrength(
                         NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
+                mDomainSelectionCallEmergencyMode[i] = false;
+                mDomainSelectionSmsEmergencyMode[i] = false;
             }
         }
     }
@@ -902,6 +913,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         mCarrierRoamingNtnSignalStrength = new NtnSignalStrength[numPhones];
         mIsSatelliteEnabled = new AtomicBoolean();
         mWasSatelliteEnabledNotified = new AtomicBoolean();
+        mDomainSelectionCallEmergencyMode = new boolean[numPhones];
+        mDomainSelectionSmsEmergencyMode = new boolean[numPhones];
 
         for (int i = 0; i < numPhones; i++) {
             mCallState[i] =  TelephonyManager.CALL_STATE_IDLE;
@@ -950,6 +963,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
             mCarrierRoamingNtnAvailableServices.add(i, new IntArray());
             mCarrierRoamingNtnSignalStrength[i] = new NtnSignalStrength(
                     NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
+            mDomainSelectionCallEmergencyMode[i] = false;
+            mDomainSelectionSmsEmergencyMode[i] = false;
         }
 
         mAppOps = mContext.getSystemService(AppOpsManager.class);
@@ -1598,6 +1613,32 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                     try {
                         r.callback.onCarrierRoamingNtnSignalStrengthChanged(
                                 mCarrierRoamingNtnSignalStrength[r.phoneId]);
+                    } catch (RemoteException ex) {
+                        remove(r.binder);
+                    }
+                }
+                if (events.contains(
+                        TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED)) {
+                    try {
+                        if (mDomainSelectionCallEmergencyMode[r.phoneId]) {
+                            r.callback.onDomainSelectionEmergencyModeEntered(
+                                    TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_CALL,
+                                    r.phoneId, r.subId);
+                        } else {
+                            r.callback.onDomainSelectionEmergencyModeExited(
+                                    TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_CALL,
+                                    r.phoneId, r.subId);
+                        }
+
+                        if (mDomainSelectionSmsEmergencyMode[r.phoneId]) {
+                            r.callback.onDomainSelectionEmergencyModeEntered(
+                                    TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_SMS,
+                                    r.phoneId, r.subId);
+                        } else {
+                            r.callback.onDomainSelectionEmergencyModeExited(
+                                    TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_SMS,
+                                    r.phoneId, r.subId);
+                        }
                     } catch (RemoteException ex) {
                         remove(r.binder);
                     }
@@ -3999,6 +4040,70 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         }
     }
 
+    /**
+     * Notify the listeners that emergency mode has been entered or exited
+     * when AP domain selection is enabled.
+     *
+     * @param phoneId the phone id.
+     * @param subId the subscription id.
+     * @param type the emergency type.
+     *             See {@link TelephonyManager.DomainSelectionEmergencyType}.
+     * @param isEntered the flag specifying whether the emergency mode is entered or exited.
+     */
+    public void notifyDomainSelectionEmergencyModeChanged(int phoneId, int subId,
+            @TelephonyManager.DomainSelectionEmergencyType int type, boolean isEntered) {
+        if (!Flags.domainSelectionEmergencyModeNotification()) {
+            log("Not available due to domainSelectionEmergencyModeNotification flag");
+            return;
+        }
+        if (!checkNotifyPermission("notifyDomainSelectionEmergencyModeChanged")) {
+            return;
+        }
+
+        if (VDBG) {
+            log("notifyDomainSelectionEmergencyModeChanged: phoneId=" + phoneId
+                    + ", subId=" + subId + ", type=" + type + ", isEntered=" + isEntered);
+        }
+        synchronized (mRecords) {
+            if (validatePhoneId(phoneId)) {
+                if (type == TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_CALL) {
+                    mDomainSelectionCallEmergencyMode[phoneId] = isEntered;
+                } else if (type == TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_SMS) {
+                    mDomainSelectionSmsEmergencyMode[phoneId] = isEntered;
+                }
+
+                if (isEntered) {
+                    for (Record r : mRecords) {
+                        // Send to all listeners regardless of subscription
+                        if (r.matchTelephonyCallbackEvent(
+                                TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED)) {
+                            try {
+                                r.callback.onDomainSelectionEmergencyModeEntered(
+                                        type, phoneId, subId);
+                            } catch (RemoteException ex) {
+                                mRemoveList.add(r.binder);
+                            }
+                        }
+                    }
+                } else {
+                    for (Record r : mRecords) {
+                        // Send to all listeners regardless of subscription
+                        if (r.matchTelephonyCallbackEvent(
+                                TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED)) {
+                            try {
+                                r.callback.onDomainSelectionEmergencyModeExited(
+                                        type, phoneId, subId);
+                            } catch (RemoteException ex) {
+                                mRemoveList.add(r.binder);
+                            }
+                        }
+                    }
+                }
+            }
+            handleRemoveListLocked();
+        }
+    }
+
     @NeverCompile // Avoid size overhead of debugging code.
     @Override
     public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
@@ -4056,6 +4161,10 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 pw.println("mCarrierRoamingNtnEligible=" + mCarrierRoamingNtnEligible[i]);
                 pw.println("mCarrierRoamingNtnSignalStrength="
                         + mCarrierRoamingNtnSignalStrength[i]);
+                pw.println("mDomainSelectionCallEmergencyMode="
+                        + mDomainSelectionCallEmergencyMode[i]);
+                pw.println("mDomainSelectionSmsEmergencyMode="
+                        + mDomainSelectionSmsEmergencyMode[i]);
 
                 // We need to obfuscate package names, and primitive arrays' native toString is ugly
                 Pair<List<String>, int[]> carrierPrivilegeState = mCarrierPrivilegeStates.get(i);
@@ -4486,6 +4595,11 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         if (isPrivilegedPhoneStatePermissionRequired(events)) {
             mContext.enforceCallingOrSelfPermission(
                     android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, null);
+        }
+
+        if (isBasicPhoneStatePermissionRequired(events)) {
+            mContext.enforceCallingOrSelfPermission(
+                    android.Manifest.permission.READ_BASIC_PHONE_STATE, null);
         }
         return isPermissionCheckSuccessful;
     }

@@ -24,6 +24,7 @@ import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -35,7 +36,7 @@ import kotlinx.coroutines.flow.combine
 @SysUISingleton
 class RestrictedModeInteractor
 @Inject
-constructor(private val simBouncerInteractor: SimBouncerInteractor) {
+constructor(private val simBouncerInteractor: Lazy<SimBouncerInteractor>) {
     /**
      * Filter user actions that
      * 1. hide the bouncer
@@ -45,7 +46,7 @@ constructor(private val simBouncerInteractor: SimBouncerInteractor) {
     fun filteredUserActions(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
-        return combine(simBouncerInteractor.isAnySimSecure, unfiltered) {
+        return combine(simBouncerInteractor.get().isAnySimSecure, unfiltered) {
             isAnySimSecure,
             unfilteredUserActions ->
             if (isAnySimSecure) {
@@ -73,7 +74,7 @@ constructor(private val simBouncerInteractor: SimBouncerInteractor) {
 
     /** Is scene change allowed based on whether the device is in restricted mode or not */
     fun isSceneChangeAllowed(toScene: SceneKey): Boolean {
-        return if (simBouncerInteractor.isAnySimSecure.value) {
+        return if (simBouncerInteractor.get().isAnySimSecure.value) {
             toScene == Scenes.Lockscreen || toScene == Scenes.Occluded || toScene == Scenes.Dream
         } else {
             true
@@ -82,7 +83,7 @@ constructor(private val simBouncerInteractor: SimBouncerInteractor) {
 
     /** Is overlay change allowed based on whether the device is in restricted mode or not */
     fun isOverlayChangeAllowed(toOverlayKey: OverlayKey?): Boolean {
-        return if (simBouncerInteractor.isAnySimSecure.value) {
+        return if (simBouncerInteractor.get().isAnySimSecure.value) {
             toOverlayKey == null || toOverlayKey == Overlays.Bouncer
         } else {
             true

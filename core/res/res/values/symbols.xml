@@ -235,6 +235,7 @@
   <java-symbol type="id" name="metric_chronometer_2" />
   <java-symbol type="id" name="alt_title" />
   <java-symbol type="id" name="alt_subtext" />
+  <java-symbol type="id" name="bridging_app_icon" />
   <java-symbol type="id" name="app_name_text_divider" />
   <java-symbol type="id" name="status_bar_latest_event_content" />
   <java-symbol type="id" name="notification_main_column" />
@@ -553,6 +554,7 @@
   <java-symbol type="integer" name="config_defaultAnalogClockSecondsHandFps"/>
   <java-symbol type="bool" name="config_notificationCloseButtonSupported"/>
   <java-symbol type="bool" name="config_enableColorInversionInSetupWizard" />
+  <java-symbol type="bool" name="config_enableColorDaltonizerInSetupWizard" />
   <java-symbol type="bool" name="config_enableGaiaEducationInPrivateSpace"/>
   <java-symbol type="bool" name="config_enableUdcSysfsUsbStateUpdate"/>
   <java-symbol type="bool" name="config_enableSearchTileHideIllustrationInPrivateSpace"/>
@@ -2146,6 +2148,7 @@
   <java-symbol type="bool" name="config_lowLightDisplayBehaviorEnabledDefault" />
   <java-symbol type="integer" name="config_lowLightDisplayBehaviorDefault" />
   <java-symbol type="integer" name="config_keyguardDrawnTimeout" />
+  <java-symbol type="integer" name="config_keyguardDrawnTimeoutOnBoot" />
   <java-symbol type="bool" name="config_supportLongPressPowerWhenNonInteractive" />
   <java-symbol type="bool" name="config_supportShortPressPowerWhenDefaultDisplayOn" />
   <java-symbol type="bool" name="config_wimaxEnabled" />
@@ -6499,4 +6502,9 @@
 
   <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
   <java-symbol type="integer" name="config_defaultFreezerDebounceTimeout" />
+
+  <!-- Whether contextual mode (e.g. Do Not Disturb Mode) sync is supported by this device. -->
+  <java-symbol type="bool" name="config_supportContextualModeSync"/>
+    <!-- If supported, should contextual mode sync be enabled by default. -->
+  <java-symbol type="bool" name="config_enableContextualModeSyncByDefault"/>
 </resources>

@@ -2083,9 +2083,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 if (decor == null) {
                     continue;
                 }
-                if (decor.getTaskInfo().displayId == displayId
-                        && DesktopModeFlags
-                        .ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING.isTrue()) {
+                if (decor.getTaskInfo().displayId == displayId) {
                     decor.onInsetsStateChanged(insetsState);
                 }
                 if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {

@@ -201,7 +201,8 @@ public final class MessageQueue {
         // and we know that it's safe to use the concurrent implementation in SystemUI.
         if (processName.equals("com.android.systemui")
                 || processName.startsWith("com.android.systemui:")) {
-            return true;
+            // If holdback is in effect, use legacy (NOT concurrent) implementation in SystemUI.
+            return !Flags.holdbackConcurrentMessageQueueInSystemui();
         }
         // On Android distributions where SystemUI has a different process name,
         // the above condition may need to be adjusted accordingly.
@@ -1314,11 +1315,8 @@ public final class MessageQueue {
     }
 
     private void removeSyncBarrierDeliQueue(int token) {
-        final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
-
-        final int removed = mStack.moveMatchingToFreelist(matchBarrierToken, null, -1, null,
-                null, 0);
-        if (removed == 0) {
+        final boolean removed = mStack.moveSyncBarrierToFreelist(token);
+        if (!removed) {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
         }

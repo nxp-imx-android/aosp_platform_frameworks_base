@@ -768,6 +768,7 @@ constructor(
                         .collect {
                             switchToScene(
                                 targetSceneKey = Scenes.Lockscreen,
+                                keyguardState = keyguardInteractor.asleepKeyguardState.value,
                                 loggingReason =
                                     "device became non-interactive (SceneContainerStartable)",
                             )
@@ -1260,7 +1261,9 @@ constructor(
                     // If the device has just become UNlocked, *don't* notify Notifications,
                     // because doing so will cause notifications to briefly flash the
                     // unredacted version during the unlock animation: b/454362854
-                    if (!it) {lockscreenUserManager.updatePublicMode() }
+                    if (!it) {
+                        lockscreenUserManager.updatePublicMode()
+                    }
                 }
         }
     }

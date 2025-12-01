@@ -160,6 +160,32 @@ public class CopyOnWriteSparseArray<T> {
     }
 
     /**
+     * Count of keys in the container.
+     */
+    public int size() {
+        return mContainer.size();
+    }
+
+    /**
+     * Returns the keys that match the given predicate.
+     *
+     * @param filter a predicate that takes key and value and returns {@code true} if the key
+     * should be included in the returned array.
+     */
+    public int[] filteredKeys(BiFunction<Integer, T, Boolean> filter) {
+        SparseArray<T> container = mContainer;
+        int count = container.size();
+        IntArray arr = new IntArray(count);
+        for (int i = 0; i < count; i++) {
+            var key = container.keyAt(i);
+            if (filter.apply(key, container.valueAt(i))) {
+                arr.add(key);
+            }
+        }
+        return arr.toArray();
+    }
+
+    /**
      * Returns the underlying container. This container should not be modified outside of
      * {@link CopyOnWriteSparseArray}, but it can be read without locks.
      * <p>

@@ -161,3 +161,14 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+    name: "enable_supervision_manager_cache"
+    is_exported: false
+    namespace: "supervision"
+    description: "Enables caching in SupervisionManager"
+    bug: "446219688"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

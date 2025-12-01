@@ -789,7 +789,7 @@ final class UiModeManagerService extends SystemService {
                             com.android.internal.R.integer.config_defaultNightMode), userId));
             mNightModeCustomType = Secure.getIntForUser(context.getContentResolver(),
                     Secure.UI_NIGHT_MODE_CUSTOM_TYPE, MODE_NIGHT_CUSTOM_TYPE_UNKNOWN, userId);
-                    mOverrideNightModeOn = Secure.getIntForUser(context.getContentResolver(),
+            mOverrideNightModeOn = Secure.getIntForUser(context.getContentResolver(),
                     Secure.UI_NIGHT_MODE_OVERRIDE_ON, 0, userId) != 0;
             mOverrideNightModeOff = Secure.getIntForUser(context.getContentResolver(),
                     Secure.UI_NIGHT_MODE_OVERRIDE_OFF, 0, userId) != 0;
@@ -916,7 +916,7 @@ final class UiModeManagerService extends SystemService {
             // e.g. 'adb shell cmd uimode car yes'
             boolean isShellCaller = mInjector.getCallingUid() == Process.SHELL_UID;
             if (!isShellCaller) {
-              assertLegit(callingPackage);
+                assertLegit(callingPackage);
             }
 
             final long ident = Binder.clearCallingIdentity();
@@ -1099,7 +1099,7 @@ final class UiModeManagerService extends SystemService {
 
         @android.annotation.EnforcePermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE)
         @Override
-            public void setAttentionModeThemeOverlay(
+        public void setAttentionModeThemeOverlay(
                 @AttentionModeThemeOverlayType int attentionModeThemeOverlayType) {
             setAttentionModeThemeOverlay_enforcePermission();
 
@@ -1187,7 +1187,7 @@ final class UiModeManagerService extends SystemService {
         }
 
         private boolean setNightModeActivatedForModeInternal(int modeCustomType,
-            boolean active, boolean isUserInteraction) {
+                boolean active, boolean isUserInteraction) {
             if (getContext().checkCallingOrSelfPermission(
                     android.Manifest.permission.MODIFY_DAY_NIGHT_MODE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -1481,6 +1481,31 @@ final class UiModeManagerService extends SystemService {
                 return state.getStateForPackage(packageName);
             }
         }
+
+        @Override
+        public List<String> getAllForceInvertAlwaysDisableApps(int userId) {
+            if (Binder.getCallingUid() != Process.SYSTEM_UID) {
+                return null;
+            }
+            synchronized (mLock) {
+                var state = getForceInvertOverrideStateLocked(userId);
+                return state.getAllForceInvertAlwaysDisableApps();
+            }
+        }
+
+        @Override
+        @android.annotation.EnforcePermission(android.Manifest.permission.WRITE_SETTINGS)
+        public boolean setForceInvertOverrideState(
+                int userId, String packageName,
+                @ForceInvertPackageOverrideState int newState) {
+            setForceInvertOverrideState_enforcePermission();
+            if (Binder.getCallingUid() != Process.SYSTEM_UID) {
+                return false;
+            }
+            synchronized (mLock) {
+                return setForceInvertOverrideStateLocked(userId, packageName, newState);
+            }
+        }
     };
 
     private void enforceProjectionTypePermissions(@UiModeManager.ProjectionType int p) {
@@ -1698,6 +1723,23 @@ final class UiModeManagerService extends SystemService {
         return states;
     }
 
+    @GuardedBy("mLock")
+    private boolean setForceInvertOverrideStateLocked(
+            int userId, String packageName,
+            @ForceInvertPackageOverrideState int newState) {
+        var states = mForceInvertOverrideStates.get(userId);
+        if (states == null && mSystemReady) {
+            updateForceInvertOverrideStateLocked(userId);
+            states = mForceInvertOverrideStates.get(userId);
+        }
+        if (states == null) {
+            return false;
+        } else {
+            return states.setForceInvertOverrideStateForPackage(
+                    getContext().getContentResolver(), packageName, newState, userId);
+        }
+    }
+
     /** Legacy method, TODO(b/362682063) remove */
     @GuardedBy("mLock")
     private float getContrastLocked() {
@@ -1733,7 +1775,7 @@ final class UiModeManagerService extends SystemService {
     @GuardedBy("mLock")
     private boolean updateContrastLocked(int userId) {
         float contrast = Settings.Secure.getFloatForUser(getContext().getContentResolver(),
-                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, mCurrentUser);
+                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, userId);
         if (Math.abs(mContrasts.get(userId, Float.MAX_VALUE) - contrast) >= 1e-10) {
             mContrasts.put(userId, contrast);
             return true;
@@ -1951,11 +1993,11 @@ final class UiModeManagerService extends SystemService {
         boolean isChangeAllowed =
                 // Anyone can disable the default priority.
                 isDefaultPriority
-                // If priority was enabled, only enabling package can disable it.
-                || isPriorityTracked && mCarModePackagePriority.get(priority).equals(
-                packageName)
-                // Disable all priorities flag can disable all regardless.
-                || isDisableAll;
+                        // If priority was enabled, only enabling package can disable it.
+                        || isPriorityTracked && mCarModePackagePriority.get(priority).equals(
+                        packageName)
+                        // Disable all priorities flag can disable all regardless.
+                        || isDisableAll;
         if (isChangeAllowed) {
             Slog.d(TAG, "disableCarMode: disabling, priority=" + priority
                     + ", packageName=" + packageName);
@@ -2130,10 +2172,10 @@ final class UiModeManagerService extends SystemService {
         if (LOG) {
             Slog.d(TAG,
                     "updateConfigurationLocked: mDockState=" + mDockState
-                    + "; mCarMode=" + mCarModeEnabled
-                    + "; mNightMode=" + mNightMode
-                    + "; mNightModeCustomType=" + mNightModeCustomType
-                    + "; uiMode=" + uiMode);
+                            + "; mCarMode=" + mCarModeEnabled
+                            + "; mNightMode=" + mNightMode
+                            + "; mNightModeCustomType=" + mNightModeCustomType
+                            + "; uiMode=" + uiMode);
         }
 
         mCurUiMode.set(uiMode);
@@ -2238,8 +2280,8 @@ final class UiModeManagerService extends SystemService {
         if (action != null) {
             if (LOG) {
                 Slog.v(TAG, String.format(
-                    "updateLocked: preparing broadcast: action=%s enable=0x%08x disable=0x%08x",
-                    action, enableFlags, disableFlags));
+                        "updateLocked: preparing broadcast: action=%s enable=0x%08x disable=0x%08x",
+                        action, enableFlags, disableFlags));
             }
 
             // Send the ordered broadcast; the result receiver will receive after all
@@ -2289,8 +2331,9 @@ final class UiModeManagerService extends SystemService {
         // keep screen on when charging and in car mode
         boolean keepScreenOn = mCharging &&
                 ((mCarModeEnabled && mCarModeKeepsScreenOn &&
-                (mCarModeEnableFlags & UiModeManager.ENABLE_CAR_MODE_ALLOW_SLEEP) == 0) ||
-                (mCurUiMode.get() == Configuration.UI_MODE_TYPE_DESK && mDeskModeKeepsScreenOn));
+                        (mCarModeEnableFlags & UiModeManager.ENABLE_CAR_MODE_ALLOW_SLEEP) == 0)
+                        || (mCurUiMode.get() == Configuration.UI_MODE_TYPE_DESK
+                        && mDeskModeKeepsScreenOn));
         if (keepScreenOn != mWakeLock.isHeld()) {
             if (keepScreenOn) {
                 mWakeLock.acquire();
@@ -2426,23 +2469,27 @@ final class UiModeManagerService extends SystemService {
 
                 Notification.Builder n =
                         new Notification.Builder(context, SystemNotificationChannels.CAR_MODE)
-                        .setSmallIcon(R.drawable.stat_notify_car_mode)
-                        .setDefaults(Notification.DEFAULT_LIGHTS)
-                        .setOngoing(true)
-                        .setWhen(0)
-                        .setColor(context.getColor(
-                                com.android.internal.R.color.system_notification_accent_color))
-                        .setContentTitle(
-                                context.getString(R.string.car_mode_disable_notification_title))
-                        .setContentText(
-                                context.getString(R.string.car_mode_disable_notification_message))
+                                .setSmallIcon(R.drawable.stat_notify_car_mode)
+                                .setDefaults(Notification.DEFAULT_LIGHTS)
+                                .setOngoing(true)
+                                .setWhen(0)
+                                .setColor(context.getColor(
+                                        com.android.internal.R.color
+                                                .system_notification_accent_color))
+                                .setContentTitle(
+                                        context.getString(
+                                                R.string.car_mode_disable_notification_title))
+                                .setContentText(
+                                        context.getString(
+                                                R.string.car_mode_disable_notification_message))
 
-                        .setContentIntent(
-                                // TODO(b/173744200) Please replace FLAG_MUTABLE_UNAUDITED below
-                                // with either FLAG_IMMUTABLE (recommended) or FLAG_MUTABLE.
-                                PendingIntent.getActivityAsUser(context, 0,
-                                        carModeOffIntent, PendingIntent.FLAG_MUTABLE,
-                                        null, UserHandle.CURRENT));
+                                .setContentIntent(
+                                        // TODO(b/173744200) Please replace FLAG_MUTABLE_UNAUDITED
+                                        // below with either FLAG_IMMUTABLE (recommended) or
+                                        // FLAG_MUTABLE.
+                                        PendingIntent.getActivityAsUser(context, 0,
+                                                carModeOffIntent, PendingIntent.FLAG_MUTABLE,
+                                                null, UserHandle.CURRENT));
                 mNotificationManager.notifyAsUser(null,
                         SystemMessage.NOTE_CAR_MODE_DISABLE, n.build(), UserHandle.ALL);
             } else {
@@ -2710,11 +2757,11 @@ final class UiModeManagerService extends SystemService {
                 }
                 if (LOG) {
                     Slog.d(TAG,
-                        "LocalService.isNightMode(): mNightMode=" + mNightMode
-                        + "; mComputedNightMode=" + mComputedNightMode
-                        + "; uiMode=" + mConfiguration.uiMode
-                        + "; nightModeOverride=" + nightModeOverride
-                        + "; isIt=" + isIt);
+                            "LocalService.isNightMode(): mNightMode=" + mNightMode
+                                    + "; mComputedNightMode=" + mComputedNightMode
+                                    + "; uiMode=" + mConfiguration.uiMode
+                                    + "; nightModeOverride=" + nightModeOverride
+                                    + "; isIt=" + isIt);
                 }
                 return isIt;
             }

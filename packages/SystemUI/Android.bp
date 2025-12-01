@@ -841,6 +841,7 @@ android_library {
         "aconfig_settings_flags_lib",
         "kairos",
         "displaylib",
+        "device_policy_aconfig_flags_lib",
     ],
 }
 

@@ -28,6 +28,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
@@ -67,6 +68,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -556,6 +558,34 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
         mTransitionObserver.onTransitionFinished(transition, /* aborted = */ false);
 
         verify(mDesktopInOrderTransitionObserver).onTransitionFinished(transition, false);
+    }
+
+    @Test
+    public void onTransitionReady_processesChangesInReverseOrder() {
+        // Create two changes for an open transition.
+        final TransitionInfo.Change change1 =
+                createChange(TRANSIT_OPEN, 1, WINDOWING_MODE_FREEFORM);
+        final TransitionInfo.Change change2 =
+                createChange(TRANSIT_OPEN, 2, WINDOWING_MODE_FREEFORM);
+        // Build the transition info, adding change1 first, then change2.
+        final TransitionInfo info =
+                new TransitionInfoBuilder(TRANSIT_OPEN, 0)
+                        .addChange(change1)
+                        .addChange(change2)
+                        .build();
+
+        final IBinder transition = mock(IBinder.class);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+
+        // Trigger the transition ready callback.
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+
+        // Verify that the changes were processed in reverse order of how they were added.
+        // This is important for focus and z-order correctness.
+        InOrder inOrder = inOrder(mTaskChangeListener);
+        inOrder.verify(mTaskChangeListener).onTaskOpening(change2.getTaskInfo());
+        inOrder.verify(mTaskChangeListener).onTaskOpening(change1.getTaskInfo());
     }
 
     private static TransitionInfo.Change createChange(int mode, int taskId, int windowingMode) {

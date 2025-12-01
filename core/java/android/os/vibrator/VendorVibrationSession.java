@@ -54,6 +54,7 @@ import java.util.Objects;
  */
 @FlaggedApi(FLAG_VENDOR_VIBRATION_EFFECTS)
 @SystemApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class VendorVibrationSession implements AutoCloseable {
     private static final String TAG = "VendorVibrationSession";
 

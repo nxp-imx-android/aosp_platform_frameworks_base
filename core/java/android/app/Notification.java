@@ -135,6 +135,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.NotificationBigTextNormalizer;
 import com.android.internal.widget.NotificationProgressModel;
+import com.android.internal.widget.NotificationRowIconView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -6940,7 +6941,23 @@ public class Notification implements Parcelable
             bindAlertedIcon(contentView, p);
             bindExpandButton(contentView, p);
             bindCloseButton(contentView, p);
+            if (Flags.bridgedNotifications()) {
+                bindBridgedIcon(contentView);
+            }
             mN.mUsesStandardHeader = true;
+        }
+
+        private void bindBridgedIcon(RemoteViews contentView) {
+            if (mN.getBridgedNotificationMetadata() != null) {
+                contentView.setViewVisibility(R.id.bridging_app_icon, View.VISIBLE);
+
+                // The NotificationRowIconView is showing the "bridged" icon by default for bridged
+                // notifications, meaning the icon of the app that the notification originates from.
+                // We still want to show the icon of the app that actually posted the notification
+                // in the top line though.
+                contentView.setInt(R.id.bridging_app_icon,
+                        "setIconTypeOverride", NotificationRowIconView.ICON_TYPE_LAUNCHER_ICON);
+            }
         }
 
         private void bindExpandButton(RemoteViews contentView, StandardTemplateParams p) {
@@ -9073,8 +9090,9 @@ public class Notification implements Parcelable
     /**
      * @return {@code true} if this notification has requested to be colorized, regardless of
      * whether it meets the requirements to be displayed that way.
+     * @hide
      */
-    private boolean isColorizedRequested() {
+    public boolean isColorizedRequested() {
         return extras.getBoolean(EXTRA_COLORIZED);
     }
 
@@ -12855,8 +12873,9 @@ public class Notification implements Parcelable
         }
 
         /**
-         * A superclass for the various value types used by the {@link Metric} class, or included in
-         * a {@link ResolvedCompactContent}.
+         * A superclass for the various value types used by the {@link Metric}
+         * class{@if (flag(Flags.FLAG_API_NOTIFICATION_CHIP)) {, or included in
+         * a {@link ResolvedCompactContent}}}.
          */
         public abstract static class MetricValue {
 
@@ -12911,7 +12930,6 @@ public class Notification implements Parcelable
             protected abstract void toBundle(Bundle bundle);
 
             /** @hide */
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public record ValueString(String text, @Nullable String subtext) {
                 public ValueString(String text) {
                     this(text, null);
@@ -12929,7 +12947,6 @@ public class Notification implements Parcelable
              * @hide
              */
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public abstract ValueString toValueString(Context context);
         }
 
@@ -13212,7 +13229,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // Not used; Chronometer view will take charge of formatting.
                 return ValueString.EMPTY;
@@ -13328,7 +13344,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // DateUtils.formatDateTime expects epoch millis, so make up a time.
                 LocalDateTime localDateTime = mValue.atStartOfDay();
@@ -13443,7 +13458,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 // DateUtils.formatDateTime expects epoch millis, so make up a date.
                 LocalDateTime localDateTime = mValue.atDate(getToday());
@@ -13538,7 +13552,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 return new ValueString(String.valueOf(mValue), mUnit);
             }
@@ -13684,7 +13697,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 String formatted = NumberFormatter.withLocale(Locale.getDefault())
                         .precision(Precision.minMaxFraction(mMinFractionDigits, mMaxFractionDigits))
@@ -13777,7 +13789,6 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             @NonNull
-            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
                 return new ValueString(mValue, mUnit);
             }
@@ -15110,6 +15121,7 @@ public class Notification implements Parcelable
     public static final class BasicCompactContent extends CompactContent implements Parcelable {
         private final CompactIcon mIcon;
         private final CompactText mText;
+        private @SemanticStyle int mSemanticStyle;
 
         /**
          * Creates a {@link BasicCompactContent} instance with a specific icon and text.
@@ -15127,6 +15139,14 @@ public class Notification implements Parcelable
             this(CompactIcon.auto(), text);
         }
 
+        /** Sets the semantic style for the compact content. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @NonNull
+        public BasicCompactContent setSemanticStyle(@SemanticStyle int semanticStyle) {
+            mSemanticStyle = semanticStyle;
+            return this;
+        }
+
         @NonNull
         private CompactIcon getIcon() {
             return mIcon;
@@ -15137,10 +15157,15 @@ public class Notification implements Parcelable
             return mText;
         }
 
+        private @SemanticStyle int getSemanticStyle() {
+            return mSemanticStyle;
+        }
+
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeTypedObject(mIcon, flags);
             dest.writeTypedObject(mText, flags);
+            dest.writeInt(mSemanticStyle);
         }
 
         public static final @NonNull Creator<BasicCompactContent> CREATOR = new Creator<>() {
@@ -15148,7 +15173,8 @@ public class Notification implements Parcelable
             public BasicCompactContent createFromParcel(Parcel source) {
                 return new BasicCompactContent(
                         source.readTypedObject(CompactIcon.CREATOR),
-                        source.readTypedObject(CompactText.CREATOR));
+                        source.readTypedObject(CompactText.CREATOR))
+                        .setSemanticStyle(source.readInt());
             }
 
             @Override
@@ -15251,7 +15277,6 @@ public class Notification implements Parcelable
         private final @TextSource int mWhich;
         private final int mStyleMetricIndex;
         private final @Nullable Metric.MetricValue mCustomMetricValue;
-        private @SemanticStyle int mSemanticStyle;
 
         private CompactText(@TextSource int which, int styleMetricIndex,
                 @Nullable Metric.MetricValue customMetricValue) {
@@ -15313,14 +15338,6 @@ public class Notification implements Parcelable
             return new CompactText(TEXT_CUSTOM_METRIC, 0, requireNonNull(metricValue));
         }
 
-        /** Sets the semantic style for the compact content. */
-        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
-        @NonNull
-        public CompactText setSemanticStyle(@SemanticStyle int semanticStyle) {
-            mSemanticStyle = semanticStyle;
-            return this;
-        }
-
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mWhich);
@@ -15334,9 +15351,6 @@ public class Notification implements Parcelable
                     dest.writeBoolean(false);
                 }
             }
-            if (Flags.apiNotificationSemanticStyle()) {
-                dest.writeInt(mSemanticStyle);
-            }
         }
 
         public static final @NonNull Creator<CompactText> CREATOR = new Creator<>() {
@@ -15349,17 +15363,13 @@ public class Notification implements Parcelable
                         int styleMetricIndex = source.readInt();
                         Metric customMetric = Metric.fromBundle(
                                 source.readBundle(getClass().getClassLoader()));
-                        res = new CompactText(which, styleMetricIndex, customMetric.getValue());
+                        return new CompactText(which, styleMetricIndex, customMetric.getValue());
                     } else {
-                        res = new CompactText(which, 0, null);
+                        return new CompactText(which, 0, null);
                     }
                 } else {
-                    res = new CompactText(which, 0, null);
+                    return new CompactText(which, 0, null);
                 }
-                if (Flags.apiNotificationSemanticStyle()) {
-                    res.setSemanticStyle(source.readInt());
-                }
-                return res;
             }
 
             @Override
@@ -15399,7 +15409,9 @@ public class Notification implements Parcelable
         private final @Nullable Metric.MetricValue mText;
         private final @SemanticStyle int mSemanticStyle;
 
-        private ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
+        /** @hide */
+        @VisibleForTesting
+        public ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
                 @Nullable Metric.MetricValue text, @SemanticStyle int semanticStyle) {
             mIcon = icon;
             mText = text;
@@ -15487,7 +15499,9 @@ public class Notification implements Parcelable
         private final int mSource;
         private final @Nullable Icon mIcon;
 
-        private ResolvedCompactIcon(int source, @Nullable Icon icon) {
+        /** @hide */
+        @VisibleForTesting
+        public ResolvedCompactIcon(@ResolvedCompactIconSource int source, @Nullable Icon icon) {
             mSource = source;
             mIcon = icon;
         }
@@ -15525,9 +15539,18 @@ public class Notification implements Parcelable
         @Override
         public String toString() {
             return "ResolvedCompactIcon{"
-                    + "mSource=" + mSource
+                    + "mSource=" + sourceToString(mSource)
                     + ", mIcon=" + mIcon
                     + "}";
+        }
+
+        private static String sourceToString(@ResolvedCompactIconSource int value) {
+            return switch(value) {
+                case SOURCE_SMALL_ICON -> "SOURCE_SMALL_ICON";
+                case SOURCE_PACKAGE_APP_ICON -> "SOURCE_PACKAGE_APP_ICON";
+                case SOURCE_UNKNOWN -> "SOURCE_UNKNOWN";
+                default -> "Unexpected! (" + value + ")";
+            };
         }
     }
 
@@ -15647,7 +15670,7 @@ public class Notification implements Parcelable
                         content.getText());
                 if (Flags.apiNotificationSemanticStyle()) {
                     return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
-                            content.getText().mSemanticStyle);
+                            content.getSemanticStyle());
                 } else {
                     return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
                             SEMANTIC_STYLE_UNSPECIFIED);
@@ -15655,7 +15678,7 @@ public class Notification implements Parcelable
             } else {
                 if (Flags.apiNotificationSemanticStyle()) {
                     return new ResolvedBasicCompactContent(resolvedIcon, null,
-                            content.getText().mSemanticStyle);
+                            content.getSemanticStyle());
                 } else {
                     return new ResolvedBasicCompactContent(resolvedIcon, null,
                             SEMANTIC_STYLE_UNSPECIFIED);
@@ -18743,11 +18766,14 @@ public class Notification implements Parcelable
             }
 
             if (Flags.apiNotificationSemanticStyle()) {
-                // TODO: b/454876153 - Use theme-based tokens, once they exist.
-                mSemanticInfo = ensureTextContrast(Color.BLUE, mBackgroundColor);
-                mSemanticSafe = ensureTextContrast(Color.GREEN, mBackgroundColor);
-                mSemanticCaution = ensureTextContrast(Color.YELLOW, mBackgroundColor);
-                mSemanticDanger = ensureTextContrast(Color.RED, mBackgroundColor);
+                mSemanticInfo = ensureTextContrast(
+                    ctx.getColor(R.color.semanticBlueOnSurfaceVariant), mBackgroundColor);
+                mSemanticSafe = ensureTextContrast(
+                        ctx.getColor(R.color.semanticGreenOnSurfaceVariant), mBackgroundColor);
+                mSemanticCaution = ensureTextContrast(
+                        ctx.getColor(R.color.semanticYellowOnSurfaceVariant), mBackgroundColor);
+                mSemanticDanger = ensureTextContrast(
+                        ctx.getColor(R.color.semanticRedOnSurfaceVariant), mBackgroundColor);
             }
 
             // make sure every color has a valid value

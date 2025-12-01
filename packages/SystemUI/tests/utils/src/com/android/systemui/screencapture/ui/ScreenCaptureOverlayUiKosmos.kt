@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.ui
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.screencapture.record.camera.ui.viewmodel.screenCaptureCameraTransformationViewModelFactory
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.screenCaptureCameraViewModelFactory
 import com.android.systemui.screencapture.record.markup.ui.viewmodel.screenCaptureMarkupOverlayViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
@@ -28,6 +29,7 @@ val Kosmos.screenCaptureOverlayUi: ScreenCaptureOverlayUi by
             applicationContext,
             systemUIDialogFactory,
             screenCaptureCameraViewModelFactory,
+            screenCaptureCameraTransformationViewModelFactory,
             screenCaptureMarkupOverlayViewModelFactory,
         )
     }

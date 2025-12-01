@@ -664,7 +664,6 @@ public class BubbleBarLayerView extends FrameLayout
         mExpandedView.setLayoutParams(lp);
         mExpandedView.setX(mTempRect.left);
         mExpandedView.setY(mTempRect.top);
-        mExpandedView.updateLocation();
         mExpandedView.updateBottomClip();
     }
 

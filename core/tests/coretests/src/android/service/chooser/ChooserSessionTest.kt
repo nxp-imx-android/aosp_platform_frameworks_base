@@ -132,14 +132,14 @@ class ChooserSessionTest {
     fun test_chooserBoundsChanged_defaultBoundsReported() {
         val (session, controllerCallback) = prepareChooserSession()
         val boundsUpdates = mutableListOf<Rect>()
-        val defaultBoundsUpdates = mutableListOf<Rect?>()
+        val restingBoundsUpdates = mutableListOf<Rect?>()
         val stateListener =
             object : StateListener {
                 override fun onStateChanged(state: Int) {}
 
                 override fun onBoundsChanged(bounds: Rect) {
                     boundsUpdates.add(bounds)
-                    defaultBoundsUpdates.add(session.defaultLaunchBounds)
+                    restingBoundsUpdates.add(session.initialRestingBounds)
                 }
             }
         session.addStateListener(ImmediateExecutor(), stateListener)
@@ -158,15 +158,15 @@ class ChooserSessionTest {
         assertWithMessage("onBoundsChanged(Rect) should not be called")
             .that(boundsUpdates)
             .hasSize(4)
-        assertThat(defaultBoundsUpdates).hasSize(4)
+        assertThat(restingBoundsUpdates).hasSize(4)
         assertThat(boundsUpdates[0]).isEqualTo(collapsed)
-        assertThat(defaultBoundsUpdates[0]).isEqualTo(default)
+        assertThat(restingBoundsUpdates[0]).isEqualTo(default)
         assertThat(boundsUpdates[1]).isEqualTo(default)
-        assertThat(defaultBoundsUpdates[1]).isEqualTo(default)
+        assertThat(restingBoundsUpdates[1]).isEqualTo(default)
         assertThat(boundsUpdates[2]).isEqualTo(expanded)
-        assertThat(defaultBoundsUpdates[2]).isEqualTo(default)
+        assertThat(restingBoundsUpdates[2]).isEqualTo(default)
         assertThat(boundsUpdates[3]).isEqualTo(expanded)
-        assertThat(defaultBoundsUpdates[3]).isEqualTo(defaultUpdated)
+        assertThat(restingBoundsUpdates[3]).isEqualTo(defaultUpdated)
     }
 
     @EnableFlags(FLAG_INTERACTIVE_CHOOSER)

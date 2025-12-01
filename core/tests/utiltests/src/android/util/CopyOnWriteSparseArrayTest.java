@@ -73,6 +73,15 @@ public class CopyOnWriteSparseArrayTest {
     }
 
     @Test
+    public void testFilterKeys() {
+        var array = init();
+
+        var filteredKeys = array.filteredKeys(
+                (Integer key, String value) -> value.startsWith("1"));
+        assertThat(filteredKeys).isEqualTo(new int[] {1, 10});
+    }
+
+    @Test
     public void testRemoveNotExistingKey() {
         var array = init();
 
@@ -162,7 +171,7 @@ public class CopyOnWriteSparseArrayTest {
         array.put(3, "3");
         array.put(0, "0");
         array.put(10, "10");
-        assertThat(array.getArray().size()).isEqualTo(4);
+        assertThat(array.size()).isEqualTo(4);
         return array;
     }
 }

@@ -101,6 +101,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_rounded_corners_on_transparent"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Enables rounded corners only for fully transparent activities."
+  bug: "463679688"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_compat_refactoring_fix_multiwindow_task_hierarchy"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether Task id detection for split screen should be enabled."
@@ -207,14 +217,4 @@ flag {
   description: "Whether callers need CHANGE_MIN_ASPECT_RATIO permission to set min aspect ratio."
   bug: "414381398"
   is_fixed_read_only: true
-}
-
-flag {
-  name: "add_surface_insets_for_crop"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Accounts for surface insets when applying window crop for rounded corners."
-  bug: "425184002"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }

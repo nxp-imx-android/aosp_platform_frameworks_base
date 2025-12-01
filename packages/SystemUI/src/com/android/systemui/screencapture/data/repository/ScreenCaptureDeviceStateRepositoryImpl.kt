@@ -45,10 +45,14 @@ constructor(
     configurationController: ConfigurationController,
 ) : ScreenCaptureDeviceStateRepository {
     /** Emits `true` if the device is considered a large screen for screen capture purposes. */
-    override val isLargeScreen: StateFlow<Boolean?> =
+    override val isLargeScreen: StateFlow<Boolean> =
         configurationController.onConfigChanged
             .onStart { emit(resources.configuration) }
             .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
             .flowOn(uiBackgroundDispatcher)
-            .stateIn(scope, SharingStarted.Eagerly, null)
+            .stateIn(
+                scope,
+                SharingStarted.Eagerly,
+                resources.getBoolean(R.bool.config_enableLargeScreenScreencapture),
+            )
 }

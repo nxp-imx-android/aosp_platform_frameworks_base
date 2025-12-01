@@ -1085,6 +1085,11 @@
     -->
     <bool name="config_isDesktopForFalsingPurposes">false</bool>
 
+    <!--
+    Whether to enable heads up notifications expansion by default.
+    -->
+    <bool name="config_enableHUNExpansion">false</bool>
+
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
 

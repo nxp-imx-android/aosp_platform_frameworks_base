@@ -94,6 +94,26 @@ flag {
 }
 
 flag {
+  name: "refactor_dimmer_crop"
+  namespace: "windowing_frontend"
+  description: "Reuse existing logic and fix corner issue"
+  bug: "435301249"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "remove_legacy_orientation_report"
+  namespace: "windowing_frontend"
+  description: "Remove legacy task letterbox logic"
+  bug: "464110049"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
@@ -327,6 +347,16 @@ flag {
 }
 
 flag {
+    name: "clean_up_task_snapshot_legacy_methods"
+    namespace: "windowing_frontend"
+    description: "Clean up legacy access methods to access task snapshot from IActivityTaskManager."
+    bug: "238206323"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_handlers_debugging_mode"
     namespace: "windowing_frontend"
     description: "collect data on handlers that did or did not play"
@@ -413,16 +443,6 @@ flag {
 }
 
 flag {
-    name: "predictive_back_stop_keycode_back_forwarding"
-    namespace: "windowing_frontend"
-    description: "No longer forward KEYCODE_BACK events when app has enableOnBackInvokedCallback=true"
-    bug: "436871339"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "predictive_back_fix_ime_events_skip_back_dispatcher"
     namespace: "windowing_frontend"
     description: "Fixes a bug that prevented IMEs to send back events to the app's dispatcher"
@@ -457,16 +477,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Make the rest of sleep/wake situations into transitions."
     bug: "423701190"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "choosing_visible_as_wallpaper_target"
-    namespace: "windowing_frontend"
-    description: "Prefer choosing a visible window as wallpaper target."
-    bug: "446629055"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -517,6 +527,16 @@ flag {
     namespace: "windowing_frontend"
     description: "Prevents flicker by keeping the snapshot visible until the input method has drawn"
     bug: "435285991"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_back_callback_for_focused_surface_control_view_host"
+    namespace: "windowing_frontend"
+    description: "Enable OnBackInvokedCallback for focused SurfaceControlViewHost"
+    bug: "390288449"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

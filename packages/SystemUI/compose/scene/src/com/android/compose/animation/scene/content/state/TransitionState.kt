@@ -461,9 +461,9 @@ sealed interface TransitionState {
                     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
                     animatable.animateTo(
                         targetValue = 0f,
-                        // Quickly animate (use fast) the current transition and without bounces
-                        // (use effects). A new transition will start soon.
-                        animationSpec = layoutImpl.state.motionScheme.fastEffectsSpec(),
+                        // Animate the current transition and without bounces (use effects). A new
+                        // transition will start soon.
+                        animationSpec = layoutImpl.state.motionScheme.defaultEffectsSpec(),
                     )
                 }
 

@@ -45,7 +45,9 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.Me
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.view.EndGenericShareToAppDialogDelegate
 import com.android.systemui.statusbar.chips.sharetoapp.ui.view.EndShareScreenToAppDialogDelegate
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.getStopActionFromDialog
@@ -533,9 +535,9 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             assertThat(
                     ((latest as OngoingActivityChipModel.Active).content
                             as OngoingActivityChipModel.Content.Timer)
-                        .startTimeMs
+                        .value
                 )
-                .isEqualTo(1234)
+                .isEqualTo(Chronometer.Running(EventTime.ElapsedRealtime(1234)))
 
             mediaProjectionRepo.mediaProjectionState.value = MediaProjectionState.NotProjecting
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
@@ -552,9 +554,9 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             assertThat(
                     ((latest as OngoingActivityChipModel.Active).content
                             as OngoingActivityChipModel.Content.Timer)
-                        .startTimeMs
+                        .value
                 )
-                .isEqualTo(5678)
+                .isEqualTo(Chronometer.Running(EventTime.ElapsedRealtime(5678)))
         }
 
     @Test

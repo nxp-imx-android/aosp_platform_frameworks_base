@@ -243,7 +243,7 @@ public class TransitionTests extends WindowTestsBase {
                 new ActivityTransitionInfo(closing.mActivityComponent, theTask.mTaskId);
         final ActivityTransitionInfo openingActivityTransitionInfo = new ActivityTransitionInfo(
                 opening.mActivityComponent, theTask.mTaskId,
-                new AppCompatTransitionInfo(letterboxBounds));
+                new AppCompatTransitionInfo(letterboxBounds, /* hasRoundedCorners */ false));
         final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = new ArrayMap<>();
         // Start states.
         changes.put(theTask, new Transition.ChangeInfo(theTask, true /* vis */, false /* exChg */));

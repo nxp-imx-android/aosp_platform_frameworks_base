@@ -120,8 +120,7 @@ class AppToWebEducationController(
         if (
             desktopState.canEnterDesktopMode &&
                 DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
-                    .isTrue &&
-                DesktopExperienceFlags.ENABLE_APP_TO_WEB_EDUCATION_ANIMATION.isTrue
+                    .isTrue
         ) {
             block()
         }

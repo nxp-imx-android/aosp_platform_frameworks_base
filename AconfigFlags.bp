@@ -41,6 +41,7 @@ aconfig_declarations_group {
         "android.app.usage.flags-aconfig-java",
         "android.app.wearable.flags-aconfig-java",
         "android.appwidget.flags-aconfig-java",
+        "android.bluetooth.platform.flags-aconfig-java",
         "android.chre.flags-aconfig-java",
         "android.companion.flags-aconfig-java",
         "android.companion.virtual.flags-aconfig-java",
@@ -68,6 +69,7 @@ aconfig_declarations_group {
         "android.os.flags-aconfig-java",
         "android.os.vibrator.flags-aconfig-java",
         "android.permission.flags-aconfig-java",
+        "android.print.flags-aconfig-java",
         "android.provider.flags-aconfig-java",
         "android.sdk.flags-aconfig-java",
         "android.security.flags-aconfig-java",
@@ -125,6 +127,7 @@ aconfig_declarations_group {
         "com.android.server.flags.services-aconfig-java",
         "com.android.server.voiceinteraction.flags-java",
         "com.android.text.flags-aconfig-java",
+        "com.android.webapp.flags-aconfig-exported-java",
         "com.android.window.flags.window-aconfig-java",
         "configinfra_framework_flags_java_exported_lib",
         "conscrypt_exported_aconfig_flags_lib",
@@ -137,6 +140,7 @@ aconfig_declarations_group {
         "hwui_flags_java_lib",
         "icu_exported_aconfig_flags_lib",
         "interaction_jank_monitor_flags_lib",
+        "keystore2_flags_java-framework",
         "libcore_exported_aconfig_flags_lib",
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
@@ -332,6 +336,13 @@ java_aconfig_library {
         "//apex_available:platform",
         "com.android.permission",
     ],
+}
+
+java_aconfig_library {
+    name: "com.android.window.flags.window-aconfig-java-host",
+    aconfig_declarations: "com.android.window.flags.window-aconfig",
+    host_supported: true,
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 cc_aconfig_library {
@@ -2023,6 +2034,7 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.permission",
+        "com.android.appsearch",
     ],
     min_sdk_version: "30",
 }
@@ -2058,6 +2070,24 @@ java_aconfig_library {
 java_aconfig_library {
     name: "backup_flags_lib",
     aconfig_declarations: "backup_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Bluetooth
+aconfig_declarations {
+    name: "android.bluetooth.platform.flags-aconfig",
+    package: "android.bluetooth.platform.flags",
+    container: "system",
+    srcs: ["bluetooth/bluetooth.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.bluetooth.platform.flags-aconfig-java",
+    aconfig_declarations: "android.bluetooth.platform.flags-aconfig",
+    min_sdk_version: "33",
+    apex_available: [
+        "//apex_available:platform",
+    ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
@@ -2388,5 +2418,20 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.internal.app.procstats-aconfig-java",
     aconfig_declarations: "com.android.internal.app.procstats-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Printing
+aconfig_declarations {
+    name: "android.print.flags-aconfig",
+    exportable: true,
+    package: "android.print.flags",
+    container: "system",
+    srcs: ["core/java/android/print/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.print.flags-aconfig-java",
+    aconfig_declarations: "android.print.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }

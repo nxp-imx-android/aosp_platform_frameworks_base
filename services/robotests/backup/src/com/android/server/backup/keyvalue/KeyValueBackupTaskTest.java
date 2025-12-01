@@ -32,9 +32,7 @@ import static com.android.server.backup.testing.PackageData.PM_PACKAGE;
 import static com.android.server.backup.testing.PackageData.fullBackupPackage;
 import static com.android.server.backup.testing.PackageData.keyValuePackage;
 import static com.android.server.backup.testing.TestUtils.assertEventLogged;
-import static com.android.server.backup.testing.TestUtils.messagesInLooper;
 import static com.android.server.backup.testing.TestUtils.uncheck;
-import static com.android.server.backup.testing.TestUtils.waitUntil;
 import static com.android.server.backup.testing.TransportData.backupTransport;
 import static com.android.server.backup.testing.Utils.isFileNonEmpty;
 import static com.android.server.backup.testing.Utils.oneTimeIterable;
@@ -61,8 +59,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.Shadows.shadowOf;
 import static org.testng.Assert.expectThrows;
 import static org.testng.Assert.fail;
 
@@ -81,7 +79,6 @@ import android.app.backup.BackupManager;
 import android.app.backup.BackupManagerMonitor;
 import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.BackupTransport;
-import android.app.backup.IBackupCallback;
 import android.app.backup.IBackupManager;
 import android.app.backup.IBackupManagerMonitor;
 import android.app.backup.IBackupObserver;
@@ -108,12 +105,12 @@ import com.android.internal.backup.IBackupTransport;
 import com.android.internal.infra.AndroidFuture;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
-import com.android.server.backup.Flags;
 import com.android.server.backup.BackupAgentConnectionManager;
 import com.android.server.backup.BackupRestoreTask;
 import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.BackupWakeLock;
 import com.android.server.backup.DataChangedJournal;
+import com.android.server.backup.Flags;
 import com.android.server.backup.KeyValueBackupJob;
 import com.android.server.backup.PackageManagerBackupAgent;
 import com.android.server.backup.TransportManager;
@@ -129,7 +126,6 @@ import com.android.server.backup.testing.TransportTestUtils.TransportMock;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.testing.shadows.FrameworkShadowLooper;
 import com.android.server.testing.shadows.ShadowApplicationPackageManager;
 import com.android.server.testing.shadows.ShadowBackupDataInput;
 import com.android.server.testing.shadows.ShadowBackupDataOutput;
@@ -154,6 +150,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowQueuedWork;
@@ -169,13 +166,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(
         shadows = {
-            FrameworkShadowLooper.class,
             ShadowApplicationPackageManager.class,
             ShadowBackupDataInput.class,
             ShadowBackupDataOutput.class,
@@ -185,11 +180,11 @@ import java.util.stream.Stream;
         })
 @Presubmit
 @EnableFlags(Flags.FLAG_ENABLE_KV_BACKUP_LOGS_FROM_TRANSPORT_WITH_PROPER_FLOW_ID)
+// this test needs a free running main looper otherwise BackupAgent.waitForSharedPrefs will deadlock
+@LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
 public class KeyValueBackupTaskTest  {
     private static final PackageData PACKAGE_1 = keyValuePackage(1);
     private static final PackageData PACKAGE_2 = keyValuePackage(2);
-    private static final String BACKUP_AGENT_SHARED_PREFS_SYNCHRONIZER_CLASS =
-            "android.app.backup.BackupAgent$SharedPrefsSynchronizer";
     private static final int USER_ID = 10;
     private static final int BACKUP_DESTINATION = BackupAnnotations.BackupDestination.CLOUD;
 
@@ -215,7 +210,7 @@ public class KeyValueBackupTaskTest  {
     private File mDataDir;
     private Application mApplication;
     private Looper mMainLooper;
-    private FrameworkShadowLooper mShadowMainLooper;
+    private ShadowLooper mShadowMainLooper;
     private Context mContext;
     private BackupEligibilityRules mBackupEligibilityRules;
 
@@ -2238,7 +2233,6 @@ public class KeyValueBackupTaskTest  {
 
         ConditionVariable taskFinished = runTaskAsync(task);
 
-        verifyAndUnblockAgentCalls(2);
         task.waitCancel();
         reset(transportMock.transport);
         taskFinished.block();
@@ -2261,7 +2255,6 @@ public class KeyValueBackupTaskTest  {
 
         ConditionVariable taskFinished = runTaskAsync(task);
 
-        verifyAndUnblockAgentCalls(2);
         taskFinished.block();
         // For PM
         verify(transportMock.transport, times(1)).finishBackup();
@@ -2285,7 +2278,6 @@ public class KeyValueBackupTaskTest  {
 
         ConditionVariable taskFinished = runTaskAsync(task);
 
-        verifyAndUnblockAgentCalls(2);
         taskFinished.block();
         InOrder inOrder = inOrder(transportMock.transport);
         inOrder.verify(transportMock.transport)
@@ -2311,7 +2303,6 @@ public class KeyValueBackupTaskTest  {
 
         ConditionVariable taskFinished = runTaskAsync(task);
 
-        verifyAndUnblockAgentCalls(3);
         taskFinished.block();
         InOrder inOrder = inOrder(transportMock.transport);
         inOrder.verify(transportMock.transport)
@@ -2338,7 +2329,6 @@ public class KeyValueBackupTaskTest  {
 
         ConditionVariable taskFinished = runTaskAsync(task);
 
-        verifyAndUnblockAgentCalls(2);
         taskFinished.block();
         InOrder inOrder = inOrder(transportMock.transport);
         inOrder.verify(transportMock.transport)
@@ -2387,12 +2377,14 @@ public class KeyValueBackupTaskTest  {
                     writeState(newState, "newState".getBytes());
                     runInWorkerThread(task::markCancel);
                 });
+        this.mShadowBackupLooper.pause();
+        this.mShadowMainLooper.pause();
         ConditionVariable taskFinished = runTaskAsync(task);
-        verifyAndUnblockAgentCalls(1);
-        boolean backupInProgressDuringBackup = mBackupManagerService.isBackupOperationInProgress();
+        boolean backupInProgressDuringBackup = pollUntilBackupInProgress(500);
         assertThat(backupInProgressDuringBackup).isTrue();
-        verifyAndUnblockAgentCalls(1);
 
+        this.mShadowBackupLooper.unPause();
+        this.mShadowMainLooper.unPause();
         task.waitCancel();
 
         boolean backupInProgressAfterWaitCancel =
@@ -2400,6 +2392,17 @@ public class KeyValueBackupTaskTest  {
         assertThat(backupInProgressDuringBackup).isTrue();
         assertThat(backupInProgressAfterWaitCancel).isFalse();
         taskFinished.block();
+    }
+
+    private boolean pollUntilBackupInProgress(long timeoutMs) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < timeoutMs) {
+            if (mBackupManagerService.isBackupOperationInProgress()) {
+                return true;
+            }
+            Thread.sleep(10);
+        }
+        return false;
     }
 
     @Test
@@ -2533,10 +2536,7 @@ public class KeyValueBackupTaskTest  {
     }
 
     private void runTask(KeyValueBackupTask task) {
-        // Pretend we are not on the main-thread to prevent RemoteCall from complaining
-        mShadowMainLooper.setCurrentThread(false);
-        task.run();
-        mShadowMainLooper.reset();
+        runTaskAsync(task).block();
         assertTaskPostConditions();
     }
 
@@ -2558,40 +2558,6 @@ public class KeyValueBackupTaskTest  {
 
     private static void runInWorkerThread(ThrowingRunnable runnable) {
         runInWorkerThreadAsync(runnable).block();
-    }
-
-    /**
-     * If you have kicked-off the task with {@link #runTaskAsync(KeyValueBackupTask)}, call this to
-     * unblock the task thread that will be waiting for the agent's {@link
-     * IBackupAgent#doBackup(ParcelFileDescriptor, ParcelFileDescriptor, ParcelFileDescriptor, long,
-     * IBackupCallback, int)}.
-     *
-     * @param times The number of {@link IBackupAgent#doBackup(ParcelFileDescriptor,
-     *     ParcelFileDescriptor, ParcelFileDescriptor, long, IBackupCallback, int)} calls. Remember
-     *     to count PM calls.
-     */
-    private void verifyAndUnblockAgentCalls(int times)
-            throws InterruptedException, TimeoutException {
-        // HACK: IBackupAgent.doBackup() posts a runnable to the front of the main-thread queue and
-        // immediately waits for its execution. In Robolectric, if we are in the main-thread this
-        // runnable is executed inline (this is called unpaused looper), that's why when we run the
-        // task in the main-thread (runTask() as opposed to runTaskAsync()) we don't need to call
-        // this method. However, if we are not in the main-thread nobody executes the runnable for
-        // us, thus IBackupAgent code will be stuck waiting for someone to execute the runnable.
-        // This method waits for that *specific* runnable, identifying it via class name, and then
-        // idles the main looper (for 0 seconds because it's posted at the front of the queue),
-        // which executes the method.
-        for (int i = 0; i < times; i++) {
-            waitUntil(() -> messagesInLooper(mMainLooper, this::isSharedPrefsSynchronizer) > 0);
-            mShadowMainLooper.idle();
-        }
-    }
-
-    private boolean isSharedPrefsSynchronizer(@Nullable Message message) {
-        String className = BACKUP_AGENT_SHARED_PREFS_SYNCHRONIZER_CLASS;
-        return message != null
-                && message.getCallback() != null
-                && className.equals(message.getCallback().getClass().getName());
     }
 
     private TransportMock setUpTransport(TransportData transport) throws Exception {
@@ -2643,6 +2609,7 @@ public class KeyValueBackupTaskTest  {
             mShadowPackageManager.installPackage(packageInfo);
             ShadowApplicationPackageManager.addInstalledPackage(packageName, packageInfo);
             mContext.sendBroadcast(getPackageAddedIntent(packageData));
+            mShadowMainLooper.idle();
             // Run the backup looper because on the receiver we post MSG_SCHEDULE_BACKUP_PACKAGE
             mShadowBackupLooper.runToEndOfTasks();
             BackupAgent backupAgent = spy(BackupAgent.class);

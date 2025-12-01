@@ -1839,8 +1839,19 @@ public final class MediaQualityUtils {
                         bundle.putDouble(key, (Double) value);
                     } else if (value instanceof Long) {
                         bundle.putLong(key, (Long) value);
-                    } else if (value instanceof int[]) {
-                        bundle.putIntArray(key, (int[]) value);
+                    } else if (value instanceof JSONArray jsonArray) {
+                        // Check the type of the element so we know it's int array. May expend more
+                        // if any parameters require string, double, long array in the future.
+                        if (jsonArray.length() > 0) {
+                            Object firstElement = jsonArray.get(0);
+                            if (firstElement instanceof Integer) {
+                                int[] intArray = new int[jsonArray.length()];
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    intArray[i] = jsonArray.getInt(i);
+                                }
+                                bundle.putIntArray(key, intArray);
+                            }
+                        }
                     }
                 }
             } catch (JSONException e) {

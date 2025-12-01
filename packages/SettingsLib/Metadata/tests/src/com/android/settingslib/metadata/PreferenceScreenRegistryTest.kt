@@ -130,7 +130,7 @@ class PreferenceScreenRegistryTest {
         val schema = KeyParametersSchema { parameter("id", "test id") }
         val keyParams = schema.prepare("id" to "123")
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
-            override fun createWithKeyParameters(context: Context, keyParameters: KeyParameters): PreferenceScreenMetadata {
+            override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata {
                 assertThat(keyParameters).isEqualTo(keyParams)
                 return mockScreen
             }
@@ -162,7 +162,7 @@ class PreferenceScreenRegistryTest {
         val keyParams = schema.prepare("id" to "123")
         val coordinate = PreferenceScreenCoordinate(screenKey, keyParams)
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
-            override fun createWithKeyParameters(context: Context, keyParameters: KeyParameters): PreferenceScreenMetadata {
+            override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata {
                 assertThat(keyParameters).isEqualTo(keyParams)
                 return mockScreen
             }
@@ -218,8 +218,8 @@ class PreferenceScreenRegistryTest {
     interface TestParameterizedFactory : PreferenceScreenMetadataParameterizedFactory {
         override fun create(context: Context, args: Bundle): PreferenceScreenMetadata = error("Should not be called")
         override fun parameters(context: Context): Flow<Bundle> = flowOf(Bundle.EMPTY)
-        override fun createWithKeyParameters(context: Context, keyParameters: KeyParameters): PreferenceScreenMetadata = error("Should not be called")
-        override fun keyParameters(context: Context): Flow<KeyParameters> = flowOf(parametersSchema.prepareEmpty())
+        override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata = error("Should not be called")
+        override fun keyParameters(context: Context): Flow<ValidatedKeyParameters> = flowOf(parametersSchema.prepareEmpty())
         override val parametersSchema: KeyParametersSchema get() = KeyParametersSchema {}
     }
 }

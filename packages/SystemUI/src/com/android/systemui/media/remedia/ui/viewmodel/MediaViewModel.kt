@@ -39,7 +39,6 @@ import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -193,6 +192,7 @@ constructor(
                                                     interactor.hide(
                                                         session.key,
                                                         MEDIA_PLAYER_ANIMATION_DELAY_MS,
+                                                        userInitiated = true,
                                                     )
                                                     interactor.setIsGutsVisible(false)
                                                 }
@@ -364,17 +364,8 @@ constructor(
         interactor.resetScrollToFirst()
     }
 
-    private val reorderingAllowedListener = OnReorderingAllowedListener {
-        interactor.reorderMedia()
-    }
-
     override suspend fun onActivated(): Nothing {
-        visualStabilityProvider.addPersistentReorderingAllowedListener(reorderingAllowedListener)
         awaitCancellation()
-    }
-
-    override suspend fun onDeactivated() {
-        visualStabilityProvider.removeReorderingAllowedListener(reorderingAllowedListener)
     }
 
     private fun MediaActionModel.toPlayPauseActionViewModel(

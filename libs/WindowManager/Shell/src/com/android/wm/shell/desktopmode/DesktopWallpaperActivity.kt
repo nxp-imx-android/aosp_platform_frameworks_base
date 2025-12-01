@@ -110,10 +110,7 @@ class DesktopWallpaperActivity : FragmentActivity() {
         // it to be focusable).
         updateFocusableFlag(focusable = false)
 
-        if (
-            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
-        ) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
         }
 

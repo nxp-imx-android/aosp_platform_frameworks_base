@@ -100,6 +100,10 @@ class CompatUIComponentTest : ShellTestCase() {
             assertEquals(info, lastPositionFactoryCompatUIInfo)
             assertEquals(view, lastPositionFactoryView)
             assertEquals(componentState, lastPositionFactoryCompState)
+            assertPositionFactoryInvocation(1)
+            assertEquals(info, lastSizeFactoryCompatUIInfo)
+            assertEquals(view, lastSizeFactoryView)
+            assertEquals(componentState, lastSizeFactoryCompState)
         }
     }
 
@@ -114,6 +118,7 @@ class CompatUIComponentTest : ShellTestCase() {
         with(layout) {
             assertViewBuilderInvocation(0)
             assertViewBinderInvocation(1)
+            assertPositionFactoryInvocation(1)
             assertPositionFactoryInvocation(1)
         }
     }

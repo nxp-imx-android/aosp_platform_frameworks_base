@@ -25,12 +25,14 @@ filegroup {
         ":anomaly_detector_mock_initializer",
         ":npumanager_mock_initializer",
         ":uprobestats_mock_initializer",
+        ":webapp_mock_initializer",
         ":systemfeatures-gen-srcs",
         ":framework-network-security-config-sources",
     ],
     // Exactly one MessageQueue.java will be added to srcs by messagequeue-gen
     exclude_srcs: [
         ":framework-ravenwood-sources",
+        ":aisealhostservice_aidl_sources",
         ":dropboxmanager_aidl_sources",
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
@@ -39,6 +41,7 @@ filegroup {
         "android/os/profiling/anomaly/mock/*.java",
         "android/ranging/**/*.java",
         "android/npumanager/mock/**/*.java",
+        "android/content/pm/webapp/mock/**/*.java",
     ],
     visibility: ["//frameworks/base"],
 }
@@ -209,6 +212,42 @@ uprobestats_mock_init {
     },
 }
 
+// Mock to allow service registry for WebApp.
+// TODO(b/400883716): Remove this once RELEASE_WEBAPP_MODULE is ramped up to next.
+soong_config_module_type {
+    name: "webapp_framework_mock_init",
+    module_type: "genrule",
+    config_namespace: "bootclasspath",
+    bool_variables: [
+        "release_webapp_module",
+    ],
+    properties: [
+        "cmd",
+        "out",
+        "srcs",
+    ],
+}
+
+// The actual WebAppFrameworkInitializer is present in packages/modules/WebApp/framework.
+// Mock WebAppFrameworkInitializer does nothing and allows to successfully build
+// SystemServiceRegistry after registering for system service in SystemServiceRegistry both with
+// and without build flag RELEASE_WEBAPP_MODULE enabled.
+webapp_framework_mock_init {
+    name: "webapp_mock_initializer",
+    soong_config_variables: {
+        release_webapp_module: {
+            cmd: "touch $(out)",
+            // Adding an empty file as out is mandatory.
+            out: ["android/content/pm/webapp/empty_webapp_fw.txt"],
+            conditions_default: {
+                srcs: ["android/content/pm/webapp/mock/WebAppFrameworkInitializer.java"],
+                cmd: "mkdir -p android/content/pm/webapp/; cp $(in) $(out);",
+                out: ["android/content/pm/webapp/WebAppFrameworkInitializer.java"],
+            },
+        },
+    },
+}
+
 // Output the selected android/os/MessageQueue.java implementation
 release_package_messagequeue_implementation_srcs {
     name: "messagequeue-gen",
@@ -222,6 +261,22 @@ release_package_messagequeue_implementation_srcs {
     },
     cmd: "mkdir -p android/os/; cp $(in) $(out);",
     out: ["android/os/MessageQueue.java"],
+}
+
+filegroup {
+    name: "aisealhostservice_aidl_sources",
+    srcs: ["android/aiseal/IAiSealHostService.aidl"],
+}
+
+aidl_interface {
+    name: "aisealhostservice_aidl",
+    srcs: [":aisealhostservice_aidl_sources"],
+    unstable: true,
+    backend: {
+        rust: {
+            enabled: true,
+        },
+    },
 }
 
 aidl_interface {

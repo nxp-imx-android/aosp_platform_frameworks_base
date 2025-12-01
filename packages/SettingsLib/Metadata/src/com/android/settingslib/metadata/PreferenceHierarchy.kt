@@ -103,7 +103,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     @Deprecated("This method will be removed once the catalyst framework stops passing the arguments as a bundle. Use String.unaryPlus")
     infix fun String.args(args: Bundle) = createPreferenceScreenHierarchy(this, args)
 
-    infix fun String.withParameters(keyParameters: KeyParameters) = createPreferenceScreenHierarchyWithKeyParameters(this, keyParameters)
+    infix fun String.withParameters(keyParameters: ValidatedKeyParameters) = createPreferenceScreenHierarchyWithKeyParameters(this, keyParameters)
 
     operator fun PreferenceHierarchyNode.unaryPlus() = also { children.add(it) }
 
@@ -216,7 +216,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      *
      * @see addPreferenceScreenWithKeyParameters
      */
-    fun addParameterizedScreenWithKeyParameters(screenKey: String, keyParameters: KeyParameters) =
+    fun addParameterizedScreenWithKeyParameters(screenKey: String, keyParameters: ValidatedKeyParameters) =
         addPreferenceScreenWithKeyParameters(screenKey, keyParameters)
 
     /**
@@ -241,14 +241,14 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     private fun addPreferenceScreen(screenKey: String, args: Bundle?): PreferenceHierarchyNode =
         createPreferenceScreenHierarchy(screenKey, args).also { children.add(it) }
 
-    private fun addPreferenceScreenWithKeyParameters(screenKey: String, keyParameters: KeyParameters?): PreferenceHierarchyNode =
+    private fun addPreferenceScreenWithKeyParameters(screenKey: String, keyParameters: ValidatedKeyParameters?): PreferenceHierarchyNode =
         createPreferenceScreenHierarchyWithKeyParameters(screenKey, keyParameters).also { children.add(it) }
 
     @Deprecated("This method will be removed once the catalyst framework stops passing the arguments as a bundle. Use createPreferenceScreenHierarchyWithKeyParameters instead.")
     private fun createPreferenceScreenHierarchy(screenKey: String, args: Bundle?) =
         PreferenceHierarchyNode(PreferenceScreenRegistry.create(context, screenKey, args)!!)
 
-    private fun createPreferenceScreenHierarchyWithKeyParameters(screenKey: String, keyParameters: KeyParameters?) =
+    private fun createPreferenceScreenHierarchyWithKeyParameters(screenKey: String, keyParameters: ValidatedKeyParameters?) =
         PreferenceHierarchyNode(PreferenceScreenRegistry.createWithKeyParameters(context, screenKey, keyParameters)!!)
 
     /** Extensions to add more preferences to the hierarchy. */

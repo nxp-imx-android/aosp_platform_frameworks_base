@@ -93,19 +93,20 @@ public interface RcPlatformServices {
     interface ComputedTextLayout {
         /**
          * Horizontal dimension of this text layout
-         *
-         * @return
          */
         float getWidth();
 
         /**
          * Vertical dimension of this text layout
-         *
-         * @return
          */
         float getHeight();
-    }
 
+        /**
+         * Returns true if contains hyphenated text
+         * @return
+         */
+        boolean isHyphenatedText();
+    }
     RcPlatformServices None =
             new RcPlatformServices() {
                 @Override

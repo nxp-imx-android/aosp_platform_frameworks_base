@@ -140,16 +140,6 @@ flag {
 }
 
 flag {
-    name: "enable_app_to_web_education_animation"
-    namespace: "lse_desktop_experience"
-    description: "Show the App-to-web education animation."
-    bug: "359226240"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_auto_recovery_from_self_kill"
     namespace: "lse_desktop_experience"
     description: "Automatically recovers apps from killing themselves on display moves"
@@ -649,13 +639,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_immersive_handle_hiding"
-    namespace: "lse_desktop_experience"
-    description: "Hides the App Handle when in fullscreen immersive mode"
-    bug: "336368019"
-}
-
-flag {
     name: "enable_desktop_windowing_mode"
     namespace: "lse_desktop_experience"
     description: "Enables desktop windowing"
@@ -801,16 +784,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "When enabled activities with type dream will be exempt from desktop windowing"
     bug: "414619063"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_empty_desk_on_minimize"
-    namespace: "lse_desktop_experience"
-    description: "Keep desktop open when the last window is minimized."
-    bug: "410493575"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1048,16 +1021,6 @@ flag {
 }
 
 flag {
-    name: "enable_per_display_window_decor_view_host_pool"
-    namespace: "lse_desktop_experience"
-    description: "Enables per-display WindowDecoration ViewHost pooling"
-    bug: "440247561"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_persisting_display_size_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enables persisting display size on resolution change for connected displays."
@@ -1218,13 +1181,6 @@ flag {
 }
 
 flag {
-    name: "enable_task_resizing_keyboard_shortcuts"
-    namespace: "lse_desktop_experience"
-    description: "Enables keyboard shortcuts for resizing tasks in desktop mode."
-    bug: "335819608"
-}
-
-flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."
@@ -1267,17 +1223,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables drawing a divider bar upon tiling tasks left and right in desktop mode for simultaneous resizing"
     bug: "351769839"
-}
-
-flag {
-    name: "enable_top_visible_root_task_per_user_tracking"
-    namespace: "lse_desktop_experience"
-    description: "Enables tracking the top visible root tasks for a user."
-    bug: "381038076"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1331,16 +1276,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the resizing of non-resizable apps through scaling their bounds up/down"
     bug: "319844447"
-}
-
-flag {
-    name: "enable_windowing_task_stack_order_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Reverses the order of TaskStackListener updates."
-    bug: "414808458"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1489,6 +1424,17 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Removes the desk when its last task is removed in touch-first displays"
     bug: "414845396"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "reparent_desk_leaf_tasks_if_relaunched"
+    namespace: "lse_desktop_experience"
+    description: "Reparents the leaf tasks of a desk to the task display area if they are /n"
+                 "relaunched outside of desktop."
+    bug: "452719159"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

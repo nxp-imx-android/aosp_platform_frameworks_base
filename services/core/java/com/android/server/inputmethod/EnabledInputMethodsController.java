@@ -122,7 +122,7 @@ final class EnabledInputMethodsController {
             // Workaround for b/354782333.
             final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
             final var bindingController = mService.getInputMethodBindingController(userId);
-            final int deviceId = bindingController.getDeviceIdToShowIme();
+            final int deviceId = bindingController.getDeviceId();
             final String settingsValue;
             if (deviceId == DEVICE_ID_DEFAULT) {
                 settingsValue = settings.getSelectedInputMethod();
@@ -164,7 +164,7 @@ final class EnabledInputMethodsController {
                 SoftInputShowHideReason.HIDE_RESET_SHELL_COMMAND, userId);
         mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
         final var bindingController = userData.mBindingController;
-        bindingController.unbindCurrentMethod();
+        bindingController.unbindIme();
         // Enable default IMEs, disable others
         var toDisable = settings.getEnabledInputMethodList();
         var defaultEnabled = InputMethodInfoUtils.getDefaultEnabledImes(

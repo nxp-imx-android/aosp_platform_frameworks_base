@@ -353,6 +353,17 @@ public class DebugStoreTest {
     }
 
     @Test
+    public void testRecordSendFinished() {
+        DebugStore.recordSendFinished(3840 /* 0xf00 */);
+
+        assertThat(paramsForRecordEvent("SendFinished"))
+                .containsExactly(
+                        "prid",
+                        "f00")
+                .inOrder();
+    }
+
+    @Test
     public void testRecordLongLooperMessage() {
         DebugStore.recordLongLooperMessage(100, "androidHandler", 500L);
 

@@ -28,7 +28,6 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
 
 import static com.android.wm.shell.Flags.FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT;
-import static com.android.wm.shell.Flags.FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
@@ -444,7 +443,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void testSplitIntentAndTaskWithPippedApp_launchFullscreen() {
         int taskId = 9;
         mStageCoordinator.setMixedHandler(mDefaultMixedHandler);
@@ -494,7 +492,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void testSplitIntentsWithPippedApp_launchFullscreen() {
         mStageCoordinator.setMixedHandler(mDefaultMixedHandler);
         PendingIntent pendingIntent = mock(PendingIntent.class);
@@ -916,7 +913,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void startTasks_withOneTask_setsFullscreenWindowingMode() {
         mStageCoordinator.startTasks(mTaskId, null /* options1 */, INVALID_TASK_ID,
                 null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
@@ -932,7 +928,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void startShortcutAndTask_withOnlyShortcut_setsFullscreenWindowingMode() {
         ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext, "test").build();
         mStageCoordinator.startShortcutAndTask(shortcutInfo, null /* options1 */, INVALID_TASK_ID,
@@ -950,7 +945,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void startIntents_withOneIntent_setsFullscreenWindowingMode() {
         PendingIntent pendingIntent = mock(PendingIntent.class);
         mStageCoordinator.startIntents(pendingIntent, new Intent(), null /* shortcutInfo1 */,

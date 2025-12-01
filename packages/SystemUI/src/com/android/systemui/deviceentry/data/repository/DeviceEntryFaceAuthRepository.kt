@@ -17,7 +17,6 @@
 package com.android.systemui.deviceentry.data.repository
 
 import android.app.StatusBarManager
-import android.content.Context
 import android.hardware.face.FaceManager
 import android.os.CancellationSignal
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -67,7 +66,6 @@ import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.errorprone.annotations.CompileTimeConstant
 import java.io.PrintWriter
-import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -148,14 +146,12 @@ private data class AuthenticationRequest(
 class DeviceEntryFaceAuthRepositoryImpl
 @Inject
 constructor(
-    context: Context,
     private val faceManager: FaceManager? = null,
     private val userRepository: UserRepository,
     private val keyguardBypassController: KeyguardBypassController? = null,
     @Application private val applicationScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
-    @Background private val backgroundExecutor: Executor,
     private val sessionTracker: SessionTracker,
     private val uiEventsLogger: UiEventLogger,
     private val faceAuthLogger: FaceAuthenticationLogger,
@@ -191,7 +187,25 @@ constructor(
         get() = _detectionStatus.filterNotNull()
 
     private val _isLockedOut = MutableStateFlow(false)
-    override val isLockedOut: StateFlow<Boolean> = _isLockedOut
+    override val isLockedOut: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                val callback =
+                    object : FaceManager.LockoutResetCallback() {
+                        override fun onLockoutReset(sensorId: Int) {
+                            trySendWithFailureLogging(false, TAG, "onLockoutReset")
+                        }
+                    }
+                faceManager?.addLockoutResetCallback(callback)
+                faceAuthLogger.addLockoutResetCallbackDone()
+                _isLockedOut.onEach { trySend(it) }.launchIn(this)
+                awaitClose {}
+            }
+            .flowOn(backgroundDispatcher)
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
 
     val isDetectionSupported =
         faceManager?.sensorPropertiesInternal?.firstOrNull()?.supportsFaceDetection ?: false
@@ -239,18 +253,7 @@ constructor(
         _isLockedOut.value = isLockedOut
     }
 
-    private val faceLockoutResetCallback =
-        object : FaceManager.LockoutResetCallback() {
-            override fun onLockoutReset(sensorId: Int) {
-                _isLockedOut.value = false
-            }
-        }
-
     init {
-        backgroundExecutor.execute {
-            faceManager?.addLockoutResetCallback(faceLockoutResetCallback)
-            faceAuthLogger.addLockoutResetCallbackDone()
-        }
         dumpManager.registerCriticalDumpable("DeviceEntryFaceAuthRepositoryImpl", this)
 
         canRunFaceAuth =

@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"မျက်နှာပြင်ပုံကို သိမ်း၍မရပါ"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"သိမ်းမည့်နေရာ"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ဖိုင်တွဲရွေးရန်"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"%1$s ဖိုင်တွဲတွင် သိမ်းလိုက်သည်"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"တစ်ခုခု မှားသွားသည်။ “%1$s” ဖိုင်တွဲတွင် သိမ်း၍မရလိုက်ပါ။"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ပြင်ပဖန်သားပြင်"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ဖန်သားပြင်ဓာတ်ပုံကို မသိမ်းမီ စက်ပစ္စည်းကို လော့ခ်ဖွင့်ထားရမည်"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"မျက်နှာပြင်ပုံကို ထပ်ရိုက်ကြည့်ပါ"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ဖန်သားပြင်ဓာတ်ပုံကို သိမ်း၍မရပါ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ဖန်သားပြင်ဓာတ်ပုံရိုက်ကူးခြင်းကို ဤအက်ပ် သို့မဟုတ် သင်၏အဖွဲ့အစည်းက ခွင့်မပြုပါ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ဖန်သားပြင်ဓာတ်ပုံရိုက်ခြင်းကို သင့် IT စီမံခန့်ခွဲသူက ပိတ်ထားသည်"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"တည်းဖြတ်ရန်"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ဖန်သားပြင်ဓာတ်ပုံ တည်းဖြတ်ရန် ခလုတ်"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"မျှဝေရန်"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ပြီးပြီ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"အသုံးပြုရန်"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ပိတ်ရန်"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"အသံပိတ်ရန်"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"မူလ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"အလိုအလျောက်"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"အသံ သို့မဟုတ် တုန်ခါမှုမရှိပါ"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"အသံမကြားရ (သို့) တုန်ခါမှုမရှိသော်လည်း စကားဝိုင်းကဏ္ဍတွင် မြင်ရပါသေးသည်"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"စက်ပစ္စည်း ဆက်တင်များပေါ် အခြေခံပြီး အသံမြည်နိုင်သည် (သို့) တုန်ခါနိုင်သည်"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"စက်ပစ္စည်းဆက်တင်များပေါ် အခြေခံပြီး အသံမြည်နိုင်သည် (သို့) တုန်ခါနိုင်သည်။ မူရင်းသတ်မှတ်ချက်အဖြစ် <xliff:g id="APP_NAME">%1$s</xliff:g> မှ စကားဝိုင်းများကို ပူဖောင်းကွက်ဖြင့် ပြသည်။"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ဤအကြောင်းကြားချက်က အသံ သို့မဟုတ် တုန်ခါမှု ပေးရန် သင့်/မသင့်ကို စနစ်က ဆုံးဖြတ်ပါစေ"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;အခြေအနေ-&lt;/b&gt; မူရင်းသို့ ချိန်ညှိထားသည်"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;အခြေအနေ-&lt;/b&gt; အသံတိတ်ခြင်းသို့ ပြန်ချိန်ညှိထားသည်"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;အခြေအနေ-&lt;/b&gt; အဆင့်တိုးထားသည်"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;အခြေအနေ-&lt;/b&gt; အဆင့်လျှော့ထားသည်"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"တည်နေရာ"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"မိုက်ခရိုဖုန်း"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"စခရင်ရိုက်ကူးမှု"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"ကန့်သတ်ဆက်တင်"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"ခေါင်းစဉ် မရှိပါ"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"အသင့်အနေအထား"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ဖောင့်အရွယ်"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"အသံအထွက်အတွက် ရရှိနိုင်သောစက်များ။"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"အသံအတိုးအကျယ်"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"စက်အချို့ကို မမြင်ရပါ။ သင့်အက်ပ်ခွင့်ပြုချက်များကို အပ်ဒိတ်လုပ်ပါ"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"ပြင်ဆင်ရန်"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ချိတ်ဆက်ထားသော စပီကာများ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"စပီကာနှင့် ပြကွက်"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"အကြံပြုထားသည်များ"</string>

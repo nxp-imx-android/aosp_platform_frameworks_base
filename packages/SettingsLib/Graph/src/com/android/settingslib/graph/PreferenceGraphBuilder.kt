@@ -44,7 +44,7 @@ import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
-import com.android.settingslib.metadata.KeyParameters
+import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceHierarchy
@@ -349,7 +349,7 @@ private constructor(
     @CanIgnoreReturnValue
     private suspend fun addPreferenceScreenWithKeyParameters(
         key: String,
-        keyParameters: KeyParameters?,
+        keyParameters: ValidatedKeyParameters?,
         init: suspend PreferenceScreenProto.Builder.() -> Unit,
     ): Boolean {
         if (!visitedScreens.add(PreferenceScreenCoordinate(key, keyParameters))) return false

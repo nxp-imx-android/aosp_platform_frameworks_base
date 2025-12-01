@@ -54,8 +54,8 @@ public class ParsedProviderUtils {
     @NonNull
     public static ParseResult<ParsedProvider> parseProvider(String[] separateProcesses,
             ParsingPackage pkg, Resources res, XmlResourceParser parser, int flags,
-            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input,
-            boolean runInPccSandbox) throws IOException, XmlPullParserException {
+            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input)
+            throws IOException, XmlPullParserException {
         String authority;
         boolean visibleToEphemeral;
 
@@ -130,8 +130,9 @@ public class ParsedProviderUtils {
                     .setFlags(provider.getFlags() | flag(ProviderInfo.FLAG_SINGLE_USER,
                             R.styleable.AndroidManifestProvider_singleUser, sa));
 
-            if (runInPccSandbox) {
-                provider.setFlags(provider.getFlags() | ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX);
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                provider.setFlags(provider.getFlags() | flag(ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX,
+                        R.styleable.AndroidManifestProvider_isPrivateComputeCoreProcess, sa));
             }
 
             if (Flags.enableSystemUserOnlyForServicesAndProviders()) {

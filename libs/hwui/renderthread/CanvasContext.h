@@ -74,7 +74,7 @@ class CanvasContext : public IFrameCallback, public IGpuContextCallback {
 public:
     static CanvasContext* create(RenderThread& thread, bool translucent, RenderNode* rootRenderNode,
                                  IContextFactory* contextFactory, pid_t uiThreadId,
-                                 pid_t renderThreadId);
+                                 pid_t renderThreadId, bool useIpcCanvas = false);
     virtual ~CanvasContext();
 
     /**

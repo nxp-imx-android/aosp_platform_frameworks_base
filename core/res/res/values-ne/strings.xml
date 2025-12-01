@@ -278,6 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"रिस्टार्ट गर्नुहोस्"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"आपत्‌कालीन"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"बग रिपोर्ट"</string>
+    <string name="global_action_feedback" msgid="3480836834202300036">"प्रतिक्रिया"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"सत्रको अन्त्य गर्नुहोस्"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"स्क्रिनसट"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"स्ट्यान्डबाई"</string>
@@ -824,10 +825,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"एपलाई तपाईंको साझा भण्डारणमा भएका भिडियो फाइलहरू पढ्ने अनुमति दिन्छ।"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"साझा भण्डारणमा भएका फोटो फाइलहरू पढ्ने"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"एपलाई तपाईंको साझा भण्डारणमा भएका फोटो फाइलहरू पढ्ने अनुमति दिन्छ।"</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"साझा भण्डारणमा भएका डकुमेन्ट फाइलहरू पढ्ने"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"एपलाई तपाईंको साझा भण्डारणमा भएका डकुमेन्ट फाइलहरू पढ्ने अनुमति दिन्छ।"</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"प्रयोगकर्ताले साझा भण्डारणबाट चयन गरेका फोटो र भिडियो फाइलहरू पढ्ने"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"एपलाई तपाईंले आफ्नो साझा भण्डारणबाट चयन गर्नुभएका फोटो र भिडियो फाइलहरू पढ्ने अनुमति दिन्छ।"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"तपाईंको आदान प्रदान गरिएको भण्डारणको विषयवस्तुहरूलाई परिमार्जन गर्नहोस् वा मेटाउनुहोस्"</string>
@@ -2180,13 +2179,29 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"कुनै स्वत: भरण सुझाव छैन"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{स्वतः भर्ने एउटा सुझाव}other{स्वतः भर्ने # वटा सुझाव}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" मा सुरक्षित गर्ने हो?"</string>
+    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
+    <skip />
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"<xliff:g id="TYPE">%1$s</xliff:g> लाई "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" मा सुरक्षित गर्ने हो?"</string>
+    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
+    <skip />
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"<xliff:g id="TYPE_0">%1$s</xliff:g> र <xliff:g id="TYPE_1">%2$s</xliff:g> लाई "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" मा सुरक्षित गर्ने हो?"</string>
+    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
+    <skip />
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"<xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> र <xliff:g id="TYPE_2">%3$s</xliff:g> लाई "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" मा सुरक्षित गर्ने हो?"</string>
+    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
+    <skip />
     <string name="autofill_update_title" msgid="3630695947047069136"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" मा अद्यावधिक गर्ने हो?"</string>
+    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
+    <skip />
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"<xliff:g id="TYPE">%1$s</xliff:g> लाई "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" मा अद्यावधिक गर्ने हो?"</string>
+    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
+    <skip />
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"<xliff:g id="TYPE_0">%1$s</xliff:g> र <xliff:g id="TYPE_1">%2$s</xliff:g> लाई "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" मा अद्यावधिक गर्ने हो?"</string>
+    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
+    <skip />
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"तपाईं "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" मा भएका निम्न वस्तुहरू अपडेट गर्न चाहनुहुन्छ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> र <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
+    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
+    <skip />
     <string name="autofill_save_yes" msgid="8035743017382012850">"सेभ गर्नुहोस्"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"पर्दैन, धन्यवाद"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"अहिले होइन"</string>

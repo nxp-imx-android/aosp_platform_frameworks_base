@@ -144,6 +144,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -1180,9 +1181,21 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     /**
-     * Verify that when finishing the top focused activity on top display, the root task order
-     * will be changed by adjusting focus.
+     * Verify that when finishing the top focused activity on top display, the focus is not
+     * adjusted immediately.
      */
+    @Test
+    public void testFinishActivityIfPossible_topFocusedActivityDoesNotAdjustFocus() {
+        final ActivityRecord activity = createActivityWithTask();
+        final Task task = activity.getTask();
+        activity.setState(RESUMED, "test");
+        doReturn(true).when(mRootWindowContainer).isTopDisplayFocusedRootTask(any());
+
+        activity.finishIfPossible("test", false /* oomAdj */);
+
+        verify(task, never()).adjustFocusToNextFocusableTask(anyString(), anyBoolean(),
+                anyBoolean());
+    }
 
     /**
      * Verify that resumed activity is paused due to finish request.
@@ -2811,6 +2824,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(Configuration.ORIENTATION_LANDSCAPE, activityConfig.orientation);
     }
 
+    @DisableFlags(Flags.FLAG_REMOVE_LEGACY_ORIENTATION_REPORT)
     @Test
     public void testReportOrientationChange() {
         final Task task = new TaskBuilder(mSupervisor)

@@ -43,10 +43,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -134,6 +136,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -184,6 +187,7 @@ import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.R.dimen.system_app_widget_background_radius
 import com.android.systemui.Flags
+import com.android.systemui.Flags.communalEditModeAccessibilityResize
 import com.android.systemui.Flags.communalResponsiveGrid
 import com.android.systemui.Flags.communalTimerFlickerFix
 import com.android.systemui.Flags.communalWidgetResizing
@@ -298,7 +302,15 @@ fun CommunalHub(
                         contentOffset,
                         contentListState,
                     ) {
-                        observeTaps { offset ->
+                        observeTaps(
+                            pass =
+                                // Use the `PointerEventPass.Final` to observe taps without interfering
+                                // with the tap handling of child composables. This allows listening
+                                // for taps on the grid's background to deselect items, while also
+                                // allowing taps on child composables to pass through to them.
+                                if (communalEditModeAccessibilityResize()) PointerEventPass.Final
+                                else PointerEventPass.Initial
+                        ) { offset ->
                             // if RTL, flip offset direction from Left side to Right
                             val adjustedOffset =
                                 Offset(
@@ -311,16 +323,25 @@ fun CommunalHub(
                             val tappedKey =
                                 index?.let { keyAtIndexIfEditable(contentListState.list, index) }
 
-                            viewModel.setSelectedKey(
-                                if (
-                                    Flags.hubEditModeTouchAdjustments() &&
-                                        selectedKey.value == tappedKey
-                                ) {
-                                    null
-                                } else {
-                                    tappedKey
+                            if (communalEditModeAccessibilityResize()) {
+                                // If we tap on the background, we should deselect whatever was
+                                // selected. Otherwise, the selection/deselection process is
+                                // managed by the WidgetContent itself.
+                                if (tappedKey == null) {
+                                    viewModel.setSelectedKey(null)
                                 }
-                            )
+                            } else {
+                                viewModel.setSelectedKey(
+                                    if (
+                                        Flags.hubEditModeTouchAdjustments() &&
+                                            selectedKey.value == tappedKey
+                                    ) {
+                                        null
+                                    } else {
+                                        tappedKey
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -1577,6 +1598,17 @@ private fun WidgetContent(
                 .focusRequester(focusRequester)
                 .focusable(interactionSource = interactionSource)
                 .then(selectableModifier)
+                .thenIf(communalEditModeAccessibilityResize() && viewModel.isEditMode) {
+                    Modifier.pointerInput(isSelected, model.key) {
+                        observeTaps {
+                            if (isSelected && Flags.hubEditModeTouchAdjustments()) {
+                                viewModel.setSelectedKey(null)
+                            } else {
+                                viewModel.setSelectedKey(model.key)
+                            }
+                        }
+                    }
+                }
                 .thenIf(!viewModel.isEditMode && !model.inQuietMode) {
                     Modifier.pointerInput(Unit) {
                         observeTaps { viewModel.onTapWidget(model.componentName, model.rank) }

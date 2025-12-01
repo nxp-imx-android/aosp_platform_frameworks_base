@@ -384,6 +384,7 @@ class ExpandableNotificationRowBuilder(
                 .setPostTime(System.currentTimeMillis())
                 .setChannel(channel)
                 .setFlag(context, Notification.FLAG_PROMOTED_ONGOING, promoted)
+                .setFlag(context, Notification.FLAG_CAN_COLORIZE, notification.isColorizedRequested)
                 .build()
 
         // it is for mitigating Rank building process.

@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.functional.fundamentals.enter
 
-import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.EnterDesktopWithAppHandleMenuExistingWindows
@@ -26,7 +26,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /* Functional test for [EnterDesktopWithAppHandleMenuExistingWindows]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
-@Presubmit
+@Postsubmit
 @ScreenRecordRule.ScreenRecord
 class EnterDesktopWithAppHandleMenuExistingWindowsTest :
     EnterDesktopWithAppHandleMenuExistingWindows()

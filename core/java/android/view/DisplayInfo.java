@@ -238,12 +238,6 @@ public final class DisplayInfo implements Parcelable {
      */
     public Display.Mode[] supportedModes = Display.Mode.EMPTY_ARRAY;
 
-    /**
-     * The supported modes that will be exposed externally.
-     * Might have different set of modes than supportedModes for VRR displays
-     */
-    public Display.Mode[] appsSupportedModes = Display.Mode.EMPTY_ARRAY;
-
     /** The active color mode. */
     public int colorMode;
 
@@ -426,7 +420,7 @@ public final class DisplayInfo implements Parcelable {
      */
     public boolean canHostTasks;
 
-    public static final @android.annotation.NonNull Creator<DisplayInfo> CREATOR = new Creator<DisplayInfo>() {
+    public static final @android.annotation.NonNull Creator<DisplayInfo> CREATOR = new Creator<>() {
         @Override
         public DisplayInfo createFromParcel(Parcel source) {
             return new DisplayInfo(source);
@@ -525,8 +519,6 @@ public final class DisplayInfo implements Parcelable {
         defaultModeId = other.defaultModeId;
         userPreferredModeId = other.userPreferredModeId;
         supportedModes = Arrays.copyOf(other.supportedModes, other.supportedModes.length);
-        appsSupportedModes = Arrays.copyOf(
-                other.appsSupportedModes, other.appsSupportedModes.length);
         colorMode = other.colorMode;
         supportedColorModes = Arrays.copyOf(
                 other.supportedColorModes, other.supportedColorModes.length);
@@ -595,11 +587,6 @@ public final class DisplayInfo implements Parcelable {
         supportedModes = new Display.Mode[nModes];
         for (int i = 0; i < nModes; i++) {
             supportedModes[i] = Display.Mode.CREATOR.createFromParcel(source);
-        }
-        int nAppModes = source.readInt();
-        appsSupportedModes = new Display.Mode[nAppModes];
-        for (int i = 0; i < nAppModes; i++) {
-            appsSupportedModes[i] = Display.Mode.CREATOR.createFromParcel(source);
         }
         colorMode = source.readInt();
         int nColorModes = source.readInt();
@@ -676,10 +663,6 @@ public final class DisplayInfo implements Parcelable {
         dest.writeInt(supportedModes.length);
         for (int i = 0; i < supportedModes.length; i++) {
             supportedModes[i].writeToParcel(dest, flags);
-        }
-        dest.writeInt(appsSupportedModes.length);
-        for (int i = 0; i < appsSupportedModes.length; i++) {
-            appsSupportedModes[i].writeToParcel(dest, flags);
         }
         dest.writeInt(colorMode);
         dest.writeInt(supportedColorModes.length);
@@ -773,7 +756,7 @@ public final class DisplayInfo implements Parcelable {
      */
     @Nullable
     public Display.Mode findDefaultModeByRefreshRate(float refreshRate) {
-        Display.Mode[] modes = appsSupportedModes;
+        Display.Mode[] modes = supportedModes;
         Display.Mode defaultMode = getDefaultMode();
         for (int i = 0; i < modes.length; i++) {
             if (modes[i].matches(
@@ -798,7 +781,7 @@ public final class DisplayInfo implements Parcelable {
      * Returns the list of supported refresh rates in the default mode.
      */
     public float[] getDefaultRefreshRatesLegacy() {
-        Display.Mode[] modes = appsSupportedModes;
+        Display.Mode[] modes = supportedModes;
         ArraySet<Float> rates = new ArraySet<>();
         Display.Mode defaultMode = getDefaultMode();
         for (int i = 0; i < modes.length; i++) {
@@ -922,7 +905,10 @@ public final class DisplayInfo implements Parcelable {
         outMetrics.densityDpi = outMetrics.noncompatDensityDpi = logicalDensityDpi;
         outMetrics.density = outMetrics.noncompatDensity =
                 logicalDensityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-        outMetrics.scaledDensity = outMetrics.noncompatScaledDensity = outMetrics.density;
+        final float fontScale = (configuration != null && configuration.fontScale != 0)
+                ? configuration.fontScale : 1.0f;
+        outMetrics.scaledDensity = outMetrics.noncompatScaledDensity =
+                outMetrics.density * fontScale;
         outMetrics.xdpi = outMetrics.noncompatXdpi = physicalXDpi;
         outMetrics.ydpi = outMetrics.noncompatYdpi = physicalYDpi;
 
@@ -1094,7 +1080,6 @@ public final class DisplayInfo implements Parcelable {
                 || !thermalRefreshRateThrottling.contentEquals(other.thermalRefreshRateThrottling)
                 || userPreferredModeId != other.userPreferredModeId
                 || !Arrays.equals(supportedModes, other.supportedModes)
-                || !Arrays.equals(appsSupportedModes, other.appsSupportedModes)
                 || minimalPostProcessingSupported != other.minimalPostProcessingSupported;
     }
 
@@ -1166,8 +1151,6 @@ public final class DisplayInfo implements Parcelable {
         sb.append(userPreferredModeId);
         sb.append(", supportedModes ");
         sb.append(Arrays.toString(supportedModes));
-        sb.append(", appsSupportedModes ");
-        sb.append(Arrays.toString(appsSupportedModes));
         sb.append(", hdrCapabilities ");
         sb.append(hdrCapabilities);
         sb.append(", isForceSdr ");

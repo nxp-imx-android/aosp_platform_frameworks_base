@@ -23,6 +23,12 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.makeBundle;
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -90,12 +96,14 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -104,7 +112,9 @@ import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.uri.UriPermissionOwner;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
-import org.junit.Assert;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -132,7 +142,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
+
+@RunWith(AndroidJUnit4.class)
+public abstract class BaseShortcutManagerTest {
     protected static final String TAG = "ShortcutManagerTest";
 
     protected static final boolean DUMP_IN_TEARDOWN = false; // DO NOT SUBMIT WITH true
@@ -872,10 +884,8 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
                 ShortcutQuery.FLAG_GET_ALL_KINDS);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         mLooper = Looper.getMainLooper();
         mHandler = new Handler(mLooper);
 
@@ -1106,17 +1116,15 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
         return in;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         if (DUMP_IN_TEARDOWN) dumpsysOnLogcat("Teardown");
 
         shutdownServices();
-
-        super.tearDown();
     }
 
     protected Context getTestContext() {
-        return getInstrumentation().getContext();
+        return InstrumentationRegistry.getInstrumentation().getContext();
     }
 
     protected Context getClientContext() {
@@ -1130,7 +1138,7 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
     protected void deleteAllSavedFiles() {
         // Empty the data directory.
         if (mInjectedFilePathRoot.exists()) {
-            Assert.assertTrue("failed to delete dir",
+            assertTrue("failed to delete dir",
                     FileUtils.deleteContents(mInjectedFilePathRoot));
         }
         mInjectedFilePathRoot.mkdirs();

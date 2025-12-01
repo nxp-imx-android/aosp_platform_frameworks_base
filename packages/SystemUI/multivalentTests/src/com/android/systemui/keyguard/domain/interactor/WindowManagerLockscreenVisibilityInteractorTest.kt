@@ -280,6 +280,38 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun surfaceBehindVisibility_fromCommunalToGone_dependsOnDeviceEntry() =
+        kosmos.runTest {
+            val isSurfaceBehindVisible by collectLastValue(underTest.surfaceBehindVisibility)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            setSceneTransition(Idle(Scenes.Communal))
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            // Mark the device unlocked so we can transition to Gone.
+            unlockDevice()
+
+            // Start the transition to Gone, the surface should become visible.
+            setSceneTransition(
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Communal,
+                    toScene = Scenes.Gone,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    progress = flowOf(0.1f),
+                    currentScene = flowOf(Scenes.Gone),
+                )
+            )
+            assertThat(isSurfaceBehindVisible).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
     fun surfaceBehindVisibility_fromBouncerToGone_becomesTrue() =
         kosmos.runTest {
             val isSurfaceBehindVisible by collectLastValue(underTest.surfaceBehindVisibility)
@@ -1480,6 +1512,42 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
                     isUserInputOngoing = flowOf(false),
                 )
             )
+            assertThat(lockscreenVisibility).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_dreamingAndUnlocked_swipeLock_isVisible() =
+        kosmos.runTest {
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
+
+            // Start on Dream.
+            setSceneTransition(Idle(Scenes.Dream))
+            assertThat(lockscreenVisibility).isTrue()
+
+            // Unlock the device (e.g. swipe auth).
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            val isDeviceUnlocked by
+                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
+            assertThat(isDeviceUnlocked).isTrue()
+
+            // At this point, lockscreen should NOT be visible.
+            assertThat(lockscreenVisibility).isFalse()
+
+            // Now, put lockscreen on the back stack. This is what happens with swipe lock when
+            // the device is "locked" (it's not really locked).
+            sceneBackInteractor.updateBackStack { sceneStackOf(Scenes.Lockscreen) }
+            runCurrent()
+
+            // While dreaming and unlocked, but with lockscreen on back stack, lockscreen should be
+            // visible.
+            assertThat(lockscreenVisibility).isTrue()
+
+            // Now remove it from back stack.
+            sceneBackInteractor.updateBackStack { sceneStackOf() }
+            runCurrent()
+
+            // Should be false again.
             assertThat(lockscreenVisibility).isFalse()
         }
 

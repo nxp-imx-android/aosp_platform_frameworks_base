@@ -35,6 +35,8 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -158,7 +160,21 @@ public class InsightSurfaceClient implements AutoCloseable {
     }
 
     /**
-     * Return the context hints for this client.
+     * Publish new hints to the context engine. This method can be called any time after the client
+     * has been created to send new hints to the context engine.
+     *
+     * @param hints a list of {@link ContextHint}s
+     */
+    public void publishHints(@NonNull Set<ContextHint> hints) {
+        Objects.requireNonNull(hints);
+        final PersonalContextManager personalContextManager =
+                mContext.getSystemService(PersonalContextManager.class);
+        personalContextManager.publishInsightSurfaceHints(hints, mClientInfo);
+    }
+
+    /**
+     * Return the context hints this client was originally created with (using the
+     * {@link Builder#addHint} method).
      *
      * @return the {@link ContextHint}s
      */
@@ -330,7 +346,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mContext,
                     mCallbacks,
                     mCallbacksExecutor,
-                    mHints, mReceivers);
+                    mHints,
+                    mReceivers);
         }
     }
 }

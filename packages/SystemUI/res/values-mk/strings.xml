@@ -83,16 +83,16 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Не може да се зачува слика од екранот"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Зачувај во"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Изберете папка"</string>
-    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
-    <skip />
-    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
-    <skip />
+    <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"Зачувано во папката „%1$s“"</string>
+    <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"Нешто тргна наопаку. Не може да се зачува во папката „%1$s“."</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Надворешен екран"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Уредот мора да биде отклучен за да може да се зачува слика од екранот"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Повторно обидете се да направите слика од екранот"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Не може да се зачува слика од екранот"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Апликацијата или вашата организација не дозволува снимање слики од екранот"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Зачувувањето слики од екранот е блокирано од IT-администраторот"</string>
+    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Изменете"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Копче за изменување слика од екранот"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Сподели"</string>
@@ -928,15 +928,31 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Готово"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Примени"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Исклучи"</string>
+    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
+    <skip />
+    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
+    <skip />
+    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Безгласно"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Стандардно"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Автоматски"</string>
+    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
+    <skip />
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Без звук или вибрации"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Нема звук или вибрации, но сепак се појавува во делот за разговор"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Може да ѕвони или да вибрира во зависност од поставките за уредот"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Може да ѕвони или да вибрира во зависност од поставките за уредот. Стандардно, разговорите од <xliff:g id="APP_NAME">%1$s</xliff:g> се во балончиња."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Дозволете системот да определи дали известувањево треба да испушти звук или да вибрира"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;Статус:&lt;/b&gt; поставено на „Стандардно“"</string>
+    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
+    <skip />
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Статус:&lt;/b&gt; намалено на „Тивко“"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Статус:&lt;/b&gt; рангирано повисоко"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Статус:&lt;/b&gt; рангирано пониско"</string>
@@ -1162,7 +1178,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Мени на копчето за вклучување"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се вклучи <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Притиснете <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> повторно за да овозможите <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Да се вклучи кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не вклучувај"</string>
@@ -1171,7 +1187,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>, функција за пристапност. Ова ви овозможува брзо да зумирате на екранот за да го зголемите приказот на содржините. Откако ќе се вклучи зголемувањето, притиснете <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> и „+“ или „-“ за да го приспособите зумот."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Исклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не исклучувај"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> е читач на екран што ви овозможува да слушате ставки изговорени наглас. Ова може да биде корисно за лица што имаат проблем да го видат екранот. Ова може да го промени начинот на функционирање на уредот."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> е читач на екран што ви овозможува да слушате ставки изговорени наглас. Ова може да биде корисно за лица што имаат проблем да го видат екранот. Ова може да го промени начинот на функционирање на уредот."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ако ја вклучите кратенката од тастатурата, ќе дозволите TalkBack да има целосна контрола врз вашиот уред."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Целосната контрола е соодветна за апликации што ви помагаат со потребите за пристапност, но не и за повеќето апликации."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Приказ и контрола на екранот"</string>
@@ -1263,8 +1279,7 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"локација"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"микрофон"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"снимање на екранот"</string>
-    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
-    <skip />
+    <string name="privacy_chip_container_leading_title" msgid="4911201935798986077">"Приватност"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"Без наслов"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"Подготвеност"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"Големина на фонтот"</string>
@@ -1412,10 +1427,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Достапни уреди за аудиоизлез."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Јачина на звук"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Некои уреди не се видливи. Ажурирајте ги дозволите за апликациите"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Поправете"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Поврзани звучници"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Звучници и екрани"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Предложени"</string>

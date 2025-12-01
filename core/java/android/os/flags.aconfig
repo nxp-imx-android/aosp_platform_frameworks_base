@@ -251,6 +251,13 @@ flag {
 }
 
 flag {
+     name: "holdback_concurrent_message_queue_in_systemui"
+     namespace: "system_performance"
+     description: "Holdback for concurrent MessageQueue in SystemUI; if enabled, don't use concurrent MessageQueue in SystemUI."
+     bug: "463114494"
+}
+
+flag {
      name: "ipc_data_cache_module_adservices"
      namespace: "system_performance"
      description: "IpcDataCache module for AdServices."

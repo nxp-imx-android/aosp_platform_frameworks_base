@@ -25,6 +25,7 @@ import static android.service.dreams.Flags.FLAG_WAKE_ON_STOPPING_DOZE;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static org.mockito.Mockito.never;
 import static com.android.server.dreams.DreamManagerService.CHARGE_LIMIT_PERCENTAGE;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -33,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -55,6 +57,7 @@ import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.Binder;
+import android.content.ComponentName;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
@@ -139,6 +142,8 @@ public class DreamManagerServiceTest {
         MockitoAnnotations.initMocks(this);
 
         mContext.getTestablePermissions().setPermission(
+                Manifest.permission.READ_DREAM_STATE, PERMISSION_GRANTED);
+        mContext.getTestablePermissions().setPermission(
                 Manifest.permission.READ_PROJECTION_STATE, PERMISSION_GRANTED);
 
         mContextSpy = spy(mContext);
@@ -169,6 +174,8 @@ public class DreamManagerServiceTest {
                 0);
 
         when(mPowerManagerMock.newWakeLock(anyInt(), any())).thenReturn(mWakeLockMock);
+        when(mWakeLockMock.wrap(any(Runnable.class))).thenAnswer(
+                invocation -> invocation.getArguments()[0]);
         when(mUserManagerInternalMock.getMainUserId()).thenReturn(mCurrentUser.getIdentifier());
 
         doReturn(mContextSpy).when(mContextSpy).createContextAsUser(any(), anyInt());
@@ -256,19 +263,12 @@ public class DreamManagerServiceTest {
     }
 
     @Test
-    public void testCanStartDreaming_charging() {
-        // Enable dreaming while charging only.
-        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ENABLED, 1, UserHandle.USER_CURRENT);
-        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+    public void testCanStartDreaming_charging() throws PackageManager.NameNotFoundException {
+        enableDreaming();
+        setupDreamPreconditions();
+        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                new ComponentName("a", "b"), true);
 
-        // Set up preconditions.
-        when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
-
-        // Device is charging.
-        when(mBatteryManagerInternal.isPowered(eq(BatteryManager.BATTERY_PLUGGED_ANY)))
-                .thenReturn(true);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -279,6 +279,22 @@ public class DreamManagerServiceTest {
 
         // Can start dreaming is true.
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isTrue();
+    }
+
+    @Test
+    public void testCanStartDreaming_returnsFalseWhenNoDreamConfigured() {
+        enableDreaming();
+        setupDreamPreconditions();
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Battery changed event is received.
+        sendBatteryChangeEvent();
+
+        // Can't start dreaming because no dream is configured.
+        assertThat(service.canStartDreamingInternal(true)).isFalse();
     }
 
     @Test
@@ -457,6 +473,8 @@ public class DreamManagerServiceTest {
                 UserHandle.USER_CURRENT);
 
         mResources.addOverride(
+                com.android.internal.R.bool.config_dreamsOnlyEnabledForDockUser, false);
+        mResources.addOverride(
                 com.android.internal.R.bool.config_supportDreamWirelessChargingRestriction, true);
 
         // Device is charging but not wirelessly.
@@ -532,6 +550,108 @@ public class DreamManagerServiceTest {
 
         // Dream condition is active.
         assertThat(service.dreamConditionActiveInternal()).isTrue();
+    }
+
+    @Test
+    public void testStartDream_fallsBackToDefaultDreamWhenUserDreamDoesNotExist()
+            throws PackageManager.NameNotFoundException {
+        enableDreaming();
+        setupDreamPreconditions();
+
+        final ComponentName nonExistentDream =
+                ComponentName.unflattenFromString("fake.package/.FakeDream");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, nonExistentDream, false);
+
+        final ComponentName defaultDream =
+                ComponentName.unflattenFromString("default.package/.DefaultDream");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT, defaultDream, true);
+
+        // Initialize service and trigger dream.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+        sendBatteryChangeEvent();
+        service.startDreamInternal(false, "testing");
+
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mWakeLockMock).wrap(runnableCaptor.capture());
+        runnableCaptor.getValue().run();
+
+        // Verify that the default dream is started.
+        ArgumentCaptor<ComponentName> componentNameCaptor =
+                ArgumentCaptor.forClass(ComponentName.class);
+        verify(mDreamControllerMock).startDream(
+                any(Binder.class),
+                componentNameCaptor.capture(),
+                eq(false),
+                eq(false),
+                anyInt(),
+                any(PowerManager.WakeLock.class),
+                any(),
+                anyString());
+        assertThat(componentNameCaptor.getValue()).isEqualTo(defaultDream);
+    }
+
+    @Test
+    public void testStartDream_noFallbackWhenDefaultDreamDoesNotExist()
+            throws PackageManager.NameNotFoundException {
+        enableDreaming();
+        setupDreamPreconditions();
+
+        final ComponentName nonExistentDream =
+                ComponentName.unflattenFromString("fake.package/.FakeDream");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, nonExistentDream, false);
+
+        final ComponentName nonExistentDefaultDream =
+                ComponentName.unflattenFromString("default.package/.DefaultDream");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                nonExistentDefaultDream, false);
+
+        // Initialize service and trigger dream.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+        sendBatteryChangeEvent();
+        service.startDreamInternal(false, "testing");
+
+        // Verify that no dream is started.
+        verify(mDreamControllerMock, never()).startDream(
+                any(Binder.class),
+                any(ComponentName.class),
+                anyBoolean(),
+                anyBoolean(),
+                anyInt(),
+                any(PowerManager.WakeLock.class),
+                any(),
+                anyString());
+    }
+
+    private void enableDreaming() {
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ENABLED, 1, UserHandle.USER_CURRENT);
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+    }
+
+    private void setupDreamPreconditions() {
+        when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
+        when(mBatteryManagerInternal.isPowered(eq(BatteryManager.BATTERY_PLUGGED_ANY)))
+                .thenReturn(true);
+    }
+
+    private void setupDreamComponent(String settingsKey, ComponentName dream, boolean exists)
+            throws PackageManager.NameNotFoundException {
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                settingsKey,
+                dream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        if (exists) {
+            ServiceInfo serviceInfo = new ServiceInfo();
+            serviceInfo.applicationInfo = new ApplicationInfo();
+            serviceInfo.permission = Manifest.permission.BIND_DREAM_SERVICE;
+            when(mPackageManagerMock.getServiceInfo(eq(dream), anyInt()))
+                    .thenReturn(serviceInfo);
+        } else {
+            when(mPackageManagerMock.getServiceInfo(eq(dream), anyInt())).thenReturn(null);
+        }
     }
 
     private static final class TestInjector implements DreamManagerService.Injector {

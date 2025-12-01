@@ -19,6 +19,7 @@ package com.android.server.criticalevents;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.server.ServerProtoEnums;
 import android.util.Slog;
 
@@ -163,8 +164,10 @@ public class CriticalEventLog {
 
     /** Logs when system server started. */
     public void logSystemServerStarted() {
+        SystemServerStarted started = new SystemServerStarted();
+        started.startCount = SystemProperties.getInt("sys.system_server.start_count", 0);
         CriticalEventProto event = new CriticalEventProto();
-        event.setSystemServerStarted(new SystemServerStarted());
+        event.setSystemServerStarted(started);
         log(event);
     }
 

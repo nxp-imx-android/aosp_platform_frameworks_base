@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
 import com.android.hardware.input.Flags
 import com.android.internal.accessibility.util.AccessibilityUtils
@@ -56,7 +58,6 @@ import com.android.systemui.accessibility.keygesture.shared.model.DialogContentS
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.ComponentSystemUIDialog
@@ -194,11 +195,7 @@ constructor(
     ): DialogBehaviorDelegate {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
-                if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
-                    MagnifyMagnificationDialogDelegate(interactor)
-                } else {
-                    DefaultDialogDelegate(interactor)
-                }
+                MagnifyMagnificationDialogDelegate(interactor)
 
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                 ScreenReaderDialogDelegate(dialogContext, interactor)
@@ -402,6 +399,7 @@ constructor(
             buildAnnotatedStringFromResource(text),
             inlineContent = inlineContentMap,
             textAlign = textAlign,
+            modifier = Modifier.semantics(mergeDescendants = true) {},
         )
     }
 

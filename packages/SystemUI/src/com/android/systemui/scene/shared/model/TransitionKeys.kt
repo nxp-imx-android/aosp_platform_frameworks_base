@@ -35,4 +35,7 @@ object TransitionKeys {
 
     /** Reference to a transition in or out of communal scene triggered by the system. */
     val SystemCommunalTransition = TransitionKey("SystemCommunalTransition")
+
+    /** A scene transition for swiping up to the gone scene. */
+    val SwipeUpToGone = TransitionKey("SwipeUpToGone")
 }

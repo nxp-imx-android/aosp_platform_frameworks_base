@@ -30,6 +30,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
@@ -37,7 +38,6 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.flashlight.flags.FlashlightStrength
 import com.android.systemui.flashlight.shared.logger.FlashlightLogger
 import com.android.systemui.flashlight.ui.composable.FlashlightSliderContainer

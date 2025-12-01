@@ -41,6 +41,7 @@ import android.os.VibratorInfo;
  */
 @TestApi
 @SuppressWarnings({"ParcelNotFinal", "ParcelCreator"}) // Parcel only extended here.
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public abstract class VibrationEffectSegment implements Parcelable {
     static final int PARCEL_TOKEN_PREBAKED = 1;
     static final int PARCEL_TOKEN_PRIMITIVE = 2;

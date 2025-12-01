@@ -52,6 +52,7 @@ abstract class TestScenarioBase(
             DesktopState.fromContext(instrumentation.context)
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
+        Utils.clearAllRememberedDesktopBounds()
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
         ChangeDisplayOrientationRule.setRotation(rotation)

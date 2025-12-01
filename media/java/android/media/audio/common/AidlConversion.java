@@ -460,6 +460,31 @@ public class AidlConversion {
                         + ") AudioFormat value " + audioFormat);
     }
 
+    private static final String MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_AAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base_enhanced.aac";
+    private static final String MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_FLAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base_enhanced.flac";
+    private static final String MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_OPUS =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base_enhanced.opus";
+    private static final String MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_PCM =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base_enhanced.pcm";
+    private static final String MIMETYPE_IAMF_BASE_PROFILE_AAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base.aac";
+    private static final String MIMETYPE_IAMF_BASE_PROFILE_FLAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base.flac";
+    private static final String MIMETYPE_IAMF_BASE_PROFILE_OPUS =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base.opus";
+    private static final String MIMETYPE_IAMF_BASE_PROFILE_PCM =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".base.pcm";
+    private static final String MIMETYPE_IAMF_SIMPLE_PROFILE_AAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".simple.aac";
+    private static final String MIMETYPE_IAMF_SIMPLE_PROFILE_FLAC =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".simple.flac";
+    private static final String MIMETYPE_IAMF_SIMPLE_PROFILE_OPUS =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".simple.opus";
+    private static final String MIMETYPE_IAMF_SIMPLE_PROFILE_PCM =
+            MediaFormat.MIMETYPE_AUDIO_IAMF + ".simple.pcm";
+
     /** Convert from AIDL AudioFormat to SDK AudioFormat.ENCODING_*. */
     public static int aidl2api_AudioFormat_AudioFormatEncoding(
             @NonNull AudioFormatDescription aidl) {
@@ -530,6 +555,30 @@ public class AidlConversion {
                         return AudioFormat.ENCODING_DTS_UHD_P1;
                     } else if (MediaFormat.MIMETYPE_AUDIO_DRA.equals(aidl.encoding)) {
                         return AudioFormat.ENCODING_DRA;
+                    } else if (MIMETYPE_IAMF_BASE_PROFILE_AAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_PROFILE_AAC;
+                    } else if (MIMETYPE_IAMF_BASE_PROFILE_FLAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_PROFILE_FLAC;
+                    } else if (MIMETYPE_IAMF_BASE_PROFILE_OPUS.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_PROFILE_OPUS;
+                    } else if (MIMETYPE_IAMF_BASE_PROFILE_PCM.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_PROFILE_PCM;
+                    } else if (MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_AAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_ENHANCED_PROFILE_AAC;
+                    } else if (MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_FLAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_ENHANCED_PROFILE_FLAC;
+                    } else if (MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_OPUS.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_ENHANCED_PROFILE_OPUS;
+                    } else if (MIMETYPE_IAMF_BASE_ENHANCED_PROFILE_PCM.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_BASE_ENHANCED_PROFILE_PCM;
+                    } else if (MIMETYPE_IAMF_SIMPLE_PROFILE_AAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_SIMPLE_PROFILE_AAC;
+                    } else if (MIMETYPE_IAMF_SIMPLE_PROFILE_FLAC.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_SIMPLE_PROFILE_FLAC;
+                    } else if (MIMETYPE_IAMF_SIMPLE_PROFILE_OPUS.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_SIMPLE_PROFILE_OPUS;
+                    } else if (MIMETYPE_IAMF_SIMPLE_PROFILE_PCM.equals(aidl.encoding)) {
+                        return AudioFormat.ENCODING_IAMF_SIMPLE_PROFILE_PCM;
                     } else {
                         return AudioFormat.ENCODING_INVALID;
                     }
@@ -895,6 +944,14 @@ public class AidlConversion {
                 break;
             case AudioSystem.DEVICE_OUT_BLE_HEADSET:
                 aidl.type = AudioDeviceType.OUT_HEADSET;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
+            case AudioSystem.DEVICE_IN_BLE_HEARING_AID:
+                aidl.type = AudioDeviceType.IN_HEARING_AID;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
+                break;
+            case AudioSystem.DEVICE_OUT_BLE_HEARING_AID:
+                aidl.type = AudioDeviceType.OUT_HEARING_AID;
                 aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
                 break;
             case AudioSystem.DEVICE_IN_DEFAULT:

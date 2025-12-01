@@ -79,7 +79,7 @@ constructor(
             stackScrollView = notificationStackScrollView.get(),
             viewModel =
                 rememberViewModel("OccludedScene") {
-                    notificationsPlaceholderViewModelFactory.create()
+                    notificationsPlaceholderViewModelFactory.create(Scenes.Occluded)
                 },
         )
     }

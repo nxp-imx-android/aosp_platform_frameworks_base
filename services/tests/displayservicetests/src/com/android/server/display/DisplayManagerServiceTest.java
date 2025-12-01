@@ -27,6 +27,7 @@ import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP;
 import static android.hardware.display.DisplayManager.SWITCHING_TYPE_NONE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
@@ -436,6 +437,11 @@ public class DisplayManagerServiceTest {
         }
 
         @Override
+        boolean canEnterDesktopMode(Context context) {
+            return true;
+        }
+
+        @Override
         PersistentDataStore getPersistentDataStore() {
             return createInMemoryPersistentDataStore();
         }
@@ -492,7 +498,8 @@ public class DisplayManagerServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        mIsDisplayListenerSnapshotFlagEnabled = Flags.displayListenerSnapshot();
+        mIsDisplayListenerSnapshotFlagEnabled = Flags.displayListenerSnapshot()
+                || Flags.displayIdsCache();
 
         mLocalServiceKeeperRule.overrideLocalService(
                 InputManagerInternal.class, mMockInputManagerInternal);
@@ -3576,7 +3583,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testRegisterDisplayOffloader_whenEnabled_DisplayHasDisplayOffloadSession() {
-        when(mMockFlags.isDisplayOffloadEnabled()).thenReturn(true);
         // set up DisplayManager
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = mDisplayManager.new LocalService();
@@ -3594,28 +3600,6 @@ public class DisplayManagerServiceTest {
         localService.registerDisplayOffloader(displayId, mockDisplayOffloader);
 
         assertThat(display.getDisplayOffloadSessionLocked()).isNotNull();
-    }
-
-    @Test
-    public void testRegisterDisplayOffloader_whenDisabled_DisplayHasNoDisplayOffloadSession() {
-        when(mMockFlags.isDisplayOffloadEnabled()).thenReturn(false);
-        // set up DisplayManager
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-        DisplayManagerInternal localService = mDisplayManager.new LocalService();
-        // set up display
-        FakeDisplayDevice displayDevice =
-                createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.DEFAULT_DISPLAY);
-        initDisplayPowerController(localService);
-        LogicalDisplayMapper logicalDisplayMapper = mDisplayManager.getLogicalDisplayMapper();
-        LogicalDisplay display =
-                logicalDisplayMapper.getDisplayLocked(displayDevice, /* includeDisabled= */ true);
-        int displayId = display.getDisplayIdLocked();
-
-        // Register DisplayOffloader.
-        DisplayOffloader mockDisplayOffloader = mock(DisplayOffloader.class);
-        localService.registerDisplayOffloader(displayId, mockDisplayOffloader);
-
-        assertThat(display.getDisplayOffloadSessionLocked()).isNull();
     }
 
     @Test
@@ -5026,6 +5010,134 @@ public class DisplayManagerServiceTest {
         assertEquals(expectedMask, ((PendingDisplayEvent) pendingEvents.get(0)).eventMask());
     }
 
+    @Test
+    public void onSystemReady_mirrorSettingDisabled_desktopCanNotBeEntered_enablesSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        setMirrorBuiltInDisplaySettingEnabled(false);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ false);
+
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isTrue();
+    }
+
+    @Test
+    public void onSystemReady_mirrorSettingDisabled_desktopCanBeEntered_keepsSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        setMirrorBuiltInDisplaySettingEnabled(false);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ true);
+
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isFalse();
+    }
+
+    @Test
+    public void onSystemReady_mirrorSettingEnabled_desktopCanBeEntered_keepsSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        setMirrorBuiltInDisplaySettingEnabled(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ true);
+
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isTrue();
+    }
+
+    @Test
+    public void onSystemReady_mirrorSettingEnabled_desktopCantBeEntered_keepsSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        setMirrorBuiltInDisplaySettingEnabled(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ false);
+
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isTrue();
+    }
+
+    @Test
+    public void onSettingsChanged_mirrorSettingDisabled_desktopCanNotBeEntered_enablesSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ false);
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        setMirrorBuiltInDisplaySettingEnabled(false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isTrue();
+    }
+
+    @Test
+    public void onSettingsChanged_mirrorSettingDisabled_desktopCanBeEntered_keepsSetting()
+            throws Exception {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ true);
+        mDisplayManager.systemReady(/* safeMode= */ false);
+
+        setMirrorBuiltInDisplaySettingEnabled(false);
+
+        assertThat(isMirrorBuiltInDisplaySettingEnabled()).isFalse();
+    }
+
+    @Test
+    public void connectionPreference_desktopCanBeEntered_preferenceIsDesktop_keepsPreference() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ true);
+        DisplayManagerInternal localService = mDisplayManager.new LocalService();
+        String displayUniqueId = createFakeDisplayDevice(mDisplayManager).getUniqueId();
+
+        localService.setConnectionPreference(
+                displayUniqueId, EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP);
+
+        assertThat(localService.getConnectionPreference(displayUniqueId))
+                .isEqualTo(EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP);
+    }
+
+    @Test
+    public void connectionPreference_desktopCantBeEntered_preferenceIsDesktop_resetsPreference() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        mDisplayManager = createDisplayManagerService(/* canEnterDesktopMode= */ false);
+        DisplayManagerInternal localService = mDisplayManager.new LocalService();
+        String displayUniqueId = createFakeDisplayDevice(mDisplayManager).getUniqueId();
+
+        localService.setConnectionPreference(
+                displayUniqueId, EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP);
+
+        assertThat(localService.getConnectionPreference(displayUniqueId))
+                .isEqualTo(DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK);
+    }
+
+    private DisplayManagerService createDisplayManagerService(boolean canEnterDesktopMode) {
+        return new DisplayManagerService(
+                mContext,
+                new BasicInjector() {
+                    @Override
+                    boolean canEnterDesktopMode(Context context) {
+                        return canEnterDesktopMode;
+                    }
+                });
+    }
+
+    private void setMirrorBuiltInDisplaySettingEnabled(boolean enabled) {
+        Settings.Secure.putInt(
+                mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, enabled ? 1 : 0);
+
+        if (mDisplayManager != null) {
+            mDisplayManager
+                    .getSettingsObserver()
+                    .onChange(
+                            /* selfChange= */ false,
+                            Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY));
+        }
+    }
+
+    private boolean isMirrorBuiltInDisplaySettingEnabled() throws SettingNotFoundException {
+        return Settings.Secure.getInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY) != 0;
+    }
+
     private void initDisplayPowerController(DisplayManagerInternal localService) {
         localService.initPowerManagement(new DisplayManagerInternal.DisplayPowerCallbacks() {
             @Override
@@ -5287,6 +5399,11 @@ public class DisplayManagerServiceTest {
                 Display.TYPE_UNKNOWN);
     }
 
+    private FakeDisplayDevice createFakeDisplayDevice(DisplayManagerService displayManager) {
+        return createFakeDisplayDevice(
+                displayManager, /* refreshRates= */ new float[] {60f}, Display.TYPE_EXTERNAL);
+    }
+
     private FakeDisplayDevice createFakeDisplayDevice(DisplayManagerService displayManager,
             float[] refreshRates,
             int displayType) {
@@ -5305,7 +5422,8 @@ public class DisplayManagerServiceTest {
                                                       float[] vsyncRates,
                                                       int displayType,
                                                       FakeDisplayManagerCallback callback) {
-        FakeDisplayDevice displayDevice = new FakeDisplayDevice();
+        String uniqueId = "uniqueId" + mUniqueIdCount++;
+        FakeDisplayDevice displayDevice = new FakeDisplayDevice(uniqueId);
         displayDevice.setCallback(callback);
         DisplayDeviceInfo displayDeviceInfo = new DisplayDeviceInfo();
         int width = 100;
@@ -5317,7 +5435,7 @@ public class DisplayManagerServiceTest {
                             new float[0], new int[0]);
         }
         displayDeviceInfo.name = "" + displayType;
-        displayDeviceInfo.uniqueId = "uniqueId" + mUniqueIdCount++;
+        displayDeviceInfo.uniqueId = uniqueId;
         displayDeviceInfo.modeId = 1;
         displayDeviceInfo.type = displayType;
         displayDeviceInfo.renderFrameRate = displayDeviceInfo.supportedModes[0].getRefreshRate();

@@ -52,7 +52,6 @@ abstract class CloseAllAppsWithBackNavigation(
     @Before
     fun setup() {
         Assume.assumeTrue(Flags.enableDesktopWindowingBackNavigation())
-        Assume.assumeTrue(Flags.enableEmptyDeskOnMinimize())
 
         // Set up apps
         testApp.enterDesktopMode(wmHelper, device)

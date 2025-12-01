@@ -649,7 +649,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
             @NonNull SurfaceControl.Transaction finishTransaction) {
-        if (!Flags.fixTaskViewRotationAnimation() && !aborted) return;
         final PendingTransition pending = findPending(transition);
         if (pending == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.onTransitionConsumed(): taskView=%d "
@@ -780,8 +779,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 }
             } else {
                 alienChanges.add(chg);
-                if (Flags.fixTaskViewRotationAnimation()
-                        && chg.hasFlags(TransitionInfo.FLAG_IS_DISPLAY)
+                if (chg.hasFlags(TransitionInfo.FLAG_IS_DISPLAY)
                         && chg.getMode() == TRANSIT_CHANGE && mPendingRedirectTransition == null) {
                     changingDisplayId = chg.getEndDisplayId();
                 }
@@ -948,8 +946,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         WindowContainerTransaction wct = null;
         for (int i = 0; i < info.getChanges().size(); ++i) {
             final TransitionInfo.Change chg = info.getChanges().get(i);
-            if (Flags.fixTaskViewRotationAnimation() && chg.hasFlags(TransitionInfo.FLAG_IS_DISPLAY)
-                    && chg.getMode() == TRANSIT_CHANGE && mPendingRedirectTransition == null) {
+            if (chg.hasFlags(TransitionInfo.FLAG_IS_DISPLAY) && chg.getMode() == TRANSIT_CHANGE
+                    && mPendingRedirectTransition == null) {
                 changingDisplayId = chg.getEndDisplayId();
                 continue;
             }
@@ -1242,7 +1240,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             @NonNull SurfaceControl.Transaction startT, @NonNull SurfaceControl.Transaction finishT,
             @NonNull IBinder mergeTarget,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
-        if (!Flags.fixTaskViewRotationAnimation()) return;
         final PendingTransition pending = findPending(transition);
         if (pending != null) {
             mPending.remove(pending);
@@ -1256,7 +1253,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             final TaskViewTaskController taskView = findTaskView(taskInfo);
             if (taskView == null) continue;
             final SurfaceControl leash = change.getLeash();
-            final Rect endBounds = change.getEndAbsBounds();
+            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
+            final Rect endBounds = state != null ? state.mBounds : change.getEndAbsBounds();
             updateSurface(leash, startT, finishT, taskView, endBounds.width(), endBounds.height());
             hasHandledTaskView = true;
         }

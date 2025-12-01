@@ -31,6 +31,7 @@ import static android.Manifest.permission.READ_FRAME_BUFFER;
 import static android.Manifest.permission.REMOVE_TASKS;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.Manifest.permission.STOP_APP_SWITCHES;
+import static android.app.ActivityManager.ASSIST_CONTEXT_SKIP_SCREEN_CONTENT;
 import static android.app.ActivityManager.DROP_CLOSE_SYSTEM_DIALOGS;
 import static android.app.ActivityManager.LOCK_DOWN_CLOSE_SYSTEM_DIALOGS;
 import static android.app.ActivityManager.LOCK_TASK_MODE_NONE;
@@ -3595,9 +3596,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     public boolean requestAssistContextExtras(int requestType, IAssistDataReceiver receiver,
             Bundle receiverExtras, IBinder activityToken, boolean checkActivityIsTop,
             boolean newSessionId) {
+
+        int flags = 0;
+        if (android.service.voice.flags.Flags.enableAssistResourceAttributes()
+                && requestType == ASSIST_CONTEXT_SKIP_SCREEN_CONTENT) {
+            flags |= AssistStructure.FLAG_OMIT_SCREEN_CONTENT;
+        }
+
         return enqueueAssistContext(requestType, null, null, receiver, receiverExtras,
                 activityToken, checkActivityIsTop, newSessionId, UserHandle.getCallingUserId(),
-                null, PENDING_ASSIST_EXTRAS_LONG_TIMEOUT, 0) != null;
+                null, PENDING_ASSIST_EXTRAS_LONG_TIMEOUT, flags) != null;
     }
 
     /**
@@ -3640,10 +3648,19 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         List<IBinder> topActivityToken = new ArrayList<>();
         topActivityToken.add(tokens.getActivityToken());
-        requester.requestAssistData(topActivityToken, true /* fetchData */,
-                false /* fetchScreenshot */, fetchStructure, true /* allowFetchData */,
-                false /* allowFetchScreenshot*/, true /* ignoreFocusCheck */,
-                Binder.getCallingUid(), callingPackageName, callingAttributionTag);
+        requester.requestAssistData(
+                topActivityToken,
+                true /* fetchData */,
+                false /* fetchScreenshot */,
+                fetchStructure,
+                true /* fetchAssistStructureScreenContent */,
+                true /* allowFetchData */,
+                false /* allowFetchScreenshot*/,
+                true /* allowFetchAssistStructureScreenContent */,
+                true /* ignoreFocusCheck */,
+                Binder.getCallingUid(),
+                callingPackageName,
+                callingAttributionTag);
 
         return true;
     }
@@ -4341,11 +4358,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         synchronized (mGlobalLock) {
             final Task task = mRootWindowContainer.anyTaskForId(taskId,
                     MATCH_ATTACHED_TASK_ONLY);
+            boolean handled = false;
             if (task != null) {
                 final ActivityRecord r = task.getTopWaitSplashScreenActivity();
                 if (r != null) {
-                    r.onCopySplashScreenFinish(parcelable);
+                    handled = r.onCopySplashScreenFinish(parcelable);
                 }
+            }
+            if (!handled && parcelable != null) {
+                parcelable.clearIfNeeded();
             }
         }
     }
@@ -4681,6 +4702,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "getTaskSnapshot()");
         final long ident = Binder.clearCallingIdentity();
         try {
+            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+                Slog.w(TAG, "IActivityTaskManager#getTaskSnapshot is deprecated.");
+                return null;
+            }
             final Task task;
             synchronized (mGlobalLock) {
                 task = mRootWindowContainer.anyTaskForId(taskId,
@@ -4710,6 +4735,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "takeTaskSnapshot()");
         final long ident = Binder.clearCallingIdentity();
         try {
+            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+                Slog.w(TAG, "IActivityTaskManager#takeTaskSnapshot is deprecated.");
+                return null;
+            }
             final Supplier<TaskSnapshot> supplier;
             synchronized (mGlobalLock) {
                 final Task task = mRootWindowContainer.anyTaskForId(taskId,
@@ -6025,15 +6054,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mPkgToStoppingProcessMap.remove(packageName);
             }
             // Kill app outside of the lock
-            killApplicationAsync(packageName, wpc, "killDueToPackageUpdate");
+            killApplicationAsync(packageName, UserHandle.getAppId(wpc.mUid),
+                    wpc.mUserId, "killDueToPackageUpdate",
+                    ApplicationExitInfo.REASON_PACKAGE_UPDATED);
         }
     }
 
-    private void killApplicationAsync(String packageName, WindowProcessController wpc,
-            String reason) {
-        mH.post(() -> mAmInternal.killApplicationSync(packageName, UserHandle.getAppId(wpc.mUid),
-                wpc.mUserId,
-                reason, ApplicationExitInfo.REASON_PACKAGE_UPDATED));
+    private void killApplicationAsync(String packageName, int appId, int userId,
+            String reason, int reasonCode) {
+        mH.post(() -> mAmInternal.killApplicationSync(packageName, appId, userId,
+                reason, reasonCode));
     }
 
     void setBooting(boolean booting) {
@@ -7592,8 +7622,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
                 // No process with activities for this package, let's log
                 if (processesToWait.isEmpty()) {
-                    ProtoLog.e(WM_DEBUG_PACKAGE_UPDATE,
+                    ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
                             "Package %s no process with activities in it.", packageName);
+                    killApplicationAsync(packageName, appId, userId, "killDueToPackageUpdate",
+                            ApplicationExitInfo.REASON_PACKAGE_UPDATED);
                 } else {
                     mPkgToStoppingProcessMap.put(packageName, processesToWait);
                     for (int i = 0; i < processesToWait.size(); i++) {

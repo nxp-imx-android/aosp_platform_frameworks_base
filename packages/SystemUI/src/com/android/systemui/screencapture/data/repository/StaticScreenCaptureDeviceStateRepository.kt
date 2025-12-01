@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class StaticScreenCaptureDeviceStateRepository(resources: Resources) :
     ScreenCaptureDeviceStateRepository {
-    override val isLargeScreen: StateFlow<Boolean?> =
+    override val isLargeScreen: StateFlow<Boolean> =
         MutableStateFlow(resources.getBoolean(R.bool.config_enableLargeScreenScreencapture))
             .asStateFlow()
 }

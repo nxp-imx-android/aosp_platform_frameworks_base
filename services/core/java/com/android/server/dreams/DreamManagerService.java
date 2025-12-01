@@ -646,6 +646,11 @@ public final class DreamManagerService extends SystemService {
                 return false;
             }
 
+            if (chooseDreamForUser(false /*doze*/, userId) == null) {
+                Slog.i(TAG, "Can't start dreaming because no dream is configured.");
+                return false;
+            }
+
             // All dream prerequisites fulfilled, check if device state matches "when to dream"
             // setting.
             return dreamConditionActiveInternalLocked();
@@ -853,7 +858,7 @@ public final class DreamManagerService extends SystemService {
         // fallback to the default dream component if necessary
         if (validComponents.isEmpty()) {
             ComponentName defaultDream = getDefaultDreamComponentForUser(userId);
-            if (defaultDream != null) {
+            if (defaultDream != null && validateDream(defaultDream, userId)) {
                 Slog.w(TAG, "Falling back to default dream " + defaultDream);
                 validComponents.add(defaultDream);
             }

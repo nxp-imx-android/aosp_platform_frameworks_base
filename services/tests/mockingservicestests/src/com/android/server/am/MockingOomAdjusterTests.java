@@ -142,6 +142,7 @@ import com.android.server.am.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.tests.assertutils.FlagAssert;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -289,15 +290,17 @@ public class MockingOomAdjusterTests {
         mActivityStateHandler = new Handler(mActivityStateHandlerThread.getLooper());
         ProcessLruUpdater lruUpdater = new ProcessLruUpdater() {
             @Override
-            public void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
-                    ProcessRecord client) {
+            public void updateLruProcessLocked(ProcessRecordInternal appInternal,
+                    boolean activityChange, ProcessRecordInternal client) {
+                final ProcessRecord app = (ProcessRecord) appInternal;
                 ArrayList<ProcessRecord> lru = mService.mProcessList.getLruProcessesLOSP();
                 lru.remove(app);
                 lru.add(app);
             }
 
             @Override
-            public void removeLruProcessLocked(ProcessRecord app) {
+            public void removeLruProcessLocked(ProcessRecordInternal appInternal) {
+                final ProcessRecord app = (ProcessRecord) appInternal;
                 ArrayList<ProcessRecord> lru = mService.mProcessList.getLruProcessesLOSP();
                 lru.remove(app);
             }
@@ -4639,7 +4642,7 @@ public class MockingOomAdjusterTests {
         record.appInfo = app.info;
         setFieldValue(ServiceRecord.class, record, "bindings", new ArrayMap<>());
         setFieldValue(ServiceRecord.class, record, "pendingStarts", new ArrayList<>());
-        setFieldValue(ServiceRecord.class, record, "isSdkSandbox", app.isSdkSandbox);
+        setFieldValue(ServiceRecordInternal.class, record, "isSdkSandbox", app.isSdkSandbox);
         return record;
     }
 

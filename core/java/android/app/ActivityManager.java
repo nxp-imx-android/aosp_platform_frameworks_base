@@ -1288,6 +1288,12 @@ public class ActivityManager {
     /** @hide requestType for assist context: generate AssistContent but not AssistStructure. */
     public static final int ASSIST_CONTEXT_CONTENT = 3;
 
+    /**
+     * @hide requestType for assist context: generate AssistStructure, but skip screen content
+     * & view hierarchy.
+     **/
+    public static final int ASSIST_CONTEXT_SKIP_SCREEN_CONTENT = 4;
+
     /** @hide Flag for registerUidObserver: report changes in process state. */
     public static final int UID_OBSERVER_PROCSTATE = 1<<0;
 

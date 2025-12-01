@@ -23,6 +23,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemService;
 import android.content.Context;
 import android.content.om.FabricatedOverlay;
+import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeManager;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
@@ -142,6 +143,32 @@ public class ThemeManager {
     public boolean unregisterThemeSettingsCallback(@NonNull IThemeSettingsCallback callback) {
         try {
             return mService.unregisterThemeSettingsCallback(callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a callback for theme changed events.
+     *
+     * @param callback The callback to add.
+     */
+    public void registerThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        try {
+            mService.registerThemeChangedCallback(callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregisters a callback for theme changed events.
+     *
+     * @param callback The callback to remove.
+     */
+    public void unregisterThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        try {
+            mService.unregisterThemeChangedCallback(callback);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

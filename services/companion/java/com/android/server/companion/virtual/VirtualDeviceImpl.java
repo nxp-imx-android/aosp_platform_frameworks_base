@@ -895,7 +895,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             }
             // Destroy the display outside locked section.
             for (VirtualDisplayWrapper virtualDisplayWrapper : virtualDisplaysToBeReleased) {
-                mDisplayManager.releaseVirtualDisplay(virtualDisplayWrapper.getToken());
+                mDisplayManager.releaseVirtualDisplay(virtualDisplayWrapper.getToken(),
+                        virtualDisplayWrapper.getDisplayId());
                 // The releaseVirtualDisplay call above won't trigger
                 // VirtualDeviceImpl.onVirtualDisplayRemoved callback because we already removed the
                 // virtual device from the service - we release the other display-tied resources

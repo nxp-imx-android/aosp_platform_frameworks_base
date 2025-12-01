@@ -242,14 +242,13 @@ class BackNavigationController {
                 return null;
             }
 
-            if (window.mTransitionController.inTransition()) {
+            final TransitionController tc = window.mTransitionController;
+            // Allow transient launch target to receive onBack event.
+            if (tc.inTransition() && !tc.hasTransientLaunch(window.getDisplayContent())) {
                 infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
                 ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "A transition is happening.");
                 return infoBuilder.build();
             }
-
-            final ArrayList<EmbeddedWindowController.EmbeddedWindow> embeddedWindows = wmService
-                    .mEmbeddedWindowController.getByHostWindow(window);
 
             currentActivity = window.mActivityRecord;
             currentTask = window.getTask();
@@ -262,8 +261,41 @@ class BackNavigationController {
                 ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "Focus window is closing.");
                 return null;
             }
+            final ArrayList<EmbeddedWindowController.EmbeddedWindow> embeddedWindows = wmService
+                    .mEmbeddedWindowController.getPotentialFocusHostWindow(window);
+            boolean transferGestureToEmbedded = false;
+            OnBackInvokedCallbackInfo embedCallbackInfo = null;
+            if (embeddedWindows != null) {
+                for (int i = embeddedWindows.size() - 1; i >= 0; --i) {
+                    transferGestureToEmbedded |= embeddedWindows.get(i).mGestureToEmbedded;
+                    if (transferGestureToEmbedded
+                            && !com.android.window.flags.Flags
+                            .enableBackCallbackForFocusedSurfaceControlViewHost()) {
+                        break;
+                    }
+                    if (!com.android.window.flags.Flags
+                            .enableBackCallbackForFocusedSurfaceControlViewHost()) {
+                        continue;
+                    }
+                    final OnBackInvokedCallbackInfo tmpCallbackInfo = embeddedWindows.get(i)
+                            .getOnBackInvokedCallbackInfo();
+                    // The embedded window must not register for system animation.
+                    if (tmpCallbackInfo == null || tmpCallbackInfo.isSystemCallback()
+                            || tmpCallbackInfo.getOverrideBehavior() != OVERRIDE_UNDEFINED) {
+                        continue;
+                    }
+                    transferGestureToEmbedded = true;
+                    if (embedCallbackInfo == null) {
+                        embedCallbackInfo = tmpCallbackInfo;
+                    } else if (tmpCallbackInfo.getPriority() > embedCallbackInfo.getPriority()) {
+                        embedCallbackInfo = tmpCallbackInfo;
+                    }
+                }
+            }
+
             // Now let's find if this window has a callback from the client side.
-            final OnBackInvokedCallbackInfo callbackInfo = window.getOnBackInvokedCallbackInfo();
+            final OnBackInvokedCallbackInfo callbackInfo = embedCallbackInfo != null
+                    ? embedCallbackInfo : window.getOnBackInvokedCallbackInfo();
             if (callbackInfo == null) {
                 Slog.e(TAG, "No callback registered, returning null.");
                 return null;
@@ -277,15 +309,6 @@ class BackNavigationController {
             if (currentTask != null) {
                 infoBuilder.setFocusedTaskId(currentTask.mTaskId);
             }
-            boolean transferGestureToEmbedded = false;
-            if (embeddedWindows != null) {
-                for (int i = embeddedWindows.size() - 1; i >= 0; --i) {
-                    if (embeddedWindows.get(i).mGestureToEmbedded) {
-                        transferGestureToEmbedded = true;
-                        break;
-                    }
-                }
-            }
             final boolean canInterruptInView = (window.mAttrs.privateFlags
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
@@ -297,8 +320,10 @@ class BackNavigationController {
 
             int requestOverride = callbackInfo.getOverrideBehavior();
             ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "startBackNavigation currentTask=%s, "
-                            + "topRunningActivity=%s, callbackInfo=%s, currentFocus=%s",
-                    currentTask, currentActivity, callbackInfo, window);
+                            + "topRunningActivity=%s, callbackInfo=%s, currentFocus=%s, "
+                            + "embedded=%b",
+                    currentTask, currentActivity, callbackInfo, window,
+                    embedCallbackInfo != null);
             if (requestOverride == OVERRIDE_FINISH_AND_REMOVE_TASK) {
                 final ActivityRecord rootR = currentTask != null ? currentTask.getRootActivity()
                         : null;

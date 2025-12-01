@@ -1582,7 +1582,7 @@ class MediaRouter2ServiceImpl {
                         requestId));
 
         UserHandler userHandler = routerRecord.mUserRecord.mHandler;
-        if (managerRequestId != MediaRoute2ProviderService.REQUEST_ID_NONE) {
+        if (managerRequestId != MediaRouter2Manager.REQUEST_ID_NONE) {
             ManagerRecord manager = userHandler.findManagerWithId(toRequesterId(managerRequestId));
             if (manager == null || manager.mLastSessionCreationRequest == null) {
                 Slog.w(TAG, "requestCreateSessionWithRouter2Locked: Ignoring unknown request.");
@@ -3808,7 +3808,7 @@ class MediaRouter2ServiceImpl {
             mSessionCreationRequests.add(request);
 
             int transferReason =
-                    managerRequestId != MediaRoute2ProviderService.REQUEST_ID_NONE
+                    managerRequestId != MediaRouter2Manager.REQUEST_ID_NONE
                             ? RoutingSessionInfo.TRANSFER_REASON_SYSTEM_REQUEST
                             : RoutingSessionInfo.TRANSFER_REASON_APP;
 
@@ -4034,9 +4034,10 @@ class MediaRouter2ServiceImpl {
                 }
             }
 
-            long managerRequestId = (matchingRequest == null)
-                    ? MediaRoute2ProviderService.REQUEST_ID_NONE
-                    : matchingRequest.mManagerRequestId;
+            long managerRequestId =
+                    (matchingRequest == null)
+                            ? MediaRouter2Manager.REQUEST_ID_NONE
+                            : matchingRequest.mManagerRequestId;
             notifySessionCreatedToManagers(managerRequestId, sessionInfo);
 
             if (matchingRequest == null) {

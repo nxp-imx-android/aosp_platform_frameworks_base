@@ -31,13 +31,13 @@ import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
-import android.window.TransitionRequestInfo.RequestedLocation
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerPinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerUnpinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getRemovedFromLayerWct
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
@@ -53,6 +53,7 @@ class PinnedLayerController(
     private val transitions: Transitions,
     private val presentationController: PinnedLayerPresentationController,
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
+    private val transactionPool: TransactionPool,
 ) : Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
@@ -170,21 +171,63 @@ class PinnedLayerController(
     /**
      * Handles drag end event for the given [TaskInfo].
      *
+     * Visual indicators and mirroring surfaces sometimes should be disposed by the API consumer,
+     * for example, when a [SurfaceControl] is snapped back to original position without any
+     * following bounds changes, therefore, a caller should rely on the returned value that
+     * indicates whether the controller committed state changes or not.
+     *
+     * @param leash a [SurfaceControl] of the given task.
      * @param taskInfo the task to update.
-     * @param dragBounds the bounds of the task when drag has ended.
+     * @param dragStartBounds the bounds of the task when the drag was started.
+     * @param dragEndBounds the bounds of the task when drag has ended.
+     * @return `true` when the API caller should clear visual indicators itself, `false` otherwise.
      */
-    fun onDragEnded(taskInfo: TaskInfo, dragBounds: Rect) {
-        if (isNotPinned(taskInfo.taskId)) return
+    fun onDragEnded(
+        leash: SurfaceControl,
+        taskInfo: TaskInfo,
+        dragStartBounds: Rect,
+        dragEndBounds: Rect,
+    ): Boolean {
+        if (isNotPinned(taskInfo.taskId)) return false
 
-        // TODO(b/449118417): Handle move to display.
+        // Post-process final drag bounds to keep them inside the valid drag area.
+        val destinationBounds =
+            requireNotNull(presentationController.clampToDisplay(taskInfo, dragEndBounds)) {
+                "Clamped destination bounds for the pinned window can't be null."
+            }
 
-        // TODO(b/449118417): PinnedPresentationController to clamp bounds.
-        // TODO(b/449118417): Reset leash to the original position when clamped is the same as
-        // start.
+        if (destinationBounds == dragStartBounds && destinationBounds == dragEndBounds) {
+            // The task was dragged back to original position, set position and show the task.
+            val t = transactionPool.acquire()
+            t.setPosition(leash, destinationBounds.left.toFloat(), destinationBounds.top.toFloat())
+            t.apply()
+            transactionPool.release(t)
+            return true
+        }
+
+        // TODO(b/449118417): Handle move to display, for now we snap back.
+
+        if (destinationBounds != dragEndBounds) {
+            // Drag bounds were snapped and we want to animate that.
+            // TODO(b/449118417): Use a custom handler to animate destination bounds.
+            startBoundsChangeTransition(taskInfo, destinationBounds, null)
+            return true
+        }
+
+        // That's a simple user drag, just match task bounds to leash bounds.
+        startBoundsChangeTransition(taskInfo, destinationBounds, windowDragTransitionHandler)
+        return false
+    }
+
+    private fun startBoundsChangeTransition(
+        taskInfo: TaskInfo,
+        bounds: Rect,
+        handler: Transitions.TransitionHandler? = null,
+    ) {
         val wct = WindowContainerTransaction()
-        wct.setBounds(taskInfo.token, dragBounds)
+        wct.setBounds(taskInfo.token, bounds)
         // TODO(b/449118417): setAppBounds? caption insets exclusion?
-        transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
+        transitions.startTransition(TRANSIT_CHANGE, wct, handler)
     }
 
     fun requestTaskLocationChange(

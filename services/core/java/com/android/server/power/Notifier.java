@@ -609,8 +609,8 @@ public class Notifier {
                 // Since wakefulness is a global property in original logic, all displays should
                 // be set to the same interactive state, matching system's global wakefulness
                 SparseBooleanArray displayInteractivities = new SparseBooleanArray();
-                int[] displayIds = mDisplayManagerInternal.getDisplayIds().toArray();
-                for (int displayId : displayIds) {
+                int[] ids = mDisplayManagerInternal.getDisplayIds(/*includeDisabled=*/ false);
+                for (int displayId : ids) {
                     displayInteractivities.put(displayId, interactive);
                 }
                 mInputManagerInternal.setDisplayInteractivities(displayInteractivities);

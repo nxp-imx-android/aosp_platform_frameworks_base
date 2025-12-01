@@ -16,6 +16,7 @@
 
 package com.android.internal.telecom;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.telecom.CallControl;
 import android.telecom.CallEndpoint;
@@ -35,4 +36,6 @@ oneway interface ICallControl {
     void setMuteState(boolean isMuted, in ResultReceiver callback);
     void sendEvent(String callId, String event, in Bundle extras);
     void requestVideoState(int callType, String callId, in ResultReceiver callback);
+    void setContactUri(String callId, in Uri uri, in ResultReceiver callback);
+    void setGroupCallState(String callId, boolean isGroupCall, in ResultReceiver callback);
 }

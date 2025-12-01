@@ -1440,9 +1440,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            // At this point, we are accepting the merge.
-            consumeMerge(info, startT, finishT, finishCallback);
-
             // Notify Launcher of the new opening tasks if necessary
             if (appearedTargets != null) {
                 try {
@@ -1455,6 +1452,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     Slog.e(TAG, "Error sending appeared tasks to recents animation", e);
                 }
             }
+
+            // At this point, we are accepting the merge. Note that this has to be called at the end
+            // as it is possible that multiple transitions have queued and merging the transition
+            // can trigger subsequent queued transitions to run, including a transition that
+            // finishes the recents transition (so we can't rely on referencing any recents
+            // controller state after merging).
+            consumeMerge(info, startT, finishT, finishCallback);
         }
 
         /**

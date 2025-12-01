@@ -43,6 +43,8 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.AccessibilityShortcutInfo;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresNoPermission;
+import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -612,6 +614,7 @@ public class AccessibilityUserState {
         pw.println();
         dumpShortcutTargets(pw, TOP_ROW_KEY, "top row key");
         dumpShortcutTargets(pw, QUICK_ACCESS, "quick access dialog");
+        dumpShortcutTargets(pw, KEY_GESTURE, "keyboard shortcuts targets");
         pw.append("     Bound services:{");
         final int serviceCount = mBoundServices.size();
         for (int j = 0; j < serviceCount; j++) {
@@ -910,21 +913,15 @@ public class AccessibilityUserState {
      * @return true if the shortcut target is installed.
      */
     public boolean isShortcutTargetInstalledLocked(String name) {
-        if (TextUtils.isEmpty(name)) {
-            return false;
-        }
-        if (MAGNIFICATION_CONTROLLER_NAME.equals(name)) {
+        BuiltInCheckResult checkResult = checkIsBuiltInFeature(name);
+        if (checkResult == BuiltInCheckResult.VALID) {
             return true;
         }
-
+        if (checkResult == BuiltInCheckResult.INVALID) {
+            return false;
+        }
         final ComponentName componentName = ComponentName.unflattenFromString(name);
-        if (componentName == null) {
-            return false;
-        }
-        if (AccessibilityShortcutController.getFrameworkShortcutFeaturesMap()
-                .containsKey(componentName)) {
-            return true;
-        }
+
         if (getInstalledServiceInfoLocked(componentName) != null) {
             return true;
         }
@@ -935,6 +932,75 @@ public class AccessibilityUserState {
         }
         return false;
     }
+
+    /**
+     * Checks if a given accessibility service or feature component is permitted to be a shortcut
+     * target,
+     *
+     * @param name   The flattened ComponentName string of the service or feature.
+     * @param userId The user ID.
+     * @return true if the service/feature is permitted as a shortcut target, false otherwise.
+     */
+    @RequiresNoPermission
+    @VisibleForTesting
+    public boolean isShortcutTargetPermittedLocked(String name, int userId) {
+        BuiltInCheckResult checkResult = checkIsBuiltInFeature(name);
+        if (checkResult == BuiltInCheckResult.VALID) {
+            return true;
+        }
+        if (checkResult == BuiltInCheckResult.INVALID) {
+            return false;
+        }
+        final ComponentName componentName = ComponentName.unflattenFromString(name);
+
+        final DevicePolicyManager dpm = mContext.getSystemService(
+                DevicePolicyManager.class);
+        final List<String> permittedPackageNames = dpm.getPermittedAccessibilityServices(userId);
+        Set<String> permittedPackageNameSet = permittedPackageNames == null ? null : new HashSet<>(
+                permittedPackageNames);
+
+        // a null return means all services are allowed
+        // (no restrictions in place from the DPM side for installable services).
+        if (permittedPackageNameSet == null || permittedPackageNameSet.contains(
+                componentName.getPackageName())) {
+            return true;
+        }
+
+        for (int i = 0; i < mInstalledShortcuts.size(); i++) {
+            if (mInstalledShortcuts.get(i).getComponentName().equals(componentName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private enum BuiltInCheckResult {
+        VALID,
+        INVALID,
+        NOT_APPLICABLE // Not one of the built-ins checked
+    }
+
+    private BuiltInCheckResult checkIsBuiltInFeature(String name) {
+        if (TextUtils.isEmpty(name)) {
+            return BuiltInCheckResult.INVALID;
+        }
+
+        if (name.equals(AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME)) {
+            return BuiltInCheckResult.VALID;
+        }
+
+        final ComponentName componentName = ComponentName.unflattenFromString(name);
+        if (componentName == null) {
+            return BuiltInCheckResult.INVALID;
+        }
+        if (AccessibilityShortcutController.getFrameworkShortcutFeaturesMap()
+                .containsKey(componentName)) {
+            return BuiltInCheckResult.VALID;
+        }
+
+        return BuiltInCheckResult.NOT_APPLICABLE;
+    }
+
 
     /**
      * Removes given shortcut target in the set.
@@ -1175,8 +1241,18 @@ public class AccessibilityUserState {
         return false;
     }
 
-    public void updateTileServiceMapForAccessibilityServiceLocked() {
+    /**
+     * Updates the internal map of accessibility services to their corresponding tile services.
+     *
+     * @param validA11yTileServices A set of valid {@link ComponentName}s for accessibility tile
+     *                              services.
+     */
+    public void updateTileServiceMapForAccessibilityServiceLocked(
+            @NonNull Set<ComponentName> validA11yTileServices) {
         mA11yServiceToTileService.clear();
+        if (validA11yTileServices.isEmpty()) {
+            return;
+        }
         getInstalledServices().forEach(
                 a11yServiceInfo -> {
                     String tileServiceName = a11yServiceInfo.getTileServiceName();
@@ -1190,7 +1266,9 @@ public class AccessibilityUserState {
                                 a11yFeature.getPackageName(),
                                 tileServiceName
                         );
-                        mA11yServiceToTileService.put(a11yFeature, tileService);
+                        if (validA11yTileServices.contains(tileService)) {
+                            mA11yServiceToTileService.put(a11yFeature, tileService);
+                        }
                     }
                 }
         );
@@ -1223,8 +1301,18 @@ public class AccessibilityUserState {
         }
     }
 
-    public void updateTileServiceMapForAccessibilityActivityLocked() {
+    /**
+     * Updates the internal map of accessibility activities to their corresponding tile services.
+     *
+     * @param validA11yTileServices A set of valid {@link ComponentName}s for accessibility tile
+     *                              services.
+     */
+    public void updateTileServiceMapForAccessibilityActivityLocked(
+            @NonNull Set<ComponentName> validA11yTileServices) {
         mA11yActivityToTileService.clear();
+        if (validA11yTileServices.isEmpty()) {
+            return;
+        }
         mInstalledShortcuts.forEach(
                 a11yShortcutInfo -> {
                     String tileServiceName = a11yShortcutInfo.getTileServiceName();
@@ -1233,7 +1321,9 @@ public class AccessibilityUserState {
                         ComponentName tileService = new ComponentName(
                                 a11yFeature.getPackageName(),
                                 tileServiceName);
-                        mA11yActivityToTileService.put(a11yFeature, tileService);
+                        if (validA11yTileServices.contains(tileService)) {
+                            mA11yActivityToTileService.put(a11yFeature, tileService);
+                        }
                     }
                 }
         );

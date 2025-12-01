@@ -17,12 +17,22 @@
 package com.android.systemui.statusbar.notification.row.icon
 
 import android.content.applicationContext
+import android.graphics.Color
+import androidx.core.graphics.drawable.toDrawable
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.util.time.fakeSystemClock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
-val Kosmos.mockAppIconProvider by Kosmos.Fixture { mock<AppIconProvider>() }
+val Kosmos.mockAppIconProvider by
+    Kosmos.Fixture {
+        mock<AppIconProvider> {
+            on { getOrFetchAppIcon(any(), any(), any()) } doReturn Color.RED.toDrawable()
+            on { getOrFetchSkeletonAppIcon(any(), any()) } doReturn Color.BLUE.toDrawable()
+        }
+    }
 
 var Kosmos.appIconProvider: AppIconProvider by
     Kosmos.Fixture { AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock) }

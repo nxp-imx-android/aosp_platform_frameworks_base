@@ -391,6 +391,25 @@ class WindowToken extends WindowContainer<WindowState> {
         sendAppVisibilityToClients();
     }
 
+    /**
+     * Returns whether the token must be {@link #isClientVisible} to allow a child to be
+     * {@link #isVisible}.
+     */
+    boolean shouldCheckTokenClientVisible() {
+        return false;
+    }
+
+    /**
+     * Returns whether the token must be {@link #isVisibleRequested} to allow a child to be
+     * {@link #isVisibleRequested}.
+     *
+     * <p>Implementations that override both this and {@link #isVisibleRequested} must avoid calling
+     * the superclass {@link #isVisibleRequested}, to avoid infinite recursion.
+     */
+    boolean shouldCheckTokenVisibleRequested() {
+        return false;
+    }
+
     boolean hasFixedRotationTransform() {
         return mFixedRotationTransformState != null;
     }
@@ -726,6 +745,7 @@ class WindowToken extends WindowContainer<WindowState> {
     @Override
     public void dumpDebug(ProtoOutputStream proto, long fieldId,
             @WindowTracingLogLevel int logLevel) {
+        // Critical log level logs only visible elements to mitigate performance overheard
         if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
             return;
         }

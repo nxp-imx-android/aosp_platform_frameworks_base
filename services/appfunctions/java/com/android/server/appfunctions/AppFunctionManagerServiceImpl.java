@@ -36,6 +36,7 @@ import android.annotation.Nullable;
 import android.annotation.WorkerThread;
 import android.app.IUriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
@@ -89,6 +90,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -107,6 +109,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 
 import java.io.FileDescriptor;
@@ -190,6 +193,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final AppFunctionAgentAllowlistStorage mAgentAllowlistStorage;
 
+    @Nullable private final AppInteractionService mAppInteractionService;
+
+    private final VisibilityHelper mVisibilityHelper;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -199,6 +206,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
             @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
+            @Nullable AppInteractionService appInteractionService,
             @NonNull Executor backgroundExecutor) {
         this(
                 context,
@@ -219,7 +227,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 agentAllowlistStorage,
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
-                new AppFunctionMetadataReader());
+                new AppFunctionMetadataReader(),
+                appInteractionService,
+                new VisibilityHelperImpl(context, packageManagerInternal));
     }
 
     private AppFunctionManagerServiceImpl(
@@ -237,7 +247,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
-            AppFunctionMetadataReader appFunctionMetadataReader) {
+            AppFunctionMetadataReader appFunctionMetadataReader,
+            @Nullable AppInteractionService appInteractionService,
+            VisibilityHelper visibilityHelper) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -256,6 +268,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
+        mAppInteractionService = appInteractionService;
+        mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
     }
 
     /** Called when the user is unlocked. */
@@ -269,6 +283,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(user);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            // TODO(b/459347717): Make AppInteractionService a published system service so that
+            // it can observe user unlocked/stopped internally.
+            Objects.requireNonNull(mAppInteractionService).onUserUnlocked(user);
         }
     }
 
@@ -287,6 +307,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            Objects.requireNonNull(mAppInteractionService).onUserStopping(user);
         }
     }
 
@@ -549,32 +573,62 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Override
     public void searchAppFunctions(
-            @NonNull AppFunctionSearchSpec searchSpec,
-            @NonNull UserHandle userHandle,
+            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
             @NonNull ISearchAppFunctionsCallback searchAppFunctionsCallback)
             throws RemoteException {
-        Objects.requireNonNull(searchSpec);
-        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(aidlSearchSpec);
         Objects.requireNonNull(searchAppFunctionsCallback);
 
-        // TODO(b/438413081): Ensure caller has EXECUTE_APP_FUNCTIONS_PERMISSION.
-        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
 
+        try {
+            // The calling package name will be used to determine the visible packages.
+            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
+        } catch (SecurityException e) {
+            try {
+                searchAppFunctionsCallback.onError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
         if (perUserAppSearchManager == null) {
             throw new IllegalStateException(
-                    "AppSearchManager not found for user:" + userHandle.getIdentifier());
+                    "AppSearchManager not found for user:" + targetUser.getIdentifier());
         }
-        // TODO(b/438413081): Use future chaining without posting to executor here.
+
         THREAD_POOL_EXECUTOR.execute(
                 () -> {
-                    try {
-                        FutureGlobalSearchSession futureGlobalSearchSession =
-                                new FutureGlobalSearchSession(
-                                        perUserAppSearchManager, THREAD_POOL_EXECUTOR);
+                    AppFunctionSearchSpec filteredSearchSpec =
+                            mVisibilityHelper.applyVisiblePackageFilter(
+                                    aidlSearchSpec, callingUid, callingPid);
+                    if (filteredSearchSpec == null) {
+                        // Early return, search nothing
+                        try {
+                            searchAppFunctionsCallback.onSuccess(Collections.emptyList());
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
+                        }
+                        return;
+                    }
 
+                    // Clear the caller identity since the AppFunction service needs to search
+                    // with "android" capability and filter the documents via search query.
+                    final long token = Binder.clearCallingIdentity();
+                    try (FutureGlobalSearchSession futureGlobalSearchSession =
+                            new FutureGlobalSearchSession(perUserAppSearchManager, Runnable::run)) {
                         List<AppFunctionMetadata> resultMetadataList =
                                 mAppFunctionMetadataReader.searchAppFunctions(
-                                        futureGlobalSearchSession, searchSpec);
+                                        futureGlobalSearchSession, filteredSearchSpec);
                         try {
                             searchAppFunctionsCallback.onSuccess(resultMetadataList);
                         } catch (RemoteException e) {
@@ -586,6 +640,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         } catch (RemoteException ex) {
                             Slog.e(TAG, "Failed to execute callback#onError.", e);
                         }
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
                     }
                 });
     }
@@ -1260,7 +1316,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 callingUid,
                                 executionStartTimeMillis,
                                 functionType);
-                        recordAppFunctionAccess(requestInternal);
+                        recordAppFunctionInteraction(requestInternal);
                     }
 
                     @Override
@@ -1272,13 +1328,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 callingUid,
                                 executionStartTimeMillis,
                                 functionType);
-                        recordAppFunctionAccess(requestInternal);
+                        recordAppFunctionInteraction(requestInternal);
                     }
                 });
     }
 
-    private void recordAppFunctionAccess(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
-        // TODO(b/459347717): Use AppInteractionService
+    private void recordAppFunctionInteraction(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
+        if (!android.app.appfunctions.flags.Flags.enableAppInteractionApi()) return;
+        Objects.requireNonNull(mAppFunctionAccessService);
+
+        final long duration = SystemClock.elapsedRealtime() - aidlRequest.getRequestTime();
+        final long accessTime = aidlRequest.getRequestWallTime();
+        mAppInteractionService.noteAppInteraction(
+                aidlRequest.getCallingPackage(),
+                aidlRequest.getClientRequest().getTargetPackageName(),
+                aidlRequest.getClientRequest().getAttribution(),
+                accessTime,
+                duration,
+                aidlRequest.getUserHandle().getIdentifier());
     }
 
     private static class AppFunctionMetadataObserver implements ObserverCallback {

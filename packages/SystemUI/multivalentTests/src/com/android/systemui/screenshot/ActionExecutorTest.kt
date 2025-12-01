@@ -35,8 +35,6 @@ import com.android.systemui.Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.utils.UserScopedService
-import com.android.systemui.util.mockito.argumentCaptor
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -47,9 +45,9 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.capture
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.firstValue
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyBlocking
 import org.mockito.kotlin.whenever
@@ -93,15 +91,15 @@ class ActionExecutorTest : SysuiTestCase() {
         val activityOptionsCaptor = argumentCaptor<ActivityOptions>()
         verifyBlocking(intentExecutor) {
             launchIntent(
-                capture(intentCaptor),
+                intentCaptor.capture(),
                 eq(UserHandle.CURRENT),
                 eq(true),
-                capture(activityOptionsCaptor),
+                activityOptionsCaptor.capture(),
                 any(),
             )
         }
-        assertThat(intentCaptor.value.action).isEqualTo(Intent.ACTION_EDIT)
-        assertThat(activityOptionsCaptor.value.launchDisplayId).isEqualTo(17)
+        assertThat(intentCaptor.firstValue.action).isEqualTo(Intent.ACTION_EDIT)
+        assertThat(activityOptionsCaptor.firstValue.launchDisplayId).isEqualTo(17)
     }
 
     @Test

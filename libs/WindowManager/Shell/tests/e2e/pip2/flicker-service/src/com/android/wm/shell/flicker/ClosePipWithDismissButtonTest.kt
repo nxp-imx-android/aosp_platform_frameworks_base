@@ -25,7 +25,7 @@ import android.tools.flicker.FlickerConfig
 import android.tools.flicker.annotation.ExpectedScenarios
 import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.assertors.ComponentTemplate
-import android.tools.flicker.assertors.assertions.LayerIsInvisibleAtEnd
+import android.tools.flicker.assertors.assertions.AppWindowBecomesInvisible
 import android.tools.flicker.config.AssertionTemplates
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerConfigEntry
@@ -97,7 +97,7 @@ class ClosePipWithDismissButtonTest {
             scenarioId = ScenarioId("PIP_REMOVE_WITH_DISMISS_BUTTON"),
             extractor = PIP_REMOVE_CUJ_EXTRACTOR,
             assertions = AssertionTemplates.COMMON_ASSERTIONS + mapOf(
-                LayerIsInvisibleAtEnd(pipAppComponentTemplate) to AssertionInvocationGroup.BLOCKING
+                AppWindowBecomesInvisible(pipAppComponentTemplate) to AssertionInvocationGroup.BLOCKING
             ),
             enabled = true
         )

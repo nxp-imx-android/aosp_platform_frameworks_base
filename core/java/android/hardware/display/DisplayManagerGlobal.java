@@ -198,12 +198,18 @@ public final class DisplayManagerGlobal {
     private boolean mShouldImplicitlyRegisterAdded = false;
     // Guarded by mLock
     private boolean mShouldImplicitlyRegisterConnected = false;
-
+    // Guarded by mLock
     private final DisplayIdsCache mDisplayIdsCache;
 
     @VisibleForTesting
     public DisplayManagerGlobal(IDisplayManager dm) {
-        mDisplayIdsCache = Flags.displayListenerSnapshot() ? new DisplayIdsCache() : null;
+        if (Process.myUid() != Process.SYSTEM_UID // cache display IDs for non-system processes
+                && (Flags.displayListenerSnapshot() || Flags.displayIdsCache())) {
+            mDisplayIdsCache = new DisplayIdsCache();
+        } else {
+            mDisplayIdsCache = null;
+        }
+
         mDm = dm;
         if (Flags.displayInfoCopyOnWriteCacheEnabled() && Process.myUid() == Process.SYSTEM_UID) {
             mDmInternal = LocalServices.getService(DisplayManagerInternal.class);
@@ -336,11 +342,18 @@ public final class DisplayManagerGlobal {
      * @return An array containing all display ids.
      */
     public int[] getDisplayIds(boolean includeDisabled) {
+        if (mDmInternal != null) {
+            if (DEBUG) {
+                Log.d(TAG, "getDisplayIds: includeDisabled=" + includeDisabled
+                        + ", using internal service");
+            }
+            return mDmInternal.getDisplayIds(includeDisabled);
+        }
         try {
             synchronized (mLock) {
                 if (mDisplayIdsCache != null) {
                     // If caching is not enabled for the requested type of display IDs,
-                    // we implicitly register for the corresponding events.
+                    // then implicitly register for the corresponding events.
                     // This allows the cache to be enabled and populated when the first snapshot
                     // arrives, even if no explicit display listener was registered for these
                     // specific event types yet.
@@ -1028,6 +1041,16 @@ public final class DisplayManagerGlobal {
             }
             return null;
         }
+        if (mDisplayIdsCache != null) {
+            synchronized (mLock) {
+                // This virtual display is created synchronously, so we assume that
+                // the display has already been created when we get here.
+                // It is important to add the display id in the cache even before we receive
+                // the onDisplayAdded callback, because some apps may expect the display to be
+                // available through {@link DisplayManager#getDisplays} immediately after creation.
+                mDisplayIdsCache.injectLocked(displayId);
+            }
+        }
         return new VirtualDisplay(this, display, callbackWrapper,
                 virtualDisplayConfig.getSurface());
     }
@@ -1049,9 +1072,17 @@ public final class DisplayManagerGlobal {
         }
     }
 
-    public void releaseVirtualDisplay(IVirtualDisplayCallback token) {
+    /**
+     * Releases virtual display identified token and displayId.
+     */
+    public void releaseVirtualDisplay(IVirtualDisplayCallback token, int displayId) {
         try {
             mDm.releaseVirtualDisplay(token);
+            if (mDisplayIdsCache != null) {
+                synchronized (mLock) {
+                    mDisplayIdsCache.evictLocked(displayId);
+                }
+            }
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
@@ -2285,7 +2316,10 @@ public final class DisplayManagerGlobal {
      * The cache must be first initialized with {@link #updateCacheLocked}.
      * The cache is possible to init only if it is enabled with
      * {@link #setConnectedCachingEnabledLocked} or {@link #setAddedCachingEnabledLocked}.
+     *
+     * @hide
      */
+    @VisibleForTesting
     public static class DisplayIdsCache {
         private volatile boolean mIsConnectedCachingEnabled;
         private volatile boolean mIsAddedCachingEnabled;
@@ -2294,7 +2328,57 @@ public final class DisplayManagerGlobal {
         private final HashSet<Integer> mConnectedDisplayIdsCache = new HashSet<>();
         private final HashSet<Integer> mAddedDisplayIdsCache = new HashSet<>();
 
-        void updateCacheLocked(int[] connected, int[] added) {
+        // Whether to throw an exception if a duplicate display event is received for a display that
+        // is not locally controlled.
+        private final boolean mIsCacheValidationEnabled = Flags.displayIdsCacheValidation();
+
+        // Set of display ids that are controlled by the current process, but not yet added or
+        // removed in connected and added caches via EVENT_DISPLAY_ADDED or EVENT_DISPLAY_REMOVED
+        // events. This is used to avoid throwing an exception when duplicate display events are
+        // received for these displays.
+        private final HashSet<Integer> mLocallyControlledDisplayIds = new HashSet<>();
+
+        /**
+         * This is used to speed up the discovery of the displays controlled by the current process,
+         * so that current application could call getDisplays() and see these displays immediately.
+         */
+        @VisibleForTesting
+        public void injectLocked(int displayId) {
+            boolean isInjected = false;
+            if (mIsConnectedCacheValid) {
+                isInjected |= mConnectedDisplayIdsCache.add(displayId);
+            }
+            if (mIsAddedCacheValid) {
+                isInjected |= mAddedDisplayIdsCache.add(displayId);
+            }
+            if (isInjected) {
+                mLocallyControlledDisplayIds.add(displayId);
+            }
+        }
+
+        /**
+         * This is used to speed up the removal of the displays controlled by the current process,
+         * so that current application could call getDisplays() and no longer see these displays
+         * immediately.
+         */
+        @VisibleForTesting
+        public void evictLocked(int displayId) {
+            if (mIsConnectedCacheValid) {
+                mConnectedDisplayIdsCache.remove(displayId);
+            }
+            if (mIsAddedCacheValid) {
+                mAddedDisplayIdsCache.remove(displayId);
+            }
+            if (mIsConnectedCacheValid || mIsAddedCacheValid) {
+                mLocallyControlledDisplayIds.add(displayId);
+            }
+        }
+
+        /**
+         * Initialize the cache given the snapshot of connected and/or added displayIds.
+         */
+        @VisibleForTesting
+        public void updateCacheLocked(int[] connected, int[] added) {
             if (DEBUG) {
                 Log.d(TAG, "updateCacheLocked"
                         + " package=" + ActivityThread.currentPackageName()
@@ -2317,12 +2401,15 @@ public final class DisplayManagerGlobal {
                 }
                 mIsAddedCacheValid = true;
             }
+            // Caches are up-to-date, so no need to keep track of locally controlled displays.
+            mLocallyControlledDisplayIds.clear();
         }
 
         /**
          * Sets whether caching is enabled.
          */
-        void setConnectedCachingEnabledLocked(boolean isCachingEnabled) {
+        @VisibleForTesting
+        public void setConnectedCachingEnabledLocked(boolean isCachingEnabled) {
             mIsConnectedCachingEnabled = isCachingEnabled;
             // If caching is no longer enabled, then the cache is no longer valid either.
             if (DEBUG && mIsConnectedCacheValid && !isCachingEnabled) {
@@ -2335,7 +2422,8 @@ public final class DisplayManagerGlobal {
         /**
          * Sets whether caching is enabled.
          */
-        void setAddedCachingEnabledLocked(boolean isCachingEnabled) {
+        @VisibleForTesting
+        public void setAddedCachingEnabledLocked(boolean isCachingEnabled) {
             mIsAddedCachingEnabled = isCachingEnabled;
             // If caching is no longer enabled, then the cache is no longer valid either.
             if (DEBUG && mIsAddedCacheValid && !isCachingEnabled) {
@@ -2345,7 +2433,11 @@ public final class DisplayManagerGlobal {
             mIsAddedCacheValid &= isCachingEnabled;
         }
 
-        void updateCacheLocked(int displayId, int eventMask) {
+        /**
+         * Incrementally update the cache given displayId, and the event(s).
+         */
+        @VisibleForTesting
+        public void updateCacheLocked(int displayId, int eventMask) {
             if (!mIsConnectedCacheValid && !mIsAddedCacheValid) {
                 return;
             }
@@ -2360,15 +2452,23 @@ public final class DisplayManagerGlobal {
             // which ensures that there is NO WAY of having a duplicated event, such as ADDED
             // while it is already present in the cache (received in the snapshot a moment ago).
             if (mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_CONNECTED) != 0) {
-                if (mConnectedDisplayIdsCache.contains(displayId)) {
+                if (mIsCacheValidationEnabled && mConnectedDisplayIdsCache.contains(displayId)
+                        && !mLocallyControlledDisplayIds.contains(displayId)) {
                     throw new IllegalStateException("DisplayId " + displayId
                             + " is already present in the mConnectedDisplayIdsCache!");
                 }
                 mConnectedDisplayIdsCache.add(displayId);
+                if (!mIsAddedCacheValid) {
+                    // If added caching is invalid, the added cache won't be incrementally
+                    // updated, so it is safe to remove the display id from the locally
+                    // controlled cache.
+                    mLocallyControlledDisplayIds.remove(displayId);
+                }
             }
 
             if (mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_ADDED) != 0) {
-                if (mAddedDisplayIdsCache.contains(displayId)) {
+                if (mIsCacheValidationEnabled && mAddedDisplayIdsCache.contains(displayId)
+                        && !mLocallyControlledDisplayIds.contains(displayId)) {
                     throw new IllegalStateException("DisplayId " + displayId
                             + " is already present in the mAddedDisplayIdsCache!");
                 }
@@ -2376,19 +2476,30 @@ public final class DisplayManagerGlobal {
             }
 
             if (mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_REMOVED) != 0) {
-                if (!mAddedDisplayIdsCache.contains(displayId)) {
+                if (mIsCacheValidationEnabled && !mAddedDisplayIdsCache.contains(displayId)
+                        && !mLocallyControlledDisplayIds.contains(displayId)) {
                     throw new IllegalStateException("DisplayId " + displayId
                             + " is NOT present in the mAddedDisplayIdsCache!");
                 }
                 mAddedDisplayIdsCache.remove(displayId);
+                if (!mIsConnectedCacheValid) {
+                    // If connected caching is invalid, the connected cache won't be incrementally
+                    // updated, so it is safe to remove the display id from the locally
+                    // controlled cache.
+                    mLocallyControlledDisplayIds.remove(displayId);
+                }
             }
 
             if (mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_DISCONNECTED) != 0) {
-                if (!mConnectedDisplayIdsCache.contains(displayId)) {
+                if (mIsCacheValidationEnabled && !mConnectedDisplayIdsCache.contains(displayId)
+                        && !mLocallyControlledDisplayIds.contains(displayId)) {
                     throw new IllegalStateException("DisplayId " + displayId
                             + " is NOT present in the mConnectedDisplayIdsCache!");
                 }
                 mConnectedDisplayIdsCache.remove(displayId);
+                // Display is disconnected, so app will never receive events for this display, so
+                // display id can be removed from the locally controlled cache.
+                mLocallyControlledDisplayIds.remove(displayId);
             }
         }
 
@@ -2408,16 +2519,24 @@ public final class DisplayManagerGlobal {
             }
         }
 
+        /**
+         * Returns current cache of connected display ids or null if cache is invalid.
+         */
+        @VisibleForTesting
         @Nullable
-        int[] getConnectedLocked() {
+        public int[] getConnectedLocked() {
             if (!mIsConnectedCacheValid) {
                 return null;
             }
             return convertToArray(mConnectedDisplayIdsCache);
         }
 
+        /**
+         * Returns current cache of added displays or null if cache is invalid.
+         */
+        @VisibleForTesting
         @Nullable
-        int[] getAddedLocked() {
+        public int[] getAddedLocked() {
             if (!mIsAddedCacheValid) {
                 return null;
             }

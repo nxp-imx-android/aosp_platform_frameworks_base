@@ -56,6 +56,7 @@ import static com.android.server.job.controllers.JobStatus.NO_LATEST_RUNTIME;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -64,11 +65,13 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
 import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
 import android.content.pm.PackageManagerInternal;
 import android.net.NetworkRequest;
 import android.net.Uri;
+import android.os.ParcelDuration;
 import android.os.SystemClock;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -76,7 +79,7 @@ import android.provider.MediaStore;
 import android.util.ArrayMap;
 import android.util.Pair;
 
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.internal.util.IntPair;
 import com.android.server.LocalServices;
@@ -93,8 +96,11 @@ import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
 import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
@@ -1721,5 +1727,101 @@ public class JobStatusTest {
 
         assertEquals("Job with all constraints satisfied should have all satisfied flags set",
                 expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testGetPendingJobReasonStats() {
+        final TestClock testClock = new TestClock();
+        JobSchedulerService.sElapsedRealtimeClock = testClock;
+
+        JobInfo jobInfo = new JobInfo.Builder(1234, TEST_JOB_COMPONENT)
+                .setRequiresCharging(true)
+                .setRequiresBatteryNotLow(true)
+                .build();
+        JobStatus jobStatus = createJobStatus(jobInfo);
+        jobStatus.enqueueTime = testClock.millis();
+
+        // Initially both constraints are unsatisfied.
+        testClock.advanceTime(1000);
+        jobStatus.setChargingConstraintSatisfied(testClock.millis(), true);
+
+        testClock.advanceTime(2000);
+        jobStatus.setBatteryNotLowConstraintSatisfied(testClock.millis(), true);
+
+        Map<String, ParcelDuration> stats = jobStatus.getPendingJobReasonStats();
+        // Here 2 explicit constraints are following:
+        //  1. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING
+        //  2. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_BATTERY_NOT_LOW
+        // and the 3 implecite constraint are following:
+        //  1. JobScheduler.PENDING_JOB_REASON_DEVICE_STATE
+        //  2. JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
+        //  3. JobScheduler.PENDING_JOB_REASON_QUOTA
+        assertEquals(5, stats.size());
+        ParcelDuration chargingDuration = stats.get(
+                String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING));
+        assertNotNull(chargingDuration);
+        assertEquals(1000, chargingDuration.getDuration().toMillis());
+
+        ParcelDuration batteryNotLowDuration = stats.get(
+                String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_BATTERY_NOT_LOW));
+        assertNotNull(batteryNotLowDuration);
+        assertEquals(3000, batteryNotLowDuration.getDuration().toMillis());
+    }
+
+    @Test
+    public void testGetPendingJobReasonStats_StillPending() {
+        final TestClock testClock = new TestClock();
+        JobSchedulerService.sElapsedRealtimeClock = testClock;
+
+        JobInfo jobInfo = new JobInfo.Builder(1234, TEST_JOB_COMPONENT)
+                .setRequiresCharging(true)
+                .build();
+        JobStatus jobStatus = createJobStatus(jobInfo);
+        jobStatus.enqueueTime = testClock.millis();
+
+        // Constraint is unsatisfied.
+        testClock.advanceTime(1000);
+
+        Map<String, ParcelDuration> stats = jobStatus.getPendingJobReasonStats();
+
+        // Here the only constraint is:
+        //  1. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING
+        // and the 3 implecite constraint are following:
+        //  1. JobScheduler.PENDING_JOB_REASON_DEVICE_STATE
+        //  2. JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
+        //  3. JobScheduler.PENDING_JOB_REASON_QUOTA
+        assertEquals(4, stats.size());
+        ParcelDuration chargingDuration = stats.get(
+                String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING));
+        assertNotNull(chargingDuration);
+        assertEquals(1000, chargingDuration.getDuration().toMillis());
+    }
+
+    private static class TestClock extends Clock {
+        private long mCurrentTime = 0;
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public long millis() {
+            return mCurrentTime;
+        }
+
+        @Override
+        public Instant instant() {
+            return Instant.ofEpochMilli(mCurrentTime);
+        }
+
+        void advanceTime(long millis) {
+            mCurrentTime += millis;
+        }
     }
 }

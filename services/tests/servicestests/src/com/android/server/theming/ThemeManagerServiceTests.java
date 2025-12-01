@@ -132,6 +132,7 @@ public class ThemeManagerServiceTests {
 
         when(mUserManager.getProfileParentId(eq(DEFAULT_USER_ID))).thenReturn(DEFAULT_USER_ID);
         when(mUserManager.getProfileParentId(eq(PROFILE_ID))).thenReturn(DEFAULT_USER_ID);
+        when(mUserManager.getUserIds()).thenReturn(new int[]{DEFAULT_USER_ID});
 
         FakeScheduledExecutorService schedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor);
@@ -144,9 +145,10 @@ public class ThemeManagerServiceTests {
         // This test now creates its own ThemeService instance.
         mThemeManagerService = testableServiceStart();
 
-        // creates user with seed color red, not the same as the default google_blue
+        // Pre-start the user manually to simulate state before boot phase
         ThemeStatePair pair = startProvisionedUser();
 
+        // Simulate boot phases
         mThemeManagerService.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
         mThemeManagerService.onBootPhase(SystemService.PHASE_ACTIVITY_MANAGER_READY);
 

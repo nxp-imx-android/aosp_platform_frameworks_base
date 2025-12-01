@@ -21,12 +21,14 @@ import android.platform.test.ravenwood.RavenwoodAwareTestRunner
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.findAnyAnnotation
 import com.android.hoststubgen.asm.isAbstract
+import com.android.hoststubgen.asm.isPublic
 import com.android.hoststubgen.asm.startsWithAny
 import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.filters.isRClass
 import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.ClassNode
 
 data class TypeHolder(
     val clazz: Class<*>,
@@ -82,35 +84,40 @@ fun isTestLookingClass(classes: ClassNodes, className: String): Boolean {
 fun isJUnit3LookingClass(classes: ClassNodes, className: String): Boolean {
     val cn = classes.findClass(className) ?: return false
 
-    if (cn.superName == null) {
-        return false
-    }
-
-    // Check if JUnit3 subclass.
-    if (!cn.isAbstract()
-        && !cn.name.startsWith("android/test/")
-        && cn.superName.isLegacyTestBaseClass()) {
-        return true
-    }
-
-    // Check the super class.
-    return isJUnit3LookingClass(classes, cn.superName)
+    // Check if JUnit3 test class
+    return cn.superName != null && !cn.isAbstract() &&
+            isJUnit3LookingBaseClass(classes, cn.superName) && hasJUnit3TestMethod(cn)
 }
 
 /**
  * Check if a class internal name is a known legacy test base class.
  */
-fun String.isLegacyTestBaseClass(): Boolean {
-    return this.startsWithAny(
-        "junit/framework/TestCase",
+private fun isJUnit3LookingBaseClass(classes: ClassNodes, className: String): Boolean {
+    var name = className
+    while (true) {
+        if (name == "junit/framework/TestCase" ||
+            // Unfortunately android.test.* classes are part of the framework
+            // and would not be statically included in the test jar. We have
+            // to hardcode this pattern as a heuristic for legacy test detection.
+            name.matches(Regex("^android/test/[a-zA-Z]*Test(Case|Suite)(2)?$"))) {
+            return true
+        }
 
-        // The following base classes should be statically included in the test jar
-        // so we don't need to check them, but let's check here in case we start
-        // including them in ravenwood-runtime.
-        "android/test/AndroidTestCase",
-        "android/test/InstrumentationTestCase",
-        "android/test/InstrumentationTestSuite",
-    )
+        // Check the super class.
+        name = classes.findClass(name)?.superName ?: return false
+    }
+}
+
+/**
+ * Check if a class internal name is a known legacy test base class.
+ * Reference: [androidx.test.internal.util.AndroidRunnerBuilderUtil.hasJUnit3TestMethod]
+ */
+private fun hasJUnit3TestMethod(classNode: ClassNode): Boolean {
+    return classNode.methods.any {
+        val desc = Type.getMethodType(it.desc)
+        it.isPublic() && it.name.startsWith("test") && desc.argumentCount == 0 &&
+                desc.returnType == Type.VOID_TYPE
+    }
 }
 
 fun String.isRavenwoodClass(): Boolean {

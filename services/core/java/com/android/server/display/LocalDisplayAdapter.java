@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
@@ -322,7 +323,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             int activeSfDisplayModeId = dynamicInfo.activeDisplayModeId;
             float renderFrameRate = dynamicInfo.renderFrameRate;
             boolean hasArrSupport = dynamicInfo.hasArrSupport;
-            boolean syntheticModesV2Enabled = getFeatureFlags().isSyntheticModesV2Enabled();
             boolean sizeOverrideEnabled =
                     getFeatureFlags().isSizeOverrideForExternalDisplaysEnabled() && !isInternal;
 
@@ -377,7 +377,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         alternativeRates[j] = alternativeRefreshRates.get(j);
                     }
                     Display.Mode displayMode = DisplayModeFactory.createMode(mode, alternativeRates,
-                            hasArrSupport, syntheticModesV2Enabled, sizeOverrideEnabled);
+                            hasArrSupport, sizeOverrideEnabled);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
                 }
@@ -454,7 +454,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             }
             List<DisplayModeRecord> syntheticModes = new ArrayList<>();
             syntheticModes.addAll(DisplayModeFactory
-                    .createArrSyntheticModes(records, hasArrSupport, syntheticModesV2Enabled));
+                    .createArrSyntheticModes(records, hasArrSupport));
             if (!isInternal) {
                 syntheticModes.addAll(DisplayModeFactory
                         .createAnisotropyCorrectedModes(records, modeIdToSfMode));
@@ -513,7 +513,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     Slog.w(TAG, "Active display mode no longer available, reverting to default"
                             + " mode.");
                 }
-                mActiveModeId = getPreferredModeId();
+                mActiveModeId = getDefaultModeId();
             }
 
             // Schedule traversals so that we apply pending changes.
@@ -533,6 +533,17 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             return mUserPreferredModeId != INVALID_MODE_ID
                     ? mUserPreferredModeId
                     : mDefaultModeId;
+        }
+
+        private int getDefaultModeId() {
+            if (mUserPreferredMode == null || mUserPreferredModeId == INVALID_MODE_ID) {
+                return mDefaultModeId;
+            }
+            if (mUserPreferredMode.getParentModeId() != INVALID_MODE_ID
+                    || (mUserPreferredMode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
+                return mDefaultModeId;
+            }
+            return mUserPreferredModeId;
         }
 
         private long getAppVsyncOffsetNanos() {
@@ -736,7 +747,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 mInfo.height = mActiveSfDisplayMode.height;
                 mInfo.modeId = mActiveModeId;
                 mInfo.renderFrameRate = mActiveRenderFrameRate;
-                mInfo.defaultModeId = getPreferredModeId();
+                mInfo.defaultModeId = getDefaultModeId();
                 mInfo.userPreferredModeId = mUserPreferredModeId;
                 mInfo.supportedModes = getDisplayModes(mSupportedModes);
                 mInfo.colorMode = mActiveColorMode;
@@ -941,28 +952,13 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                                     + ", state=" + Display.stateToString(state) + ")");
                         }
 
-                        boolean isDisplayOffloadEnabled =
-                                getFeatureFlags().isDisplayOffloadEnabled();
-
                         // We must tell sidekick/displayoffload to stop controlling the display
                         // before we can change its power mode, so do that first.
-                        if (isDisplayOffloadEnabled) {
-                            if (displayOffloadSession != null
-                                    && !DisplayOffloadSession.isSupportedOffloadState(state)) {
-                                displayOffloadSession.stopOffload();
-                            }
-                        } else {
-                            if (mSidekickActive) {
-                                Trace.traceBegin(Trace.TRACE_TAG_POWER,
-                                        "SidekickInternal#endDisplayControl");
-                                try {
-                                    mSidekickInternal.endDisplayControl();
-                                } finally {
-                                    Trace.traceEnd(Trace.TRACE_TAG_POWER);
-                                }
-                                mSidekickActive = false;
-                            }
+                        if (displayOffloadSession != null
+                                && !DisplayOffloadSession.isSupportedOffloadState(state)) {
+                            displayOffloadSession.stopOffload();
                         }
+
 
                         final int mode = getPowerModeForState(state);
                         Trace.traceBegin(Trace.TRACE_TAG_POWER, "setDisplayState("
@@ -982,22 +978,9 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         // If we're entering a suspended (but not OFF) power state and we
                         // have a sidekick/displayoffload available, tell it now that it can take
                         // control.
-                        if (isDisplayOffloadEnabled) {
-                            if (displayOffloadSession != null
-                                    && DisplayOffloadSession.isSupportedOffloadState(state)) {
-                                displayOffloadSession.startOffload(state);
-                            }
-                        } else {
-                            if (Display.isSuspendedState(state) && state != Display.STATE_OFF
-                                    && mSidekickInternal != null && !mSidekickActive) {
-                                Trace.traceBegin(Trace.TRACE_TAG_POWER,
-                                        "SidekickInternal#startDisplayControl");
-                                try {
-                                    mSidekickActive = mSidekickInternal.startDisplayControl(state);
-                                } finally {
-                                    Trace.traceEnd(Trace.TRACE_TAG_POWER);
-                                }
-                            }
+                        if (displayOffloadSession != null
+                                && DisplayOffloadSession.isSupportedOffloadState(state)) {
+                            displayOffloadSession.startOffload(state);
                         }
                     }
 

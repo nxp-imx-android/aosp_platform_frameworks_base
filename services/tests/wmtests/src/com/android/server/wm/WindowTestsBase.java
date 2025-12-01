@@ -123,6 +123,7 @@ import com.android.internal.policy.AttributeCache;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
+import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -680,7 +681,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     Task createTaskWithActivity(TaskDisplayArea taskDisplayArea,
             int windowingMode, int activityType, boolean onTop, boolean twoLevelTask) {
         return createTask(taskDisplayArea, windowingMode, activityType,
-                onTop, true /* createActivity */, twoLevelTask);
+                onTop, true /* createActivity */, twoLevelTask,
+                false /* forceOpaque */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link DisplayContent}. */
@@ -695,18 +697,21 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType) {
         return createTask(taskDisplayArea, windowingMode, activityType,
-                true /* onTop */, false /* createActivity */, false /* twoLevelTask */);
+                true /* onTop */, false /* createActivity */, false /* twoLevelTask */,
+                false /* forceOpaque */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link TaskDisplayArea}. */
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType,
-            boolean onTop, boolean createActivity, boolean twoLevelTask) {
+            boolean onTop, boolean createActivity, boolean twoLevelTask,
+            boolean forcepaque) {
         final TaskBuilder builder = new TaskBuilder(mSupervisor)
                 .setTaskDisplayArea(taskDisplayArea)
                 .setWindowingMode(windowingMode)
                 .setActivityType(activityType)
                 .setOnTop(onTop)
-                .setCreateActivity(createActivity);
+                .setCreateActivity(createActivity)
+                .setForceOpaque(forcepaque);
         if (twoLevelTask) {
             return builder
                     .setCreateParentTask(true)
@@ -1556,6 +1561,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
         private boolean mCreateActivity = false;
         private boolean mCreatedByOrganizer = false;
+        private boolean mIsForceOpaque = false;
 
         TaskBuilder(ActivityTaskSupervisor supervisor) {
             mSupervisor = supervisor;
@@ -1652,6 +1658,11 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             return this;
         }
 
+        TaskBuilder setForceOpaque(boolean forceOpaque) {
+            mIsForceOpaque = forceOpaque;
+            return this;
+        }
+
         Task build() {
             SystemServicesTestRule.checkHoldsLock(mSupervisor.mService.mGlobalLock);
 
@@ -1687,7 +1698,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                     .setIntent(mIntent)
                     .setOnTop(mOnTop)
                     .setVoiceSession(mVoiceSession)
-                    .setCreatedByOrganizer(mCreatedByOrganizer);
+                    .setCreatedByOrganizer(mCreatedByOrganizer)
+                    .setForceOpaque(mIsForceOpaque);
             final Task task;
             if (mParentTask == null) {
                 task = builder.setActivityType(mActivityType)
@@ -1844,7 +1856,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestStartingWindowOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestStartingWindowOrganizer extends StubOrganizer {
         private final ActivityTaskManagerService mAtm;
         private final WindowManagerService mWMService;
         private final SparseArray<IBinder> mTaskAppMap = new SparseArray<>();
@@ -1890,7 +1902,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestSplitOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestSplitOrganizer extends StubOrganizer {
         final ActivityTaskManagerService mService;
         final TaskDisplayArea mDefaultTDA;
         Task mPrimary;
@@ -1951,7 +1963,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
-    static class TestDesktopOrganizer extends WindowOrganizerTests.StubOrganizer {
+    static class TestDesktopOrganizer extends StubOrganizer {
         final int mDesktopModeDefaultWidthDp = 840;
         final int mDesktopModeDefaultHeightDp = 630;
         final int mDesktopDensity = 284;

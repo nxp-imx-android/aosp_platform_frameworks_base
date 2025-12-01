@@ -80,12 +80,12 @@ protected:
 
     bool isCapturingSkp() const { return mCaptureMode != CaptureMode::None; }
 
-private:
     void renderFrameImpl(const SkRect& clip,
                          const std::vector<sp<RenderNode>>& nodes, bool opaque,
                          const Rect& contentDrawBounds, SkCanvas* canvas,
                          const SkMatrix& preTransform);
 
+private:
     /**
      *  Debugging feature.  Draws a semi-transparent overlay on each pixel, indicating
      *  how many times it has been drawn.

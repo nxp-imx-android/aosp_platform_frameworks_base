@@ -1178,7 +1178,8 @@ class DesktopRepository(
      * appropriate classes.
      */
     fun updateTaskExclusionRegions(taskId: Int, taskExclusionRegions: Region) {
-        desktopExclusionRegions.put(taskId, taskExclusionRegions)
+        val exclusionRegion = Region.obtain(taskExclusionRegions)
+        desktopExclusionRegions.put(taskId, exclusionRegion)
         desktopGestureExclusionExecutor?.execute {
             desktopGestureExclusionListener?.accept(calculateDesktopExclusionRegion())
         }
@@ -1266,6 +1267,17 @@ class DesktopRepository(
             return
         }
         rememberedBoundsRatioByPackageName.remove(packageName)
+        // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
+        // needs to be updated.
+        updatePersistentRepository(DEFAULT_DISPLAY)
+    }
+
+    /** Clears the remembered bounds ratio for all package. */
+    fun clearAllRememberedBoundsRatio() {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName.clear()
         // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
         // needs to be updated.
         updatePersistentRepository(DEFAULT_DISPLAY)

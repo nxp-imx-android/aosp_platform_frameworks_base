@@ -721,6 +721,11 @@ public class DesktopModeLaunchParamsModifierTests extends
         setupDesktopModeLaunchParamsModifier();
 
         final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        // Make home visible to trigger desktop-first policy.
+        final Task homeTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_HOME).setWindowingMode(WINDOWING_MODE_FULLSCREEN).setDisplay(
+                display).build();
+        homeTask.setVisibleRequested(true);
         final Task task = new TaskBuilder(mSupervisor).setActivityType(
                 ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
         // Override task bounds within display.
@@ -739,6 +744,11 @@ public class DesktopModeLaunchParamsModifierTests extends
         setupDesktopModeLaunchParamsModifier();
 
         final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        // Make home visible to trigger desktop-first policy.
+        final Task homeTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_HOME).setWindowingMode(WINDOWING_MODE_FULLSCREEN).setDisplay(
+                display).build();
+        homeTask.setVisibleRequested(true);
         final Task task = new TaskBuilder(mSupervisor).setActivityType(
                 ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
         // Override task bounds with bounds larger than display in at least on dimension.
@@ -1955,7 +1965,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_PERSISTED_LAUNCH_PARAMS_BUGFIX})
     public void testDoesntInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
         doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any(), any());
@@ -1966,7 +1977,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         mCurrent.mPreferredTaskDisplayArea = currTaskDisplayArea;
         mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
 
-        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task).calculate());
         assertEquals(task.getRootTask().getDisplayArea(), mResult.mPreferredTaskDisplayArea);
         assertNotEquals(currTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
         assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
@@ -2144,7 +2155,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_FULLSCREEN_DECISION_BUGFIX})
     public void testCalculate_desktopFirstPolicy_fullscreenRelaunch_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
@@ -2158,8 +2170,9 @@ public class DesktopModeLaunchParamsModifierTests extends
         final ActivityRecord source = new ActivityBuilder(mAtm).setTask(launchingTask).build();
 
         // The task is launched by a different task on a desktop-first display.
-        assertEquals(RESULT_SKIP,
+        assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(launchingTask).setSource(source).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
     @Test
@@ -2205,7 +2218,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_FULLSCREEN_DECISION_BUGFIX})
     public void testCalculate_desktopFirstPolicy_requestFullscreen_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
@@ -2220,9 +2234,10 @@ public class DesktopModeLaunchParamsModifierTests extends
         options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
 
         // The policy should be bypassed if fullscreen is requested.
-        assertEquals(RESULT_SKIP,
+        assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(launchingTask).setOptions(
                         options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
     @Test

@@ -55,6 +55,7 @@
       <xs:enumeration value="DISALLOW_INSTALL_UNKNOWN_SOURCES"/>
       <xs:enumeration value="DISALLOW_USB"/>
       <xs:enumeration value="ENABLE_MTE"/>
+      <xs:enumeration value="DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES"/>
     </xs:restriction>
   </xs:simpleType>
 

@@ -30,6 +30,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,6 +43,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import android.annotation.NonNull;
 import android.app.WindowConfiguration;
 import android.content.ContentResolver;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
@@ -194,6 +196,7 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testSecondaryDisplayDefaultToFreeform_HasFreeformSupport_NonPc_HasDesktopMode() {
         mWm.mAtmService.mSupportsFreeformWindowManagement = true;
         mWm.setForceDesktopModeOnExternalDisplays(true);
@@ -396,8 +399,7 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.display.feature.flags.Flags
-            .FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testSetShouldShowSystemDecorsNotifyNotificationManager() {
         final NotificationManagerInternal notificationManager = Mockito.mock(
                 NotificationManagerInternal.class);
@@ -505,6 +507,7 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testShouldShowImeOnDisplayWithinForceDesktopMode() {
         mWm.mAtmService.mSupportsFreeformWindowManagement = true;
         mWm.setForceDesktopModeOnExternalDisplays(true);
@@ -523,8 +526,7 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.display.feature.flags.Flags
-            .FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testShouldShowImeOnDisplayForDisplayWithEligibleForDesktopMode() {
         mWm.mAtmService.mSupportsFreeformWindowManagement = true;
 

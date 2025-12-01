@@ -21,6 +21,7 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -56,7 +57,13 @@ constructor(
                     ) { isDeviceUnlocked, shadeMode ->
                         buildList {
                                 if (isDeviceUnlocked) {
-                                    add(Swipe.Up to Scenes.Gone)
+                                    add(
+                                        Swipe.Up to
+                                            UserActionResult(
+                                                Scenes.Gone,
+                                                transitionKey = TransitionKeys.SwipeUpToGone,
+                                            )
+                                    )
                                 } else {
                                     add(Swipe.Up to Scenes.Lockscreen)
                                 }

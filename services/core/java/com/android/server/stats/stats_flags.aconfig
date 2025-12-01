@@ -48,3 +48,10 @@ flag {
     description: "Adds memcgv2 atom logging"
     bug: "434920925"
 }
+
+flag {
+    name: "add_adaptive_suspend_stats_puller"
+    namespace: "pixel_power_sw"
+    description: "Adds adaptive_suspend_stats atom logging"
+    bug: "442333174"
+}

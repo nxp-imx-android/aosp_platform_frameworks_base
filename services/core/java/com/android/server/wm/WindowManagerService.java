@@ -156,7 +156,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
-import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -327,6 +326,7 @@ import android.window.ISurfaceSyncGroupCompletedListener;
 import android.window.ITaskFpsCallback;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
+import android.window.OnBackInvokedCallbackInfo;
 import android.window.ScreenCapture;
 import android.window.ScreenCaptureInternal;
 import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
@@ -4612,8 +4612,8 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " display state="
                             + Display.stateToString(displayContent.getDisplayInfo().state));
                 }
-                captureArgs = displayContent.getLayerCaptureArgs(predicate,
-                        /*useWindowingLayerAsScreenshotRoot*/ enableLppAssistInvocationEffect());
+                captureArgs =
+                        displayContent.getWindowingLayerCaptureArgs(predicate);
             }
         }
 
@@ -6080,6 +6080,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             mAccessibilityController.onFocusChanged(lastTarget, newTarget);
             ProtoLog.i(WM_DEBUG_FOCUS_LIGHT, "Focus changing: %s -> %s", lastTarget, newTarget);
+            updateEmbeddedWindowFocusIfNeeded(lastTarget, newTarget);
         }
 
         // Call WindowState focus change observers
@@ -10280,6 +10281,19 @@ public class WindowManagerService extends IWindowManager.Stub
         return mPossibleDisplayInfoMapper.getPossibleDisplayInfos(displayId);
     }
 
+    void updateEmbeddedWindowFocusIfNeeded(InputTarget lastTarget, InputTarget newTarget) {
+        if (lastTarget instanceof EmbeddedWindowController.EmbeddedWindow ew) {
+            ew.updatePotentialHostWhileFocus(null);
+        }
+        if (newTarget instanceof EmbeddedWindowController.EmbeddedWindow ew) {
+            final int displayId = ew.mDisplayId;
+            DisplayContent displayContent = mRoot.getDisplayContent(displayId);
+            WindowState focusWindow = displayContent == null
+                    ? null : displayContent.mCurrentFocus;
+            ew.updatePotentialHostWhileFocus(focusWindow);
+        }
+    }
+
     void grantEmbeddedWindowFocus(Session session, InputTransferToken inputTransferToken,
             boolean grantFocus) {
         synchronized (mGlobalLock) {
@@ -10300,16 +10314,17 @@ public class WindowManagerService extends IWindowManager.Stub
             }
             SurfaceControl.Transaction t = mTransactionFactory.get();
             final int displayId = embeddedWindow.mDisplayId;
+            // Search for current focus window
+            DisplayContent displayContent = mRoot.getDisplayContent(displayId);
+            WindowState focusWindow = displayContent == null
+                    ? null : displayContent.findFocusedWindow();
+            embeddedWindow.updatePotentialHostWhileFocus(grantFocus ? focusWindow : null);
             if (grantFocus) {
                 t.setFocusedWindow(inputToken, embeddedWindow.toString(), displayId).apply();
                 EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
                         "Focus request " + embeddedWindow, "reason=grantEmbeddedWindowFocus(true)");
             } else {
-                // Search for a new focus target
-                DisplayContent displayContent = mRoot.getDisplayContent(displayId);
-                WindowState newFocusTarget =  displayContent == null
-                        ? null : displayContent.findFocusedWindow();
-                if (newFocusTarget == null) {
+                if (focusWindow == null) {
                     t.setFocusedWindow(null, null, displayId).apply();
                     ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s"
                                     + " dropped focus so setting focus to null since no candidate"
@@ -10317,11 +10332,11 @@ public class WindowManagerService extends IWindowManager.Stub
                             embeddedWindow);
                     return;
                 }
-                t.setFocusedWindow(newFocusTarget.mInputChannelToken, newFocusTarget.getName(),
+                t.setFocusedWindow(focusWindow.mInputChannelToken, focusWindow.getName(),
                         displayId).apply();
 
                 EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
-                        "Focus request " + newFocusTarget,
+                        "Focus request " + focusWindow,
                         "reason=grantEmbeddedWindowFocus(false)");
             }
             ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
@@ -10367,9 +10382,30 @@ public class WindowManagerService extends IWindowManager.Stub
             if (dc != null) {
                 dc.getInputMonitor().updateInputWindowsLw(true);
             }
-
+            embeddedWindow.updatePotentialHostWhileFocus(grantFocus ? hostWindow : null);
             ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
                     embeddedWindow, grantFocus);
+        }
+    }
+
+    void setOnBackInvokedCallbackInfoToEmbedded(Session session,
+            InputTransferToken inputTransferToken, OnBackInvokedCallbackInfo callbackInfo) {
+        synchronized (mGlobalLock) {
+            final EmbeddedWindowController.EmbeddedWindow embeddedWindow =
+                    mEmbeddedWindowController.getByInputTransferToken(inputTransferToken);
+            if (embeddedWindow == null) {
+                Slog.e(TAG, "Embedded window not found");
+                return;
+            }
+            if (embeddedWindow.mSession != session) {
+                Slog.e(TAG, "Window not in session:" + session);
+                return;
+            }
+            if (embeddedWindow.getInputChannelToken() == null) {
+                Slog.e(TAG, "Focus token found but input channel token not found");
+                return;
+            }
+            embeddedWindow.setOnBackInvokedCallbackInfo(callbackInfo);
         }
     }
 

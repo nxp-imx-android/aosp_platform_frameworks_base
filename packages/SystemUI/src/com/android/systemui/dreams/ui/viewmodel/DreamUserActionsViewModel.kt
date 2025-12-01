@@ -49,7 +49,8 @@ constructor(
                         buildList {
                                 addAll(
                                     when (shadeMode) {
-                                        ShadeMode.Single -> singleShadeActions()
+                                        ShadeMode.Single ->
+                                            singleShadeActions(isDownFromTopEdgeEnabled = false)
                                         ShadeMode.Split -> splitShadeActions()
                                         ShadeMode.Dual -> dualShadeActions()
                                     }

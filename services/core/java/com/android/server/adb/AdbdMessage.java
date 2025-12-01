@@ -51,7 +51,7 @@ class AdbdMessage {
         }
         int size = mBuffer[mCursor++] & 0xFF;
 
-        if (mCursor + size >= mBuffer.length) {
+        if (mCursor + size > mBuffer.length) {
             return Optional.empty();
         }
         String str = new String(Arrays.copyOfRange(mBuffer, mCursor, mCursor + size));

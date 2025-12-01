@@ -41,7 +41,9 @@ import com.android.systemui.statusbar.chips.screenrecord.domain.interactor.Scree
 import com.android.systemui.statusbar.chips.screenrecord.domain.model.ScreenRecordChipModel
 import com.android.systemui.statusbar.chips.screenrecord.ui.view.EndScreenRecordingDialogDelegate
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
+import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
@@ -113,7 +115,10 @@ constructor(
                                 ),
                             content =
                                 OngoingActivityChipModel.Content.Timer(
-                                    startTimeMs = systemClock.elapsedRealtime(),
+                                    value =
+                                        Chronometer.Running(
+                                            EventTime.ElapsedRealtime(systemClock.elapsedRealtime())
+                                        ),
                                     timeSource = systemClock,
                                 ),
                             colors = ColorsModel.Red,
@@ -162,7 +167,7 @@ constructor(
                         new is OngoingActivityChipModel.Active &&
                         new.content is OngoingActivityChipModel.Content.Timer
                 ) {
-                    new.copy(content = new.content.copy(startTimeMs = old.content.startTimeMs))
+                    new.copy(content = new.content.copy(value = old.content.value))
                 } else {
                     new
                 }

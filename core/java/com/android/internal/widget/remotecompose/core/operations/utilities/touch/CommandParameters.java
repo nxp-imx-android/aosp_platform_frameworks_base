@@ -35,6 +35,8 @@ public class CommandParameters {
 
     Param[] mParams = new Param[256];
 
+    int mParamsCount = 0;
+
     /**
      * Create a CommandParameters processing utility for processing a set of parameters
      *
@@ -44,6 +46,14 @@ public class CommandParameters {
         for (Param param : params) {
             mParams[0xFF & param.mId] = param;
         }
+        mParamsCount = params.length;
+    }
+
+    /**
+     * Returns the number of known parameters
+     */
+    public int getParamsCount() {
+        return mParamsCount;
     }
 
     /**
@@ -58,6 +68,120 @@ public class CommandParameters {
     }
 
     /**
+     * Ctor with a default value for the parameter
+     *
+     * @param name
+     * @param id
+     * @param defaultValue
+     * @return
+     */
+    public static @NonNull Param param(@NonNull String name, byte id, int defaultValue) {
+        return new Param(name, id, defaultValue);
+    }
+
+    /**
+     * Ctor with a default value for the parameter
+     *
+     * @param name
+     * @param id
+     * @param defaultValue
+     * @return
+     */
+    public static @NonNull Param param(@NonNull String name, byte id, float defaultValue) {
+        return new Param(name, id, defaultValue);
+    }
+
+    /**
+     * Ctor with a default value for the parameter
+     *
+     * @param name
+     * @param id
+     * @param defaultValue
+     * @return
+     */
+    public static @NonNull Param param(@NonNull String name, byte id, boolean defaultValue) {
+        return new Param(name, id, defaultValue);
+    }
+
+    /**
+     * Returns true if the parameter is the default value
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public boolean isDefault(byte id, int value) {
+        Param param = mParams[0xFF & id];
+        return param.mType == P_INT && value == param.mDefaultIntValue;
+    }
+
+    /**
+     * Returns true if the parameter is the default value
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public boolean isDefault(byte id, float value) {
+        Param param = mParams[0xFF & id];
+        return param.mType == P_FLOAT && value == param.mDefaultFloatValue;
+    }
+
+    /**
+     * Returns true if the parameter is the default value
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public boolean isDefault(byte id, boolean value) {
+        Param param = mParams[0xFF & id];
+        return param.mType == P_BOOLEAN && value == param.mDefaultBooleanValue;
+    }
+
+    /**
+     * Returns one if the parameter is NOT the default value, zero otherwise
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public int countIfNotDefault(byte id, int value) {
+        if (isDefault(id, value)) {
+            return 0;
+        }
+        return 1;
+    }
+
+    /**
+     * Returns one if the parameter is NOT the default value, zero otherwise
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public int countIfNotDefault(byte id, float value) {
+        if (isDefault(id, value)) {
+            return 0;
+        }
+        return 1;
+    }
+
+    /**
+     * Returns one if the parameter is NOT the default value, zero otherwise
+     *
+     * @param id
+     * @param value
+     * @return
+     */
+    public int countIfNotDefault(byte id, boolean value) {
+        if (isDefault(id, value)) {
+            return 0;
+        }
+        return 1;
+    }
+
+    /**
      * A parameter
      */
     public static class Param {
@@ -65,10 +189,35 @@ public class CommandParameters {
         byte mId;
         byte mType;
 
+        int mDefaultIntValue;
+        float mDefaultFloatValue;
+        boolean mDefaultBooleanValue;
+
         Param(@NonNull String name, byte id, byte type) {
             mName = name;
             mId = id;
             mType = type;
+        }
+
+        Param(@NonNull String name, byte id, int defaultValue) {
+            mName = name;
+            mId = id;
+            mType = P_INT;
+            mDefaultIntValue = defaultValue;
+        }
+
+        Param(@NonNull String name, byte id, float defaultValue) {
+            mName = name;
+            mId = id;
+            mType = P_FLOAT;
+            mDefaultFloatValue = defaultValue;
+        }
+
+        Param(@NonNull String name, byte id, boolean defaultValue) {
+            mName = name;
+            mId = id;
+            mType = P_BOOLEAN;
+            mDefaultBooleanValue = defaultValue;
         }
     }
 
@@ -79,8 +228,11 @@ public class CommandParameters {
      * @param id     the id of the parameter
      * @param value  the value of the parameter
      */
-    public void write(@NonNull WireBuffer buffer, byte id, int value) {
+    public boolean write(@NonNull WireBuffer buffer, byte id, int value) {
         Param param = mParams[0xFF & id];
+        if (param.mType == P_INT && value == param.mDefaultIntValue) {
+            return false;
+        }
         buffer.writeByte(param.mId);
         switch (param.mType) {
             case P_INT:
@@ -98,6 +250,7 @@ public class CommandParameters {
             default:
                 throw new IllegalArgumentException("Unknown parameter type " + param.mType);
         }
+        return true;
     }
 
     /**
@@ -107,14 +260,17 @@ public class CommandParameters {
      * @param id     the id of the parameter
      * @param value  the value of the parameter
      */
-    public void write(@NonNull WireBuffer buffer, byte id, float value) {
+    public boolean write(@NonNull WireBuffer buffer, byte id, float value) {
         Param param = mParams[0xFF & id];
         if (param.mType != P_FLOAT) {
             throw new IllegalArgumentException("Unknown parameter type " + param.mType);
         }
+        if (value == param.mDefaultFloatValue) {
+            return false;
+        }
         buffer.writeByte(param.mId);
-
         buffer.writeFloat(value);
+        return true;
     }
 
     /**
@@ -195,14 +351,18 @@ public class CommandParameters {
      * @param id     the id of the parameter
      * @param value  the value of the parameter
      */
-    public void write(@NonNull WireBuffer buffer, byte id, boolean value) {
+    public boolean write(@NonNull WireBuffer buffer, byte id, boolean value) {
         Param param = mParams[0xFF & id];
+        if (param.mType == P_BOOLEAN && value == param.mDefaultBooleanValue) {
+            return false;
+        }
         buffer.writeByte(param.mId);
         if (param.mType == P_BOOLEAN) {
             buffer.writeBoolean(value);
         } else {
             throw new IllegalArgumentException("Unknown parameter type " + param.mType);
         }
+        return true;
     }
 
     /**
@@ -321,7 +481,6 @@ public class CommandParameters {
      */
     public void read(@NonNull WireBuffer buffer, @NonNull Callback callback) {
         int id = buffer.readByte();
-        System.out.println("read " + id);
         Param param = mParams[0xFF & id];
         switch (param.mType) {
             case P_INT:

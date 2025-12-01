@@ -50,16 +50,27 @@ public final class FallbackFontUpdateRequest {
         mPriority = priority;
     }
 
+    /**
+     * Returns a list of fonts associated with the supported languages and the priority.
+     */
     @NonNull
     public List<FontFamilyUpdateRequest.Font> getFonts() {
         return mFonts;
     }
 
+    /**
+     * Returns a comma-separated string of BCP 47 language tags.
+     */
     @NonNull
     public String getLanguages() {
         return mLanguages;
     }
 
+    /**
+     * Returns the priority for this font family. This non-negative integer represents the priority
+     * within the font fallback chain associated with the supported languages. Higher values
+     * indicate higher priority.
+     */
     public int getPriority() {
         return mPriority;
     }
@@ -97,9 +108,24 @@ public final class FallbackFontUpdateRequest {
         }
 
         /**
-         * Sets the priority for this font family.
+         * Sets the priority for this font family. Higher values indicate higher priority.
+         * The current max priority associates with the language tag in the system can be get with
+         *<pre>{@code
+         * FontManager fontManager = getContext().getSystemService(FontManager.class);
+         * FontConfig fontConfig = fontManager.getFontConfig();
+         * List&lt;FontConfig.FontFamily&gt; fontFamilies = fontConfig.getFontFamilies();
+         * int maxPriority = -1;
+         * for (FontConfig.FontFamily family: fontFamilies) {
+         *    if (Objects.equals(family.getLocaleList().toLanguageTags(), "und-Zsye")) {
+         *       if (family.getPriority() > maxPriority) {
+         *          maxPriority = family.getPriority();
+         *       }
+         *    }
+         * }
+         * }</pre>
          *
-         * @param priority The priority of the font family.
+         * @param priority The priority of the font family. This value must be greater than the
+         *                 current max priority associates with the language tag in the system.
          * @return This builder.
          */
         @NonNull

@@ -43,4 +43,7 @@ interface IPersonalContextManager {
     oneway void unregisterInsightSurfaceClient(in ParcelUuid id, int userId);
 
     Token mintToken();
+
+    oneway void publishInsightSurfaceHints(
+        in List<ContextHintWrapper> hints, in InsightSurfaceClientInfo clientInfo, int userId);
 }

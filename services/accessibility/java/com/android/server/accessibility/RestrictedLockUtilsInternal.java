@@ -16,14 +16,21 @@
 
 package com.android.server.accessibility;
 
+import static android.app.admin.DevicePolicyIdentifiers.getIdentifierForUserRestriction;
+
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
+import android.Manifest;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.EnforcingAdmin;
+import android.app.admin.PolicyEnforcementInfo;
 import android.content.Context;
 import android.content.pm.UserInfo;
 import android.os.UserHandle;
 import android.os.UserManager;
+
+import androidx.annotation.RequiresPermission;
 
 import com.android.settingslib.RestrictedLockUtils;
 
@@ -35,9 +42,11 @@ import java.util.List;
  */
 public class RestrictedLockUtilsInternal {
 
+    // LINT.IfChange
     /**
      * Disables accessibility service that are not permitted.
      */
+    @RequiresPermission(Manifest.permission.QUERY_ADMIN_POLICY)
     public static EnforcedAdmin checkIfAccessibilityServiceDisallowed(Context context,
             String packageName, int userId) {
         final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
@@ -66,8 +75,21 @@ public class RestrictedLockUtilsInternal {
         } else if (!permittedByProfileAdmin) {
             return profileAdmin;
         }
-        return null;
+        String userRestriction = UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE;
+        PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                getIdentifierForUserRestriction(userRestriction),
+                UserHandle.myUserId());
+        if (policyEnforcementInfo.getAllAdmins().isEmpty()) {
+            return null;
+        }
+        EnforcingAdmin aapmEnforcingAdmin = policyEnforcementInfo.getMostImportantEnforcingAdmin();
+        EnforcedAdmin aapmEnforcedAdmin = new EnforcedAdmin(aapmEnforcingAdmin.getComponentName(),
+                userRestriction,
+                aapmEnforcingAdmin.getUserHandle());
+        return aapmEnforcedAdmin;
     }
+    // LINT.ThenChange(frameworks/base/packages/SettingsLib/src/com/android/settingslib
+    // /RestrictedLockUtilsInternal.java)
 
     /**
      * Disables input method that are not permitted.

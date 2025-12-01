@@ -769,6 +769,9 @@
     <!-- Timeout for receiving the keyguard drawn event from System UI.  -->
     <integer name="config_keyguardDrawnTimeout">1000</integer>
 
+    <!-- Timeout for receiving the keyguard drawn event from System UI the first time after boot. -->
+    <integer name="config_keyguardDrawnTimeoutOnBoot">5000</integer>
+
     <!-- Indicates that the device supports having more than one internal display on at the same
          time. Only applicable to devices with more than one internal display. If this option is
          set to false, DisplayManager will make additional effort to ensure no more than 1 internal
@@ -906,6 +909,10 @@
      <!-- Boolean indicating whether Color Inversion is enabled within the Setup Wizard flow.
          This flag is disabled by default. -->
     <bool name="config_enableColorInversionInSetupWizard">false</bool>
+
+    <!-- Boolean indicating whether Color Daltonizer is enabled within the Setup Wizard flow.
+         This flag is disabled by default. -->
+    <bool name="config_enableColorDaltonizerInSetupWizard">false</bool>
 
     <!-- Boolean indicating whether the HWC setColorTransform function can be performed efficiently
          in hardware. -->
@@ -7876,4 +7883,9 @@
 
     <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
     <integer name="config_defaultFreezerDebounceTimeout">10000</integer>
+
+    <!-- Whether contextual mode (e.g. Do Not Disturb Mode) sync is supported by this device. -->
+    <bool name="config_supportContextualModeSync">true</bool>
+    <!-- If supported, should contextual mode sync be enabled by default. -->
+    <bool name="config_enableContextualModeSyncByDefault">true</bool>
 </resources>

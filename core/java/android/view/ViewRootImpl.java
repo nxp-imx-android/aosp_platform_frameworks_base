@@ -120,6 +120,7 @@ import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
 import static android.view.flags.Flags.disableDrawWakeLock;
+import static android.view.flags.Flags.enableWindowlessWindowFocusNavigation;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
 import static android.view.flags.Flags.toolkitDisableCategoryOnMrr;
@@ -140,7 +141,6 @@ import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
-import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -382,6 +382,14 @@ public final class ViewRootImpl implements ViewParent,
      */
     public static final boolean CLIENT_TRANSIENT =
             SystemProperties.getBoolean("persist.wm.debug.client_transient", false);
+
+    /**
+     * Allow enabling IPC rendering on a per-package basis for debugging.
+     * Use a comma-separated list of packages.
+     */
+    private static final String IPC_RENDERING_PACKAGES =
+            SystemProperties.get("viewroot.ipc_rendering_packages", "");
+    private boolean mIpcRenderingEnabled = false;
 
     /**
      * Set this system property to true to force the view hierarchy to render
@@ -1407,6 +1415,7 @@ public final class ViewRootImpl implements ViewParent,
             preInitBufferAllocator();
             sPreInitializedBufferAllocator = true;
         }
+        mIpcRenderingEnabled = useIpcRendering();
     }
 
     public static void addFirstDrawHandler(Runnable callback) {
@@ -2075,7 +2084,7 @@ public final class ViewRootImpl implements ViewParent,
                         || insets.top != 0 || insets.bottom != 0;
                 final boolean translucent = attrs.format != PixelFormat.OPAQUE || hasSurfaceInsets;
                 final ThreadedRenderer renderer = ThreadedRenderer.create(mContext, translucent,
-                        attrs.getTitle().toString());
+                        attrs.getTitle().toString(), mIpcRenderingEnabled);
                 mAttachInfo.mThreadedRenderer = renderer;
                 renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
@@ -6846,9 +6855,7 @@ public final class ViewRootImpl implements ViewParent,
                     WindowTokenClientController.getInstance().onWindowConfigurationChanged(
                             windowContextToken,
                             mLastReportedMergedConfiguration.getMergedConfiguration(),
-                            newDisplayId == INVALID_DISPLAY
-                                    ? mDisplay.getDisplayId()
-                                    : newDisplayId
+                            newDisplayId
                     );
                 }
             }
@@ -7911,27 +7918,14 @@ public final class ViewRootImpl implements ViewParent,
                             dispatcher.onBackCancelled(topCallback);
                         } else {
                             dispatcher.onBackInvoked(topCallback);
-                            if (predictiveBackStopKeycodeBackForwarding()) {
-                                return FINISH_HANDLED;
-                            }
+                            return FINISH_HANDLED;
                         }
                         break;
                 }
             } else {
-                if (predictiveBackStopKeycodeBackForwarding()) {
-                    return FORWARD;
-                }
-            }
-            if (predictiveBackStopKeycodeBackForwarding()) {
-                return FINISH_NOT_HANDLED;
-            } else {
-                // Do not cancel the keyEvent if no callback can handle the back event.
-                if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    // forward a cancelled event so that following stages cancel their back logic
-                    keyEvent.cancel();
-                }
                 return FORWARD;
             }
+            return FINISH_NOT_HANDLED;
         }
 
         @Override
@@ -8289,13 +8283,17 @@ public final class ViewRootImpl implements ViewParent,
 
         private boolean moveFocusToAdjacentWindow(@FocusDirection int direction) {
             final int windowingMode = getConfiguration().windowConfiguration.getWindowingMode();
+            final boolean isEmbeddedWindow = enableWindowlessWindowFocusNavigation()
+                            && mWindowSession instanceof WindowlessWindowManager;
             if (windowingMode != WINDOWING_MODE_MULTI_WINDOW
-                    && windowingMode != WINDOWING_MODE_FREEFORM) {
+                    && windowingMode != WINDOWING_MODE_FREEFORM
+                    && !isEmbeddedWindow) {
                 return false;
             }
             try {
                 return mWindowSession.moveFocusToAdjacentWindow(mWindow, direction);
             } catch (RemoteException e) {
+                Log.d(TAG, "moveFocusToAdjacentWindow: RemoteException", e);
                 return false;
             }
         }
@@ -14024,5 +14022,12 @@ public final class ViewRootImpl implements ViewParent,
      */
     public Choreographer getChoreographer() {
         return mChoreographer;
+    }
+
+    private boolean useIpcRendering() {
+        if (IPC_RENDERING_PACKAGES.contains(mBasePackageName)) {
+            return true;
+        }
+        return false;
     }
 }

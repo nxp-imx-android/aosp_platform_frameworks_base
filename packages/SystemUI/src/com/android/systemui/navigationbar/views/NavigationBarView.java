@@ -1178,7 +1178,7 @@ public class NavigationBarView extends FrameLayout {
     }
 
     void addPipExclusionBoundsChangeListener(Pip pip) {
-        pip.addPipExclusionBoundsChangeListener(mPipListener);
+        pip.addPipExclusionBoundsChangeListener(getContext().getMainExecutor(), mPipListener);
     }
 
     void removePipExclusionBoundsChangeListener(Pip pip) {

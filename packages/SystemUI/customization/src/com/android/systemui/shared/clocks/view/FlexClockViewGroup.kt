@@ -23,6 +23,7 @@ import android.icu.text.NumberFormat
 import android.util.MathUtils.constrainedMap
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.util.lerp
 import androidx.core.graphics.withSave
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
@@ -205,33 +206,30 @@ class FlexClockViewGroup(clockCtx: FlexClockContext) :
     }
 
     /** Offsets the textViews of the clock for the compose version of the step clock animation. */
-    fun offsetGlyphsForStepClockAnimation(
-        startX: Float,
-        currentX: Float,
-        endX: Float,
-        progress: Float,
-    ) {
+    fun offsetGlyphsForStepClockAnimation(startX: Float, endX: Float, progress: Float) {
         if (progress <= 0f || progress >= 1f) {
             resetGlyphsOffsets()
             return
         }
 
+        val currentX = lerp(startX, endX, progress)
         val translation = endX - startX
         // A map of the delays for a given digit, keyed by digit index
-        val delays = if (translation > 0) STEP_RIGHT_DELAYS else STEP_LEFT_DELAYS
+        val delays = if (translation > 0) FLEXI_STEP_RIGHT_DELAYS else FLEXI_STEP_LEFT_DELAYS
         children.forEachIndexed { index, child ->
             val digitFraction =
                 constrainedMap(
                     /* rangeMin= */ 0.0f,
                     /* rangeMax= */ 1.0f,
                     /* valueMin= */ delays[index],
-                    /* valueMax= */ delays[index] + STEP_ANIMATION_TIME,
+                    /* valueMax= */ delays[index] + FLEXI_STEP_ANIMATION_TIME,
                     /* value= */ progress,
                 )
 
             val digitX = translation * digitFraction + startX
             digitOffsets[child.id] = (digitX - currentX)
         }
+
         invalidate()
     }
 
@@ -240,11 +238,19 @@ class FlexClockViewGroup(clockCtx: FlexClockContext) :
         const val AOD_TRANSITION_DURATION = 800L
 
         private val STEP_INTERPOLATOR = Interpolators.EMPHASIZED
-        // Measured as fraction of total animation duration
-        private const val STEP_DIGIT_DELAY = 0.033f
-        private val STEP_LEFT_DELAYS = listOf(0, 1, 2, 3).map { it * STEP_DIGIT_DELAY }
-        private val STEP_RIGHT_DELAYS = listOf(1, 0, 3, 2).map { it * STEP_DIGIT_DELAY }
+
+        // Delay measured as fraction of total animation duration
+        private fun stepAnimationDelays(digitOrder: List<Int>, scale: Float): List<Float> {
+            return digitOrder.map { it * 0.033f * scale }
+        }
+
+        private val STEP_LEFT_DELAYS = stepAnimationDelays(listOf(0, 1, 2, 3), 1f)
+        private val STEP_RIGHT_DELAYS = stepAnimationDelays(listOf(1, 0, 3, 2), 1f)
         private val STEP_ANIMATION_TIME = 1.0f - STEP_LEFT_DELAYS.max()
+
+        private val FLEXI_STEP_LEFT_DELAYS = stepAnimationDelays(listOf(0, 1, 2, 3), 2f)
+        private val FLEXI_STEP_RIGHT_DELAYS = stepAnimationDelays(listOf(1, 0, 3, 2), 2f)
+        private val FLEXI_STEP_ANIMATION_TIME = 1.0f - FLEXI_STEP_LEFT_DELAYS.max()
 
         /** Languages that do not have vertically mono spaced numerals */
         private val NON_MONO_VERTICAL_NUMERIC_LINE_SPACING_LANGUAGES = setOf("my" /* Burmese */)

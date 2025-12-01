@@ -375,6 +375,111 @@ public class SettingsHelperTest {
     }
 
     @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void restoreValue_colorDaltonizerEnabledInSuw_suwNotCompleted_mapsValueToOn() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableColorDaltonizerInSetupWizard))
+                .thenReturn(true);
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 0);
+
+        // Restore "1" should be mapped to RESTORED_COLOR_DALTONIZER_SETTINGS_ENABLED" (-1)
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Settings.Secure.CONTENT_URI,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+                "1",
+                /* restoredFromSdkInt */ 0);
+        assertThat(Settings.Secure.getInt(mContentResolver,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED, 0))
+                .isEqualTo(-1);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void restoreValue_colorDaltonizerEnabledInSuw_suwNotCompleted_mapsValueToOff() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableColorDaltonizerInSetupWizard))
+                .thenReturn(true);
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 0);
+
+        // Restore "0" should be mapped to RESTORED_COLOR_DALTONIZER_SETTINGS_DISABLED" (-2)
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Settings.Secure.CONTENT_URI,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+                "0",
+                /* restoredFromSdkInt */ 0);
+        assertThat(Settings.Secure.getInt(mContentResolver,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED, 0))
+                .isEqualTo(-2);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void
+            restoreValue_colorDaltonizerDisabledInSuwByConfig_suwNotCompleted_doesNotMapValue() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableColorDaltonizerInSetupWizard))
+                .thenReturn(false);
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 0);
+
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Settings.Secure.CONTENT_URI,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+                "1",
+                /* restoredFromSdkInt */ 0);
+        assertThat(Settings.Secure.getInt(mContentResolver,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED, 0)).isEqualTo(1);
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void restoreValue_colorDaltonizerDisabledInSuwByFlag_suwNotCompleted_doesNotMapValue() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableColorDaltonizerInSetupWizard))
+                .thenReturn(true);
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 0);
+
+        mSettingsHelper.restoreValue(
+            mContext,
+            mContentResolver,
+            new ContentValues(),
+            Settings.Secure.CONTENT_URI,
+            Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+            "1",
+            /* restoredFromSdkInt */ 0);
+        assertThat(Settings.Secure.getInt(mContentResolver,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED, 0)).isEqualTo(1);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_COLOR_DALTONIZER_IN_SUW)
+    public void restoreValue_colorDaltonizerEnabledInSuw_suwCompleted_doesNotMapValue() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableColorDaltonizerInSetupWizard))
+                .thenReturn(true);
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
+
+        mSettingsHelper.restoreValue(
+            mContext,
+            mContentResolver,
+            new ContentValues(),
+            Settings.Secure.CONTENT_URI,
+            Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED,
+            "1",
+            /* restoredFromSdkInt */ 0);
+        assertThat(Settings.Secure.getInt(mContentResolver,
+                Settings.Secure.ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED, 0)).isEqualTo(1);
+    }
+
+    @Test
     public void testResolveLocales() throws Exception {
         // Empty string from backup server
         assertEquals(LocaleList.forLanguageTags("en-US"),

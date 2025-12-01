@@ -1075,7 +1075,6 @@ public final class DisplayPowerControllerTest {
         mContext.getOrCreateTestableResources().addOverride(
                 com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing, true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         when(mDisplayOffloadSession.allowAutoBrightnessInDoze()).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
@@ -1180,7 +1179,6 @@ public final class DisplayPowerControllerTest {
         mContext.getOrCreateTestableResources().addOverride(
                 com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing, true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         when(mDisplayOffloadSession.allowAutoBrightnessInDoze()).thenReturn(false);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
@@ -1776,7 +1774,6 @@ public final class DisplayPowerControllerTest {
     @Test
     public void testOffloadBlocker_turnON_thenOFF_cancelBlockScreenOnNotCalledIfUnblocked() {
         // Set up.
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         int initState = Display.STATE_OFF;
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -1813,7 +1810,6 @@ public final class DisplayPowerControllerTest {
     @Test
     public void testOffloadBlocker_turnON_thenOFF_cancelBlockScreenOn() {
         // Set up.
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         int initState = Display.STATE_OFF;
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -1845,7 +1841,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testBrightnessFromOffload() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -1869,7 +1864,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testBrightness_AutomaticHigherPriorityThanOffload() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -2052,7 +2046,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDozeManualBrightness_DpcRefactorDisabled() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -2087,7 +2080,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDozeManualBrightness_DpcRefactorEnabled() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
         Settings.System.putInt(mContext.getContentResolver(),
@@ -2123,7 +2115,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testManualBrightness_stateOnPolicyDozeUseNormalBrightnessForDozeFalse_brightnessDoze() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isNormalBrightnessForDozeParameterEnabled(
                 mContext)).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -2159,7 +2150,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testManualBrightness_stateOnPolicyDozeUseNormalBrightnessForDozeTrue_brightnessNormal() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isNormalBrightnessForDozeParameterEnabled(
                 mContext)).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -2194,7 +2184,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testManualBrightness_stateDozePolicyOnUseNormalBrightnessForDozeTrue_brightnessDoze() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isNormalBrightnessForDozeParameterEnabled(
                 mContext)).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -2228,7 +2217,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDozeManualBrightness_AbcIsNull() {
-        when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID, /* isEnabled= */ true,
                 /* isAutoBrightnessAvailable= */ false);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
