@@ -50,10 +50,12 @@ import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
 import com.android.systemui.communal.util.userTouchActivityNotifier
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.userActivityNotifier
@@ -534,6 +536,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             swipeToHubEnabled.value = true
 
             // On lockscreen.
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
             goToScene(CommunalScenes.Blank)
             whenever(notificationStackScrollLayoutController.isBelowLastNotification(any(), any()))
                 .thenReturn(true)
