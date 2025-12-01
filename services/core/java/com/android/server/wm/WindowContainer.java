@@ -36,6 +36,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.WindowContai
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.SURFACE_ANIMATOR;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.SURFACE_CONTROL;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.VISIBLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.VISIBLE_REQUESTED;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
@@ -2772,6 +2773,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (mSurfaceControl != null) {
             mSurfaceControl.dumpDebug(proto, SURFACE_CONTROL);
         }
+        proto.write(VISIBLE_REQUESTED, isVisibleRequested());
 
         // add children to proto
         for (int i = 0; i < getChildCount(); i++) {
