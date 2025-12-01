@@ -2191,6 +2191,23 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetReparentLeafTaskIfRelaunchFromHome() {
+        registerMockOrganizer();
+        final Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, null /* launchCookie */);
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, true);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+        assertTrue(rootTask.mReparentLeafTaskIfRelaunchFromHome);
+
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, false);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+        assertFalse(rootTask.mReparentLeafTaskIfRelaunchFromHome);
+    }
+
+    @Test
     public void testConfigurationsAreEqualForOrganizer() {
         Configuration config1 = new Configuration();
         config1.smallestScreenWidthDp = 300;

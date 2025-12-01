@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
@@ -96,6 +95,7 @@ import android.util.Xml;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowInsetsController;
+import android.window.ITaskOrganizer;
 import android.window.TaskFragmentOrganizer;
 
 import androidx.test.filters.MediumTest;
@@ -1771,6 +1771,26 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(task.isDragResizing());
         task.setDragResizing(false);
         assertFalse(task.isDragResizing());
+    }
+
+    @Test
+    public void testSetReparentLeafTaskIfRelaunchFromHome_organizedTask_setsFlag() {
+        final Task task = getTestTask();
+        task.mCreatedByOrganizer = true;
+        task.mTaskOrganizer = mock(ITaskOrganizer.class);
+
+        task.setReparentLeafTaskIfRelaunchFromHome(true);
+        assertTrue(task.mReparentLeafTaskIfRelaunchFromHome);
+
+        task.setReparentLeafTaskIfRelaunchFromHome(false);
+        assertFalse(task.mReparentLeafTaskIfRelaunchFromHome);
+    }
+
+    @Test
+    public void testSetReparentLeafTaskIfRelaunchFromHome_nonOrganizedTask_doesNothing() {
+        final Task task = getTestTask();
+        task.setReparentLeafTaskIfRelaunchFromHome(true);
+        assertFalse(task.mReparentLeafTaskIfRelaunchFromHome);
     }
 
     @Test
