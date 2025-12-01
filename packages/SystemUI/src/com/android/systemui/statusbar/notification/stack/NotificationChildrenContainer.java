@@ -833,7 +833,8 @@ public class NotificationChildrenContainer extends ViewGroup
             ExpandableViewState childState = child.getViewState();
             int intrinsicHeight = child.getIntrinsicHeight();
             childState.height = intrinsicHeight;
-            childState.setYTranslation(yPosition + launchTransitionCompensation);
+            childState.setYTranslation(yPosition + launchTransitionCompensation,
+                    "NotificationChildrenContainer.updateState.child");
             childState.hidden = false;
             if (child.isExpandAnimationRunning() || mContainingNotification.hasExpandingChild()) {
                 // Not modifying translationZ during launch animation. The translationZ of the
@@ -890,11 +891,13 @@ public class NotificationChildrenContainer extends ViewGroup
                     float yTranslation = mGroupOverFlowState.getYTranslation()
                             + NotificationUtils.getRelativeYOffset(
                             mirrorView, overflowView);
-                    mGroupOverFlowState.setYTranslation(yTranslation);
+                    mGroupOverFlowState.setYTranslation(yTranslation,
+                            "NotificationChildrenContainer.updateState.overflow");
                 }
             } else {
                 mGroupOverFlowState.setYTranslation(
-                        mGroupOverFlowState.getYTranslation() + getCollapsedHeaderMargin());
+                        mGroupOverFlowState.getYTranslation() + getCollapsedHeaderMargin(),
+                        "NotificationChildrenContainer.updateState.overflow.collapsed");
                 mGroupOverFlowState.setAlpha(0.0f, "group overflow");
             }
         }
@@ -909,7 +912,8 @@ public class NotificationChildrenContainer extends ViewGroup
             } else {
                 mHeaderViewState.setZTranslation(0);
             }
-            mHeaderViewState.setYTranslation(mCurrentHeaderTranslation);
+            mHeaderViewState.setYTranslation(mCurrentHeaderTranslation,
+                    "NotificationChildrenContainer.updateState.header");
             mHeaderViewState.setAlpha(mHeaderVisibleAmount, "header visible amount");
 
             if (notificationsRedesignTemplates()) {
@@ -928,10 +932,12 @@ public class NotificationChildrenContainer extends ViewGroup
                 }
 
                 mTopLineViewState = initStateForGroupHeader(mTopLineViewState);
-                mTopLineViewState.setYTranslation(topLineTranslation);
+                mTopLineViewState.setYTranslation(topLineTranslation,
+                        "NotificationChildrenContainer.updateState.topLine");
 
                 mExpandButtonViewState = initStateForGroupHeader(mExpandButtonViewState);
-                mExpandButtonViewState.setYTranslation(expandButtonTranslation);
+                mExpandButtonViewState.setYTranslation(expandButtonTranslation,
+                        "NotificationChildrenContainer.updateState.expandButton");
             }
         }
     }
@@ -1036,7 +1042,8 @@ public class NotificationChildrenContainer extends ViewGroup
             // layout the divider
             View divider = mDividers.get(i);
             tmpState.initFrom(divider);
-            tmpState.setYTranslation(viewState.getYTranslation() - mDividerHeight);
+            tmpState.setYTranslation(viewState.getYTranslation() - mDividerHeight,
+                    "NotificationChildrenContainer.applyState.divider");
             float alpha = mChildrenExpanded && viewState.getAlpha() != 0 ? mDividerAlpha : 0;
             if (mIsUserSwipingToExpandRow && !showingAsLowPriority() && viewState.getAlpha() != 0) {
                 alpha = NotificationUtils.interpolate(0, mDividerAlpha,
@@ -1197,7 +1204,9 @@ public class NotificationChildrenContainer extends ViewGroup
             // layout the divider
             View divider = mDividers.get(i);
             tmpState.initFrom(divider);
-            tmpState.setYTranslation(viewState.getYTranslation() - mDividerHeight);
+            tmpState.setYTranslation(
+                    viewState.getYTranslation() - mDividerHeight,
+                    "NotificationChildrenContainer.startAnimationToState.divider");
             float alpha = mChildrenExpanded && viewState.getAlpha() != 0 ? mDividerAlpha : 0;
             if (mIsUserSwipingToExpandRow && !showingAsLowPriority() && viewState.getAlpha() != 0) {
                 alpha = NotificationUtils.interpolate(0, mDividerAlpha,

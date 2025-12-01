@@ -715,7 +715,8 @@ public class StackScrollAlgorithm {
 
         // Must set viewState.yTranslation _before_ use.
         // Incoming views have yTranslation=0 by default.
-        viewState.setYTranslation(algorithmState.mCurrentYPosition);
+        viewState.setYTranslation(algorithmState.mCurrentYPosition,
+                "StackScrollAlgorithm.updateChild.init");
 
         float stackTop = SceneContainerFlag.isEnabled()
                 ? ambientState.getStackScrollTop()
@@ -761,7 +762,8 @@ public class StackScrollAlgorithm {
                         ? ambientState.getStackCutoff() - ambientState.getStackScrollTop()
                         : ambientState.getLayoutMaxHeight() + mMarginBottom
                         - ambientState.getStackY();
-                viewState.setYTranslation((fullHeight - getMaxAllowedChildHeight(view)) / 2f);
+                viewState.setYTranslation((fullHeight - getMaxAllowedChildHeight(view)) / 2f,
+                        "StackScrollAlgorithm.updateChild.emptyShade");
             } else if (view != ambientState.getTrackedHeadsUpRow()) {
                 if (ambientState.isExpansionChanging()) {
                     // We later update shelf state, then hide views below the shelf.
@@ -804,12 +806,14 @@ public class StackScrollAlgorithm {
                 + mPaddingBetweenElements;
 
         setLocation(view.getViewState(), algorithmState.mCurrentYPosition, i);
-        viewState.setYTranslation(viewState.getYTranslation() + stackTop);
+        viewState.setYTranslation(viewState.getYTranslation() + stackTop,
+                "StackScrollAlgorithm.updateChild.stackTop");
     }
 
     @VisibleForTesting
     void updateViewWithShelf(ExpandableView view, ExpandableViewState viewState, float shelfStart) {
-        viewState.setYTranslation(Math.min(viewState.getYTranslation(), shelfStart));
+        viewState.setYTranslation(Math.min(viewState.getYTranslation(), shelfStart),
+                "StackScrollAlgorithm.updateViewWithShelf");
         if (viewState.getYTranslation() >= shelfStart) {
             viewState.hidden = !view.isExpandAnimationRunning()
                     && !view.hasExpandingChild();
@@ -965,7 +969,8 @@ public class StackScrollAlgorithm {
             if (childState != null) {
                 float endPos = childState.getYTranslation() - ambientState.getStackTranslation();
                 childState.setYTranslation(MathUtils.lerp(
-                        headsUpTranslation, endPos, ambientState.getAppearFraction()));
+                        headsUpTranslation, endPos, ambientState.getAppearFraction()),
+                        "StackScrollAlgorithm.updateHeadsUpStates.tracked");
             }
         }
 
@@ -1007,7 +1012,8 @@ public class StackScrollAlgorithm {
                         // HUN to the correct Y position from the placeholder.
                         boolean isHunToShadeTransition = ambientState.getTrackedHeadsUpRow() == row;
                         if (ambientState.shouldApplyHunTranslation() && !isHunToShadeTransition) {
-                            childState.setYTranslation(headsUpTranslation);
+                            childState.setYTranslation(headsUpTranslation,
+                                    "StackScrollAlgorithm.updateHeadsUpStates.applyHunTranslation");
                         }
                         clampHunToTop(
                                 /* headsUpTop = */ headsUpTranslation,
@@ -1086,7 +1092,8 @@ public class StackScrollAlgorithm {
                 // which accounts for AmbientState.stackTopMargin in split-shade.
                 // Once we start opening the shade, we keep the previously calculated translation.
                 childState.setYTranslation(
-                        Math.max(childState.getYTranslation(), headsUpTranslation));
+                        Math.max(childState.getYTranslation(), headsUpTranslation),
+                        "StackScrollAlgorithm.updateHeadsUpStates.pinned");
                 childState.height = Math.max(row.getIntrinsicHeight(), childState.height);
                 if (NotificationHeadsUpCycling.isEnabled()) {
                     if (isCyclingIn(row, ambientState)) {
@@ -1112,7 +1119,8 @@ public class StackScrollAlgorithm {
                 // translationY need to move up the HUN.
                 if (!mIsExpanded && isTopEntry && ambientState.getScrollY() > 0) {
                     childState.setYTranslation(
-                            childState.getYTranslation() - ambientState.getScrollY());
+                            childState.getYTranslation() - ambientState.getScrollY(),
+                            "StackScrollAlgorithm.updateHeadsUpStates.scroll");
                 }
             }
             if (row.isHeadsUpAnimatingAway()) {
@@ -1125,7 +1133,8 @@ public class StackScrollAlgorithm {
                     extraTranslation += mHeadsUpCyclingPadding;
                     float inSpaceTranslation = Math.max(childState.getYTranslation(),
                             headsUpTranslation);
-                    childState.setYTranslation(inSpaceTranslation + extraTranslation);
+                    childState.setYTranslation(inSpaceTranslation + extraTranslation,
+                            "StackScrollAlgorithm.updateHeadsUpStates.cyclingOut");
                     cyclingInHunHeight = -1;
                 } else if (!ambientState.isDozing()) {
                     boolean shouldHunAppearFromBottom =
@@ -1134,12 +1143,14 @@ public class StackScrollAlgorithm {
                             mHeadsUpAnimator.getHeadsUpYTranslation(
                                     shouldHunAppearFromBottom,
                                     row.hasStatusBarChipDuringHeadsUpAnimation());
-                    childState.setYTranslation(yTranslation);
+                    childState.setYTranslation(yTranslation,
+                            "StackScrollAlgorithm.updateHeadsUpStates.notDozing");
                 } else {
                     // Make sure row yTranslation is at maximum the HUN yTranslation,
                     // which accounts for AmbientState.stackTopMargin in split-shade.
                     childState.setYTranslation(
-                            Math.max(childState.getYTranslation(), headsUpTranslation));
+                            Math.max(childState.getYTranslation(), headsUpTranslation),
+                            "StackScrollAlgorithm.updateHeadsUpStates.limitMax");
                 }
                 // keep it visible for the animation
                 childState.hidden = false;
@@ -1176,7 +1187,7 @@ public class StackScrollAlgorithm {
         final float distToRealY = newTranslation - viewState.getYTranslation();
         final float availableHeight = viewState.height - distToRealY;
 
-        viewState.setYTranslation(newTranslation);
+        viewState.setYTranslation(newTranslation, "StackScrollAlgorithm.clampHunToTop");
         viewState.height = (int) Math.max(availableHeight, collapsedHeight);
     }
 
@@ -1216,14 +1227,16 @@ public class StackScrollAlgorithm {
         final float newTranslation = Math.min(childState.getYTranslation(), bottomPosition);
         childState.height = (int) Math.min(childState.height, maxHeadsUpTranslation
                 - newTranslation);
-        childState.setYTranslation(newTranslation);
+        childState.setYTranslation(newTranslation,
+                "StackScrollAlgorithm.clampHunToMaxTranslation.legacy");
     }
 
     private void clampHunToMaxTranslation(float headsUpTop, float headsUpBottom,
             ExpandableViewState viewState) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         final float maxHeight = Math.max(0f, headsUpBottom - headsUpTop);
-        viewState.setYTranslation(Math.min(headsUpTop, viewState.getYTranslation()));
+        viewState.setYTranslation(Math.min(headsUpTop, viewState.getYTranslation()),
+                "StackScrollAlgorithm.clampHunToMaxTranslation");
         viewState.height = (int) Math.min(maxHeight, viewState.height);
     }
 
