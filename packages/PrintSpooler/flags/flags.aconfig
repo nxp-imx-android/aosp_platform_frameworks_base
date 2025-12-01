@@ -36,3 +36,14 @@ flag {
     bug: "455021653"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "dynamic_column_width"
+    namespace: "printing"
+    description: "Change option column counts based on window width instead of device width."
+    bug: "460133065"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+    is_fixed_read_only: true
+}
