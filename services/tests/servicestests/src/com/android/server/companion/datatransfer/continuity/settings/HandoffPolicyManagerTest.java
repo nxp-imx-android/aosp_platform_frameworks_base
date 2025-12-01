@@ -59,6 +59,11 @@ public class HandoffPolicyManagerTest {
     }
 
     @Test
+    public void constructor_registersSelfAsUserRestrictionsListener() {
+        verify(mMockUserManagerInternal).addUserRestrictionsListener(mHandoffPolicyManager);
+    }
+
+    @Test
     public void isHandoffAllowedForUser_callsUserManagerInternal() {
         when(mMockUserManagerInternal.getUserRestriction(USER_ID, UserManager.DISALLOW_HANDOFF))
                 .thenReturn(false);
