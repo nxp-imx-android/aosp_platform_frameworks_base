@@ -2613,7 +2613,9 @@ public class BubbleController implements ConfigurationChangeListener,
                         bubbleTransit.continueCollapse();
                     }
                     if (!mBubbleData.hasBubbles() && !isStackExpanded()) {
-                        mLayerView.setVisibility(INVISIBLE);
+                        if (mLayerView != null) {
+                            mLayerView.setVisibility(INVISIBLE);
+                        }
                         removeFromWindowManagerMaybe();
                     }
                 });
