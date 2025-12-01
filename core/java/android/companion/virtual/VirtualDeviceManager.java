@@ -242,7 +242,7 @@ public final class VirtualDeviceManager {
      * @hide
      */
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_COMPUTER_CONTROL,
-            Manifest.permission.POST_NOTIFICATIONS})
+            Manifest.permission.POST_NOTIFICATIONS}, conditional = true)
     public void requestComputerControlSession(
             @NonNull ComputerControlSessionParams params,
             @NonNull @CallbackExecutor Executor executor,

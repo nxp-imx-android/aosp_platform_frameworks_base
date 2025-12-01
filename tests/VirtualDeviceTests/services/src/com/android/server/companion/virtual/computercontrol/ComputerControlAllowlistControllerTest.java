@@ -23,10 +23,13 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_SESSION_OWNER_ALLOWLIST_KEY;
 
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -110,7 +113,13 @@ public class ComputerControlAllowlistControllerTest {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mSpyContext = spy(new ContextWrapper(mContext));
         when(mSpyContext.getResources()).thenReturn(mResources);
-        when(mResources.getStringArray(anyInt())).thenReturn(new String[]{SUPER_AGENT_PACKAGE});
+        doNothing().when(mSpyContext).enforceCallingOrSelfPermission(anyString(), anyString());
+
+        final Signature signature = generateSignature((byte) 42);
+        final String superAgentCertificateDigest = preparePackage(SUPER_AGENT_PACKAGE, signature);
+        when(mResources.getStringArray(anyInt()))
+                .thenReturn(new String[]{SUPER_AGENT_PACKAGE + ":" + superAgentCertificateDigest});
+
         when(mPackageManager.getPermissionControllerPackageName())
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
         when(mPackageManager.getLaunchIntentForPackage(anyString())).thenReturn(new Intent());
@@ -152,43 +161,6 @@ public class ComputerControlAllowlistControllerTest {
         assertFalse(mAllowlistController.isPackageAutomatable("hello", null, mPackageManager));
         assertFalse(mAllowlistController.isPackageAutomatable(null, "hello", mPackageManager));
         assertFalse(mAllowlistController.isPackageAutomatable(null, null, mPackageManager));
-    }
-
-    @Test
-    public void isPackageAllowedToCreateSession_preInstalledPackageName_returnsTrue()
-            throws Exception {
-        createAllowlistController(/* buildIsDebuggable */ false);
-        final String packageName = "com.hello.app3";
-        final Signature signature = generateSignature((byte) 2);
-        final String certificateDigest = preparePackage(packageName, signature,
-                /* preinstalled= */ true, /* testOnly= */ false);
-        // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
-                .thenReturn(Process.myUid());
-
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
-        SystemClock.sleep(TIMEOUT_MILLIS);
-
-        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
-    }
-
-    @Test
-    public void isPackageAllowedToCreateSession_notPreInstalledPackageName_returnsFalse()
-            throws Exception {
-        createAllowlistController(/* buildIsDebuggable */ false);
-        final String packageName = "com.hello.app3";
-        final Signature signature = generateSignature((byte) 2);
-        final String certificateDigest = preparePackage(packageName, signature);
-        // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
-                .thenReturn(Process.myUid());
-
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
-        SystemClock.sleep(TIMEOUT_MILLIS);
-
-        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
     }
 
     @Test
@@ -269,8 +241,9 @@ public class ComputerControlAllowlistControllerTest {
     @Test
     public void isPackageAllowedToCreateSession_superAgent_debuggableBuild_returnsTrue()
             throws Exception {
-        final Signature signature = generateSignature((byte) 2);
-        preparePackage(SUPER_AGENT_PACKAGE, signature);
+        doCallRealMethod().when(mSpyContext)
+                .enforceCallingOrSelfPermission(anyString(), anyString());
+
         // Make PackageManager infer that the given package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(eq(SUPER_AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
@@ -280,17 +253,19 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @Test
-    public void isPackageAllowedToCreateSession_superAgent_nonDebuggableBuild_returnsFalse()
+    public void isPackageAllowedToCreateSession_superAgent_nonDebuggableBuild_throws()
             throws Exception {
+        doCallRealMethod().when(mSpyContext)
+                .enforceCallingOrSelfPermission(anyString(), anyString());
+
         createAllowlistController(/* buildIsDebuggable */ false);
-        final Signature signature = generateSignature((byte) 2);
-        preparePackage(SUPER_AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(eq(SUPER_AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
 
-        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                SUPER_AGENT_PACKAGE, mPackageManager));
+        assertThrows(SecurityException.class, () ->
+                mAllowlistController.isPackageAllowedToCreateSession(
+                        SUPER_AGENT_PACKAGE, mPackageManager));
     }
 
     @Test

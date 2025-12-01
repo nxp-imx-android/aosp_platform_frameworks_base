@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
+import static android.Manifest.permission.POST_NOTIFICATIONS;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -35,7 +36,6 @@ import android.os.Environment;
 import android.os.Process;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
-import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.Pair;
 import android.util.Slog;
@@ -80,15 +80,16 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     @VisibleForTesting
     static final String COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY = "blocked_automatable_apps";
 
+    private final Context mContext;
     private final Executor mBackgroundExecutor;
-    private final RemoteList mSessionOwnerAllowlist;
-    private final RemoteList mAutomatableAppAllowlist;
-    private final RemoteList mAutomatableAppDenylist;
+    private final DeviceConfigRemoteList mSessionOwnerAllowlist;
+    private final DeviceConfigRemoteList mAutomatableAppAllowlist;
+    private final DeviceConfigRemoteList mAutomatableAppDenylist;
     private final boolean mBuildIsDebuggable;
     private final PermissionManagerServiceInterface mPermissionManager;
     // In debuggable builds, we can have a list of "super agents" (defined by a config resource)
     // which are allowed to automate any app.
-    private final Set<String> mSuperAgentPackages;
+    private final SignedPackageList mSuperAgentPackages = new SignedPackageList();
 
     ComputerControlAllowlistController(@NonNull Context context) {
         this(context, BackgroundThread.getExecutor(),
@@ -108,24 +109,28 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             @NonNull File automatableAppsDenylistFile,
             @NonNull PermissionManagerServiceInterface permissionManager,
             boolean buildIsDebuggable) {
+        mContext = context;
         mBackgroundExecutor = executor;
-        mSessionOwnerAllowlist = new RemoteList(agentAllowlistFile,
+        mSessionOwnerAllowlist = new DeviceConfigRemoteList(agentAllowlistFile,
                 COMPUTER_CONTROL_SESSION_OWNER_ALLOWLIST_KEY);
-        mAutomatableAppAllowlist = new RemoteList(automatableAppsAllowlistFile,
+        mAutomatableAppAllowlist = new DeviceConfigRemoteList(automatableAppsAllowlistFile,
                 COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY);
-        mAutomatableAppDenylist = new RemoteList(automatableAppsDenylistFile,
+        mAutomatableAppDenylist = new DeviceConfigRemoteList(automatableAppsDenylistFile,
                 COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY);
         mPermissionManager = permissionManager;
         mBuildIsDebuggable = buildIsDebuggable;
         final Resources resources = context.getResources();
-        String[] superAgentPackages = null;
         try {
-            superAgentPackages =
+            final String[] superAgentConfigItems =
                     resources.getStringArray(R.array.config_computerControlKnownSuperAgents);
+            List<SignedPackage> superAgents = new ArrayList<>();
+            for (int i = 0; i < superAgentConfigItems.length; ++i) {
+                superAgents.add(parse(superAgentConfigItems[i]));
+            }
+            mSuperAgentPackages.setSignedPackages(new SignedPackages(superAgents));
         } catch (Resources.NotFoundException e) {
             Slog.e(TAG, "superAgentPackages not found in resources", e);
         }
-        mSuperAgentPackages = new ArraySet<>(superAgentPackages);
     }
 
     @Override
@@ -170,6 +175,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return false;
         }
 
+        final SigningDetails signingDetails = getSigningDetails(packageName, packageManager);
+        if (isSuperAgent(packageName, signingDetails)) {
+            Slog.i(TAG, "isPackageAllowedToCreateSession: Found super agent " + packageName);
+            return true;
+        }
+
+        // Manually enforce the computer control session creation permission for non-super-agents.
+        mContext.enforceCallingOrSelfPermission(
+                ACCESS_COMPUTER_CONTROL, "Requires ACCESS_COMPUTER_CONTROL permission");
+        mContext.enforceCallingOrSelfPermission(
+                POST_NOTIFICATIONS, "Requires POST_NOTIFICATIONS permission");
+
         final ApplicationInfo appInfo = getApplicationInfo(packageName, packageManager);
         if (appInfo == null) {
             return false;
@@ -187,18 +204,6 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             }
         }
 
-        if (!mBuildIsDebuggable && !isPreInstalledApp(appInfo)) {
-            Slog.i(TAG, "isPackageAllowedToCreateSession: " + packageName
-                    + " is not pre-installed, hence cannot be a session owner");
-            return false;
-        }
-
-        if (isSuperAgent(packageName)) {
-            Slog.i(TAG, "isPackageAllowedToCreateSession: Found super agent " + packageName);
-            return true;
-        }
-
-        final SigningDetails signingDetails = getSigningDetails(packageName, packageManager);
         if (signingDetails == null) {
             Slog.e(TAG, "isPackageAllowedToCreateSession: Failed to fetch signing details for "
                     + packageName);
@@ -242,7 +247,9 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return false;
         }
 
-        if (isSuperAgent(sessionOwnerPackage)) {
+        final SigningDetails sessionOwnerPackageSigningDetails =
+                getSigningDetails(sessionOwnerPackage, packageManager);
+        if (isSuperAgent(sessionOwnerPackage, sessionOwnerPackageSigningDetails)) {
             Slog.i(TAG, "isPackageAutomatable: Found super agent " + sessionOwnerPackage);
             return true;
         }
@@ -333,11 +340,15 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
      * can have a list of "super agents" (defined by a config resource) which are allowed to
      * automate any app.
      */
-    private boolean isSuperAgent(@NonNull String packageName) {
+    private boolean isSuperAgent(@NonNull String packageName,
+            @Nullable SigningDetails signingDetails) {
         if (!mBuildIsDebuggable) {
             return false;
         }
-        return mSuperAgentPackages.contains(packageName);
+        if (signingDetails == null) {
+            return false;
+        }
+        return mSuperAgentPackages.anyMatch(packageName, signingDetails);
     }
 
     private boolean hasComputerControlAccessPermission(int packageUid) {
@@ -447,29 +458,19 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         return new SignedPackages(signedPackages);
     }
 
-    /**
-     * Represents a remote allowlist/denylist, automatically handles persistence of valid snapshots
-     * from DeviceConfig.
-     */
-    private static final class RemoteList {
-        private final ValueStorage mStorage;
-        private final String mDeviceConfigKey;
+    /** Represents an allowlist/denylist of package names and signatures. */
+    private static class SignedPackageList {
         private final Object mLock = new Object();
         @GuardedBy("mLock")
         @Nullable
         private SignedPackages mSignedPackages = null;
 
-        RemoteList(@NonNull File file, @NonNull String deviceConfigKey) {
-            mStorage = new ValueStorage(file);
-            mDeviceConfigKey = deviceConfigKey;
-        }
-
-        private boolean anyMatch(@NonNull String packageName,
+        boolean anyMatch(@NonNull String packageName,
                 @NonNull SigningDetails signingDetails) {
             return anyMatch(packageName, signingDetails, false);
         }
 
-        private boolean anyMatch(@NonNull String packageName,
+        boolean anyMatch(@NonNull String packageName,
                 @NonNull SigningDetails signingDetails, boolean preinstalled) {
             synchronized (mLock) {
                 return mSignedPackages != null
@@ -477,15 +478,39 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             }
         }
 
+        void setSignedPackages(SignedPackages signedPackages) {
+            synchronized (mLock) {
+                mSignedPackages = signedPackages;
+            }
+        }
+
+        boolean isSameSignedPackagesObject(@NonNull SignedPackages signedPackages) {
+            synchronized (mLock) {
+                return Objects.equals(signedPackages, mSignedPackages);
+            }
+        }
+    }
+
+    /**
+     * Represents a remote allowlist/denylist, automatically handles persistence of valid snapshots
+     * from DeviceConfig.
+     */
+    private static final class DeviceConfigRemoteList extends SignedPackageList {
+        private final ValueStorage mStorage;
+        private final String mDeviceConfigKey;
+
+        DeviceConfigRemoteList(@NonNull File file, @NonNull String deviceConfigKey) {
+            mStorage = new ValueStorage(file);
+            mDeviceConfigKey = deviceConfigKey;
+        }
+
         private void update() {
             final Pair<String, SignedPackages> parsedValueAndSignedPackages = readDeviceConfig();
             if (parsedValueAndSignedPackages != null) {
-                synchronized (mLock) {
-                    if (Objects.equals(parsedValueAndSignedPackages.second, mSignedPackages)) {
-                        // If the parsed value is same as what we already have right now,
-                        // then nothing to do.
-                        return;
-                    }
+                if (isSameSignedPackagesObject(parsedValueAndSignedPackages.second)) {
+                    // If the parsed value is same as what we already have right now,
+                    // then nothing to do.
+                    return;
                 }
                 // Persist the parsed value;
                 mStorage.writeValue(parsedValueAndSignedPackages.first);
@@ -525,12 +550,6 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                         + mDeviceConfigKey);
             }
             return null;
-        }
-
-        private void setSignedPackages(SignedPackages signedPackages) {
-            synchronized (mLock) {
-                mSignedPackages = signedPackages;
-            }
         }
     }
 
