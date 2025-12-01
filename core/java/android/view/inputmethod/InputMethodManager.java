@@ -1168,7 +1168,7 @@ public final class InputMethodManager {
                         if (curBindSequence < 0 || curBindSequence != res.sequence) {
                             if (android.tracing.Flags.imetrackerProtolog()) {
                                 ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
-                                        "Ignoring onBind: cur seq=%s, given seq=%s",
+                                        "Ignoring onBind: cur seq=%d, given seq=%d",
                                         curBindSequence, res.sequence);
                             } else {
                                 Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
@@ -1300,7 +1300,7 @@ public final class InputMethodManager {
                         if (curBindSequence < 0 || curBindSequence != res.sequence) {
                             if (android.tracing.Flags.imetrackerProtolog()) {
                                 ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
-                                        "Ignoring onBind: cur seq=%s, given seq=%s",
+                                        "Ignoring onBind: cur seq=%d, given seq=%d",
                                         curBindSequence, res.sequence);
                             } else {
                                 Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
@@ -1351,7 +1351,7 @@ public final class InputMethodManager {
                         if (getBindSequenceLocked() != sequence) {
                             if (android.tracing.Flags.imetrackerProtolog()) {
                                 ProtoLog.i(INPUT_METHOD_MANAGER_DEBUG,
-                                        "current BindSequence=%s sequence=%s id=%s",
+                                        "current BindSequence=%d sequence=%d id=%d",
                                         getBindSequenceLocked(), sequence, id);
                             } else if (DEBUG) {
                                 Log.i(TAG, "current BindSequence =" + getBindSequenceLocked()
@@ -2251,7 +2251,7 @@ public final class InputMethodManager {
     @GuardedBy("mH")
     private void clearAccessibilityBindingLocked(int id) {
         if (android.tracing.Flags.imetrackerProtolog()) {
-            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Clearing accessibility binding %s", id);
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Clearing accessibility binding %d", id);
         } else if (DEBUG) {
             Log.v(TAG, "Clearing accessibility binding " + id);
         }
@@ -3655,7 +3655,7 @@ public final class InputMethodManager {
                         && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                     ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                             "Starting input: finished by someone else. view=%s servedView=%s "
-                                    + "mServedConnecting=%s",
+                                    + "mServedConnecting=%b",
                             InputMethodDebug.dumpViewInfo(view),
                             InputMethodDebug.dumpViewInfo(servedView), mServedConnecting);
                 } else if (DEBUG) {
@@ -3787,7 +3787,7 @@ public final class InputMethodManager {
                                 if (android.tracing.Flags.imetrackerProtolog()) {
                                     ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                                             "Calling View.onInputConnectionOpened: view=%s, ic=%s, "
-                                                    + "editorInfo=%s, handler=%s, startInputSeq=%s",
+                                                    + "editorInfo=%s, handler=%s, startInputSeq=%d",
                                             view, ic, editorInfo, icHandler, startInputSeq);
                                 } else if (DEBUG) {
                                     Log.v(TAG, "Calling View.onInputConnectionOpened: view= "
@@ -3957,7 +3957,7 @@ public final class InputMethodManager {
         }
         if (android.tracing.Flags.imetrackerProtolog()) {
             ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
-                    "checkFocus: view=%s next=%s force=%s package=%s",
+                    "checkFocus: view=%s next=%s force=%b package=%s",
                     mServedView, mNextServedView, forceNewFocus,
                     (mServedView != null ? mServedView.getContext().getPackageName() : "<none>"));
         } else if (DEBUG) {
@@ -4177,7 +4177,7 @@ public final class InputMethodManager {
                 return;
             }
             if (android.tracing.Flags.imetrackerProtolog()) {
-                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "onViewClicked: %s", focusChanged);
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "onViewClicked: %b", focusChanged);
             } else if (DEBUG) {
                 Log.v(TAG, "onViewClicked: " + focusChanged);
             }
@@ -4650,7 +4650,7 @@ public final class InputMethodManager {
             if (timeout) {
                 if (android.tracing.Flags.imetrackerProtolog()) {
                     ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
-                            "Timeout waiting for IME to handle input event after %s ms: %s",
+                            "Timeout waiting for IME to handle input event after %d ms: %s",
                             INPUT_METHOD_NOT_RESPONDING_TIMEOUT, p.mInputMethodId);
                 } else {
                     Log.w(TAG, "Timeout waiting for IME to handle input event after "
