@@ -218,7 +218,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final DesksOrganizer mDesksOrganizer;
     private final ShellDesktopState mShellDesktopState;
     private final DesktopConfig mDesktopConfig;
-    private final PinnedLayerController mPinnedLayerController;
+    private final @Nullable PinnedLayerController mPinnedLayerController;
     private boolean mTransitionDragActive;
 
     private SparseArray<EventReceiver> mEventReceiversByDisplay = new SparseArray<>();
@@ -551,6 +551,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 new DesktopModeOnTaskResizeAnimationListener());
         mDesktopTasksController.setOnTaskRepositionAnimationListener(
                 new DesktopModeOnTaskRepositionAnimationListener());
+        if (mPinnedLayerController != null) {
+            mPinnedLayerController.setOnTaskRepositionAnimationListener(
+                    new DesktopModeOnTaskRepositionAnimationListener()
+            );
+        }
         mRecentsTransitionHandler.addTransitionStateListener(
                 new DesktopModeRecentsTransitionStateListener());
         mDisplayController.addDisplayChangingController(mOnDisplayChangingListener);
