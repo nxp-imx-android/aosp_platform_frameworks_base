@@ -42,7 +42,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
@@ -116,6 +115,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
 
     protected void dump(PrintWriter pw) {
         pw.println("## MediaFocusControl");
+        pw.println("  has focus policy:" + (mFocusPolicy != null));
         dumpFocusStack(pw);
         pw.println();
         // log

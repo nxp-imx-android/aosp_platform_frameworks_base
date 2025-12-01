@@ -14463,7 +14463,9 @@ public class AudioService extends IAudioService.Stub
                 mDynPolicyLogger.enqueue((new EventLogger.StringEvent("registerAudioPolicy for "
                         + pcb.asBinder() + " u/pid:" + Binder.getCallingUid() + "/"
                         + Binder.getCallingPid() + " with config:" + app.toCompactLogString()
-                        + " for virtual deviceId: " + attributionSource.getDeviceId()))
+                        + " for virtual deviceId: " + attributionSource.getDeviceId()
+                        + " isFocusPolicy:" + isFocusPolicy
+                        + " isTestFocusPolicy:" + isTestFocusPolicy))
                         .printLog(TAG));
 
                 regId = app.getRegistrationId();
