@@ -97,6 +97,8 @@ public:
     // Called only from RenderThread frame drawing callbacks.
     void applyPendingTransactions(uint64_t);
 #endif
+    void updateRenderTargetSize(uint64_t width, uint64_t height);
+
     void allocateBuffers();
     bool pause();
     void setStopped(bool stopped);

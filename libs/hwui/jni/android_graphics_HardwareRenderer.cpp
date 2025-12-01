@@ -292,6 +292,12 @@ static void android_view_ThreadedRenderer_applyPendingTransactions(JNIEnv* env, 
 #endif
 }
 
+static void android_view_ThreadedRenderer_updateRenderTargetSize(JNIEnv* env, jclass clazz, jlong ptr,
+                                                                 jlong width, jlong height) {
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    proxy->updateRenderTargetSize(width, height);
+}
+
 static jboolean android_view_ThreadedRenderer_pause(JNIEnv* env, jobject clazz,
         jlong proxyPtr) {
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
@@ -1162,6 +1168,8 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_mergeWithNextTransaction},
         {"nApplyPendingTransactions", "(JJ)V",
          (void*)android_view_ThreadedRenderer_applyPendingTransactions},
+        {"nUpdateRenderTargetSize", "(JJJ)V",
+         (void*)android_view_ThreadedRenderer_updateRenderTargetSize}
 };
 
 static JavaVM* mJvm = nullptr;

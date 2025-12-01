@@ -301,6 +301,10 @@ void CanvasContext::applyPendingTransactions(uint64_t frameNumber) {
 }
 #endif
 
+void CanvasContext::updateRenderTargetSize(uint64_t width, uint64_t height) {
+    mRenderPipeline->updateRenderTargetSize(width, height);
+}
+
 void CanvasContext::setupPipelineSurface() {
     bool hasSurface = mRenderPipeline->setSurface(
             mNativeSurface ? mNativeSurface->getNativeWindow() : nullptr, mSwapBehavior);

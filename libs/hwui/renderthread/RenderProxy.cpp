@@ -157,6 +157,12 @@ void RenderProxy::applyPendingTransactions(uint64_t frameNumber) {
 }
 #endif
 
+void RenderProxy::updateRenderTargetSize(uint64_t width, uint64_t height) {
+    return mRenderThread.queue().post([this, width, height]() {
+        mContext->updateRenderTargetSize(width, height);
+    });
+}
+
 void RenderProxy::allocateBuffers() {
     mRenderThread.queue().post([this]() { mContext->allocateBuffers(); });
 }

@@ -149,6 +149,7 @@ public:
     void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
     void applyPendingTransactions(uint64_t);
 #endif
+    void updateRenderTargetSize(uint64_t width, uint64_t height);
 
     bool pauseSurface();
     void setStopped(bool stopped);

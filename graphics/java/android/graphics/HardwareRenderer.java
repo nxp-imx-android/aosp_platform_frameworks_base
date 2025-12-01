@@ -1227,6 +1227,16 @@ public class HardwareRenderer {
     }
 
     /**
+     * Update the size of the rendering surface. At the moment only used
+     * for out-of-process-rendering
+     *
+     * @hide
+     */
+    public void updateRenderTargetSize(long width, long height) {
+        nUpdateRenderTargetSize(mNativeProxy, width, height);
+    }
+
+    /**
      * b/68769804, b/66945974: For low FPS experiments.
      *
      * @hide
@@ -1842,4 +1852,5 @@ public class HardwareRenderer {
     private static native void nMergeWithNextTransaction(long ptr, long transactionPtr,
                                                               long frameNumber);
     private static native void nApplyPendingTransactions(long ptr, long frameNumber);
+    private static native void nUpdateRenderTargetSize(long ptr, long width, long height);
 }

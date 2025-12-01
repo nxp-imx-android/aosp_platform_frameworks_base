@@ -95,6 +95,8 @@ public:
     ANativeWindow* getSurface() override { return nullptr; }
     uint64_t getFrameNumber() override;
 
+    void updateRenderTargetSize(uint64_t width, uint64_t height) override;
+
 private:
     sp<IBinder> mApplyToken;
 
@@ -111,6 +113,9 @@ private:
             GUARDED_BY(mLock);
 
     std::mutex mLock;
+
+    uint64_t mWidth = 0;
+    uint64_t mHeight = 0;
 };
 
 } /* namespace skiapipeline */

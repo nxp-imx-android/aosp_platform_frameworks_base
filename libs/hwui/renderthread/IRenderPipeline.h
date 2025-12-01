@@ -90,6 +90,9 @@ public:
     virtual void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t) {}
     virtual void applyPendingTransactions(uint64_t) {}
 #endif
+    // Only used on SkiaIpcPipeline so we provide an empty default impl
+    virtual void updateRenderTargetSize(uint64_t width, uint64_t height) {}
+
     virtual void onStop() = 0;
     virtual bool isSurfaceReady() = 0;
     virtual bool isContextReady() = 0;

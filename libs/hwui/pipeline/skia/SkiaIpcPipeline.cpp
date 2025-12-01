@@ -94,7 +94,7 @@ MakeCurrentResult SkiaIpcPipeline::makeCurrent() {
 
 Frame SkiaIpcPipeline::getFrame() {
     // Need to plumb "surface size" from ViewRoot
-    return Frame(1, 1, 0);
+    return Frame(mWidth, mHeight, 0);
 }
 
 IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
@@ -110,9 +110,8 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     mIPCRecordingCanvas->startRecording();
 
     // This should be the size plummed down from ViewRoot instead.
-    int width = renderNodes[0]->getWidth();
-    int height = renderNodes[0]->getHeight();
-    mIPCRecordingCanvas->storeSize(width, height);
+    mIPCRecordingCanvas->storeSize(mWidth, mHeight);
+
     renderLayersImpl(*layerUpdateQueue, opaque);
     layerUpdateQueue->clear();
     renderFrameImpl(dirty, renderNodes, opaque, contentDrawBounds, canvas, SkMatrix::I());
@@ -211,6 +210,11 @@ bool SkiaIpcPipeline::mergePendingTransactions(SurfaceComposerClient::Transactio
 
 uint64_t SkiaIpcPipeline::getFrameNumber() {
     return mIPCRecordingCanvas->getRenderCommandBufferProducer()->getFrameNumber();
+}
+
+void SkiaIpcPipeline::updateRenderTargetSize(uint64_t width, uint64_t height) {
+    mWidth = width;
+    mHeight = height;
 }
 
 } /* namespace skiapipeline */

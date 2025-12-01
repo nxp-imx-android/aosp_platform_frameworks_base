@@ -2892,6 +2892,10 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
 
+        if (mAttachInfo.mThreadedRenderer != null) {
+            mAttachInfo.mThreadedRenderer.updateRenderTargetSize(mSurfaceSize.x, mSurfaceSize.y);
+        }
+
         if (mBlastBufferQueue != null && mBlastBufferQueue.isSameSurfaceControl(mSurfaceControl)) {
             mBlastBufferQueue.update(mSurfaceControl,
                 mSurfaceSize.x, mSurfaceSize.y,
