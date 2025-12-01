@@ -113,7 +113,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutManager;
 import android.content.pm.verify.domain.DomainVerificationManager;
 import android.content.pm.verify.domain.IDomainVerificationManager;
-import android.content.pm.webapp.WebAppFrameworkInitializer;
 import android.content.res.Resources;
 import android.content.rollback.RollbackManagerFrameworkInitializer;
 import android.credentials.CredentialManager;
@@ -2073,10 +2072,6 @@ public final class SystemServiceRegistry {
             NpuManagerFrameworkInitializer.registerServiceWrappers();
             VirtualizationFrameworkInitializer.registerServiceWrappers();
             ConnectivityFrameworkInitializerBaklava.registerServiceWrappers();
-
-            if (com.android.webapp.flags.Flags.enableWebAppService()) {
-                WebAppFrameworkInitializer.registerServiceWrappers();
-            }
 
             if (newStoragePublicApi()) {
                 ConfigInfrastructureFrameworkInitializer.registerServiceWrappers();
