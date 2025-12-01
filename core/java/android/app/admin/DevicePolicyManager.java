@@ -18850,19 +18850,19 @@ public class DevicePolicyManager {
     /** @hide */
     public static final int NOT_A_DPC = -1;
     /** @hide */
-    public static final int DEFAULT_DEVICE_OWNER = 1;
+    public static final int DEVICE_OWNER = 1;
     /** @hide */
     public static final int FINANCED_DEVICE_OWNER = 2;
     /** @hide */
-    public static final int PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 3;
+    public static final int MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 3;
     /** @hide */
     public static final int PROFILE_OWNER_ON_USER_0 = 4;
     /** @hide */
-    public static final int PROFILE_OWNER = 5;
+    public static final int MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE = 5;
     /** @hide */
-    public static final int PROFILE_OWNER_ON_USER = 6;
+    public static final int UNAFFILIATED_FULL_USER_PROFILE_OWNER = 6;
     /** @hide */
-    public static final int AFFILIATED_PROFILE_OWNER_ON_USER = 7;
+    public static final int AFFILIATED_FULL_USER_PROFILE_OWNER = 7;
 
     /**
      * Possible DPC types.
@@ -18871,13 +18871,13 @@ public class DevicePolicyManager {
      */
     @IntDef(value = {
             NOT_A_DPC,
-            DEFAULT_DEVICE_OWNER,
+            DEVICE_OWNER,
             FINANCED_DEVICE_OWNER,
-            PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+            MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
             PROFILE_OWNER_ON_USER_0,
-            PROFILE_OWNER,
-            PROFILE_OWNER_ON_USER,
-            AFFILIATED_PROFILE_OWNER_ON_USER
+            MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE,
+            UNAFFILIATED_FULL_USER_PROFILE_OWNER,
+            AFFILIATED_FULL_USER_PROFILE_OWNER
     })
     public @interface DpcType {}
     // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:dpc_type)

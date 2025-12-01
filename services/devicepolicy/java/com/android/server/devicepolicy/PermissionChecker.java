@@ -89,8 +89,8 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
 import static android.Manifest.permission.QUERY_ADMIN_POLICY;
 import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
-import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
-import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE_OWNER;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
@@ -100,9 +100,9 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
 import static android.app.admin.DevicePolicyManager.DpcType;
 import static android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -441,14 +441,20 @@ public class PermissionChecker implements IPermissionChecker {
         AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS.addAll(
                 ADDITIONAL_AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS);
 
-        DPC_PERMISSIONS.put(DEFAULT_DEVICE_OWNER, DEFAULT_DEVICE_OWNER_PERMISSIONS);
+        DPC_PERMISSIONS.put(DEVICE_OWNER, DEFAULT_DEVICE_OWNER_PERMISSIONS);
         DPC_PERMISSIONS.put(FINANCED_DEVICE_OWNER, FINANCED_DEVICE_OWNER_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
-                PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS);
+        DPC_PERMISSIONS.put(MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+                PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS );
         DPC_PERMISSIONS.put(PROFILE_OWNER_ON_USER_0, PROFILE_OWNER_ON_USER_0_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER, PROFILE_OWNER_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER_ON_USER, PROFILE_OWNER_ON_USER_PERMISSIONS);
-        DPC_PERMISSIONS.put(AFFILIATED_PROFILE_OWNER_ON_USER,
+        DPC_PERMISSIONS.put(
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE,
+                PROFILE_OWNER_PERMISSIONS
+        );
+        DPC_PERMISSIONS.put(
+                UNAFFILIATED_FULL_USER_PROFILE_OWNER,
+                PROFILE_OWNER_ON_USER_PERMISSIONS
+        );
+        DPC_PERMISSIONS.put(AFFILIATED_FULL_USER_PROFILE_OWNER,
                 AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS);
     }
 

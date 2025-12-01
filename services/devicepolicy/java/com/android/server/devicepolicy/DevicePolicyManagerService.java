@@ -89,11 +89,11 @@ import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USE
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
-import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.CONTENT_PROTECTION_DISABLED;
 import static android.app.admin.DevicePolicyManager.ContentProtectionPolicy;
-import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
@@ -165,9 +165,9 @@ import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR;
 import static android.app.admin.DevicePolicyManager.PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -3075,7 +3075,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     ActiveAdmin getDefaultDeviceOwnerLocked(@UserIdInt int userId) {
         ensureLocked();
         ComponentName doComponent = mOwners.getDeviceOwnerComponent();
-        if (mOwners.getDeviceOwnerType(doComponent.getPackageName()) == DEFAULT_DEVICE_OWNER) {
+        if (mOwners.getDeviceOwnerType(doComponent.getPackageName()) == DEVICE_OWNER) {
             ActiveAdmin doAdmin = getUserData(userId).mAdminMap.get(doComponent);
             return doAdmin;
         }
@@ -24337,25 +24337,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private @DpcType int getDpcType(CallerIdentity caller) {
         // Check the permissions of DPCs
         if (isDefaultDeviceOwner(caller)) {
-            return DEFAULT_DEVICE_OWNER;
+            return DEVICE_OWNER;
         }
         if (isFinancedDeviceOwner(caller)) {
             return FINANCED_DEVICE_OWNER;
         }
         if (isProfileOwner(caller)) {
             if (isProfileOwnerOfOrganizationOwnedDevice(caller)) {
-                return PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+                return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
             }
             if (isManagedProfile(caller.getUserId())) {
-                return PROFILE_OWNER;
+                return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
             }
             if (isProfileOwnerOnUser0(caller)) {
                 return PROFILE_OWNER_ON_USER_0;
             }
             if (isUserAffiliatedWithDevice(caller.getUserId())) {
-                return AFFILIATED_PROFILE_OWNER_ON_USER;
+                return AFFILIATED_FULL_USER_PROFILE_OWNER;
             }
-            return PROFILE_OWNER_ON_USER;
+            return UNAFFILIATED_FULL_USER_PROFILE_OWNER;
         }
         return NOT_A_DPC;
     }
@@ -24367,19 +24367,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     private @DpcType int getDpcType(@UserIdInt int userId) {
         if (mOwners.isDefaultDeviceOwnerUserId(userId)) {
-            return DEFAULT_DEVICE_OWNER;
+            return DEVICE_OWNER;
         }
         if (mOwners.isFinancedDeviceOwnerUserId(userId)) {
             return FINANCED_DEVICE_OWNER;
         }
         if (mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId)) {
-            return PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+            return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
         }
         if (userId == 0 && mOwners.hasProfileOwner(0)) {
             return PROFILE_OWNER_ON_USER_0;
         }
         if (mOwners.hasProfileOwner(userId)) {
-            return PROFILE_OWNER;
+            return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
         }
         return NOT_A_DPC;
     }
