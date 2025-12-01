@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.privatecompute.IPccService;
@@ -49,6 +51,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
+import com.android.server.pm.pkg.AndroidPackage;
 
 import org.junit.After;
 import org.junit.Before;
@@ -71,6 +74,8 @@ public class PccSandboxManagerInternalTest {
     private static final int USER_ID_2 = 2;
     private static final int NON_PCC_CLIENT_UID = 10001;
     private static final int PCC_CLIENT_UID = 30001;
+    private static final int TRUSTED_PACKAGE_UID = 10002;
+    private static final String TRUSTED_PACKAGE = "com.trusted.package";
     private static final String CORRECT_CALLING_PACKAGE = "com.example.client";
     private static final String WRONG_CALLING_PACKAGE = "com.wrong.package";
     // Example UIDs for different process types
@@ -91,7 +96,6 @@ public class PccSandboxManagerInternalTest {
     private IBinder mRealBinder;
     private ComponentName mServiceName;
     private Intent mIntent;
-
 
     @Mock
     private PackageManagerInternal mPackageManagerInternal;
@@ -139,6 +143,20 @@ public class PccSandboxManagerInternalTest {
                 mIntent, mRealBinder, NON_PCC_CLIENT_UID);
 
         assertNotEquals("Should return a proxy binder", mRealBinder, returnedBinder);
+    }
+
+    @Test
+    public void createPccProxyIfNeeded_asTrustedPackage_returnsDirectBinder() {
+        mPccSandboxManagerInternal.mPccTrustedPackages.add(TRUSTED_PACKAGE);
+        AndroidPackage mockAndroidPackage = mock(AndroidPackage.class);
+        doReturn(TRUSTED_PACKAGE).when(mockAndroidPackage).getPackageName();
+        doReturn(mockAndroidPackage).when(mPackageManagerInternal).getPackage(TRUSTED_PACKAGE_UID);
+
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
+                mIntent, mRealBinder, TRUSTED_PACKAGE_UID);
+
+        assertEquals("Should return a direct binder for trusted package", mRealBinder,
+                returnedBinder);
     }
 
     @Test
