@@ -4307,7 +4307,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (DEBUG_KEYGUARD) Slog.d(TAG, "setKeyguardOccluded occluded=" + isOccluded);
         mKeyguardOccludedChanged = false;
         mPendingKeyguardOccluded = isOccluded;
-        mKeyguardDelegate.setOccluded(isOccluded, true /* notify */);
+        mKeyguardDelegate.setOccluded(isOccluded);
         return mKeyguardDelegate.isShowing();
     }
 
