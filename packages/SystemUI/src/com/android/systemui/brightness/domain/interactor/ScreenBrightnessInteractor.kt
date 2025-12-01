@@ -17,10 +17,10 @@
 package com.android.systemui.brightness.domain.interactor
 
 import com.android.settingslib.display.BrightnessUtils
+import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.brightness.data.repository.ScreenBrightnessRepository
 import com.android.systemui.brightness.shared.BrightnessLog
 import com.android.systemui.brightness.shared.model.GammaBrightness
-import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.brightness.shared.model.logDiffForTable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application

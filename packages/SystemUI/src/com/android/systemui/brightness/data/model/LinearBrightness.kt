@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.brightness.shared.model
-
-import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.util.kotlin.pairwiseBy
-import kotlinx.coroutines.flow.Flow
+package com.android.systemui.brightness.data.model
 
 @JvmInline
 value class LinearBrightness(val floatValue: Float) {
@@ -38,28 +34,4 @@ value class LinearBrightness(val floatValue: Float) {
 
 fun Float.formatBrightness(): String {
     return "%.3f".format(this)
-}
-
-internal fun Flow<LinearBrightness>.logDiffForTable(
-    tableLogBuffer: TableLogBuffer,
-    columnPrefix: String,
-    columnName: String,
-    initialValue: LinearBrightness?,
-): Flow<LinearBrightness> {
-    val initialValueFun = {
-        tableLogBuffer.logChange(
-            columnPrefix,
-            columnName,
-            initialValue?.loggableString,
-            isInitial = true
-        )
-        initialValue
-    }
-    return this.pairwiseBy(initialValueFun) { prevVal: LinearBrightness?, newVal: LinearBrightness
-        ->
-        if (prevVal != newVal) {
-            tableLogBuffer.logChange(columnPrefix, columnName, newVal.loggableString)
-        }
-        newVal
-    }
 }

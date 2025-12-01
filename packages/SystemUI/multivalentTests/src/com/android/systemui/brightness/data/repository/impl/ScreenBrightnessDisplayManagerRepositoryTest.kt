@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.brightness.data.repository
+package com.android.systemui.brightness.data.repository.impl
 
 import android.hardware.display.BrightnessInfo
 import android.hardware.display.BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE
@@ -25,7 +25,7 @@ import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.brightness.shared.model.LinearBrightness
+import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher

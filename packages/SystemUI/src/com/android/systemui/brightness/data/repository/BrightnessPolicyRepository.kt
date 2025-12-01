@@ -16,20 +16,9 @@
 
 package com.android.systemui.brightness.data.repository
 
-import android.content.Context
 import android.os.UserManager
-import com.android.settingslib.RestrictedLockUtils
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.policy.PolicyRestriction
-import com.android.systemui.util.policy.UserRestrictionChecker
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
 
 /** Checks whether the current user is restricted to change the brightness ([RESTRICTION]) */
 interface BrightnessPolicyRepository {
@@ -44,38 +33,4 @@ interface BrightnessPolicyRepository {
     companion object {
         const val RESTRICTION = UserManager.DISALLOW_CONFIG_BRIGHTNESS
     }
-}
-
-@SysUISingleton
-class BrightnessPolicyRepositoryImpl
-@Inject
-constructor(
-    userRepository: UserRepository,
-    private val userRestrictionChecker: UserRestrictionChecker,
-    @Application private val applicationContext: Context,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
-) : BrightnessPolicyRepository {
-    override val restrictionPolicy =
-        userRepository.selectedUserInfo
-            .mapLatest { user ->
-                userRestrictionChecker
-                    .checkIfRestrictionEnforced(
-                        applicationContext,
-                        BrightnessPolicyRepository.RESTRICTION,
-                        user.id,
-                    )
-                    ?.let { PolicyRestriction.Restricted(it) }
-                    ?: if (
-                        userRestrictionChecker.hasBaseUserRestriction(
-                            applicationContext,
-                            UserManager.DISALLOW_CONFIG_BRIGHTNESS,
-                            user.id,
-                        )
-                    ) {
-                        PolicyRestriction.Restricted(RestrictedLockUtils.EnforcedAdmin())
-                    } else {
-                        PolicyRestriction.NoRestriction
-                    }
-            }
-            .flowOn(backgroundDispatcher)
 }

@@ -19,14 +19,14 @@ package com.android.systemui.brightness.data.repository
 import android.hardware.display.BrightnessInfo
 import android.hardware.display.BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE
 import android.hardware.display.BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF
-import com.android.systemui.brightness.shared.model.LinearBrightness
+import com.android.systemui.brightness.data.model.LinearBrightness
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
 class FakeScreenBrightnessRepository(
     initialBrightnessInfo: BrightnessInfo =
-        BrightnessInfo(0f, 0f, 1f, HIGH_BRIGHTNESS_MODE_OFF, 1f, BRIGHTNESS_MAX_REASON_NONE),
+        BrightnessInfo(0f, 0f, 1f, HIGH_BRIGHTNESS_MODE_OFF, 1f, BRIGHTNESS_MAX_REASON_NONE)
 ) : ScreenBrightnessRepository {
 
     private val brightnessInfo = MutableStateFlow(initialBrightnessInfo)
@@ -84,7 +84,7 @@ class FakeScreenBrightnessRepository(
                     max.floatValue,
                     highBrightnessMode,
                     highBrightnessTransitionPoint,
-                    brightnessMaxReason
+                    brightnessMaxReason,
                 )
             }
     }
