@@ -105,7 +105,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         SurfaceControlViewHost createSurfaceControlViewHost(
                 @NonNull Context context,
                 @NonNull Display display,
-                @NonNull InputTransferToken inputTransferToken);
+                @Nullable InputTransferToken inputTransferToken);
     }
 
     /**
@@ -292,13 +292,13 @@ public abstract class InsightSurfaceVisualizerService extends Service {
 
                 final SurfaceControlViewHost surfaceControlViewHost =
                         mSurfaceControlViewHostFactory.createSurfaceControlViewHost(
-                                mContext, mDisplay, clientInfo.getInputTransferToken());
+                                mContext, mDisplay, null);
                 mSurfaceControlViewHostsByClient.put(clientInfo.getId(), surfaceControlViewHost);
 
                 surfaceControlViewHost.setView(
                         view,
-                        MeasureSpec.getSize(clientInfo.getWidthMeasureSpec()),
-                        MeasureSpec.getSize(clientInfo.getHeightMeasureSpec()));
+                        MeasureSpec.getSize(clientInfo.getMeasureSpecWidth()),
+                        MeasureSpec.getSize(clientInfo.getMeasureSpecHeight()));
                 clientInfo.onSurfaceCreated(surfaceControlViewHost.getSurfacePackage());
 
                 // Tell the visualizer the client is now connected.

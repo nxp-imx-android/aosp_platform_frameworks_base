@@ -26,12 +26,14 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.view.Display;
 import android.view.SurfaceControlViewHost.SurfacePackage;
+import android.view.View;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -56,7 +58,7 @@ public class InsightSurfaceClientTest {
     @Mock private Configuration mConfiguration;
     @Mock private SurfacePackage mSurfacePackage;
     @Mock private PersonalContextManager mPersonalContextManager;
-    @Mock private InsightSurfaceClient.ClientCallback mConnectionCallbacks;
+    @Mock private InsightSurfaceClient.ClientCallback mClientCallbacks;
     private final Executor mExecutor = Runnable::run;
     private final BundleHint mHint = new BundleHint.Builder().build();
     private InsightSurfaceClient mClient;
@@ -73,14 +75,14 @@ public class InsightSurfaceClientTest {
                 .thenReturn(mPersonalContextManager);
 
         mClient =
-                new InsightSurfaceClient.Builder(mContext, mExecutor, mConnectionCallbacks)
+                new InsightSurfaceClient.Builder(mContext, mExecutor, mClientCallbacks)
                         .addHint(mHint)
                         .build();
     }
 
     @Test
     public void testSurfaceCreated() throws RemoteException {
-        mClient.register(0, 0);
+        mClient.register();
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
         verify(mPersonalContextManager).registerInsightSurfaceClient(
@@ -88,12 +90,12 @@ public class InsightSurfaceClientTest {
 
         final IEmbeddedInsightSurfaceCallback callback = clientInfoCaptor.getValue().getCallback();
         callback.onSurfaceCreated(mSurfacePackage);
-        verify(mConnectionCallbacks).onSurfaceCreated(mSurfacePackage);
+        verify(mClientCallbacks).onSurfaceCreated(mSurfacePackage);
     }
 
     @Test
     public void testSurfaceReleased() throws RemoteException {
-        mClient.register(0, 0);
+        mClient.register();
         mClient.unregister();
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
@@ -101,24 +103,72 @@ public class InsightSurfaceClientTest {
 
         final IEmbeddedInsightSurfaceCallback callback = clientInfoCaptor.getValue().getCallback();
         callback.onSurfaceReleased(mSurfacePackage);
-        verify(mConnectionCallbacks).onSurfaceReleased(mSurfacePackage);
+        verify(mClientCallbacks).onSurfaceReleased(mSurfacePackage);
     }
 
     @Test
     public void testInsightSurfaceClientCreation() {
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks).build();
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks).build();
 
         assertThat(client.getHints()).isEmpty();
         assertThat(client.getReceivers()).isEmpty();
     }
 
     @Test
+    public void testInsightSurfaceClientCreation_withMeasureSpecs() {
+        final int widthMeasureSpec =
+                View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY);
+        final int heightMeasureSpec =
+                View.MeasureSpec.makeMeasureSpec(200, View.MeasureSpec.EXACTLY);
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                        .setMeasureSpecs(widthMeasureSpec, heightMeasureSpec)
+                        .build();
+
+        assertThat(client.getMeasureSpecWidth()).isEqualTo(widthMeasureSpec);
+        assertThat(client.getMeasureSpecHeight()).isEqualTo(heightMeasureSpec);
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation_withBackgroundColor() {
+        final Color backgroundColor = Color.valueOf(Color.RED);
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                        .setBackgroundColor(backgroundColor)
+                        .build();
+
+        assertThat(client.getBackgroundColor()).isEqualTo(backgroundColor);
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation_withNestedScrollAxes() {
+        final int nestedScrollAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                        .setNestedScrollAxes(nestedScrollAxes)
+                        .build();
+
+        assertThat(client.getNestedScrollAxes()).isEqualTo(nestedScrollAxes);
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation_withNestedScrollAxisLocked() {
+        final boolean nestedScrollAxisLocked = true;
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                        .setNestedScrollAxisLocked(nestedScrollAxisLocked)
+                        .build();
+
+        assertThat(client.isNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
+    }
+
+    @Test
     public void testInsightSurfaceClientCreation_withHint() {
-        final BundleHint hint = new BundleHint();
+        final BundleHint hint = new BundleHint.Builder().build();
 
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks)
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
                         .addHint(hint).build();
 
         assertThat(client.getHints()).containsExactly(hint);
@@ -129,7 +179,7 @@ public class InsightSurfaceClientTest {
         final InsightSurfaceClient.InsightReceiver receiver = insight -> true;
 
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks)
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
                         .addReceiver(receiver)
                         .build();
 
@@ -139,10 +189,10 @@ public class InsightSurfaceClientTest {
     @Test
     public void testPublishHints() {
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks).build();
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks).build();
         final Set<ContextHint> hints = Set.of(mHint);
 
-        client.register(0, 0);
+        client.register();
         client.publishHints(hints);
 
         verify(mPersonalContextManager).publishInsightSurfaceHints(
