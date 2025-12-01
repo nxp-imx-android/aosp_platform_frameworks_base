@@ -31,6 +31,7 @@ import android.content.Context;
 import android.hardware.biometrics.BiometricAuthenticator;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.Flags;
+import android.hardware.biometrics.IdentityCheckInfo;
 import android.hardware.biometrics.PromptInfo;
 import android.os.RemoteException;
 import android.os.UserManager;
@@ -195,14 +196,21 @@ class PreAuthInfo {
             BiometricService.SettingObserver settingObserver) {
         if (!Flags.identityCheckTestApi() && dropCredentialFallback(promptInfo.getAuthenticators(),
                 settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
-                        effectiveUserId), trustManager)) {
+                        promptInfo, effectiveUserId), trustManager)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-        } else if (Flags.identityCheckTestApi()
-                && Utils.shouldApplyIdentityCheck(promptInfo.getAuthenticators())
-                && settingObserver.isIdentityCheckActive(effectiveUserId)) {
-            promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
-            promptInfo.setIdentityCheckActive(true);
+        } else if (Flags.identityCheckTestApi()) {
+            final boolean shouldApplyIdentityCheck =
+                    Utils.shouldApplyIdentityCheck(promptInfo.getAuthenticators());
+            if (!shouldApplyIdentityCheck) {
+                promptInfo.setIdentityCheckInactiveReason(
+                        IdentityCheckInfo.IDENTITY_CHECK_AUTHENTICATORS_INVALID);
+            }
+            if (shouldApplyIdentityCheck
+                    && settingObserver.isIdentityCheckActive(promptInfo, effectiveUserId)) {
+                promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+                promptInfo.setIdentityCheckActive(true);
+            }
         }
 
         return promptInfo.isIdentityCheckActive();

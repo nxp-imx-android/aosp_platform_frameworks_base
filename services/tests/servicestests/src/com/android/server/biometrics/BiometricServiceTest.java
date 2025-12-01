@@ -82,6 +82,7 @@ import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.IIdentityCheckStateListener.WatchRangingState;
+import android.hardware.biometrics.IdentityCheckInfo;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.display.DisplayManagerGlobal;
@@ -1542,7 +1543,8 @@ public class BiometricServiceTest {
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
+                .thenReturn(true);
 
         invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
                 false /* requireConfirmation */,
@@ -1572,7 +1574,8 @@ public class BiometricServiceTest {
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
+                .thenReturn(true);
 
         invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
                 false /* requireConfirmation */,
@@ -1773,7 +1776,7 @@ public class BiometricServiceTest {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
@@ -1781,7 +1784,7 @@ public class BiometricServiceTest {
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK));
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE,
@@ -1795,7 +1798,7 @@ public class BiometricServiceTest {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
@@ -1804,7 +1807,7 @@ public class BiometricServiceTest {
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK
                         | Authenticators.BIOMETRIC_STRONG));
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
@@ -1819,7 +1822,7 @@ public class BiometricServiceTest {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_CREDENTIAL, Authenticators.DEVICE_CREDENTIAL);
@@ -1827,7 +1830,7 @@ public class BiometricServiceTest {
         assertEquals(BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK));
 
-        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(any(), anyInt()))
                 .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
@@ -2248,7 +2251,114 @@ public class BiometricServiceTest {
                 profileParentId);
 
         assertTrue(settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                new PromptInfo(),
                 userId));
+    }
+
+    @Test
+    public void testIdentityCheckDisabledReason_toggleDisabled() {
+        final Context context = ApplicationProvider.getApplicationContext();
+        final int userId = context.getContentResolver().getUserId();
+        final BiometricService.SettingObserver settingObserver =
+                new BiometricService.SettingObserver(
+                        context, mBiometricHandlerProvider.getBiometricCallbackHandler(),
+                        new ArrayList<>(), mUserManager, mFingerprintManager, mFaceManager);
+        final PromptInfo promptInfo = new PromptInfo();
+
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS, 0, userId);
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED, 1,
+                userId);
+
+        assertThat(settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                promptInfo, userId)).isFalse();
+        assertThat(promptInfo.getIdentityCheckInactiveReason()).isEqualTo(
+                IdentityCheckInfo.IDENTITY_CHECK_TOGGLE_DISABLED);
+    }
+
+    @Test
+    public void testIdentityCheckDisabledReason_requirementsNotSatisfied() {
+        final Context context = ApplicationProvider.getApplicationContext();
+        final int userId = context.getContentResolver().getUserId();
+        final BiometricService.SettingObserver settingObserver =
+                new BiometricService.SettingObserver(
+                        context, mBiometricHandlerProvider.getBiometricCallbackHandler(),
+                        new ArrayList<>(), mUserManager, mFingerprintManager, mFaceManager);
+        final PromptInfo promptInfo = new PromptInfo();
+
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS, 1, userId);
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED, 0,
+                userId);
+
+        assertThat(settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                promptInfo, userId)).isFalse();
+        assertThat(promptInfo.getIdentityCheckInactiveReason()).isEqualTo(
+                IdentityCheckInfo.IDENTITY_CHECK_REQUIREMENTS_NOT_SATISFIED);
+    }
+
+    @Test
+    public void testIdentityCheckDisabledReason_strongBiometricsEnrolled() {
+        final Context context = ApplicationProvider.getApplicationContext();
+        final int userId = context.getContentResolver().getUserId();
+        final BiometricService.SettingObserver settingObserver =
+                new BiometricService.SettingObserver(
+                        context, mBiometricHandlerProvider.getBiometricCallbackHandler(),
+                        new ArrayList<>(), mUserManager, mFingerprintManager, mFaceManager);
+        final PromptInfo promptInfo = new PromptInfo();
+
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS, 1, userId);
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED, 1,
+                userId);
+
+        assertThat(settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                promptInfo, userId)).isFalse();
+        assertThat(promptInfo.getIdentityCheckInactiveReason()).isEqualTo(
+                IdentityCheckInfo.IDENTITY_CHECK_STRONG_BIOMETRICS_NOT_ENROLLED);
+    }
+
+    @Test
+    public void testIdentityCheckDisabledReason_deviceInTrustedLocation() throws RemoteException {
+        final Context context = ApplicationProvider.getApplicationContext();
+        final int userId = context.getContentResolver().getUserId();
+        final BiometricService.SettingObserver settingObserver =
+                new BiometricService.SettingObserver(
+                        context, mBiometricHandlerProvider.getBiometricCallbackHandler(),
+                        new ArrayList<>(), mUserManager, mFingerprintManager, mFaceManager,
+                        mTrustManager);
+        final PromptInfo promptInfo = new PromptInfo();
+
+        verify(mFingerprintManager).addAuthenticatorsRegisteredCallback(
+                mFingerprintAuthenticatorRegisteredCallbackCaptor.capture());
+
+        mFingerprintAuthenticatorRegisteredCallbackCaptor.getValue().onAllAuthenticatorsRegistered(
+                mFingerprintSensorPropertiesInternals);
+
+        verify(mFingerprintManager).registerBiometricStateListener(
+                mBiometricStateListenerArgumentCaptor.capture());
+
+        mBiometricStateListenerArgumentCaptor.getValue().onEnrollmentsChanged(userId,
+                SENSOR_ID_FINGERPRINT, true /* hasEnrollments */);
+
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS, 1, userId);
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED, 1,
+                userId);
+        Settings.Secure.putIntForUser(context.getContentResolver(), FINGERPRINT_APP_ENABLED,
+                1, userId);
+
+        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+
+        assertThat(settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                promptInfo, userId)).isTrue();
+        assertThat(settingObserver.isIdentityCheckActive(promptInfo, userId)).isFalse();
+        assertThat(promptInfo.getIdentityCheckInactiveReason()).isEqualTo(
+                IdentityCheckInfo.IDENTITY_CHECK_DEVICE_IN_TRUSTED_LOCATION);
     }
 
     @Test
