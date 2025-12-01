@@ -97,11 +97,12 @@ class PinnedLayerPresentationController(
      *
      * @param task a task that's being clamped.
      * @param bounds current task's bounds, either real task position or leash position.
+     * @param displayId a source display id based on which to calculate bounds.
      * @return new bounds that match window constraints and that're placed inside visible display
      *   bounds.
      */
-    fun clampToDisplay(task: TaskInfo, bounds: Rect): Rect? {
-        val displayDetails = getDisplayDetails(task.displayId) ?: return null
+    fun clampToDisplay(task: TaskInfo, bounds: Rect, displayId: Int = task.displayId): Rect? {
+        val displayDetails = getDisplayDetails(displayId) ?: return null
 
         return clampSizeToConstraints(bounds, displayDetails)?.also {
             ensureNotOffscreen(it, displayDetails)
