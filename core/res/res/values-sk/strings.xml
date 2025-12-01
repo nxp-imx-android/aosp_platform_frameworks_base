@@ -285,7 +285,7 @@
     <string name="global_action_screenshot" msgid="2610053466156478564">"Snímka obrazovky"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Pohotovostný režim"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Nahlásiť chybu"</string>
-    <string name="bugreport_message" msgid="5212529146119624326">"Týmto zhromaždíte informácie o aktuálnom stave zariadenia. Informácie je potom možné odoslať e-mailom, chvíľu však potrvá, kým bude hlásenie chyby pripravené na odoslanie. Prosíme vás preto o trpezlivosť."</string>
+    <string name="bugreport_message" msgid="5212529146119624326">"Týmto zhromaždíte informácie o aktuálnom stave zariadenia. Informácie je potom možné odoslať e‑mailom, chvíľu však potrvá, kým bude hlásenie chyby pripravené na odoslanie. Prosíme vás preto o trpezlivosť."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktívne nahlásenie"</string>
     <string name="bugreport_option_interactive_summary" msgid="8493795476325339542">"Táto možnosť je vhodná pre väčšinu prípadov. Umožňuje sledovať priebeh nahlásenia, zadávať ďalšie podrobnosti o probléme a vytvárať snímky obrazovky. Môžu byť vynechané niektoré menej používané sekcie, ktorých nahlásenie trvá dlho."</string>
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Úplné nahlásenie"</string>
@@ -647,6 +647,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Umožňuje aplikácii prístup k zariadeniam v miestnej sieti"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"používať rozhranie loopback"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Umožňuje aplikácii interagovať s inými aplikáciami cez rozhranie loopback"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"určovať relatívnu polohu medzi zariadeniami v okolí"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Povoľte aplikácii určovať relatívnu polohu medzi zariadeniami v okolí"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferované informácie platenej služby NFC"</string>
@@ -1696,7 +1700,7 @@
     <string name="data_usage_mobile_limit_snoozed_title" msgid="101888478915677895">"Prekročený limit mobilných dát"</string>
     <string name="data_usage_wifi_limit_snoozed_title" msgid="1622359254521960508">"Prekročený limit dát cez Wi-Fi"</string>
     <string name="data_usage_limit_snoozed_body" msgid="545146591766765678">"Prekročili ste stanovený limit o <xliff:g id="SIZE">%s</xliff:g>"</string>
-    <string name="data_usage_restricted_title" msgid="126711424380051268">"Dátové prenosy obmedzené"</string>
+    <string name="data_usage_restricted_title" msgid="126711424380051268">"Dátové prenosy sú obmedzené"</string>
     <string name="data_usage_restricted_body" msgid="5338694433686077733">"Klepnutím odstránite obmedzenie."</string>
     <string name="data_usage_rapid_title" msgid="2950192123248740375">"Vysoké využitie mobilných dát"</string>
     <string name="data_usage_rapid_body" msgid="3886676853263693432">"Vaše aplikácie využili viac dát než zvyčajne"</string>
@@ -2181,29 +2185,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Žiadne návrhy automatického dopĺňania"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{Jeden návrh automatického dopĺňania}few{# návrhy automatického dopĺňania}many{# autofill suggestions}other{# návrhov automatického dopĺňania}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Uložiť do služby "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"Uložiť informácie do služby "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Chcete položku <xliff:g id="TYPE">%1$s</xliff:g> uložiť do služby "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"Uložte <xliff:g id="TYPE">%1$s</xliff:g> do služby "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Chcete položky <xliff:g id="TYPE_0">%1$s</xliff:g> a <xliff:g id="TYPE_1">%2$s</xliff:g> uložiť do služby "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"Uložte <xliff:g id="TYPE_0">%1$s</xliff:g> a <xliff:g id="TYPE_1">%2$s</xliff:g> do služby "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Chcete položky <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> a <xliff:g id="TYPE_2">%3$s</xliff:g> uložiť do služby "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"Uložte <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> a <xliff:g id="TYPE_2">%3$s</xliff:g> do služby "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"Aktualizovať v službe "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"Aktualizujte informácie v službe "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Chcete údaje <xliff:g id="TYPE">%1$s</xliff:g> aktualizovať v službe "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"Aktualizujte <xliff:g id="TYPE">%1$s</xliff:g> v službe "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Chcete položky <xliff:g id="TYPE_0">%1$s</xliff:g> a <xliff:g id="TYPE_1">%2$s</xliff:g> aktualizovať v službe "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"Uložte <xliff:g id="TYPE_0">%1$s</xliff:g> a <xliff:g id="TYPE_1">%2$s</xliff:g> v službe "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Chcete tieto položky aktualizovať v službe "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> a <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"Aktualizujte v službe "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" tieto položky: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> a <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"Uložiť"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"Nie, vďaka"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Teraz nie"</string>

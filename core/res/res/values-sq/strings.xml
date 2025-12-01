@@ -278,8 +278,7 @@
     <string name="global_action_restart" msgid="4678451019561687074">"Rinis"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Urgjenca"</string>
     <string name="global_action_bug_report" msgid="5127867163044170003">"Raport i defektit në kod"</string>
-    <!-- no translation found for global_action_feedback (3480836834202300036) -->
-    <skip />
+    <string name="global_action_feedback" msgid="3480836834202300036">"Komentet"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Jepi fund sesionit"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Pamja e ekranit"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Në gatishmëri"</string>
@@ -646,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Lejon që aplikacioni të qaset në pajisjet në rrjetin lokal"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"përdor ndërfaqen e përsëritjes"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Lejon që aplikacioni të ndërveprojë me aplikacionet e tjera nëpërmjet ndërfaqes së përsëritjes"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"të përcaktojë pozicionin e përafërt mes pajisjeve në afërsi"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Lejo që aplikacioni të përcaktojë pozicionin e përafërt mes pajisjeve në afërsi"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informacionet për shërbimin e preferuar të pagesës me NFC"</string>

@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"به برنامه اجازه می دهد تا به دستگاه های شبکه محلی دسترسی پیدا کند"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"استفاده کردن از میانای حلقه بازگشتی"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"به برنامه اجازه می‌دهد ازطریق میانای حلقه بازگشتی با برنامه‌های دیگر تعامل داشته باشد"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"تعیین موقعیت نسبی بین دستگاه‌های اطراف"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"به برنامه اجازه داده می‌شود موقعیت نسبی بین دستگاه‌های اطراف را تعیین کند"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏اطلاعات ترجیحی سرویس پرداخت NFC"</string>
@@ -1421,7 +1425,7 @@
   </string-array>
     <string name="network_switch_type_name_unknown" msgid="3665696841646851068">"نوع شبکه نامشخص"</string>
     <string name="accept" msgid="5447154347815825107">"پذیرفتن"</string>
-    <string name="decline" msgid="6490507610282145874">"نپذیرفتن"</string>
+    <string name="decline" msgid="6490507610282145874">"رد کردن"</string>
     <string name="select_character" msgid="3352797107930786979">"درج نویسه"</string>
     <string name="sms_control_title" msgid="4748684259903148341">"درحال ارسال پیامک‌ها"</string>
     <string name="sms_control_message" msgid="6574313876316388239">"‏&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; درحال ارسال تعداد زیادی پیامک است. آیا اجازه می‌دهید این برنامه همچنان پیامک ارسال کند؟"</string>
@@ -1494,7 +1498,7 @@
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"درحال اشتراک‌گذاری گزارش اشکال…‏"</string>
     <string name="share_remote_bugreport_notification_message_finished" msgid="7325635795739260135">"سرپرست سیستم شما برای کمک به عیب‌یابی این دستگاه، گزارش اشکال درخواست کرده است. ممکن است برنامه‌ها و داده‌ها به اشتراک گذاشته شوند."</string>
     <string name="share_remote_bugreport_action" msgid="7630880678785123682">"اشتراک‌گذاری"</string>
-    <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"نپذیرفتن"</string>
+    <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"رد کردن"</string>
     <string name="select_input_method" msgid="3971267998568587025">"انتخاب روش ورودی"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"تنظیمات زبان"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"پیکربندی <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
@@ -2069,7 +2073,7 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
-    <string name="call_notification_answer_action" msgid="5999246836247132937">"پاسخ دادن"</string>
+    <string name="call_notification_answer_action" msgid="5999246836247132937">"جواب"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ویدیو"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"رد کردن"</string>
     <string name="call_notification_hang_up_action" msgid="9130720590159188131">"قطع تماس"</string>
@@ -2179,29 +2183,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"هیچ پیشنهاد تکمیل خودکاری نیست"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{یک پیشنهاد تکمیل خودکار}one{# پیشنهاد تکمیل خودکار}other{# پیشنهاد تکمیل خودکار}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"در "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" ذخیره شود؟"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"ذخیره کردن اطلاعات در "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"<xliff:g id="TYPE">%1$s</xliff:g> در "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" ذخیره شود؟"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"ذخیره کردن <xliff:g id="TYPE">%1$s</xliff:g> در "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"<xliff:g id="TYPE_0">%1$s</xliff:g> و <xliff:g id="TYPE_1">%2$s</xliff:g> در "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" ذخیره شود؟"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"ذخیره کردن <xliff:g id="TYPE_0">%1$s</xliff:g> و <xliff:g id="TYPE_1">%2$s</xliff:g> در "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"<xliff:g id="TYPE_0">%1$s</xliff:g>، <xliff:g id="TYPE_1">%2$s</xliff:g> و <xliff:g id="TYPE_2">%3$s</xliff:g> در "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" ذخیره شود؟"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"ذخیره کردن <xliff:g id="TYPE_0">%1$s</xliff:g>، <xliff:g id="TYPE_1">%2$s</xliff:g>، و <xliff:g id="TYPE_2">%3$s</xliff:g> در "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"در "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" به‌روزرسانی شود؟"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"به‌روز کردن اطلاعات در "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"<xliff:g id="TYPE">%1$s</xliff:g> در "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" به‌روزرسانی شود؟"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"به‌روز کردن <xliff:g id="TYPE">%1$s</xliff:g> در "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"<xliff:g id="TYPE_0">%1$s</xliff:g> و <xliff:g id="TYPE_1">%2$s</xliff:g> در "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" به‌روزرسانی شود؟"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"به‌روز کردن <xliff:g id="TYPE_0">%1$s</xliff:g> و <xliff:g id="TYPE_1">%2$s</xliff:g> در "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"این موارد در "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>، <xliff:g id="TYPE_1">%2$s</xliff:g>، و <xliff:g id="TYPE_2">%3$s</xliff:g> به‌روزرسانی شود؟"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"به‌روز کردن این موارد در "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>، <xliff:g id="TYPE_1">%2$s</xliff:g>، و <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"ذخیره"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"نه سپاسگزارم"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"حالا نه"</string>

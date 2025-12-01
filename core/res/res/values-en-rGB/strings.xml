@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Allows the app to access local network devices"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"use loopback interface"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Allows the app to interact with other apps over a loopback interface"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"determine relative position between nearby devices"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Allow the app to determine relative position between nearby devices"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferred NFC payment service information"</string>
@@ -2179,29 +2183,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"No auto-fill suggestions"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{One auto-fill suggestion}other{# auto-fill suggestions}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Save to "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"Save info to "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Save <xliff:g id="TYPE">%1$s</xliff:g> to "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"Save <xliff:g id="TYPE">%1$s</xliff:g> to "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Save <xliff:g id="TYPE_0">%1$s</xliff:g> and <xliff:g id="TYPE_1">%2$s</xliff:g> to "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"Save <xliff:g id="TYPE_0">%1$s</xliff:g> and <xliff:g id="TYPE_1">%2$s</xliff:g> to "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Save <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> and <xliff:g id="TYPE_2">%3$s</xliff:g> to "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"Save <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> and <xliff:g id="TYPE_2">%3$s</xliff:g> to "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"Update in "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"Update info in "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Update <xliff:g id="TYPE">%1$s</xliff:g> in "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"Update <xliff:g id="TYPE">%1$s</xliff:g> in "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Update <xliff:g id="TYPE_0">%1$s</xliff:g> and <xliff:g id="TYPE_1">%2$s</xliff:g> in "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"Update <xliff:g id="TYPE_0">%1$s</xliff:g> and <xliff:g id="TYPE_1">%2$s</xliff:g> in "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Update these items in "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, and <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"Update these items in "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> and <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"Save"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"No, thanks"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Not now"</string>

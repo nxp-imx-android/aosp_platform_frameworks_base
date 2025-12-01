@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ऐप्लिकेशन को आपके लोकल नेटवर्क से कनेक्ट किए गए डिवाइसों का ऐक्सेस मिलता है"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"लूपबैक इंटरफ़ेस का इस्तेमाल करें"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"इससे ऐप्लिकेशन को लूपबैक इंटरफ़ेस के ज़रिए अन्य ऐप्लिकेशन के साथ इंटरैक्ट करने की अनुमति मिलती है"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"आस-पास मौजूद डिवाइसों के बीच की दूरी का पता लगाएं"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ऐप्लिकेशन को, आस-पास मौजूद डिवाइसों के बीच की दूरी का पता लगाने की अनुमति दें"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"NFC का इस्तेमाल करने वाली पैसे चुकाने की पसंदीदा सेवा की जानकारी"</string>
@@ -2179,29 +2183,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"ऑटोमैटिक भरने का कोई सुझाव नहीं"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{जानकारी अपने-आप भरने के लिए एक सुझाव}one{जानकारी अपने-आप भरने के लिए # सुझाव}other{जानकारी अपने-आप भरने के लिए # सुझाव}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"क्या आप "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" में सेव करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"जानकारी को "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" में सेव करें"</string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"क्या आप "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" में <xliff:g id="TYPE">%1$s</xliff:g> सेव करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"<xliff:g id="TYPE">%1$s</xliff:g> को "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" में सेव करें"</string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"क्या आप "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" में <xliff:g id="TYPE_0">%1$s</xliff:g> और <xliff:g id="TYPE_1">%2$s</xliff:g> सेव करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"<xliff:g id="TYPE_0">%1$s</xliff:g> और <xliff:g id="TYPE_1">%2$s</xliff:g> को "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" में सेव करें"</string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"क्या आप "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" में <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, और <xliff:g id="TYPE_2">%3$s</xliff:g> सेव करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"<xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, और <xliff:g id="TYPE_2">%3$s</xliff:g> को "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" में सेव करें"</string>
     <string name="autofill_update_title" msgid="3630695947047069136">"क्या आप "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" में अपडेट करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" में जानकारी अपडेट करें"</string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"क्या आप "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" में <xliff:g id="TYPE">%1$s</xliff:g> अपडेट करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"<xliff:g id="TYPE">%1$s</xliff:g> को "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>" में अपडेट करें"</string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"क्या आप "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" में <xliff:g id="TYPE_0">%1$s</xliff:g> और <xliff:g id="TYPE_1">%2$s</xliff:g> अपडेट करना चाहते हैं?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"<xliff:g id="TYPE_0">%1$s</xliff:g> और <xliff:g id="TYPE_1">%2$s</xliff:g> को "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>" में अपडेट करें"</string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"क्या आपको "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" में इन आइटम को अपडेट करना है: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, और <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" में ये आइटम अपडेट करें: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, और <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"सेव करें"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"नहीं, धन्यवाद"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"अभी नहीं"</string>

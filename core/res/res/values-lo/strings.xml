@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ອະນຸຍາດໃຫ້ແອັບເຂົ້າເຖິງອຸປະກອນໃນເຄືອຂ່າຍທ້ອງຖິ່ນ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ໃຊ້ສ່ວນຕິດຕໍ່ Loopback"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ອະນຸຍາດໃຫ້ແອັບໂຕ້ຕອບກັບແອັບອື່ນໆຜ່ານສ່ວນຕິດຕໍ່ Loopback"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"ກຳນົດຕຳແໜ່ງທີ່ກ່ຽວຂ້ອງກັນລະຫວ່າງອຸປະກອນທີ່ຢູ່ໃກ້ຄຽງ"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ອະນຸຍາດໃຫ້ແອັບກຳນົດຕຳແໜ່ງທີ່ກ່ຽວຂ້ອງກັນລະຫວ່າງອຸປະກອນທີ່ຢູ່ໃກ້ຄຽງ"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ຂໍ້ມູນບໍລິການການຈ່າຍເງິນ NFC ທີ່ຕ້ອງການ"</string>
