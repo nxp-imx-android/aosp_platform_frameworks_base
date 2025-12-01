@@ -368,6 +368,13 @@ public class VoiceInteractionService extends Service {
      * to receive interaction from it. You should generally do initialization here
      * rather than in {@link #onCreate}. Methods such as {@link #showSession} will
      * not be operational until this point.
+     *
+     * <p>Note: Under some circumstances, it is possible for {@link #onReady} to be called after
+     * {@link #onDestroy} has been called. This can happen in cases where the system is in the
+     * process of shutting down the service, but the {@code IVoiceInteractionManagerService}
+     * still sends a final "ready" signal. Therefore, implementations must be prepared for
+     * {@link #onReady} to be called even after {@link #onDestroy}, and should not rely on a
+     * fixed lifecycle order.
      */
     public void onReady() {
         mSystemService = IVoiceInteractionManagerService.Stub.asInterface(
@@ -401,6 +408,10 @@ public class VoiceInteractionService extends Service {
      * Called during service de-initialization to tell you when the system is shutting the
      * service down.
      * At this point this service may no longer be the active {@link VoiceInteractionService}.
+     *
+     * <p>Note: After this method is called, it is possible for other methods on this service
+     * to be called, including {@link #onReady}. Implementations should be prepared to handle
+     * this case gracefully.
      */
     public void onShutdown() {
     }
