@@ -348,7 +348,7 @@ public class InputMethodManagerServiceTestBase {
     protected void verifyHideSoftInput(boolean hideSoftInput)
             throws RemoteException {
         synchronized (ImfLock.class) {
-            verify(mMockInputMethodBindingController, never()).setImeNotVisible();
+            verify(mMockInputMethodBindingController, never()).unbindVisibleConnection();
         }
         verify(mMockInputMethod, times(hideSoftInput ? 1 : 0))
                 .hideSoftInput(notNull() /* statsToken */);
