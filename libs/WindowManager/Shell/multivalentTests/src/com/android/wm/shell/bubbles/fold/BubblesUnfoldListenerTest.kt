@@ -121,6 +121,7 @@ class BubblesUnfoldListenerTest {
     fun fold_expandedBubble_staysAwakeOnFold_shouldStartTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
+        bubble.setIsTaskValidToBubble(true)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
@@ -161,7 +162,7 @@ class BubblesUnfoldListenerTest {
     fun fold_expandedTaskValidToBubble_staysAwakeOnFold_shouldStartFullscreenTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTaskValidToBubble(true)
+        bubble.setIsTaskValidToBubble(false)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
@@ -176,7 +177,7 @@ class BubblesUnfoldListenerTest {
     fun fold_expandedTaskInValidToBubble_staysAwakeOnFold_shouldStartFloatingTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTaskValidToBubble(false)
+        bubble.setIsTaskValidToBubble(true)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
