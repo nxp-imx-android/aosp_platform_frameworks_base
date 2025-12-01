@@ -685,6 +685,35 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertSame(childTask2, parentTask2.getTopChild());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void setHandlePackageUpdateForRootContainer_withRootTaskLeafTask_onlyUpdatesRootTask() {
+        final Task rootTask = createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        final Task leafTask = new TaskBuilder(mSupervisor)
+                .setParentTask(rootTask)
+                .build();
+        leafTask.setParent(rootTask);
+
+        // The default state is false.
+        assertFalse("Leaf task should initially not handle package updates",
+                leafTask.mHandlePackageUpdate);
+        assertFalse("Root task should initially not handle package updates",
+                rootTask.mHandlePackageUpdate);
+
+        // Set handlePackageUpdate to true.
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = rootTask.getTaskInfo().token;
+        wct.setHandlePackageUpdateForRootContainer(token, true /* handlePackageUpdate */);
+        wct.setHandlePackageUpdateForRootContainer(leafTask.getTaskInfo().token,
+                true /* handlePackageUpdate */);
+        applyTransaction(wct);
+
+        assertTrue("Root task should be updated to handle package updates",
+                rootTask.mHandlePackageUpdate);
+        assertFalse("Leaf task should not handle package updates", leafTask.mHandlePackageUpdate);
+    }
+
     private Task createTask(int taskId) {
         return new Task.Builder(mAtm)
                 .setTaskId(taskId)
