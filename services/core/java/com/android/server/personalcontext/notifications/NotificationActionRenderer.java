@@ -100,7 +100,7 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean alreadyRendered) {
+    public void render(@NonNull ContextInsight insight) {
         if (mNotificationManagerInternal == null) {
             Slog.e(TAG, "NotificationManagerInternal not found.");
             return;

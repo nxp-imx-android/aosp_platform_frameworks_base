@@ -18,21 +18,21 @@ package android.service.personalcontext.renderer;
 
 import android.os.ParcelUuid;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.renderer.IGetFilterCallback;
+import android.service.personalcontext.renderer.RendererFilter;
 import android.service.personalcontext.RenderToken;
 
 /** @hide */
-interface IInsightRenderer {
+oneway interface IInsightRenderer {
     /**
      * Called with a list of insights to render. isFirst will be true if this is the first renderer
      * to see these insights.
      */
-    void render(in List<ContextInsightWrapper> insights, in boolean isFirst);
+    void render(in ContextInsightWrapper insights);
 
     /** Provides configuration information to the renderer. */
-    oneway void configure(in ParcelUuid componentId);
+    void configure(in ParcelUuid componentId);
 
-    /**
-     * Ask the renderer to mint a new {@link RenderToken}.
-     */
-    RenderToken mintRenderToken();
+    /** Gets a filter to be used when deciding whether to send an insight to this renderer. */
+    void getFilter(in IGetFilterCallback callback);
 }

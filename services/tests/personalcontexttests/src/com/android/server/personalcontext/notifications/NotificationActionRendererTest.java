@@ -107,7 +107,7 @@ public class NotificationActionRendererTest {
         mockPackageManagerResolvesIntent();
         ContextInsight insight = new BundleInsight.Builder().build();
 
-        mRenderer.render(insight, false);
+        mRenderer.render(insight);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -123,7 +123,7 @@ public class NotificationActionRendererTest {
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
-        mRenderer.render(insight, false);
+        mRenderer.render(insight);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -191,7 +191,7 @@ public class NotificationActionRendererTest {
         for (int i = 0; i < NotificationActionRenderer.MAX_RECURSION_DEPTH - 1; i++) {
             nested = new InsightCollection.Builder().addInsight(nested).build();
         }
-        mRenderer.render(nested, false);
+        mRenderer.render(nested);
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
@@ -247,7 +247,7 @@ public class NotificationActionRendererTest {
         when(mPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
                 .thenReturn(Collections.emptyList());
 
-        mRenderer.render(insight, false);
+        mRenderer.render(insight);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -309,7 +309,7 @@ public class NotificationActionRendererTest {
                 new InsightCollection.Builder()
                         .addInsight(new BundleInsight.Builder().build())
                         .build();
-        mRenderer.render(collection, false);
+        mRenderer.render(collection);
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
@@ -401,7 +401,8 @@ public class NotificationActionRendererTest {
     }
 
     private List<Adjustment> renderAndCaptureAdjustments(ContextInsight insight) {
-        mRenderer.render(insight, false);
+        mRenderer.render(insight);
+
         ArgumentCaptor<List<Adjustment>> captor = ArgumentCaptor.forClass(List.class);
         verify(mNotificationManagerInternal).requestSystemAdjustments(captor.capture());
         return captor.getValue();
