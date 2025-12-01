@@ -16,7 +16,10 @@
 
 package android.net.wifi.nl80211;
 
+import static android.net.wifi.flags.Flags.FLAG_DEPRECATE_WIFICOND;
+
 import android.annotation.CallbackExecutor;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -56,7 +59,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * interface is only for use by the Wi-Fi framework and access is protected by SELinux permissions.
  *
  * @hide
+ * @deprecated Wificond functionality has moved to the Wi-Fi mainline module.
+ *             See {@link com.android.server.wifi.nl80211.Nl80211Native}.
  */
+@FlaggedApi(FLAG_DEPRECATE_WIFICOND)
+@Deprecated
 @SystemApi
 @SystemService(Context.WIFI_NL80211_SERVICE)
 public class WifiNl80211Manager {
