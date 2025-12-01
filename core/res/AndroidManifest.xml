@@ -9253,14 +9253,14 @@
 
 
     <!-- @SystemApi Allows an app to bind the on-device intelligence service.
-             <p>Protection level: signature|privileged
+             <p>Protection level: signature
              @hide
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_INTELLIGENCE_SERVICE"
-        android:protectionLevel="signature|privileged" />
+        android:protectionLevel="signature" />
 
     <!-- @SystemApi Allows an app to bind the on-device sandboxed service.
-             <p>Protection level: signature|privileged
+             <p>Protection level: signature
              @hide
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_SANDBOXED_INFERENCE_SERVICE"
