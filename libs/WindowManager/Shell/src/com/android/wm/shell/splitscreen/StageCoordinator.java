@@ -692,24 +692,22 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         return mSplitTransitions.isPendingEnter(transition);
     }
 
-    @StageType
-    int getStageOfTask(int taskId) {
+    /** Current stage as seen in StageTaskListener#mChildrenTaskInfo */
+    @Nullable
+    StageTaskListener getCurrentStageOfTask(int taskId) {
         if (enableFlexibleSplit()) {
-            StageTaskListener stageTaskListener = mStageOrderOperator.getActiveStages().stream()
+            return mStageOrderOperator.getActiveStages().stream()
                     .filter(stage -> stage.containsTask(taskId))
-                    .findFirst().orElse(null);
-            if (stageTaskListener != null) {
-                return stageTaskListener.getId();
-            }
+                    .findFirst()
+                    .orElse(null);
         } else {
             if (mMainStage.containsTask(taskId)) {
-                return STAGE_TYPE_MAIN;
+                return mMainStage;
             } else if (mSideStage.containsTask(taskId)) {
-                return STAGE_TYPE_SIDE;
+                return mSideStage;
             }
+            return null;
         }
-
-        return STAGE_TYPE_UNDEFINED;
     }
 
     boolean isRootOrStageRoot(int taskId) {
@@ -3138,6 +3136,12 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         return null;
     }
 
+    @Override
+    @StageType
+    int getStageOfTask(int taskId) {
+        return getStageType(getCurrentStageOfTask(taskId));
+    }
+
     @StageType
     private int getStageType(StageTaskListener stage) {
         if (stage == null) return STAGE_TYPE_UNDEFINED;
@@ -3597,53 +3601,49 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                     }
                     continue;
                 }
-                final StageTaskListener stage = getStageOfTask(taskInfo);
-                if (stage == null) {
-                    boolean isFullscreenChange = (change.getParent() == null
+
+                final int taskId = taskInfo.taskId;
+                StageTaskListener lastStage = getCurrentStageOfTask(taskId);
+                StageTaskListener nextStage = getStageOfTask(taskInfo);
+
+                // Record task moving into {@code nextStage} unexpectedly.
+                if (nextStage != null && !nextStage.containsTask(taskId)
+                        && isOpeningType(change.getMode())) {
+                    Log.w(TAG, "Expected onTaskAppeared on " + nextStage + " to have been called"
+                            + " with " + taskId + " before startAnimation().");
+                    record.addRecord(nextStage, true, taskId);
+                }
+
+                // Record task moving out of {@code lastStage} unexpectedly.
+                if (lastStage != null && lastStage.containsTask(taskId)
+                        && (lastStage != nextStage || change.getMode() == TRANSIT_CLOSE)) {
+                    Log.w(TAG, "Expected onTaskVanished on " + lastStage + " to have been called"
+                            + " with " + taskId + " before startAnimation().");
+                    record.addRecord(lastStage, false, taskId);
+                }
+
+                if (lastStage == null) {
+                    // Record task launching fullscreen over split.
+                    if (change.getParent() == null
                             && !isClosingType(change.getMode())
-                            && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN);
-                    if (com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix()) {
-                        // Split won't be covered by fullscreen tasks on another display, or by
-                        // home/recents showing behind.
-                        isFullscreenChange = isFullscreenChange
-                                && change.getEndDisplayId() == mDisplayId
-                                && !isHomeOrRecents(taskInfo);
-                    }
-                    if (isFullscreenChange) {
+                            && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN
+                            && (!com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix()
+                                    || (!isHomeOrRecents(taskInfo)
+                                            && change.getEndDisplayId() == mDisplayId))) {
                         record.mContainShowFullscreenChange = true;
                     }
                     continue;
                 }
-                final int taskId = taskInfo.taskId;
-                if (isOpeningType(change.getMode())) {
-                    if (!stage.containsTask(taskId)) {
-                        Log.w(TAG, "Expected onTaskAppeared on " + stage + " to have been called"
-                                + " with " + taskId + " before startAnimation().");
-                        record.addRecord(stage, true, taskId);
-                    }
-                } else if (change.getMode() == TRANSIT_CLOSE) {
-                    if (stage.containsTask(taskId)) {
-                        record.addRecord(stage, false, taskId);
-                        Log.w(TAG, "Expected onTaskVanished on " + stage + " to have been called"
-                                + " with " + taskId + " before startAnimation().");
-                    }
-                }
 
-                final int stageOfTaskId = getStageOfTask(taskId);
-                if (stageOfTaskId == STAGE_TYPE_UNDEFINED) {
-                    continue;
-                }
                 if (isClosingType(change.getMode())) {
                     // (For PiP transitions) If either one of the 2 stages is closing we're assuming
                     // we'll break split
                     closingSplitTaskId = taskId;
                 }
                 // Record which stages are receiving which changes
-                if ((change.getMode() == TRANSIT_TO_BACK
-                        || change.getMode() == TRANSIT_TO_FRONT)
-                        && (stageOfTaskId == STAGE_TYPE_MAIN
-                        || stageOfTaskId == STAGE_TYPE_SIDE)) {
-                    stageChanges.put(getStageOfTask(taskId), change.getMode());
+                if ((change.getMode() == TRANSIT_TO_BACK || change.getMode() == TRANSIT_TO_FRONT)
+                        && lastStage != null) {
+                   stageChanges.put(getStageType(lastStage), change.getMode());
                 }
             }
 

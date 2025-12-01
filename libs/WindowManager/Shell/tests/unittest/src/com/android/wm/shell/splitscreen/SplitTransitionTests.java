@@ -26,6 +26,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REPARENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE;
 
 import static com.android.wm.shell.common.split.SplitScreenUtils.getNewParentTokenForStage;
@@ -37,8 +38,14 @@ import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_SIDE;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
 import static com.android.wm.shell.splitscreen.SplitTestUtils.createMockSurface;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_SCREEN_PAIR_OPEN;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -71,6 +78,7 @@ import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
+import android.window.WindowContainerTransaction.HierarchyOp;
 
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
@@ -106,9 +114,12 @@ import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
 import com.google.android.msdl.domain.MSDLPlayer;
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
@@ -561,6 +572,60 @@ public class SplitTransitionTests extends ShellTestCase {
     }
 
     @Test
+    @UiThreadTest
+    @EnableFlags(com.android.window.flags.Flags.FLAG_EXIT_SPLIT_ON_DISPLAY_MOVE_BUGFIX)
+    public void testDismissFromDisplayMove() {
+        enterSplit();
+        mSplitScreenTransitions.mPendingEnter.mFinishedCallback.onFinished(
+                new WindowContainerTransaction(), new SurfaceControl.Transaction());
+        org.mockito.Mockito.clearInvocations(mSyncQueue);
+        org.mockito.Mockito.clearInvocations(mTransitions);
+
+        final var sideStageInfo = mSideStage.getRunningTaskInfo();
+        final var mainStageInfo = mMainStage.getRunningTaskInfo();
+
+        // Create a request to relaunch the main task in fullscreen on another display.
+        final var movedMainChild = new TestRunningTaskInfoBuilder("MainChild(moved)")
+                .setToken(mMainChild.getToken())
+                .setTaskId(MAIN_TASK_ID)
+                .setVisible(true)
+                .setVisibleRequested(true)
+                .setDisplayId(mSecondaryDisplayAreaInfo.displayId)
+                .build();
+
+        // Create a request to relaunch the main task in fullscreen on another display.
+        IBinder transition = mock(IBinder.class);
+        TransitionRequestInfo request = new TransitionRequestInfo(TRANSIT_OPEN, mMainChild, null);
+
+        // There is not enough information yet to know to exit split.
+        WindowContainerTransaction result = mStageCoordinator.handleRequest(transition, request);
+        assertFalse(containsSplitExit(result));
+
+        // The full transition contains the change of displayId for mMainChild, and can also
+        // include the launcher becoming visible underneath.
+        TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
+                .addChange(TRANSIT_TO_FRONT, TransitionInfo.FLAG_SHOW_WALLPAPER, mHomeTask)
+                .addChange(TRANSIT_TO_FRONT, TransitionInfo.FLAG_IS_WALLPAPER, null)
+                .addChange(TRANSIT_CHANGE, movedMainChild, mSecondaryDisplayAreaInfo.displayId)
+                .build();
+
+        // Simulate the transition. Split does not need to play it, but does need to know about it.
+        assertFalse("Display-move transition should not be played by StageCoordinator",
+                mStageCoordinator.startAnimation(transition, info,
+                        mock(SurfaceControl.Transaction.class),
+                        mock(SurfaceControl.Transaction.class),
+                        mock(Transitions.TransitionFinishCallback.class)));
+
+        // The main task should be allowed to continue going fullscreen on the other display,
+        // and we should explit from split to fullscreen.
+        assertThat(mLastStartedTransitionWCT.getHierarchyOps(), allOf(
+                not(hasItem(wctContaining(mMainChild))),
+                hasItems(
+                        isChildrenTasksReparent(sideStageInfo, mDisplayAreaInfo, true),
+                        isChildrenTasksReparent(mainStageInfo, mDisplayAreaInfo, false))));
+    }
+
+    @Test
     public void testRequestingFocusForDefaultLaunch() throws RemoteException {
         enterSplit();
         verify(mActivityTaskManager, times(0)).setFocusedTask(anyInt());
@@ -622,6 +687,46 @@ public class SplitTransitionTests extends ShellTestCase {
         mTestShellExecutor.flushAll();
         verify(mInvocationListener, times(1))
                 .onSplitAnimationInvoked(eq(true));
+    }
+
+    /**
+     * Matcher for any {@link HierarchyOp} containing a given task.
+     */
+    private static TypeSafeMatcher<HierarchyOp> wctContaining(RunningTaskInfo task) {
+        return new TypeSafeMatcher<HierarchyOp>() {
+            @Override
+            public boolean matchesSafely(HierarchyOp hop) {
+                return hop.getContainer() == task.token.asBinder();
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("task token=" + task.token);
+            }
+        };
+    }
+
+    /**
+     * Matcher for a {@link HierarchyOp} reparenting a given task to
+     * the given display area.
+     */
+    private static TypeSafeMatcher<HierarchyOp> isChildrenTasksReparent(
+            RunningTaskInfo oldParent, DisplayAreaInfo newParent, boolean toTop) {
+        return new TypeSafeMatcher<HierarchyOp>() {
+            @Override
+            public boolean matchesSafely(HierarchyOp hop) {
+                return hop.getType() == HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT
+                        && hop.getContainer() == oldParent.token.asBinder()
+                        && hop.getNewParent() == newParent.token.asBinder()
+                        && hop.getToTop() == toTop;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("{reparent child tasks of " + oldParent.token.asBinder()
+                        + " to " + newParent.token.asBinder() + ", toTop=" + toTop + "}");
+            }
+        };
     }
 
     private boolean containsSplitEnter(@NonNull WindowContainerTransaction wct) {
