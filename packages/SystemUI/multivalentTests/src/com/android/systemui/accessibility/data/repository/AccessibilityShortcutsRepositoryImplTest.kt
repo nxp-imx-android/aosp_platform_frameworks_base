@@ -425,7 +425,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val getContentObservers = {
                 fakeSettings.getContentObservers(
                     fakeSettings.getUriFor(mouseKeysSettingsKey),
-                    fakeSettings.userId,
+                    userTracker.userId,
                 )
             }
 
@@ -445,7 +445,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(getContentObservers()).hasSize(1)
 
             // Simulate a settings change.
-            fakeSettings.putBool(mouseKeysSettingsKey, true)
+            fakeSettings.putBoolForUser(mouseKeysSettingsKey, true, userTracker.userId)
             kosmos.fakeExecutor.runAllReady()
             advanceUntilIdle()
 
@@ -465,7 +465,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val getContentObservers = {
                 fakeSettings.getContentObservers(
                     fakeSettings.getUriFor(quickAccessTargetsSettingsKey),
-                    fakeSettings.userId,
+                    userTracker.userId,
                 )
             }
 
@@ -491,7 +491,11 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                     )
                 )
                 .thenReturn(listOf(MAGNIFICATION_CONTROLLER_NAME))
-            fakeSettings.putString(quickAccessTargetsSettingsKey, MAGNIFICATION_CONTROLLER_NAME)
+            fakeSettings.putStringForUser(
+                quickAccessTargetsSettingsKey,
+                MAGNIFICATION_CONTROLLER_NAME,
+                userTracker.userId,
+            )
             kosmos.fakeExecutor.runAllReady()
             advanceUntilIdle()
 

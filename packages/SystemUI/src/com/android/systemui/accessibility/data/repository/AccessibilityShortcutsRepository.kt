@@ -351,7 +351,13 @@ constructor(
                     .toMutableSet()
                     // This observes targets being assigned/unassigned to the shortcut.
                     .apply { add(ShortcutUtils.convertToKey(shortcutType)) }
-                    .map { key -> secureSettings.registerContentObserverAsync(key, observer) }
+                    .map { key ->
+                        secureSettings.registerContentObserverForUserAsync(
+                            key,
+                            observer,
+                            userTracker.userId,
+                        )
+                    }
                     .joinAll()
 
                 // Emits the initial state of the list of accessibility targets.
