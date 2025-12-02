@@ -24,6 +24,7 @@ import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -663,7 +664,10 @@ constructor(
                         .transitionValue(LOCKSCREEN)
                         .map { it > 0f }
                         .distinctUntilChanged(),
-                ) { bouncerExpansion, inLockscreenTransition ->
+                    sceneInteractor.transitionState
+                        .map { it is ObservableTransitionState.Idle }
+                        .distinctUntilChanged(),
+                ) { bouncerExpansion, inLockscreenTransition, isIdle ->
                     if (bouncerExpansion > 0f) {
                         // If bouncerExpansion is nonzero, we are currently transitioning to or from
                         // bouncer. In this case, only emit when going to/from lockscreen
@@ -673,9 +677,13 @@ constructor(
                         if (inLockscreenTransition) {
                             emit(alphaForBouncerExpansion(bouncerExpansion))
                         }
-                    } else {
-                        // Once bouncer is fully gone, emit 1 to make sure we leave the alpha in a
-                        // correct state when idle.
+                    } else if (isIdle) {
+                        // Once bouncer is fully gone *and* the system is at rest, emit 1 to make
+                        // sure we leave the alpha in a correct state when idle. This needs to
+                        // wait until the system is at rest in the case of transitions of the form
+                        // bouncer -> A -> B, where bouncer is fully gone by the time we reach scene
+                        // A but the system is still transitioning, so emitting an alpha of 1 at
+                        // that time would be premature.
                         emit(1f)
                     }
                 }
