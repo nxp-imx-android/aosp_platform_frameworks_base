@@ -32,6 +32,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SwipeSourceDetector
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
@@ -103,6 +104,9 @@ constructor(
 
     /** The scene that should be rendered. */
     val currentScene: StateFlow<SceneKey> = sceneInteractor.currentScene
+
+    val currentSceneAsState: SceneKey
+        get() = sceneInteractor.currentSceneAsState
 
     private val hydrator = Hydrator("SceneContainerViewModel.hydrator")
     val blurViewModel: SceneTransitionBlurViewModel = sceneTransitionBlurViewModelFactory.create()
@@ -459,6 +463,10 @@ constructor(
     /** Immediately changes the initial scene if necessary. */
     suspend fun onInitialComposition() {
         onBootTransitionInteractor.maybeChangeInitialScene()
+    }
+
+    fun startTransitionImmediately(transition: TransitionState.Transition) {
+        sceneInteractor.startTransitionImmediately(transition)
     }
 
     private fun isFalsingAllowingContentChange(from: ContentKey?, to: ContentKey): Boolean {
