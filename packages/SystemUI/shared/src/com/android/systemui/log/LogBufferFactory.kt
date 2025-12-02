@@ -38,4 +38,22 @@ public interface LogBufferFactory {
         /** Track name used for logging messages in the system trace. */
         systraceTrackName: String = LogBuffer.DEFAULT_LOGBUFFER_TRACK_NAME,
     ): LogBuffer
+
+    /**
+     * Retrieves an existing [LogBuffer] associated with the given [name], or creates and returns a
+     * new one if it doesn't exist. The new instance is configured with the provided parameters.
+     *
+     * This function ensures that only one instance of [LogBuffer] exists per unique name.
+     *
+     * For the parameters' description, see [create]
+     *
+     * @return The existing or newly created [LogBuffer] instance.
+     */
+    public fun getOrCreate(
+        name: String,
+        maxSize: Int,
+        systrace: Boolean = true,
+        alwaysLogToLogcat: Boolean = false,
+        systraceTrackName: String = LogBuffer.DEFAULT_LOGBUFFER_TRACK_NAME,
+    ): LogBuffer
 }
