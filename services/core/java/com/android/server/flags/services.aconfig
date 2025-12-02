@@ -22,7 +22,7 @@ flag {
 
 flag {
     name: "keystore_in_memory_cleanup"
-    namespace: "desktop_security"
+    namespace: "security"
     description: "Keystore cleans up all components of the UserSuperKeys when the user credential encrypted storage is locked"
     bug: "384030190"
 }
