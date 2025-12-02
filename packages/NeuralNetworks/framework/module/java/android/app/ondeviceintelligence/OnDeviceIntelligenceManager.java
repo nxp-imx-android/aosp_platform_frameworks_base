@@ -29,7 +29,6 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.app.ondeviceintelligence.utils.BinderUtils;
-import android.app.ondeviceintelligence.ICancellationSignal;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -809,6 +808,4 @@ public final class OnDeviceIntelligenceManager {
                 }, executor);
         return processingSignalFuture;
     }
-
-
 }

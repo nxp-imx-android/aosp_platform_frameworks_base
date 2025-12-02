@@ -63,8 +63,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.app.ondeviceintelligence.ICancellationSignal;
-import android.app.ondeviceintelligence.IRemoteCallback;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteCallbackList;
@@ -104,6 +102,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -164,8 +163,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private final Object mPriorityBindingLock = new Object();
 
     private final InferenceInfoStore mInferenceInfoStore;
-    private RemoteOnDeviceSandboxedInferenceService mRemoteInferenceService;
+    @VisibleForTesting
+    RemoteOnDeviceSandboxedInferenceService mRemoteInferenceService;
     private RemoteOnDeviceIntelligenceService mRemoteOnDeviceIntelligenceService;
+    @VisibleForTesting
     volatile boolean mIsServiceEnabled;
 
     /**
@@ -174,20 +175,23 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
      * inference requests initiated by that UID.
      */
     @GuardedBy("mPriorityBindingLock")
-    private final java.util.Map<Integer, Integer> mJobCountsByUid = new HashMap<>();
+    @VisibleForTesting
+    final Map<Integer, Integer> mJobCountsByUid = new HashMap<>();
     /**
      * A shared connection to the inference service with {@link Context.BIND_SCHEDULE_LIKE_TOP_APP},
      * used when at least one UID has an active job and is in the foreground.
      */
     @GuardedBy("mPriorityBindingLock")
-    private RemoteOnDeviceSandboxedInferenceService mHighPriorityConnection;
+    @VisibleForTesting
+    RemoteOnDeviceSandboxedInferenceService mHighPriorityConnection;
     /**
      * A set tracking the UIDs that have at least one active inference job and are in the foreground.
      * This is used to determine whether to create a high-priority connection to the inference
      * service.
      */
     @GuardedBy("mPriorityBindingLock")
-    private final java.util.Set<Integer> mHighPriorityUids = new HashSet<>();
+    @VisibleForTesting
+    final Set<Integer> mHighPriorityUids = new HashSet<>();
     @GuardedBy("mLock")
     private int remoteInferenceServiceUid = -1;
 
@@ -201,7 +205,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private String mTemporaryConfigNamespace;
 
 
-    private ActivityManager mActivityManager;
+    @VisibleForTesting
+    ActivityManager mActivityManager;
     private final ActivityManager.OnUidImportanceListener mUidImportanceListener =
             (uid, importance) -> {
             // Post to the foreground thread to avoid blocking the main thread.
