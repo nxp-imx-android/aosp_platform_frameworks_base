@@ -474,11 +474,6 @@ interface ITelecomService {
     long getLocalVoicemailTimeout(in String packageName, in PhoneAccountHandle phoneAccountHandle);
 
     /**
-     * @see TelecomServiceImpl#setTestOemCallScreeningService
-     */
-    void setTestOemCallScreeningService(in ComponentName componentName);
-
-    /**
      * @see TelecomServiceImpl#isLocalVoicemailEnabled
      */
     boolean isLocalVoicemailEnabled(in String packageName,
