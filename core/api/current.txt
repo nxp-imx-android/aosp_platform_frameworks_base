@@ -57175,6 +57175,8 @@ package android.view.accessibility {
     method public int describeContents();
     method @Nullable public android.view.accessibility.AccessibilityNodeInfo getNode();
     method public int getOffset();
+    method @FlaggedApi("android.view.accessibility.a11y_selection_position_app_getters_api") @Nullable public android.view.View getView();
+    method @FlaggedApi("android.view.accessibility.a11y_selection_position_app_getters_api") public int getVirtualDescendantId();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.SelectionPosition> CREATOR;
   }
