@@ -55,6 +55,9 @@
 
     <!-- QS shade overlay brightness bar -->
     <dimen
+        name="overlay_qs_layout_brightness_icon_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">24dp</dimen>
+    <dimen
         name="overlay_qs_layout_brightness_thumb_height"
         android:featureFlag="com.android.systemui.desktop_sizing">40dp</dimen>
     <dimen
