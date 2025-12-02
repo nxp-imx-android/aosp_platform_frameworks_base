@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.screenrecord.screenRecordUxController
+import com.android.systemui.screenrecord.service.fakeScreenRecordingService
 import com.android.systemui.user.data.repository.userRepository
 
 var Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
@@ -29,5 +30,6 @@ var Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
             applicationCoroutineScope,
             userRepository,
             screenRecordUxController,
+            { _, _ -> fakeScreenRecordingService },
         )
     }

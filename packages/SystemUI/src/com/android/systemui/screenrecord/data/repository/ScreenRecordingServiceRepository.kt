@@ -26,6 +26,7 @@ import android.net.Uri
 import android.os.IBinder
 import android.util.Log
 import android.view.Display
+import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.launchInTraced
@@ -74,13 +75,30 @@ private val startingStatusUpdateInterval: Duration = 1.seconds
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class ScreenRecordingServiceRepository
-@Inject
+@VisibleForTesting
 constructor(
     private val context: Context,
-    @Background coroutineScope: CoroutineScope,
+    coroutineScope: CoroutineScope,
     private val userRepository: UserRepository,
     private val screenRecordUxController: ScreenRecordUxController,
+    private val mapServiceBinder:
+        (name: ComponentName?, service: IBinder?) -> IScreenRecordingService,
 ) : ScreenRecordingStartStopRepository, ScreenRecordRepository {
+
+    @Inject
+    constructor(
+        context: Context,
+        @Background coroutineScope: CoroutineScope,
+        userRepository: UserRepository,
+        screenRecordUxController: ScreenRecordUxController,
+    ) : this(
+        context = context,
+        coroutineScope = coroutineScope,
+        userRepository = userRepository,
+        screenRecordUxController = screenRecordUxController,
+        mapServiceBinder = { _, service -> IScreenRecordingService.Stub.asInterface(service) },
+    )
+
     private val serviceCallback = ServiceCallback()
     private val isServiceBound = MutableStateFlow(false)
     private val service: Flow<RecordingService?> =
@@ -256,11 +274,11 @@ constructor(
         private val onServiceReceived: (IScreenRecordingService?) -> Unit
     ) : ServiceConnection {
 
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            onServiceReceived(IScreenRecordingService.Stub.asInterface(service))
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            onServiceReceived(mapServiceBinder(name, service))
         }
 
-        override fun onServiceDisconnected(name: ComponentName) {
+        override fun onServiceDisconnected(name: ComponentName?) {
             onServiceReceived(null)
         }
 

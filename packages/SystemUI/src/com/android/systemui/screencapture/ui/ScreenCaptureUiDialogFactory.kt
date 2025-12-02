@@ -16,7 +16,6 @@
 
 package com.android.systemui.screencapture.ui
 
-import android.app.Dialog
 import android.content.Context
 import android.view.Display
 import android.view.Window
@@ -38,6 +37,7 @@ import androidx.compose.ui.Modifier
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -47,18 +47,16 @@ import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
-import kotlin.coroutines.resume
-import kotlinx.coroutines.suspendCancellableCoroutine
+import javax.inject.Inject
 
-class ScreenCaptureUi
-@AssistedInject
+// TODO(b/427481098) Change to TYPE_SCREENSHOT
+private const val WINDOW_TYPE = WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL
+
+@ScreenCaptureScope
+class ScreenCaptureUiDialogFactory
+@Inject
 constructor(
     @Application private val appContext: Context,
-    @Assisted private val display: Display,
-    @Assisted private val type: ScreenCaptureType,
     private val viewModelFactory: ScreenCaptureUiViewModel.Factory,
     private val componentBuilders:
         Map<
@@ -67,30 +65,32 @@ constructor(
             @JvmSuppressWildcards
             ScreenCaptureUiComponent.Builder,
         >,
-    dialogFactory: SystemUIDialogFactory,
+    private val dialogFactory: SystemUIDialogFactory,
 ) {
-    private val dialog: SystemUIDialog =
-        dialogFactory
+
+    fun create(display: Display, type: ScreenCaptureType): SystemUIDialog {
+        val visibleState = MutableTransitionState(true)
+        return dialogFactory
             .create(
                 context =
                     appContext.createWindowContext(
-                        display,
+                        /* display= */ display,
                         // TODO(b/427481098) Change to TYPE_SCREENSHOT
-                        WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
-                        /* options */ null,
+                        /* type= */ WINDOW_TYPE,
+                        /* options= */ null,
                     ),
                 theme = R.style.Theme_SystemUI_Dialog_ScreenCapture,
                 dialogDelegate = EdgeToEdgeDialogDelegate(),
                 dismissOnDeviceLock = true,
                 isTransient = true,
-            ) { dialog: Dialog ->
-                DialogContent(dialog.window!!)
+            ) { dialog: SystemUIDialog ->
+                dialog.DialogContent(visibleState = visibleState, type = type, display = display)
             }
             .apply {
                 setupWindow(window!!)
                 setDismissOverride { visibleState.targetState = false }
             }
-    private val visibleState = MutableTransitionState(false)
+    }
 
     private fun setupWindow(window: Window) {
         window.attributes =
@@ -105,14 +105,17 @@ constructor(
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
             )
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-            // TODO(b/427481098) Change to TYPE_SCREENSHOT
-            setType(WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL)
+            setType(WINDOW_TYPE)
             setWindowAnimations(-1)
         }
     }
 
     @Composable
-    private fun DialogContent(window: Window) {
+    private fun SystemUIDialog.DialogContent(
+        visibleState: MutableTransitionState<Boolean>,
+        type: ScreenCaptureType,
+        display: Display,
+    ) {
         val viewModel =
             rememberViewModel("ScreenCaptureUi#viewModel") { viewModelFactory.create(type) }
         var parametersState: ScreenCaptureUiParameters? by remember { mutableStateOf(null) }
@@ -124,14 +127,14 @@ constructor(
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
         SideEffect {
-            dialog.setCancelable(viewModel.cancelOnTouchOutside)
-            dialog.setCanceledOnTouchOutside(viewModel.cancelOnTouchOutside)
+            setCancelable(viewModel.cancelOnTouchOutside)
+            setCanceledOnTouchOutside(viewModel.cancelOnTouchOutside)
         }
 
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {
-                dialog.setDismissOverride(null)
-                dialog.dismissWithoutAnimation()
+                setDismissOverride(null)
+                dismissWithoutAnimation()
             }
         }
 
@@ -146,26 +149,5 @@ constructor(
                 }
             Box(modifier = Modifier.focusable()) { component.screenCaptureContent.Content() }
         }
-    }
-
-    /**
-     * Shows the UI and suspends until it's is dismissed. Cancelling the suspension dismisses the UI
-     */
-    suspend fun show(): Unit = suspendCancellableCoroutine { invocation ->
-        dialog.setOnDismissListener {
-            dialog.dismiss()
-            if (invocation.isActive) {
-                invocation.resume(Unit)
-            }
-        }
-        visibleState.targetState = true
-        dialog.show()
-        invocation.invokeOnCancellation { dialog.dismiss() }
-    }
-
-    @AssistedFactory
-    interface Factory {
-
-        fun create(display: Display, type: ScreenCaptureType): ScreenCaptureUi
     }
 }

@@ -17,35 +17,19 @@
 package com.android.systemui.screencapture.ui
 
 import android.content.applicationContext
-import android.view.Display
-import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.screenCaptureUiComponentBuilder
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
-val Kosmos.recordingScreenCaptureUi by
+val Kosmos.screenCaptureUiDialogFactory by
     Kosmos.Fixture {
-        screenCaptureUiFactory.create(
-            display = displayRepository.getDisplay(Display.DEFAULT_DISPLAY)!!,
-            type = ScreenCaptureType.RECORD,
+        ScreenCaptureUiDialogFactory(
+            appContext = applicationContext,
+            viewModelFactory = screenCaptureUiViewModelFactory,
+            componentBuilders =
+                ScreenCaptureType.entries.associateWith { screenCaptureUiComponentBuilder(it) },
+            dialogFactory = systemUIDialogFactory,
         )
-    }
-val Kosmos.screenCaptureUiFactory by
-    Kosmos.Fixture {
-        object : ScreenCaptureUi.Factory {
-            override fun create(display: Display, type: ScreenCaptureType): ScreenCaptureUi =
-                ScreenCaptureUi(
-                    appContext = applicationContext,
-                    display = display,
-                    type = type,
-                    viewModelFactory = screenCaptureUiViewModelFactory,
-                    componentBuilders =
-                        ScreenCaptureType.entries.associateWith {
-                            screenCaptureUiComponentBuilder(it)
-                        },
-                    dialogFactory = systemUIDialogFactory,
-                )
-        }
     }
