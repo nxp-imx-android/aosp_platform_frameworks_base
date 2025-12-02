@@ -42,6 +42,7 @@ import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 import static com.android.server.EventLogTags.IMF_HIDE_IME;
 import static com.android.server.EventLogTags.IMF_SHOW_IME;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IMMS_DEBUG;
+import static com.android.server.inputmethod.ImeProtoLogGroup.IMMS_WITH_LOGCAT;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeTargetWindowState;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeVisibilityResult;
 import static com.android.server.inputmethod.InputMethodBindingController.IME_BACKGROUND_BIND_FLAGS;
@@ -1211,6 +1212,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return true;
             }
             // Pending user switch for a different user, cancel it.
+            ProtoLog.i(IMMS_WITH_LOGCAT, "Removing scheduled user switch to userId=%d", newUserId);
             mIoHandler.removeCallbacks(mUserSwitchHandlerTask);
             mUserSwitchHandlerTask = null;
         }
@@ -1228,6 +1230,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
         final var task = new UserSwitchHandlerTask(this, newUserId, profileSwitch, clientToBeReset);
         mUserSwitchHandlerTask = task;
+        ProtoLog.i(IMMS_WITH_LOGCAT, "Scheduling user switch newUserId=%d currentUserId=%d",
+                newUserId, mCurrentImeUserId);
         mIoHandler.post(task);
         return true;
     }
@@ -1359,8 +1363,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private void switchUserOnHandlerLocked(@UserIdInt int newUserId, boolean profileSwitch,
             @Nullable IInputMethodClientInvoker clientToBeReset) {
         final int prevUserId = mCurrentImeUserId;
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 1/3. newUserId=%d prevUserId=%d", newUserId,
-                prevUserId);
+        ProtoLog.i(IMMS_WITH_LOGCAT, "Switching user stage 1/3. newUserId=%d prevUserId=%d",
+                newUserId, prevUserId);
 
         // Clean up stuff for mCurrentImeUserId, which soon becomes the previous user.
 
@@ -1394,8 +1398,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final String defaultImiId = SecureSettingsWrapper.getString(
                 Settings.Secure.DEFAULT_INPUT_METHOD, null, newUserId);
 
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 2/3. newUserId=%d defaultImiId=%s", newUserId,
-                defaultImiId);
+        ProtoLog.i(IMMS_WITH_LOGCAT, "Switching user stage 2/3. newUserId=%d defaultImiId=%s",
+                newUserId, defaultImiId);
 
         // For secondary users, the list of enabled IMEs may not have been updated since the
         // callbacks to PackageMonitor are ignored for the secondary user. Here, defaultImiId may
@@ -1407,7 +1411,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final InputMethodSettings newSettings = InputMethodSettingsRepository.get(newUserId);
         postInputMethodSettingUpdatedLocked(initialUserSwitch /* resetDefaultEnabledIme */,
                 newUserId);
-        if (TextUtils.isEmpty(newSettings.getSelectedInputMethod())) {
+        final String newSelectedImeId = newSettings.getSelectedInputMethod();
+        if (TextUtils.isEmpty(newSelectedImeId)) {
             // This is the first time of the user switch and
             // set the current ime to the proper one.
             resetDefaultImeLocked(mContext, newUserId);
@@ -1431,8 +1436,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     newSettings.getEnabledInputMethodList());
         }
 
-        ProtoLog.v(IMMS_DEBUG, "Switching user stage 3/3. newUserId=%d selectedImeId=%s", newUserId,
-                newSettings.getSelectedInputMethod());
+        ProtoLog.i(IMMS_WITH_LOGCAT, "Switching user stage 3/3. newUserId=%d selectedImeId=%s",
+                newUserId, newSelectedImeId);
 
         if (mIsInteractive && clientToBeReset != null) {
             final ClientState cs = mClientController.getClient(clientToBeReset.asBinder());

@@ -25,7 +25,8 @@ public enum ImeProtoLogGroup implements IProtoLogGroup {
     IMMS_DEBUG(Consts.ENABLE_DEBUG, false, false,
             InputMethodManagerService.TAG),
     IME_VIS_STATE_COMPUTER_DEBUG(Consts.ENABLE_DEBUG, false, false,
-            ImeVisibilityStateComputer.TAG);
+            ImeVisibilityStateComputer.TAG),
+    IMMS_WITH_LOGCAT(Consts.ENABLE_DEBUG, false, true, InputMethodManagerService.TAG);
 
     private final boolean mEnabled;
     private volatile boolean mLogToProto;
