@@ -66,12 +66,12 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
     @Test
     fun testDefaultState() {
-        val topState = underTest.topDragState
+        val topState = underTest.topResizeState
         assertThat(topState.currentValue).isEqualTo(0)
         assertThat(topState.offset).isEqualTo(0f)
         assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
 
-        val bottomState = underTest.bottomDragState
+        val bottomState = underTest.bottomResizeState
         assertThat(bottomState.currentValue).isEqualTo(0)
         assertThat(bottomState.offset).isEqualTo(0f)
         assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
@@ -82,11 +82,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         testScope.runTest {
             updateGridLayout(singleSpanGrid)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
         }
@@ -99,11 +99,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     fun testTwoSpanGrid_elementInFirstRow_sizeSingleSpan() =
         testScope.runTest {
             updateGridLayout(singleSpanGrid.copy(currentRow = 0, totalSpans = 2))
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, 1 to 45f)
         }
@@ -116,11 +116,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     fun testTwoSpanGrid_elementInSecondRow_sizeSingleSpan() =
         testScope.runTest {
             updateGridLayout(singleSpanGrid.copy(currentRow = 1, totalSpans = 2))
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f, -1 to -45f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
         }
@@ -136,11 +136,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(adjustedGridLayout)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(topState.currentValue).isEqualTo(0)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.anchors.toList()).containsExactly(-1 to -45f, 0 to 0f)
             assertThat(bottomState.currentValue).isEqualTo(0)
         }
@@ -156,11 +156,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(adjustedGridLayout)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f, -1 to -30f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, 1 to 30f)
         }
@@ -173,11 +173,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(adjustedGridLayout)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, 1 to 30f, 2 to 60f)
         }
@@ -195,11 +195,11 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(adjustedGridLayout)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.currentValue).isEqualTo(0)
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f, -3 to -45f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.currentValue).isEqualTo(0)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
         }
@@ -216,8 +216,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
                 )
             updateGridLayout(firstRowLayout)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
 
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, 1 to 45f)
@@ -238,9 +238,9 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(adjustedGridLayout)
 
-            underTest.bottomDragState.anchoredDrag { dragTo(45f) }
+            underTest.bottomResizeState.anchoredDrag { dragTo(45f) }
 
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, ResizeHandle.BOTTOM))
         }
 
     @Test
@@ -249,8 +249,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             val resizeInfo by collectLastValue(underTest.resizeInfo)
             updateGridLayout(singleSpanGrid.copy(currentRow = 1, totalSpans = 3))
 
-            underTest.topDragState.anchoredDrag { dragTo(-30f) }
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
+            underTest.topResizeState.anchoredDrag { dragTo(-30f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, ResizeHandle.TOP))
         }
 
     @Test
@@ -260,8 +260,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             updateGridLayout(singleSpanGrid.copy(totalSpans = 3))
 
             assertThat(resizeInfo).isNull()
-            underTest.bottomDragState.anchoredDrag { dragTo(60f) }
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(2, DragHandle.BOTTOM))
+            underTest.bottomResizeState.anchoredDrag { dragTo(60f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(2, ResizeHandle.BOTTOM))
         }
 
     @Test
@@ -271,8 +271,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             updateGridLayout(singleSpanGrid.copy(totalSpans = 2, currentSpan = 2))
 
             assertThat(resizeInfo).isNull()
-            underTest.bottomDragState.anchoredDrag { dragTo(-45f) }
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
+            underTest.bottomResizeState.anchoredDrag { dragTo(-45f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, ResizeHandle.BOTTOM))
         }
 
     @Test
@@ -281,10 +281,10 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             val gridLayout = singleSpanGrid.copy(currentRow = 1, resizeMultiple = 1, totalSpans = 3)
             updateGridLayout(gridLayout)
 
-            val topState = underTest.topDragState
+            val topState = underTest.topResizeState
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f, -1 to -30f)
 
-            val bottomState = underTest.bottomDragState
+            val bottomState = underTest.bottomResizeState
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, 1 to 30f)
 
             // Set currentRow to null to simulate the row info becoming null
@@ -301,8 +301,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
                 singleSpanGrid.copy(maxHeightPx = heightPx, minHeightPx = heightPx, totalSpans = 2)
             )
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
 
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
@@ -322,8 +322,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(threeRowGrid)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsAtLeast(0 to 0f, 1 to 30f)
         }
@@ -342,8 +342,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(threeRowGrid)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
 
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, -1 to -30f)
 
@@ -362,8 +362,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(twoRowGrid)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
 
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
@@ -395,8 +395,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
                 )
             updateGridLayout(layout)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
 
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f, -3 to -736f)
@@ -409,7 +409,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             updateGridLayout(twoRowGrid)
             assertThat(underTest.canExpand()).isTrue()
-            assertThat(underTest.bottomDragState.anchors.toList())
+            assertThat(underTest.bottomResizeState.anchors.toList())
                 .containsAtLeast(0 to 0f, 1 to 45f)
         }
 
@@ -427,7 +427,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             val twoRowGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 1)
             updateGridLayout(twoRowGrid)
             assertThat(underTest.canExpand()).isTrue()
-            assertThat(underTest.topDragState.anchors.toList()).containsAtLeast(0 to 0f, -1 to -45f)
+            assertThat(underTest.topResizeState.anchors.toList()).containsAtLeast(0 to 0f, -1 to -45f)
         }
 
     @Test
@@ -445,7 +445,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             updateGridLayout(twoSpanGrid)
 
             assertThat(underTest.canShrink()).isTrue()
-            assertThat(underTest.bottomDragState.anchors.toList())
+            assertThat(underTest.bottomResizeState.anchors.toList())
                 .containsAtLeast(0 to 0f, -1 to -45f)
         }
 
@@ -459,7 +459,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             underTest.expandToNextAnchor()
 
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, ResizeHandle.TOP))
         }
 
     @Test
@@ -472,7 +472,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             underTest.expandToNextAnchor()
 
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, ResizeHandle.BOTTOM))
         }
 
     @Test
@@ -485,7 +485,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
             underTest.shrinkToNextAnchor()
 
-            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, ResizeHandle.BOTTOM))
         }
 
     @Test
@@ -545,8 +545,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
                 )
             updateGridLayout(zeroHeightGrid)
 
-            val topState = underTest.topDragState
-            val bottomState = underTest.bottomDragState
+            val topState = underTest.topResizeState
+            val bottomState = underTest.bottomResizeState
             assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
         }
