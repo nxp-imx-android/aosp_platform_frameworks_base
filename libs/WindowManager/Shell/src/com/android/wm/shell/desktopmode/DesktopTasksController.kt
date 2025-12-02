@@ -6999,13 +6999,6 @@ class DesktopTasksController(
             }
         }
 
-        override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
-            logger.v("moveFocusedTaskToStageSplit")
-            mainExecutor.execute {
-                this@DesktopTasksController.enterSplit(displayId = displayId, leftOrTop = leftOrTop)
-            }
-        }
-
         override fun toggleFocusedTaskFullscreenState(
             displayId: Int,
             transitionSource: DesktopModeTransitionSource,
