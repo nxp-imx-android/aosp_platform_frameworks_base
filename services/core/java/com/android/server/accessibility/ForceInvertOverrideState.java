@@ -25,24 +25,27 @@ import android.text.TextUtils;
 
 import com.android.internal.util.ArrayUtils;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Holds the state of the force invert overrides from Settings.
  *
- * @param packagesToEnable list of package names that will always have force invert applied
- * @param packagesToDisable list of package names that will never have force invert applied
+ * @param packagesToEnable set of package names that will always have force invert applied
+ * @param packagesToDisable set of package names that will never have force invert applied
+ * @param packagesInBlockList set of package names that are set to never be force inverted
+ *                            by the system
  */
 public record ForceInvertOverrideState(
-        List<String> packagesToEnable, List<String> packagesToDisable) {
-    // TODO(b/448469020): Migrate the List to Set
+        Set<String> packagesToEnable, Set<String> packagesToDisable,
+        Set<String> packagesInBlockList) {
 
     /**
      * An empty force invert override state.
      */
-    public static final ForceInvertOverrideState EMPTY = new ForceInvertOverrideState(List.of(),
-            List.of());
+    public static final ForceInvertOverrideState EMPTY = new ForceInvertOverrideState(Set.of(),
+            Set.of(), Set.of());
 
     private static final String DELIMITER = ",";
 
@@ -50,21 +53,18 @@ public record ForceInvertOverrideState(
     @NonNull
     public static ForceInvertOverrideState loadFrom(Context context, int userId) {
         var resolver = context.getContentResolver();
-        var packageDisableList = parseCsv(resolver, userId,
+        var packageDisableSet = parseCsv(resolver, userId,
                 Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE);
-        var packageEnableList = parseCsv(resolver, userId,
+        var packageEnableSet = parseCsv(resolver, userId,
                 Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE);
 
         var blocklistArray = context.getResources().getStringArray(
                 com.android.internal.R.array.config_forceInvertPackageBlocklist);
-        var packageBlocklist = blocklistArray == null ? new ArrayList<String>()
-                : ArrayUtils.toList(blocklistArray);
+        var packageBlockSet = blocklistArray == null ? new HashSet<String>()
+                : new HashSet<>(ArrayUtils.toList(blocklistArray));
 
-        // Overrides take precedence over config blocklist
-        packageBlocklist.removeAll(packageEnableList);
-        packageDisableList.addAll(packageBlocklist);
-
-        return new ForceInvertOverrideState(packageEnableList, packageDisableList);
+        return new ForceInvertOverrideState(
+                packageEnableSet, packageDisableSet, packageBlockSet);
     }
 
     /**
@@ -76,12 +76,17 @@ public record ForceInvertOverrideState(
             return UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED;
         }
 
+        // 1. Overrides take precedence over config blocklist
+        // 2. If the package exists in both packagesToDisable and packagesToEnable, disable takes
+        // precedence
         if (packagesToDisable.contains(packageName)) {
             return UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE;
         }
-
         if (packagesToEnable.contains(packageName)) {
             return UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE;
+        }
+        if (packagesInBlockList.contains(packageName)) {
+            return UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE;
         }
 
         return UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED;
@@ -93,7 +98,10 @@ public record ForceInvertOverrideState(
      * @hide
      */
     public List<String> getAllForceInvertAlwaysDisableApps() {
-        return packagesToDisable;
+        var disableApps = new HashSet<String>();
+        disableApps.addAll(packagesToDisable);
+        disableApps.addAll(packagesInBlockList);
+        return disableApps.stream().toList();
     }
 
     /**
@@ -110,54 +118,51 @@ public record ForceInvertOverrideState(
             return false;
         }
 
-        boolean result = false;
+        boolean resultToDisable = false;
+        boolean resultToEnable = false;
         switch (newState) {
             case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE -> {
-                result = !packagesToDisable.contains(packageName);
-                if (result) {
-                    packagesToDisable.add(packageName);
-                    packagesToEnable.remove(packageName);
-                }
+                resultToDisable = packagesToDisable.add(packageName);
+                resultToEnable = packagesToEnable.remove(packageName);
             }
             case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE -> {
-                result = !packagesToEnable.contains(packageName);
-                if (result) {
-                    packagesToDisable.remove(packageName);
-                    packagesToEnable.add(packageName);
-                }
+                resultToDisable = packagesToDisable.remove(packageName);
+                resultToEnable = packagesToEnable.add(packageName);
             }
             case UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED -> {
-                result = packagesToDisable.remove(packageName);
-                result |= packagesToEnable.remove(packageName);
+                resultToDisable = packagesToDisable.remove(packageName);
+                resultToEnable = packagesToEnable.remove(packageName);
             }
         }
 
-        if (result) {
+        if (resultToDisable) {
             saveToCsv(resolver, userId,
                     Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
                     packagesToDisable);
+        }
+        if (resultToEnable) {
             saveToCsv(resolver, userId,
                     Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
                     packagesToEnable);
         }
 
-        return result;
+        return resultToDisable || resultToEnable;
     }
 
     @NonNull
-    private static List<String> parseCsv(ContentResolver resolver, int userId, String settingsKey) {
+    private static Set<String> parseCsv(ContentResolver resolver, int userId, String settingsKey) {
         var csv = Settings.System.getStringForUser(resolver, settingsKey, userId);
         if (csv == null) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
 
-        return ArrayUtils.toList(TextUtils.split(csv, DELIMITER));
+        return new HashSet<>(ArrayUtils.toList(TextUtils.split(csv, DELIMITER)));
     }
 
     private static boolean saveToCsv(ContentResolver resolver, int userId,
-            String settingsKey, List<String> packageList) {
+            String settingsKey, Set<String> packageSet) {
         return Settings.System.putStringForUser(
-                resolver, settingsKey, TextUtils.join(DELIMITER, packageList), userId);
+                resolver, settingsKey, TextUtils.join(DELIMITER, packageSet), userId);
     }
 }
 
