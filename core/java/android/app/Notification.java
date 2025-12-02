@@ -15574,7 +15574,7 @@ public class Notification implements Parcelable
      *     <li>The text will be a {@link Metric.MetricValue} populated based on the data in the
      *     Notification, using the following ordered list of checks:
      *     <ol>
-     *         <li>If the Notification has {@link #getShortCriticalText()}, it will be a
+     *         <li>If the Notification has a non-null {@link #getShortCriticalText()}, it will be a
      *         {@link Metric.FixedText} with that text.
      *         <li>If the Notification uses {@link MetricStyle}, it will be the value of the
      *         first metric.
@@ -15628,7 +15628,7 @@ public class Notification implements Parcelable
                 : CompactIcon.useSmallIcon();
 
         CompactText compactText;
-        if (!TextUtils.isEmpty(getShortCriticalText())) {
+        if (getShortCriticalText() != null) {
             compactText = CompactText.useShortCriticalText();
         } else if (Flags.apiMetricStyle()
                 && builder.getStyle() instanceof MetricStyle metricStyle
@@ -15708,7 +15708,7 @@ public class Notification implements Parcelable
                 case CompactText.TEXT_NONE -> null;
                 case CompactText.TEXT_SHORT_CRITICAL -> {
                     String shortCriticalText = notification.getShortCriticalText();
-                    if (!TextUtils.isEmpty(shortCriticalText)) {
+                    if (shortCriticalText != null) {
                         yield new Metric.FixedText(shortCriticalText);
                     } else {
                         yield null;
