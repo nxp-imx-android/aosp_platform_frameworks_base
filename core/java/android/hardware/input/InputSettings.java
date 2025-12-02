@@ -24,11 +24,8 @@ import static com.android.hardware.input.Flags.pointerAcceleration;
 import static com.android.hardware.input.Flags.touchpadDisable;
 import static com.android.hardware.input.Flags.touchpadSystemGestureDisable;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
-import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
-import static com.android.input.flags.Flags.keyboardRepeatKeys;
 
 import android.Manifest;
-import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -1223,22 +1220,6 @@ public class InputSettings {
     }
 
     /**
-     * Whether "Repeat keys" feature flag is enabled.
-     *
-     * <p>
-     * ‘Repeat keys’ is a feature which allows users to generate key repeats when a particular
-     * key on the physical keyboard is held down. This feature allows the user
-     * to configure the timeout before the key repeats begin as well as the delay
-     * between successive key repeats.
-     * </p>
-     *
-     * @hide
-     */
-    public static boolean isRepeatKeysFeatureFlagEnabled() {
-        return keyboardRepeatKeys();
-    }
-
-    /**
      * Whether "Repeat keys" feature is enabled.
      * Repeat keys is ON by default.
      * The repeat keys timeout and delay would have the default values in the default ON case.
@@ -1253,11 +1234,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     public static boolean isRepeatKeysEnabled(@NonNull Context context) {
-        if (!isRepeatKeysFeatureFlagEnabled()) {
-            return true;
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.KEY_REPEAT_ENABLED, 1, UserHandle.USER_CURRENT) != 0;
     }
@@ -1282,11 +1259,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     public static int getRepeatKeysTimeout(@NonNull Context context) {
-        if (!isRepeatKeysFeatureFlagEnabled()) {
-            return ViewConfiguration.getKeyRepeatTimeout();
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.KEY_REPEAT_TIMEOUT_MS, ViewConfiguration.getKeyRepeatTimeout(),
                 UserHandle.USER_CURRENT);
@@ -1312,11 +1285,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     public static int getRepeatKeysDelay(@NonNull Context context) {
-        if (!isRepeatKeysFeatureFlagEnabled()) {
-            return ViewConfiguration.getKeyRepeatDelay();
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.KEY_REPEAT_DELAY_MS, ViewConfiguration.getKeyRepeatDelay(),
                 UserHandle.USER_CURRENT);
@@ -1335,13 +1304,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setRepeatKeysEnabled(@NonNull Context context,
             boolean enabled) {
-        if (!isRepeatKeysFeatureFlagEnabled()) {
-            return;
-        }
         Settings.Secure.putIntForUser(context.getContentResolver(),
                 Settings.Secure.KEY_REPEAT_ENABLED, enabled ? 1 : 0, UserHandle.USER_CURRENT);
     }
@@ -1364,14 +1329,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setRepeatKeysTimeout(@NonNull Context context,
             int timeoutTimeMillis) {
-        if (!isRepeatKeysFeatureFlagEnabled()
-                && !isRepeatKeysEnabled(context)) {
-            return;
-        }
         if (timeoutTimeMillis < MIN_KEY_REPEAT_TIMEOUT_MILLIS
                 || timeoutTimeMillis > MAX_KEY_REPEAT_TIMEOUT_MILLIS) {
             throw new IllegalArgumentException(
@@ -1401,14 +1361,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_REPEAT_KEYS)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setRepeatKeysDelay(@NonNull Context context,
             int delayTimeMillis) {
-        if (!isRepeatKeysFeatureFlagEnabled()
-                && !isRepeatKeysEnabled(context)) {
-            return;
-        }
         if (delayTimeMillis < MIN_KEY_REPEAT_DELAY_MILLIS
                 || delayTimeMillis > MAX_KEY_REPEAT_DELAY_MILLIS) {
             throw new IllegalArgumentException(
