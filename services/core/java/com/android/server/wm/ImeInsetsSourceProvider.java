@@ -134,7 +134,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                     mControlTarget);
             mGivenInsetsReady = true;
             ImeTracker.forLogging().onProgress(mStatsToken,
-                    ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
+                    ImeTracker.PHASE_SERVER_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
             if (!controlDispatched) {
                 mStateController.notifyControlChanged(mControlTarget, this);
             }
@@ -149,7 +149,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             ProtoLog.w(WM_DEBUG_IME, "onPostLayout cancel statsToken, controlTarget=%s",
                     mControlTarget);
             ImeTracker.forLogging().onCancelled(mStatsToken,
-                    ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
+                    ImeTracker.PHASE_SERVER_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
             mStatsToken = null;
         } else if (!isServerVisible()) {
             if (isImeShowing()) {
@@ -286,7 +286,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                         false /* fromUser */, UserHandle.USER_NULL, mDisplayContent.getDisplayId());
             }
             ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_WM_GET_CONTROL_WITH_LEASH);
+                    ImeTracker.PHASE_SERVER_GET_CONTROL_WITH_LEASH);
             control.setImeStatsToken(statsToken);
         }
         return control;
@@ -466,7 +466,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         boolean imeVisible = imeInputTarget.isRequestedVisible(WindowInsets.Type.ime());
         if (controlTarget != null) {
             ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
+                    ImeTracker.PHASE_SERVER_SET_REMOTE_TARGET_IME_VISIBILITY);
             controlTarget.setImeInputTargetRequestedVisibility(imeVisible, statsToken);
         } else if (imeInputTarget instanceof InsetsControlTarget) {
             // In case of a virtual display that cannot show the IME, the
@@ -478,7 +478,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
 
             if (controlTarget != null && controlTarget != imeInputTarget) {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
+                        ImeTracker.PHASE_SERVER_SET_REMOTE_TARGET_IME_VISIBILITY);
                 controlTarget.setImeInputTargetRequestedVisibility(imeVisible, statsToken);
                 // not all virtual displays have an ImeInsetsSourceProvider, so it is not
                 // guaranteed that the IME will be started when the control target reports its
@@ -487,7 +487,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                         statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
+                        ImeTracker.PHASE_SERVER_SET_REMOTE_TARGET_IME_VISIBILITY);
             }
         }
     }
@@ -521,15 +521,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 windowToken = null;
             }
             ImeTracker.forLogging().onProgress(finalStatsToken,
-                    ImeTracker.PHASE_WM_POSTING_CHANGED_IME_VISIBILITY);
+                    ImeTracker.PHASE_SERVER_POSTING_CHANGED_IME_VISIBILITY);
             mDisplayContent.mWmService.mH.post(() -> {
                 ImeTracker.forLogging().onProgress(finalStatsToken,
-                        ImeTracker.PHASE_WM_INVOKING_IME_REQUESTED_LISTENER);
+                        ImeTracker.PHASE_SERVER_INVOKING_IME_REQUESTED_LISTENER);
                 imeListener.onImeRequestedChanged(windowToken, imeVisible, finalStatsToken);
             });
         } else {
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_WM_DISPATCH_IME_REQUESTED_CHANGED);
+                    ImeTracker.PHASE_SERVER_DISPATCH_IME_REQUESTED_CHANGED);
         }
     }
 
@@ -543,11 +543,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             if (caller == controlTarget && !caller.isRequestedVisible(WindowInsets.Type.ime())
                     && (caller.getAnimatingTypes() & WindowInsets.Type.ime()) == 0) {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED);
+                        ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
                 invokeOnImeRequestedChangedListener(caller, statsToken);
             } else {
                 ImeTracker.forLogging().onCancelled(statsToken,
-                        ImeTracker.PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED);
+                        ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
             }
         }
     }
@@ -623,11 +623,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         ProtoLog.d(WM_DEBUG_IME, "receiveImeStatsToken: visible=%s", visible);
         if (visible) {
             ImeTracker.forLogging().onCancelled(
-                    mStatsToken, ImeTracker.PHASE_WM_ABORT_SHOW_IME_POST_LAYOUT);
+                    mStatsToken, ImeTracker.PHASE_SERVER_ABORT_SHOW_IME_POST_LAYOUT);
             mStatsToken = statsToken;
         } else {
             ImeTracker.forLogging().onFailed(
-                    mStatsToken, ImeTracker.PHASE_WM_ABORT_SHOW_IME_POST_LAYOUT);
+                    mStatsToken, ImeTracker.PHASE_SERVER_ABORT_SHOW_IME_POST_LAYOUT);
             mStatsToken = null;
         }
     }

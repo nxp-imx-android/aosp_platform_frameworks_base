@@ -5152,11 +5152,11 @@ public class WindowManagerService extends IWindowManager.Stub
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null || dc.mRemoteInsetsControlTarget == null) {
                     ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
                     return;
                 }
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
+                        ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
                 final @InsetsType int changedTypes =
                         dc.mRemoteInsetsControlTarget.updateRequestedVisibleTypes(
                                 visibleTypes, mask);
@@ -5182,11 +5182,11 @@ public class WindowManagerService extends IWindowManager.Stub
                     final DisplayContent dc = mRoot.getDisplayContent(displayId);
                     if (dc == null || dc.mRemoteInsetsControlTarget == null) {
                         ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                                ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                         return;
                     }
                     ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                     dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
                 }
             } finally {

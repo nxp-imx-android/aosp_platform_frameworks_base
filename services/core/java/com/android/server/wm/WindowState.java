@@ -873,14 +873,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
             if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_WINDOW_ANIMATING_TYPES_CHANGED);
+                        ImeTracker.PHASE_SERVER_WINDOW_ANIMATING_TYPES_CHANGED);
                 final InsetsStateController insetsStateController =
                         getDisplayContent().getInsetsStateController();
                 insetsStateController.onAnimatingTypesChanged(this, statsToken);
             }
         } else {
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_WM_WINDOW_ANIMATING_TYPES_CHANGED);
+                    ImeTracker.PHASE_SERVER_WINDOW_ANIMATING_TYPES_CHANGED);
         }
     }
 
@@ -3893,12 +3893,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     public void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
         try {
             ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS);
+                    ImeTracker.PHASE_SERVER_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS);
             mClient.showInsets(types, statsToken);
         } catch (RemoteException e) {
             Slog.w(TAG, "Failed to deliver showInsets", e);
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS);
+                    ImeTracker.PHASE_SERVER_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS);
         }
     }
 
@@ -3906,12 +3906,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
         try {
             ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS);
+                    ImeTracker.PHASE_SERVER_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS);
             mClient.hideInsets(types, statsToken);
         } catch (RemoteException e) {
             Slog.w(TAG, "Failed to deliver hideInsets", e);
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS);
+                    ImeTracker.PHASE_SERVER_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS);
         }
     }
 

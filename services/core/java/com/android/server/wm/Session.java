@@ -726,7 +726,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             final WindowState win = mService.windowForClient(this, window);
             if (win != null) {
                 ImeTracker.forLogging().onProgress(imeStatsToken,
-                        ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
+                        ImeTracker.PHASE_SERVER_UPDATE_REQUESTED_VISIBLE_TYPES);
                 final @InsetsType int changedTypes =
                         win.setRequestedVisibleTypes(requestedVisibleTypes);
                 win.getDisplayContent().getInsetsPolicy().onRequestedVisibleTypesChanged(win,
@@ -743,7 +743,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                     // EmbeddedWindow. Therefore, check the EmbeddedWindowController as well
                     // TODO(b/353463205) Use different phase here
                     ImeTracker.forLogging().onProgress(imeStatsToken,
-                            ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_REQUESTED_VISIBLE_TYPES);
                     final @InsetsType int changedTypes = embeddedWindow.setRequestedVisibleTypes(
                             requestedVisibleTypes & WindowInsets.Type.ime());
                     embeddedWindow.getDisplayContent().getInsetsPolicy()
@@ -751,7 +751,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                                     embeddedWindow, changedTypes, imeStatsToken);
                 } else {
                     ImeTracker.forLogging().onFailed(imeStatsToken,
-                            ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_REQUESTED_VISIBLE_TYPES);
                 }
             }
         }
@@ -764,11 +764,11 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             final WindowState win = mService.windowForClient(this, window);
             if (win != null) {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
+                        ImeTracker.PHASE_SERVER_UPDATE_ANIMATING_TYPES);
                 win.setAnimatingTypes(animatingTypes, statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
+                        ImeTracker.PHASE_SERVER_UPDATE_ANIMATING_TYPES);
             }
         }
     }
@@ -1054,12 +1054,12 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                 ProtoLog.d(WM_DEBUG_IME, "notifyImeWindowVisibilityChangedFromClient: %s",
                         insetsStateController.getImeSourceProvider());
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_NOTIFY_IME_VISIBILITY_CHANGED_FROM_CLIENT);
+                        ImeTracker.PHASE_SERVER_NOTIFY_IME_VISIBILITY_CHANGED_FROM_CLIENT);
                 insetsStateController.getImeSourceProvider().receiveImeStatsToken(visible,
                         statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_WM_NOTIFY_IME_VISIBILITY_CHANGED_FROM_CLIENT);
+                        ImeTracker.PHASE_SERVER_NOTIFY_IME_VISIBILITY_CHANGED_FROM_CLIENT);
             }
         }
     }
