@@ -302,7 +302,6 @@ import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * This manages the execution of the main thread in an
@@ -1185,27 +1184,37 @@ public final class ActivityThread extends ClientTransactionHandler
                 throws RemoteException {
             int callingUid = Binder.getCallingUid();
             if (callingUid != Process.ROOT_UID && callingUid != Process.SYSTEM_UID) {
-                String[] packagesForUid =
-                        getSystemContext().getPackageManager().getPackagesForUid(callingUid);
                 String packageName;
-                if (packagesForUid == null || packagesForUid.length == 0) {
-                    packageName = "unknown";
-                } else if (packagesForUid.length == 1) {
-                    packageName = packagesForUid[0];
+                if (callingUid == Process.SHELL_UID) {
+                    // save lookup, we know and expect this
+                    packageName = "com.android.shell";
                 } else {
-                    packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
-                            Collectors.joining(", "));
+                    String[] packagesForUid = getPackageManager().getPackagesForUid(callingUid);
+                    if (packagesForUid == null || packagesForUid.length == 0) {
+                        packageName = "unknown";
+                    } else if (packagesForUid.length == 1) {
+                        packageName = packagesForUid[0];
+                    } else {
+                        // shared UID - just use first package name and annotate it
+                        packageName = packagesForUid[0] + "*";
+                    }
                 }
-                Slog.wtf(TAG, "ApplicationThread called by non-system process"
-                        + " (callingUid: " + callingUid
-                        + "; packageName: " + packageName
-                        + "; code: " + code
-                        + "; flags: " + flags
-                        + ")");
-                throw new SecurityException(
-                        "ApplicationThread called by non-system process"
-                                + " (callingUid: " + callingUid
-                                + "; packageName: " + packageName + ")");
+                boolean fail = callingUid != Process.SHELL_UID;
+                if (Build.IS_DEBUGGABLE || fail) {
+                    Slog.wtf(TAG, "ApplicationThread called by non-system process"
+                            + " (callingUid: " + callingUid
+                            + "; packageName: " + packageName
+                            + "; code: " + code
+                            + "; flags: " + flags
+                            + "; behavior: " + (fail ? "fail" : "log")
+                            + ")");
+                }
+                if (fail) {
+                    throw new SecurityException(
+                            "ApplicationThread called by non-system process"
+                                    + " (callingUid: " + callingUid
+                                    + "; packageName: " + packageName + ")");
+                }
             }
             return super.onTransact(code, data, reply, flags);
         }
