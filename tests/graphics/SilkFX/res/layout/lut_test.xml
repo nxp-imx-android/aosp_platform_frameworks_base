@@ -44,6 +44,12 @@
                       android:layout_height="wrap_content"
                       android:text="3D Lut" />
 
+         <RadioButton android:id="@+id/agtm_rwtmo"
+                      android:layout_width="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_height="wrap_content"
+                      android:text="AGTM RWTMO" />
+
         <RadioButton android:id="@+id/no_lut"
                       android:layout_width="wrap_content"
                       android:layout_weight="1"

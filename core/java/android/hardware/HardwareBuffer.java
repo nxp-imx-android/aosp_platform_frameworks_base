@@ -294,6 +294,8 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
      * receiving an overlay plane & avoid caching it in intermediate composition buffers. */
     public static final long USAGE_FRONT_BUFFER           = 1L << 32;
 
+    private static final int MAX_SMPTE2094_50_SIZE = 10 * 1024; // 10 KB
+
     /**
      * Creates a new <code>HardwareBuffer</code> instance.
      *
@@ -469,6 +471,31 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
         return nGetId(mNativeObject);
     }
 
+    /**
+     * @hide
+     * Sets SMPTE 2094-50 as a property of the HardwareBuffer.
+     */
+    public void setSmpte2094_50(@NonNull byte[] metadata, int offset, int length) {
+        checkClosed("setSmpte2094_50");
+
+        if (metadata == null) {
+            throw new NullPointerException("Metadata can't be null!");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Invalid offset " + offset);
+        }
+        if (length < 0 || length > MAX_SMPTE2094_50_SIZE) {
+            throw new IllegalArgumentException("Invalid length " + length);
+        }
+        if (offset + length > metadata.length) {
+            throw new IllegalArgumentException(
+                    "Length: " + length + " and offset: " + offset
+                    + " exceed metadata size: " + metadata.length);
+        }
+
+        nSetSmpte2094_50(mNativeObject, metadata, offset, length);
+    }
+
     private void checkClosed(String name) {
         if (isClosed()) {
             throw new IllegalStateException("This HardwareBuffer has been closed and its "
@@ -570,4 +597,6 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
     private static native long nEstimateSize(long nativeObject);
     @CriticalNative
     private static native long nGetId(long nativeObject);
+    private static native void nSetSmpte2094_50(
+            long nativeObject, byte[] metadat, int offset, int length);
 }
