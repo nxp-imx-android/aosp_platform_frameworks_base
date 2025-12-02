@@ -16,7 +16,9 @@
 
 package com.android.systemui.brightness.impl
 
+import com.android.systemui.brightness.data.repository.impl.BrightnessDataModule
 import com.android.systemui.brightness.shared.impl.BrightnessSharedModule
 import dagger.Module
 
-@Module(includes = [BrightnessSharedModule::class]) public interface BrightnessModule
+@Module(includes = [BrightnessSharedModule::class, BrightnessDataModule::class])
+public interface BrightnessModule

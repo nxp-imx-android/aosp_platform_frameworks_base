@@ -17,8 +17,8 @@
 package com.android.systemui.brightness.data.model
 
 @JvmInline
-value class LinearBrightness(val floatValue: Float) {
-    fun clamp(min: LinearBrightness, max: LinearBrightness): LinearBrightness {
+public value class LinearBrightness(public val floatValue: Float) {
+    public fun clamp(min: LinearBrightness, max: LinearBrightness): LinearBrightness {
         return if (floatValue < min.floatValue) {
             min
         } else if (floatValue > max.floatValue) {
@@ -28,10 +28,10 @@ value class LinearBrightness(val floatValue: Float) {
         }
     }
 
-    val loggableString: String
+    public val loggableString: String
         get() = floatValue.formatBrightness()
 }
 
-fun Float.formatBrightness(): String {
+public fun Float.formatBrightness(): String {
     return "%.3f".format(this)
 }

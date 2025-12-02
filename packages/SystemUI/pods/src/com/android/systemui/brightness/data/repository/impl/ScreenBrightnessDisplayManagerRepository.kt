@@ -38,6 +38,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,7 @@ import kotlinx.coroutines.withContext
 
 @SuppressLint("MissingPermission")
 @SysUISingleton
-class ScreenBrightnessDisplayManagerRepository
+public class ScreenBrightnessDisplayManagerRepository
 @Inject
 constructor(
     @DisplayId private val displayId: Int,
@@ -121,7 +122,7 @@ constructor(
         }
     }
 
-    override val minLinearBrightness =
+    override val minLinearBrightness: SharedFlow<LinearBrightness> =
         brightnessInfo
             .filterNotNull()
             .map { LinearBrightness(it.brightnessMinimum) }
@@ -142,14 +143,14 @@ constructor(
         return LinearBrightness(min) to LinearBrightness(max)
     }
 
-    override val linearBrightness =
+    override val linearBrightness: Flow<LinearBrightness> =
         brightnessInfo
             .filterNotNull()
             .map { LinearBrightness(it.brightness) }
             .logDiffForTable(tableBuffer, TABLE_PREFIX_LINEAR, TABLE_COLUMN_BRIGHTNESS, null)
             .stateIn(applicationScope, SharingStarted.WhileSubscribed(), LinearBrightness(0f))
 
-    override val isBrightnessOverriddenByWindow =
+    override val isBrightnessOverriddenByWindow: StateFlow<Boolean> =
         brightnessInfo
             .filterNotNull()
             .map { it.isBrightnessOverrideByWindow }

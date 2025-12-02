@@ -22,13 +22,15 @@ import dagger.Binds
 import dagger.Module
 
 @Module
-interface BrightnessDataModule {
+public interface BrightnessDataModule {
 
     @Binds
-    fun bindScreenBrightnessRepository(
+    public fun bindScreenBrightnessRepository(
         impl: ScreenBrightnessDisplayManagerRepository
     ): ScreenBrightnessRepository
 
     @Binds
-    fun bindPolicyRepository(impl: BrightnessPolicyRepositoryImpl): BrightnessPolicyRepository
+    public fun bindPolicyRepository(
+        impl: BrightnessPolicyRepositoryImpl
+    ): BrightnessPolicyRepository
 }
