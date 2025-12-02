@@ -508,6 +508,21 @@ public class LockPatternUtils {
     }
 
     /**
+     * Sends a hint to the system server to prepare for verifying a credential within the next 5
+     * seconds. The hint is processed asynchronously, and implementations may choose to ignore it.
+     *
+     * @param userId The user whose credential is going to be checked
+     */
+    public void prepareToVerifyCredential(int userId) {
+        try {
+            getLockSettings().prepareToVerifyCredential(userId);
+        } catch (RemoteException e) {
+            // Do not re-throw, as this is just a hint.
+            Log.e(TAG, "Error while preparing to verify credential: " + e);
+        }
+    }
+
+    /**
      * Check to see if a credential matches the saved one.
      *
      * @param credential The credential to check.
