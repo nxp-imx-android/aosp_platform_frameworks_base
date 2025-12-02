@@ -137,7 +137,9 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 deviceConfig.isSmallTablet(), mShowingInBubbleBar,
                 deviceConfig.getWindowBounds());
         updateInternal(deviceConfig.getInsets(), deviceConfig.getWindowBounds());
-        mPendingBubbleBarTopOnScreenUpdate = true;
+        if (isShowingInBubbleBar()) {
+            mPendingBubbleBarTopOnScreenUpdate = true;
+        }
     }
 
     /** Returns the device config being used. */
