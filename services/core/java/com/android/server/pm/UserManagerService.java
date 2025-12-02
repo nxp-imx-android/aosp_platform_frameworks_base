@@ -3399,15 +3399,15 @@ public class UserManagerService extends IUserManager.Stub {
         // The feature is enabled. But is it worth showing?
         return showEvenIfNotActionable
                 || !hasUserRestriction(UserManager.DISALLOW_ADD_USER, userId) // Can add new user
-                || areThereMultipleSwitchableUsers(); // There are switchable users
+                || areThereMultipleUiSwitchableUsers(); // There are switchable users
     }
 
-    /** Returns true if there is more than one user that can be switched to. */
-    private boolean areThereMultipleSwitchableUsers() {
+    /** Returns true if there is more than one human user that can be switched to via the UI. */
+    private boolean areThereMultipleUiSwitchableUsers() {
         List<UserInfo> aliveUsers = getUsers(/* excludeDying= */ true);
         boolean isAnyAliveUser = false;
         for (UserInfo userInfo : aliveUsers) {
-            if (userInfo.supportsSwitchToByUser()) {
+            if (userInfo.isUiSwitchableHumanUser()) {
                 if (isAnyAliveUser) {
                     return true;
                 }
