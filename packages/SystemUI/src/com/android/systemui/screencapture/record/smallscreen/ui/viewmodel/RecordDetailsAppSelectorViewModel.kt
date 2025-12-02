@@ -16,43 +16,26 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
-import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.coroutineScope
 
 class RecordDetailsAppSelectorViewModel
 @AssistedInject
-constructor(private val recentTasksViewModel: RecentTasksViewModel) : HydratedActivatable() {
+constructor(
+    interactor: RecordDetailsTargetInteractor,
+    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+) : HydratedActivatable() {
 
-    val recentTasks: List<ScreenCaptureRecentTask>? by derivedStateOf {
-        recentTasksViewModel.targets.value?.withoutPostRecordingActivity()
-    }
-
-    override suspend fun onActivated() {
-        coroutineScope {
-            launchTraced("RecordDetailsAppSelectorViewModel#recentTasksViewModel") {
-                recentTasksViewModel.activate()
-            }
-        }
-    }
+    val recentTasks: List<ScreenCaptureRecentTask>? by
+        interactor.recentTasks.hydratedStateOf("RecordDetailsAppSelectorViewModel#recentTasks")
 
     fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
-        recentTasksViewModel.createViewModelFor(task) as RecentTaskViewModel
-
-    private fun List<ScreenCaptureRecentTask>.withoutPostRecordingActivity():
-        List<ScreenCaptureRecentTask> {
-        return filter { task ->
-            SmallScreenPostRecordingActivity::class.qualifiedName != task.component?.className
-        }
-    }
+        recentTaskViewModelFactory.create(task)
 
     @AssistedFactory
     interface Factory {

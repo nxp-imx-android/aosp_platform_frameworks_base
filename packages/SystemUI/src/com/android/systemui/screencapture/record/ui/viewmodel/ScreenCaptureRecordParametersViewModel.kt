@@ -21,9 +21,12 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.shared.model.currentTargetModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
@@ -33,6 +36,7 @@ constructor(
     private val interactor: ScreenCaptureRecordParametersInteractor,
     screenRecordCameraInteractor: ScreenRecordCameraInteractor,
     screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
 ) : HydratedActivatable() {
 
     val audioSource: ScreenRecordingAudioSource? by
@@ -92,7 +96,14 @@ constructor(
 
     val canUseFrontCamera: Boolean by
         if (screenCaptureRecordFeaturesInteractor.isSelfieAvailable) {
-                screenRecordCameraInteractor.isCameraSupported
+                combine(
+                    recordDetailsTargetInteractor.model.map {
+                        it?.currentTargetModel?.canUseCamera ?: false
+                    },
+                    screenRecordCameraInteractor.isCameraSupported,
+                ) { canUseCameraForTarget, isCameraSupported ->
+                    canUseCameraForTarget && isCameraSupported
+                }
             } else {
                 flowOf(false)
             }

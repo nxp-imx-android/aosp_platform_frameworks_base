@@ -81,7 +81,7 @@ import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsPopupType
+import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsPopupType
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.SmallScreenCaptureRecordViewModel
 import com.android.systemui.util.view.listenToComputeInternalInsets
 import javax.inject.Inject

@@ -44,7 +44,6 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetItemViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetViewModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 
@@ -81,7 +80,7 @@ fun RecordDetailsSettings(
             }
             AnimatedVisibility(visible = targetViewModel.shouldShowAppSelector) {
                 AppSelectorButton(
-                    appLabel = targetViewModel.selectedAppName?.getOrNull()?.toString(),
+                    appLabel = targetViewModel.selectedAppLabel?.toString(),
                     viewModel = drawableLoaderViewModel,
                     onClick = onAppSelectorClicked,
                 )
@@ -125,9 +124,7 @@ fun RecordDetailsSettings(
                     modifier = Modifier,
                 )
             }
-            AnimatedVisibility(
-                targetViewModel.currentTarget is RecordDetailsTargetItemViewModel.EntireScreen
-            ) {
+            AnimatedVisibility(targetViewModel.canShowTouches) {
                 RichSwitch(
                     icon =
                         loadIcon(
