@@ -182,14 +182,13 @@ internal class SwipeAnimation<T : ContentKey>(
     private val isUpOrLeft: Boolean,
     val requiresFullDistanceSwipe: Boolean,
     private val distance: (SwipeAnimation<T>) -> Float,
-    currentContent: T = fromContent,
     private val gestureContext: MutableDragOffsetGestureContext,
     private val decayAnimationSpec: DecayAnimationSpec<Float>,
 ) : MutableDragOffsetGestureContext by gestureContext {
     /** The [TransitionState.Transition] whose implementation delegates to this [SwipeAnimation]. */
     lateinit var contentTransition: TransitionState.Transition
 
-    private var _currentContent by mutableStateOf(currentContent)
+    private var _currentContent by mutableStateOf(fromContent)
     var currentContent: T
         get() = _currentContent
         set(value) {
