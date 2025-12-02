@@ -33,6 +33,8 @@ import org.jetbrains.uast.UImportStatement
 /**
  * A detector for SysUI e2e test classes that use both `@RunWith(Parameterized)` and
  * `@NoMetricBefore` / `@NoMetricAfter`, which isn't allowed.
+ *
+ * See also: [UseNoMetricInFunctionalDetector].
  */
 class NoMetricInParameterizedDetector : Detector(), SourceCodeScanner {
     override fun getApplicableUastTypes(): List<Class<out UElement>> {

@@ -207,20 +207,21 @@ src/test/pkg/TestClass.kt:9: Error: @NoMetricAfter can't be used with Parameteri
             )
     }
 
-    private val runWithStub: TestFile =
-        kotlin(
-            """
+    companion object {
+        val runWithStub: TestFile =
+            kotlin(
+                """
         package org.junit.runner
 
         annotation class RunWith(
             val value: KClass
         )
         """
-        )
+            )
 
-    private val microbenchmarkStub: TestFile =
-        kotlin(
-            """
+        val microbenchmarkStub: TestFile =
+            kotlin(
+                """
         package android.platform.test.microbenchmark
 
         class Microbenchmark {
@@ -228,23 +229,24 @@ src/test/pkg/TestClass.kt:9: Error: @NoMetricAfter can't be used with Parameteri
             annotation class NoMetricAfter
         }
         """
-        )
+            )
 
-    private val functionalStub: TestFile =
-        kotlin(
-            """
+        val functionalStub: TestFile =
+            kotlin(
+                """
             package android.platform.test.microbenchmark
             class Functional
 """
-        )
+            )
 
-    private val parameterizedStub: TestFile =
-        kotlin(
-            """
+        val parameterizedStub: TestFile =
+            kotlin(
+                """
             package org.junit.runners
             public class Parameterized
 """
-        )
+            )
+    }
 
     private val stubs = arrayOf(runWithStub, microbenchmarkStub, functionalStub, parameterizedStub)
 }

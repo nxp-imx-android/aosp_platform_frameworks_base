@@ -207,20 +207,21 @@ src/test/pkg/TestClass.java:9: Error: @NoMetricAfter can't be used with Paramete
             )
     }
 
-    private val runWithStub: TestFile =
-        java(
-            """
+    companion object {
+        val runWithStub: TestFile =
+            java(
+                """
         package org.junit.runner;
 
         public @interface RunWith {
             Class<T> value();
         }
         """
-        )
+            )
 
-    private val microbenchmarkStub: TestFile =
-        java(
-            """
+        val microbenchmarkStub: TestFile =
+            java(
+                """
         package android.platform.test.microbenchmark;
 
         public class Microbenchmark {
@@ -228,23 +229,24 @@ src/test/pkg/TestClass.java:9: Error: @NoMetricAfter can't be used with Paramete
             public @interface NoMetricAfter {}
         }
         """
-        )
+            )
 
-    private val functionalStub: TestFile =
-        java(
-            """
+        val functionalStub: TestFile =
+            java(
+                """
             package android.platform.test.microbenchmark;
             public class Functional {}
 """
-        )
+            )
 
-    private val parameterizedStub: TestFile =
-        java(
-            """
+        val parameterizedStub: TestFile =
+            java(
+                """
             package org.junit.runners;
             public class Parameterized {}
 """
-        )
+            )
+    }
 
     private val stubs = arrayOf(runWithStub, microbenchmarkStub, functionalStub, parameterizedStub)
 }
