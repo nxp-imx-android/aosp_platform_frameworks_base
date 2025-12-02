@@ -31,6 +31,7 @@ import android.content.ContentCaptureOptions;
 import android.content.Context;
 import android.os.DeadObjectException;
 import android.os.DeadSystemRuntimeException;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.view.WindowManager;
 
 import com.android.internal.util.RingBuffer;
@@ -195,6 +196,7 @@ public class ContentCaptureManagerTest {
     }
 
     @Test
+    @RequiresFlagsDisabled("android.view.contentcapture.deprecate_set_content_capture_enabled")
     public void testUpdateWindowAttribute_clearFlagSecureAfterDisabledByApp() {
         final ContentCaptureManager manager =
                 new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
