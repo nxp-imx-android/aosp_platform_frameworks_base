@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.ui.compose
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.screencapture.record.smallscreen.ui.compose.smallScreenCaptureRecordContent
 import com.android.systemui.screencapture.record.ui.viewmodel.screenCaptureRecordViewModelFactory
 
 val Kosmos.screenCaptureRecordContent: ScreenCaptureRecordContent by
@@ -24,6 +25,6 @@ val Kosmos.screenCaptureRecordContent: ScreenCaptureRecordContent by
         ScreenCaptureRecordContent(
             screenCaptureRecordViewModelFactory = screenCaptureRecordViewModelFactory,
             largeScreenCaptureContent = { error("not yet implemented") },
-            smallScreenCaptureRecordContent = { error("not yet implemented") },
+            smallScreenCaptureRecordContent = { smallScreenCaptureRecordContent },
         )
     }
