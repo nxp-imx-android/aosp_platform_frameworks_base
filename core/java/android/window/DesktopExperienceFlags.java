@@ -110,8 +110,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH(
             Flags::enableDensityResetOnCrossDisplaysPipLaunch, false,
             Flags.FLAG_ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH),
-    ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, true,
-            Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
