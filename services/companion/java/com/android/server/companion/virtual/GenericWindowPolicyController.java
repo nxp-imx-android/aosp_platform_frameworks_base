@@ -506,7 +506,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     }
 
     private void notifyActivityBlocked(
-            ActivityInfo activityInfo, Supplier<IntentSender> intentSender) {
+            @NonNull ActivityInfo activityInfo, @Nullable Supplier<IntentSender> intentSender) {
         int displayId = waitAndGetDisplayId();
         // Don't trigger activity blocked callback for mirror displays, because we can't show
         // any activity or presentation on it anyway.
@@ -562,6 +562,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         @GuardedBy("mLock")
         private final Map<ComponentName, Integer> mComponentNameToWindowFlagsMap = new ArrayMap<>();
         @GuardedBy("mLock")
+        @Nullable
         private ComponentName mTopComponentName = null;
 
         int getWindowFlagsForComponentName(@NonNull ComponentName componentName) {
@@ -572,6 +573,9 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
 
         int getCurrentWindowFlags() {
             synchronized (mLock) {
+                if (mTopComponentName == null) {
+                    return FLAG_NONE;
+                }
                 return getWindowFlagsForComponentNameLocked(mTopComponentName);
             }
         }
@@ -582,7 +586,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             }
         }
 
-        @NonNull
+        @Nullable
         ComponentName getTopComponentName() {
             synchronized (mLock) {
                 return mTopComponentName;

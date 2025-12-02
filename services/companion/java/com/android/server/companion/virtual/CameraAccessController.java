@@ -75,8 +75,15 @@ final class CameraAccessController extends CameraManager.AvailabilityCallback
     }
 
     static class OpenCameraInfo {
-        public String packageName;
-        public Set<Integer> packageUids;
+        @NonNull
+        public final String packageName;
+        @NonNull
+        public final Set<Integer> packageUids;
+
+        OpenCameraInfo(@NonNull String packageName, @NonNull Set<Integer> packageUids) {
+            this.packageName = packageName;
+            this.packageUids = packageUids;
+        }
     }
 
     interface CameraAccessBlockedCallback {
@@ -153,7 +160,7 @@ final class CameraAccessController extends CameraManager.AvailabilityCallback
         synchronized (mLock) {
             for (int i = 0; i < mAppsToBlockOnVirtualDevice.size(); i++) {
                 final String cameraId = mAppsToBlockOnVirtualDevice.keyAt(i);
-                final OpenCameraInfo openCameraInfo = mAppsToBlockOnVirtualDevice.get(cameraId);
+                final OpenCameraInfo openCameraInfo = mAppsToBlockOnVirtualDevice.valueAt(i);
                 final String packageName = openCameraInfo.packageName;
                 for (int packageUid : openCameraInfo.packageUids) {
                     if (runningUids.contains(packageUid)) {
@@ -220,12 +227,14 @@ final class CameraAccessController extends CameraManager.AvailabilityCallback
                     }
                 }
             }
-            OpenCameraInfo openCameraInfo = new OpenCameraInfo();
-            openCameraInfo.packageName = packageName;
-            openCameraInfo.packageUids = packageUids;
+            OpenCameraInfo openCameraInfo = new OpenCameraInfo(packageName, packageUids);
             mAppsToBlockOnVirtualDevice.put(cameraId, openCameraInfo);
-            CameraInjectionSession existingSession =
-                    (data != null) ? data.cameraIdToSession.get(cameraId) : null;
+
+            if (data == null) {
+                return;
+            }
+
+            CameraInjectionSession existingSession = data.cameraIdToSession.get(cameraId);
             if (existingSession != null) {
                 existingSession.close();
                 data.cameraIdToSession.remove(cameraId);

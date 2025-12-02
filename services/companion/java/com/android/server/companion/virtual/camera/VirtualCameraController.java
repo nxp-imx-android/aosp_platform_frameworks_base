@@ -44,6 +44,7 @@ import com.android.modules.expresslog.Counter;
 
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -60,7 +61,8 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     private final Object mServiceLock = new Object();
 
     @GuardedBy("mServiceLock")
-    @Nullable private IVirtualCameraService mVirtualCameraService;
+    @Nullable
+    private IVirtualCameraService mVirtualCameraService;
     @DevicePolicy
     private final int mCameraPolicy;
     private final int mDeviceId;
@@ -73,7 +75,7 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     }
 
     @VisibleForTesting
-    VirtualCameraController(IVirtualCameraService virtualCameraService,
+    VirtualCameraController(@Nullable IVirtualCameraService virtualCameraService,
             @DevicePolicy int cameraPolicy, int deviceId) {
         mVirtualCameraService = virtualCameraService;
         mCameraPolicy = cameraPolicy;
@@ -154,6 +156,7 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
             service = mVirtualCameraService;
         }
 
+        Objects.requireNonNull(service);
         try {
             return service.getCameraId(cameraConfig.getCallback().asBinder());
         } catch (RemoteException e) {

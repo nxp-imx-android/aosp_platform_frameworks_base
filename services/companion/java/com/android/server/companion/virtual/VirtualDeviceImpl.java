@@ -111,6 +111,7 @@ import android.widget.Toast;
 import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Initializer;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
 import com.android.modules.expresslog.Counter;
@@ -182,37 +183,57 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     private final int mBaseVirtualDisplayFlags;
 
+    @NonNull
     private final Context mContext;
+    @Nullable
     private final AssociationInfo mAssociationInfo;
+    @NonNull
     private final VirtualDeviceManagerService mService;
+    @NonNull
     private final PendingTrampolineCallback mPendingTrampolineCallback;
     private final int mOwnerUid;
+    @NonNull
     private final VirtualDeviceLog mVirtualDeviceLog;
+    @NonNull
     private final String mOwnerPackageName;
     @NonNull
     private final AttributionSource mAttributionSource;
     private final int mDeviceId;
     @Nullable
     private final String mPersistentDeviceId;
+    @NonNull
     private final InputController mInputController;
+    @NonNull
     private final SensorController mSensorController;
+    @Nullable
     private final CameraAccessController mCameraAccessController;
-    @Nullable private final ViewConfigurationController mViewConfigurationController;
+    @Nullable
+    private final ViewConfigurationController mViewConfigurationController;
     @Nullable // Null if virtual camera flag is off.
     private final VirtualCameraController mVirtualCameraController;
+    @Nullable
     private VirtualAudioController mVirtualAudioController;
+    @NonNull
     private final IBinder mAppToken;
+    @NonNull
     private final VirtualDeviceParams mParams;
     @GuardedBy("mVirtualDeviceLock")
     private final SparseIntArray mDevicePolicies;
     @GuardedBy("mVirtualDeviceLock")
     private final SparseArray<VirtualDisplayWrapper> mVirtualDisplays = new SparseArray<>();
+    @NonNull
     private IVirtualDeviceActivityListener mActivityListener;
+    @Nullable
     private GenericWindowPolicyController.ActivityListener mActivityListenerAdapter = null;
+    @Nullable
     private IVirtualDeviceSoundEffectListener mSoundEffectListener;
+    @NonNull
     private final DisplayManagerGlobal mDisplayManager;
+    @NonNull
     private final DisplayManagerInternal mDisplayManagerInternal;
+    @NonNull
     private final UiModeManagerInternal mUiModeManagerInternal;
+    @NonNull
     private final PowerManager mPowerManager;
     @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
@@ -434,18 +455,18 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     VirtualDeviceImpl(
-            Context context,
-            AssociationInfo associationInfo,
-            VirtualDeviceManagerService service,
-            VirtualDeviceLog virtualDeviceLog,
-            IBinder token,
-            AttributionSource attributionSource,
+            @NonNull Context context,
+            @Nullable AssociationInfo associationInfo,
+            @NonNull VirtualDeviceManagerService service,
+            @NonNull VirtualDeviceLog virtualDeviceLog,
+            @NonNull IBinder token,
+            @NonNull AttributionSource attributionSource,
             int deviceId,
-            CameraAccessController cameraAccessController,
-            PendingTrampolineCallback pendingTrampolineCallback,
-            IVirtualDeviceActivityListener activityListener,
-            IVirtualDeviceSoundEffectListener soundEffectListener,
-            VirtualDeviceParams params) {
+            @Nullable CameraAccessController cameraAccessController,
+            @NonNull PendingTrampolineCallback pendingTrampolineCallback,
+            @NonNull IVirtualDeviceActivityListener activityListener,
+            @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
+            @NonNull VirtualDeviceParams params) {
         this(
                 context,
                 associationInfo,
@@ -472,24 +493,24 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     @VisibleForTesting
     VirtualDeviceImpl(
-            Context context,
-            AssociationInfo associationInfo,
-            VirtualDeviceManagerService service,
-            VirtualDeviceLog virtualDeviceLog,
-            IBinder token,
-            AttributionSource attributionSource,
+            @NonNull Context context,
+            @Nullable AssociationInfo associationInfo,
+            @NonNull VirtualDeviceManagerService service,
+            @NonNull VirtualDeviceLog virtualDeviceLog,
+            @NonNull IBinder token,
+            @NonNull AttributionSource attributionSource,
             int deviceId,
-            InputController inputController,
-            CameraAccessController cameraAccessController,
-            PendingTrampolineCallback pendingTrampolineCallback,
-            IVirtualDeviceActivityListener activityListener,
-            IVirtualDeviceSoundEffectListener soundEffectListener,
-            VirtualDeviceParams params,
-            DisplayManagerGlobal displayManager,
-            VirtualCameraController virtualCameraController,
-            ViewConfigurationController viewConfigurationController) {
+            @Nullable InputController inputController,
+            @Nullable CameraAccessController cameraAccessController,
+            @NonNull PendingTrampolineCallback pendingTrampolineCallback,
+            @NonNull IVirtualDeviceActivityListener activityListener,
+            @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
+            @NonNull VirtualDeviceParams params,
+            @NonNull DisplayManagerGlobal displayManager,
+            @Nullable VirtualCameraController virtualCameraController,
+            @Nullable ViewConfigurationController viewConfigurationController) {
         mVirtualDeviceLog = virtualDeviceLog;
-        mOwnerPackageName = attributionSource.getPackageName();
+        mOwnerPackageName = Objects.requireNonNull(attributionSource.getPackageName());
         mAttributionSource = attributionSource;
         UserHandle ownerUserHandle = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mContext = context.createContextAsUser(ownerUserHandle, 0);
@@ -509,7 +530,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mDisplayManager = displayManager;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
-        mPowerManager = context.getSystemService(PowerManager.class);
+        mPowerManager = Objects.requireNonNull(context.getSystemService(PowerManager.class));
 
         if (mDevicePolicies.get(POLICY_TYPE_CLIPBOARD, DEVICE_POLICY_DEFAULT)
                 != DEVICE_POLICY_DEFAULT) {
@@ -613,6 +634,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     /** Returns the camera access controller of this device. */
+    @Nullable
     CameraAccessController getCameraAccessController() {
         return mCameraAccessController;
     }
@@ -622,16 +644,19 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mAssociationInfo == null ? mParams.getName() : mAssociationInfo.getDisplayName();
     }
 
+    @Nullable
     String getDeviceProfile() {
         return mAssociationInfo == null ? null : mAssociationInfo.getDeviceProfile();
     }
 
     /** Returns the public representation of the device. */
+    @NonNull
     VirtualDevice getPublicVirtualDeviceObject() {
         return mPublicVirtualDeviceObject;
     }
 
     /** Returns the locale of the device. */
+    @Nullable
     LocaleList getDeviceLocaleList() {
         synchronized (mVirtualDeviceLock) {
             return mLocaleList;
@@ -645,6 +670,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
      * This is needed for virtual devices that are created by the system, as the VirtualDeviceImpl
      * object is created before the returned VirtualDeviceInternal one.
      */
+    @Initializer
     @Override // Binder call
     public void setListeners(@NonNull IVirtualDeviceActivityListener activityListener,
             @NonNull IVirtualDeviceSoundEffectListener soundEffectListener) {
@@ -935,6 +961,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @VisibleForTesting
+    @Nullable
     VirtualAudioController getVirtualAudioControllerForTesting() {
         return mVirtualAudioController;
     }
@@ -1332,7 +1359,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override
-    protected void dump(FileDescriptor fd, PrintWriter fout, String[] args) {
+    protected void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,
+            @Nullable String[] args) {
         String indent = "    ";
         fout.println("  VirtualDevice: ");
         fout.println(indent + "mDeviceId: " + mDeviceId);
@@ -1454,6 +1482,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return displayId;
     }
 
+    @Nullable
     private PowerManager.WakeLock createWakeLockForDisplay(int displayId) {
         if (Flags.deviceAwareDisplayPower()) {
             return null;
@@ -1664,8 +1693,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private void releaseOwnedVirtualDisplayResources(VirtualDisplayWrapper virtualDisplayWrapper) {
         virtualDisplayWrapper.releaseWakeLock();
         // Notify the clients that nothing is running on this display anymore.
-        mActivityListenerAdapter.onRunningAppsChanged(
-                virtualDisplayWrapper.getDisplayId(), new ArraySet<>());
+        if (mActivityListenerAdapter != null) {
+            mActivityListenerAdapter.onRunningAppsChanged(virtualDisplayWrapper.getDisplayId(),
+                    new ArraySet<>());
+        }
         // UiModeManagerService keeps all UI mode overrides in a map, so this call effectively
         // removes the entry for this display.
         mUiModeManagerInternal.setDisplayUiMode(
@@ -1702,6 +1733,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @VisibleForTesting
+    @Nullable
     GenericWindowPolicyController getDisplayWindowPolicyControllerForTest(int displayId) {
         VirtualDisplayWrapper virtualDisplayWrapper;
         synchronized (mVirtualDeviceLock) {
@@ -1844,6 +1876,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private static final class VirtualDisplayWrapper {
         private final IVirtualDisplayCallback mToken;
         private final GenericWindowPolicyController mWindowPolicyController;
+        @Nullable
         private final PowerManager.WakeLock mWakeLock;
         private final boolean mIsTrusted;
         private final boolean mIsMirror;

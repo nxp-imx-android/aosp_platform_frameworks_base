@@ -216,17 +216,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
+    @Nullable
     private NotificationInfo mNotificationInfo = null;
     private final Object mPreviewIntentLock = new Object();
     @GuardedBy("mPreviewIntentLock")
+    @Nullable
     private PendingIntent mPreviewIntent = null;
 
     @GuardedBy("mInteractiveMirrors")
     private final List<InteractiveMirrorImpl> mInteractiveMirrors = new ArrayList<>();
 
+    @Nullable
     private ScheduledFuture<?> mSwipeFuture;
+    @Nullable
     private ScheduledFuture<?> mInsertTextFuture;
+    @Nullable
     private ScheduledFuture<?> mCloseSessionFuture;
+    @Nullable
     private ScheduledFuture<?> mDisplayEmptyScheduledAction;
     @Nullable
     private Surface mClientSurface;
@@ -410,6 +416,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mOwnerPackageName;
     }
 
+    @Nullable
     NotificationInfo getNotificationInfo() {
         synchronized (mNotificationLock) {
             return mNotificationInfo;
@@ -799,7 +806,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return userId == UserHandle.USER_SYSTEM || userId == mOwnerUser.getIdentifier();
     }
 
-    private Intent getLaunchIntent(String packageName, String className) {
+    @Nullable
+    private Intent getLaunchIntent(@NonNull String packageName, @Nullable String className) {
         if (className == null) {
             return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
         }
@@ -940,9 +948,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     static final class NotificationInfo {
         private final int mNotificationId;
+        @Nullable
         private final String mNotificationTag;
 
-        NotificationInfo(int notificationId, String notificationTag) {
+        NotificationInfo(int notificationId, @Nullable String notificationTag) {
             this.mNotificationId = notificationId;
             this.mNotificationTag = notificationTag;
         }

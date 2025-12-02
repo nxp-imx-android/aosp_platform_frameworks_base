@@ -61,7 +61,7 @@ final class SensorController {
     private static final int UNKNOWN_ERROR = (-2147483647 - 1); // INT32_MIN value
     private static final int BAD_VALUE = -22;
 
-    private static AtomicInteger sNextDirectChannelHandle = new AtomicInteger(1);
+    private static final AtomicInteger sNextDirectChannelHandle = new AtomicInteger(1);
 
     private final Object mLock = new Object();
     private final int mVirtualDeviceId;
@@ -71,8 +71,9 @@ final class SensorController {
 
     // This device's sensors, keyed by sensor handle.
     @GuardedBy("mLock")
-    private SparseArray<VirtualSensor> mVirtualSensors = new SparseArray<>();
+    private final SparseArray<VirtualSensor> mVirtualSensors = new SparseArray<>();
     @GuardedBy("mLock")
+    @Nullable
     private List<VirtualSensor> mVirtualSensorList = null;
 
     @NonNull

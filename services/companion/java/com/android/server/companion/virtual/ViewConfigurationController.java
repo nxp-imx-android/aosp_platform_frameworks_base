@@ -63,6 +63,7 @@ public class ViewConfigurationController {
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
+    @Nullable
     private OverlayIdentifier mOverlayIdentifier = null;
 
     ViewConfigurationController(@NonNull Context context) {
