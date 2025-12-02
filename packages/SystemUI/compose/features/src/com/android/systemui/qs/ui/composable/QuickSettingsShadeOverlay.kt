@@ -362,12 +362,14 @@ private fun ContentScope.QuickSettingsLayout(
 
         Toolbar(
             modifier =
-                Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
+                Modifier.fillMaxWidth()
+                    .requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight)
+                    .sysuiResTag("quick_settings_toolbar"),
             viewModel = toolbarViewModel,
             isFullyVisible = { layoutState.isIdle(contentKey) },
         )
 
-        VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
+        VerticalSeparator(QuickSettingsShade.Dimensions.ToolbarBottomPadding)
 
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             Media(
@@ -531,6 +533,11 @@ object QuickSettingsShade {
                     volumeTrackHeight,
                     volumeVerticalPadding,
                 )
+
+        val ToolbarBottomPadding: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.toolbar_bottom_padding)
 
         val ToolbarHeight: Dp
             @Composable
