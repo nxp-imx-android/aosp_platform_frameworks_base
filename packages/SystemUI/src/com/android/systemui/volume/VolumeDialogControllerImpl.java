@@ -52,6 +52,7 @@ import android.util.Slog;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
 
+import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
@@ -83,6 +84,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -1376,69 +1378,63 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     protected final class MediaSessionsCallbacks implements MediaSessions.Callbacks {
-        private final HashMap<SessionId, Integer> mRemoteStreams = new HashMap<>();
+        @GuardedBy("mRemoteStreams")
+        private final Map<SessionId, Integer> mRemoteStreams = new HashMap<>();
 
-        private int mNextStream = DYNAMIC_STREAM_REMOTE_START_INDEX;
+        private final Random mRandom = new Random();
 
         @Override
         public void onRemoteUpdate(
-                    SessionId token, String name, MediaSessions.VolumeInfo volumeInfo) {
-                addStream(token, "onRemoteUpdate");
-
-                int stream = 0;
-                synchronized (mRemoteStreams) {
-                    stream = mRemoteStreams.get(token);
-                }
-                Slog.d(TAG,
-                        "onRemoteUpdate: stream: "
-                                + stream + " volume: " + volumeInfo.getCurrentVolume());
-                boolean changed = mState.states.indexOfKey(stream) < 0;
-                final StreamState ss = streamStateW(stream);
-                ss.dynamic = true;
-                ss.levelMin = 0;
-                ss.levelMax = volumeInfo.getMaxVolume();
-                if (ss.level != volumeInfo.getCurrentVolume()) {
-                    ss.level = volumeInfo.getCurrentVolume();
-                    changed = true;
-                }
-                if (!Objects.equals(ss.remoteLabel, name)) {
-                    ss.name = -1;
-                    ss.remoteLabel = name;
-                    changed = true;
-                }
-                if (changed) {
-                    Log.d(TAG, "onRemoteUpdate: " + name + ": " + ss.level + " of " + ss.levelMax);
-                    mCallbacks.onStateChanged(mState);
-                }
+                SessionId token, String name, MediaSessions.VolumeInfo volumeInfo) {
+            final int stream = putStream(token, "onRemoteUpdate");
+            Slog.d(TAG,
+                    "onRemoteUpdate: stream: "
+                            + stream + " volume: " + volumeInfo.getCurrentVolume());
+            boolean changed = mState.states.indexOfKey(stream) < 0;
+            final StreamState ss = streamStateW(stream);
+            ss.dynamic = true;
+            ss.levelMin = 0;
+            ss.levelMax = volumeInfo.getMaxVolume();
+            if (ss.level != volumeInfo.getCurrentVolume()) {
+                ss.level = volumeInfo.getCurrentVolume();
+                changed = true;
+            }
+            if (!Objects.equals(ss.remoteLabel, name)) {
+                ss.name = -1;
+                ss.remoteLabel = name;
+                changed = true;
+            }
+            if (changed) {
+                Log.d(TAG, "onRemoteUpdate: " + name + ": " + ss.level + " of " + ss.levelMax);
+                mCallbacks.onStateChanged(mState);
+            }
         }
 
         @Override
         public void onRemoteVolumeChanged(SessionId sessionId, int flags) {
-                addStream(sessionId, "onRemoteVolumeChanged");
-                int stream = 0;
-                synchronized (mRemoteStreams) {
-                    stream = mRemoteStreams.get(sessionId);
-                }
-                final boolean showUI = shouldShowUI(flags);
-                Slog.d(TAG, "onRemoteVolumeChanged: stream: " + stream + " showui? " + showUI);
-                boolean changed = updateActiveStreamW(stream);
-                if (showUI) {
-                    changed |= checkRoutedToBluetoothW(AudioManager.STREAM_MUSIC);
-                }
-                if (changed) {
-                    Slog.d(TAG, "onRemoteChanged: updatingState");
-                    mCallbacks.onStateChanged(mState);
-                }
-                if (showUI) {
-                    onShowRequestedW(Events.SHOW_REASON_REMOTE_VOLUME_CHANGED);
-                }
+            final int stream = putStream(sessionId, "onRemoteVolumeChanged");
+
+            final boolean showUI = shouldShowUI(flags);
+            Slog.d(TAG, "onRemoteVolumeChanged: stream: " + stream + " showui? " + showUI);
+            boolean changed = updateActiveStreamW(stream);
+            if (showUI) {
+                changed |= checkRoutedToBluetoothW(AudioManager.STREAM_MUSIC);
+            }
+            if (changed) {
+                Slog.d(TAG, "onRemoteChanged: updatingState");
+                mCallbacks.onStateChanged(mState);
+            }
+            if (showUI) {
+                onShowRequestedW(Events.SHOW_REASON_REMOTE_VOLUME_CHANGED);
+            }
         }
 
         @Override
         public void onRemoteRemoved(SessionId token) {
-            int stream;
+            Integer stream;
             synchronized (mRemoteStreams) {
-                if (!mRemoteStreams.containsKey(token)) {
+                stream = mRemoteStreams.remove(token);
+                if (stream == null) {
                     Log.d(
                             TAG,
                             "onRemoteRemoved: stream doesn't exist, "
@@ -1446,7 +1442,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
                                     + token.toString());
                     return;
                 }
-                stream = mRemoteStreams.get(token);
             }
             mState.states.remove(stream);
             if (mState.activeStream == stream) {
@@ -1475,15 +1470,26 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
             return null;
         }
 
-        private void addStream(SessionId token, String triggeringMethod) {
+        private int putStream(SessionId token, String triggeringMethod) {
             synchronized (mRemoteStreams) {
-                if (!mRemoteStreams.containsKey(token)) {
-                    mRemoteStreams.put(token, mNextStream);
-                    Log.d(TAG, triggeringMethod + ": added stream " + mNextStream
+                Integer stream = mRemoteStreams.get(token);
+                if (stream == null) {
+                    int nextStream = generateRandomDynamicStreamIndex();
+                    while (mRemoteStreams.containsValue(nextStream)) {
+                        nextStream = generateRandomDynamicStreamIndex();
+                    }
+                    mRemoteStreams.put(token, nextStream);
+                    stream = nextStream;
+                    Log.d(TAG, triggeringMethod + ": added stream " + nextStream
                             + " from token + " + token.toString());
-                    mNextStream++;
                 }
+                return stream;
             }
+        }
+
+        private int generateRandomDynamicStreamIndex() {
+            return mRandom.nextInt(DYNAMIC_STREAM_REMOTE_START_INDEX,
+                    Integer.MAX_VALUE);
         }
     }
 
