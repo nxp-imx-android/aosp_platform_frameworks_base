@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.apifirst
 
 import android.content.Context
+import androidx.annotation.StringRes
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
@@ -53,8 +54,6 @@ data class SetConfig<V : Any>(
 )
 
 /**
- * TODO: Remove the typing from the preference and infer it based on the passed type
- *
  * A preference abstraction to describe the ability of getting and (optionally) setting a value
  * specific to that preference, without relying on binding to an actual UI widget. This class is
  * produced when an Engineer in a partner team migrates their preference to Catalyst using the 2026
@@ -312,10 +311,10 @@ class SetConfigBuilder<V : Any> {
 
 /** Configuration builder for an [ApiFirstPreference]. */
 @ApiFirstPreferenceDsl
-class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>) {
-    lateinit var key: String
-    lateinit var type: ApiFirstType
-    var purpose: Int = 0
+class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
+                                               @StringRes val purpose: Int,
+                                               val type: ApiFirstType<V>,
+                                               val valueType: Class<V>) {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var getConfig: GetConfig<V>? = null
@@ -357,27 +356,15 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>
 
     /** Create an instance of [ApiFirstPreference] from its configuration. */
     fun build(): ApiFirstPreference<V> {
-        if (!this::key.isInitialized) {
-            throw IllegalStateException("'key' is required")
-        }
-
-        if (!this::type.isInitialized) {
-            throw IllegalStateException("'type' is required")
-        }
-
-        // keep a copy of the preference key and purpose
-        val preferenceKey = key
-        val purpose = purpose
-
         return object : ApiFirstPreference<V>() {
             override val commonPermissions: PermissionsConfig? = permissionsConfig
             override val commonPreconditions: PreconditionsConfig? = preconditionsConfig
             override val get: GetConfig<V> =
                 getConfig ?: throw IllegalStateException("'get' block is required")
             override val set: SetConfig<V>? = setConfig
-            override val valueType: Class<V> = preferenceValueType // TODO: Use the passed `type`
-            override val key: String = preferenceKey
-            override val purpose: Int = purpose
+            override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
+            override val key: String = this@ApiFirstPreferenceConfigBuilder.key
+            override val purpose: Int = this@ApiFirstPreferenceConfigBuilder.purpose
         }
     }
 }

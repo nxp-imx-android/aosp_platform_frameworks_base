@@ -16,4 +16,4 @@
 
 package com.android.settingslib.metadata.apifirst.types
 
-interface ApiFirstType
+interface ApiFirstType<V>

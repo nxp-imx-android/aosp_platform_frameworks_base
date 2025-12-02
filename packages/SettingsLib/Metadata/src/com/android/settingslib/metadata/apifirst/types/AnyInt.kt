@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.types
 
 /** Any int value. */
-object AnyInt: ApiFirstType
+object AnyInt: ApiFirstType<Int>
