@@ -4689,11 +4689,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
             // A record's phoneId can get invalid if there is no SIM or modem was restarting
             // when caller registered.
             if (r.phoneId == INVALID_SIM_SLOT_INDEX) {
-                if(Flags.useRelaxedPhoneIdMatch()) {
-                   return validatePhoneId(phoneId);
-                } else {
-                   return phoneId == 0;
-                }
+                return validatePhoneId(phoneId);
             } else {
                 return (r.phoneId == phoneId);
             }
@@ -4702,11 +4698,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         if (r.subId == SubscriptionManager.DEFAULT_SUBSCRIPTION_ID) {
             // if the registered record does not have a valid phoneId then use the phone 0/1
             if (r.phoneId == INVALID_SIM_SLOT_INDEX) {
-                if(Flags.useRelaxedPhoneIdMatch()) {
-                   return validatePhoneId(phoneId);
-                } else {
-                   return phoneId == 0;
-                }
+                return validatePhoneId(phoneId);
             }
             return (subId == mDefaultSubId);
         } else {
