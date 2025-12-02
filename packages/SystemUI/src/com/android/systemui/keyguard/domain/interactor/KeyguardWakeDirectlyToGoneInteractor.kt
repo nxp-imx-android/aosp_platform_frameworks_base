@@ -134,7 +134,7 @@ constructor(
      * - We're allowed to ignore auth and return to GONE, due to timeouts not elapsing.
      * - We're DREAMING and dismissible.
      */
-    val canWakeDirectlyToGone by lazy {
+    val canWakeDirectlyToGone =
         combine(
                 repository.isKeyguardEnabled,
                 shouldSuppressKeyguard,
@@ -163,7 +163,6 @@ constructor(
                     isDreamingAndDismissible
             }
             .stateIn(scope, SharingStarted.Eagerly, false)
-    }
 
     /**
      * Counter that is incremented every time we wake up or stop dreaming. Upon sleeping/dreaming,

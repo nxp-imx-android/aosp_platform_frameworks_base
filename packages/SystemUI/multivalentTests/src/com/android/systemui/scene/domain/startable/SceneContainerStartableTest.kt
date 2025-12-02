@@ -1362,7 +1362,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun switchToGoneWhenDeviceStartsToWakeUp_authMethodNone() =
+    @EnableSceneContainer
+    fun switchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
             prepareState(
@@ -1375,10 +1376,35 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
 
+            kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(true)
+            runCurrent()
+
             powerInteractor.setAwakeForTest()
             runCurrent()
 
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun doesNotSwitchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canNotIgnoreAuth() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            prepareState(
+                initialSceneKey = Scenes.Lockscreen,
+                authenticationMethod = AuthenticationMethodModel.None,
+                isLockscreenEnabled = false,
+            )
+            powerInteractor.setAsleepForTest()
+            kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(false)
+            underTest.start()
+            runCurrent()
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
         }
 
     @Test
