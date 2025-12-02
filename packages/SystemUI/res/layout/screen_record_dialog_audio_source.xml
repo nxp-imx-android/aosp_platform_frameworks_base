@@ -16,6 +16,7 @@
   -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="250dp"
     android:layout_height="wrap_content"
     android:minHeight="48dp"
@@ -29,7 +30,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:fontFamily="variable-label-large"
         android:textSize="14sp"
-        android:textColor="@color/material_dynamic_neutral10"/>
+        android:textColor="@androidprv:color/materialColorOnSecondaryContainer"/>
     <TextView
         android:id="@+id/screen_recording_dialog_source_description"
         android:layout_width="match_parent"
@@ -37,5 +38,5 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:fontFamily="variable-body-small"
         android:textSize="12sp"
-        android:textColor="@color/material_dynamic_neutral_variant30"/>
+        android:textColor="@androidprv:color/materialColorOnSecondaryContainer"/>
 </LinearLayout>
