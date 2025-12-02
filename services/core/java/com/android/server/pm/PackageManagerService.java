@@ -34,6 +34,7 @@ import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
+import static android.os.PerfettoTrace.BIG_LOCKS_V3;
 import static android.os.Process.INVALID_UID;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 import static android.os.UserHandle.USER_ALL;
@@ -187,6 +188,7 @@ import com.android.internal.app.ResolverActivity;
 import com.android.internal.content.F2fsUtils;
 import com.android.internal.content.InstallLocationUtils;
 import com.android.internal.content.om.OverlayConfig;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.pm.parsing.PackageParser2;
 import com.android.internal.pm.parsing.pkg.AndroidPackageInternal;
@@ -1005,6 +1007,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      * @hide
      */
     public static void boostPriorityForPackageManagerTracedLockedSection() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "pms_lock_acquire").emit();
         if (ENABLE_BOOST) {
             sThreadPriorityBooster.boost();
         }
@@ -1019,6 +1022,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         if (ENABLE_BOOST) {
             sThreadPriorityBooster.reset();
         }
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     /**
