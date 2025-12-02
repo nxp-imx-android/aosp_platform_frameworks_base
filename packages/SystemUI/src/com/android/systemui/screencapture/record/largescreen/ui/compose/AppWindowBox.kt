@@ -18,9 +18,7 @@ package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.app.ActivityManager
 import android.graphics.Rect as AndroidRect
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -29,10 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect as ComposeRect
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -48,16 +43,6 @@ fun AppWindowBox(taskInfo: ActivityManager.RunningTaskInfo?, modifier: Modifier 
     Box(modifier = modifier.fillMaxSize().background(color = ScreenCaptureColors.scrimColor)) {
         if (bounds != null) {
             val boundsRect = bounds.toComposeRect()
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRoundRect(
-                    color = Color.Transparent,
-                    topLeft = boundsRect.topLeft,
-                    size = boundsRect.size,
-                    cornerRadius = CornerRadius(with(density) { cornerRadius.toPx() }),
-                    blendMode = BlendMode.Clear,
-                )
-            }
-
             val boxWidthDp = with(density) { bounds.width().toDp() }
             val boxHeightDp = with(density) { bounds.height().toDp() }
 
@@ -65,9 +50,8 @@ fun AppWindowBox(taskInfo: ActivityManager.RunningTaskInfo?, modifier: Modifier 
                 modifier =
                     Modifier.offset { IntOffset(bounds.left, bounds.top) }
                         .size(boxWidthDp, boxHeightDp)
-                        .border(
-                            borderStrokeWidth,
-                            MaterialTheme.colorScheme.primary,
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.32f),
                             RoundedCornerShape(cornerRadius),
                         )
             ) {}
