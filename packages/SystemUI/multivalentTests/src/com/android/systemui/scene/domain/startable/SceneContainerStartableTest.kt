@@ -82,7 +82,6 @@ import com.android.systemui.keyguard.data.repository.fakeTrustRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
-import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
@@ -2675,7 +2674,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun handleDeviceUnlockStatus_deviceLockedWhileOnDream_stayOnDream() =
+    fun handleDeviceUnlockStatus_deviceLockedWhileOnDream_stayOnDreamAndReplaceBackStack() =
         kosmos.runTest {
             val transitionState =
                 prepareState(
@@ -2688,6 +2687,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             val isUnlocked by
                 collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
             val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
             assertThat(isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
@@ -2705,6 +2705,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(backStack?.asIterable()?.first()).isEqualTo(Scenes.Gone)
 
             // Lock device, and verify stay on dream.
             fakeDeviceEntryRepository.deviceUnlockStatus.value =
@@ -2712,6 +2713,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
             assertThat(isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(backStack?.asIterable()?.first()).isEqualTo(Scenes.Lockscreen)
         }
 
     @Test
@@ -3392,8 +3394,5 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
     private companion object {
         const val SECONDARY_DISPLAY = Display.DEFAULT_DISPLAY + 1
-
-        // Move past initial delay with [KeyguardInteractor#isAbleToDream]
-        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L
     }
 }
