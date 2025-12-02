@@ -110,6 +110,9 @@ flag {
   namespace: "supervision"
   description: "Enables AppBindingService to dispatch actions to be executed by AppServiceConnection after a connection is established."
   bug: "441932377"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
