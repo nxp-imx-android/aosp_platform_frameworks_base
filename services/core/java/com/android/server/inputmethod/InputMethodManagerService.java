@@ -6419,15 +6419,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     void handleShellCommandTraceInputMethod() {
         boolean isImeTraceEnabled = ImeTracing.getInstance().isEnabled();
         synchronized (ImfLock.class) {
-            // TODO(b/322816970): Replace this with lambda.
-            mClientController.forAllClients(new Consumer<ClientState>() {
-
-                @GuardedBy("ImfLock.class")
-                @Override
-                public void accept(ClientState c) {
-                    c.mClient.setImeTraceEnabled(isImeTraceEnabled);
-                }
-            });
+            @SuppressWarnings("GuardedBy")
+            Consumer<ClientState> consumer = c -> c.mClient.setImeTraceEnabled(isImeTraceEnabled);
+            mClientController.forAllClients(consumer);
         }
     }
 
