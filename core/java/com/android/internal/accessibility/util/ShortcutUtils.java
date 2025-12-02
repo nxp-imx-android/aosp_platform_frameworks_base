@@ -54,7 +54,9 @@ import com.android.internal.R;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -472,18 +474,33 @@ public final class ShortcutUtils {
 
 
     private static int getKeyCodeFromTarget(Context context, String targetName) {
-        final String selectToSpeakTargetName = getSelectToSpeakTargetName(context);
-        final String screenReaderTargetName = getScreenReaderTargetName(context);
-        final String voiceAccessTargetName = getVoiceAccessTargetName(context);
-
+        // Magnification uses the package name rather than a component name.
         if (targetName.equals(MAGNIFICATION_CONTROLLER_NAME)) {
             return KeyEvent.KEYCODE_M;
-        } else if (targetName.equals(selectToSpeakTargetName)) {
-            return KeyEvent.KEYCODE_S;
-        } else if (targetName.equals(screenReaderTargetName)) {
-            return KeyEvent.KEYCODE_T;
-        } else if (targetName.equals(voiceAccessTargetName)) {
-            return KeyEvent.KEYCODE_V;
+        }
+
+        final Map<String, Integer> serviceToKeyCodeMap = new LinkedHashMap<>();
+        serviceToKeyCodeMap.put(getSelectToSpeakTargetName(context), KeyEvent.KEYCODE_S);
+        serviceToKeyCodeMap.put(getScreenReaderTargetName(context), KeyEvent.KEYCODE_T);
+        serviceToKeyCodeMap.put(getVoiceAccessTargetName(context), KeyEvent.KEYCODE_V);
+
+        for (Map.Entry<String, Integer> entry : serviceToKeyCodeMap.entrySet()) {
+            final String serviceName = entry.getKey();
+            final int keyCode = entry.getValue();
+
+            // Check if the input targetName directly matches the service name.
+            if (targetName.equals(serviceName)) {
+                return keyCode;
+            }
+
+            // If not, try to unflatten the service name and compare its flattened form
+            // with the input targetName.
+            if (!TextUtils.isEmpty(serviceName)) {
+                final ComponentName componentName = ComponentName.unflattenFromString(serviceName);
+                if (componentName != null && targetName.equals(componentName.flattenToString())) {
+                    return keyCode;
+                }
+            }
         }
 
         return KeyEvent.KEYCODE_UNKNOWN;
