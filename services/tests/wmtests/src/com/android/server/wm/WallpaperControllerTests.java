@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 import static android.view.WindowManager.LayoutParams.FLAG_SCALED;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
@@ -38,6 +39,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -133,8 +135,6 @@ public class WallpaperControllerTests extends WindowTestsBase {
                 displayWidth / (float) wallpaperWidth, displayHeight / (float) wallpaperHeight);
         attrs.width = (int) (wallpaperWidth * layoutScale + .5f);
         attrs.height = (int) (wallpaperHeight * layoutScale + .5f);
-        attrs.flags |= FLAG_LAYOUT_NO_LIMITS | FLAG_SCALED;
-        attrs.gravity = Gravity.TOP | Gravity.LEFT;
         wallpaperWindow.getWindowFrames().mParentFrame.set(dc.getBounds());
 
         dc.getDisplayPolicy().layoutWindowLw(wallpaperWindow, null, dc.mDisplayFrames);
@@ -555,6 +555,31 @@ public class WallpaperControllerTests extends WindowTestsBase {
         assertThat(wallpaperWindow.mYOffset).isEqualTo(0);
     }
 
+    @Test
+    public void testUpdateWallpaperOffset_parentFrameChange() {
+        final DisplayContent dc = mDisplayContent;
+        final int size = 1000;
+        final WindowState wallpaperWindow = createWallpaperWindow(dc);
+        wallpaperWindow.mAttrs.width = wallpaperWindow.mAttrs.height = size;
+        wallpaperWindow.setRequestedSize(size, size);
+        dc.getDisplayPolicy().layoutWindowLw(wallpaperWindow, null /* attached */,
+                dc.mDisplayFrames);
+        wallpaperWindow.updateLastFrames();
+        final Rect originalFrame = new Rect(wallpaperWindow.getFrame());
+        final Rect originalParentFrame = new Rect(wallpaperWindow.getParentFrame());
+        resizeDisplay(dc, dc.mBaseDisplayWidth, dc.mBaseDisplayHeight + 10);
+        spyOn(dc.mWallpaperController);
+        dc.getDisplayPolicy().layoutWindowLw(wallpaperWindow, null /* attached */,
+                dc.mDisplayFrames);
+
+        assertEquals("No frame change because wallpaper requested fixed size",
+                originalFrame, wallpaperWindow.getFrame());
+        assertNotEquals("Parent frame must be changed because display resized",
+                originalParentFrame, wallpaperWindow.getParentFrame());
+        // Offset should be updated when parent frame is changed.
+        verify(dc.mWallpaperController).updateWallpaperOffset(eq(wallpaperWindow));
+    }
+
     private static void makeWallpaperWindowShown(WindowState w) {
         w.mWinAnimator.mLastAlpha = 1;
         spyOn(w.mWinAnimator);
@@ -573,8 +598,12 @@ public class WallpaperControllerTests extends WindowTestsBase {
         final WindowToken wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
                 null /* options */);
         dc.addWindowToken(wallpaperWindowToken);
-        return newWindowBuilder("wallpaperWindow", TYPE_WALLPAPER).setWindowToken(
-                wallpaperWindowToken).build();
+        final WindowState wallpaperWindow = newWindowBuilder("wallpaperWindow", TYPE_WALLPAPER)
+                .setWindowToken(wallpaperWindowToken).build();
+        wallpaperWindow.mAttrs.setFitInsetsTypes(0 /* types */);
+        wallpaperWindow.mAttrs.flags |= FLAG_LAYOUT_NO_LIMITS | FLAG_SCALED | FLAG_LAYOUT_IN_SCREEN;
+        wallpaperWindow.mAttrs.gravity = Gravity.TOP | Gravity.LEFT;
+        return wallpaperWindow;
     }
 
     private WindowState createWallpaperTargetWindow(DisplayContent dc) {
