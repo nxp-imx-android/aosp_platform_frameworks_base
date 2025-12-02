@@ -11099,13 +11099,6 @@ public final class Settings {
         public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NONE = 0;
 
         /**
-         * The screen should turn completely off in low light.
-         *
-         * @hide
-         */
-        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF = 1;
-
-        /**
          * The screen should switch to a low light clock dream if dreaming is enabled in low light.
          *
          * @hide
@@ -11123,7 +11116,6 @@ public final class Settings {
         @Retention(RetentionPolicy.SOURCE)
         @IntDef({
                 LOW_LIGHT_DISPLAY_BEHAVIOR_NONE,
-                LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF,
                 LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM,
                 LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM,
         })
