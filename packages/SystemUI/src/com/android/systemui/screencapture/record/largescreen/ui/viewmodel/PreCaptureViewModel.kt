@@ -220,6 +220,7 @@ constructor(
         return activityTaskManager.getTasks(Integer.MAX_VALUE).filter {
             it.topActivity != null &&
                 it.isVisible &&
+                it.displayId == displayId &&
                 it.configuration.windowConfiguration.activityType ==
                     WindowConfiguration.ACTIVITY_TYPE_STANDARD
         }

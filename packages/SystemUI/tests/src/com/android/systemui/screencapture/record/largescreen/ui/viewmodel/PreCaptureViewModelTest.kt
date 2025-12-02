@@ -613,6 +613,27 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(toolbarViewModel.currentSaveLocationUri).isNull()
         }
 
+    @Test
+    fun getAppWindowTasks_filtersByDisplayId() =
+        kosmos.runTest {
+            val taskOnCorrectDisplay =
+                createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val taskOnOtherDisplay =
+                createRunningTaskInfo(taskId = 2, bounds = Rect(60, 60, 100, 100), displayId = 9999)
+            val runningTasks = listOf(taskOnCorrectDisplay, taskOnOtherDisplay)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            // Hover over the task on the other display
+            viewModel.updateTaskSelectionFromHover(Point(75, 75))
+            assertThat(viewModel.topTask).isNull()
+
+            // Hover over the task on the correct display
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            assertThat(viewModel.topTask).isEqualTo(taskOnCorrectDisplay)
+        }
+
     private fun setupViewModel(uiParams: LargeScreenCaptureUiParameters? = null) {
         if (uiParams != null) {
             kosmos.largeScreenCaptureUiParameters = uiParams
@@ -634,10 +655,15 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
     }
 
-    private fun createRunningTaskInfo(taskId: Int, bounds: Rect): ActivityManager.RunningTaskInfo {
+    private fun createRunningTaskInfo(
+        taskId: Int,
+        bounds: Rect,
+        displayId: Int = this.displayId,
+    ): ActivityManager.RunningTaskInfo {
         return ActivityManager.RunningTaskInfo().apply {
             this.taskId = taskId
             this.isVisible = true
+            this.displayId = displayId
             this.topActivity = ComponentName("test.pkg", "test.class")
             this.configuration.windowConfiguration.apply {
                 setBounds(bounds)
