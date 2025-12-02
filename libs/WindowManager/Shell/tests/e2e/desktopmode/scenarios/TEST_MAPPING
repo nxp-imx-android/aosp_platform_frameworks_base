@@ -313,7 +313,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest",
       "keywords": [
         "device",
         "desktop"
