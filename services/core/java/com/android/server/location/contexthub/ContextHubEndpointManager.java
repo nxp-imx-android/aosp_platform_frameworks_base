@@ -20,6 +20,8 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.contexthub.ContextHubInfo;
+import android.hardware.contexthub.DataFlowConsumerHandle;
+import android.hardware.contexthub.DataFlowId;
 import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
 import android.hardware.contexthub.HubEndpointInfo;
@@ -56,7 +58,8 @@ import java.util.function.Consumer;
  * @hide
  */
 /* package */ class ContextHubEndpointManager
-        implements ContextHubHalEndpointCallback.IEndpointSessionCallback {
+        implements ContextHubHalEndpointCallback.IEndpointSessionCallback,
+                ContextHubHalEndpointCallback.IEndpointDataFlowCallback {
     /** The range of session IDs to use for endpoints */
     public static final int SERVICE_SESSION_RANGE = 1024;
 
@@ -224,7 +227,7 @@ import java.util.function.Consumer;
             info.hubDetails = HubInfo.HubDetails.contextHubInfo(contextHubInfo);
             mHubInterface =
                     mContextHubProxy.registerEndpointHub(
-                            new ContextHubHalEndpointCallback(mHubInfoRegistry, this), info);
+                            new ContextHubHalEndpointCallback(mHubInfoRegistry, this, this), info);
             if (mHubInterface == null) {
                 throw new IllegalStateException("Received null IEndpointCommunication");
             }
@@ -507,6 +510,44 @@ import java.util.function.Consumer;
                                         sessionId, sequenceNumber, errorCode));
         if (!callbackInvoked) {
             Log.w(TAG, "onMessageDeliveryStatusReceived: unknown session ID " + sessionId);
+        }
+    }
+
+    @Override
+    public void onDataFlowHostConsumerRegistered(
+            DataFlowConsumerHandle handle,
+            HubEndpointInfo.HubEndpointIdentifier producerId,
+            HubEndpointInfo.HubEndpointIdentifier consumerId,
+            HubMessage msg,
+            int sessionId) {
+        ContextHubEndpointBroker broker = mEndpointMap.get(consumerId.getEndpoint());
+        if (broker == null) {
+            Log.w(
+                    TAG,
+                    "onDataFlowHostConsumerRegistered: unknown consumer endpoint ID "
+                            + consumerId.getEndpoint());
+            return;
+        }
+        broker.onDataFlowHostConsumerRegistered(
+                handle, mHubInfoRegistry.getEndpointInfo(producerId), msg, sessionId);
+    }
+
+    @Override
+    public void onDataFlowOffloadEndpointUnregistered(
+            DataFlowId dataFlowId,
+            HubEndpointInfo.HubEndpointIdentifier endpointId,
+            HubEndpointInfo.HubEndpointIdentifier[] destinationIds) {
+        for (HubEndpointInfo.HubEndpointIdentifier destinationId : destinationIds) {
+            ContextHubEndpointBroker broker = mEndpointMap.get(destinationId.getEndpoint());
+            if (broker == null) {
+                Log.w(
+                        TAG,
+                        "onDataFlowOffloadEndpointUnregistered: unknown endpoint ID "
+                                + destinationId.getEndpoint());
+                continue;
+            }
+            broker.onDataFlowOffloadEndpointUnregistered(
+                    dataFlowId, mHubInfoRegistry.getEndpointInfo(endpointId));
         }
     }
 
