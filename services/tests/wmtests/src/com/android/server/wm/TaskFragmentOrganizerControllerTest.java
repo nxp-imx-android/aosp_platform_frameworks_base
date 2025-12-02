@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_NONE;
@@ -58,6 +59,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.TaskFragment.EMBEDDING_ALLOWED;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.testing.Assert.assertThrows;
+import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -94,6 +96,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.RemoteAnimationDefinition;
 import android.view.SurfaceControl;
+import android.view.WindowManager;
 import android.window.IRemoteTransition;
 import android.window.ITaskFragmentOrganizer;
 import android.window.RemoteTransition;
@@ -799,6 +802,78 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         assertApplyTransactionAllowed(mTransaction);
         assertFalse(mTaskFragment.hasAdjacentTaskFragment());
         assertFalse(taskFragment2.hasAdjacentTaskFragment());
+    }
+
+    @EnableFlags(FLAG_FIX_TF_ADJACENT_FOCUS)
+    @Test
+    public void testApplyTransaction_setAndClearAdjacentTaskFragments_triggerFocusUpdate() {
+        spyOn(mDisplayContent);
+        final Task task = createTask(mDisplayContent);
+
+        final TaskFragment tf0 = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .createActivityCount(1)
+                .setOrganizer(mOrganizer)
+                .setFragmentToken(new Binder())
+                .build();
+        final TaskFragment tf1 = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .createActivityCount(1)
+                .setOrganizer(mOrganizer)
+                .setFragmentToken(new Binder())
+                .build();
+        mWindowOrganizerController.mLaunchTaskFragments.put(tf0.getFragmentToken(), tf0);
+        mWindowOrganizerController.mLaunchTaskFragments.put(tf1.getFragmentToken(), tf1);
+        tf0.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        task.setBounds(0, 0, 1200, 1000);
+        tf0.setBounds(0, 0, 600, 1000);
+        tf1.setBounds(600, 0, 1200, 1000);
+
+        final ActivityRecord activity0 = tf0.getTopMostActivity();
+        final ActivityRecord activity1 = tf1.getTopMostActivity();
+        final WindowState win0 = newWindowBuilder("win0", TYPE_BASE_APPLICATION)
+                .setWindowToken(activity0)
+                .build();
+        final WindowState win1 = newWindowBuilder("win1", TYPE_BASE_APPLICATION)
+                .setWindowToken(activity1)
+                .build();
+        activity0.setVisibleRequested(true);
+        activity1.setVisibleRequested(true);
+        win0.setVisibleRequested(true);
+        win1.setVisibleRequested(true);
+
+        // Make the top activity's window to be non-focusable.
+        win1.mAttrs.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        mDisplayContent.setFocusedApp(activity1);
+
+        // No focusable window for the top activity1.
+        assertNull(mDisplayContent.mCurrentFocus);
+
+        // Make the TaskFragments to be adjacent, so that activity0's window will be considered for
+        // focus.
+        mTransaction.setTaskFragmentOrganizer(mIOrganizer)
+                .setAdjacentTaskFragments(tf0.getFragmentToken(), tf1.getFragmentToken(), null);
+        mController.applyTransaction(
+                mTransaction, TASK_FRAGMENT_TRANSIT_CHANGE,
+                false /* shouldApplyIndependently */, null /* remoteTransition */);
+
+        // The window in the adjacent TaskFragment should be the focused window.
+        verify(mDisplayContent).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+        assertEquals(win0, mDisplayContent.mCurrentFocus);
+
+        // Disassociate the TaskFragment should trigger a focus update.
+        clearInvocations(mDisplayContent);
+        mTransaction.clear();
+        mTransaction.setTaskFragmentOrganizer(mIOrganizer)
+                .clearAdjacentTaskFragments(tf0.getFragmentToken());
+        mController.applyTransaction(
+                mTransaction, TASK_FRAGMENT_TRANSIT_CHANGE,
+                false /* shouldApplyIndependently */, null /* remoteTransition */);
+
+        // The two TaskFragments are no longer adjacent, so the focus should be null.
+        verify(mDisplayContent).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+        assertNull(mDisplayContent.mCurrentFocus);
     }
 
     @Test

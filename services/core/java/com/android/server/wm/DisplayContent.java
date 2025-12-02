@@ -934,20 +934,41 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // Descend through all of the app tokens and find the first that either matches
         // win.mActivityRecord (return win) or mFocusedApp (return null).
         if (activity != null && w.mAttrs.type != TYPE_APPLICATION_STARTING) {
-            if (focusedApp.compareTo(activity) > 0) {
+            final boolean reachedEnd;
+            if (Flags.fixTfAdjacentFocus()
+                    && focusedApp.getTask() != null && activity.getTask() != null) {
+                // If the current window is below the Task of the focused app, it will never get
+                // the focus. Activities in the same task but below the focused app are still
+                // considered because of adjacent TaskFragments: if the focused app doesn't have
+                // any focusable window, the focus may go to the activity in the adjacent
+                // TaskFragment below.
+                reachedEnd = focusedApp.getTask().compareTo(activity.getTask()) > 0;
+            } else {
+                reachedEnd = focusedApp.compareTo(activity) > 0;
+            }
+            if (reachedEnd) {
                 // App root task below focused app root task. No focus for you!!!
                 ProtoLog.v(WM_DEBUG_FOCUS_LIGHT,
                         "findFocusedWindow: Reached focused app=%s", focusedApp);
-                mTmpWindow = null;
                 return true;
             }
 
-            // If the candidate activity is currently being embedded in the focused task, the
-            // activity cannot be focused unless it is on the same TaskFragment as the focusedApp's.
+            // If the candidate activity is currently being embedded in the focused task, it
+            // becomes focused if it is in the same TaskFragment as the focusedApp. Otherwise, we
+            // tentatively set the window to mTmpWindow and continue the search. If there is a
+            // focusable window in the focusedApp TaskFragment, then that window becomes focused; if
+            // we reach the end without finding another window, then this window becomes focused.
             TaskFragment parent = activity.getTaskFragment();
             if (parent != null && parent.isEmbedded()) {
                 if (activity.getTask() == focusedApp.getTask()
                         && activity.getTaskFragment() != focusedApp.getTaskFragment()) {
+                    if (Flags.fixTfAdjacentFocus()
+                            && focusedApp.isInAdjacentTaskFragment(activity)
+                            && mTmpWindow == null) {
+                        mTmpWindow = w;
+                        ProtoLog.v(WM_DEBUG_FOCUS_LIGHT, "findFocusedWindow: Found window (%s)"
+                                + " in adjacent TaskFragment and continue searching", w);
+                    }
                     return false;
                 }
             }
