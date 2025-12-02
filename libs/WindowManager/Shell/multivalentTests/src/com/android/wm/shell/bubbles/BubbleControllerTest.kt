@@ -680,6 +680,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubble(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
@@ -725,6 +726,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubble(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
