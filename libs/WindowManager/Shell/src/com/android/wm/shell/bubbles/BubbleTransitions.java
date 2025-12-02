@@ -612,7 +612,7 @@ public class BubbleTransitions {
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
             // TODO(b/456051408): this should not be needed after we support switch in root task
             if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
-                    && mBubble.getTaskView().isInitialized()) {
+                    && mBubble.getTaskView().isSurfaceCreated()) {
                 surfaceCreated();
             }
         }
