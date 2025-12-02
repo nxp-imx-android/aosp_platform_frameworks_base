@@ -564,45 +564,24 @@ constructor(
     }
 
     /**
-     * Ensure view is visible when the shade/qs are expanded. Also, as QS is expanding, fade out
-     * notifications unless it's a large screen.
+     * Alpha of the container, driven by shade and QS expansion.
+     *
+     * This is 1f when the shade or QS is expanded, with a few exceptions:
+     * - In Dual Shade, notifications fade out as QS expands, unless a HUN is visible.
+     * - When transitioning to dream with the shade open, alpha is 0f to prevent visual glitches.
      */
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
                 shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
                     @Suppress("DEPRECATION") // to handle split shade
                     when (shadeMode) {
-                        Single ->
-                            shadeInteractor.qsExpansion
-                                .map { it == 1f }
-                                .distinctUntilChanged()
-                                .flatMapLatestConflated { qsFullyExpanded ->
-                                    if (qsFullyExpanded) {
-                                        // Ensure HUNs will be visible in QS shade (at least
-                                        // while unlocked)
-                                        flowOf(1f)
-                                    } else {
-                                        combineTransform(
-                                            shadeInteractor.shadeExpansion
-                                                .map { it > 0f }
-                                                .distinctUntilChanged(),
-                                            shadeInteractor.qsExpansion,
-                                        ) { shadeExpanding, qsExpansion ->
-                                            // Fade as QS shade expands
-                                            if (shadeExpanding || qsExpansion > 0) {
-                                                emit(1f - qsExpansion)
-                                            }
-                                        }
-                                    }
-                                }
-
+                        Single,
                         Split ->
                             isAnyExpanded.transform { isAnyExpanded ->
                                 if (isAnyExpanded) {
                                     emit(1f)
                                 }
                             }
-
                         Dual ->
                             headsUpNotificationInteractor
                                 .get()
@@ -645,15 +624,8 @@ constructor(
                                 // starts, it can cause keyguard to show up again briefly during the
                                 // transition.
                                 emit(0f)
-                            } else if (configurationBasedDimensions.useSplitShade) {
-                                emit(1f)
-                            } else if (qsExpansion == 1f) {
-                                // Ensure HUNs will be visible in QS shade (at least while
-                                // unlocked)
-                                emit(1f)
                             } else {
-                                // Fade as QS shade expands
-                                emit(1f - qsExpansion)
+                                emit(1f)
                             }
                         }
                     }
