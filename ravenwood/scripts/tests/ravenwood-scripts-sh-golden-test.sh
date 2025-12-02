@@ -124,6 +124,10 @@ run_all_commands() {
 
     run_test "Clean output" run-ravenwood-tests-wrapper -c
 
+    run_test "Live logcat" run-ravenwood-tests-wrapper -t
+
+    RAVENWOOD_LOG_OUT=- run_test "No live logcat" run-ravenwood-tests-wrapper -T
+
     echo "== All commands finished =="
 }
 
