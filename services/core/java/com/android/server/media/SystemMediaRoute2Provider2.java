@@ -605,8 +605,9 @@ import java.util.stream.Stream;
             } else {
                 String logMessage =
                         TextUtils.formatSimple(
-                                "New volume from volume key press event matches current volume %d."
-                                    + " Dispatching volume event with no change to display slider.",
+                                "New volume from volume key press event matches current volume"
+                                    + " %d/%d (%s). Dispatching volume event with no change to"
+                                    + " display slider.",
                                 newVolume,
                                 currentSessionInfo.getVolumeMax(),
                                 currentSessionInfo.getOwnerPackageName());
