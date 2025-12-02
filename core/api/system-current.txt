@@ -4879,7 +4879,9 @@ package android.content.pm {
     field @StringRes public int requestRes;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresGeneralPurposeTargetSdkVersion;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresPurposeStringTargetSdkVersion;
+    field @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public int requiresPurposeTargetSdkVersion;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidGeneralPurposeInfo> validGeneralPurposes;
+    field @FlaggedApi("android.permission.flags.ppd_purpose_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidPurposeInfo> validPurposes;
   }
 
   public class ResolveInfo implements android.os.Parcelable {
@@ -4951,6 +4953,7 @@ package android.content.pm {
     method @NonNull public java.util.Set<java.lang.String> getGeneralPurposes();
     method @NonNull public String getPermissionName();
     method @StringRes public int getPurposeStringResource();
+    method @NonNull public java.util.Set<java.lang.String> getPurposes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UsesPermissionPurposeInfo> CREATOR;
   }
@@ -4961,6 +4964,14 @@ package android.content.pm {
     method @NonNull public String getName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ValidGeneralPurposeInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public final class ValidPurposeInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getMaxTargetSdkVersion();
+    method @NonNull public String getName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ValidPurposeInfo> CREATOR;
   }
 
 }

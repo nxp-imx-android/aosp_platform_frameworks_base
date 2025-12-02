@@ -9795,7 +9795,6 @@
     <permission android:name="android.permission.QUERY_AUDIO_VOLUME"
             android:protectionLevel="normal"
             android:featureFlag="android.media.audio.guard_stream_volume_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>
@@ -9816,7 +9815,6 @@
     <permission android:name="android.permission.QUERY_INPUT_METHOD"
             android:protectionLevel="normal"
             android:featureFlag="android.view.inputmethod.guard_input_method_list_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>
@@ -9871,7 +9869,6 @@
     <permission android:name="android.permission.QUERY_NETWORK_IDENTIFIERS"
             android:protectionLevel="normal"
             android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>
@@ -9884,7 +9881,6 @@
     <permission android:name="android.permission.QUERY_NETWORK_COUNTRY"
             android:protectionLevel="normal"
             android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>

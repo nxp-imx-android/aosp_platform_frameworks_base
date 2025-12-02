@@ -115,7 +115,6 @@ abstract class BasePermissionPolicyTest {
                     protectionLevel = parsedPermission.protectionLevel
                     group = parsedPermission.group
                     flags = parsedPermission.flags
-                    requiresPurpose = parsedPermission.isPurposeRequired
                     requiresPurposeTargetSdkVersion =
                         parsedPermission.requiresPurposeTargetSdkVersion
                     validPurposes =
@@ -266,7 +265,6 @@ abstract class BasePermissionPolicyTest {
         whenever(this.protectionLevel).thenReturn(protectionLevel)
         whenever(this.flags).thenReturn(flags)
         whenever(this.isTree).thenReturn(isTree)
-        whenever(this.isPurposeRequired).thenReturn(isPurposeRequired)
         whenever(this.requiresPurposeTargetSdkVersion).thenReturn(requiresPurposeTargetSdkVersion)
         whenever(this.validPurposes).thenReturn(validPurposes)
     }

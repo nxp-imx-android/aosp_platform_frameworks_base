@@ -42,8 +42,6 @@ public interface ParsedPermission extends ParsedComponent {
 
     int getRequestRes();
 
-    boolean isPurposeRequired();
-
     int getRequiresPurposeTargetSdkVersion();
 
     int getRequiresGeneralPurposeTargetSdkVersion();
