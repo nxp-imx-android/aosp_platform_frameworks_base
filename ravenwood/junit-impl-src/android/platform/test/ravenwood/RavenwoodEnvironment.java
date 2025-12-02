@@ -387,6 +387,14 @@ public final class RavenwoodEnvironment {
         return "1".equals(getEnvVar(keyName, ""));
     }
 
+    /**
+     * Return if $RAVENWOOD_HIDE_DISABLED_TESTS is set to 1, in which case we don't show
+     * @DisabledOnRavenwood tests in log or in atest output.
+     */
+    public boolean isHidingDisabledTests() {
+        return getBoolEnvVar("RAVENWOOD_HIDE_DISABLED_TESTS");
+    }
+
     /** Reads a per-module environmental int variable. */
     public int getIntEnvVar(String keyName, int defValue) {
         var v = getEnvVar(keyName, "");

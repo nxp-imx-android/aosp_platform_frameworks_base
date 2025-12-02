@@ -40,7 +40,12 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -124,6 +129,17 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             runAnnotatedMethodsOnRavenwood(RavenwoodTestRunnerInitializing.class, null);
 
             mRealRunner = instantiateRealRunner(mTestClass);
+
+            if (RavenwoodEnvironment.getInstance().isHidingDisabledTests()
+                    && mRealRunner instanceof Filterable r) {
+                try {
+                    r.filter(RavenwoodEnablementChecker.getInstance().asJunitFilter());
+                } catch (NoTestsRemainException ignore) {
+                    // We hit it when the class is not disabled, but all methods are disabled.
+                    // The point of $RAVENWOOD_HIDE_DISABLED_TESTS is to unclutter the teset log,
+                    // so we don't log anything here.
+                }
+            }
 
             mState.enterTestRunner();
         } catch (Throwable throwable) {
@@ -231,8 +247,8 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         private final Description mDescription;
         private boolean mFilteredOut;
 
-        ClassBypassTestRunner(Class<?> testClass) {
-            mDescription = Description.createTestDescription(testClass, "<init>");
+        ClassBypassTestRunner(Class<?> testClass, Annotation... annotations) {
+            mDescription = Description.createTestDescription(testClass, "<init>", annotations);
             mFilteredOut = false;
         }
 
@@ -264,11 +280,43 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     }
 
     /**
-     * A runner that simply ignore a class.
+     * A runner that simply ignores a class, used when a test class is disabled by
+     * {@code @DisabledOnRavenwood} (or the policy file or regex -- see
+     * {@link RavenwoodEnablementChecker}).
+     *
+     * The default behavior is these classes still get executed but skipped with an assumption
+     * failure.
+     *
+     * But that clutters atest output, especially when classes are disabled with regexes.
+     * We optionally hide such results when the environmental variable
+     * {@code $RAVENWOOD_HIDE_DISABLED_CLASSES} is set to "1". When it's set,
+     * {@link #getDescription} returns an instance with annotation
+     * {@link ClassIgnoredOnRavenwood}, which lets Tradefed recognized as "runner should be
+     * skipped", which avoids cluttering atest output. (see b/462198969 for more information.)
      */
     private static class ClassIgnoreTestRunner extends ClassBypassTestRunner {
+        @Target({ElementType.TYPE})
+        @Retention(RetentionPolicy.RUNTIME)
+        public @interface ClassIgnoredOnRavenwood {
+            @ClassIgnoredOnRavenwood
+            final class InstanceHolder {
+                static final ClassIgnoredOnRavenwood INSTANCE = Objects.requireNonNull(
+                        InstanceHolder.class.getAnnotation(ClassIgnoredOnRavenwood.class));
+            }
+        }
+
+        private static final Annotation[] IGNORE_CLASS_FROM_TRADEFED_ANNOTATIONS = {
+                ClassIgnoredOnRavenwood.InstanceHolder.INSTANCE
+        };
+
+        private static final Annotation[] EMPTY_ANNOTATIONS = {};
+
+        private static final Annotation[] CLASS_IGNORE_ANNOTATIONS =
+                RavenwoodEnvironment.getInstance().isHidingDisabledTests()
+                        ? IGNORE_CLASS_FROM_TRADEFED_ANNOTATIONS : EMPTY_ANNOTATIONS;
+
         ClassIgnoreTestRunner(Class<?> testClass) {
-            super(testClass);
+            super(testClass, CLASS_IGNORE_ANNOTATIONS);
             RavenwoodTestStats.getInstance().onTestDisabled(testClass);
         }
 
@@ -279,7 +327,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     }
 
     /**
-     * A runner that simply fail a class.
+     * A runner that simply fails a class.
      */
     private static class ClassFailTestRunner extends ClassBypassTestRunner {
         private final Throwable mError;
