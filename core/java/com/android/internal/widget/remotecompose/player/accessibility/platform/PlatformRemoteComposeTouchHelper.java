@@ -154,7 +154,10 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
 
     @Override
     protected void onPopulateEventForVirtualView(
-            int virtualViewId, @NonNull AccessibilityEvent event) {}
+            int virtualViewId, @NonNull AccessibilityEvent event) {
+        // This field should always be filled to keep the Accessibility framework happy.
+        event.setContentDescription("");
+    }
 
     @Override
     protected boolean onPerformActionForVirtualView(
