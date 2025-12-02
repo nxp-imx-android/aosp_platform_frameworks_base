@@ -49,6 +49,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.text.TextUtils;
@@ -3406,13 +3407,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
-    /**
-     * Returns if promoted notification can use expanded template or not.
-     * It can only fallback to contracted on the lock screen
-     * when there is no available height to accommodate the promoted notification.
-     * @hide
-     */
-    public boolean canPromotedNotificationShowExpanded(boolean allowOnKeyguard) {
+    private boolean isPromotedNotificationExpanded(boolean allowOnKeyguard) {
         // public view in non group notifications is always collapsed.
         if (shouldShowPublic()) {
             return false;
@@ -3472,7 +3467,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public boolean isExpanded(boolean allowOnKeyguard) {
         if (isPromotedOngoing()) {
-            return canPromotedNotificationShowExpanded(allowOnKeyguard);
+            return isPromotedNotificationExpanded(allowOnKeyguard);
         }
 
         return (!shouldShowPublic()) && (!mOnKeyguard || allowOnKeyguard)
