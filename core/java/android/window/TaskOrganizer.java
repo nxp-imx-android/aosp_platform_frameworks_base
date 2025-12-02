@@ -230,7 +230,7 @@ public class TaskOrganizer extends WindowOrganizer {
 
     @BinderThread
     public void onBackPressedOnTaskRoot(@NonNull ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack) {}
+            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked) {}
 
     /** @hide */
     @BinderThread
@@ -470,10 +470,11 @@ public class TaskOrganizer extends WindowOrganizer {
 
         @Override
         public void onBackPressedOnTaskRoot(
-                ActivityManager.RunningTaskInfo info, boolean isFromMoveActivityTaskToBack) {
+                ActivityManager.RunningTaskInfo info, boolean isFromMoveActivityTaskToBack,
+                boolean isOptInOnBackInvoked) {
             mExecutor.execute(
                     () -> TaskOrganizer.this.onBackPressedOnTaskRoot(
-                            info, isFromMoveActivityTaskToBack));
+                            info, isFromMoveActivityTaskToBack, isOptInOnBackInvoked));
         }
 
         @Override
