@@ -5,14 +5,6 @@
 package: "com.android.wm.shell"
 container: "system"
 
-
-flag {
-    name: "enable_taskbar_navbar_unification"
-    namespace: "multitasking"
-    description: "Enables taskbar / navbar unification"
-    bug: "309671494"
-}
-
 flag {
     name: "enable_pip2"
     namespace: "multitasking"
