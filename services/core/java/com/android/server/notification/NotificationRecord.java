@@ -905,8 +905,8 @@ public final class NotificationRecord {
                     } else {
                         mSummarization = null;
                     }
-                    EventLogTags.writeNotificationAdjusted(getKey(),
-                            KEY_SUMMARIZATION, Boolean.toString(mSummarization != null));
+                    EventLogTags.writeNotificationAdjusted(getKey(), KEY_SUMMARIZATION,
+                            Boolean.toString(!TextUtils.isEmpty(mSummarization)));
                     if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
                         signals.remove(KEY_SUMMARIZATION);
                     }
