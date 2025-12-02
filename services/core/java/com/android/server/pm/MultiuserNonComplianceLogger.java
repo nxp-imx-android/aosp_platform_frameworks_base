@@ -53,23 +53,23 @@ final class MultiuserNonComplianceLogger {
     // example, instead of having 2 sets for mLaunchedHsuActivities and mBlockedHsuActivities,
     // we should have just one for the activity and an @IntDef with the result.
 
-    // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
+    /** Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count. */
     @Nullable
     private final SparseIntArray mGetMainUserCalls;
 
-    // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
+    /** Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count. */
     @Nullable
     private final SparseIntArray mIsMainUserCalls;
 
-    // Activities launched while the current user is the headless system user.
+    /** Activities launched while the current user is the headless system user. */
     @Nullable
     private final ArraySet<ComponentName> mLaunchedHsuActivities;
 
-    // Activities blocked while the current user is the headless system user.
+    /** Activities blocked while the current user is the headless system user. */
     @Nullable
     private final ArraySet<ComponentName> mBlockedHsuActivities;
 
-    // Notifications shown while the current user is the headless system user.
+    /** Notifications shown while the current user is the headless system user. */
     @Nullable
     private final Map<HsuNotification, Integer> mShownHsuNotifications;
 
@@ -150,6 +150,9 @@ final class MultiuserNonComplianceLogger {
     }
 
     void logShownHsuNotification(StatusBarNotification sbn) {
+        if (mShownHsuNotifications == null) {
+            return;
+        }
         Notification notification = sbn.getNotification();
         HsuNotification notif = new HsuNotification(
                 sbn.getPackageName(), sbn.getTag(), sbn.getId(), sbn.getUser().getIdentifier(),
