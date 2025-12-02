@@ -69,14 +69,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:paddingLeft="@dimen/notification_2025_margin"
                 android:paddingRight="@dimen/notification_2025_margin"
                 android:layout_marginTop="@dimen/notification_2025_right_icon_vertical_margin">
                 <TextView
                     android:id="@+id/metric_value_0"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxWidth="@dimen/notification_single_promoted_metric_value_max_width"
                     android:gravity="top|end"
                     style="@style/NotificationExpandedSingleMetricValue"
                     />
@@ -85,7 +83,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:maxWidth="@dimen/notification_single_promoted_metric_value_max_width"
                     android:gravity="top|end"
                     style="@style/NotificationExpandedSingleMetricValue"
                     />
