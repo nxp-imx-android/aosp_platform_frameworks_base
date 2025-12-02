@@ -286,8 +286,8 @@ public class KeyguardServiceDelegate {
         }
     }
 
-    public void setOccluded(boolean isOccluded, boolean notify) {
-        if (mKeyguardService != null && notify) {
+    public void setOccluded(boolean isOccluded) {
+        if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "setOccluded(" + isOccluded + ")");
             EventLogTags.writeWmSetKeyguardOccluded(
                     isOccluded ? 1 : 0,
