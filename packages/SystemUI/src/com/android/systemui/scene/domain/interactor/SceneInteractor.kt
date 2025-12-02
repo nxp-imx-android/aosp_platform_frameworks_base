@@ -318,14 +318,7 @@ constructor(
         }
 
         val currentSceneKey = currentScene.value
-        val resolvedScene =
-            sceneFamilyResolvers.get()[toScene]?.let { familyResolver ->
-                if (familyResolver.includesScene(currentSceneKey)) {
-                    return
-                } else {
-                    familyResolver.resolvedScene.value
-                }
-            } ?: toScene
+        val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
         if (
             !validateSceneChange(
                 from = currentSceneKey,

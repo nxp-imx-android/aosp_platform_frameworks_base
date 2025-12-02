@@ -89,8 +89,6 @@ constructor(
                     ),
             )
 
-    override fun includesScene(scene: SceneKey): Boolean = scene in homeScenes
-
     private fun homeScene(
         isKeyguardOccluded: Boolean,
         isKeyguardEnabled: Boolean,
