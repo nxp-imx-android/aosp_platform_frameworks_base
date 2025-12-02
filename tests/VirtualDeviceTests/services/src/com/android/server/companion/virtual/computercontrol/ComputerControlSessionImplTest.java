@@ -27,6 +27,7 @@ import static android.companion.virtual.computercontrol.ComputerControlSession.B
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_USER_INITIATED;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
@@ -59,6 +60,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.AppOpsManager;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -181,6 +183,8 @@ public class ComputerControlSessionImplTest {
     @Mock
     private PackageManager mOwnerPackageManager;
     @Mock
+    private AppOpsManager mAppOpsManager;
+    @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private UserManagerInternal mUserManagerInternal;
@@ -258,10 +262,6 @@ public class ComputerControlSessionImplTest {
     private final Context mContext =
             spy(new ContextWrapper(
                     InstrumentationRegistry.getInstrumentation().getTargetContext()));
-    private final Context mOwnerContext =
-            spy(new ContextWrapper(
-                    InstrumentationRegistry.getInstrumentation().getTargetContext()));
-
     private final EditorInfo mEditorInfo = new EditorInfo();
 
     @Before
@@ -269,9 +269,12 @@ public class ComputerControlSessionImplTest {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mTransaction = spy(new StubTransaction());
 
+        final Context ownerContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(mContext.createContextAsUser(UserHandle.of(USER_ID), /* flags = */ 0))
-                .thenReturn(mOwnerContext);
-        when(mOwnerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
+                .thenReturn(ownerContext);
+        when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
+        when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
@@ -473,12 +476,31 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void createSession_startsWatchingAppOps() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mAppOpsManager).startWatchingMode(
+                eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any());
+    }
+
+    @Test
     public void closeSession_closesVirtualDevice() throws Exception {
         createComputerControlSession(mDefaultParams);
+
         mSession.close();
+
         verify(mVirtualDevice).close();
         verify(mOnClosedListener).accept(mSession);
         verify(mLifecycleCallback).onClosed(eq(CLOSE_REASON_CALLER_INITIATED));
+    }
+
+    @Test
+    public void closeSession_stopsWatchingAppOps() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.close();
+
+        verify(mAppOpsManager).stopWatchingMode(mSession);
     }
 
     @Test
@@ -486,6 +508,74 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         mSession.close(123);
         verify(mLifecycleCallback).onClosed(eq(123));
+    }
+
+    @Test
+    public void onOpChanged_modeIgnored_closesSession() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID);
+
+        // Verify the session is closed.
+        verify(mVirtualDevice).close();
+        verify(mOnClosedListener).accept(mSession);
+        verify(mLifecycleCallback).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_modeNotIgnored_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_ALLOWED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_differentPackage_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, UNDECLARED_TARGET_PACKAGE,
+                USER_ID);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_differentUser_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID + 1);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
     }
 
     @Test
