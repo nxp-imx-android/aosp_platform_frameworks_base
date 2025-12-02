@@ -40,10 +40,9 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
+import com.android.systemui.animation.ActivityTransitionAnimator.Companion.INTERPOLATORS
 import java.util.concurrent.Executor
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val TAG = "TransitionAnimator"
@@ -55,8 +54,8 @@ class TransitionAnimator(
     private val interpolators: Interpolators,
 
     /** [springTimings] and [springInterpolators] must either both be null or both not null. */
-    private val springTimings: SpringTimings? = null,
-    private val springInterpolators: Interpolators? = null,
+    private val springTimings: SpringTimings? = SPRING_TIMINGS,
+    private val springInterpolators: Interpolators? = SPRING_INTERPOLATORS,
     private val springParams: SpringParams = DEFAULT_SPRING_PARAMS,
 ) {
     companion object {
@@ -72,6 +71,28 @@ class TransitionAnimator(
                 centerYDampingRatio = 0.95f,
                 scaleStiffness = 500f,
                 scaleDampingRatio = 0.99f,
+            )
+
+        /** The interpolators when animating a View into an app using a spring animator. */
+        val SPRING_INTERPOLATORS =
+            INTERPOLATORS.copy(
+                contentBeforeFadeOutInterpolator =
+                    com.android.app.animation.Interpolators.DECELERATE_1_5,
+                contentAfterFadeInInterpolator =
+                    com.android.app.animation.Interpolators.SLOW_OUT_LINEAR_IN,
+            )
+
+        /**
+         * The timings when animating a View into an app using a spring animator. These timings
+         * represent fractions of the progress between the spring's initial value and its final
+         * value.
+         */
+        val SPRING_TIMINGS =
+            SpringTimings(
+                contentBeforeFadeOutDelay = 0f,
+                contentBeforeFadeOutDuration = 0.8f,
+                contentAfterFadeInDelay = 0.85f,
+                contentAfterFadeInDuration = 0.135f,
             )
 
         /**
@@ -523,6 +544,7 @@ class TransitionAnimator(
         drawHole: Boolean = false,
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
+        springParams: SpringParams = this.springParams,
     ): Animation {
         // We add an extra layer with the same color as the dialog/app splash screen background
         // color, which is usually the same color of the app background. We first fade in this layer
@@ -543,6 +565,7 @@ class TransitionAnimator(
                 drawHole,
                 startVelocity,
                 startFrameTime,
+                springParams,
             )
             .apply { start() }
     }
@@ -557,6 +580,7 @@ class TransitionAnimator(
         drawHole: Boolean = false,
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
+        springParams: SpringParams = this.springParams,
     ): Animation {
         val transitionContainer = controller.transitionContainer
         val transitionContainerOverlay = transitionContainer.overlay
@@ -588,6 +612,7 @@ class TransitionAnimator(
                 shouldFadeWindowBackgroundLayer,
                 drawHole,
                 moveBackgroundLayerWhenAppVisibilityChanges,
+                springParams,
             )
         } else {
             createInterpolatedAnimation(
@@ -780,6 +805,7 @@ class TransitionAnimator(
         shouldFadeWindowBackgroundLayer: () -> Boolean = { true },
         drawHole: Boolean = false,
         moveBackgroundLayerWhenAppVisibilityChanges: Boolean = false,
+        springParams: SpringParams,
     ): Animation {
         var endState = startState
         var pivot = AnimationPivot.CENTER
@@ -1032,8 +1058,6 @@ class TransitionAnimator(
 
                     setStartValue(startX)
                     setStartVelocity(startVelocity.x)
-                    setMinValue(min(startX, targetX))
-                    setMaxValue(max(startX, targetX))
 
                     addEndListener { _, _, _, _ ->
                         springState.isXDone = true
@@ -1054,8 +1078,6 @@ class TransitionAnimator(
 
                     setStartValue(startY)
                     setStartVelocity(startVelocity.y)
-                    setMinValue(min(startY, targetY))
-                    setMaxValue(max(startY, targetY))
 
                     addEndListener { _, _, _, _ ->
                         springState.isYDone = true
@@ -1075,7 +1097,6 @@ class TransitionAnimator(
                         }
 
                     setStartValue(0f)
-                    setMaxValue(1f)
                     setMinimumVisibleChange(abs(1f / startState.height))
 
                     addEndListener { _, _, _, _ ->

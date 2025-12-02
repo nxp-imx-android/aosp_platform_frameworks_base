@@ -467,6 +467,13 @@ flag {
 }
 
 flag {
+    name: "enable_dialog_spring_animation"
+    namespace: "systemui"
+    description: "Adding Spring Animation to dialog"
+    bug: "446828194"
+}
+
+flag {
    name: "enable_efficient_display_repository"
    namespace: "systemui"
    description: "Decide whether to use the new implementation of DisplayRepository that minimizes binder calls and background lock contention."
