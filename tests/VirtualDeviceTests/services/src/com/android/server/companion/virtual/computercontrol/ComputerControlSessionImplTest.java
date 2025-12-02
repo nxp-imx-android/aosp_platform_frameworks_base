@@ -43,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -95,6 +96,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
@@ -110,6 +113,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.server.LocalServices;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -152,6 +156,7 @@ public class ComputerControlSessionImplTest {
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
     private static final String TARGET_CLASS = "com.android.foo.FooActivity";
     private static final long GLOBAL_TIMEOUT_MILLIS = 10000L;
+    private static final String AGENT_PACKAGE = "com.package";
     private static final ComponentName TEST_COMPONENT = new ComponentName(TARGET_PACKAGE_1,
             TARGET_CLASS);
     private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
@@ -219,6 +224,8 @@ public class ComputerControlSessionImplTest {
     private IntentSender mIntentSender;
     @Mock
     private ComputerControlAllowlistController mAllowlistController;
+    @Mock
+    private AppInteractionService mAppInteractionService;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -272,6 +279,9 @@ public class ComputerControlSessionImplTest {
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
         LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            LocalServices.addService(AppInteractionService.class, mAppInteractionService);
+        }
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
@@ -822,6 +832,59 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    @EnableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenActivityIsAllowed_reportsAppInteraction()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        verify(mAppInteractionService)
+                .noteAppInteraction(
+                        eq(AGENT_PACKAGE),
+                        eq(TEST_COMPONENT.getPackageName()),
+                        isNull(),
+                        anyLong(),
+                        eq(0L),
+                        eq(USER_ID));
+    }
+
+    @Test
+    @EnableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenActivityIsBlocked_doesNotReportAppInteraction()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+
+        verify(mAppInteractionService, never())
+                .noteAppInteraction(any(), any(), any(), anyLong(), anyLong(), anyInt());
+    }
+
+    @Test
+    @DisableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenFlagIsDisabled_doesNotCrash()
+            throws RemoteException {
+        assertThat(LocalServices.getService(AppInteractionService.class)).isNull();
+
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+    }
+
+    @Test
     public void onActivityLaunchRequested_whenActivityIsBlocked_entersBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -1089,8 +1152,8 @@ public class ComputerControlSessionImplTest {
         mSession = new ComputerControlSessionImpl(
                 mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
                 globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params,
-                new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
-                mVirtualDeviceFactory, mOnClosedListener);
+                new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE, "tag"),
+                mVirtualDeviceFactory, mOnClosedListener, Runnable::run);
     }
 
     @SuppressLint("MissingPermission")
