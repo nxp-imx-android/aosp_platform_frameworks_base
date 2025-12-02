@@ -1230,8 +1230,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
         final var task = new UserSwitchHandlerTask(this, newUserId, profileSwitch, clientToBeReset);
         mUserSwitchHandlerTask = task;
-        ProtoLog.i(IMMS_WITH_LOGCAT, "Scheduling user switch newUserId=%d currentUserId=%d",
-                newUserId, mCurrentImeUserId);
+        ProtoLog.i(IMMS_WITH_LOGCAT,
+                "Scheduling user switch newUserId=%d currentUserId=%d profileSwitch=%b",
+                newUserId, mCurrentImeUserId, profileSwitch);
         mIoHandler.post(task);
         return true;
     }
@@ -1374,12 +1375,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (Flags.warmWorkProfileIme() && profileSwitch && !mPreventImeStartupUnlessTextEditor) {
             bindingController.setInactive();
         } else if (Flags.warmWorkProfileIme() && !mPreventImeStartupUnlessTextEditor) {
-            // Unbind the IMEs of all profiles of the previous user, if still bound.
+            // Unbind the IMEs of all profiles of the previous user, if still bound,
+            // and restores the default active state.
             for (final int profileId : getProfileIds(prevUserId)) {
                 final var controller = getInputMethodBindingController(profileId);
-                if (controller.getCurToken() != null) {
-                    controller.unbindIme();
-                }
+                controller.unbindIme();
+                controller.setActive();
             }
         } else {
             bindingController.unbindIme();
@@ -1448,7 +1449,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             cs.mClient.scheduleStartInputIfNecessary(newUserData.mInFullscreenMode);
         }
 
-        if (Flags.warmWorkProfileIme() && profileSwitch) {
+        if (Flags.warmWorkProfileIme()) {
             newUserData.mBindingController.setActive();
         }
     }
