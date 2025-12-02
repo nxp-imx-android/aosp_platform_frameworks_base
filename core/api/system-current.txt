@@ -16378,6 +16378,7 @@ package android.telephony {
     method @Nullable public java.util.List<android.telephony.SubscriptionInfo> getAvailableSubscriptionInfoList();
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int[] getCompleteActiveSubscriptionIdList();
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int getEnabledSubscriptionId(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS, android.Manifest.permission.READ_SUBSCRIPTION_PLANS, "carrier privileges"}) public java.util.List<android.telephony.SubscriptionPlan> getEnrollableSubscriptionPlans(int);
     method @NonNull public static android.content.res.Resources getResourcesForSubId(@NonNull android.content.Context, int);
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public boolean isSubscriptionEnabled(int);
     method public void requestEmbeddedSubscriptionInfoListRefresh();
@@ -16386,13 +16387,19 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultDataSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultSmsSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultVoiceSubscriptionId(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS, "carrier privileges"}) public void setEnrollableSubscriptionPlans(int, @NonNull java.util.List<android.telephony.SubscriptionPlan>, long);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setPreferredDataSubscriptionId(int, boolean, @Nullable java.util.concurrent.Executor, @Nullable java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public boolean setSubscriptionEnabled(int, boolean);
     method @FlaggedApi("com.android.internal.telephony.flags.support_psim_to_esim_conversion") @RequiresPermission(android.Manifest.permission.WRITE_EMBEDDED_SUBSCRIPTIONS) public void setTransferStatus(int, int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setUiccApplicationsEnabled(int, boolean);
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @RequiresPermission(android.Manifest.permission.READ_SUBSCRIPTION_PLANS) public static final String ACTION_ENROLLABLE_SUBSCRIPTION_PLANS_CHANGED = "android.telephony.action.ENROLLABLE_SUBSCRIPTION_PLANS_CHANGED";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String ACTION_REFRESH_ENROLLABLE_SUBSCRIPTION_PLANS = "android.telephony.action.REFRESH_ENROLLABLE_SUBSCRIPTION_PLANS";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String ACTION_SHOW_ENROLLABLE_SUBSCRIPTION_PLANS = "android.telephony.action.SHOW_ENROLLABLE_SUBSCRIPTION_PLANS";
     field @RequiresPermission(android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS) public static final String ACTION_SUBSCRIPTION_PLANS_CHANGED = "android.telephony.action.SUBSCRIPTION_PLANS_CHANGED";
     field @NonNull public static final android.net.Uri ADVANCED_CALLING_ENABLED_CONTENT_URI;
     field @NonNull public static final android.net.Uri CROSS_SIM_ENABLED_CONTENT_URI;
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_PLAN_TYPES = "android.telephony.extra.PLAN_TYPES";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_REFRESH_PLANS = "android.telephony.extra.REFRESH_PLANS";
     field @Deprecated public static final int PROFILE_CLASS_DEFAULT = -1; // 0xffffffff
     field public static final int PROFILE_CLASS_OPERATIONAL = 2; // 0x2
     field public static final int PROFILE_CLASS_PROVISIONING = 1; // 0x1
