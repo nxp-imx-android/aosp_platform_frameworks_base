@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.test.viewembed;
+package com.android.test.ipcrendering;
 import static android.graphics.Paint.Style.FILL;
 import android.app.Activity;
 import android.animation.ValueAnimator;
@@ -60,6 +60,7 @@ public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback
 
         IpcCanvasContext(SurfaceControl sc) {
             mRenderNode = RenderNode.create("HwuiCanvas", null);
+            mRenderNode.setPosition(0, 0, 512, 512); // Explicitly set size
             mHardwareRenderer = new HardwareRenderer(true);
             mHardwareRenderer.setContentRoot(mRenderNode);
             mHardwareRenderer.setSurfaceControl(sc, null);

@@ -26,5 +26,8 @@
         </activity>
     </application>
 
+    <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.android.test.ipcrendering"
+        android:label="Tests for IPCRenderingTest" />
 
 </manifest>

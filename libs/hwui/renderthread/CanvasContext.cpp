@@ -767,7 +767,9 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
     if (requireSwap) {
         didDraw = true;
         // Handle any swapchain errors
-        error = mNativeSurface->getAndClearError();
+        if (mNativeSurface) {
+            error = mNativeSurface->getAndClearError();
+        }
         if (error == TIMED_OUT) {
             // Try again
             mRenderThread.postFrameCallback(this);
@@ -790,7 +792,8 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
         }
         swap.swapCompletedTime = systemTime(SYSTEM_TIME_MONOTONIC);
         swap.vsyncTime = mRenderThread.timeLord().latestVsync();
-        if (didDraw) {
+
+        if (didDraw && mNativeSurface) {
             nsecs_t dequeueStart =
                     ANativeWindow_getLastDequeueStartTime(mNativeSurface->getNativeWindow());
             if (dequeueStart < mCurrentFrameInfo->get(FrameInfoIndex::SyncStart)) {
