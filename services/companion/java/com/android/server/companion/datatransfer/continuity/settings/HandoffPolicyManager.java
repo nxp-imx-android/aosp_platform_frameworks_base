@@ -45,6 +45,7 @@ public class HandoffPolicyManager implements UserRestrictionsListener {
 
     public HandoffPolicyManager(@NonNull UserManagerInternal userManagerInternal) {
         mUserManagerInternal = Objects.requireNonNull(userManagerInternal);
+        mUserManagerInternal.addUserRestrictionsListener(this);
     }
 
     public boolean isHandoffAllowedForUser(int userId) {
