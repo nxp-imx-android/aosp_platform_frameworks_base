@@ -290,6 +290,37 @@ class SupervisionSettingsTest {
         assertThat(userData.policies.values).containsExactly(TEST_PACKAGE_POLICY)
     }
 
+     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun loadUserData_withUnknownTag_skipsTagAndLoadsCorrectly() {
+        // TODO: b/463800582 - Transition to a XML resource file.
+        val malformedFile = File(tempSupervisionDir, "supervision_settings.xml")
+        malformedFile.writeText(
+            """
+            <supervision_data>
+                <supervision_user_data
+                    user_id="1"
+                    supervision_enabled="true"
+                    supervision_app_package="package1"
+                    supervision_lockscreen_enabled="true">
+                    <unknown_tag>some value</unknown_tag>
+                    <supervision_lockscreen_options>
+                        <string name="id">id</string>
+                        <number name="key1" value="1" />
+                        <boolean name="key2" value="true" />
+                        <string name="key3">value</string>
+                        <number name="key4" value="4" />
+                    </supervision_lockscreen_options>
+                </supervision_user_data>
+            </supervision_data>
+            """.trimIndent()
+        )
+
+        mSupervisionSettings.loadUserData()
+
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1)
+    }
+
     private companion object {
         const val USER_ID = 100
 
