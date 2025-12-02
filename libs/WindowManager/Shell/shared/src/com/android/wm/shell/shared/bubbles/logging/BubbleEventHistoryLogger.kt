@@ -17,28 +17,40 @@
 package com.android.wm.shell.shared.bubbles.logging
 
 import android.icu.text.SimpleDateFormat
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
-import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
+import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_DEBUG
 import java.io.PrintWriter
 import java.util.Locale
 
 /**
- * An implementation of [DebugLogger] that stores a history of events, respecting the [MAX_EVENTS]
- * limit. It can add events history as part of a system dump method.
+ * An implementation of [DebugLogger] that stores a history of events, respecting the
+ * [MAX_EVENTS_DEBUG] limit. It can add events history as part of a system dump method.
  */
-class BubbleEventHistoryLogger : DebugLogger {
+class BubbleEventHistoryLogger(
+    isUserBuild: Boolean = Build.IS_USER && !Build.IS_DEBUGGABLE
+) : DebugLogger {
+
+    private val maxLogEvents =
+        if (isUserBuild) {
+            MAX_EVENTS_RELEASE
+        } else {
+            MAX_EVENTS_DEBUG
+        }
 
     @VisibleForTesting
     val recentEvents: MutableList<BubbleEvent> = mutableListOf()
 
     override fun d(message: String, vararg parameters: Any?, eventData: String?) {
+        if (!Log.isLoggable(TAG, Log.DEBUG)) return
         logEvent(title = "d: $message", titleParams = parameters, eventData = eventData)
     }
 
     override fun v(message: String, vararg parameters: Any?, eventData: String?) {
+        if (!Log.isLoggable(TAG, Log.VERBOSE)) return
         logEvent(title = "v: $message", titleParams = parameters, eventData = eventData)
     }
 
@@ -73,7 +85,7 @@ class BubbleEventHistoryLogger : DebugLogger {
         timestamp: Long = System.currentTimeMillis(),
     ) {
         if (!Flags.enableBubbleEventHistoryLogs()) return
-        if (recentEvents.size >= MAX_EVENTS) {
+        if (recentEvents.size >= maxLogEvents) {
             recentEvents.removeAt(0)
         }
         @Suppress("UNCHECKED_CAST")
@@ -113,9 +125,10 @@ class BubbleEventHistoryLogger : DebugLogger {
     }
 
     companion object {
-        const val TAG = "BubbleEventHistoryLogger"
+        const val TAG = "BubblesHistoryLogger"
         const val DATE_FORMAT = "MM-dd HH:mm:ss.SSS"
-        const val MAX_EVENTS: Int = 200
+        const val MAX_EVENTS_RELEASE: Int = 20
+        const val MAX_EVENTS_DEBUG: Int = 200
         @VisibleForTesting
         val DATE_FORMATTER = SimpleDateFormat(DATE_FORMAT, Locale.US)
     }
