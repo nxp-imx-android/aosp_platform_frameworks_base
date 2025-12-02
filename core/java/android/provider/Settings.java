@@ -20916,11 +20916,25 @@ public final class Settings {
             public static final String AMBIENT_LOW_BIT_ENABLED = "ambient_low_bit_enabled";
 
             /**
-             * The timeout duration in minutes of ambient mode when plugged in.
+             * The timeout duration in minutes of ambient mode when plugged in with Wear Charging
+             * Experience enabled. This remaining time in this timeout will be reset only when the
+             * device is unplugged. If the remaining time is less than AMBIENT_PLUGGED_TIMEOUT_MIN
+             * when entering ambient mode, AMBIENT_OFFWRIST_TIMEOUT_MIN will be used instead.
              * @hide
              */
             @Readable
             public static final String AMBIENT_PLUGGED_TIMEOUT_MIN = "ambient_plugged_timeout_min";
+
+            /**
+             * The timeout duration in minutes of ambient mode when offwrist. It fallbacks to
+             * AMBIENT_PLUGGED_TIMEOUT_MIN if undefined or negative. This timeout will also be used
+             * when the plugged device enters ambient mode with Wear Charging Experience disabled,
+             * or plugged remaining time is less than this timeout.
+             * @hide
+             */
+            @Readable
+            public static final String AMBIENT_OFFWRIST_TIMEOUT_MIN =
+                    "ambient_offwrist_timeout_min";
 
             /**
              * What OS does paired device has.

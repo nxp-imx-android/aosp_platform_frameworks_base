@@ -4318,7 +4318,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 234;
+            private static final int SETTINGS_VERSION = 235;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6960,6 +6960,17 @@ public class SettingsProvider extends ContentProvider {
                                 Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED);
                     }
                     currentVersion = 234;
+                }
+
+                if (currentVersion == 234) {
+                    // Version 234: Add AMBIENT_OFFWRIST_TIMEOUT for Wear charging experience
+                    // AMBIENT_OFFWRIST_TIMEOUT_MIN
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings,
+                            Settings.Global.Wearable.AMBIENT_OFFWRIST_TIMEOUT_MIN,
+                            SystemProperties.getInt("ro.ambient.offwrist_timeout_min", -1));
+
+                    currentVersion = 235;
                 }
 
                 // vXXX: Add new settings above this point.
