@@ -42,6 +42,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
+import com.android.server.am.ActivityManagerService;
 import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.Closeable;
@@ -334,7 +335,8 @@ public final class PccSandboxManagerInternal {
      * {@code targetPackage} running under user handle {@code targetUid}.
      */
     public boolean validateAssociationAllowed(
-            int callerUid, String callerPackage, int targetUid, String targetPackage) {
+            int callerUid, String callerPackage, int targetUid, String targetPackage,
+            @ActivityManagerService.AssociationType int associationType) {
         final boolean callerIsPcc = Process.isPrivateComputeCoreUid(callerUid);
         final boolean targetIsPcc = Process.isPrivateComputeCoreUid(targetUid);
 
@@ -347,6 +349,11 @@ public final class PccSandboxManagerInternal {
         // Allow non-PCC to PCC association, as one-way data flow will be
         // enforced through other ActivityManager APIs.
         if (!callerIsPcc && targetIsPcc) {
+            if (associationType == ActivityManagerService.ASSOCIATION_TYPE_PROVIDER) {
+                // ContentProvider association from regular to pcc components is disallowed because
+                // it can be used to egress sensitive data.
+                return isPccTrustedApp(callerUid, callerPackage);
+            }
             return true;
         }
 

@@ -1658,11 +1658,13 @@ public class ContentProviderHelper {
             ProviderInfo cpi) {
         if (callingApp == null) {
             return mService.validateAssociationAllowedLocked(cpi.packageName,
-                    cpi.getUid(), null, callingUid) ? null : "<null>";
+                    cpi.getUid(), null, callingUid,
+                    ActivityManagerService.ASSOCIATION_TYPE_PROVIDER) ? null : "<null>";
         }
         final String r = callingApp.getPkgList().searchEachPackage(pkgName -> {
             if (!mService.validateAssociationAllowedLocked(pkgName,
-                        callingApp.uid, cpi.packageName, cpi.getUid())) {
+                        callingApp.uid, cpi.packageName, cpi.getUid(),
+                        ActivityManagerService.ASSOCIATION_TYPE_PROVIDER)) {
                 return cpi.packageName;
             }
             return null;

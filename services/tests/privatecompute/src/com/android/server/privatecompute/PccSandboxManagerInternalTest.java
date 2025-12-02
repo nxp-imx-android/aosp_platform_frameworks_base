@@ -51,6 +51,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
+import com.android.server.am.ActivityManagerService;
 import com.android.server.pm.pkg.AndroidPackage;
 
 import org.junit.After;
@@ -404,7 +405,8 @@ public class PccSandboxManagerInternalTest {
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_pccToPcc_isAllowed() {
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                PCC_UID_1, PCC_PACKAGE_1, PCC_UID_2, PCC_PACKAGE_2);
+                PCC_UID_1, PCC_PACKAGE_1, PCC_UID_2, PCC_PACKAGE_2,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
 
         assertTrue("Association between two PCC UIDs should be allowed", allowed);
     }
@@ -416,10 +418,12 @@ public class PccSandboxManagerInternalTest {
         when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(PCS_UID)).thenReturn(true);
 
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                PCC_UID_1, PCC_PACKAGE_1, PCS_UID, PCS_PACKAGE);
+                PCC_UID_1, PCC_PACKAGE_1, PCS_UID, PCS_PACKAGE,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
         assertTrue("Association between a PCC UID and a PCS UID should be allowed", allowed);
         allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-            PCS_UID, PCS_PACKAGE, PCC_UID_1, PCC_PACKAGE_1);
+            PCS_UID, PCS_PACKAGE, PCC_UID_1, PCC_PACKAGE_1,
+            ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
         assertTrue("Association between a PCS UID and PCC UID should be allowed", allowed);
     }
 
@@ -431,7 +435,8 @@ public class PccSandboxManagerInternalTest {
                 .thenReturn(false);
 
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, REGULAR_PACKAGE);
+                PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, REGULAR_PACKAGE,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
 
         assertFalse("Association between a PCC UID and a regular UID should be denied", allowed);
     }
@@ -444,7 +449,8 @@ public class PccSandboxManagerInternalTest {
                 .thenReturn(false);
 
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1);
+                REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
 
         assertTrue("Association between a regular UID and a PCC UID should be allowed", allowed);
     }
@@ -455,7 +461,8 @@ public class PccSandboxManagerInternalTest {
         boolean allowed;
         for (int trustedUid : PccSandboxManagerInternal.TRUSTED_UIDS) {
             allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                    PCC_UID_1, PCC_PACKAGE_1, trustedUid, REGULAR_PACKAGE);
+                    PCC_UID_1, PCC_PACKAGE_1, trustedUid, REGULAR_PACKAGE,
+                    ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
             assertTrue("Association between a PCC UID and a trusted UID should be"
                     + " allowed", allowed);
         }
@@ -467,8 +474,38 @@ public class PccSandboxManagerInternalTest {
         mPccSandboxManagerInternal.populatePccTrustedPackages();
         for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
             boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
-                    PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, trustedPackage);
+                    PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, trustedPackage,
+                    ActivityManagerService.ASSOCIATION_TYPE_SERVICE);
             assertTrue("Association between a PCC UID and a trusted package should be allowed",
+                    allowed);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_regularToPcc_Provider_isDenied()
+            throws android.os.RemoteException {
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(REGULAR_UID))
+                .thenReturn(false);
+
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1,
+                ActivityManagerService.ASSOCIATION_TYPE_PROVIDER);
+
+        assertFalse("Provider association between a regular UID and a PCC UID should be denied",
+                allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_trustedToPcc_Provider_isAllowed() {
+        mPccSandboxManagerInternal.populatePccTrustedPackages();
+        for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
+            boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                    TRUSTED_PACKAGE_UID, trustedPackage, PCC_UID_1, PCC_PACKAGE_1,
+                    ActivityManagerService.ASSOCIATION_TYPE_PROVIDER);
+            assertTrue("Provider association between a trusted package and a PCC UID "
+                            + "should be allowed",
                     allowed);
         }
     }
