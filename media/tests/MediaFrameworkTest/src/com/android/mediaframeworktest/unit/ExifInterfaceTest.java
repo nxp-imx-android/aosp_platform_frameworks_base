@@ -52,14 +52,16 @@ public class ExifInterfaceTest extends AndroidTestCase {
     // List of files.
     private static final String EXIF_BYTE_ORDER_II_JPEG = "image_exif_byte_order_ii.jpg";
     private static final String EXIF_BYTE_ORDER_MM_JPEG = "image_exif_byte_order_mm.jpg";
-    private static final String EXIF_WITH_FILL_BYTES_JPEG = "image_exif_with_fill_bytes.jpg";
+    private static final String EXIF_WITH_FILL_1BYTE_JPEG = "image_exif_with_fill_1byte.jpg";
+    private static final String EXIF_WITH_FILL_2BYTES_JPEG = "image_exif_with_fill_2bytes.jpg";
     private static final String LG_G4_ISO_800_DNG = "lg_g4_iso_800.dng";
     private static final String VOLANTIS_JPEG = "volantis.jpg";
     private static final int[] IMAGE_RESOURCES =
             new int[] {
                 R.raw.image_exif_byte_order_ii,
                 R.raw.image_exif_byte_order_mm,
-                R.raw.image_exif_with_fill_bytes,
+                R.raw.image_exif_with_fill_1byte,
+                R.raw.image_exif_with_fill_2bytes,
                 R.raw.lg_g4_iso_800,
                 R.raw.volantis
             };
@@ -67,7 +69,8 @@ public class ExifInterfaceTest extends AndroidTestCase {
             new String[] {
                 EXIF_BYTE_ORDER_II_JPEG,
                 EXIF_BYTE_ORDER_MM_JPEG,
-                EXIF_WITH_FILL_BYTES_JPEG,
+                EXIF_WITH_FILL_1BYTE_JPEG,
+                EXIF_WITH_FILL_2BYTES_JPEG,
                 LG_G4_ISO_800_DNG,
                 VOLANTIS_JPEG
             };
@@ -478,9 +481,14 @@ public class ExifInterfaceTest extends AndroidTestCase {
         testExifInterfaceForJpeg(EXIF_BYTE_ORDER_MM_JPEG, R.array.exifbyteordermm_jpg);
     }
 
-    public void testReadExifDataFromExifWithFillBytes() throws Throwable {
-        // Fill bytes are added before APP1 and SOS markers.
-        testExifInterfaceForJpeg(EXIF_WITH_FILL_BYTES_JPEG, R.array.exifwithfillbytes_jpg);
+    public void testReadExifDataFromExifWithFill1Byte() throws Throwable {
+        // 1 0xFF fill byte added before each marker.
+        testExifInterfaceForJpeg(EXIF_WITH_FILL_1BYTE_JPEG, R.array.exifwith1fillbyte_jpg);
+    }
+
+    public void testReadExifDataFromExifWithFill2Bytes() throws Throwable {
+        // 2 0xFF fill bytes added before each marker.
+        testExifInterfaceForJpeg(EXIF_WITH_FILL_2BYTES_JPEG, R.array.exifwith2fillbytes_jpg);
     }
 
     public void testReadExifDataFromLgG4Iso800Dng() throws Throwable {
