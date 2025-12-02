@@ -21,6 +21,8 @@ import android.platform.test.annotations.EnableFlags
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_OUTSIDE
+import android.view.WindowInsetsController
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
@@ -64,7 +66,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -538,5 +542,63 @@ class SceneContainerViewModelTest : SysuiTestCase() {
 
             // THEN the overlay is hidden
             assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun lockscreenAod_updateNavigationBarVisibility_hide() =
+        kosmos.runTest {
+            val windowInsetsController: WindowInsetsController = mock()
+            underTest.updateNavigationBarVisibility(
+                windowInsetsController = windowInsetsController,
+                hasBackAction = false,
+                sceneKey = Scenes.Lockscreen,
+                aodOrDozing = true,
+            )
+
+            verify(windowInsetsController).hide(eq(WindowInsetsCompat.Type.navigationBars()))
+        }
+
+    @Test
+    fun lockscreen_updateNavigationBarVisibility_show() =
+        kosmos.runTest {
+            val windowInsetsController: WindowInsetsController = mock()
+            underTest.updateNavigationBarVisibility(
+                windowInsetsController = windowInsetsController,
+                hasBackAction = false,
+                sceneKey = Scenes.Lockscreen,
+                aodOrDozing = false,
+            )
+
+            verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
+        }
+
+    @Test
+    fun gone_updateNavigationBarVisibility_show() =
+        kosmos.runTest {
+            val windowInsetsController: WindowInsetsController = mock()
+            underTest.updateNavigationBarVisibility(
+                windowInsetsController = windowInsetsController,
+                hasBackAction = false,
+                sceneKey = Scenes.Gone,
+                aodOrDozing = false,
+            )
+
+            verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
+        }
+
+    @Test
+    fun updateNavigationBarVisibilityCalledMultipleTimes_showOnlyCalledOnce() =
+        kosmos.runTest {
+            val windowInsetsController: WindowInsetsController = mock()
+            for (i in 0..5) {
+                underTest.updateNavigationBarVisibility(
+                    windowInsetsController = windowInsetsController,
+                    hasBackAction = true,
+                    sceneKey = Scenes.Gone,
+                    aodOrDozing = false,
+                )
+            }
+            // verify "show" is only called once
+            verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
         }
 }
