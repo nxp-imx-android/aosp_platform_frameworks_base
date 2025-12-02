@@ -20,11 +20,6 @@ import java.lang.System.identityHashCode
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
-
-open class SimpleParam(@JvmField val symbol: String) {
-    override fun toString(): String = symbol
-}
 
 @OptIn(ExperimentalStdlibApi::class)
 inline fun <reified R> R.instanceName(): String {
@@ -34,13 +29,6 @@ inline fun <reified R> R.instanceName(): String {
         ""
     }
 }
-
-inline fun <reified R : CoroutineContext> R.toDbgString(): String =
-    "${this.instanceName()}[" +
-        fold("") { acc, element ->
-            if (acc.isEmpty()) "${element.key}=${element.instanceName()}" else "$acc, $element"
-        } +
-        "]"
 
 @OptIn(ExperimentalContracts::class)
 inline fun <reified R> R.dbg(tr: Throwable? = null, msg: () -> String) {
@@ -74,23 +62,16 @@ operator fun <T1, T2> Iterable<T1>.times(other: Iterable<T2>): Iterable<Array<An
     }
 }
 
-/** Helper class to prevent JUnit from adding commas to int param names */
-class IntParam(val value: Int) {
-    override fun toString(): String {
-        return value.toString()
-    }
-}
-
-internal val CONSUME_CPU_NONE = IntParam(0)
-internal val CONSUME_CPU_SMALL = IntParam(250)
-internal val CONSUME_CPU_MEDIUM = IntParam(5_000)
-internal val CONSUME_CPU_LARGE = IntParam(10_000)
-val allConsumeCpuParams =
+internal const val CONSUME_CPU_NONE = 0
+internal const val CONSUME_CPU_SMALL = 250
+internal const val CONSUME_CPU_MEDIUM = 5_000
+internal const val CONSUME_CPU_LARGE = 10_000
+val allCpuWorkloads =
     listOf(CONSUME_CPU_NONE, CONSUME_CPU_SMALL, CONSUME_CPU_MEDIUM, CONSUME_CPU_LARGE)
 
-internal fun consumeCpu(iterations: IntParam): Double {
+internal fun stressCpu(workload: Int): Double {
     var accumulator = 123456789.12345678
-    repeat(iterations.value) {
+    repeat(workload) {
         accumulator /= 1.000001
         accumulator += 0.000000001
     }

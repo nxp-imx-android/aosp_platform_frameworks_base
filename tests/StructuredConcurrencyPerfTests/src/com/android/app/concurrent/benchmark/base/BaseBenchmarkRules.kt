@@ -28,9 +28,8 @@ import androidx.benchmark.perfetto.PerfettoConfig
 import androidx.benchmark.traceprocessor.PerfettoTrace
 import androidx.benchmark.traceprocessor.Row
 import androidx.benchmark.traceprocessor.TraceProcessor
+import com.android.app.concurrent.benchmark.util.BG_THREAD_NAME_PREFIX
 import com.android.app.concurrent.benchmark.util.BgExceptionHandler
-import com.android.app.concurrent.benchmark.util.CsvMetricCollector
-import com.android.app.concurrent.benchmark.util.CsvMetricCollector.Helper.getCurrentBgThreadName
 import com.android.app.concurrent.benchmark.util.DEBUG
 import com.android.app.concurrent.benchmark.util.LooperThreadWithHandlerBuilder
 import com.android.app.concurrent.benchmark.util.PERFETTO_CONFIG
@@ -103,8 +102,8 @@ abstract class BaseLooperThreadBenchmark() {
     }
 
     /**
-     * Posts [initialBlock] to the bg handler, running until [HandlerThreadContext.stopBenchmark] is
-     * called.
+     * Posts [initialBlock] to the bg handler, running until
+     * [stopBenchmark][HandlerSynchronousContext.stopBenchmark] is called.
      */
     fun measure(initialBlock: HandlerSynchronousContext.() -> Unit) {
         val handlerMonitor =
@@ -185,7 +184,7 @@ class ConcurrentBenchmarkRule() : TestRule {
                         dbg { "putValueFromRow where key=$key" }
                         allMetricsValid = putValueFromRow(row, key) && allMetricsValid
                     }
-                    CsvMetricCollector.clearActiveName()
+                    clearBgThreadName()
                     if (!allMetricsValid) {
                         error(
                             "Trace has data loss or other errors. For more details, " +
@@ -203,6 +202,9 @@ class ConcurrentBenchmarkRule() : TestRule {
                 PerfettoTraceRule(
                     config = PerfettoConfig.Text(PERFETTO_CONFIG),
                     enableUserspaceTracing = false,
+                    labelProvider = {
+                        "${it.className.substringAfterLast('.')}_${it.methodName.substringBefore('[')}"
+                    },
                     traceCallback = traceCallback,
                 )
             )
@@ -213,14 +215,11 @@ class ConcurrentBenchmarkRule() : TestRule {
         object : Statement() {
             override fun evaluate() {
                 dbg { "ConcurrentBenchmarkRule START $description" }
-                CsvMetricCollector.setActiveName(
-                    description.testClass.simpleName,
-                    description.methodName,
-                )
+                setBgThreadName()
                 try {
                     base.evaluate()
                 } finally {
-                    CsvMetricCollector.clearActiveName()
+                    clearBgThreadName()
                     dbg { "ConcurrentBenchmarkRule END $description" }
                 }
             }
@@ -259,6 +258,25 @@ class ConcurrentBenchmarkRule() : TestRule {
     }
 }
 
+private lateinit var bgThreadName: String
+
+fun setBgThreadName() {
+    bgThreadName = "${BG_THREAD_NAME_PREFIX}${randomThreadId()}"
+}
+
+fun clearBgThreadName() {
+    bgThreadName = "${BG_THREAD_NAME_PREFIX}not_set"
+}
+
+fun getCurrentBgThreadName(): String {
+    return bgThreadName
+}
+
+private fun randomThreadId(): String {
+    val numericalChars = ('0'..'9')
+    return String(CharArray(8) { numericalChars.random() })
+}
+
 private fun putValueFromRow(row: Row, key: String): Boolean {
     // Key name for Perfetto metrics computed by looking at each measurement slice, e.g.
     // "measurement 0", "measurement 1", "measurement 2", etc.
@@ -282,7 +300,6 @@ private fun putValueFromRow(row: Row, key: String): Boolean {
             }
         }
     if (strValue != null) {
-        CsvMetricCollector.putMetric(metricName, strValue)
         if (metricValue is Number) {
             PerfettoMeasurementTimelineMetricCollector.putMetric(metricName, metricValue.toDouble())
         }

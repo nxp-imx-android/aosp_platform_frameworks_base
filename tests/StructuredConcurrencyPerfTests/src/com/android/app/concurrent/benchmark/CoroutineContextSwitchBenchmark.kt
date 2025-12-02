@@ -64,13 +64,13 @@ class CoroutineContextSwitchBenchmark(
 ) : BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:withContext={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder) *
                 listOf(
-                    ContextTransformParam("unwrapped") { _ -> EmptyCoroutineContext },
-                    ContextTransformParam("wrapped") { executor -> wrapDispatcher(executor) },
+                    ContextTransformParam("EmptyCoroutineContext") { _ -> EmptyCoroutineContext },
+                    ContextTransformParam("wrapDispatcher") { executor -> wrapDispatcher(executor) },
                 )
     }
 

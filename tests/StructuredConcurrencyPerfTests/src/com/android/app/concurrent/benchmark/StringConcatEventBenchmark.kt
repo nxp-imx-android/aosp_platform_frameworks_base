@@ -191,7 +191,7 @@ private sealed interface StringConcatEventBenchmark<T, E : Any>
     }
 
     @Test
-    fun benchmarkE_manyStringConcatFlows() {
+    fun benchmark_manyStringConcatFlows() {
         context.manyStringConcatFlows()
     }
 }
@@ -205,7 +205,7 @@ class SimpleStringConcatEventBenchmark(param: ThreadBuilder<Executor>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(
                 ExecutorServiceThreadWithExecutorBuilder,
                 LooperThreadWithExecutorBuilder,
@@ -222,7 +222,7 @@ class FlowStringConcatEventBenchmark(param: ThreadBuilder<CoroutineScope>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(
                 ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder,
                 LooperThreadWithHandlerDispatcherBuilder,

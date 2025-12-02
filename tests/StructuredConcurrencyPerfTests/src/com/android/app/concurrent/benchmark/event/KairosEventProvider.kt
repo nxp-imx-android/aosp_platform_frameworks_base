@@ -20,7 +20,6 @@ import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.MutableState as KairosMutableState
 import com.android.systemui.kairos.State as KairosState
-import com.android.systemui.kairos.TransactionScope
 import com.android.systemui.kairos.combine as combineKairosState
 import com.android.systemui.kairos.launchKairosNetwork
 import com.android.systemui.kairos.map as mapKairosState
@@ -43,10 +42,10 @@ class KairosObservationContext(val scope: BuildScope) : ReadContext<KairosState<
     }
 }
 
-class KairosWriteContext(val scope: TransactionScope) : WriteContext<KairosState<*>> {
+class KairosWriteContext : WriteContext<KairosState<*>> {
     override fun <T> KairosStateBoxIn<T>.update(value: T) {
         val kairosState = (this as KairosStateBoxImpl<T, *>).event as KairosMutableState<T>
-        with(scope) { kairosState.setValue(value) }
+        kairosState.setValue(value)
     }
 
     override fun <T> KairosStateBoxIn<T>.current(): T {
@@ -62,6 +61,7 @@ class KairosWritableEventBuilder(val scope: CoroutineScope) :
     IntEventCombiner<KairosState<*>>,
     MapOperator<KairosState<*>> {
 
+    val updateContext = KairosWriteContext()
     val kairosNetwork = scope.launchKairosNetwork()
 
     override fun <T> createWritableEvent(value: T): EventBox<T, KairosMutableState<T>> {
@@ -113,12 +113,7 @@ class KairosWritableEventBuilder(val scope: CoroutineScope) :
     }
 
     override fun write(block: WriteContext<KairosState<*>>.() -> Unit) {
-        scope.launch {
-            kairosNetwork.transact {
-                val updateContext = KairosWriteContext(this)
-                updateContext.block()
-            }
-        }
+        scope.launch { kairosNetwork.transact { updateContext.block() } }
     }
 
     override fun <A, B> KairosStateBoxIn<A>.map(transform: (A) -> B): KairosStateBoxOut<B> {
