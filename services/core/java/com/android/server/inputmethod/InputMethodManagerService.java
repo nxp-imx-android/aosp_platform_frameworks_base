@@ -5890,8 +5890,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 if (userData.mImeBindingState.mFocusedWindow != windowToken) {
                     // A perceptible value was set for the focused window, but it is no longer in
                     // control, so we reset the perceptible for the window passed as argument.
-                    // TODO(b/314149476): Investigate whether this logic is still relevant, if not
-                    //     then consider removing using concurrent_input_methods feature flag.
                     mFocusedWindowPerceptible.put(windowToken, true);
                 }
             }
