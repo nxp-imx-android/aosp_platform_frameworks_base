@@ -74,7 +74,8 @@ final class NavigationBarController implements Window.DecorCallback,
     @Nullable
     private Insets mLastInsets;
 
-    private boolean mShouldShowImeSwitcherWhenImeIsShown;
+    /** Whether the IME Switcher button should be visible. */
+    private boolean mShowImeSwitcherButton;
 
     /** Whether a custom IME Switcher button should be visible. */
     private boolean mCustomImeSwitcherButtonRequestedVisible;
@@ -155,8 +156,7 @@ final class NavigationBarController implements Window.DecorCallback,
                 // TODO(b/213337792): Support InputMethodService#setBackDisposition().
                 // TODO(b/213337792): Set NAVBAR_IME_VISIBLE only when necessary.
                 final int flags = NAVBAR_BACK_DISMISS_IME | NAVBAR_IME_VISIBLE
-                        | (mShouldShowImeSwitcherWhenImeIsShown
-                                ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
+                        | (mShowImeSwitcherButton ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
                 navigationBarView.setNavbarFlags(flags);
                 navigationBarView.prepareNavButtons(this);
             }
@@ -181,7 +181,7 @@ final class NavigationBarController implements Window.DecorCallback,
                 // IME navigation bar.
                 boolean visible = insets.isVisible(captionBar());
                 mNavigationBarFrame.setVisibility(visible ? View.VISIBLE : View.GONE);
-                checkCustomImeSwitcherButtonRequestedVisible(mShouldShowImeSwitcherWhenImeIsShown,
+                checkCustomImeSwitcherButtonRequestedVisible(mShowImeSwitcherButton,
                         mImeDrawsImeNavBar, !visible /* imeNavBarNotVisible */);
             }
             return view.onApplyWindowInsets(insets);
@@ -398,30 +398,26 @@ final class NavigationBarController implements Window.DecorCallback,
 
         final boolean imeDrawsImeNavBar =
                 (navButtonFlags & InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR) != 0;
-        final boolean shouldShowImeSwitcherWhenImeIsShown =
-                (navButtonFlags & InputMethodNavButtonFlags.SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN)
-                        != 0;
+        final boolean showImeSwitcherButton =
+                (navButtonFlags & InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON) != 0;
 
         mImeDrawsImeNavBar = imeDrawsImeNavBar;
-        final boolean prevShouldShowImeSwitcherWhenImeIsShown =
-                mShouldShowImeSwitcherWhenImeIsShown;
-        mShouldShowImeSwitcherWhenImeIsShown = shouldShowImeSwitcherWhenImeIsShown;
+        final boolean prevShowImeSwitcherButton = mShowImeSwitcherButton;
+        mShowImeSwitcherButton = showImeSwitcherButton;
 
         mService.mWindow.getWindow().getDecorView().getWindowInsetsController()
                 .setImeCaptionBarInsetsHeight(getImeCaptionBarHeight(imeDrawsImeNavBar));
 
         if (imeDrawsImeNavBar) {
             installNavigationBarFrameIfNecessary();
-            if (mNavigationBarFrame != null && mShouldShowImeSwitcherWhenImeIsShown
-                    != prevShouldShowImeSwitcherWhenImeIsShown) {
+            if (mNavigationBarFrame != null && showImeSwitcherButton != prevShowImeSwitcherButton) {
                 final NavigationBarView navigationBarView = mNavigationBarFrame
                         .findViewByPredicate(NavigationBarView.class::isInstance);
                 if (navigationBarView != null) {
                     // TODO(b/213337792): Support InputMethodService#setBackDisposition().
                     // TODO(b/213337792): Set NAVBAR_IME_VISIBLE only when necessary.
                     final int flags = NAVBAR_BACK_DISMISS_IME | NAVBAR_IME_VISIBLE
-                            | (mShouldShowImeSwitcherWhenImeIsShown
-                            ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
+                            | (showImeSwitcherButton ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
                     navigationBarView.setNavbarFlags(flags);
                 }
             }
@@ -430,8 +426,8 @@ final class NavigationBarController implements Window.DecorCallback,
         }
 
         // Check custom IME Switcher button visibility after (un)installing nav bar frame.
-        checkCustomImeSwitcherButtonRequestedVisible(shouldShowImeSwitcherWhenImeIsShown,
-                imeDrawsImeNavBar, !isShown() /* imeNavBarNotVisible */);
+        checkCustomImeSwitcherButtonRequestedVisible(showImeSwitcherButton, imeDrawsImeNavBar,
+                !isShown() /* imeNavBarNotVisible */);
     }
 
     @Override
@@ -561,7 +557,7 @@ final class NavigationBarController implements Window.DecorCallback,
     String toDebugString() {
         return "{mImeDrawsImeNavBar=" + mImeDrawsImeNavBar
                 + " mNavigationBarFrame=" + mNavigationBarFrame
-                + " mShouldShowImeSwitcherWhenImeIsShown=" + mShouldShowImeSwitcherWhenImeIsShown
+                + " mShowImeSwitcherButton=" + mShowImeSwitcherButton
                 + " mCustomImeSwitcherButtonRequestedVisible="
                 + mCustomImeSwitcherButtonRequestedVisible
                 + " mAppearance=0x" + Integer.toHexString(mAppearance)

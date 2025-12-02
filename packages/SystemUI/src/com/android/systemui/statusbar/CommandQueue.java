@@ -116,7 +116,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_EXPAND_SETTINGS                   = 5 << MSG_SHIFT;
     private static final int MSG_SYSTEM_BAR_CHANGED                = 6 << MSG_SHIFT;
     private static final int MSG_DISPLAY_ADD_SYSTEM_DECORATIONS    = 7 << MSG_SHIFT;
-    private static final int MSG_SHOW_IME_BUTTON                   = 8 << MSG_SHIFT;
+    private static final int MSG_SET_IME_WINDOW_STATUS             = 8 << MSG_SHIFT;
     private static final int MSG_TOGGLE_RECENT_APPS                = 9 << MSG_SHIFT;
     private static final int MSG_PRELOAD_RECENT_APPS               = 10 << MSG_SHIFT;
     private static final int MSG_CANCEL_PRELOAD_RECENT_APPS        = 11 << MSG_SHIFT;
@@ -286,10 +286,10 @@ public class CommandQueue extends IStatusBar.Stub implements
          * @param displayId The id of the display to which the IME is bound.
          * @param vis The IME window visibility.
          * @param backDisposition The IME back disposition mode.
-         * @param showImeSwitcher Whether the IME Switcher button should be shown.
+         * @param showImeSwitcherButton Whether the IME Switcher button should be shown.
          */
         default void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-                @BackDispositionMode int backDisposition, boolean showImeSwitcher) { }
+                @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) { }
         default void showRecentApps(boolean triggeredFromAltTab) { }
         default void hideRecentApps(boolean triggeredFromAltTab, boolean triggeredFromHomeKey) { }
         default void toggleTaskbar() { }
@@ -803,16 +803,15 @@ public class CommandQueue extends IStatusBar.Stub implements
 
     @Override
     public void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-            @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+            @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
         synchronized (mLock) {
-            mHandler.removeMessages(MSG_SHOW_IME_BUTTON);
-            SomeArgs args = SomeArgs.obtain();
+            mHandler.removeMessages(MSG_SET_IME_WINDOW_STATUS);
+            final SomeArgs args = SomeArgs.obtain();
             args.argi1 = displayId;
             args.argi2 = vis;
             args.argi3 = backDisposition;
-            args.argi4 = showImeSwitcher ? 1 : 0;
-            Message m = mHandler.obtainMessage(MSG_SHOW_IME_BUTTON, args);
-            m.sendToTarget();
+            args.argi4 = showImeSwitcherButton ? 1 : 0;
+            mHandler.obtainMessage(MSG_SET_IME_WINDOW_STATUS, args).sendToTarget();
         }
     }
 
@@ -1289,8 +1288,8 @@ public class CommandQueue extends IStatusBar.Stub implements
         }
     }
 
-    private void handleShowImeButton(int displayId, @ImeWindowVisibility int vis,
-            @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+    private void handleSetImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
+            @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
         if (displayId == INVALID_DISPLAY) return;
 
         boolean isConcurrentMultiUserModeEnabled = UserManager.isVisibleBackgroundUsersEnabled()
@@ -1304,7 +1303,7 @@ public class CommandQueue extends IStatusBar.Stub implements
             sendImeNotVisibleStatusForPrevNavBar();
         }
         for (Callbacks callback : mCallbacks) {
-            callback.setImeWindowStatus(displayId, vis, backDisposition, showImeSwitcher);
+            callback.setImeWindowStatus(displayId, vis, backDisposition, showImeSwitcherButton);
         }
         mLastUpdatedImeDisplayId = displayId;
     }
@@ -1312,7 +1311,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private void sendImeNotVisibleStatusForPrevNavBar() {
         for (Callbacks callback : mCallbacks) {
             callback.setImeWindowStatus(mLastUpdatedImeDisplayId, 0 /* vis */,
-                    BACK_DISPOSITION_DEFAULT, false /* showImeSwitcher */);
+                    BACK_DISPOSITION_DEFAULT, false /* showImeSwitcherButton */);
         }
     }
 
@@ -1646,11 +1645,12 @@ public class CommandQueue extends IStatusBar.Stub implements
                         callback.toggleQuickSettingsPanel();
                     }
                     break;
-                case MSG_SHOW_IME_BUTTON:
+                case MSG_SET_IME_WINDOW_STATUS:
                     args = (SomeArgs) msg.obj;
-                    handleShowImeButton(args.argi1 /* displayId */,
+                    handleSetImeWindowStatus(args.argi1 /* displayId */,
                             args.argi2 /* vis */, args.argi3 /* backDisposition */,
-                            args.argi4 != 0 /* showImeSwitcher */);
+                            args.argi4 != 0 /* showImeSwitcherButton */);
+                    args.recycle();
                     break;
                 case MSG_SHOW_RECENT_APPS:
                     for (Callbacks callback : mCallbacks) {

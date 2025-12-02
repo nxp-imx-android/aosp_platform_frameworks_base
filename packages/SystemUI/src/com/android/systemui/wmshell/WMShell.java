@@ -425,7 +425,7 @@ public final class WMShell implements
 
             @Override
             public void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-                    @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+                    @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
                 if (displayId == mDisplayTracker.getDefaultDisplayId()
                         && (vis & InputMethodService.IME_VISIBLE) != 0) {
                     oneHanded.stopOneHanded(

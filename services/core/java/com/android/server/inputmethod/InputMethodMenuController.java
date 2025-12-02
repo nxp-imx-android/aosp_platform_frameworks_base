@@ -158,7 +158,7 @@ final class InputMethodMenuController {
         w.setAttributes(attrs);
 
         mDialog.show();
-        InputMethodManagerInternal.get().updateShouldShowImeSwitcher(displayId, userId);
+        InputMethodManagerInternal.get().updateShouldShowImeSwitcherButton(displayId, userId);
     }
 
     /**
@@ -176,7 +176,7 @@ final class InputMethodMenuController {
             mDialog.dismiss();
             mDialog = null;
 
-            InputMethodManagerInternal.get().updateShouldShowImeSwitcher(displayId, userId);
+            InputMethodManagerInternal.get().updateShouldShowImeSwitcherButton(displayId, userId);
         }
     }
 

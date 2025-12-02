@@ -28,7 +28,7 @@ import static com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapp
 import static com.android.compatibility.common.util.SystemUtil.eventually;
 import static com.android.cts.input.injectinputinprocess.InjectInputInProcessKt.clickOnViewCenter;
 import static com.android.internal.inputmethod.InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR;
-import static com.android.internal.inputmethod.InputMethodNavButtonFlags.SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN;
+import static com.android.internal.inputmethod.InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -828,7 +828,7 @@ public class InputMethodServiceTest {
 
         verifyInputViewStatusOnMainSync(
                 () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enable */);
+                    setDrawsImeNavBarAndImeSwitcherButton(true /* enable */);
                     mActivity.showImeWithWindowInsetsController();
                 },
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -860,7 +860,7 @@ public class InputMethodServiceTest {
 
         verifyInputViewStatusOnMainSync(
                 () -> {
-                    setDrawsImeNavBarAndSwitcherButton(false /* enable */);
+                    setDrawsImeNavBarAndImeSwitcherButton(false /* enable */);
                     mActivity.showImeWithWindowInsetsController();
                 },
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -956,7 +956,7 @@ public class InputMethodServiceTest {
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
-                        setDrawsImeNavBarAndSwitcherButton(true /* enable */);
+                        setDrawsImeNavBarAndImeSwitcherButton(true /* enable */);
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -997,7 +997,7 @@ public class InputMethodServiceTest {
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
-                        setDrawsImeNavBarAndSwitcherButton(true /* enable */);
+                        setDrawsImeNavBarAndImeSwitcherButton(true /* enable */);
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -1479,8 +1479,8 @@ public class InputMethodServiceTest {
      *
      * @param enable whether the IME nav bar and IME Switcher button are drawn.
      */
-    private void setDrawsImeNavBarAndSwitcherButton(boolean enable) {
-        final int flags = enable ? IME_DRAWS_IME_NAV_BAR | SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN : 0;
+    private void setDrawsImeNavBarAndImeSwitcherButton(boolean enable) {
+        final int flags = enable ? IME_DRAWS_IME_NAV_BAR | SHOW_IME_SWITCHER_BUTTON : 0;
         mInputMethodService.getInputMethodInternal().onNavButtonFlagsChanged(flags);
     }
 

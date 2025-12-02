@@ -908,7 +908,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     mDisplayId,
                     result.mImeWindowVis,
                     result.mImeBackDisposition,
-                    result.mShowImeSwitcher);
+                    result.mShowImeSwitcherButton);
 
             // Set up the initial icon state
             int numIcons = result.mIcons.size();

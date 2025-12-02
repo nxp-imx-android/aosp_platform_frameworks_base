@@ -530,14 +530,14 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
 
     @Override
     public void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-            @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+            @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
         if (displayId != mDefaultDisplayId) {
             return;
         }
 
         final boolean isImeVisible = mNavBarHelper.isImeVisible(vis);
         final int flags = Utilities.updateNavbarFlagsFromIme(mNavbarFlags, backDisposition,
-                isImeVisible, showImeSwitcher);
+                isImeVisible, showImeSwitcherButton);
         if (flags == mNavbarFlags) {
             return;
         }
