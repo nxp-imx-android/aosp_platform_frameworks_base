@@ -36,6 +36,7 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.SensorPrivacyManager;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.View;
@@ -45,6 +46,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.app.displaylib.PerDisplayRepository;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dreams.DreamOverlayNotificationCountProvider;
@@ -76,7 +78,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -212,10 +213,42 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
 
         final PrivacyItem item = Mockito.mock(PrivacyItem.class);
         when(item.getPrivacyType()).thenReturn(PrivacyType.TYPE_LOCATION);
-        callbackCaptor.getValue().onPrivacyItemsChanged(Arrays.asList(item));
+        callbackCaptor.getValue().onPrivacyItemsChanged(List.of(item));
 
         verify(mView).showIcon(
                 eq(AmbientStatusBarView.STATUS_ICON_LOCATION_ACTIVE), eq(true), any());
+    }
+
+    @EnableFlags({Flags.FLAG_DREAM_PRIVACY_INDICATOR})
+    @Test
+    public void testMicPrivacyIconShownWhenMicActive() {
+        mController.onViewAttached();
+        final ArgumentCaptor<PrivacyItemController.Callback> callbackCaptor =
+                ArgumentCaptor.forClass(PrivacyItemController.Callback.class);
+        verify(mPrivacyItemController).addCallback(callbackCaptor.capture());
+
+        final PrivacyItem item = Mockito.mock(PrivacyItem.class);
+        when(item.getPrivacyType()).thenReturn(PrivacyType.TYPE_MICROPHONE);
+        callbackCaptor.getValue().onPrivacyItemsChanged(List.of(item));
+
+        verify(mView).showIcon(
+                eq(AmbientStatusBarView.STATUS_ICON_MIC_PRIVACY_ON), eq(true), any());
+    }
+
+    @EnableFlags({Flags.FLAG_DREAM_PRIVACY_INDICATOR})
+    @Test
+    public void testCameraPrivacyIconShownWhenCameraActive() {
+        mController.onViewAttached();
+        final ArgumentCaptor<PrivacyItemController.Callback> callbackCaptor =
+                ArgumentCaptor.forClass(PrivacyItemController.Callback.class);
+        verify(mPrivacyItemController).addCallback(callbackCaptor.capture());
+
+        final PrivacyItem item = Mockito.mock(PrivacyItem.class);
+        when(item.getPrivacyType()).thenReturn(PrivacyType.TYPE_CAMERA);
+        callbackCaptor.getValue().onPrivacyItemsChanged(List.of(item));
+
+        verify(mView).showIcon(
+                eq(AmbientStatusBarView.STATUS_ICON_CAMERA_PRIVACY_ON), eq(true), any());
     }
 
     @Test
@@ -227,7 +260,7 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
 
         final PrivacyItem item = Mockito.mock(PrivacyItem.class);
         when(item.getPrivacyType()).thenReturn(PrivacyType.TYPE_CAMERA);
-        callbackCaptor.getValue().onPrivacyItemsChanged(Arrays.asList(item));
+        callbackCaptor.getValue().onPrivacyItemsChanged(List.of(item));
 
         verify(mView, never()).showIcon(
                 eq(AmbientStatusBarView.STATUS_ICON_LOCATION_ACTIVE), eq(true), any());
@@ -243,7 +276,7 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
         verify(mView, never()).showIcon(
                 eq(AmbientStatusBarView.STATUS_ICON_LOCATION_ACTIVE), eq(true), any());
 
-        callbackCaptor.getValue().onPrivacyItemsChanged(Arrays.asList());
+        callbackCaptor.getValue().onPrivacyItemsChanged(List.of());
 
         verify(mView, never()).showIcon(
                 eq(AmbientStatusBarView.STATUS_ICON_LOCATION_ACTIVE), eq(true), any());

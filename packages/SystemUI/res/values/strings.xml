@@ -4147,6 +4147,12 @@
     <!-- Content description for location in use icon on dream [CHAR LIMIT=NONE] -->
     <string name="location_active_dream_overlay_content_description">Location active</string>
 
+    <!-- Content description for camera active icon on dream [CHAR LIMIT=NONE] -->
+    <string name="camera_privacy_dream_overlay_content_description">Camera active</string>
+
+    <!-- Content description for microphone active icon on dream [CHAR LIMIT=NONE] -->
+    <string name="mic_privacy_dream_overlay_content_description">Microphone active</string>
+
     <!-- Content description for camera blocked icon on dream [CHAR LIMIT=NONE] -->
     <string name="camera_blocked_dream_overlay_content_description">Camera blocked</string>
 
