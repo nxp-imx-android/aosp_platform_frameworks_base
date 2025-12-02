@@ -1436,8 +1436,10 @@ final class DefaultPermissionGrantPolicy {
                         pm.grantPermission(permission, pkg, user);
                     }
 
-                    // clear the REVIEW_REQUIRED flag, if set
-                    int flagMask = newFlags | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED;
+                    // Create a mask to clear the REVIEW_REQUIRED and REVOKE_WHEN_REQUESTED flags.
+                    int flagMask = newFlags | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED |
+                            PackageManager.FLAG_PERMISSION_REVOKE_WHEN_REQUESTED;
+
                     pm.updatePermissionFlags(permission, pkg, flagMask, newFlags, user);
                 }
 
