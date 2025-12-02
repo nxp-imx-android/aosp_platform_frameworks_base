@@ -7786,18 +7786,18 @@ package android.hardware.usb {
 
   @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public final class PowerProfileInfo implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingPartnerProfiles();
     method @CheckResult public int getMaxCurrentMa();
     method @CheckResult public int getMaxPowerMw();
     method @CheckResult public int getMaxVoltageMv();
     method @CheckResult public int getMinCurrentMa();
     method @CheckResult public int getMinVoltageMv();
     method @Nullable public String getName();
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
     method @CheckResult public int getPowerProfileType();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.PowerProfileInfo> CREATOR;
