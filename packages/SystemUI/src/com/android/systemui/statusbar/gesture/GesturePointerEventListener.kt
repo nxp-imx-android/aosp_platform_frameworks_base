@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.gesture
 
 import android.content.Context
 import android.graphics.Rect
-import android.graphics.Region
 import android.hardware.display.DisplayManagerGlobal
 import android.os.Handler
 import android.os.Looper
@@ -42,12 +41,11 @@ import javax.inject.Inject
  * Watches for gesture events that may trigger system bar related events and notify the registered
  * callbacks. Add callback to this listener by calling {@link setCallbacks}.
  */
-class GesturePointerEventListener
-@Inject
-constructor(context: Context, gestureDetector: GesturePointerEventDetector) : CoreStartable {
-    private val mContext: Context
+class GesturePointerEventListener @Inject constructor(context: Context) :
+    CoreStartable,
+    GenericGestureDetector(GesturePointerEventListener::class.java.simpleName, context.displayId) {
+    private val mContext: Context = checkNull("context", context)
     private val mHandler = Handler(Looper.getMainLooper())
-    private var mGestureDetector: GesturePointerEventDetector
     private var mFlingGestureDetector: GestureDetector? = null
     private var mDisplayCutoutTouchableRegionSize = 0
 
@@ -71,8 +69,6 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
     private var mLastFlingTime: Long = 0
 
     init {
-        mContext = checkNull("context", context)
-        mGestureDetector = checkNull("gesture detector", gestureDetector)
         onConfigurationChanged()
     }
 
@@ -80,14 +76,23 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         if (!Flags.enableTransientGestureInSystemUi()) {
             return
         }
-        mGestureDetector.addOnGestureDetectedCallback(TAG) { ev -> onInputEvent(ev) }
-        mGestureDetector.startGestureListening()
+        // GestureDetector records statistics about gesture classification events to inform gesture
+        // usage trends. GesturesPointerEventListener creates a lot of noise in these
+        // statistics because it passes every touch event though a GestureDetector. By creating an
+        // anonymous subclass of GestureDetector, these statistics will be recorded with a unique
+        // source name that can be filtered.
+
+        // GestureDetector would get a ViewConfiguration instance by context, that may also
+        // create a new WindowManagerImpl for the new display, and lock WindowManagerGlobal
+        // temporarily in the constructor that would make a deadlock.
 
         mFlingGestureDetector =
             object : GestureDetector(mContext, FlingGestureDetector(), mHandler) {}
     }
 
-    fun onDisplayInfoChanged(info: DisplayInfo) {
+    fun onDisplayInfoChanged() {
+        val info = DisplayInfo()
+        mContext.display.getDisplayInfo(info)
         screenWidth = info.logicalWidth
         screenHeight = info.logicalHeight
         onConfigurationChanged()
@@ -151,11 +156,12 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
             )
     }
 
-    fun onInputEvent(ev: InputEvent) {
+    override fun onInputEvent(ev: InputEvent) {
         if (ev !is MotionEvent) {
             return
         }
         if (DEBUG) Log.d(TAG, "Received motion event $ev")
+        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) return
         if (ev.isTouchEvent) {
             mFlingGestureDetector?.onTouchEvent(ev)
         }
@@ -287,10 +293,6 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
             if (DEBUG)
                 Log.d(TAG, "pointer " + pointerId + " down x=" + mDownX[i] + " y=" + mDownY[i])
         }
-    }
-
-    protected fun currentGestureStartedInRegion(r: Region): Boolean {
-        return r.contains(mDownX[0].toInt(), mDownY[0].toInt())
     }
 
     private fun findIndex(pointerId: Int): Int {

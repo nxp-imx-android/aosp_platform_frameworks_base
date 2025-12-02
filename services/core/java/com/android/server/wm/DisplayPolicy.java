@@ -721,7 +721,10 @@ public class DisplayPolicy {
                 mContext, () -> {
             synchronized (mLock) {
                 onConfigurationChanged();
-                if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+                if (com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+                    StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                    if (statusBar != null) statusBar.onConfigurationChanged();
+                } else {
                     mSystemGestures.onConfigurationChanged();
                 }
                 mDisplayContent.updateSystemGestureExclusion();
@@ -1461,7 +1464,10 @@ public class DisplayPolicy {
     }
 
     void onDisplayInfoChanged(DisplayInfo info) {
-        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+        if (com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+            StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+            if (statusBar != null) statusBar.onDisplayInfoChanged();
+        } else {
             mSystemGestures.onDisplayInfoChanged(info);
         }
     }
@@ -1878,7 +1884,10 @@ public class DisplayPolicy {
         // Update the latest display size, cutout.
         mDisplayContent.requestDisplayUpdate(() -> {
             onConfigurationChanged();
-            if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+            if (com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
+                StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                if (statusBar != null) statusBar.onConfigurationChanged();
+            } else {
                 mSystemGestures.onConfigurationChanged();
             }
         });

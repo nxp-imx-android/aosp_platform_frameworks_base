@@ -846,6 +846,30 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         public void passThroughShellCommand(String[] args, FileDescriptor fd) {
             StatusBarManagerService.this.passThroughShellCommand(args, fd);
         }
+
+        @Override
+        public void onDisplayInfoChanged() {
+            IStatusBar bar = mBar;
+            if (bar != null) {
+                try {
+                    bar.onDisplayInfoChanged();
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "onDisplayInfoChanged", e);
+                }
+            }
+        }
+
+        @Override
+        public void onConfigurationChanged() {
+            IStatusBar bar = mBar;
+            if (bar != null) {
+                try {
+                    bar.onConfigurationChanged();
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "onConfigucrationChanged", e);
+                }
+            }
+        }
     };
 
     private final GlobalActionsProvider mGlobalActionsProvider = new GlobalActionsProvider() {

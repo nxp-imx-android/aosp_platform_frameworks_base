@@ -597,4 +597,18 @@ public class CommandQueueTest extends SysuiTestCase {
         waitForIdleSync();
         verify(mCallbacks).showRearDisplayDialog(eq(currentBaseState));
     }
+
+    @Test
+    public void testOnDisplayInfoChanged() throws RemoteException {
+        mCommandQueue.onDisplayInfoChanged();
+        waitForIdleSync();
+        verify(mCallbacks).onDisplayInfoChanged();
+    }
+
+    @Test
+    public void testOnConfigurationChanged() throws RemoteException {
+        mCommandQueue.onConfigurationChanged();
+        waitForIdleSync();
+        verify(mCallbacks).onConfigurationChanged();
+    }
 }
