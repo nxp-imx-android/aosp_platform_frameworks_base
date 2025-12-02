@@ -130,6 +130,7 @@ public class PipTransitionState {
     @ShellMainThread
     private final Handler mMainHandler;
 
+    @Nullable
     private final PipDesktopState mPipDesktopState;
 
     //
@@ -194,7 +195,8 @@ public class PipTransitionState {
 
     private final List<PipTransitionStateChangedListener> mCallbacks = new ArrayList<>();
 
-    public PipTransitionState(@ShellMainThread Handler handler, PipDesktopState pipDesktopState) {
+    public PipTransitionState(@ShellMainThread Handler handler,
+            @Nullable PipDesktopState pipDesktopState) {
         mMainHandler = handler;
         mPipDesktopState = pipDesktopState;
     }
@@ -489,7 +491,8 @@ public class PipTransitionState {
                 //   started playing yet
                 // - there is no drag-to-desktop gesture in progress; otherwise the PiP resize
                 //   transition will block the drag-to-desktop transitions from finishing
-                return isPipStateIdle() && !mPipDesktopState.isDragToDesktopInProgress();
+                return isPipStateIdle() && (mPipDesktopState == null
+                        || !mPipDesktopState.isDragToDesktopInProgress());
             default:
                 return true;
         }

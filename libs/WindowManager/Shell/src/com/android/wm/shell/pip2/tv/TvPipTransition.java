@@ -27,6 +27,8 @@ import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
 import android.view.Surface;
 import android.view.SurfaceControl;
@@ -45,6 +47,7 @@ import com.android.wm.shell.pip.tv.TvPipBoundsState;
 import com.android.wm.shell.pip.tv.TvPipMenuController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
+import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ShellInit;
@@ -57,11 +60,31 @@ import com.android.wm.shell.transition.Transitions;
 public class TvPipTransition extends PipTransitionController {
     private static final String TAG = "TvPip2Transition";
 
+    // Used when for ENTERING_PIP state update.
+    private static final String PIP_TASK_LEASH = "pip_task_leash";
+    private static final String PIP_TASK_INFO = "pip_task_info";
+
+    //
+    // Dependencies
+    //
+
     private final Context mContext;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final TvPipMenuController mTvPipMenuController;
+    private final PipTransitionState mPipTransitionState;
+
+    //
+    // Transition caches
+    //
+
     @Nullable
     private IBinder mEnterPipTransition;
+
+    //
+    // Internal state and relevant cached info
+    //
+
+    private Transitions.TransitionFinishCallback mFinishCallback;
 
     public TvPipTransition(
             Context context,
@@ -71,12 +94,14 @@ public class TvPipTransition extends PipTransitionController {
             @NonNull Transitions transitions,
             TvPipBoundsState tvPipBoundsState,
             TvPipMenuController tvPipMenuController,
-            TvPipBoundsAlgorithm tvPipBoundsAlgorithm) {
+            TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            PipTransitionState pipTransitionState) {
         super(shellInit, shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
                 tvPipBoundsAlgorithm);
         mContext = context;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mTvPipMenuController = tvPipMenuController;
+        mPipTransitionState = pipTransitionState;
     }
 
     @Override
@@ -98,6 +123,7 @@ public class TvPipTransition extends PipTransitionController {
                     "%s: handle PiP enter request", TAG);
             // Cache the token so we can identify this transition in startAnimation().
             mEnterPipTransition = transition;
+            mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
             return getEnterPipTransaction(request.getPipChange());
         }
         return null;
@@ -106,7 +132,6 @@ public class TvPipTransition extends PipTransitionController {
     private WindowContainerTransaction getEnterPipTransaction(
             @NonNull TransitionRequestInfo.PipChange pipChange) {
         final ActivityManager.RunningTaskInfo pipTask = pipChange.getTaskInfo();
-        if (pipTask == null) return new WindowContainerTransaction();
 
         PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
         mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
@@ -131,6 +156,7 @@ public class TvPipTransition extends PipTransitionController {
         if (pipChange == null) {
             return false;
         }
+        mFinishCallback = finishCallback;
 
         TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
                 info, pipChange.getTaskInfo().getToken());
@@ -158,7 +184,7 @@ public class TvPipTransition extends PipTransitionController {
             mPipSurfaceTransactionHelper.shadow(finishTransaction, leash, false);
             mTvPipMenuController.movePipMenu(finishTransaction, destinationBounds, 1f);
 
-            finishCallback.onTransitionFinished(null /* wct */);
+            finishTransition();
         });
 
         animator.start();
@@ -176,6 +202,12 @@ public class TvPipTransition extends PipTransitionController {
             ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: starting PiP enter animation", TAG);
             mEnterPipTransition = null; // Clear the cached token.
+            TransitionInfo.Change pipChange = getPipChange(info);
+
+            Bundle extra = new Bundle();
+            extra.putParcelable(PIP_TASK_LEASH, pipChange.getLeash());
+            extra.putParcelable(PIP_TASK_INFO, pipChange.getTaskInfo());
+            mPipTransitionState.setState(PipTransitionState.ENTERING_PIP, extra);
             return startEnterAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
         return false;
@@ -200,5 +232,38 @@ public class TvPipTransition extends PipTransitionController {
                 initActivityScale.y);
         finishTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
                 initActivityPos.y);
+    }
+
+    @Override
+    public void finishTransition() {
+        final int currentState = mPipTransitionState.getState();
+        int nextState = PipTransitionState.UNDEFINED;
+        switch (currentState) {
+            case PipTransitionState.ENTERING_PIP:
+                nextState = PipTransitionState.ENTERED_PIP;
+                break;
+            case PipTransitionState.CHANGING_PIP_BOUNDS:
+                nextState = PipTransitionState.CHANGED_PIP_BOUNDS;
+                break;
+            case PipTransitionState.EXITING_PIP:
+                nextState = PipTransitionState.EXITED_PIP;
+                break;
+        }
+
+        if (nextState == PipTransitionState.UNDEFINED) {
+            ProtoLog.wtf(WM_SHELL_PICTURE_IN_PICTURE, "%s: "
+                    + "PipTransitionState resolved to an undefined state in "
+                    + "finishTransition(). callers=%s", TAG, Debug.getCallers(4));
+        }
+
+        mPipTransitionState.setState(nextState);
+
+        if (mFinishCallback != null) {
+            // Need to unset mFinishCallback first because onTransitionFinished can re-enter this
+            // handler if there is a pending PiP animation.
+            final Transitions.TransitionFinishCallback finishCallback = mFinishCallback;
+            mFinishCallback = null;
+            finishCallback.onTransitionFinished(null /* finishWct */);
+        }
     }
 }

@@ -17,12 +17,16 @@
 package com.android.wm.shell.dagger.pip;
 
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.pip.Pip;
 import com.android.wm.shell.pip.PipTransitionController;
+import com.android.wm.shell.pip2.tv.TvPipController;
 import com.android.wm.shell.pip2.tv.TvPipTransition;
 import com.android.wm.shell.shared.pip.PipFlags;
 
 import dagger.Module;
 import dagger.Provides;
+
+import java.util.Optional;
 
 /**
  * Selects between the TV legacy and new PiP implementation.
@@ -41,6 +45,18 @@ public abstract class TvPipModule {
             return newPipTransition;
         } else {
             return legacyPipTransition;
+        }
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<Pip> providePip(
+            Optional<com.android.wm.shell.pip.tv.TvPipController.TvPipImpl> pip1,
+            Optional<TvPipController.TvPipImpl> pip2) {
+        if (PipFlags.isPip2ExperimentEnabled()) {
+            return Optional.ofNullable(pip2.orElse(null));
+        } else {
+            return Optional.ofNullable(pip1.orElse(null));
         }
     }
 }

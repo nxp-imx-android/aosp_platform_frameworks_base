@@ -39,7 +39,6 @@ import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
-import com.android.wm.shell.pip.Pip;
 import com.android.wm.shell.pip.PipAnimationController;
 import com.android.wm.shell.pip.PipParamsChangedForwarder;
 import com.android.wm.shell.pip.PipSurfaceTransactionHelper;
@@ -55,6 +54,7 @@ import com.android.wm.shell.pip.tv.TvPipNotificationController;
 import com.android.wm.shell.pip.tv.TvPipTaskOrganizer;
 import com.android.wm.shell.pip.tv.TvPipTransition;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -74,7 +74,7 @@ import java.util.Optional;
 public abstract class TvPip1Module {
     @WMSingleton
     @Provides
-    static Optional<Pip> providePip(
+    static Optional<TvPipController.TvPipImpl> providePip1(
             Context context,
             ShellInit shellInit,
             ShellController shellController,
@@ -95,28 +95,32 @@ public abstract class TvPip1Module {
             WindowManagerShellWrapper windowManagerShellWrapper,
             @ShellMainThread Handler mainHandler, // needed for registerReceiverForAllUsers()
             @ShellMainThread ShellExecutor mainExecutor) {
-        return Optional.of(
-                TvPipController.create(
-                        context,
-                        shellInit,
-                        shellController,
-                        tvPipBoundsState,
-                        pipDisplayLayoutState,
-                        tvPipBoundsAlgorithm,
-                        tvPipBoundsController,
-                        pipTransitionState,
-                        pipAppOpsListener,
-                        pipTaskOrganizer,
-                        pipTransitionController,
-                        tvPipMenuController,
-                        pipMediaController,
-                        tvPipNotificationController,
-                        taskStackListener,
-                        pipParamsChangedForwarder,
-                        displayController,
-                        windowManagerShellWrapper,
-                        mainHandler,
-                        mainExecutor));
+        if (PipFlags.isPip2ExperimentEnabled()) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(
+                    TvPipController.create(
+                            context,
+                            shellInit,
+                            shellController,
+                            tvPipBoundsState,
+                            pipDisplayLayoutState,
+                            tvPipBoundsAlgorithm,
+                            tvPipBoundsController,
+                            pipTransitionState,
+                            pipAppOpsListener,
+                            pipTaskOrganizer,
+                            pipTransitionController,
+                            tvPipMenuController,
+                            pipMediaController,
+                            tvPipNotificationController,
+                            taskStackListener,
+                            pipParamsChangedForwarder,
+                            displayController,
+                            windowManagerShellWrapper,
+                            mainHandler,
+                            mainExecutor));
+        }
     }
 
     @WMSingleton
