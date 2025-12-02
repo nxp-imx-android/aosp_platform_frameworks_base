@@ -851,7 +851,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void startExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
+    public void startExecutingService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
         psr.startExecutingService(sr);
     }
 
@@ -860,7 +861,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
+    public void stopExecutingService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
         psr.stopExecutingService(sr);
     }
 
@@ -869,7 +871,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopAllExecutingServices(@NonNull ProcessServiceRecord psr) {
+    public void stopAllExecutingServices(@NonNull ProcessServiceRecordInternal psr) {
         psr.stopAllExecutingServices();
     }
 

@@ -48,11 +48,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     boolean mAllowlistManager;
 
     /**
-     * Services that are currently executing code (need to remain foreground).
-     */
-    private final ArraySet<ServiceRecord> mExecutingServices = new ArraySet<>();
-
-    /**
      * A set of UIDs of all bound clients.
      */
     private ArraySet<Integer> mBoundClientUids = new ArraySet<>();
@@ -173,29 +168,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return (ServiceRecord) getRunningServiceInternalAt(index);
     }
 
-    void startExecutingService(ServiceRecord service) {
-        mExecutingServices.add(service);
-    }
-
-    void stopExecutingService(ServiceRecord service) {
-        mExecutingServices.remove(service);
-    }
-
-    void stopAllExecutingServices() {
-        mExecutingServices.clear();
-    }
-
     ServiceRecord getExecutingServiceAt(int index) {
-        return mExecutingServices.valueAt(index);
-    }
-
-    int numberOfExecutingServices() {
-        return mExecutingServices.size();
-    }
-
-    @Override
-    public boolean hasExecutingServices() {
-        return !mExecutingServices.isEmpty();
+        return (ServiceRecord) getExecutingServiceInternalAt(index);
     }
 
     ConnectionRecord getConnectionAt(int index) {
@@ -333,12 +307,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
 
     @GuardedBy("mService")
     private void scheduleServiceTimeoutIfNeededLocked() {
-        if (mScheduleServiceTimeoutPending && mExecutingServices.size() > 0) {
+        if (mScheduleServiceTimeoutPending && hasExecutingServices()) {
             mService.mServices.scheduleServiceTimeoutLocked(mApp);
             // We'll need to reset the executingStart since the app was frozen.
             final long now = SystemClock.uptimeMillis();
-            for (int i = 0, size = mExecutingServices.size(); i < size; i++) {
-                mExecutingServices.valueAt(i).executingStart = now;
+            for (int i = 0, size = numberOfExecutingServices(); i < size; i++) {
+                getExecutingServiceAt(i).executingStart = now;
             }
         }
     }
@@ -374,11 +348,11 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
                 pw.print(prefix); pw.print("  - "); pw.println(getRunningServiceAt(i));
             }
         }
-        if (mExecutingServices.size() > 0) {
+        if (hasExecutingServices()) {
             pw.print(prefix); pw.print("Executing Services (fg=");
             pw.print(isExecServicesFg()); pw.println(")");
-            for (int i = 0, size = mExecutingServices.size(); i < size; i++) {
-                pw.print(prefix); pw.print("  - "); pw.println(mExecutingServices.valueAt(i));
+            for (int i = 0, size = numberOfExecutingServices(); i < size; i++) {
+                pw.print(prefix); pw.print("  - "); pw.println(getExecutingServiceAt(i));
             }
         }
         if (numberOfConnections() > 0) {
