@@ -21,8 +21,8 @@ import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Issue
 import org.junit.Test
 
-// Note: Using Java test files everywhere makes the annotation stub happy.
-class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
+/** Test [NoMetricInParameterizedDetector] with Kotlin files. */
+class NoMetricInParameterizedDetectorKotlinTest : SystemUILintDetectorTest() {
     override fun getDetector(): Detector = NoMetricInParameterizedDetector()
 
     override fun getIssues(): List<Issue> =
@@ -35,18 +35,18 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
     fun noMetricBefore_withFunctionalRunner_clean() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import android.platform.test.microbenchmark.Functional;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore;
+                        import org.junit.runner.RunWith
+                        import android.platform.test.microbenchmark.Functional
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore
 
-                        @RunWith(Functional.class)
+                        @RunWith(Functional::class)
                         class TestClass {
                             @NoMetricBefore
-                            void setUp() {}
+                            fun setUp() {}
                         }
                     """
                         .trimIndent()
@@ -62,18 +62,18 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
     fun noMetricAfter_withFunctionalRunner_clean() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import android.platform.test.microbenchmark.Functional;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter;
+                        import org.junit.runner.RunWith
+                        import android.platform.test.microbenchmark.Functional
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter
 
-                        @RunWith(Functional.class)
+                        @RunWith(Functional::class)
                         class TestClass {
                             @NoMetricAfter
-                            void tearDown() {}
+                            fun tearDown() {}
                         }
                     """
                         .trimIndent()
@@ -89,18 +89,18 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
     fun noMetricBefore_withMicrobenchmarkRunner_clean() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import android.platform.test.microbenchmark.Microbenchmark;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore;
+                        import org.junit.runner.RunWith
+                        import android.platform.test.microbenchmark.Microbenchmark
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore
 
-                        @RunWith(Microbenchmark.class)
+                        @RunWith(Microbenchmark::class)
                         class TestClass {
                             @NoMetricBefore
-                            void setUp() {}
+                            fun setUp() {}
                         }
                     """
                         .trimIndent()
@@ -116,18 +116,18 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
     fun noMetricAfter_withMicrobenchmarkRunner_clean() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import android.platform.test.microbenchmark.Microbenchmark;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter;
+                        import org.junit.runner.RunWith
+                        import android.platform.test.microbenchmark.Microbenchmark
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter
 
-                        @RunWith(Microbenchmark.class)
+                        @RunWith(Microbenchmark::class)
                         class TestClass {
                             @NoMetricAfter
-                            void tearDown() {}
+                            fun tearDown() {}
                         }
                     """
                         .trimIndent()
@@ -143,18 +143,18 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
     fun noMetricBefore_withParameterizedRunner_error() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import org.junit.runners.Parameterized;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore;
+                        import org.junit.runner.RunWith
+                        import org.junit.runners.Parameterized
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore
 
-                        @RunWith(Parameterized.class)
+                        @RunWith(Parameterized::class)
                         class TestClass {
                             @NoMetricBefore
-                            void setUp() {}
+                            fun setUp() {}
                         }
                     """
                         .trimIndent()
@@ -165,7 +165,7 @@ class NoMetricInParameterizedDetectorTest : SystemUILintDetectorTest() {
             .run()
             .expect(
                 """
-src/test/pkg/TestClass.java:9: Error: @NoMetricBefore can't be used with Parameterized test runner [NoMetricBeforeWithParameterized]
+src/test/pkg/TestClass.kt:9: Error: @NoMetricBefore can't be used with Parameterized test runner [NoMetricBeforeWithParameterized]
     @NoMetricBefore
     ~~~~~~~~~~~~~~~
 1 errors, 0 warnings
@@ -177,18 +177,18 @@ src/test/pkg/TestClass.java:9: Error: @NoMetricBefore can't be used with Paramet
     fun noMetricAfter_withParameterizedRunner_error() {
         lint()
             .files(
-                java(
+                kotlin(
                     """
-                        package test.pkg;
+                        package test.pkg
 
-                        import org.junit.runner.RunWith;
-                        import org.junit.runners.Parameterized;
-                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter;
+                        import org.junit.runner.RunWith
+                        import org.junit.runners.Parameterized
+                        import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter
 
-                        @RunWith(Parameterized.class)
+                        @RunWith(Parameterized::class)
                         class TestClass {
                             @NoMetricAfter
-                            void tearDown() {}
+                            fun tearDown() {}
                         }
                     """
                         .trimIndent()
@@ -199,7 +199,7 @@ src/test/pkg/TestClass.java:9: Error: @NoMetricBefore can't be used with Paramet
             .run()
             .expect(
                 """
-src/test/pkg/TestClass.java:9: Error: @NoMetricAfter can't be used with Parameterized test runner [NoMetricAfterWithParameterized]
+src/test/pkg/TestClass.kt:9: Error: @NoMetricAfter can't be used with Parameterized test runner [NoMetricAfterWithParameterized]
     @NoMetricAfter
     ~~~~~~~~~~~~~~
 1 errors, 0 warnings
@@ -208,41 +208,41 @@ src/test/pkg/TestClass.java:9: Error: @NoMetricAfter can't be used with Paramete
     }
 
     private val runWithStub: TestFile =
-        java(
+        kotlin(
             """
-        package org.junit.runner;
+        package org.junit.runner
 
-        public @interface RunWith {
-            Class<T> value();
-        }
+        annotation class RunWith(
+            val value: KClass
+        )
         """
         )
 
     private val microbenchmarkStub: TestFile =
-        java(
+        kotlin(
             """
-        package android.platform.test.microbenchmark;
+        package android.platform.test.microbenchmark
 
-        public class Microbenchmark {
-            public @interface NoMetricBefore {}
-            public @interface NoMetricAfter {}
+        class Microbenchmark {
+            annotation class NoMetricBefore
+            annotation class NoMetricAfter
         }
         """
         )
 
     private val functionalStub: TestFile =
-        java(
+        kotlin(
             """
-            package android.platform.test.microbenchmark;
-            public class Functional {}
+            package android.platform.test.microbenchmark
+            class Functional
 """
         )
 
     private val parameterizedStub: TestFile =
-        java(
+        kotlin(
             """
-            package org.junit.runners;
-            public class Parameterized {}
+            package org.junit.runners
+            public class Parameterized
 """
         )
 
