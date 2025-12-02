@@ -183,7 +183,7 @@ constructor(
                 viewModel.evaluateClockSize {
                     when {
                         viewModel.isNotificationStackActive -> ClockSize.SMALL
-                        viewModel.isMediaActive -> ClockSize.SMALL
+                        viewModel.isMediaVisible -> ClockSize.SMALL
                         else -> ClockSize.LARGE
                     }
                 }
@@ -230,7 +230,7 @@ constructor(
                 viewModel.evaluateClockSize {
                     when {
                         viewModel.shadeMode == ShadeMode.Dual -> ClockSize.LARGE
-                        viewModel.isMediaActive -> ClockSize.SMALL
+                        viewModel.isMediaVisible -> ClockSize.SMALL
                         else -> ClockSize.LARGE
                     }
                 }
