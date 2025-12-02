@@ -16,6 +16,9 @@
 
 package com.android.server.pm;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+import static android.os.Process.INVALID_UID;
+
 import android.annotation.AppIdInt;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -168,7 +171,7 @@ public class Installer extends SystemService {
     // Manually override previousAppId after building CreateAppDataArgs for specific behaviors.
     static CreateAppDataArgs buildCreateAppDataArgs(String uuid, String packageName,
             int userId, int flags, int appId, String seInfo, int targetSdkVersion,
-            boolean usesSdk) {
+            boolean usesSdk, int pccId) {
         final CreateAppDataArgs args = new CreateAppDataArgs();
         args.uuid = uuid;
         args.packageName = packageName;
@@ -180,6 +183,7 @@ public class Installer extends SystemService {
         args.appId = appId;
         args.seInfo = seInfo;
         args.targetSdkVersion = targetSdkVersion;
+        args.pccId = pccId;
         return args;
     }
 
@@ -214,6 +218,7 @@ public class Installer extends SystemService {
         }
         // Hardcode previousAppId to 0 to disable any data migration (http://b/221088088)
         args.previousAppId = 0;
+        args.previousPccId = enablePccFrameworkSupport() ? 0 : INVALID_UID;
         try {
             return mInstalld.createAppData(args);
         } catch (Exception e) {

@@ -457,17 +457,10 @@ public final class LoadedApk {
         return true;
     }
 
-    void setSdkSandboxStorage(@Nullable String sdkSandboxClientAppVolumeUuid,
-            String sdkSandboxClientAppPackage) {
-        int userId = UserHandle.myUserId();
-        mDeviceProtectedDataDirFile = Environment
-                .getDataMiscDeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
-                        sdkSandboxClientAppPackage)
-                .getAbsoluteFile();
-        mCredentialProtectedDataDirFile = Environment
-                .getDataMiscCeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
-                        sdkSandboxClientAppPackage)
-                .getAbsoluteFile();
+    private void setInternalDataDirFiles(File deviceProtectedDataDirFile,
+            File credentialProtectedDataDirFile) {
+        mDeviceProtectedDataDirFile = deviceProtectedDataDirFile;
+        mCredentialProtectedDataDirFile = credentialProtectedDataDirFile;
 
         if ((mApplicationInfo.privateFlags
                 & ApplicationInfo.PRIVATE_FLAG_DEFAULT_TO_DEVICE_PROTECTED_STORAGE) != 0
@@ -477,6 +470,39 @@ public final class LoadedApk {
             mDataDirFile = mCredentialProtectedDataDirFile;
         }
         mDataDir = mDataDirFile.getAbsolutePath();
+    }
+
+    void setSdkSandboxStorage(@Nullable String sdkSandboxClientAppVolumeUuid,
+            String sdkSandboxClientAppPackage) {
+        int userId = UserHandle.myUserId();
+        File deviceProtectedDataDirFile = Environment
+                .getDataMiscDeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
+                        sdkSandboxClientAppPackage)
+                .getAbsoluteFile();
+        File credentialProtectedDataDirFile = Environment
+                .getDataMiscCeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
+                        sdkSandboxClientAppPackage)
+                .getAbsoluteFile();
+
+        setInternalDataDirFiles(deviceProtectedDataDirFile, credentialProtectedDataDirFile);
+    }
+
+    /**
+     * Sets data directories tracking variables to point to the corresponding PCC directories.
+     */
+    void setPccStorageDirPaths() {
+
+        final String volumeUuid = mApplicationInfo.volumeUuid;
+        final int userId = UserHandle.myUserId();
+        final String packageName = mApplicationInfo.packageName;
+
+        File deviceProtectedDataDirFile =
+                Environment.getPccDataUserDePackageDirectory(volumeUuid, userId, packageName);
+        File credentialProtectedDataDirFile =
+                Environment.getPccDataUserCePackageDirectory(volumeUuid, userId, packageName);
+
+        setInternalDataDirFiles(deviceProtectedDataDirFile, credentialProtectedDataDirFile);
+        mApplicationInfo.dataDir = mDataDirFile.getAbsolutePath();
     }
 
     /**

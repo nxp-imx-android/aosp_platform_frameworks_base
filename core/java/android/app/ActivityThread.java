@@ -21,6 +21,7 @@ import static android.app.ConfigurationController.createNewConfigAndUpdateIfNotN
 import static android.app.Flags.skipBgMemTrimOnFgApp;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_CREATE;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_DESTROY;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_PAUSE;
@@ -7956,6 +7957,10 @@ public final class ActivityThread extends ClientTransactionHandler
         if (isSdkSandbox) {
             data.info.setSdkSandboxStorage(data.sdkSandboxClientAppVolumeUuid,
                     data.sdkSandboxClientAppPackage);
+        }
+
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(Process.myUid())) {
+            data.info.setPccStorageDirPaths();
         }
 
         if (agent != null) {
