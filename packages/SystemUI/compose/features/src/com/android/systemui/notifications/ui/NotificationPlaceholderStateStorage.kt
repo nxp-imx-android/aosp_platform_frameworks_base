@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.ui
 
 import com.android.compose.animation.scene.ContentKey
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
@@ -106,11 +107,28 @@ constructor(
         stackAlpha.remove(contentKey)
     }
 
+    /** Draw scale requested by the StackPlaceholder STL element. */
+    val stackScale: SynchronouslyObservableStateMap<ContentKey, Scale?, Scale> =
+        SynchronouslyObservableStateMap { contentKeyToValuesMap ->
+            stackPicker.pickValueFrom(contentKeyToValuesMap) ?: Scale.Default
+        }
+
+    /** Set a value for [stackScale] associated by the given [contentKey]. */
+    fun setStackScale(contentKey: ContentKey, value: Scale?) {
+        stackScale[contentKey] = value
+    }
+
+    /** Removes any stored [stackScale] value for the given [contentKey]. */
+    fun resetStackScale(contentKey: ContentKey) {
+        stackScale.remove(contentKey)
+    }
+
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("stackScrollTop: $stackScrollTop")
         pw.println("stackBounds: $stackBounds")
         pw.println("hunBounds: $hunBounds")
         pw.println("stackAlpha: $stackAlpha")
+        pw.println("stackScale: $stackScale")
     }
 }
 

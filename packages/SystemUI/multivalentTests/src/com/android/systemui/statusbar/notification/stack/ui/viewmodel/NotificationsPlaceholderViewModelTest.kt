@@ -16,8 +16,10 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import androidx.compose.ui.geometry.Offset
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
@@ -194,6 +196,40 @@ class NotificationsPlaceholderViewModelTest : SysuiTestCase() {
             shadeViewModel.resetStackAlpha()
             // Then: Observers get 1f again
             assertThat(stackAlpha).isEqualTo(1f)
+
+            disposable.dispose()
+        }
+
+    @Test
+    fun onStackScaleChanged_lockScreenPushback() =
+        kosmos.runTest {
+            var stackScale: Scale = Scale.Unspecified
+            val disposable =
+                kosmos.notificationScrollViewModel.stackPlaceholderScale.observe { value ->
+                    stackScale = value
+                }
+
+            // Given: Initial Scale is 1f with no Offset.
+            assertThat(stackScale).isEqualTo(Scale(1f, 1f))
+
+            // When: Lockscreen comes in
+            lockscreenViewModel.setStackScale(Scale(1f, 1f))
+            // Then: Scale is still 1f.
+            assertThat(stackScale).isEqualTo(Scale(1f, 1f))
+
+            // When: Lockscreen does the pushback effect
+            val pivot = Offset(10f, 50f)
+            lockscreenViewModel.setStackScale(Scale(.8f, .8f, pivot))
+            // Then: Scale is updated
+            assertThat(stackScale).isEqualTo(Scale(.8f, .8f, pivot))
+
+            lockscreenViewModel.setStackScale(Scale(.4f, .4f, pivot))
+            assertThat(stackScale).isEqualTo(Scale(.4f, .4f, pivot))
+
+            // When: Lockscreen is gone
+            lockscreenViewModel.resetStackScale()
+            // Then: Scale is default again.
+            assertThat(stackScale).isEqualTo(Scale(1f, 1f))
 
             disposable.dispose()
         }

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -111,6 +112,14 @@ constructor(
 
     fun resetStackAlpha() {
         placeholderStateStorage.resetStackAlpha(contentKey)
+    }
+
+    fun setStackScale(value: Scale?) {
+        placeholderStateStorage.setStackScale(contentKey, value)
+    }
+
+    fun resetStackScale() {
+        placeholderStateStorage.resetStackScale(contentKey)
     }
 
     private val hydrator = Hydrator("NotificationsPlaceholderViewModel")

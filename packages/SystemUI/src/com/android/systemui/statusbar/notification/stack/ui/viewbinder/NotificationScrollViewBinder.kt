@@ -17,9 +17,12 @@
 package com.android.systemui.statusbar.notification.stack.ui.viewbinder
 
 import android.util.Log
+import android.view.View
+import androidx.compose.ui.geometry.Offset
 import com.android.app.tracing.coroutines.flow.collectLatestTraced
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.onLayoutChanged
@@ -176,6 +179,13 @@ constructor(
                             view.setPlaceholderAlpha(alpha)
                         }
                     )
+                    register(
+                        viewModel.stackPlaceholderScale.observe { drawScale ->
+                            // Applying the scale directly on the View, because with SceneContainer,
+                            // this is the only place where NSSL's scale is modified.
+                            view.asView().setDrawScale(drawScale)
+                        }
+                    )
                 }
             }
         }
@@ -187,4 +197,16 @@ constructor(
     /** flow of the scrim clipping radius */
     private val scrimRadius: Flow<Int>
         get() = configuration.getDimensionPixelOffset(R.dimen.notification_scrim_corner_radius)
+}
+
+/** Set an STL [Scale] on a regular [View]. */
+private fun View.setDrawScale(drawScale: Scale) {
+    scaleX = drawScale.scaleX
+    scaleY = drawScale.scaleY
+    if (drawScale.pivot != Offset.Unspecified) {
+        pivotX = drawScale.pivot.x
+        pivotY = drawScale.pivot.y
+    } else if (isPivotSet) {
+        resetPivot()
+    }
 }

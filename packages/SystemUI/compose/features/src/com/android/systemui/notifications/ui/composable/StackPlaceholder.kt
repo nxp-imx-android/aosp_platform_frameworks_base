@@ -72,9 +72,11 @@ internal fun ContentScope.StackPlaceholder(
                     debugLog(viewModel) { "$tag.STACK onUnplaced" }
                     viewModel.resetStackScrollTop()
                     viewModel.resetStackAlpha()
+                    viewModel.resetStackScale()
                 }
                 .drawBehind {
                     viewModel.setStackAlpha(Elements.StackPlaceholder.currentAlpha())
+                    viewModel.setStackScale(Elements.StackPlaceholder.currentScale())
                 }
     ) {
         if (viewModel.isVisualDebuggingEnabled) {
