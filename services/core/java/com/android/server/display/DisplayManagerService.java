@@ -629,6 +629,9 @@ public final class DisplayManagerService extends SystemService {
     @Nullable
     private final DisplayTopologyCoordinator mDisplayTopologyCoordinator;
 
+    @NonNull
+    private final SecondaryDisplayPolicy mSecondaryDisplayPolicy;
+
     /**
      * Applications use {@link android.view.Display#getRefreshRate} and
      * {@link android.view.Display.Mode#getRefreshRate} to know what is the display refresh rate.
@@ -731,6 +734,8 @@ public final class DisplayManagerService extends SystemService {
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
         mPluginManager = new PluginManager(mContext, mFlags);
+        mSecondaryDisplayPolicy =
+                new SecondaryDisplayPolicy(mContext, () -> mInjector.canEnterDesktopMode(mContext));
     }
 
     public void setupSchedulerPolicies() {
@@ -953,6 +958,8 @@ public final class DisplayManagerService extends SystemService {
         mSmallAreaDetectionController = SmallAreaDetectionController.create(mContext);
 
         scheduleTopologiesReload(mCurrentUserId, /*isUserSwitching=*/ false);
+
+        mSecondaryDisplayPolicy.forceEnableMirrorBuiltInDisplaySettingIfNeeded();
     }
 
     @VisibleForTesting
@@ -1273,6 +1280,9 @@ public final class DisplayManagerService extends SystemService {
             }
 
             if (Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY).equals(uri)) {
+                if (mSecondaryDisplayPolicy.forceEnableMirrorBuiltInDisplaySettingIfNeeded()) {
+                    return;
+                }
                 synchronized (mSyncRoot) {
                     if (mFlags.isDisplayContentModeManagementEnabled()) {
                         if (updateMirrorBuiltInDisplaySettingLocked(
@@ -4230,6 +4240,10 @@ public final class DisplayManagerService extends SystemService {
             return DesktopModeHelper.isDesktopModeSupportedOnInternalDisplay(context);
         }
 
+        boolean canEnterDesktopMode(Context context) {
+            return DesktopModeHelper.canEnterDesktopMode(context);
+        }
+
         PersistentDataStore getPersistentDataStore() {
             return new PersistentDataStore();
         }
@@ -4400,7 +4414,10 @@ public final class DisplayManagerService extends SystemService {
                 return DEFAULT_CONNECTION_PREFERENCE;
             }
 
-            return mPersistentDataStore.getConnectionPreference(displayDevice);
+            int persistedConnectionPreference =
+                    mPersistentDataStore.getConnectionPreference(displayDevice);
+            return mSecondaryDisplayPolicy.getPolicyAwareConnectionPreference(
+                    persistedConnectionPreference);
         }
     }
 

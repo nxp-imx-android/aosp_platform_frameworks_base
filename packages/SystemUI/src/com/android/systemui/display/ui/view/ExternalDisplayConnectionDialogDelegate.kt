@@ -50,6 +50,7 @@ class ExternalDisplayConnectionDialogDelegate
 constructor(
     @Application private val context: Context,
     @Assisted("showConcurrentDisplayInfo") private val showConcurrentDisplayInfo: Boolean = false,
+    @Assisted("isDesktopModeSupported") private val isDesktopModeSupported: Boolean = true,
     @Assisted("isInKioskMode") private val isInKioskMode: Boolean = false,
     @Assisted private val rememberChoiceCheckBoxListener: CompoundButton.OnCheckedChangeListener,
     @Assisted("onStartDesktop") private val onStartDesktopClickListener: View.OnClickListener,
@@ -83,7 +84,7 @@ constructor(
 
         desktopButton =
             dialog.requireViewById<Button>(R.id.start_desktop_mode).apply {
-                if (isInKioskMode) {
+                if (isInKioskMode || !isDesktopModeSupported) {
                     visibility = View.GONE
                 } else {
                     visibility = View.VISIBLE
@@ -170,6 +171,7 @@ constructor(
     interface Factory {
         fun create(
             @Assisted("showConcurrentDisplayInfo") showConcurrentDisplayInfo: Boolean,
+            @Assisted("isDesktopModeSupported") isDesktopModeSupported: Boolean,
             @Assisted("isInKioskMode") isInKioskMode: Boolean,
             rememberChoiceCheckBoxListener: CompoundButton.OnCheckedChangeListener,
             @Assisted("onStartDesktop") onStartDesktopClickListener: View.OnClickListener,
