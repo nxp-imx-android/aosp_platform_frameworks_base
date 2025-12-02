@@ -24,6 +24,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -100,6 +101,9 @@ constructor(
      * one is considered the committed/current scene.
      */
     val currentScene: StateFlow<SceneKey> = repository.currentScene
+
+    val currentSceneAsState: SceneKey
+        get() = repository.currentSceneAsState
 
     /**
      * The current set of overlays to be shown (may be empty).
@@ -535,6 +539,10 @@ constructor(
      */
     fun resolveSceneFamilyOrNull(sceneKey: SceneKey): StateFlow<SceneKey>? =
         sceneFamilyResolvers.get()[sceneKey]?.resolvedScene
+
+    fun startTransitionImmediately(transition: TransitionState.Transition) {
+        repository.startTransitionImmediately(transition)
+    }
 
     private fun isVisibleInternal(
         raw: Boolean = repository.isVisible.value,
