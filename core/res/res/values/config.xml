@@ -7915,4 +7915,7 @@
     <!-- The number of overuses a package has to exceed for TV watchdog to attribute
          recurring overuse. -->
     <integer name="config_tvWatchdogRecurringOveruseTimes">3</integer>
+
+     <!-- Whether to enable app launch blur -->
+    <bool name="config_enableAppLaunchBlur">true</bool>
 </resources>
