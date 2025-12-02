@@ -44,6 +44,7 @@ public class DefaultSurfaceAnimator implements Runnable {
     private final Choreographer mChoreographer = Choreographer.getInstance();
     private SurfaceControl.Transaction mTransaction;
     private boolean mScheduled;
+    private long mLastAppliedVsyncId;
     private int mNumRunningAnimations;
 
     private DefaultSurfaceAnimator() {
@@ -59,7 +60,8 @@ public class DefaultSurfaceAnimator implements Runnable {
     @Override
     public void run() {
         mScheduled = false;
-        mTransaction.setFrameTimelineVsync(mChoreographer.getVsyncId());
+        mLastAppliedVsyncId = mChoreographer.getVsyncId();
+        mTransaction.setFrameTimelineVsync(mLastAppliedVsyncId);
         mTransaction.apply();
     }
 
@@ -78,6 +80,12 @@ public class DefaultSurfaceAnimator implements Runnable {
         final DefaultSurfaceAnimator animator = animation.mSurfaceAnimator;
         animator.mNumRunningAnimations--;
         if (animator.mScheduled || animator.mNumRunningAnimations > 0) {
+            // In case Animation#end is called between the applied frame and the next frame, the
+            // transaction of end animation should be applied before the finish transaction of
+            // transition. Otherwise, the real end state of transition may be overwritten.
+            if (animator.mLastAppliedVsyncId == animator.mChoreographer.getVsyncId()) {
+                animator.mTransaction.apply();
+            }
             return;
         }
         animation.mTransactionPool.release(animator.mTransaction);
