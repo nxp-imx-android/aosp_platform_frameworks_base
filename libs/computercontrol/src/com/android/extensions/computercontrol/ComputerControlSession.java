@@ -16,9 +16,6 @@
 
 package com.android.extensions.computercontrol;
 
-import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
-
 import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
@@ -41,7 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +55,8 @@ import java.util.concurrent.Executor;
  * resources and reduce the system-wide impact computer control sessions can have.</p>
  */
 public final class ComputerControlSession implements AutoCloseable {
+    private static final long DEFAULT_STABILITY_TIMEOUT_MS = 500L;
+
     private final android.companion.virtual.computercontrol.ComputerControlSession mSession;
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -195,12 +194,28 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void setStabilityListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull StabilityListener listener) {
-        mSession.setStabilityListener(executor, listener::onSessionStable);
+        setStabilityListener(Duration.ofMillis(DEFAULT_STABILITY_TIMEOUT_MS), executor, listener);
+    }
+
+    /**
+     * Sets a {@link StabilityListener} to be notified when the computer control session is
+     * potentially stable.
+     *
+     * @param duration {@link Duration} after which the session would be considered stable, upon any
+     *                                 action or any framework event
+     * @param executor {@link Executor} on which this listener would be invoked
+     * @param listener {@link StabilityListener} which would be invoked
+     *
+     * @throws IllegalStateException if a listener was previously set.
+     */
+    public void setStabilityListener(@NonNull Duration duration,
+            @NonNull @CallbackExecutor Executor executor, @NonNull StabilityListener listener) {
+        mSession.setStabilityListener(duration, executor, listener::onSessionStable);
     }
 
     /**
      * Clears any {@link StabilityListener} that was previously set using
-     * {@link #setStabilityListener(Executor, StabilityListener)}.
+     * {@link #setStabilityListener(Duration, Executor, StabilityListener)}.
      */
     public void clearStabilityListener() {
         mSession.clearStabilityListener();
@@ -345,7 +360,7 @@ public final class ComputerControlSession implements AutoCloseable {
         public static class Builder {
             @NonNull private final Context mContext;
             private String mName;
-            private List<String> mTargetPackageNames = emptyList();
+            private List<String> mTargetPackageNames = Collections.emptyList();
             private PendingIntent mPreviewIntent;
 
             /**
