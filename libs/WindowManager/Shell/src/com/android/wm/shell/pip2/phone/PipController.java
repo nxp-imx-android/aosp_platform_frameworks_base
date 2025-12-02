@@ -333,7 +333,8 @@ public class PipController implements ConfigurationChangeListener,
                         || isPipLaunchingOnDifferentDisplay) {
                     return;
                 }
-                mPipScheduler.scheduleExitPipViaExpand(wasVisible);
+                mPipScheduler.scheduleExitPipViaExpand(wasVisible,
+                        mPipDisplayLayoutState.getDisplayId());
             }
         });
 
