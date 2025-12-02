@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
+import com.android.settingslib.metadata.apifirst.category.Category
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +34,7 @@ import kotlin.reflect.KClass
  */
 abstract class ApiFirstPreferenceScreen(
     override val key: String,
-    val topLevelSettingsCategory: String,
+    val topLevelSettingsCategory: Category,
     val fragment: KClass<out Fragment>,
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
