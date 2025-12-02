@@ -39,8 +39,9 @@ oneway interface IScanListener {
      * Notify the scan completion.
      *
      * @param @ScanConstants.ScanResult.SUCCESS/FAILED/CANCEL/BUSY depending on the scan result.
+     * @param optionInfo optional bundle to pass in extra information, null if not needed.
      */
-    void onScanCompleted(int scanResult);
+    void onScanCompleted(int scanResult, in Bundle optionInfo);
     /**
      * Notify that the temporaily held channel list is stored.
      *
