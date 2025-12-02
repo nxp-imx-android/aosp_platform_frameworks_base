@@ -3214,9 +3214,9 @@ class Task extends TaskFragment {
         mWmService.mSnapshotController.notifySnapshotChanged(mTaskId, snapshot);
     }
 
-    void onSnapshotInvalidated() {
+    void onSnapshotReleased() {
         // No local listener.
-        mWmService.mSnapshotController.notifySnapshotInvalidate(mTaskId);
+        mWmService.mSnapshotController.notifySnapshotReleased(mTaskId);
     }
 
 
