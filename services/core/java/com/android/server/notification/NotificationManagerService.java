@@ -57,6 +57,7 @@ import static android.app.NotificationChannel.OLD_CONVERSATION_CHANNEL_ID_FORMAT
 import static android.app.NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
 import static android.app.NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED;
+import static android.app.NotificationManager.ACTION_DYNAMIC_BUNDLE_MODIFIED;
 import static android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED;
 import static android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED_INTERNAL;
 import static android.app.NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED;
@@ -65,8 +66,12 @@ import static android.app.NotificationManager.ACTION_NOTIFICATION_LISTENER_ENABL
 import static android.app.NotificationManager.ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED;
 import static android.app.NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
+import static android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED;
+import static android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED;
 import static android.app.NotificationManager.EXTRA_AUTOMATIC_ZEN_RULE_ID;
 import static android.app.NotificationManager.EXTRA_AUTOMATIC_ZEN_RULE_STATUS;
+import static android.app.NotificationManager.EXTRA_DYNAMIC_BUNDLE;
+import static android.app.NotificationManager.EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE;
 import static android.app.NotificationManager.EXTRA_NOTIFICATION_POLICY;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
@@ -7292,13 +7297,21 @@ public class NotificationManagerService extends SystemService {
                         mAssistants.checkServiceTokenLocked(token);
                     }
                 }
-                boolean existed = mAssistants.deleteDynamicBundle(
+                DynamicBundle existed = mAssistants.deleteDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId);
-                if (existed) {
+                if (existed != null) {
                     setAssistantClassificationTypeState(dynamicBundleId, false);
 
                     // TODO (b/452679429): Add event log?
                     handleSavePolicyFile();
+                    // TODO (b/452679429): Handle multiuser
+                    getContext().sendBroadcastAsUser(
+                            new Intent(ACTION_DYNAMIC_BUNDLE_MODIFIED)
+                                    .putExtra(EXTRA_DYNAMIC_BUNDLE, existed)
+                                    .putExtra(EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE,
+                                            DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED)
+                                    .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
+                            UserHandle.ALL, STATUS_BAR_SERVICE);
                 }
             } finally {
                 Binder.restoreCallingIdentity(identity);
@@ -7326,13 +7339,21 @@ public class NotificationManagerService extends SystemService {
                         mAssistants.checkServiceTokenLocked(token);
                     }
                 }
-                boolean created = mAssistants.createDynamicBundle(
+                DynamicBundle created = mAssistants.createDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(),
                         dynamicBundleType,
                         bundleName);
-                if (created) {
+                if (created != null) {
                     // TODO (b/452679429): Add event log?
                     handleSavePolicyFile();
+                    // TODO (b/452679429): Handle multiuser
+                    getContext().sendBroadcastAsUser(
+                            new Intent(ACTION_DYNAMIC_BUNDLE_MODIFIED)
+                                    .putExtra(EXTRA_DYNAMIC_BUNDLE, created)
+                                    .putExtra(EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE,
+                                            DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED)
+                                    .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
+                            UserHandle.ALL, STATUS_BAR_SERVICE);
                 }
             } finally {
                 Binder.restoreCallingIdentity(identity);
@@ -13111,22 +13132,24 @@ public class NotificationManagerService extends SystemService {
             return out;
         }
 
-        protected boolean deleteDynamicBundle(@UserIdInt int userId, int dynamicBundleType) {
+        protected DynamicBundle deleteDynamicBundle(@UserIdInt int userId, int dynamicBundleType) {
             if (!android.app.Flags.nmContextualDisplay()) {
-                return false;
+                return null;
             }
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
             synchronized (mLock) {
-                return mDynamicBundleMap.containsKey(userId)
-                        && mDynamicBundleMap.get(userId).remove(dynamicBundleType) != null;
+                if (mDynamicBundleMap.containsKey(userId)) {
+                    return mDynamicBundleMap.get(userId).remove(dynamicBundleType);
+                }
+                return null;
             }
         }
 
-        protected boolean createDynamicBundle(@UserIdInt int userId, int dynamicBundleType,
+        protected DynamicBundle createDynamicBundle(@UserIdInt int userId, int dynamicBundleType,
                 String bundleName) {
             if (!android.app.Flags.nmContextualDisplay()) {
-                return false;
+                return null;
             }
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
@@ -13134,13 +13157,13 @@ public class NotificationManagerService extends SystemService {
                 mDynamicBundleMap.putIfAbsent(userId, new ArrayMap<>());
                 DynamicBundle db = new DynamicBundle(dynamicBundleType, bundleName);
                 if (mDynamicBundleMap.get(userId).containsKey(dynamicBundleType)) {
-                    return false;
+                    return null;
                 }
                 if (mDynamicBundleMap.get(userId).put(dynamicBundleType, db) == null) {
                     setAdjustmentTypeSupportedState(userId, KEY_TYPE, true);
                     setAssistantClassificationTypeState(userId, dynamicBundleType, true);
                 }
-                return true;
+                return db;
             }
         }
 

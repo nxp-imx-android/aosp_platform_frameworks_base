@@ -18,9 +18,11 @@ package com.android.systemui.statusbar.notification.collection
 
 import android.app.NotificationChannel
 import android.service.notification.Adjustment
+import android.service.notification.DynamicBundle
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.internal.R
+import com.android.systemui.statusbar.notification.stack.BUCKET_DYNAMIC_BUNDLE
 import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
 import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
@@ -78,5 +80,19 @@ data class BundleSpec(
                 bucket = BUCKET_RECS,
                 bundleType = Adjustment.TYPE_CONTENT_RECOMMENDATION,
             )
+
+        fun fromDynamicBundle(dynamicBundle: DynamicBundle): BundleSpec {
+            return BundleSpec(
+                key =
+                    NotificationChannel.getChannelIdForBundleType(
+                        dynamicBundle.dynamicBundleType
+                    )!!,
+                titleText = R.string.promotional_notification_channel_label,
+                summaryText = dynamicBundle.bundleName,
+                icon = com.android.settingslib.R.drawable.ic_dynamic_bundle,
+                bucket = BUCKET_DYNAMIC_BUNDLE,
+                bundleType = dynamicBundle.dynamicBundleType,
+            )
+        }
     }
 }

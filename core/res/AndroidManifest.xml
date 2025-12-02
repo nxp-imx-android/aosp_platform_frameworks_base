@@ -862,6 +862,9 @@
     <!-- Added in 26Q2 -->
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
 
+    <!-- Added in 26Q4 -->
+    <protected-broadcast android:name="android.app.action.DYNAMIC_BUNDLE_MODIFIED" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
