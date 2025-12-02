@@ -23,10 +23,14 @@ import android.graphics.Rect
 import android.view.Gravity
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.DesktopModeCompatUtils.applyLayoutGravity
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.BottomLeft
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.BottomRight
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.Center
+import com.android.wm.shell.desktopmode.DesktopTaskPosition.LeftSnapped
+import com.android.wm.shell.desktopmode.DesktopTaskPosition.Maximized
+import com.android.wm.shell.desktopmode.DesktopTaskPosition.RightSnapped
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.TopLeft
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.TopRight
 
@@ -73,6 +77,27 @@ sealed class DesktopTaskPosition {
         override fun next(): DesktopTaskPosition = Center
     }
 
+    data object Maximized : DesktopTaskPosition() {
+        override fun getTopLeftCoordinates(frame: Rect, window: Rect): Point =
+            Point(frame.left, frame.top)
+
+        override fun next(): DesktopTaskPosition = Center
+    }
+
+    data object LeftSnapped : DesktopTaskPosition() {
+        override fun getTopLeftCoordinates(frame: Rect, window: Rect): Point =
+            Point(frame.left, frame.top)
+
+        override fun next(): DesktopTaskPosition = Center
+    }
+
+    data object RightSnapped : DesktopTaskPosition() {
+        override fun getTopLeftCoordinates(frame: Rect, window: Rect): Point =
+            Point(frame.right - window.width(), frame.top)
+
+        override fun next(): DesktopTaskPosition = Center
+    }
+
     /**
      * Returns the top left coordinates for the window to be placed in the given DesktopTaskPosition
      * in the frame.
@@ -100,6 +125,15 @@ fun applyLayoutGravityIfNeeded(taskInfo: TaskInfo, bounds: Rect, stableBounds: R
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 fun Rect.getDesktopTaskPosition(bounds: Rect): DesktopTaskPosition {
     return when {
+        Flags.enableRememberedBounds() && this == bounds -> Maximized
+        Flags.enableRememberedBounds() &&
+            left == bounds.left &&
+            height() == bounds.height() &&
+            top == bounds.top -> LeftSnapped
+        Flags.enableRememberedBounds() &&
+            right == bounds.right &&
+            height() == bounds.height() &&
+            top == bounds.top -> RightSnapped
         top == bounds.top && left == bounds.left && bottom != bounds.bottom -> TopLeft
         top == bounds.top && right == bounds.right && bottom != bounds.bottom -> TopRight
         bottom == bounds.bottom && left == bounds.left && top != bounds.top -> BottomLeft
@@ -108,7 +142,17 @@ fun Rect.getDesktopTaskPosition(bounds: Rect): DesktopTaskPosition {
     }
 }
 
-internal fun cascadeWindow(res: Resources, frame: Rect, prev: Rect, dest: Rect) {
+internal fun cascadeWindow(
+    res: Resources,
+    frame: Rect,
+    prev: Rect,
+    dest: Rect,
+    isRememberedBounds: Boolean,
+) {
+    if (Flags.enableRememberedBounds() && isRememberedBounds) {
+        cascadeWindowForRememberedBounds(res, frame, prev, dest)
+        return
+    }
     val candidateBounds = Rect(dest)
     val lastPos = frame.getDesktopTaskPosition(prev)
     var destCoord = Center.getTopLeftCoordinates(frame, candidateBounds)
@@ -119,6 +163,22 @@ internal fun cascadeWindow(res: Resources, frame: Rect, prev: Rect, dest: Rect) 
         val nextCascadingPos = lastPos.next()
         destCoord = nextCascadingPos.getTopLeftCoordinates(frame, dest)
     }
+    dest.offsetTo(destCoord.x, destCoord.y)
+}
+
+fun cascadeWindowForRememberedBounds(res: Resources, frame: Rect, prev: Rect, dest: Rect) {
+    val candidatePos = frame.getDesktopTaskPosition(dest)
+    if (candidatePos == Maximized || candidatePos == LeftSnapped || candidatePos == RightSnapped) {
+        // No need to cascade if the destination bounds is maximized or snapped.
+        return
+    }
+    if (prevBoundsMovedAboveThreshold(res, prev, dest)) {
+        // No need to cascade if the destination bounds have moved significantly.
+        return
+    }
+    val lastPos = frame.getDesktopTaskPosition(prev)
+    val nextCascadingPos = lastPos.next()
+    val destCoord = nextCascadingPos.getTopLeftCoordinates(frame, dest)
     dest.offsetTo(destCoord.x, destCoord.y)
 }
 
