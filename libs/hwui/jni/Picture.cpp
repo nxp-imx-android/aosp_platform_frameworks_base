@@ -107,7 +107,7 @@ Picture* Picture::CreateFromStream(SkStream* stream) {
 
 void Picture::serialize(SkWStream* stream) const {
     SkSerialProcs procs;
-    procs.fImageProc = [](SkImage* img, void*) -> sk_sp<SkData> {
+    procs.fImageProc = [](SkImage* img, void*) -> SkSerialReturnType {
         // TODO when migrating to Graphite, readback won't work, so we will only be
         // able to serialize raster-backed or lazy images. It is unclear if this
         // is an actual problem, so probably adding an assert like the !isTextureBacked()
