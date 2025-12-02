@@ -3068,7 +3068,7 @@ class ContextImpl extends Context {
     private void setDisplay(Display display) {
         mDisplay = display;
         if (display != null) {
-            updateDeviceIdIfChanged(display.getDisplayId());
+            updateDeviceIdIfChanged(display);
         }
         updateResourceOverlayConstraints();
     }
@@ -3349,10 +3349,12 @@ class ContextImpl extends Context {
         }
     }
 
-    private void updateDeviceIdIfChanged(int displayId) {
+    private void updateDeviceIdIfChanged(Display display) {
         if (mIsExplicitDeviceId) {
             return;
         }
+
+        int displayId = display.getDisplayId();
 
         if ((displayId == Display.DEFAULT_DISPLAY || displayId == Display.INVALID_DISPLAY)
                 && mDeviceId == DEVICE_ID_DEFAULT) {
@@ -3361,15 +3363,19 @@ class ContextImpl extends Context {
             return;
         }
 
-        VirtualDeviceManager vdm = getSystemService(VirtualDeviceManager.class);
-        if (vdm != null) {
-            int deviceId = vdm.getDeviceIdForDisplayId(displayId);
-            if (deviceId != mDeviceId) {
-                mDeviceId = deviceId;
-                mAttributionSource =
-                        createAttributionSourceWithDeviceId(mAttributionSource, mDeviceId);
-                notifyOnDeviceChangedListeners(mDeviceId);
+        int deviceId = DEVICE_ID_DEFAULT;
+        if (display.getType() == Display.TYPE_VIRTUAL) {
+            VirtualDeviceManager vdm = getSystemService(VirtualDeviceManager.class);
+            if (vdm != null) {
+                deviceId = vdm.getDeviceIdForDisplayId(displayId);
             }
+        }
+
+        if (deviceId != mDeviceId) {
+            mDeviceId = deviceId;
+            mAttributionSource =
+                    createAttributionSourceWithDeviceId(mAttributionSource, mDeviceId);
+            notifyOnDeviceChangedListeners(mDeviceId);
         }
     }
 
