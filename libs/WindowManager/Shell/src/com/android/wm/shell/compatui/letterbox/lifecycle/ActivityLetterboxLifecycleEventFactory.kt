@@ -66,6 +66,7 @@ class ActivityLetterboxLifecycleEventFactory(
                 containerToken = taskItem.containerToken,
                 isTranslucent = change.isTranslucent(),
                 supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change),
+                mainWindowHasRoundedCorners = change.mainWindowHasRoundedCorners(),
             )
         }
         ProtoLog.w(WM_SHELL_APP_COMPAT, "$TAG: Task not found for taskId: $taskId")

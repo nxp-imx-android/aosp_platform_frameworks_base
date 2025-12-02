@@ -63,6 +63,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                 // are created.
                 letterboxTaskInfoRepository.updateConfiguration(ti, change.leash)
             }
+            val mainWindowHasRoundedCorners = change.mainWindowHasRoundedCorners()
             if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
                 // Because the [TransitionObserver] is invoked before the [OnTaskAppearedListener]s
                 // it's important to store the information about the Task to be reused below for the
@@ -94,6 +95,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                         isBubble = ti.isAppBubble,
                         isTranslucent = change.isTranslucent(),
                         supportsInput = shouldSupportInput,
+                        mainWindowHasRoundedCorners = mainWindowHasRoundedCorners,
                     )
                 }
             } else {
@@ -109,6 +111,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                     isBubble = ti.isAppBubble,
                     isTranslucent = change.isTranslucent(),
                     supportsInput = shouldSupportInput,
+                    mainWindowHasRoundedCorners = mainWindowHasRoundedCorners,
                 )
             }
         }
