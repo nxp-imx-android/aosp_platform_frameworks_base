@@ -27,7 +27,7 @@ use libactivity_manager_procstate_aidl::aidl::android::app::ProcessStateEnum::Pr
 use native_activity_thread_bindgen::{
     ANativeService, ANativeServiceCallbacks,
     ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND,
-    ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_UI_HIDDEN, ANativeService_createFunc,
+    ANativeService_createFunc,
 };
 use std::{collections::BTreeMap, ffi::CString};
 
@@ -266,13 +266,8 @@ impl NativeActivityThread {
 
     fn handle_trim_memory_request(&mut self, level: i32) -> Result<()> {
         atrace::trace_method!(AtraceTag::ActivityManager);
-        if level != ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
-            && level != ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_UI_HIDDEN
-        {
-            bail!("Received an unexpected level: {}", level);
-        }
         if self.process_state <= ProcessStateEnum::IMPORTANT_FOREGROUND.0
-            && level == ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
+            && level >= ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
         {
             return Ok(());
         }

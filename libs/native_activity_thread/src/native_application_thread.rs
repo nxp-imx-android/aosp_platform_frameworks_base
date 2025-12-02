@@ -203,7 +203,7 @@ impl INativeApplicationThread for NativeApplicationThread {
     }
 
     fn scheduleTrimMemory(&self, level: i32) -> binder::Result<()> {
-        info!("scheduleLowMemory thread id={:?}", thread::current().id());
+        info!("scheduleTrimMemory thread id={:?}", thread::current().id());
         self.sender.send(NativeApplicationThreadRequest::TrimMemory(level)).map_err(|e| {
             binder::Status::new_exception_str(
                 binder::ExceptionCode::SERVICE_SPECIFIC,
