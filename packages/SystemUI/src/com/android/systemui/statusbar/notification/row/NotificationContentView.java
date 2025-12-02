@@ -1296,7 +1296,8 @@ public class NotificationContentView extends FrameLayout implements Notification
         return getVisualTypeForHeight(viewHeight);
     }
 
-    private int getVisualTypeForHeight(float viewHeight) {
+    @VisibleForTesting
+    public int getVisualTypeForHeight(float viewHeight) {
         boolean noExpandedChild = mExpandedChild == null;
         if (!noExpandedChild && viewHeight == getViewHeight(VISIBLE_TYPE_EXPANDED)) {
             return VISIBLE_TYPE_EXPANDED;
