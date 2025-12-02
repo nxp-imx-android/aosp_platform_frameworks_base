@@ -1816,7 +1816,9 @@ constructor(
             onAnimationFinished: () -> Unit,
         ) {
             impl.onAnimationStart(
-                resolveAnimatedSurface = { resolveAnimatedSurface(info) },
+                resolveAnimatedSurface = {
+                    resolveAnimatedSurface(info, transaction = startTransaction)
+                },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1830,7 +1832,7 @@ constructor(
             states: Array<out WindowAnimationState>,
         ) {
             impl.takeOverAnimation(
-                resolveAnimatedSurface = { resolveAnimatedSurface(info, states) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(info, states, startTransaction) },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1841,10 +1843,14 @@ constructor(
         /**
          * Extracts the [TransitionInfo.Change] representing the window to animate and its state
          * from [info] and [startWindowStates], and wraps them in an [AnimatedSurface] object.
+         *
+         * If the controller is closing and the transition is an opening type, also makes the
+         * opening windows visible.
          */
         private fun resolveAnimatedSurface(
             info: TransitionInfo?,
             startWindowStates: Array<out WindowAnimationState>? = null,
+            transaction: SurfaceControl.Transaction,
         ): AnimatedSurface? {
             if (info == null) {
                 return null
@@ -1867,6 +1873,15 @@ constructor(
             var state: WindowAnimationState? = null
 
             for ((index, it) in info.changes.withIndex()) {
+                if (
+                    !controller.isLaunching &&
+                        TransitionUtil.isOpeningType(info.type) &&
+                        TransitionUtil.isOpeningMode(it.mode)
+                ) {
+                    transaction.setAlpha(it.leash, 1f)
+                    continue
+                }
+
                 if (targetModes.contains(it.mode)) {
                     // If the controller contains a cookie, _only_ match if either the candidate
                     // contains the matching cookie, or a component is also defined and is a
