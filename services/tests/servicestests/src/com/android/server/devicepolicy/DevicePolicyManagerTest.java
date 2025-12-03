@@ -139,9 +139,9 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -5182,32 +5182,67 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(dpm.getLockTaskFeatures(admin1)).isEqualTo(flags);
     }
 
+    private int getMockedUidFromLocalPackageManager() {
+        String testPackageName = mContext.getPackageName();
+        int currentProcessUserId = UserHandle.getUserId(Process.myUid());
+        int appIdFromMockState;
+
+        try (var snapshot = dpms.mMockInjector.getPackageManagerLocal().withUnfilteredSnapshot()) {
+            appIdFromMockState = snapshot.getPackageStates()
+                    .get(testPackageName)
+                    .getAppId();
+        }
+        int uidExpectedByMock = UserHandle.getUid(currentProcessUserId, appIdFromMockState);
+        return uidExpectedByMock;
+    }
+
     @Test
-    public void testIsDeviceManaged() throws Exception {
+    public void isDeviceManaged_withDeviceOwner_fromSystemUser_returnsTrue() throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
         setupDeviceOwner();
-
-        // The device owner itself, any uid holding MANAGE_USERS permission and the system can
-        // find out that the device has a device owner.
         assertThat(dpm.isDeviceManaged()).isTrue();
-        mContext.binder.callingUid = 1234567;
-        mContext.callerPermissions.add(permission.MANAGE_USERS);
-        assertThat(dpm.isDeviceManaged()).isTrue();
-        mContext.callerPermissions.remove(permission.MANAGE_USERS);
-        mContext.binder.clearCallingIdentity();
-        assertThat(dpm.isDeviceManaged()).isTrue();
-
-        clearDeviceOwner();
-
-        // Any uid holding MANAGE_USERS permission and the system can find out that the device does
-        // not have a device owner.
-        mContext.binder.callingUid = 1234567;
-        mContext.callerPermissions.add(permission.MANAGE_USERS);
-        assertThat(dpm.isDeviceManaged()).isFalse();
-        mContext.callerPermissions.remove(permission.MANAGE_USERS);
-        mContext.binder.clearCallingIdentity();
-        assertThat(dpm.isDeviceManaged()).isFalse();
     }
+
+    @Test
+    public void isDeviceManaged_withDeviceOwner_withPermission_returnsTrue() throws Exception {
+        mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
+        setupDeviceOwner();
+        int mockedUid = getMockedUidFromLocalPackageManager();
+        mContext.binder.callingUid = mockedUid;
+        mContext.binder.callingPermissions
+                .computeIfAbsent(mockedUid, k -> new ArrayList<>())
+                .add(permission.MANAGE_USERS);
+
+        assertThat(dpm.isDeviceManaged()).isTrue();
+        mContext.binder.callingPermissions.remove(mockedUid);
+    }
+
+    @Test
+    public void isDeviceManaged_withDeviceOwner_withoutPermission_returnsTrue() throws Exception {
+        mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
+        setupDeviceOwner();
+        mContext.binder.callingUid = getMockedUidFromLocalPackageManager();
+        assertThat(dpm.isDeviceManaged()).isTrue();
+    }
+
+    @Test
+    public void isDeviceManaged_withoutDeviceOwner_withPermission_returnsFalse() {
+        int mockedUid = getMockedUidFromLocalPackageManager();
+        mContext.binder.callingUid = mockedUid;
+        mContext.binder.callingPermissions
+                .computeIfAbsent(mockedUid, k -> new ArrayList<>())
+                .add(permission.MANAGE_USERS);
+
+        assertThat(dpm.isDeviceManaged()).isFalse();
+        mContext.binder.callingPermissions.remove(mockedUid);
+    }
+
+    @Test
+    public void isDeviceManaged_withoutDeviceOwner_without_throwsSecurityException() {
+        mContext.binder.callingUid = getMockedUidFromLocalPackageManager();
+        assertThrows(SecurityException.class, () -> dpm.isDeviceManaged());
+    }
+
 
     @Test
     public void testDeviceOwnerOrganizationName() throws Exception {
