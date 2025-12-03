@@ -82,6 +82,7 @@ import com.android.wm.shell.transition.Transitions.TransitionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -1253,7 +1254,11 @@ public class BubbleTransitions {
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             final Rect bounds = new Rect();
             mPositioner.getTaskViewRestBounds(bounds);
-            wct.setBounds(mBubbleController.getAppBubbleRootTaskToken(), bounds);
+            final WindowContainerToken bubbleRootTask =
+                    Objects.requireNonNull(mBubbleHelper.getAppBubbleRootTaskToken());
+            wct.setBounds(bubbleRootTask, bounds);
+            wct.setAlwaysOnTop(bubbleRootTask, true);
+
             BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds " + bounds);
             return wct;
         }
