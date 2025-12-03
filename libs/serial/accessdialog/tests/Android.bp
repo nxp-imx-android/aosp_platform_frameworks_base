@@ -28,9 +28,9 @@ android_test {
     ],
     static_libs: [
         "androidx.test.core",
-        "androidx.test.espresso.intents",
         "androidx.test.ext.junit",
         "androidx.test.rules",
+        "androidx.test.uiautomator_uiautomator",
         "mockito-kotlin-nodeps",
         "mockito-target-minus-junit4",
         "SerialPortAccessDialog",
