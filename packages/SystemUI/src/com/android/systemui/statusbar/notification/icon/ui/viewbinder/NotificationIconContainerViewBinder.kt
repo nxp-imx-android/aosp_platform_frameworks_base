@@ -289,16 +289,6 @@ object NotificationIconContainerViewBinder {
                             if (actual === expected) {
                                 continue
                             }
-                            if (expected.parent !== view) {
-                                val viewGroup = expected.parent as? ViewGroup
-                                viewGroup?.also {
-                                    Log.e(
-                                        TAG,
-                                        "re-sort[$logTag]: View parent is changed!\nold parent = $it, new parent = $view, expected = $expected",
-                                    )
-                                    it.removeView(expected)
-                                }
-                            }
                             view.removeView(expected)
                             view.addView(expected, i)
                         }
