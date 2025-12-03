@@ -457,6 +457,51 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     }
 
     /**
+     * Verifies that a top-resumed state gain is scheduled after resume is no longer deferred.
+     */
+    @Test
+    public void testTopResumedActivity_deferResume_gainState() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        doReturn(true).when(activity).scheduleTopResumedActivityChanged(anyBoolean());
+
+        // Defer resume, then resume an activity.
+        mSupervisor.beginDeferResume();
+        activity.setState(ActivityRecord.State.RESUMED, "test");
+
+        // Verify that no top-resumed state change is sent while resume is deferred.
+        verify(activity, never()).scheduleTopResumedActivityChanged(anyBoolean());
+
+        // End deferring resume.
+        mSupervisor.endDeferResume();
+
+        // Verify that the top-resumed state gain is sent.
+        verify(activity).scheduleTopResumedActivityChanged(eq(true));
+    }
+
+    /**
+     * Verifies that top-resumed state loss is scheduled for a transiently visible activity.
+     */
+    @Test
+    public void testTopResumedStateLoss_transientlyVisible() {
+        final TransitionController transitionController =
+                mAtm.mWindowOrganizerController.getTransitionController();
+        spyOn(transitionController);
+        doReturn(true).when(transitionController).isTransientVisible(any());
+
+        final ActivityRecord activity1 = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        doReturn(true).when(activity1).scheduleTopResumedActivityChanged(anyBoolean());
+        activity1.setState(ActivityRecord.State.RESUMED, "test");
+
+        // Resume another activity, which should trigger top resumed state loss for activity1.
+        final ActivityRecord activity2 = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity2.setState(ActivityRecord.State.RESUMED, "test");
+
+        // TODO: b/275026461 - Remove this when this issue is resolved, we should not report
+        // state loss.
+        verify(activity1).scheduleTopResumedActivityChanged(eq(false));
+    }
+
+    /**
      * We need to launch home again after user unlocked for those displays that do not have
      * encryption aware home app.
      */
