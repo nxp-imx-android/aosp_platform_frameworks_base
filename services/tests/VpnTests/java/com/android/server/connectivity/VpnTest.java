@@ -43,7 +43,6 @@ import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_UDP;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV4;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV6;
-import static android.net.platform.flags.Flags.FLAG_REENABLE_INNER_IPV6_ON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
 import static android.telephony.CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL;
 import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
@@ -159,7 +158,6 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.test.TestLooper;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.security.Credentials;
@@ -2564,7 +2562,6 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
     public void testOnChildMigrated_remove_v6() throws Exception {
         final int newMtu = IPV6_MIN_MTU - 1;
         doTestOnChildMigrated(true /* supportsV6Before */, newMtu);
@@ -2613,7 +2610,6 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
     public void testOnChildMigrated_v6_support_unchanged() throws Exception {
         final int newMtu = IPV6_MIN_MTU + 1;
         doTestOnChildMigrated(true /* supportsV6Before */, newMtu);
@@ -2631,7 +2627,6 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
     public void testOnChildMigrated_reenable_IPv6() throws Exception {
         final int newMtu = IPV6_MIN_MTU + 1;
         doTestOnChildMigrated(false /* supportsV6Before */, newMtu);
@@ -2678,7 +2673,6 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
     public void testOnVpnNetworkLpChanged_v6_support_unchanged() throws Exception {
         // Create a VPN support IPv4+IPv6, and simulate network still have v6 capability
         doTestOnVpnNetworkLpChanged(
@@ -2694,7 +2688,6 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
     public void testOnVpnNetworkLpChanged_reenable_IPv6() throws Exception {
         // Create a VPN support IPv4 only, and simulate receiving callback that LinkProperties's mtu
         // got updated to support v6
