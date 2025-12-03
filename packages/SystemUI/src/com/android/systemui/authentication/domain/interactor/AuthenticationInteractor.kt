@@ -17,6 +17,7 @@
 package com.android.systemui.authentication.domain.interactor
 
 import android.os.UserHandle
+import android.security.Flags.lockscreenIndicateDuplicateGuesses
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternView
@@ -216,6 +217,13 @@ constructor(
 
         val authMethod = authenticationMethod.value
         if (shouldSkipAuthenticationAttempt(authMethod, tryAutoConfirm, input.size)) {
+            if (lockscreenIndicateDuplicateGuesses() && !tryAutoConfirm) {
+                // skips during auto confirm do not appear to be attempts from a user perspective
+                repository.reportAuthenticationAttempt(
+                    AuthenticationResult.SKIPPED,
+                    isDuplicate = false,
+                )
+            }
             return AuthenticationResult.SKIPPED
         }
 
@@ -225,7 +233,7 @@ constructor(
         credential.zeroize()
 
         if (authenticationResult.isSuccessful) {
-            repository.reportAuthenticationAttempt(isSuccessful = true)
+            repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
             _onAuthenticationResult.emit(true)
 
             // Force a garbage collection in an attempt to erase any credentials left in memory.
@@ -237,7 +245,7 @@ constructor(
 
         // Authentication failed.
         repository.reportAuthenticationAttempt(
-            isSuccessful = false,
+            AuthenticationResult.FAILED,
             authenticationResult.isDuplicate,
         )
 
@@ -272,7 +280,7 @@ constructor(
      * Sends a signal to the system to trigger warm ups of any LSKF auth system components that may
      * be in a low power state. The signal is expected to be handled by the system and return
      * instantly without throwing any exceptions.
-
+     *
      * This signal will be ignored if the system has already received one within the last 5 seconds.
      */
     suspend fun triggerAuthWarmUp() {

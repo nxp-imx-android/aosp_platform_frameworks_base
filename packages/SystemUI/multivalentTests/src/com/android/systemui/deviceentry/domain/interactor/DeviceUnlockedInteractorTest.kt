@@ -819,7 +819,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
 
             // Mock primary auth on bouncer
-            authenticationRepository.reportAuthenticationAttempt(true)
+            authenticationRepository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
 
             // Mock primary auth secure lock device flag cleared
             kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
@@ -919,7 +919,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             // Mock primary auth on bouncer
             kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
-            authenticationRepository.reportAuthenticationAttempt(true)
+            authenticationRepository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
 
             // Mock primary auth secure lock device flag cleared
             kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()

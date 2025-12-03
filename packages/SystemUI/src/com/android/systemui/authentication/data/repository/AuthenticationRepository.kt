@@ -36,6 +36,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Sim
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationResultModel
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
@@ -151,8 +152,11 @@ interface AuthenticationRepository {
     /** Returns the length of the PIN or `0` if the current auth method is not PIN. */
     suspend fun getPinLength(): Int
 
-    /** Reports an authentication attempt. */
-    suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean = false)
+    /** Reports an authentication attempt. Skipped attempts are not reported downstream. */
+    suspend fun reportAuthenticationAttempt(
+        result: AuthenticationResult,
+        isDuplicate: Boolean = false,
+    )
 
     /** Reports that the user has entered a temporary device lockout (throttling). */
     suspend fun reportLockoutStarted(duration: Duration)
@@ -201,7 +205,7 @@ interface AuthenticationRepository {
     /**
      * The last time a warm up signal was triggered to the system, as a Duration wrapping
      * [SystemClock.elapsedRealtime] milliseconds. [ZERO - WARM_UP_THROTTLE_DURATION] serves as the
-      first value to allow for a warm up to be triggered immediately after boot.
+     * first value to allow for a warm up to be triggered immediately after boot.
      */
     var lastWarmUpTrigger: Duration
 
@@ -338,31 +342,43 @@ constructor(
         return withContext(backgroundDispatcher) { lockPatternUtils.getPinLength(selectedUserId) }
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
+    override suspend fun reportAuthenticationAttempt(
+        result: AuthenticationResult,
+        isDuplicate: Boolean,
+    ) {
         withContext(backgroundDispatcher) {
-            if (isSuccessful) {
-                if (
-                    secureLockDevice() &&
-                        SceneContainerFlag.isEnabled &&
-                        lockPatternUtils
-                            .getStrongAuthForUser(selectedUserId)
-                            .and(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE) != 0
-                ) {
-                    Log.d(
-                        TAG,
-                        "Device is in secure lock device mode; awaiting second factor " +
-                            "biometric authentication before unlocking.",
-                    )
-                } else {
-                    lockPatternUtils.userPresent(selectedUserId)
-                    lockPatternUtils.reportSuccessfulPasswordAttempt(selectedUserId)
+            when (result) {
+                AuthenticationResult.SUCCEEDED -> {
+                    if (
+                        secureLockDevice() &&
+                            SceneContainerFlag.isEnabled &&
+                            lockPatternUtils
+                                .getStrongAuthForUser(selectedUserId)
+                                .and(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE) != 0
+                    ) {
+                        Log.d(
+                            TAG,
+                            "Device is in secure lock device mode; awaiting second factor " +
+                                "biometric authentication before unlocking.",
+                        )
+                    } else {
+                        lockPatternUtils.userPresent(selectedUserId)
+                        lockPatternUtils.reportSuccessfulPasswordAttempt(selectedUserId)
+                    }
+                    _hasLockoutOccurred.value = false
                 }
-                _hasLockoutOccurred.value = false
-            } else {
-                lockPatternUtils.reportFailedPasswordAttempt(selectedUserId)
+                AuthenticationResult.FAILED -> {
+                    lockPatternUtils.reportFailedPasswordAttempt(selectedUserId)
+                }
+                AuthenticationResult.SKIPPED -> {
+                    // Skipped, we don't want to use any downstream attempts here.
+                }
             }
             _isDuplicateAttempt.value = isDuplicate
-            _failedAuthenticationAttempts.value = getFailedAuthenticationAttemptCount()
+            // Skipped attempts don't change anything downstream.
+            if (result != AuthenticationResult.SKIPPED) {
+                _failedAuthenticationAttempts.value = getFailedAuthenticationAttemptCount()
+            }
         }
     }
 

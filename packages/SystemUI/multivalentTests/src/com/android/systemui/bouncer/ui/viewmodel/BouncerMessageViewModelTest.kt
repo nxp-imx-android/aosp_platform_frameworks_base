@@ -938,7 +938,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                     assertThat(bouncerMessage?.text).isEqualTo(text)
 
                     kosmos.fakeAuthenticationRepository.reportAuthenticationAttempt(
-                        isSuccessful = true
+                        AuthenticationResult.SUCCEEDED
                     )
 
                     job.cancelAndJoin()

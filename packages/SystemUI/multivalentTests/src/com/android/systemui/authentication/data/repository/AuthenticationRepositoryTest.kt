@@ -205,10 +205,10 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
 
             clock.setElapsedRealtime(clock.elapsedRealtime() + 60.seconds.inWholeMilliseconds)
 
-            underTest.reportAuthenticationAttempt(isSuccessful = false)
+            underTest.reportAuthenticationAttempt(AuthenticationResult.FAILED)
             assertThat(hasLockoutOccurred).isTrue()
 
-            underTest.reportAuthenticationAttempt(isSuccessful = true)
+            underTest.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
             assertThat(hasLockoutOccurred).isFalse()
         }
 
@@ -220,7 +220,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             whenever(lockPatternUtils.getStrongAuthForUser(anyInt()))
                 .thenReturn(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE)
 
-            underTest.reportAuthenticationAttempt(true)
+            underTest.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
             verify(lockPatternUtils, never()).userPresent(anyInt())
             verify(lockPatternUtils, never()).reportSuccessfulPasswordAttempt(anyInt())
         }
