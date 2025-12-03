@@ -2152,6 +2152,9 @@ class Task extends TaskFragment {
 
         final boolean pipChanging = wasInPictureInPicture != inPinnedWindowingMode();
         if (pipChanging) {
+            if (wasInPictureInPicture && com.android.window.flags.Flags.enableBubbleRootTask()) {
+                notifyExitPipMode();
+            }
             mTaskSupervisor.scheduleUpdatePictureInPictureModeIfNeeded(this, getRootTask());
         } else if (wasInMultiWindowMode != inMultiWindowMode()) {
             mTaskSupervisor.scheduleUpdateMultiWindowMode(this);
@@ -4804,12 +4807,9 @@ class Task extends TaskFragment {
             likelyResolvedMode = parent != null ? parent.getWindowingMode()
                     : WINDOWING_MODE_FULLSCREEN;
         }
-        if (currentMode == WINDOWING_MODE_PINNED) {
-            // In the case that we've disabled affecting the SysUI flags as a part of seamlessly
-            // transferring the transform on the leash to the task, reset this state once we're
-            // moving out of pip
-            setCanAffectSystemUiFlags(true);
-            mRootWindowContainer.notifyActivityPipModeChanged(this, null);
+        if (currentMode == WINDOWING_MODE_PINNED
+                && !com.android.window.flags.Flags.enableBubbleRootTask()) {
+            notifyExitPipMode();
         }
         if (likelyResolvedMode == WINDOWING_MODE_PINNED) {
             if (taskDisplayArea.getRootPinnedTask() != null) {
@@ -4929,6 +4929,14 @@ class Task extends TaskFragment {
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.resumeFocusedTasksTopActivities();
         }
+    }
+
+    private void notifyExitPipMode() {
+        // In the case that we've disabled affecting the SysUI flags as a part of seamlessly
+        // transferring the transform on the leash to the task, reset this state once we're
+        // moving out of pip
+        setCanAffectSystemUiFlags(true);
+        mRootWindowContainer.notifyActivityPipModeChanged(this, null);
     }
 
     /**
