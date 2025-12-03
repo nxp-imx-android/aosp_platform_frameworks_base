@@ -198,6 +198,16 @@ flag {
 }
 
 flag {
+  name: "commit_keyguard_occlusion_before_waking_up"
+  namespace: "windowing_frontend"
+  description: "Report latest keyguard state before notifying KeyguardService to wake up"
+  bug: "427961601"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "remove_set_wake_ready_immediately"
     namespace: "windowing_frontend"
     description: "Remove a potentially obsolete Transition.setReady() when waking up"
