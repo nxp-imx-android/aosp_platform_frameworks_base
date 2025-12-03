@@ -3144,7 +3144,8 @@ class ActivityStarter {
             final Task topTask = curTop != null ? curTop.getTask() : null;
             differentTopTask = topTask != intentTask
                     || (focusRootTask != null && topTask != focusRootTask.getTopMostTask())
-                    || (focusRootTask != null && focusRootTask != origRootTask);
+                    || (focusRootTask != null && focusRootTask != origRootTask)
+                    || mTargetRootTask != origRootTask;
         } else {
             // The existing task should always be different from those in other displays.
             differentTopTask = true;
