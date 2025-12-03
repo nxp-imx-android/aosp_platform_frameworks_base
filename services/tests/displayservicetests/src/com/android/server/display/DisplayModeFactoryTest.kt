@@ -16,14 +16,19 @@
 
 package com.android.server.display
 
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
+import android.util.SparseArray
 import android.view.Display
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
+import com.android.server.display.feature.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlin.test.Test
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 private const val NO_FLAGS = 0
@@ -31,6 +36,9 @@ private const val NO_FLAGS = 0
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class DisplayModeFactoryTest {
+
+    @get:Rule
+    val setFlagRule = SetFlagsRule()
 
     @Test
     fun testCreateMode_resolutionAndRefreshRate() {
@@ -45,13 +53,8 @@ class DisplayModeFactoryTest {
 
     @Test
     fun testCreateMode_fromSurfaceControlMode(@TestParameter testCase: SFModeTestCase) {
-        val displayMode = SurfaceControl.DisplayMode().also {
-            it.width = 150
-            it.height = 250
-            it.peakRefreshRate = testCase.inputRefreshRate
-            it.vsyncRate = 240f
-            it.supportedHdrTypes = intArrayOf()
-        }
+        val displayMode = createSfDisplayMode(peakRefreshRate = testCase.inputRefreshRate,
+            vsyncRate = 240f)
         val alternativeRefreshRates = floatArrayOf(10f, 20f)
         val expectedMode = createDisplayMode(flags = testCase.expectedFlags,
             width = displayMode.width, height = displayMode.height,
@@ -128,6 +131,102 @@ class DisplayModeFactoryTest {
             .that(result).isEmpty()
     }
 
+    enum class AnisotropicModesTestCase(
+        val inputModes: List<Display.Mode>,
+        val inputSfModes: SparseArray<SurfaceControl.DisplayMode>,
+        val expectedModes: List<Display.Mode>
+    ) {
+        SINGLE_ISOTROPIC(
+            listOf(createDisplayMode(id = 1)),
+            sparseArrayOf(1 to createSfDisplayMode()),
+            listOf()
+        ),
+        NO_CORRESPONDING_SF_MODE(
+            listOf(createDisplayMode(id = 1, height = 100)),
+            sparseArrayOf(2 to createSfDisplayMode(xDpi = 2f, yDpi = 1f)),
+            listOf()
+        ),
+        NO_XDPI(
+            listOf(createDisplayMode(id = 1, height = 100)),
+            sparseArrayOf(1 to createSfDisplayMode(xDpi = 0f, yDpi = 1f)),
+            listOf()
+        ),
+        NO_YDPI(
+            listOf(createDisplayMode(id = 1, height = 100)),
+            sparseArrayOf(1 to createSfDisplayMode(xDpi = 0f, yDpi = 1f)),
+            listOf()
+        ),
+        SINGLE_ANISOTROPIC_TALL(
+            listOf(createDisplayMode(id = 1, height = 100)),
+            sparseArrayOf(1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f)),
+            listOf(createDisplayMode(parentId = 1, height = 200, flags = 6))
+        ),
+        SINGLE_ANISOTROPIC_WIDE(
+            listOf(createDisplayMode(id = 1, width = 100)),
+            sparseArrayOf(1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f)),
+            listOf(createDisplayMode(parentId = 1, width = 200, flags = 6))
+        ),
+        ANISOTROPIC_TALL_AND_MATCHING_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, height = 100, width = 100),
+                createDisplayMode(id = 2, height = 104, width = 200)
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+            ),
+            listOf()
+        ),
+        ANISOTROPIC_TALL_AND_NOT_MATCHING_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, height = 100, width = 100),
+                createDisplayMode(id = 2, height = 105, width = 200)
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+            ),
+            listOf(createDisplayMode(parentId = 1, height = 200, width = 100, flags = 6))
+        ),
+        ANISOTROPIC_WIDE_AND_MATCHING_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 104, height = 200)
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+            ),
+            listOf()
+        ),
+        ANISOTROPIC_WIDE_AND_NOT_MATCHING_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 105, height = 200)
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+            ),
+            listOf(createDisplayMode(parentId = 1, width = 200, height = 100, flags = 6))
+        ),
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANISOTROPIC_MODE_EXCLUDE_SIMILAR_SIZE)
+    fun testAnisotropy(@TestParameter testCase: AnisotropicModesTestCase) {
+        val inputRecords =
+            testCase.inputModes.stream()
+                .map { mode -> LocalDisplayAdapter.DisplayModeRecord(mode) }
+                .toList()
+        val result =
+            DisplayModeFactory.createAnisotropyCorrectedModes(inputRecords, testCase.inputSfModes)
+        assertThat(result).hasSize(testCase.expectedModes.size)
+        result.forEachIndexed { index, record ->
+            assertModesEqual(record.mMode, testCase.expectedModes[index])
+        }
+    }
+
     private fun assertModesEqual(result: Display.Mode, expected: Display.Mode) {
         assertWithMessage("parentModeId is different")
             .that(result.parentModeId).isEqualTo(expected.parentModeId)
@@ -141,5 +240,13 @@ class DisplayModeFactoryTest {
             .that(result.refreshRate).isWithin(0.001f).of(expected.refreshRate)
         assertWithMessage("vsyncRate is different")
             .that(result.vsyncRate).isWithin(0.001f).of(expected.vsyncRate)
+    }
+}
+
+private fun <V>sparseArrayOf(vararg pairs: Pair<Int, V>): SparseArray<V> {
+    return SparseArray<V>(pairs.size).also { array ->
+        pairs.forEach { pair ->
+            array.put(pair.first, pair.second)
+        }
     }
 }

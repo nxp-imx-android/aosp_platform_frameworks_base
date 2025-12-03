@@ -23,8 +23,10 @@ import android.os.Parcel
 import android.os.SystemClock
 import android.view.Display
 import android.view.DisplayAddress
+import android.view.SurfaceControl
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.Int
 
 internal const val TEST_SENSOR_NAME = "test_sensor_name"
 internal const val TEST_SENSOR_TYPE_STRING = "test_sensor_type"
@@ -86,3 +88,30 @@ fun createDisplayMode(
     id, parentId, flags, width, height, peakRefreshRate, vsyncRate,
     alternativeRefreshRates, supportedHdrTypes
 )
+
+fun createSfDisplayMode(
+    id: Int = Display.Mode.INVALID_MODE_ID,
+    width: Int = 100,
+    height: Int = 200,
+    xDpi: Float = 1f,
+    yDpi: Float = 1f,
+    peakRefreshRate: Float = 60f,
+    vsyncRate: Float = 60f,
+    appVsyncOffsetNanos: Long = 0L,
+    presentationDeadlineNanos: Long = 0L,
+    supportedHdrTypes: IntArray = intArrayOf(),
+    group: Int = 0
+): SurfaceControl.DisplayMode = SurfaceControl.DisplayMode().also { mode ->
+    mode.id = id
+    mode.width = width
+    mode.height = height
+    mode.xDpi = xDpi
+    mode.yDpi = yDpi
+    mode.peakRefreshRate = peakRefreshRate
+    mode.vsyncRate = vsyncRate
+    mode.appVsyncOffsetNanos = appVsyncOffsetNanos
+    mode.presentationDeadlineNanos = presentationDeadlineNanos
+    mode.supportedHdrTypes = supportedHdrTypes
+    mode.group = group
+}
+
