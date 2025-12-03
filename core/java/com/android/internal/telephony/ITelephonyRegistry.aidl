@@ -27,6 +27,7 @@ import android.telephony.CellularIdentifierDisclosure;
 import android.telephony.LinkCapacityEstimate;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.ims.ImsReasonInfo;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.PhoneCapability;
 import android.telephony.PhysicalChannelConfig;
 import android.telephony.PreciseDataConnectionState;
@@ -139,4 +140,6 @@ interface ITelephonyRegistry {
             int phoneId, int subId, in CellularIdentifierDisclosure disclosure);
     void notifyDomainSelectionEmergencyModeChanged(
             int phoneId, int subId, int type, boolean isEntered);
+    void notifyNetworkSecurityEvents(
+            int phoneId, int subId, in List<NetworkSecurityEvent> events);
 }

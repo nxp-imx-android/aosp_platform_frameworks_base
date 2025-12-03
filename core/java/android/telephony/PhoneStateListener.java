@@ -47,6 +47,7 @@ import dalvik.system.VMRuntime;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -1731,6 +1732,11 @@ public class PhoneStateListener {
         public final void onDomainSelectionEmergencyModeExited(
                 @TelephonyManager.DomainSelectionEmergencyType int type,
                 int slotIndex, int subscriptionId) {
+            // not supported on the deprecated interface - Use TelephonyCallback instead
+        }
+
+        public final void onNetworkSecurityEvents(
+                List<NetworkSecurityEvent> events) {
             // not supported on the deprecated interface - Use TelephonyCallback instead
         }
     }
