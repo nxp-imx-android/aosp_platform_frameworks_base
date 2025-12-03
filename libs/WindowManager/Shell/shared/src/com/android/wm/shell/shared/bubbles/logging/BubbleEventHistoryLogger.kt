@@ -18,6 +18,7 @@ package com.android.wm.shell.shared.bubbles.logging
 
 import android.icu.text.SimpleDateFormat
 import android.text.TextUtils
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
@@ -34,23 +35,23 @@ class BubbleEventHistoryLogger : DebugLogger {
     val recentEvents: MutableList<BubbleEvent> = mutableListOf()
 
     override fun d(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("d: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "d: $message", titleParams = parameters, eventData = eventData)
     }
 
     override fun v(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("v: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "v: $message", titleParams = parameters, eventData = eventData)
     }
 
     override fun i(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("i: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "i: $message", titleParams = parameters, eventData = eventData)
     }
 
     override fun w(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("w: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "w: $message", titleParams = parameters, eventData = eventData)
     }
 
     override fun e(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("e: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "e: $message", titleParams = parameters, eventData = eventData)
     }
 
     /** Flushes all stored logs. */
@@ -65,13 +66,14 @@ class BubbleEventHistoryLogger : DebugLogger {
      * [eventData] string may also be provided, which implementations can include in the log output.
      */
     fun record(message: String, vararg parameters: Any?, eventData: String?) {
-        logEvent("r: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+        logEvent(title = "r: $message", titleParams = parameters, eventData = eventData)
     }
 
     @VisibleForTesting
     @Synchronized
     fun logEvent(
         title: String,
+        vararg titleParams: Any?,
         eventData: String? = null,
         timestamp: Long = System.currentTimeMillis(),
     ) {
@@ -79,7 +81,15 @@ class BubbleEventHistoryLogger : DebugLogger {
         if (recentEvents.size >= MAX_EVENTS) {
             recentEvents.removeAt(0)
         }
-        recentEvents.add(BubbleEvent(title, eventData, timestamp))
+        @Suppress("UNCHECKED_CAST")
+        recentEvents.add(
+            BubbleEvent(
+                title = title,
+                titleParams = titleParams as Array<Any?>,
+                eventData = eventData,
+                timestamp = timestamp,
+            )
+        )
     }
 
     /**
@@ -91,16 +101,24 @@ class BubbleEventHistoryLogger : DebugLogger {
         val recentEventsCopy = synchronized(this) { ArrayList(recentEvents) }
         pw.println("${prefix}Bubbles events history:")
         recentEventsCopy.forEach { event ->
-            val eventFormattedTime = DATE_FORMATTER.format(event.timestamp)
-            var eventData = ""
-            if (!event.eventData.isNullOrBlank()) {
-                eventData = " | ${event.eventData}"
+            try {
+                val eventFormattedTime = DATE_FORMATTER.format(event.timestamp)
+                val eventFormattedTitle =
+                    if (event.titleParams.isNullOrEmpty()) {
+                        event.title
+                    } else {
+                        TextUtils.formatSimple(event.title, *event.titleParams)
+                    }
+                val data = if (event.eventData.isNullOrBlank()) "" else " | ${event.eventData}"
+                pw.println("$prefix  $eventFormattedTime ${eventFormattedTitle}$data")
+            } catch (e: Throwable) {
+                Log.w(TAG, "Caught an exception while logging: $event")
             }
-            pw.println("$prefix  $eventFormattedTime ${event.title}$eventData")
         }
     }
 
     companion object {
+        const val TAG = "BubbleEventHistoryLogger"
         const val DATE_FORMAT = "MM-dd HH:mm:ss.SSS"
         const val MAX_EVENTS: Int = 200
         @VisibleForTesting

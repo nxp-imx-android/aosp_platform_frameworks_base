@@ -55,7 +55,7 @@ class BubbleEventHistoryLoggerTest {
     fun dump_printsHeaderWithEvents() {
         val timestamp = System.currentTimeMillis()
         val formattedTimeStamp = DATE_FORMATTER.format(timestamp)
-        logger.logEvent("e: test", "eventData", timestamp)
+        logger.logEvent("e: test | %s", "eventData", timestamp = timestamp)
         logger.logEvent("d: hey", timestamp = timestamp)
         val expectedOutput = """
             Bubbles events history:
@@ -117,7 +117,9 @@ class BubbleEventHistoryLoggerTest {
             executorService.submit {
                 try {
                     startLatch.await() // Wait until the main thread gives the green light
-                    repeat(eventsPerThread) { logger.logEvent("Thread $i", "Data $i-$it") }
+                    repeat(eventsPerThread) {
+                        logger.logEvent("Thread $i", eventData = "Data $i-$it")
+                    }
                 } finally {
                     doneLatch.countDown() // Signal that this thread has finished
                 }
