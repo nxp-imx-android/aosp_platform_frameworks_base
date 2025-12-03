@@ -1504,7 +1504,7 @@ public class SubscriptionManager {
     public static final String EXTRA_PLAN_TYPES = "android.telephony.extra.PLAN_TYPES";
 
     /**
-     * Boolean extra used with {@link #ACTION_SHOW_SUBSCRIPTION_PLANS_ENROLLABLE} to indicate
+     * Boolean extra used with {@link #ACTION_SHOW_ENROLLABLE_SUBSCRIPTION_PLANS} to indicate
      * whether the receiving application should force a refresh of the subscription
      * plan data from the server.
      *
@@ -3494,13 +3494,13 @@ public class SubscriptionManager {
      * <p>
      * This method is only accessible to the following apps:
      * <ul>
-     * <li>The carrier app for this subscriberId, as determined by
+     * <li>The carrier app for this subscriptionId, as determined by
      * {@link TelephonyManager#hasCarrierPrivileges()}.
      * <li>An app that has been explicitly delegated access through
      * {@link CarrierConfigManager#KEY_CONFIG_PLANS_PACKAGE_OVERRIDE_STRING}.
      * </ul>
      *
-     * @param subId the subscriber ID for which to retrieve the enrollable plans.
+     * @param subscriptionId the subscription ID for which to retrieve the enrollable plans.
      * @return A list of {@link SubscriptionPlan} objects available to the user. Returns an empty
      * list if no plans are available or if the information is not provided by the carrier.
      * @throws SecurityException if the caller does not meet the requirements outlined above.
@@ -3515,12 +3515,13 @@ public class SubscriptionManager {
             "carrier privileges",
     })
     @NonNull
-    public List<SubscriptionPlan> getEnrollableSubscriptionPlans(int subId) {
+    public List<SubscriptionPlan> getEnrollableSubscriptionPlans(int subscriptionId) {
         try {
             ISub iSub = TelephonyManager.getSubscriptionService();
             if (iSub != null) {
                 SubscriptionPlan[] enrollableSubscriptionPlans =
-                        iSub.getEnrollableSubscriptionPlans(subId, mContext.getOpPackageName());
+                        iSub.getEnrollableSubscriptionPlans(
+                                subscriptionId, mContext.getOpPackageName());
                 return enrollableSubscriptionPlans == null
                         ? Collections.emptyList() : Arrays.asList(enrollableSubscriptionPlans);
             } else {
@@ -3542,14 +3543,14 @@ public class SubscriptionManager {
      * <p>
      * This method is only accessible to the following apps:
      * <ul>
-     * <li>The carrier app for this subscriberId, as determined by
+     * <li>The carrier app for this subscriptionId, as determined by
      * {@link TelephonyManager#hasCarrierPrivileges()}.
      * <li>An app that has been explicitly delegated access through
      * {@link CarrierConfigManager#KEY_CONFIG_PLANS_PACKAGE_OVERRIDE_STRING}.
      * </ul>
      *
-     * @param subId the subscriber ID this list of plans applies to. If the plans are not associated
-     * with any current subscriptions, use {@link #INVALID_SUBSCRIPTION_ID}.
+     * @param subscriptionId the subscriptionId ID this list of plans applies to. If the plans are
+     * not associated with any current subscriptions, use {@link #INVALID_SUBSCRIPTION_ID}.
      * @param plans the list of enrollable plans. An empty list may be sent to clear any existing
      * plans.
      * @param expirationDurationMillis the duration after which the list of enrollable subscription
@@ -3567,12 +3568,13 @@ public class SubscriptionManager {
             Manifest.permission.MANAGE_SUBSCRIPTION_PLANS,
             "carrier privileges",
     })
-    public void setEnrollableSubscriptionPlans(int subId, @NonNull List<SubscriptionPlan> plans,
+    public void setEnrollableSubscriptionPlans(int subscriptionId,
+            @NonNull List<SubscriptionPlan> plans,
             @DurationMillisLong long expirationDurationMillis) {
         try {
             ISub iSub = TelephonyManager.getSubscriptionService();
             if (iSub != null) {
-                iSub.setEnrollableSubscriptionPlans(subId,
+                iSub.setEnrollableSubscriptionPlans(subscriptionId,
                         plans.toArray(new SubscriptionPlan[0]),
                         expirationDurationMillis,
                         mContext.getOpPackageName());
