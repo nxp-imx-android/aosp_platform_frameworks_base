@@ -24,7 +24,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Icon;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.Property;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -51,7 +50,6 @@ import java.util.function.Consumer;
  * correctly on the screen.
  */
 public class NotificationIconContainer extends ViewGroup {
-    private static final String TAG = "NotifIconContainer";
     private static final int NO_VALUE = Integer.MIN_VALUE;
     private static final boolean DEBUG = false;
     private static final boolean DEBUG_OVERFLOW = false;
@@ -128,7 +126,6 @@ public class NotificationIconContainer extends ViewGroup {
     private int mThemedTextColorPrimary;
     private int mThemedTextColorPrimaryInverse;
     private boolean mUseIncreasedIconScale;
-    private String mLogTag = "none";
 
     public NotificationIconContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -241,8 +238,7 @@ public class NotificationIconContainer extends ViewGroup {
     public String toString() {
         return super.toString()
                 + " {"
-                + " logTag=" + mLogTag
-                + ", overrideIconColor=" + mOverrideIconColor
+                + " overrideIconColor=" + mOverrideIconColor
                 + ", maxIcons=" + mMaxIcons
                 + ", isStaticLayout=" + mIsStaticLayout
                 + ", iconSize=" + mIconSize
@@ -385,19 +381,10 @@ public class NotificationIconContainer extends ViewGroup {
         for (int i = 0; i < getChildCount(); i++) {
             View view = getChildAt(i);
             ViewState iconState = mIconStates.get(view);
-            if (iconState == null) {
-                Log.e(TAG, "resetViewStates: iconState is null.\nContainer tag = "
-                        + mLogTag + ", view =" + view);
-                continue;
-            }
             iconState.initFrom(view);
             iconState.setAlpha(1.0f, "notifIconContainer reset");
             iconState.hidden = false;
         }
-    }
-
-    public void setLogTag(String tag) {
-        mLogTag = tag;
     }
 
     /**

@@ -128,7 +128,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         mShelfIcons = findViewById(R.id.content);
         mShelfIcons.setClipChildren(false);
         mShelfIcons.setClipToPadding(false);
-        mShelfIcons.setLogTag("shelf");
+
         mBackgroundNormal = (NotificationShelfBackgroundView) super.mBackgroundNormal;
 
         setClipToActualHeight(false);
