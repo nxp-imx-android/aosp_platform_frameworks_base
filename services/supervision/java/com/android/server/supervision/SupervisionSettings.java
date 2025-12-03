@@ -30,16 +30,20 @@ import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import org.xmlpull.v1.XmlPullParserException;
+import java.util.function.BiConsumer;
 
 /**
  * Provides storage and retrieval of device supervision recovery information and user data.
@@ -103,6 +107,21 @@ public class SupervisionSettings {
                 sInstance = new SupervisionSettings();
             }
             return sInstance;
+        }
+    }
+
+    /**
+     * Performs the given action for each user data entry in the settings.
+     *
+     * <p>This method iterates over all stored {@link SupervisionUserData} entries
+     * and applies the provided {@link BiConsumer} action, passing the user ID and
+     * the corresponding user data.
+     *
+     * @param action The action to be performed for each user data entry.
+     */
+    public void forEachUserData(BiConsumer<Integer, SupervisionUserData> action) {
+        for (int i = 0; i < mUserData.size(); i++) {
+            action.accept(mUserData.keyAt(i), mUserData.valueAt(i));
         }
     }
 
