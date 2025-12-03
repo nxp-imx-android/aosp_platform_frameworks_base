@@ -20,6 +20,7 @@ import android.app.Notification
 import android.app.Notification.ResolvedBasicCompactContent
 import android.content.ComponentName
 import android.content.Context
+import androidx.annotation.ColorRes
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags
@@ -144,6 +145,7 @@ constructor(
         val chipTime: PromotedNotificationContentModel.When?
         val chipChronometer: Chronometer?
         val chipChronometerFormat: OngoingActivityChipModel.Content.Timer.Format?
+        val chipSemanticStyle: Int?
 
         if (NotificationChipApi.isEnabled) {
             if (content.compactContent is ResolvedBasicCompactContent) {
@@ -157,6 +159,10 @@ constructor(
                     (contentText as? Notification.Metric.TimeDifference)?.toChronometer()
                 chipChronometerFormat =
                     (contentText as? Notification.Metric.TimeDifference)?.toChronometerFormat()
+                chipSemanticStyle =
+                    content.compactContent.semanticStyle.takeIf {
+                        it != Notification.SEMANTIC_STYLE_UNSPECIFIED
+                    }
                 chipTime = null
             } else {
                 throw IllegalStateException("Unknown compactContent: ${content.compactContent}")
@@ -194,6 +200,7 @@ constructor(
             chipTime = timeFromMetric ?: timeFromWhen
             chipChronometer = null
             chipChronometerFormat = null
+            chipSemanticStyle = null
         }
 
         return PrunedNotificationChipModel(
@@ -207,6 +214,7 @@ constructor(
             chronometer = chipChronometer,
             chronometerFormat =
                 chipChronometerFormat ?: OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
+            semanticStyle = chipSemanticStyle,
             wasPromotedAutomatically = content.wasPromotedAutomatically,
             isAppVisible = isAppVisible,
             instanceId = instanceId,
@@ -365,7 +373,14 @@ constructor(
                     contentDescription,
                 )
             }
-        val colors = ColorsModel.SystemThemed
+
+        val colors =
+            if (NotificationChipApi.isEnabled && this.semanticStyle != null) {
+                ColorsModel.SystemThemedWithOverride(textRes = this.semanticStyle.toColorResource())
+            } else {
+                ColorsModel.SystemThemed
+            }
+
         // If the app that posted this notification is visible, we want to hide the chip
         // because information between the status bar chip and the app itself could be
         // out-of-sync (like a timer that's slightly off)
@@ -466,6 +481,10 @@ constructor(
         )
     }
 
+    @ColorRes
+    private fun @receiver:Notification.SemanticStyle Int.toColorResource(): Int? =
+        Notification.semanticStyleToColorRes(this)
+
     private fun getContentDescription(appName: String): ContentDescription {
         val ongoingDescription =
             context.getString(R.string.ongoing_notification_extra_content_description)
@@ -494,14 +513,14 @@ constructor(
         val statusBarChipIconView: StatusBarIconView?,
         /**
          * The text to show in the chip, or null if text shouldn't be shown. Text takes precedence
-         * over [time].
+         * over [time]/[chronometer].
          */
         val text: String?,
         /** The chronometer to show in the chip, or null if it shouldn't be shown. */
         val chronometer: Chronometer?,
         val chronometerFormat: OngoingActivityChipModel.Content.Timer.Format =
             OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
-
+        @Notification.SemanticStyle val semanticStyle: Int?,
         /** The time to show in the chip, or null if the time shouldn't be shown. */
         // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
         val time: PromotedNotificationContentModel.When?,
