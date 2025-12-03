@@ -1833,12 +1833,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     public void forEachConnectionHost(Consumer<ProcessRecord> consumer) {
         for (int i = mServices.numberOfConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = mServices.getConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.app;
+            final ProcessRecord service = cr.binding.service.getHostProcess();
             consumer.accept(service);
         }
         for (int i = mServices.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = mServices.getSdkSandboxConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.app;
+            final ProcessRecord service = cr.binding.service.getHostProcess();
             consumer.accept(service);
         }
         for (int i = mProviders.numberOfProviderConnections() - 1; i >= 0; i--) {

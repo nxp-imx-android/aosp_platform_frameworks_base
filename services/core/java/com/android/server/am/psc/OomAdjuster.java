@@ -934,7 +934,7 @@ public abstract class OomAdjuster {
                 final ConnectionRecordInternal cr = psr.getConnectionInternalAt(i);
                 ProcessRecordInternal service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                         ? cr.getService().getIsolationHostProcess()
-                        : cr.getService().getHostProcess();
+                        : cr.getService().getHostProcessInternal();
                 if (service == null || service == pr
                         || ((service.getMaxAdj() >= SYSTEM_ADJ)
                                 && (service.getMaxAdj() < FOREGROUND_APP_ADJ))) {

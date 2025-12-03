@@ -131,6 +131,27 @@ public class ProcessServiceRecordInternal {
         mHasAboveClient = hasAboveClient;
     }
 
+    /** Resets service-related flags when the application record is being cleaned up. */
+    public void onCleanupApplicationRecord() {
+        setTreatLikeActivity(false);
+        setHasAboveClient(false);
+        setHasClientActivities(false);
+    }
+
+    /** Recalculates and updates the {@link #mHasAboveClient} flag. */
+    public void updateHasAboveClient() {
+        setHasAboveClient(false);
+        for (int i = numberOfConnections() - 1; i >= 0; i--) {
+            final ConnectionRecordInternal cr = getConnectionInternalAt(i);
+            final boolean isSameProcess = cr.getService().getHostProcessInternal() != null
+                    && cr.getService().getHostProcessInternal().getServices() == this;
+            if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
+                setHasAboveClient(true);
+                break;
+            }
+        }
+    }
+
     /**
      * Sets whether this process has any client services with activities.
      * This method also notifies the registered observer of the change.
@@ -306,9 +327,10 @@ public class ProcessServiceRecordInternal {
         return mServices.remove(service);
     }
 
-    /** Removes all services from the set of running services for this process. */
-    public void clearRunningServices() {
+    /** Stops all services running in this process. */
+    public void stopAllServices() {
         mServices.clear();
+        updateHasTopStartedAlmostPerceptibleServices();
     }
 
     /** Checks if there are any services currently executing in this process. */

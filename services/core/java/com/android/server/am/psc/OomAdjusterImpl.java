@@ -953,7 +953,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             final ConnectionRecordInternal cr = psr.getConnectionInternalAt(i);
             ProcessRecordInternal service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                     ? cr.getService().getIsolationHostProcess()
-                    : cr.getService().getHostProcess();
+                    : cr.getService().getHostProcessInternal();
             if (service == null || service == app || isSandboxAttributedConnection(cr, service)) {
                 continue;
             }
@@ -967,7 +967,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int i = psr.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
             final ConnectionRecordInternal cr = psr.getSdkSandboxConnectionInternalAt(i);
-            final ProcessRecordInternal service = cr.getService().getHostProcess();
+            final ProcessRecordInternal service = cr.getService().getHostProcessInternal();
             if (service == null || service == app) {
                 continue;
             }

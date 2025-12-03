@@ -2475,7 +2475,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
                          new OomAdjusterStateGetter())
                 .setHandlerThread(handlerThread)
                 .build();
@@ -2548,9 +2548,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
                          new OomAdjusterStateGetter())
                 .setLockObject(this)
+                .setProcLockObject(this.mProcLock)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
                 .build();

@@ -35,6 +35,9 @@ public abstract class ServiceRecordInternal extends Binder {
     public final boolean isSdkSandbox;
     private final OomAdjuster.Constants mOomConstants;
 
+    /** where this service is running or null. */
+    private ProcessRecordInternal mHostProcess;
+
     /** Whether the service has been explicitly requested to start by an application. */
     private boolean mStartRequested;
     /** Whether the service is currently running in foreground mode. */
@@ -125,12 +128,12 @@ public abstract class ServiceRecordInternal extends Binder {
         return mShortFgsStartTime;
     }
 
-    protected void setShortFgsStartTime(long uptimeNow) {
+    public void setShortFgsStartTime(long uptimeNow) {
         mShortFgsStartTime = uptimeNow;
     }
 
     /** Resets the start time for the short foreground service. */
-    protected void clearShortFgsStartTime() {
+    public void clearShortFgsStartTime() {
         mShortFgsStartTime = NO_SHORT_FGS_START_TIME;
     }
 
@@ -172,7 +175,13 @@ public abstract class ServiceRecordInternal extends Binder {
     public abstract ArrayList<? extends ConnectionRecordInternal> getConnectionAt(int index);
 
     /** Returns the host process that hosts this service. */
-    public abstract ProcessRecordInternal getHostProcess();
+    public ProcessRecordInternal getHostProcessInternal() {
+        return mHostProcess;
+    }
+
+    public void setHostProcess(ProcessRecordInternal process) {
+        mHostProcess = process;
+    }
 
     /** Returns the isolation host process (e.g., for isolated or SDK sandbox processes). */
     public abstract ProcessRecordInternal getIsolationHostProcess();

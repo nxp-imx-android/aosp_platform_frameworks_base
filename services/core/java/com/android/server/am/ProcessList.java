@@ -4093,18 +4093,19 @@ public final class ProcessList extends ProcessListInternal
         for (int j = psr.numberOfConnections() - 1; j >= 0; j--) {
             ConnectionRecord cr = psr.getConnectionAt(j);
             if (cr.binding != null && !cr.serviceDead && cr.binding.service != null
-                    && cr.binding.service.app != null
-                    && cr.binding.service.app.getLruSeq() != getLruSeqLOSP()
+                    && cr.binding.service.getHostProcess() != null
+                    && cr.binding.service.getHostProcess().getLruSeq() != getLruSeqLOSP()
                     && cr.notHasFlag(Context.BIND_REDUCTION_FLAGS)
-                    && !cr.binding.service.app.isPersistent()) {
-                if (cr.binding.service.app.mServices.hasClientActivities()) {
+                    && !cr.binding.service.getHostProcess().isPersistent()) {
+                if (cr.binding.service.getHostProcess().mServices.hasClientActivities()) {
                     if (nextActivityIndex >= 0) {
-                        indices.append(offerLruProcessInternalLSP(cr.binding.service.app, now,
+                        indices.append(offerLruProcessInternalLSP(
+                                cr.binding.service.getHostProcess(), now,
                                 "service connection", cr, app), true);
                     }
                 } else {
-                    indices.append(offerLruProcessInternalLSP(cr.binding.service.app, now,
-                            "service connection", cr, app), false);
+                    indices.append(offerLruProcessInternalLSP(cr.binding.service.getHostProcess(),
+                            now, "service connection", cr, app), false);
                 }
             }
         }
