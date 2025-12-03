@@ -196,7 +196,7 @@ public class ImeBackAnimationControllerTest {
     @Test
     public void testAdjustPanScrollsViewRoot() {
         // simulate view root being panned upwards by 50px
-        int appPan = -50;
+        int appPan = 50;
         mViewRoot.setScrollY(appPan);
         // setup ViewRoot with softInputMode=adjustPan
         mViewRoot.mWindowAttributes.softInputMode = SOFT_INPUT_ADJUST_PAN;
@@ -212,9 +212,10 @@ public class ImeBackAnimationControllerTest {
 
         // verify that view root is scrolled by expected amount
         float interpolatedProgress = BACK_GESTURE.getInterpolation(progress);
-        int expectedViewRootScroll =
-                (int) (appPan * (1 - interpolatedProgress * PEEK_FRACTION));
-        assertEquals(mViewRoot.getScrollY(), expectedViewRootScroll);
+        int imeMovement = (int) (interpolatedProgress * PEEK_FRACTION * IME_HEIGHT);
+        int expectedViewRootScroll = appPan - imeMovement;
+        // Allow a difference of 1 pixel due to float-to-int rounding
+        assertEquals((float) expectedViewRootScroll, (float) mViewRoot.getScrollY(), 1f);
     }
 
     @Test
