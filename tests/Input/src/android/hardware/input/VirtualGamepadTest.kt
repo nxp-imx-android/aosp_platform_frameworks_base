@@ -27,7 +27,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.AdoptShellPermissionsRule
-import com.android.compatibility.common.util.PollingCheck
+import com.android.compatibility.common.util.WindowUtil
 import com.android.cts.input.CaptureEventActivity
 import com.android.cts.input.inputeventmatchers.withKeyAction
 import com.android.cts.input.inputeventmatchers.withKeyCode
@@ -80,7 +80,7 @@ class VirtualGamepadTest {
                 createVirtualGamepadConfig("TestVirtualGamepad", registerTriggers = true)
             )
 
-        PollingCheck.waitFor { activity.hasWindowFocus() }
+        WindowUtil.waitForFocus(activity)
     }
 
     @After

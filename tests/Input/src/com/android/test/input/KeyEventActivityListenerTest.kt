@@ -23,7 +23,7 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.AdoptShellPermissionsRule
-import com.android.compatibility.common.util.PollingCheck
+import com.android.compatibility.common.util.WindowUtil
 import com.android.cts.input.CaptureEventActivity
 import com.android.cts.input.EvdevInputEventCodes
 import com.android.cts.input.UinputKeyboard
@@ -65,7 +65,7 @@ class KeyEventActivityListenerTest {
             inputManager = it.getSystemService(InputManager::class.java)
             activity = it
         }
-        PollingCheck.waitFor { activity.hasWindowFocus() }
+        WindowUtil.waitForFocus(activity)
         listener = mock(InputManager.KeyEventActivityListener::class.java)
     }
 
