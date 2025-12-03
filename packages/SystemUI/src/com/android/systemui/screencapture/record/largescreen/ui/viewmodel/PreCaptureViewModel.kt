@@ -18,8 +18,6 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.app.ActivityManager
 import android.app.ActivityOptions.LaunchCookie
-import android.app.ActivityTaskManager
-import android.app.WindowConfiguration
 import android.graphics.Point
 import android.graphics.Rect
 import android.view.WindowManager
@@ -32,6 +30,7 @@ import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.AppWindowInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.AppWindowModel
@@ -64,7 +63,7 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
-    private val activityTaskManager: ActivityTaskManager,
+    private val appWindowInteractor: AppWindowInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
@@ -138,7 +137,7 @@ constructor(
             )
         }
         if (selectedRegion == ScreenCaptureRegion.APP_WINDOW) {
-            runningTasks = getAppWindowTasks()
+            runningTasks = appWindowInteractor.getAppWindowTasks(displayId)
         }
         captureRegionSource.value = selectedRegion
         backgroundScope.launch {
@@ -248,7 +247,7 @@ constructor(
 
     fun captureTaskAtPosition(pointerPosition: Point) {
         val task =
-            getAppWindowTasks().firstOrNull {
+            appWindowInteractor.getAppWindowTasks(displayId).firstOrNull {
                 it.configuration.windowConfiguration.bounds.contains(
                     pointerPosition.x,
                     pointerPosition.y,
@@ -269,16 +268,6 @@ constructor(
             screenshotInteractor.requestAppWindowScreenshot(taskId, displayId)
         }
         closeUi()
-    }
-
-    private fun getAppWindowTasks(): List<ActivityManager.RunningTaskInfo> {
-        return activityTaskManager.getTasks(Integer.MAX_VALUE).filter {
-            it.topActivity != null &&
-                it.isVisible &&
-                it.displayId == displayId &&
-                it.configuration.windowConfiguration.activityType ==
-                    WindowConfiguration.ACTIVITY_TYPE_STANDARD
-        }
     }
 
     private fun startRecording() {
@@ -351,7 +340,7 @@ constructor(
             launch { toolbarViewModel.activate() }
             launch { initializeRegionBox() }
             if (captureRegion == ScreenCaptureRegion.APP_WINDOW) {
-                launch { runningTasks = getAppWindowTasks() }
+                launch { runningTasks = appWindowInteractor.getAppWindowTasks(displayId) }
             }
         }
     }
