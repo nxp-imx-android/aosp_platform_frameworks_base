@@ -291,12 +291,21 @@ public class NotificationIconContainer extends ViewGroup {
             mIconStates.put(child, v);
         }
         int childIndex = indexOfChild(child);
-        if (childIndex < getChildCount() - 1 && !isReplacingIcon
-            && mIconStates.get(getChildAt(childIndex + 1)).iconAppearAmount > 0.0f) {
-            if (mAddAnimationStartIndex < 0) {
-                mAddAnimationStartIndex = childIndex;
-            } else {
-                mAddAnimationStartIndex = Math.min(mAddAnimationStartIndex, childIndex);
+        if (childIndex < getChildCount() - 1 && !isReplacingIcon) {
+            View nextChild = getChildAt(childIndex + 1);
+            IconState nextChildIconState = mIconStates.get(nextChild);
+            if (nextChildIconState == null) {
+                // TODO(b/465733688): Somehow this IconContainer has a child without an IconState
+                throw new IllegalStateException(
+                        "onViewAdded: nextChildIconState is null.\n"
+                                + "Container tag = " + mLogTag + ", nextChild =" + nextChild);
+            }
+            if (nextChildIconState.iconAppearAmount > 0.0f) {
+                if (mAddAnimationStartIndex < 0) {
+                    mAddAnimationStartIndex = childIndex;
+                } else {
+                    mAddAnimationStartIndex = Math.min(mAddAnimationStartIndex, childIndex);
+                }
             }
         }
         if (child instanceof StatusBarIconView) {
@@ -335,7 +344,8 @@ public class NotificationIconContainer extends ViewGroup {
                 if (mAddAnimationStartIndex < 0) {
                     mAddAnimationStartIndex = animationStartIndex;
                 } else {
-                    mAddAnimationStartIndex = Math.min(mAddAnimationStartIndex, animationStartIndex);
+                    mAddAnimationStartIndex = Math.min(mAddAnimationStartIndex,
+                            animationStartIndex);
                 }
             }
             if (!mChangingViewPositions) {
@@ -386,9 +396,10 @@ public class NotificationIconContainer extends ViewGroup {
             View view = getChildAt(i);
             ViewState iconState = mIconStates.get(view);
             if (iconState == null) {
-                Log.e(TAG, "resetViewStates: iconState is null.\nContainer tag = "
-                        + mLogTag + ", view =" + view);
-                continue;
+                // TODO(b/465733688): Somehow this IconContainer has a child without an IconState
+                throw new IllegalStateException(
+                        "resetViewStates: iconState is null.\n"
+                                + "Container tag = " + mLogTag + ", view =" + view);
             }
             iconState.initFrom(view);
             iconState.setAlpha(1.0f, "notifIconContainer reset");
@@ -484,12 +495,13 @@ public class NotificationIconContainer extends ViewGroup {
                 iconState.setXTranslation(translationX);
                 boolean isLastChild = i == childCount - 1;
                 if (!mIsShowingOverflowDot) {
-                    if (iconState.iconAppearAmount < 0.8f && (isLastChild || !physicalNotificationMovement())) {
+                    if (iconState.iconAppearAmount < 0.8f && (isLastChild
+                            || !physicalNotificationMovement())) {
                         iconState.visibleState = StatusBarIconView.STATE_ICON;
                     } else {
                         iconState.visibleState = isLastChild || !physicalNotificationMovement() ?
-                            StatusBarIconView.STATE_DOT:
-                            StatusBarIconView.STATE_HIDDEN;
+                                StatusBarIconView.STATE_DOT :
+                                StatusBarIconView.STATE_HIDDEN;
                         mIsShowingOverflowDot = true;
                     }
                     if (!physicalNotificationMovement()) {
@@ -498,7 +510,7 @@ public class NotificationIconContainer extends ViewGroup {
                     mLastVisibleIconState = iconState;
                 } else {
                     iconState.visibleState = isLastChild && physicalNotificationMovement() ?
-                            StatusBarIconView.STATE_DOT:
+                            StatusBarIconView.STATE_DOT :
                             StatusBarIconView.STATE_HIDDEN;
                 }
             }
@@ -768,8 +780,8 @@ public class NotificationIconContainer extends ViewGroup {
             final boolean isLowPriorityIconChange =
                     (visibleState == StatusBarIconView.STATE_HIDDEN
                             && icon.getVisibleState() == StatusBarIconView.STATE_DOT)
-                    || (visibleState == StatusBarIconView.STATE_DOT
-                        && icon.getVisibleState() == StatusBarIconView.STATE_HIDDEN);
+                            || (visibleState == StatusBarIconView.STATE_DOT
+                            && icon.getVisibleState() == StatusBarIconView.STATE_HIDDEN);
             return mAnimationsEnabled
                     && !mDisallowNextAnimation
                     && !noAnimations
