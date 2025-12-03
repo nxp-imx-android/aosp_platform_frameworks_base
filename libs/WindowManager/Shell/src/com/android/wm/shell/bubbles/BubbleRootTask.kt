@@ -61,12 +61,15 @@ class BubbleRootTask(
         // tasks under this root-task.
         // The app bubble should be dismissed with proper transition (such as need to convert
         // it to fullscreen) if the bubble task is no longer be a leaf task under this leaf
-        // task.
+        // task. Note that bubbles should ignore insets and should not show app compat rounded
+        // corners for better UX (e.g. when landscape apps are letterboxed).
         taskOrganizer.createRootTask(
             TaskOrganizer.CreateRootTaskRequest()
                 .setName("Bubbles")
                 .setDisplayId(context.displayId)
-                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW),
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setShouldIgnoreInsets(true)
+                .setDisableAppCompatRoundedCorners(true),
             this,
         )
     }

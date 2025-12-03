@@ -891,7 +891,8 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         final TaskDisplayArea tda = mDefaultDisplay.getDefaultTaskDisplayArea();
         final Task rootTask = createTask(tda, WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD,
                 true /* onTop */, true /* createActivity */, true /* twoLevelTask */,
-                false /* forceOpaque */);
+                false /* forceOpaque */, false /* shouldIgnoreInsets */,
+                false /* disableAppCompatRoundedCorners */);
         final Task leafTask = rootTask.getTopLeafTask();
 
         clearInvocations(tda);

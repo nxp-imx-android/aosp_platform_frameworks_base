@@ -2618,8 +2618,14 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
                     final Task task = getTask();
                     if (task != null) {
-                        // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
-                        shouldUseTaskBounds |= task.mLaunchNextToBubble;
+                        if (com.android.window.flags.Flags.enableBubbleRootTask()) {
+                            final Task rootTask = task.getRootTask();
+                            if (rootTask != null) {
+                                shouldUseTaskBounds |= rootTask.shouldIgnoreInsets();
+                            }
+                        } else {
+                            shouldUseTaskBounds |= task.mLaunchNextToBubble;
+                        }
                     }
                 }
                 if (shouldUseTaskBounds && !inPipTransition) {

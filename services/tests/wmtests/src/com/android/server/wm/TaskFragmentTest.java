@@ -629,7 +629,8 @@ public class TaskFragmentTest extends WindowTestsBase {
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */,
                 true /* createActivity */, false /* twoLevelTask */,
-                false /* forceOpaque */);
+                false /* forceOpaque */, false /* shouldIgnoreInsets */,
+                false /* disableAppCompatRoundedCorners */);
 
         // Create the top task that contains two adjacent tasks.
         final Task topTask = new TaskBuilder(mSupervisor)
