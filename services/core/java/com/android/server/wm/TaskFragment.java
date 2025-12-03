@@ -2147,8 +2147,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 } else if (!prev.isVisibleRequested() || shouldSleepOrShutDownActivities()) {
                     // If we were visible then resumeTopActivities will release resources before
                     // stopping.
-                    prev.addToStopping(true /* scheduleIdle */, false /* idleDelayed */,
-                            "completePauseLocked");
+                    prev.addToStopping(true /* scheduleIdle */, "completePauseLocked");
                 }
             } else {
                 ProtoLog.v(WM_DEBUG_STATES, "App died during pause, not stopping: %s", prev);
