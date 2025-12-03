@@ -240,7 +240,7 @@ public class JankDataProcessor {
         switch (widgetCategory) {
             case AppJankStats.WIDGET_CATEGORY_SCROLL -> {
                 return FrameworkStatsLog
-                        .JANK_FRAME_COUNT_BY_WIDGET_REPORTED__WIDGET_STATE__SCROLLING;
+                        .JANK_FRAME_COUNT_BY_WIDGET_REPORTED__WIDGET_TYPE__SCROLL;
             }
             case AppJankStats.WIDGET_CATEGORY_ANIMATION -> {
                 return FrameworkStatsLog
