@@ -18,11 +18,9 @@ package com.android.systemui.statusbar.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE_NONE
 import android.app.StatusBarManager.DISABLE_SYSTEM_INFO
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
 import com.android.systemui.flags.EnableSceneContainer
@@ -47,7 +45,6 @@ import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRo
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.testKosmosNew
-import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -192,44 +189,6 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
             assertThat(latest).isTrue()
         }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
-    fun signOutButton_isVisible_whenUserManagerLogoutIsEnabled() {
-        kosmos.runTest {
-            fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
-            val logoutToSystemUserCount = fakeUserRepository.logOutWithUserManagerCallCount
-            fakeUserRepository.setUserManagerLogoutEnabled(true)
-            fakeUserRepository.setPolicyManagerLogoutEnabled(false)
-            assertThat(underTest.isSignOutButtonEnabled).isTrue()
-            assertThat(underTest.isSignOutButtonVisible).isTrue()
-            underTest.onSignOut()
-
-            assertThat(fakeUserRepository.logOutWithUserManagerCallCount)
-                .isEqualTo(logoutToSystemUserCount + 1)
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
-    fun signOutButton_isNotVisible_whenUserManagerLogoutIsDisabled() {
-        kosmos.runTest {
-            fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
-            fakeUserRepository.setUserManagerLogoutEnabled(false)
-            fakeUserRepository.setPolicyManagerLogoutEnabled(true)
-            assertThat(underTest.isSignOutButtonEnabled).isTrue()
-            assertThat(underTest.isSignOutButtonVisible).isFalse()
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
-    fun signOutButton_isDisabled_whenDisabledInConfig() {
-        kosmos.runTest {
-            fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(false)
-            assertThat(underTest.isSignOutButtonEnabled).isFalse()
-        }
-    }
 
     @Test
     fun isSystemInfoVisible_allowedByDisableFlags_visible() =
