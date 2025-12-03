@@ -1449,6 +1449,13 @@ flag {
 }
 
 flag {
+    name: "runtime_density_resolution_for_window_layout"
+    namespace: "lse_desktop_experience"
+    description: "Enable runtime density resolution for ActivityInfo.WindowLayout"
+    bug: "438420596"
+}
+
+flag {
     name: "show_desktop_experience_dev_option"
     namespace: "lse_desktop_experience"
     description: "Replace the freeform windowing dev options with a desktop experience one."
