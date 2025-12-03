@@ -308,6 +308,14 @@ public class ThemeManagerService extends SystemService {
                         Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
                         return;
                     }
+
+                    if (wallpaperColors == null) {
+                        Slog.d(TAG,
+                                "Wallpaper color change ignored due to WallpaperManager providing"
+                                        + " null WallpaperColors");
+                        return;
+                    }
+
                     Slog.d(TAG, "User: " + userId + " changed wallpaper");
                     mStateManager.onSeedColorChange(activityManagerInternal.getCurrentUserId(),
                             ColorScheme.getSeedColor(wallpaperColors),
