@@ -22,6 +22,13 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
+import android.app.NotificationManager.ACTION_DYNAMIC_BUNDLE_MODIFIED
+import android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED
+import android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED
+import android.app.NotificationManager.EXTRA_DYNAMIC_BUNDLE
+import android.app.NotificationManager.EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE
+import android.content.Intent
+import android.content.applicationContext
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.service.notification.DynamicBundle
@@ -33,6 +40,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.settings.UserTracker
@@ -50,7 +58,7 @@ import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC_2
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
-import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager
+import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.SystemClock
@@ -69,7 +77,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 
 @OptIn(
     ExperimentalMaterial3ExpressiveApi::class,
@@ -80,6 +87,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 class BundleCoordinatorTest : SysuiTestCase() {
+    private val kosmos = testKosmos()
     @Mock private lateinit var newsController: NodeController
     @Mock private lateinit var socialController: NodeController
     @Mock private lateinit var recsController: NodeController
@@ -89,10 +97,11 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var sectionHeaderVisProvider: SectionHeaderVisibilityProvider
 
     @Mock private lateinit var notificationManager: INotificationManager
-    @Mock private lateinit var sectionsManager: NotificationSectionsManager
     @Mock private lateinit var userTracker: UserTracker
 
     private var executor: FakeExecutor = FakeExecutor(FakeSystemClock())
+
+    private val broadcastDispatcher = kosmos.broadcastDispatcher
 
     private val onboardingMgr by lazy {
         OnboardingAffordanceManager("test bundle onboarding", sectionHeaderVisProvider)
@@ -123,7 +132,7 @@ class BundleCoordinatorTest : SysuiTestCase() {
                 executor,
                 executor,
                 userTracker,
-                sectionsManager,
+                broadcastDispatcher,
             )
     }
 
@@ -628,16 +637,75 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Test
     @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
     fun testAddDynamicBundles() {
-        var bundles = listOf(DynamicBundle(130, "Group Chats"), DynamicBundle(140, "Spoilers"))
+        val bundles = listOf(DynamicBundle(130, "Group Chats"), DynamicBundle(140, "Spoilers"))
         whenever(notificationManager.getDynamicBundles(any(), any())).thenReturn(bundles)
 
         executor.runAllReady()
 
+        // 4 static bundles and 2 dynamic bundles
         assertThat(coordinator.bundler.bundleSpecs)
             .comparingElementsUsing<BundleSpec, Int>(
                 Correspondence.transforming({ it?.bundleType }, "bundleType")
             )
-            .containsAtLeast(130, 140)
+            .containsExactly(1, 2, 3, 4, 130, 140)
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    fun testAddDynamicBundles_afterBoot() {
+        val bundles =
+            mutableListOf(DynamicBundle(130, "Group Chats"), DynamicBundle(140, "Spoilers"))
+        whenever(notificationManager.getDynamicBundles(any(), any())).thenReturn(bundles)
+
+        executor.runAllReady()
+
+        val newBundle = DynamicBundle(150, "bundle!")
+        bundles.add(newBundle)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            kosmos.applicationContext,
+            Intent(ACTION_DYNAMIC_BUNDLE_MODIFIED).apply {
+                putExtra(
+                    EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE,
+                    DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED,
+                )
+                putExtra(EXTRA_DYNAMIC_BUNDLE, newBundle)
+            },
+        )
+
+        // 4 static bundles and 3 dynamic bundles
+        assertThat(coordinator.bundler.bundleSpecs)
+            .comparingElementsUsing<BundleSpec, Int>(
+                Correspondence.transforming({ it?.bundleType }, "bundleType")
+            )
+            .containsExactly(1, 2, 3, 4, 130, 140, 150)
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    fun testRemoveDynamicBundles() {
+        val removable = DynamicBundle(140, "Spoilers")
+        val bundles = mutableListOf(DynamicBundle(130, "Group Chats"), removable)
+        whenever(notificationManager.getDynamicBundles(any(), any())).thenReturn(bundles)
+
+        executor.runAllReady()
+
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            kosmos.applicationContext,
+            Intent(ACTION_DYNAMIC_BUNDLE_MODIFIED).apply {
+                putExtra(
+                    EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE,
+                    DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED,
+                )
+                putExtra(EXTRA_DYNAMIC_BUNDLE, removable)
+            },
+        )
+
+        // 4 static bundles and 1 dynamic bundle
+        assertThat(coordinator.bundler.bundleSpecs)
+            .comparingElementsUsing<BundleSpec, Int>(
+                Correspondence.transforming({ it?.bundleType }, "bundleType")
+            )
+            .containsExactly(1, 2, 3, 4, 130)
     }
 
     private fun makeEntryOfChannelType(
