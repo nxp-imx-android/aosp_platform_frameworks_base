@@ -19,6 +19,7 @@ package android.app;
 import static android.app.Instrumentation.DEBUG_FINISH_ACTIVITY;
 import static android.app.WindowConfiguration.activityTypeToString;
 import static android.app.WindowConfiguration.windowingModeToString;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 
@@ -5539,11 +5540,41 @@ public class ActivityManager {
         if (UserHandle.isIsolated(uid)) {
             return PackageManager.PERMISSION_DENIED;
         }
+
         // If there is a uid that owns whatever is being accessed, it has
         // blanket access to it regardless of the permissions it requires.
         if (owningUid >= 0 && UserHandle.isSameApp(uid, owningUid)) {
             return PackageManager.PERMISSION_GRANTED;
         }
+
+        if (owningUid >= 0 && enablePccFrameworkSupport()) {
+            boolean isCallerPcc = Process.isPrivateComputeCoreUid(uid);
+            boolean isOwnerPcc = Process.isPrivateComputeCoreUid(owningUid);
+
+            // If a PCC process and a non-PCC process from the same app are trying to communicate,
+            // convert the PCC UID back to an app UID to check if they are the same app.
+            // This allows accessing non-exported PCC components.
+            if (isCallerPcc != isOwnerPcc) {
+                int callerAppUid = uid;
+                int ownerAppUid = owningUid;
+                try {
+                    if (isCallerPcc) {
+                        callerAppUid = AppGlobals.getPackageManager()
+                                .getAppUidForPrivateComputeCoreUid(uid);
+                    } else {
+                        ownerAppUid = AppGlobals.getPackageManager()
+                                .getAppUidForPrivateComputeCoreUid(owningUid);
+                    }
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+
+                if (UserHandle.isSameApp(callerAppUid, ownerAppUid)) {
+                    return PackageManager.PERMISSION_GRANTED;
+                }
+            }
+        }
+
         // If the target is not exported, then nobody else can get to it.
         if (!exported) {
             /*
