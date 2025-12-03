@@ -1298,6 +1298,16 @@ flag {
 }
 
 flag {
+    name: "fullscreen_key_ignores_bubble_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "The fullscreen key does not apply the fullscreen state toggle if a a bubble is the focused task."
+    bug: "457296491"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "grant_manage_key_gestures_to_recents"
     namespace: "lse_desktop_experience"
     description: "Grant MANAGE_KEY_GESTURES permission to the recents holder."
