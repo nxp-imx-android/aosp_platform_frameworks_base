@@ -20,10 +20,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.display.BrightnessUtils
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.brightness.data.repository.fakeScreenBrightnessRepository
 import com.android.systemui.brightness.data.repository.screenBrightnessRepository
 import com.android.systemui.brightness.shared.model.GammaBrightness
-import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testScope

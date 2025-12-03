@@ -16,21 +16,7 @@
 
 package com.android.systemui.brightness.dagger
 
-import com.android.systemui.brightness.data.repository.BrightnessPolicyRepository
-import com.android.systemui.brightness.data.repository.BrightnessPolicyRepositoryImpl
-import com.android.systemui.brightness.data.repository.ScreenBrightnessDisplayManagerRepository
-import com.android.systemui.brightness.data.repository.ScreenBrightnessRepository
-import dagger.Binds
+import com.android.systemui.brightness.data.repository.impl.BrightnessDataModule
 import dagger.Module
 
-@Module
-interface ScreenBrightnessModule {
-
-    @Binds
-    fun bindScreenBrightnessRepository(
-        impl: ScreenBrightnessDisplayManagerRepository
-    ): ScreenBrightnessRepository
-
-    @Binds
-    fun bindPolicyRepository(impl: BrightnessPolicyRepositoryImpl): BrightnessPolicyRepository
-}
+@Module(includes = [BrightnessDataModule::class]) interface ScreenBrightnessModule {}
