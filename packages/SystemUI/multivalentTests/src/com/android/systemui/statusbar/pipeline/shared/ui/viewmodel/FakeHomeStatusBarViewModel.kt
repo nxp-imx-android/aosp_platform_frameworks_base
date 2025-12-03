@@ -188,6 +188,10 @@ class FakeHomeStatusBarViewModel(
     val isQuickSettingsChipClickableSource = mutableStateOf(false)
     override val isQuickSettingsChipClickable: Boolean by isQuickSettingsChipClickableSource
 
+    override val isSignOutButtonVisible: Boolean = false
+
+    override fun onSignOut() {}
+
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }

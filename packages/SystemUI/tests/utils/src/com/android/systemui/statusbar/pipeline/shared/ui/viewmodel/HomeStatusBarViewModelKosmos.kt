@@ -50,6 +50,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarVie
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
+import com.android.systemui.user.domain.interactor.userLogoutInteractor
 
 var Kosmos.homeStatusBarViewBinder: HomeStatusBarViewBinder by
     Kosmos.Fixture { HomeStatusBarViewBinderImpl() }
@@ -103,6 +104,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 { shadeDisplaysInteractor },
                 uiEventLogger = statusBarChipsUiEventLogger,
                 deviceProvisioningInteractor = deviceProvisioningInteractor,
+                userLogoutInteractor = userLogoutInteractor,
             )
         }
     }
