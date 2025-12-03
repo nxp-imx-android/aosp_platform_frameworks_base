@@ -23,6 +23,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.windowingModeToString
 import android.os.IBinder
 import android.window.DesktopExperienceFlags
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
@@ -290,7 +291,6 @@ class DesktopPipTransitionController(
             return
         }
 
-        val taskId = taskInfo.taskId
         val displayId = taskInfo.displayId
         val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
         if (!pipDesktopState.isPipInDesktopMode()) {
@@ -336,6 +336,23 @@ class DesktopPipTransitionController(
                 )
             runOnTransitStart?.invoke(transition)
         }
+    }
+
+    /**
+     * This is called by [PipScheduler#getRemovePipTransaction] when PiP is removed. If PiP is in
+     * Desktop session, we remove the entire task directly instead of reordering the task to the
+     * back.
+     *
+     * @param wct WindowContainerTransaction that will apply the changes
+     * @param token WindowContainerToken of the PiP task
+     */
+    fun handleRemovePipTransition(wct: WindowContainerTransaction, token: WindowContainerToken) {
+        if (!pipDesktopState.isPipInDesktopMode()) {
+            logD("handleRemovePipTransition: PiP transition is not in Desktop session")
+            return
+        }
+        logD("handleRemovePipTransition: In Desktop session, removing PiP task entirely")
+        wct.removeTask(token)
     }
 
     private fun getDeskId(repository: DesktopRepository, displayId: Int): Int =
