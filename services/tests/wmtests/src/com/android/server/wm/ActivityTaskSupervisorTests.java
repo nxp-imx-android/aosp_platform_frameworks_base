@@ -227,11 +227,11 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         activity1.setVisible(false);
         activity1.finishing = true;
         activity1.setState(ActivityRecord.State.STOPPING, "test");
-        activity1.addToStopping(false /* scheduleIdle */, false /* idleDelayed */, "test");
+        activity1.addToStopping(false /* scheduleIdle */, "test");
         final ActivityRecord activity2 = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity2.setState(ActivityRecord.State.RESUMED, "test");
         // The state can happen from ActivityRecord#makeInvisible.
-        activity2.addToStopping(false /* scheduleIdle */, false /* idleDelayed */, "test");
+        activity2.addToStopping(false /* scheduleIdle */, "test");
         mSupervisor.removeTask(activity1.getTask(), true /* killProcess */,
                 true /* removeFromRecents */, "testRemoveTask");
         mSupervisor.removeTask(activity2.getTask(), true /* killProcess */,

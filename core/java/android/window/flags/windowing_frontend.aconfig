@@ -149,16 +149,6 @@ flag {
 }
 
 flag {
-  name: "reduce_unnecessary_schedule_idle_msg"
-  namespace: "windowing_frontend"
-  description: "Reduce lock contention on display thread"
-  bug: "445613287"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "default_animator_single_transaction2"
   namespace: "windowing_frontend"
   description: "Reduce binder transaction to SF if there are multiple default animations"

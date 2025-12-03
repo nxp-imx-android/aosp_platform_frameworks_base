@@ -400,9 +400,6 @@ final class ActivityRecord extends WindowToken {
     private static final String TAG_INITIAL_CALLER_INFO = "initial_caller_info";
     static final String ACTIVITY_ICON_SUFFIX = "_activity_icon_";
 
-    // How many activities have to be scheduled to stop to force a stop pass.
-    private static final int MAX_STOPPING_TO_FORCE = 3;
-
     static final int STARTING_WINDOW_TYPE_NONE = 0;
     static final int STARTING_WINDOW_TYPE_SNAPSHOT = 1;
     static final int STARTING_WINDOW_TYPE_SPLASH_SCREEN = 2;
@@ -3829,8 +3826,7 @@ final class ActivityRecord extends WindowToken {
             if (isNextNotYetVisible || delayRemoval || (next != null && inTransition())) {
                 // Add this activity to the list of stopping activities. It will be processed and
                 // destroyed when the next activity reports idle.
-                addToStopping(false /* scheduleIdle */, false /* idleDelayed */,
-                        "completeFinishing");
+                addToStopping(false /* scheduleIdle */, "completeFinishing");
                 setState(STOPPING, "completeFinishing");
             } else if (addToFinishingAndWaitForIdle()) {
                 // We added this activity to the finishing list and something else is becoming
@@ -5984,8 +5980,6 @@ final class ActivityRecord extends WindowToken {
             Slog.v(TAG_VISIBILITY, "Making invisible: " + this + ", state=" + mState);
         }
         try {
-            final boolean canEnterPictureInPicture = checkEnterPictureInPictureState(
-                    "makeInvisible", true /* beforeStopping */);
             setVisibility(false);
 
             switch (mState) {
@@ -6009,8 +6003,7 @@ final class ActivityRecord extends WindowToken {
                 case PAUSING:
                 case PAUSED:
                 case STARTED:
-                    addToStopping(true /* scheduleIdle */,
-                            canEnterPictureInPicture /* idleDelayed */, "makeInvisible");
+                    addToStopping(true /* scheduleIdle */, "makeInvisible");
                     break;
                 default:
                     break;
@@ -6438,41 +6431,19 @@ final class ActivityRecord extends WindowToken {
         mTaskSupervisor.checkReadyForSleepLocked();
     }
 
-    void addToStopping(boolean scheduleIdle, boolean idleDelayed, String reason) {
+    void addToStopping(boolean scheduleIdle, String reason) {
         if (!mTaskSupervisor.mStoppingActivities.contains(this)) {
             EventLogTags.writeWmAddToStopping(mUserId, System.identityHashCode(this),
                     shortComponentName, reason);
             mTaskSupervisor.mStoppingActivities.add(this);
         }
 
-        if (com.android.window.flags.Flags.reduceUnnecessaryScheduleIdleMsg()) {
-            // Schedule idle to process the stopping activities if there won't be further events to
-            // handle them.
-            if (scheduleIdle && (isSleeping() || (!mTransitionController.inTransition()
-                    && !mTransitionController.inFinishingTransition(this)))) {
-                ProtoLog.v(WM_DEBUG_STATES, "Scheduling idle now");
-                mTaskSupervisor.scheduleIdle();
-            }
-            return;
-        }
-
-        final Task rootTask = getRootTask();
-        // If we already have a few activities waiting to stop, then give up on things going idle
-        // and start clearing them out. Or if r is the last of activity of the last task the root
-        // task will be empty and must be cleared immediately.
-        boolean forceIdle = mTaskSupervisor.mStoppingActivities.size() > MAX_STOPPING_TO_FORCE
-                || (isRootOfTask() && rootTask.getChildCount() <= 1);
-        if (scheduleIdle || forceIdle) {
-            ProtoLog.v(WM_DEBUG_STATES,
-                    "Scheduling idle now: forceIdle=%b immediate=%b", forceIdle, !idleDelayed);
-
-            if (!idleDelayed) {
-                mTaskSupervisor.scheduleIdle();
-            } else {
-                mTaskSupervisor.scheduleIdleTimeout(this);
-            }
-        } else {
-            rootTask.checkReadyForSleep();
+        // Schedule idle to process the stopping activities if there won't be further events to
+        // handle them.
+        if (scheduleIdle && (isSleeping() || (!mTransitionController.inTransition()
+                && !mTransitionController.inFinishingTransition(this)))) {
+            ProtoLog.v(WM_DEBUG_STATES, "Scheduling idle now");
+            mTaskSupervisor.scheduleIdle();
         }
     }
 
