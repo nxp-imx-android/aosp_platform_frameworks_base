@@ -19,6 +19,7 @@ package com.android.keyguard;
 import static android.app.StatusBarManager.SESSION_KEYGUARD;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.security.Flags.enableWeaverWarmup;
 import static android.security.Flags.secureLockDevice;
 
 import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISSIBLE_KEYGUARD;
@@ -75,6 +76,7 @@ import com.android.keyguard.dagger.KeyguardBouncerScope;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
+import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor;
 import com.android.systemui.biometrics.FaceAuthAccessibilityDelegate;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.BouncerMessageInteractor;
@@ -107,6 +109,7 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 
 import dagger.Lazy;
 
+import kotlin.Unit;
 import kotlinx.coroutines.Job;
 
 import java.io.File;
@@ -142,6 +145,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private final FeatureFlags mFeatureFlags;
     private final SessionTracker mSessionTracker;
     private final FalsingA11yDelegate mFalsingA11yDelegate;
+    private final Lazy<AuthenticationInteractor> mAuthenticationInteractor;
     private final DeviceEntryFaceAuthInteractor mDeviceEntryFaceAuthInteractor;
     private final BouncerMessageInteractor mBouncerMessageInteractor;
     private final Lazy<WindowRootViewBlurInteractor> mRootViewBlurInteractor;
@@ -219,6 +223,15 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private KeyguardSecurityCallback mKeyguardSecurityCallback = new KeyguardSecurityCallback() {
         @Override
         public void onUserInput() {
+            if (enableWeaverWarmup()) {
+                // We don't care about the result of this call.
+                mJavaAdapter.get().<Unit>runSuspend(
+                    mAuthenticationInteractor.get()::triggerAuthWarmUp,
+                    /* onSuccess= */ unused -> Unit.INSTANCE,
+                    /* onCancel= */ unused -> Unit.INSTANCE,
+                    /* onFailure= */ unused -> Unit.INSTANCE
+                );
+            }
             mBouncerMessageInteractor.onPrimaryBouncerUserInput();
             mDeviceEntryFaceAuthInteractor.onPrimaryBouncerUserInput();
         }
@@ -478,6 +491,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
             TelephonyManager telephonyManager,
             ViewMediatorCallback viewMediatorCallback,
             AudioManager audioManager,
+            Lazy<AuthenticationInteractor> authenticationInteractor,
             DeviceEntryFaceAuthInteractor deviceEntryFaceAuthInteractor,
             BouncerMessageInteractor bouncerMessageInteractor,
             Provider<JavaAdapter> javaAdapter,
@@ -518,6 +532,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         mTelephonyManager = telephonyManager;
         mViewMediatorCallback = viewMediatorCallback;
         mAudioManager = audioManager;
+        mAuthenticationInteractor = authenticationInteractor;
         mDeviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor;
         mBouncerMessageInteractor = bouncerMessageInteractor;
         mSelectedUserInteractor = selectedUserInteractor;

@@ -23,6 +23,7 @@ import com.android.internal.widget.LockPatternUtils.credentialTypeToString
 import com.android.internal.widget.LockPatternView
 import com.android.internal.widget.LockscreenCredential
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode
+import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
 import com.android.systemui.authentication.shared.model.AuthenticationResultModel
@@ -33,6 +34,7 @@ import dagger.Provides
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.ZERO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -88,6 +90,12 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
 
     fun overrideLockout(lockout: Duration) {
         lockoutOverride = lockout
+    }
+
+    override var lastWarmUpTrigger = ZERO - WARM_UP_THROTTLE_DURATION
+
+    override suspend fun triggerAuthWarmUp() {
+        // Do nothing.
     }
 
     fun setAuthenticationMethod(authenticationMethod: AuthenticationMethodModel) {

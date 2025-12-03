@@ -42,6 +42,8 @@ import com.android.keyguard.KeyguardSecurityModel.SecurityMode
 import com.android.keyguard.domain.interactor.KeyguardKeyboardInteractor
 import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
+import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.biometrics.FaceAuthAccessibilityDelegate
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
@@ -189,6 +191,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
     private lateinit var kosmos: Kosmos
     private lateinit var sceneInteractor: SceneInteractor
     private lateinit var keyguardTransitionInteractor: KeyguardTransitionInteractor
+    private lateinit var authenticationInteractor: AuthenticationInteractor
     private lateinit var deviceEntryInteractor: DeviceEntryInteractor
     @Mock private lateinit var primaryBouncerInteractor: PrimaryBouncerInteractor
     private lateinit var sceneTransitionStateFlow: MutableStateFlow<ObservableTransitionState>
@@ -266,6 +269,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
         sceneTransitionStateFlow =
             MutableStateFlow(ObservableTransitionState.Idle(Scenes.Lockscreen))
         sceneInteractor.setTransitionState(sceneTransitionStateFlow)
+        authenticationInteractor = kosmos.authenticationInteractor
         deviceEntryInteractor = kosmos.deviceEntryInteractor
 
         fakeSceneDataSource = kosmos.fakeSceneDataSource
@@ -292,6 +296,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 telephonyManager,
                 viewMediatorCallback,
                 audioManager,
+                { authenticationInteractor },
                 faceAuthInteractor,
                 mock(),
                 { kosmos.javaAdapter },
