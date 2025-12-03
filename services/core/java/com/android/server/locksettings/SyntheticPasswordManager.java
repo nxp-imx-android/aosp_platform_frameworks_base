@@ -1143,12 +1143,25 @@ class SyntheticPasswordManager {
             saveState(PASSWORD_DATA_NAME, pwd.toBytes(), protectorId, userId);
             savePasswordMetrics(credential, sp, protectorId, userId);
         }
-        createSyntheticPasswordBlob(protectorId, PROTECTOR_TYPE_LSKF_BASED, sp, protectorSecret,
-                sid, userId);
+        createSyntheticPasswordBlob(
+                protectorId, PROTECTOR_TYPE_LSKF_BASED, sp, protectorSecret, sid, userId);
+        if (android.security.Flags.enableAtomicChildProfileLskf()
+                && credential.isUnifiedProfilePassword()) {
+            final UserInfo parent = mUserManager.getProfileParent(userId);
+            if (parent == null) {
+                throw new IllegalStateException("User has no parent user");
+            }
+            tieProtectorToParent(gatekeeper, userId, protectorId, parent.id, credential);
+        }
         syncState(userId); // ensure the new files are really saved to disk
         return protectorId;
     }
 
+    /**
+     * Creates a unified profile password for the given profileUserId encrypted by a key bound to
+     * the parent sid. The caller is responsible for calling {@link
+     * LockSettingsStorage#syncSyntheticPasswordState(int)} afterward.
+     */
     void tieProtectorToParent(
             IGateKeeperService gatekeeper,
             int profileUserId,
