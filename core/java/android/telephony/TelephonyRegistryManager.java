@@ -1256,24 +1256,6 @@ public class TelephonyRegistryManager {
     }
 
     /**
-     * Notify external listeners of new network security events.
-     *
-     * @param slotIndex for the phone object that the event applies to
-     * @param subId for which the event applies to
-     * @param events details of the network security event
-     * @hide
-     */
-    public void notifyNetworkSecurityEvents(
-            int slotIndex, int subId, Set<NetworkSecurityEvent> events) {
-        try {
-            sRegistry.notifyNetworkSecurityEvents(slotIndex, subId, List.copyOf(events));
-        } catch (RemoteException ex) {
-            // system server crash
-            throw ex.rethrowFromSystemServer();
-        }
-    }
-
-    /**
      * Processes potential event changes from the provided {@link TelephonyCallback}.
      *
      * @param telephonyCallback callback for monitoring callback changes to the telephony state.
@@ -1443,10 +1425,6 @@ public class TelephonyRegistryManager {
 
         if (telephonyCallback instanceof TelephonyCallback.DomainSelectionEmergencyModeListener) {
             eventList.add(TelephonyCallback.EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED);
-        }
-
-        if (telephonyCallback instanceof TelephonyCallback.NetworkSecurityEventsListener) {
-            eventList.add(TelephonyCallback.EVENT_NETWORK_SECURITY_EVENTS);
         }
 
         return eventList;
