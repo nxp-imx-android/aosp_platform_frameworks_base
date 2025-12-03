@@ -542,8 +542,7 @@ public class BubbleBarLayerView extends FrameLayout
 
     public void removeBubble(@NonNull Bubble bubble, @NonNull Runnable endAction) {
         final boolean inTransition = bubble.getCurrentTransition() != null;
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                "BBLayerView.removeBubble(): bubble=%s hasBubbles=%b inTransition=%b",
+        BubbleLog.d("BubbleBarLayerView.removeBubble(): bubble=%s hasBubbles=%b inTransition=%b",
                 bubble, !mBubbleData.getBubbles().isEmpty(), inTransition);
         Runnable cleanUp = () -> {
             // The transition is already managing the task/wm state.
