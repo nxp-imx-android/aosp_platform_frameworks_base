@@ -19,6 +19,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.annotation.SystemService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.util.Slog;
@@ -40,14 +41,18 @@ import com.android.internal.annotations.GuardedBy;
  */
 @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
 @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
-public class DynamicInstrumentationUtil {
+@SystemService(Context.DYNAMIC_INSTRUMENTATION_SERVICE)
+public final class DynamicInstrumentationManager {
 
-    private static final String TAG = DynamicInstrumentationUtil.class.getSimpleName();
+    private static final String TAG = DynamicInstrumentationManager.class.getSimpleName();
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
     private static volatile ComponentName sDynamicInstrumentationEventConsumer;
+    private final Context mContext;
 
-    private DynamicInstrumentationUtil() {
+    /** @hide */
+    public DynamicInstrumentationManager(@NonNull Context context) {
+        mContext = context;
     }
 
     /**
@@ -62,7 +67,6 @@ public class DynamicInstrumentationUtil {
      * <p>If the configuration string is empty or does not point to a valid component,
      * this method will return {@code null}, and instrumentation events will be discarded.
      *
-     * @param context The context used to resolve system resources.
      * @return The {@link ComponentName} of the configured consumer service, or {@code null} if
      * none is configured or the configured value is invalid.
      * @hide
@@ -70,11 +74,11 @@ public class DynamicInstrumentationUtil {
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
     @Nullable
-    public static ComponentName getDynamicInstrumentationEventConsumer(@NonNull Context context) {
+    public ComponentName getDynamicInstrumentationEventConsumer() {
         if (sDynamicInstrumentationEventConsumer == null) {
             synchronized (sLock) {
                 if (sDynamicInstrumentationEventConsumer == null) {
-                    final String componentNameString = context.getString(
+                    final String componentNameString = mContext.getString(
                             R.string.config_dynamicInstrumentationEventConsumer);
                     // An empty or invalid string will correctly result in null.
                     sDynamicInstrumentationEventConsumer =
@@ -94,8 +98,7 @@ public class DynamicInstrumentationUtil {
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
-    public static void setDynamicInstrumentationEventConsumer(@NonNull Context context,
-            @Nullable ComponentName componentName) {
+    public void setDynamicInstrumentationEventConsumer(@Nullable ComponentName componentName) {
         synchronized (sLock) {
             Slog.w(TAG, "Overriding dynamic instrumentation consumer for test. New value: "
                     + componentName);

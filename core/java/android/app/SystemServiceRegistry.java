@@ -29,7 +29,6 @@ import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
 import android.adservices.AdServicesFrameworkInitializer;
 import android.aiseal.AiSealManager;
-import android.aiseal.IAiSealHostService;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -275,6 +274,7 @@ import android.service.persistentdata.IPersistentDataBlockService;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
+import android.service.uprobestats.DynamicInstrumentationManager;
 import android.service.uprobestats.UprobestatsFrameworkInitializer;
 import android.service.vr.IVrManager;
 import android.system.virtualmachine.VirtualizationFrameworkInitializer;
@@ -2040,6 +2040,20 @@ public final class SystemServiceRegistry {
                         }
                     });
         }
+
+        registerService(Context.DYNAMIC_INSTRUMENTATION_SERVICE,
+                DynamicInstrumentationManager.class,
+                new CachedServiceFetcher<DynamicInstrumentationManager>() {
+                    @Override
+                    public DynamicInstrumentationManager createService(ContextImpl ctx)
+                            throws ServiceNotFoundException {
+                        if (!android.security.Flags.dynamicInstrumentationApi()) {
+                            throw new ServiceNotFoundException(
+                                    Context.DYNAMIC_INSTRUMENTATION_SERVICE + " is not supported");
+                        }
+                        return new DynamicInstrumentationManager(ctx);
+                    }
+                });
 
         sInitializing = true;
         try {
