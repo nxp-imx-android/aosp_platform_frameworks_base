@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ComposeView
@@ -72,6 +73,7 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
+import com.android.internal.graphics.ColorUtils
 import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.hasCompactWindowSize
 import com.android.systemui.res.R
@@ -155,10 +157,12 @@ fun SystemUIDialogFactory.createBottomSheet(
             }
             Box(
                 modifier =
-                    Modifier.bottomSheetClickable { dialog.dismiss() }
+                    Modifier
+                        .bottomSheetClickable { dialog.dismiss() }
                         .then(
                             if (isDraggable)
-                                Modifier.anchoredDraggable(
+                                Modifier
+                                    .anchoredDraggable(
                                         state = dragState!!,
                                         interactionSource = interactionSource,
                                         orientation = Orientation.Vertical,
@@ -221,7 +225,8 @@ fun SystemUIDialogFactory.createBottomSheet(
                     }
                 Surface(
                     modifier =
-                        Modifier.bottomSheetPaddings()
+                        Modifier
+                            .bottomSheetPaddings()
                             // consume input so it doesn't get to the parent Composable
                             .bottomSheetClickable {}
                             .widthIn(
@@ -234,7 +239,12 @@ fun SystemUIDialogFactory.createBottomSheet(
                     color =
                         if (Flags.blurOnMoreSurfaces()) {
                             if (isBlurSupported) {
-                                LocalAndroidColorScheme.current.surfaceEffect0
+                                Color(
+                                    ColorUtils.compositeColors(
+                                        LocalAndroidColorScheme.current.surfaceEffect0.toArgb(),
+                                        LocalAndroidColorScheme.current.surfaceEffect2.toArgb(),
+                                    )
+                                )
                             } else {
                                 LocalAndroidColorScheme.current.surfaceEffect0Fallback
                             }
@@ -337,7 +347,8 @@ private fun DragHandle(dialog: Dialog) {
         stringResource(id = R.string.shortcut_helper_content_description_drag_handle)
     Surface(
         modifier =
-            Modifier.padding(top = 16.dp, bottom = 6.dp)
+            Modifier
+                .padding(top = 16.dp, bottom = 6.dp)
                 .semantics {
                     contentDescription = dragHandleContentDescription
                     hideFromAccessibility()
