@@ -3021,6 +3021,9 @@
     <!-- Positive button text for dialog when the keyboard shortcut has not yet enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text">Turn on shortcut</string>
 
+    <!-- Dialog content for the color inversion shortcut confirmation. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_color_inversion_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="I">^3</xliff:g> is the keyboard shortcut to use color inversion. Color inversion turns light screens dark. It also turns dark screens light.</string>
+
     <!-- Text for the Magnification dialog title when the keyboard shortcut is enabled and Magnification has been toggled on. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_title"><xliff:g name="feature_name" example="Magnification">%1$s</xliff:g> keyboard shortcut turned on</string>
     <!-- Text for showing inside the Magnification dialog. [CHAR LIMIT=NONE] -->

@@ -37,6 +37,7 @@ import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME
 import com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.ShortcutUtils
@@ -110,6 +111,34 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
 
             assertThat(info).isNull()
+        }
+
+    @Test
+    fun getKeyGestureConfirmInfo_onColorInversionTypeReceived_getExpectedInfo() =
+        kosmos.runTest {
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION
+
+            val info =
+                underTest.getKeyGestureConfirmInfo(
+                    type,
+                    metaState,
+                    KeyEvent.KEYCODE_I,
+                    getTargetNameByType(type),
+                    DEFAULT_DISPLAY,
+                )
+
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Turn on Color inversion keyboard shortcut?")
+            val contentText = info.contentText
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
+            // compare its value here.
+            assertThat(contentText.toString())
+                .isEqualTo(
+                    "Action icon + Alt + I is the keyboard shortcut to use color inversion. Color" +
+                        " inversion turns light screens dark. It also turns dark screens light."
+                )
         }
 
     @Test
@@ -539,6 +568,8 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
     private fun Kosmos.getTargetNameByType(keyGestureType: Int): String =
         when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION ->
+                COLOR_INVERSION_COMPONENT_NAME.flattenToString()
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION -> MAGNIFICATION_CONTROLLER_NAME
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK ->
                 mainResources.getString(
