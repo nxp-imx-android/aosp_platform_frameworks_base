@@ -334,8 +334,13 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                             finishTransaction,
                             finishCB);
                 }
-                mPipHandler.startAnimation(mTransition, pipInfo, startTransaction,
-                        finishTransaction, finishCB);
+                if (!mPipHandler.startAnimation(mTransition, pipInfo, startTransaction,
+                        finishTransaction, finishCB)) {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                            "PiP handler rejected its part of the mixed animation #%d.",
+                            info.getDebugId());
+                    --mInFlightSubAnimations;
+                }
             } else if (enterPipChange != null) {
                 mPipHandler.startEnterAnimation(enterPipChange, otherStartT, finishTransaction,
                         finishCB);
