@@ -460,7 +460,6 @@ public abstract class CameraDevice implements AutoCloseable {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public static final int SESSION_OPERATION_MODE_SHARED =
             2; // ICameraDeviceUser.SHARED_MODE;
 
@@ -1596,7 +1595,6 @@ public abstract class CameraDevice implements AutoCloseable {
          * @hide
          */
         @SystemApi
-        @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
         public void onOpenedInSharedMode(@NonNull CameraDevice camera, boolean isPrimaryClient) {
           // Default empty implementation
         }
@@ -1618,7 +1616,6 @@ public abstract class CameraDevice implements AutoCloseable {
          * @hide
          */
         @SystemApi
-        @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
         public void onClientSharedAccessPriorityChanged(@NonNull CameraDevice camera,
                 boolean isPrimaryClient) {
           // Default empty implementation
