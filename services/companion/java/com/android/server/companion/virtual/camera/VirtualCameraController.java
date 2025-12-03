@@ -103,7 +103,6 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
                     mCameras.put(binder, cameraDescriptor);
                 }
             } else {
-                // TODO(b/310857519): Revisit this to find a better way of indicating failure.
                 throw new RuntimeException("Failed to register virtual camera.");
             }
         } catch (RemoteException e) {

@@ -22,6 +22,8 @@ import android.annotation.TestApi;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtualdevice.flags.Flags;
+import android.hardware.HardwareBuffer;
 import android.hardware.camera2.CameraDevice;
 import android.os.RemoteException;
 
@@ -55,6 +57,7 @@ public final class VirtualCamera implements Closeable {
 
     private final String mCameraId;
     private final VirtualCameraConfig mConfig;
+    private static Boolean sVirtualCameraSupported = null;
 
     /**
      * VirtualCamera device constructor.
@@ -70,6 +73,33 @@ public final class VirtualCamera implements Closeable {
         mVirtualDevice = Objects.requireNonNull(virtualDevice);
         mCameraId = Objects.requireNonNull(cameraId);
         mConfig = Objects.requireNonNull(config);
+    }
+
+    /** @hide */
+    public static boolean isSupported() {
+        if (!Flags.virtualCameraSupportApi()) {
+            throw new UnsupportedOperationException(
+                    "Flag " + Flags.FLAG_VIRTUAL_CAMERA_SUPPORT_API + " is not enabled");
+        }
+
+        final int checkWidth = 640;
+        final int checkHeight = 480;
+
+        if (sVirtualCameraSupported != null) {
+            return sVirtualCameraSupported;
+        }
+
+        final long usage = HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
+                | HardwareBuffer.USAGE_GPU_COLOR_OUTPUT
+                | HardwareBuffer.USAGE_CPU_WRITE_OFTEN
+                | HardwareBuffer.USAGE_CPU_READ_OFTEN;
+        sVirtualCameraSupported = HardwareBuffer.isSupported(
+                checkWidth,
+                checkHeight,
+                HardwareBuffer.YCBCR_420_888,
+                1 /* layers */,
+                usage);
+        return sVirtualCameraSupported;
     }
 
     /** Returns the configuration of this virtual camera instance. */
