@@ -1324,10 +1324,11 @@ public class StackScrollAlgorithm {
             // SceneContainer simplifies this logic, because:
             // - there are no overlapping HUNs anymore, no need for multiplying their shadows
             // - shadows for HUNs overlapping with the stack are now set from updateHeadsUpStates
-            if (child.isPinned() || ambientState.getTrackedHeadsUpRow() == child) {
-                // set a default elevation on the HUN, which would be overridden
-                // from updateHeadsUpStates if it is displayed in the shade
-                childViewState.setZTranslation(baseZ + mPinnedZTranslationExtra);
+            if (child.isPinned()
+                    || (child.mustStayOnScreen() && ambientState.isDozing())
+                    || ambientState.getTrackedHeadsUpRow() == child) {
+                childrenOnTop++;
+                childViewState.setZTranslation(baseZ + childrenOnTop * mPinnedZTranslationExtra);
             } else {
                 // set baseZ for every notification
                 childViewState.setZTranslation(baseZ);
