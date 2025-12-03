@@ -107,4 +107,9 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
     public void injectWeaverReadResponse(int status, Duration timeout) {
         mWeaverService.injectReadResponse(status, timeout);
     }
+
+    /** Injects a timeout to be returned by the next getTimeout call to Weaver. */
+    public void injectWeaverTimeout(Duration timeout) {
+        mWeaverService.injectTimeout(timeout);
+    }
 }

@@ -582,6 +582,63 @@ public class SoftwareRateLimiterTest {
         verify(mInvalidateLockoutEndTimeCacheMock, times(2)).run();
     }
 
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+        android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
+    })
+    public void testLockoutEndTimeAfterInstantiation_reflectsGreaterOfSwAndHwTimeouts() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final Duration timeSinceBoot = Duration.ZERO;
+        mInjector.setTime(timeSinceBoot);
+
+        // Case 1: Zero SW timeout, nonzero HW timeout. Expect HW timeout.
+        assertLockoutEndTimeAfterInstantiation(
+                id,
+                timeSinceBoot,
+                /* hwTimeout= */ Duration.ofMinutes(5),
+                /* expectedTimeout= */ Duration.ofMinutes(5));
+
+        // Make guesses until a nonzero SW timeout is reached, and set swTimeout to that timeout.
+        mInjector.setHardwareRateLimiterTimeout(Duration.ZERO);
+        mRateLimiter = new SoftwareRateLimiter(mInjector);
+        makeGuessesUntilRateLimited(id);
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
+        final Duration swTimeout = timeoutTable[findIndexOfFirstNonZeroTimeout(timeoutTable)];
+
+        // Case 2: Nonzero SW timeout, zero HW timeout. Expect SW timeout.
+        assertLockoutEndTimeAfterInstantiation(
+                id,
+                timeSinceBoot,
+                /* hwTimeout= */ Duration.ZERO,
+                /* expectedTimeout= */ swTimeout);
+
+        // Case 3: Nonzero SW timeout longer than nonzero HW timeout. Expect SW timeout.
+        assertLockoutEndTimeAfterInstantiation(
+                id,
+                timeSinceBoot,
+                /* hwTimeout= */ swTimeout.minusSeconds(1),
+                /* expectedTimeout= */ swTimeout);
+
+        // Case 4: Nonzero SW timeout shorter than nonzero HW timeout. Expect HW timeout.
+        assertLockoutEndTimeAfterInstantiation(
+                id,
+                timeSinceBoot,
+                /* hwTimeout= */ swTimeout.plusMinutes(1),
+                /* expectedTimeout= */ swTimeout.plusMinutes(1));
+    }
+
+    private void assertLockoutEndTimeAfterInstantiation(
+            LskfIdentifier id,
+            Duration timeSinceBoot,
+            Duration hwTimeout,
+            Duration expectedTimeout) {
+        mInjector.setHardwareRateLimiterTimeout(hwTimeout);
+        mRateLimiter = new SoftwareRateLimiter(mInjector);
+        assertThat(mRateLimiter.getLockoutEndTime(id))
+                .isEqualTo(timeSinceBoot.plus(expectedTimeout));
+    }
+
     private void makeGuessesUntilRateLimited(LskfIdentifier id) {
         for (int i = 0; i < 100; i++) {
             final LockscreenCredential guess = newPassword("rate_limit_me" + i);
@@ -673,6 +730,7 @@ public class SoftwareRateLimiterTest {
         private final Map<LskfIdentifier, Integer> mFailureCounters = new HashMap<>();
         private final List<WorkItem> mWorkList = new ArrayList<>();
         private Duration mTimeSinceBoot = Duration.ZERO;
+        private Duration mHardwareRateLimiterTimeout = Duration.ZERO;
         private final Runnable mInvalidateLockoutEndTimeCacheRunnable;
 
         TestInjector(Runnable invalidateLockoutEndTimeCacheRunnable) {
@@ -689,6 +747,10 @@ public class SoftwareRateLimiterTest {
 
         void setTime(Duration timeSinceBoot) {
             mTimeSinceBoot = timeSinceBoot;
+        }
+
+        void setHardwareRateLimiterTimeout(Duration timeout) {
+            mHardwareRateLimiterTimeout = timeout;
         }
 
         @Override
@@ -719,6 +781,11 @@ public class SoftwareRateLimiterTest {
         @Override
         public int getHardwareRateLimiter(LskfIdentifier id) {
             return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+        }
+
+        @Override
+        public Duration getHardwareRateLimiterTimeout(LskfIdentifier id) {
+            return mHardwareRateLimiterTimeout;
         }
 
         @Override

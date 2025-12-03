@@ -27,6 +27,7 @@ public class MockWeaverService implements IWeaver {
 
     private final WeaverSlot[] mSlots = new WeaverSlot[MAX_SLOTS];
     private WeaverReadResponse mInjectedReadResponse;
+    private Duration mInjectedTimeout;
 
     public MockWeaverService() {
         for (int i = 0; i < MAX_SLOTS; i++) {
@@ -82,6 +83,11 @@ public class MockWeaverService implements IWeaver {
 
     @Override
     public long getTimeout(int slotId) {
+        Duration timeout = mInjectedTimeout;
+        if (timeout != null) {
+            mInjectedTimeout = null;
+            return timeout.toMillis();
+        }
         throw new UnsupportedOperationException("MockWeaverService does not support getTimeout");
     }
 
@@ -115,6 +121,11 @@ public class MockWeaverService implements IWeaver {
         response.status = status;
         response.timeout = timeout.toMillis();
         mInjectedReadResponse = response;
+    }
+
+    /** Injects a timeout to be returned by the next {@link #getTimeout(int)}. */
+    public void injectTimeout(Duration timeout) {
+        mInjectedTimeout = timeout;
     }
 
     private class MockWeaverServiceHidlAdapter extends android.hardware.weaver.V1_0.IWeaver.Stub {
