@@ -62,8 +62,12 @@ public final class TimeZoneConfiguration implements Parcelable {
      *
      * @hide
      */
-    @StringDef({SETTING_AUTO_DETECTION_ENABLED, SETTING_GEO_DETECTION_ENABLED,
-            SETTING_NOTIFICATIONS_ENABLED})
+    @StringDef({
+        SETTING_AUTO_DETECTION_ENABLED,
+        SETTING_GEO_DETECTION_ENABLED,
+        SETTING_NOTIFICATIONS_ENABLED,
+        SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED
+    })
     @Retention(RetentionPolicy.SOURCE)
     @interface Setting {}
 
@@ -78,6 +82,13 @@ public final class TimeZoneConfiguration implements Parcelable {
     /** See {@link TimeZoneConfiguration#areNotificationsEnabled()} for details. */
     @Setting
     private static final String SETTING_NOTIFICATIONS_ENABLED = "notificationsEnabled";
+
+    /**
+     * See {@link TimeZoneConfiguration#areTimeZoneOffsetChangeNotificationsEnabled()} for details.
+     */
+    @Setting
+    private static final String SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED =
+            "timeZoneOffsetChangeNotificationsEnabled";
 
     @NonNull private final Bundle mBundle;
 
@@ -104,7 +115,8 @@ public final class TimeZoneConfiguration implements Parcelable {
     public boolean isComplete() {
         return hasIsAutoDetectionEnabled()
                 && hasIsGeoDetectionEnabled()
-                && hasIsNotificationsEnabled();
+                && hasIsNotificationsEnabled()
+                && hasIsTimeZoneOffsetChangeNotificationsEnabled();
     }
 
     /**
@@ -170,6 +182,33 @@ public final class TimeZoneConfiguration implements Parcelable {
     public boolean areNotificationsEnabled() {
         enforceSettingPresent(SETTING_NOTIFICATIONS_ENABLED);
         return mBundle.getBoolean(SETTING_NOTIFICATIONS_ENABLED);
+    }
+
+    /**
+     * Returns the value of the {@link #SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED}
+     * setting. This controls whether the device can send time zone offset change (e.g. DST)
+     * notifications. This value may only be used by Android under some circumstances.
+     *
+     * <p>See {@link
+     * TimeZoneCapabilities#getConfigureTimeZoneOffsetChangeNotificationsEnabledCapability()} for
+     * how to tell if the setting is meaningful for the current user at this time.
+     *
+     * @throws IllegalStateException if the setting is not present
+     * @hide
+     */
+    public boolean areTimeZoneOffsetChangeNotificationsEnabled() {
+        enforceSettingPresent(SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED);
+        return mBundle.getBoolean(SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED);
+    }
+
+    /**
+     * Returns {@code true} if the {@link #areTimeZoneOffsetChangeNotificationsEnabled()} setting is
+     * present.
+     *
+     * @hide
+     */
+    public boolean hasIsTimeZoneOffsetChangeNotificationsEnabled() {
+        return mBundle.containsKey(SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED);
     }
 
     /**
@@ -283,6 +322,18 @@ public final class TimeZoneConfiguration implements Parcelable {
         @NonNull
         public Builder setNotificationsEnabled(boolean enabled) {
             this.mBundle.putBoolean(SETTING_NOTIFICATIONS_ENABLED, enabled);
+            return this;
+        }
+
+        /**
+         * Sets the state of the {@link #SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED}
+         * setting.
+         *
+         * @hide
+         */
+        @NonNull
+        public Builder setTimeZoneOffsetChangeNotificationsEnabled(boolean enabled) {
+            this.mBundle.putBoolean(SETTING_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED, enabled);
             return this;
         }
 

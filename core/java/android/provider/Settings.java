@@ -14336,6 +14336,17 @@ public final class Settings {
         public static final String TIME_ZONE_NOTIFICATIONS = "time_zone_notifications";
 
         /**
+         * Value to specify if the device should send notifications when the device's time zone
+         * offset changes (e.g. for daylight saving time).
+         *
+         * <p>1=yes, 0=no.
+         *
+         * @hide
+         */
+        public static final String TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS =
+                "time_zone_offset_change_notifications";
+
+        /**
          * URI for the car dock "in" event sound.
          * @hide
          */

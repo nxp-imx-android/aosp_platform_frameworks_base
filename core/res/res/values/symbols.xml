@@ -2473,6 +2473,7 @@
   <java-symbol type="bool" name="config_enableTimeZoneNotificationsSupported" />
   <java-symbol type="bool" name="config_enableTimeZoneNotificationsTrackingSupported" />
   <java-symbol type="bool" name="config_enableTimeZoneManualChangeTrackingSupported" />
+  <java-symbol type="bool" name="config_enableTimeZoneOffsetChangeNotificationsSupported" />
   <java-symbol type="bool" name="config_autoResetAirplaneMode" />
   <java-symbol type="string" name="config_notificationAccessConfirmationActivity" />
   <java-symbol type="bool" name="config_preventImeStartupUnlessTextEditor" />
@@ -4209,6 +4210,9 @@
   <java-symbol type="string" name="notification_channel_display" />
   <java-symbol type="string" name="time_zone_change_notification_title" />
   <java-symbol type="string" name="time_zone_change_notification_body" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_title" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_body_forward" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_body_backward" />
   <java-symbol type="string" name="config_defaultAutofillService" />
   <java-symbol type="string" name="config_defaultFieldClassificationService" />
   <java-symbol type="string" name="config_defaultOnDeviceSpeechRecognitionService" />
