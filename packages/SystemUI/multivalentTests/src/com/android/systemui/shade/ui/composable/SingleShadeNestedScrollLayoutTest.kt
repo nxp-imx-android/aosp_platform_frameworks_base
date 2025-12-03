@@ -47,7 +47,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.TestContentScope
-import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
+import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
@@ -227,7 +227,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                     mediaAndQqsHeader = {
                         Box(Modifier.testTag(TAG_HEADER).fillMaxWidth().height(HeaderHeight))
                     },
-                    scrollableScrim = { onHeightChanged ->
+                    scrollableScrim = { onHeightChanged, rememberOffsetOverscrollEffect ->
                         // This box must be scrollable, for the parent's NestedScrollConnection
                         Box(
                             Modifier.testTag(TAG_SCRIM)
@@ -254,14 +254,17 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
         cutoutInsets: WindowInsets? = null,
         statusBarHeader: @Composable () -> Unit,
         mediaAndQqsHeader: @Composable () -> Unit,
-        scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
+        scrollableScrim:
+            @Composable
+            (
+                onContentHeightChanged: (Int) -> Unit, scrimOverScrollEffect: OffsetOverscrollEffect,
+            ) -> Unit,
     ) {
         SingleShadeNestedScrollLayout(
             modifier = modifier,
             shadeSession = rememberShadeSession(),
             viewModel = kosmos.notificationsPlaceholderViewModel,
             scrollState = rememberScrollState(),
-            scrimOverScrollEffect = rememberOffsetOverscrollEffect(),
             jankMonitor = kosmos.interactionJankMonitor,
             statusBarHeader = statusBarHeader,
             mediaAndQqsHeader = mediaAndQqsHeader,

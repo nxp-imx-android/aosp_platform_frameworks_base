@@ -298,7 +298,7 @@ public class NotificationStackScrollLayout
     private boolean mIsExpansionChanging;
     private boolean mPanelTracking;
     private boolean mExpandingNotification;
-    private boolean mExpandedInThisMotion;
+    private boolean mExpandedNotificationInThisMotion;
     private boolean mShouldShowShelfOnly;
     protected boolean mScrollingEnabled;
     protected FooterView mFooterView;
@@ -2470,7 +2470,7 @@ public class NotificationStackScrollLayout
         float scrollAmount = newTopAmount < 0 ? -newTopAmount : 0.0f;
         float newScrollY = getOwnScrollY() + scrollAmount;
         if (newScrollY > range) {
-            if (!mExpandedInThisMotion) {
+            if (!mExpandedNotificationInThisMotion) {
                 float currentBottomPixels = getCurrentOverScrolledPixels(false);
                 // We overScroll on the bottom
                 setOverScrolledPixels(currentBottomPixels + newScrollY - range,
@@ -3054,11 +3054,12 @@ public class NotificationStackScrollLayout
             }
             int scrollRange = getScrollRange();
             int minScrollY = Math.max(0, scrollRange);
-            if (mExpandedInThisMotion) {
+            if (mExpandedNotificationInThisMotion) {
                 minScrollY = Math.min(minScrollY, mMaxScrollAfterExpand);
             }
             mScroller.fling(mScrollX, getOwnScrollY(), 1, velocityY, 0, 0, 0, minScrollY, 0,
-                    mExpandedInThisMotion && getOwnScrollY() >= 0 ? 0 : Integer.MAX_VALUE / 2);
+                    mExpandedNotificationInThisMotion && getOwnScrollY() >= 0 ? 0
+                            : Integer.MAX_VALUE / 2);
 
             animateScroll();
         }
@@ -3071,7 +3072,7 @@ public class NotificationStackScrollLayout
     private boolean shouldOverScrollFling(int initialVelocity) {
         float topOverScroll = getCurrentOverScrollAmount(true);
         return mScrolledToTopOnFirstDown
-                && !mExpandedInThisMotion
+                && !mExpandedNotificationInThisMotion
                 && !mShouldUseSplitNotificationShade
                 && (initialVelocity > mMinimumVelocity
                 || (topOverScroll > mMinTopOverScrollToEscape && initialVelocity > 0));
@@ -3131,7 +3132,7 @@ public class NotificationStackScrollLayout
         if (!onTop) {
             return RUBBER_BAND_FACTOR_NORMAL;
         }
-        if (mExpandedInThisMotion) {
+        if (mExpandedNotificationInThisMotion) {
             return RUBBER_BAND_FACTOR_AFTER_EXPAND;
         } else if (mIsExpansionChanging || mPanelTracking) {
             return RUBBER_BAND_FACTOR_ON_PANEL_EXPAND;
@@ -3147,7 +3148,7 @@ public class NotificationStackScrollLayout
      * overscroll view (e.g. expand QS).
      */
     private boolean isRubberbanded(boolean onTop) {
-        return !onTop || mExpandedInThisMotion || mIsExpansionChanging || mPanelTracking
+        return !onTop || mExpandedNotificationInThisMotion || mIsExpansionChanging || mPanelTracking
                 || !mScrolledToTopOnFirstDown;
     }
 
@@ -4144,7 +4145,7 @@ public class NotificationStackScrollLayout
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return false;
         }
-        return mIsBeingDragged || mExpandingNotification;
+        return mIsBeingDragged || mExpandingNotification || mExpandedNotificationInThisMotion;
     }
 
     @Override
@@ -4271,7 +4272,7 @@ public class NotificationStackScrollLayout
                     float scrollAmount;
                     int range;
                     range = getScrollRange();
-                    if (mExpandedInThisMotion) {
+                    if (mExpandedNotificationInThisMotion) {
                         range = Math.min(range, mMaxScrollAfterExpand);
                     }
                     if (deltaY < 0) {
@@ -4486,7 +4487,7 @@ public class NotificationStackScrollLayout
 
     void initDownStates(MotionEvent ev) {
         if (ev.getAction() == ACTION_DOWN) {
-            mExpandedInThisMotion = false;
+            mExpandedNotificationInThisMotion = false;
             mOnlyScrollingInThisMotion = !mScroller.isFinished();
             mDisallowScrollingInThisMotion = false;
             mDisallowDismissInThisMotion = false;
@@ -6361,9 +6362,9 @@ public class NotificationStackScrollLayout
     @VisibleForTesting
     void setIsExpandingNotification(boolean isExpanding) {
         mExpandingNotification = isExpanding;
-        if (!mExpandedInThisMotion) {
+        if (!mExpandedNotificationInThisMotion) {
             mMaxScrollAfterExpand = getOwnScrollY();
-            mExpandedInThisMotion = true;
+            mExpandedNotificationInThisMotion = true;
         }
     }
 
@@ -6375,8 +6376,8 @@ public class NotificationStackScrollLayout
         return mIsBeingDragged;
     }
 
-    boolean getExpandedInThisMotion() {
-        return mExpandedInThisMotion;
+    boolean getExpandedNotificationInThisMotion() {
+        return mExpandedNotificationInThisMotion;
     }
 
     boolean getDisallowDismissInThisMotion() {
