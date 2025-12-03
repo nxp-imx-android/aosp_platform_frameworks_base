@@ -60,17 +60,13 @@ fun QuickAccessDialogContent(
                 Text(text = stringResource(R.string.accessibility_quick_access_dialog_title))
             },
             content = {
-                ShortcutPickerList(
-                    targets,
-                    onTargetClick = onTargetClick,
-                    modifier = Modifier.heightIn(max = 450.dp),
-                )
+                ShortcutTargetsList(targets, modifier = Modifier.heightIn(max = 450.dp)) {
+                    ShortcutToggleRow(it, onClick = { onTargetClick(it) })
+                }
             },
             positiveButton = {
                 PlatformButton(onClick = onDoneClick, modifier = Modifier.testTag("done_button")) {
-                    Text(
-                        stringResource(R.string.accessibility_quick_access_dialog_done_button_text)
-                    )
+                    Text(stringResource(R.string.accessibility_shortcutchooser_done_button))
                 }
             },
             contentBottomPadding = 18.dp,

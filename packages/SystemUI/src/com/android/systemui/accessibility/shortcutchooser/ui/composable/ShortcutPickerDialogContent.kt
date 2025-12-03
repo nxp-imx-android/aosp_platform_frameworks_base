@@ -35,14 +35,14 @@ import com.android.systemui.res.R
  * The content used by [SystemUIDialogFactory.create] to create toggle dialogs for different
  * shortcut type.
  *
- * @param infoList The list of targets enabled for a specific shortcut type
+ * @param targets The list of targets enabled for a specific shortcut type
  * @param onEditClick The callback for the negative button
  * @param onDoneClick The callback for the positive button
  * @param onTargetClick The callback when clicking on the [ToggleTargetRow]
  */
 @Composable
 fun ShortcutPickerDialogContent(
-    infoList: List<AccessibilityTargetModel>,
+    targets: List<AccessibilityTargetModel>,
     showEditButton: Boolean,
     onEditClick: () -> Unit,
     onDoneClick: () -> Unit,
@@ -58,11 +58,9 @@ fun ShortcutPickerDialogContent(
                 )
             },
             content = {
-                ShortcutPickerList(
-                    infoList,
-                    onTargetClick = onTargetClick,
-                    modifier = Modifier.heightIn(max = 400.dp),
-                )
+                ShortcutTargetsList(targets, modifier = Modifier.heightIn(max = 400.dp)) {
+                    ShortcutToggleRow(it, onClick = { onTargetClick(it) })
+                }
             },
             negativeButton =
                 if (showEditButton) {
@@ -85,6 +83,7 @@ fun ShortcutPickerDialogContent(
                     Text(stringResource(R.string.accessibility_shortcutchooser_done_button))
                 }
             },
+            contentBottomPadding = 18.dp,
         )
     }
 }

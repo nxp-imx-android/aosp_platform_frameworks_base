@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
@@ -32,11 +33,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 
+/**
+ * A list of accessibility targets.
+ *
+ * This list is vertically scrollable and will show a horizontal divider at the top or bottom if
+ * there is more content in that direction.
+ *
+ * @param targets The list of targets to display
+ * @param modifier The modifier to apply to the list
+ * @param itemContent The content to display for each target
+ */
 @Composable
-fun ShortcutPickerList(
+fun ShortcutTargetsList(
     targets: List<AccessibilityTargetModel>,
-    onTargetClick: (AccessibilityTargetModel) -> Unit,
     modifier: Modifier = Modifier,
+    itemContent: @Composable LazyItemScope.(AccessibilityTargetModel) -> Unit,
 ) {
     val listState = rememberLazyListState()
     val canScrollUp by remember { derivedStateOf { listState.canScrollBackward } }
@@ -48,9 +59,7 @@ fun ShortcutPickerList(
             modifier = modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(targets, key = { target -> target.targetName }) { target ->
-                ShortcutPickerRow(target, onClick = { onTargetClick(target) })
-            }
+            items(targets, key = { target -> target.targetName }, itemContent = itemContent)
         }
 
         ScrollBorder(canScrollUp, Modifier.align(Alignment.TopCenter))
