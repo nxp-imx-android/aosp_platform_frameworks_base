@@ -268,6 +268,13 @@ flag {
 }
 
 flag {
+    name: "default_hun_expansion"
+    namespace: "systemui"
+    description: "Enable HUNs to appear in their expanded state by default."
+    bug: "456554989"
+}
+
+flag {
     name: "delete_after_scroll_capture"
     namespace: "systemui"
     description: "Delete original screenshot if scroll capture output is saved."
@@ -624,6 +631,13 @@ flag {
 }
 
 flag {
+    name: "extended_hun_timer_with_mouse"
+    namespace: "systemui"
+    description: "Extends the on-screen display duration for HUNs when a mouse is detected."
+    bug: "456554989"
+}
+
+flag {
    name: "face_scanning_animation_npe_fix"
    namespace: "systemui"
    description: "Fix for the face scanning animation NPE"
@@ -868,6 +882,13 @@ flag {
 }
 
 flag {
+    name: "hun_timer_pause_on_hover"
+    namespace: "systemui"
+    description: "Enables pausing the HUN dismissal timer when the mouse cursor is hovering over the notification"
+    bug: "456554989"
+}
+
+flag {
     name: "indication_text_a11y_fix"
     namespace: "systemui"
     description: "add double shadow to the indication text at the bottom of the lock screen"
@@ -875,6 +896,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "inline_notification_settings_access"
+    namespace: "systemui"
+    description: "Enables inline notifications settings access."
+    bug: "456554989"
 }
 
 flag {
