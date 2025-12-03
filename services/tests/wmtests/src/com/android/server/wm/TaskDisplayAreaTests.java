@@ -898,4 +898,33 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         tda.onTaskMoved(rootTask, true /* toTop */, false /* toBottom */);
         verify(tda).onLeafTaskMoved(eq(leafTask), anyBoolean(), anyBoolean());
     }
+
+    /**
+     * Verifies that when a pinned task is reparented to a new TaskDisplayArea, the
+     * {@link TaskDisplayArea#mRootPinnedTask} reference is correctly updated. This is the scenario
+     * for dragging a PiP window to another display.
+     */
+    @Test
+    public void testReparentingPinnedTask_updatesRootPinnedTaskReference() {
+        // Create a second display with its own TaskDisplayArea.
+        final DisplayContent secondDisplay = createNewDisplay();
+        final TaskDisplayArea firstTda = mDisplayContent.getDefaultTaskDisplayArea();
+        final TaskDisplayArea secondTda = secondDisplay.getDefaultTaskDisplayArea();
+
+        // Create a pinned task in the first TDA.
+        final Task pinnedTask = createTask(firstTda, WINDOWING_MODE_PINNED, ACTIVITY_TYPE_STANDARD);
+        createActivityRecord(pinnedTask);
+
+        // Verify initial state: the first TDA has the pinned task, the second does not.
+        assertThat(firstTda.getRootPinnedTask()).isEqualTo(pinnedTask);
+        assertThat(secondTda.getRootPinnedTask()).isNull();
+
+        // Reparent the task to the second TDA. This simulates dragging a PiP to another display.
+        pinnedTask.reparent(secondTda, true /* onTop */);
+
+        // Verify final state: the reference should be removed from the first TDA and added to the
+        // second TDA.
+        assertThat(firstTda.getRootPinnedTask()).isNull();
+        assertThat(secondTda.getRootPinnedTask()).isEqualTo(pinnedTask);
+    }
 }
