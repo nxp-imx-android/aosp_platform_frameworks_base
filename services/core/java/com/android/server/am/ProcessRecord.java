@@ -1323,8 +1323,14 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
 
     @Override
     @GuardedBy("mService")
-    public void killLocked(String reason, String description, @Reason int reasonCode,
-            @SubReason int subReason, boolean noisy, boolean asyncKPG) {
+    public void killLocked(
+            String reason,
+            String description,
+            @Reason int reasonCode,
+            @SubReason int subReason,
+            @Nullable ApplicationExitInfo.AnrInfo anrInfo,
+            boolean noisy,
+            boolean asyncKPG) {
         if (!isKilledByAm()) {
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
@@ -1346,7 +1352,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 mOptRecord.setFrozen(false);
             }
             if (mPid > 0) {
-                mService.mProcessList.noteAppKill(this, reasonCode, subReason, description);
+                mService.mProcessList.noteAppKill(
+                        this, reasonCode, subReason, description, anrInfo);
                 EventLog.writeEvent(EventLogTags.AM_KILL,
                         userId, mPid, processName, getSetAdj(), reason, getRss(mPid));
                 Process.killProcessQuiet(mPid);

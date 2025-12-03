@@ -290,8 +290,8 @@ public class AnrTimer<V> implements AutoCloseable {
      * Information about a timer that has expired.
      */
     public static class ExpiredTimer {
-        // The timer ID.
-        final int mTimerId;
+        // The timer ID. The ids are unique in the moment.
+        public final int mTimerId;
 
         // The start uptime of the timer in millis.
         public final long mStartMs;

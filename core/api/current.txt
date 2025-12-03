@@ -5197,6 +5197,20 @@ package android.app {
     ctor @Deprecated public AliasActivity();
   }
 
+  @FlaggedApi("android.app.include_anr_info") public final class AnrTypes {
+    field public static final int ANR_TYPE_APPLICATION_START = 10; // 0xa
+    field public static final int ANR_TYPE_APP_TRIGGERED = 7; // 0x7
+    field public static final int ANR_TYPE_BROADCAST_OF_INTENT = 3; // 0x3
+    field public static final int ANR_TYPE_CONTENT_PROVIDER_NOT_RESPONDING = 6; // 0x6
+    field public static final int ANR_TYPE_EXECUTE_SERVICE = 5; // 0x5
+    field public static final int ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT = 8; // 0x8
+    field public static final int ANR_TYPE_INPUT_DISPATCH = 2; // 0x2
+    field public static final int ANR_TYPE_INPUT_DISPATCH_NO_FOCUSED_WINDOW = 1; // 0x1
+    field public static final int ANR_TYPE_JOB_SERVICE_START = 9; // 0x9
+    field public static final int ANR_TYPE_OTHER = 0; // 0x0
+    field public static final int ANR_TYPE_START_FOREGROUND_SERVICE = 4; // 0x4
+  }
+
   public class AppComponentFactory {
     ctor public AppComponentFactory();
     method @NonNull public android.app.Activity instantiateActivity(@NonNull ClassLoader, @NonNull String, @Nullable android.content.Intent) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
@@ -5439,6 +5453,7 @@ package android.app {
 
   public final class ApplicationExitInfo implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.app.include_anr_info") @Nullable public android.app.ApplicationExitInfo.AnrInfo getAnrInfo();
     method public int getDefiningUid();
     method @Nullable public String getDescription();
     method public int getImportance();
@@ -5473,6 +5488,16 @@ package android.app {
     field public static final int REASON_UNKNOWN = 0; // 0x0
     field public static final int REASON_USER_REQUESTED = 10; // 0xa
     field public static final int REASON_USER_STOPPED = 11; // 0xb
+  }
+
+  @FlaggedApi("android.app.include_anr_info") public static final class ApplicationExitInfo.AnrInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAnrId();
+    method public int getAnrType();
+    method public long getTimeoutMillis();
+    method public boolean isUserPerceptible();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.ApplicationExitInfo.AnrInfo> CREATOR;
   }
 
   public final class ApplicationStartInfo implements android.os.Parcelable {

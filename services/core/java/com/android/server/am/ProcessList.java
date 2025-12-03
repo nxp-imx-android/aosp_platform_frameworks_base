@@ -5614,11 +5614,28 @@ public final class ProcessList extends ProcessListInternal
     }
 
     /**
-     * Called by ActivityManagerService when it decides to kill an application process.
+     * Called by ActivityManagerService when it decides to kill an application process except ANR.
      */
     @GuardedBy("mService")
-    void noteAppKill(final ProcessRecord app, final @Reason int reason,
-            final @SubReason int subReason, final String msg) {
+    void noteAppKill(
+            final ProcessRecord app,
+            final @Reason int reason,
+            final @SubReason int subReason,
+            final String msg) {
+        noteAppKill(app, reason, subReason, msg, /* anrInfo= */ null);
+    }
+
+    /**
+     * Called by ActivityManagerService when it decides to kill an application process if reason is
+     * ANR.
+     */
+    @GuardedBy("mService")
+    void noteAppKill(
+            final ProcessRecord app,
+            final @Reason int reason,
+            final @SubReason int subReason,
+            final String msg,
+            @Nullable ApplicationExitInfo.AnrInfo anrInfo) {
         if (DEBUG_PROCESSES) {
             Slog.i(TAG, "note: " + app + " is being killed, reason: "
                     + ApplicationExitInfo.reasonCodeToString(reason) + ", sub-reason: "
@@ -5629,7 +5646,7 @@ public final class ProcessList extends ProcessListInternal
             mDyingProcesses.put(app.processName, app.uid, app);
             app.setDyingPid(app.getPid());
         }
-        mAppExitInfoTracker.scheduleNoteAppKill(app, reason, subReason, msg);
+        mAppExitInfoTracker.scheduleNoteAppKill(app, reason, subReason, msg, anrInfo);
     }
 
     @GuardedBy("mService")

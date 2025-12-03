@@ -29,6 +29,7 @@ import android.app.ActivityManager;
 import android.app.AnrController;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.Flags;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -59,6 +60,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.expresslog.Counter;
 import com.android.server.ResourcePressureUtil;
 import com.android.server.criticalevents.CriticalEventLog;
+import com.android.server.utils.AnrTimer;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.File;
@@ -74,7 +76,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
-
 
 /**
  * The error state of the process, such as if it's crashing/ANR etc.
@@ -308,20 +309,39 @@ class ProcessErrorStateRecord {
             return;
         }
 
-        mApp.getWindowProcessController().appEarlyNotResponding(annotation, () -> {
-            latencyTracker.waitingOnAMSLockStarted();
-            synchronized (mService) {
-                latencyTracker.waitingOnAMSLockEnded();
-                // Store annotation here as instance below races with this killLocked.
-                setAnrAnnotation(annotation);
-                if (android.app.Flags.includeAnrSubreason()) {
-                    mApp.killLocked("anr", ApplicationExitInfo.REASON_ANR,
-                            timeoutRecord.getAppExitInfoAnrSubreason(), true);
-                } else {
-                    mApp.killLocked("anr", ApplicationExitInfo.REASON_ANR, true);
-                }
-            }
-        });
+        final boolean isSilentAnr;
+        latencyTracker.waitingOnAMSLockStarted();
+        synchronized (mService) {
+            latencyTracker.waitingOnAMSLockEnded();
+            isSilentAnr = isSilentAnr();
+        }
+
+        ApplicationExitInfo.AnrInfo anrInfo =
+                Flags.includeAnrInfo() ? createAnrInfo(timeoutRecord, !isSilentAnr) : null;
+
+        mApp.getWindowProcessController()
+                .appEarlyNotResponding(
+                        annotation,
+                        () -> {
+                            latencyTracker.waitingOnAMSLockStarted();
+                            synchronized (mService) {
+                                latencyTracker.waitingOnAMSLockEnded();
+                                // Store annotation here as instance below races with this
+                                // killLocked.
+                                setAnrAnnotation(annotation);
+                                if (android.app.Flags.includeAnrSubreason()) {
+                                    mApp.killLocked(
+                                            "anr",
+                                            ApplicationExitInfo.REASON_ANR,
+                                            timeoutRecord.getAppExitInfoAnrSubreason(),
+                                            anrInfo,
+                                            true);
+                                } else {
+                                    mApp.killLocked(
+                                            "anr", ApplicationExitInfo.REASON_ANR, anrInfo, true);
+                                }
+                            }
+                        });
 
         long anrTime = SystemClock.uptimeMillis();
 
@@ -335,7 +355,6 @@ class ProcessErrorStateRecord {
 
         }
 
-        final boolean isSilentAnr;
         final int pid;
         final UUID errorId;
         latencyTracker.waitingOnAMSLockStarted();
@@ -400,7 +419,6 @@ class ProcessErrorStateRecord {
             // Note that the primary pid is added here just in case, as it should normally be
             // dumped on the early dump thread, and would only be dumped on the Anr consumer thread
             // as a fallback.
-            isSilentAnr = isSilentAnr();
             if (!isSilentAnr && !onlyDumpSelf) {
                 int parentPid = pid;
                 if (parentProcess != null && parentProcess.getPid() > 0) {
@@ -651,22 +669,29 @@ class ProcessErrorStateRecord {
                 null, new Float(loadingProgress), incrementalMetrics, errorId,
                 volatileDropboxEntriyStates);
 
-        if (mApp.getWindowProcessController().appNotResponding(info.toString(),
-                () -> {
-                    synchronized (mService) {
-                        if (android.app.Flags.includeAnrSubreason()) {
-                            mApp.killLocked("anr", ApplicationExitInfo.REASON_ANR,
-                                    timeoutRecord.getAppExitInfoAnrSubreason(), true);
-                        } else {
-                            mApp.killLocked("anr", ApplicationExitInfo.REASON_ANR, true);
-                        }
-                    }
-                },
-                () -> {
-                    synchronized (mService) {
-                        mService.mServices.scheduleServiceTimeoutLocked(mApp);
-                    }
-                })) {
+        if (mApp.getWindowProcessController()
+                .appNotResponding(
+                        info.toString(),
+                        () -> {
+                            synchronized (mService) {
+                                if (android.app.Flags.includeAnrSubreason()) {
+                                    mApp.killLocked(
+                                            "anr",
+                                            ApplicationExitInfo.REASON_ANR,
+                                            timeoutRecord.getAppExitInfoAnrSubreason(),
+                                            anrInfo,
+                                            true);
+                                } else {
+                                    mApp.killLocked(
+                                            "anr", ApplicationExitInfo.REASON_ANR, anrInfo, true);
+                                }
+                            }
+                        },
+                        () -> {
+                            synchronized (mService) {
+                                mService.mServices.scheduleServiceTimeoutLocked(mApp);
+                            }
+                        })) {
             return;
         }
 
@@ -677,12 +702,16 @@ class ProcessErrorStateRecord {
                 mService.mBatteryStatsService.noteProcessAnr(mApp.processName, mApp.uid);
             }
 
-            if (isSilentAnr() && !mApp.isDebugging()) {
+            if (isSilentAnr && !mApp.isDebugging()) {
                 if (android.app.Flags.includeAnrSubreason()) {
-                    mApp.killLocked("bg anr", ApplicationExitInfo.REASON_ANR,
-                            timeoutRecord.getAppExitInfoAnrSubreason(), true);
+                    mApp.killLocked(
+                            "bg anr",
+                            ApplicationExitInfo.REASON_ANR,
+                            timeoutRecord.getAppExitInfoAnrSubreason(),
+                            anrInfo,
+                            true);
                 } else {
-                    mApp.killLocked("bg anr", ApplicationExitInfo.REASON_ANR, true);
+                    mApp.killLocked("bg anr", ApplicationExitInfo.REASON_ANR, anrInfo, true);
                 }
                 return;
             }
@@ -706,6 +735,26 @@ class ProcessErrorStateRecord {
                 mService.mUiHandler.sendMessageDelayed(msg, anrDialogDelayMs);
             }
         }
+    }
+
+    @Nullable
+    private ApplicationExitInfo.AnrInfo createAnrInfo(
+            TimeoutRecord timeoutRecord, boolean isUserPerceptible) {
+        if (timeoutRecord == null) {
+            return null;
+        }
+
+        AnrTimer.ExpiredTimer expiredTimer = AnrTimer.expiredTimer(timeoutRecord);
+        // This can be null for Input dispatch ANRs
+        if (expiredTimer == null) {
+            return null;
+        }
+
+        return new ApplicationExitInfo.AnrInfo(
+                expiredTimer.mTimerId,
+                timeoutRecord.getAnrType(),
+                expiredTimer.mDurationMs,
+                isUserPerceptible);
     }
 
     @GuardedBy({"mService", "mProcLock"})
