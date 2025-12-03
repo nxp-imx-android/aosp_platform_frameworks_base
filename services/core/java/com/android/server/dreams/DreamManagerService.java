@@ -27,7 +27,6 @@ import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.systemDreamDeathRecipient;
-import static android.service.dreams.Flags.wakeOnStoppingDoze;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
@@ -1090,12 +1089,10 @@ public final class DreamManagerService extends SystemService {
                     mCurrentDream.name.flattenToString());
         }
         if (mCurrentDream.isDozing) {
-            if (wakeOnStoppingDoze()) {
-                mPowerManager.wakeUp(
-                        SystemClock.uptimeMillis(),
-                        PowerManager.WAKE_REASON_DOZE_STOPPED,
-                        "android.server.dreams:requestAwaken");
-            }
+            mPowerManager.wakeUp(
+                    SystemClock.uptimeMillis(),
+                    PowerManager.WAKE_REASON_DOZE_STOPPED,
+                    "android.server.dreams:requestAwaken");
             mDozeWakeLock.release();
         }
         mCurrentDream = null;

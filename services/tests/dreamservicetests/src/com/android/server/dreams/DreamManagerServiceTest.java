@@ -21,7 +21,6 @@ import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 import static android.service.dreams.Flags.FLAG_SYSTEM_DREAM_DEATH_RECIPIENT;
-import static android.service.dreams.Flags.FLAG_WAKE_ON_STOPPING_DOZE;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -327,7 +326,6 @@ public class DreamManagerServiceTest {
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isFalse();
     }
 
-    @EnableFlags(FLAG_WAKE_ON_STOPPING_DOZE)
     @Test
     public void testStopDream_sendsWakeIfDozing() throws PackageManager.NameNotFoundException {
         // Enable dreaming while charging only.
