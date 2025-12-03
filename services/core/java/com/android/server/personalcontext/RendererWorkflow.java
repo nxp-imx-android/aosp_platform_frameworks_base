@@ -29,6 +29,7 @@ import com.android.server.personalcontext.component.Renderer;
 
 import java.security.GeneralSecurityException;
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -127,23 +128,26 @@ public final class RendererWorkflow {
                 }
 
                 // Extract the RenderToken from the insight if there is one.
-                final RenderToken renderToken = mInsight.getRenderToken();
+                final Set<RenderToken> renderTokens = mInsight.getRenderTokens();
 
-                if (renderToken != null) {
-                    // If we have a RenderToken, then only send the insight to that renderer.
-                    final Renderer renderer =
-                            mProvider.getRendererById(renderToken.getRendererComponentId());
-                    if (renderer == null) throw new IllegalStateException("Renderer not found");
+                if (!renderTokens.isEmpty()) {
+                    // If we have RenderTokens, then only send the insight to those renderers.
+                    for (RenderToken renderToken : renderTokens) {
+                        final Renderer renderer =
+                                mProvider.getRendererById(renderToken.getRendererComponentId());
+                        if (renderer == null) throw new IllegalStateException("Renderer not found");
 
-                    mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                    renderer.render(mInsight);
+                        mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
+                        renderer.render(mInsight, renderToken);
+                    }
                 } else {
                     // If we don't have a RenderToken, then send the insight to all renderers...
+                    // TODO: Figure out what to do when we have multiple catch-all renderers.
                     for (Renderer renderer : mProvider.getRenderers()) {
                         // ... but only if the renderer actually wants it.
                         if (renderer.isInterestedInInsight(mInsight)) {
                             mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                            renderer.render(mInsight);
+                            renderer.render(mInsight, renderer.mintRenderToken());
                         }
                     }
                 }

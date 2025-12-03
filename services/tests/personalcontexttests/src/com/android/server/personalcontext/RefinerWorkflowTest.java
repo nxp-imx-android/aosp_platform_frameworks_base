@@ -27,6 +27,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import static java.util.Collections.emptySet;
+
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
@@ -41,7 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.security.GeneralSecurityException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -95,7 +96,7 @@ public class RefinerWorkflowTest {
                 }
             }
             if (result.isEmpty()) {
-                return Collections.emptySet();
+                return emptySet();
             } else {
                 return Set.of(result);
             }
@@ -112,7 +113,7 @@ public class RefinerWorkflowTest {
         final RefinerWorkflow.ComponentProvider provider =
                 mock(RefinerWorkflow.ComponentProvider.class);
 
-        doReturn(Collections.emptySet()).when(provider).getRefiners();
+        doReturn(emptySet()).when(provider).getRefiners();
 
         RefinerWorkflow.start(
                 provider,
@@ -121,7 +122,7 @@ public class RefinerWorkflowTest {
                                 .build(),
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
-                /* renderToken= */ null,
+                /* renderToken= */ emptySet(),
                 key,
                 listener,
                 INLINE_EXECUTOR);
@@ -141,7 +142,7 @@ public class RefinerWorkflowTest {
 
         doReturn(Set.of(refiner)).when(provider).getRefiners();
         doAnswer(invocation -> {
-            invocation.getArgument(1, Consumer.class).accept(Collections.emptySet());
+            invocation.getArgument(1, Consumer.class).accept(emptySet());
             return null;
         })
                 .when(refiner).refine(any(), any());
@@ -153,8 +154,8 @@ public class RefinerWorkflowTest {
                                 .build(),
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
-                /* renderToken= */ null,
-                ContextHintTestUtils.generateSignedHintKey(),
+                /* renderToken= */ emptySet(),
+                key,
                 listener,
                 INLINE_EXECUTOR);
 
@@ -174,7 +175,7 @@ public class RefinerWorkflowTest {
 
         doReturn(Set.of(refiner)).when(provider).getRefiners();
         doAnswer(invocation -> {
-            invocation.getArgument(1, Consumer.class).accept(Collections.emptySet());
+            invocation.getArgument(1, Consumer.class).accept(emptySet());
             return null;
         })
                 .when(refiner).refine(any(), any());
@@ -186,7 +187,7 @@ public class RefinerWorkflowTest {
                                 .build(),
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
-                /* renderToken= */ null,
+                /* renderToken= */ emptySet(),
                 key,
                 listener,
                 INLINE_EXECUTOR);
@@ -215,7 +216,7 @@ public class RefinerWorkflowTest {
                     invocation.getArgument(0, Set.class), new HashSet<>());
             final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
             if (hints.contains(hint2)) {
-                callback.accept(Collections.emptySet());
+                callback.accept(emptySet());
             } else if (hints.contains(hint1)) {
                 callback.accept(Set.of(hint2));
             } else {
@@ -238,7 +239,7 @@ public class RefinerWorkflowTest {
 
         doAnswer(invocation -> {
             final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
-            callback.accept(Collections.emptySet());
+            callback.accept(emptySet());
             return null;
         })
                 .when(refiner2).refine(any(), any());
@@ -248,7 +249,7 @@ public class RefinerWorkflowTest {
         RefinerWorkflow.start(
                 provider,
                 Set.of(new ContextHintWithSignature.Builder(hint1, key).build()),
-                /* renderToken= */ null,
+                /* renderToken= */ emptySet(),
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
@@ -280,7 +281,7 @@ public class RefinerWorkflowTest {
                                 .build(),
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
-                /* renderToken= */ null,
+                /* renderToken= */ emptySet(),
                 key,
                 listener,
                 INLINE_EXECUTOR);

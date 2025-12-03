@@ -14660,7 +14660,7 @@ package android.service.personalcontext {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishInsight(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
-    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable android.service.personalcontext.RenderToken);
+    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint);
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
@@ -14773,7 +14773,7 @@ package android.service.personalcontext.renderer {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.renderer.RendererFilter onInitializeFilter();
-    method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight);
+    method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.service.personalcontext.RenderToken);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 

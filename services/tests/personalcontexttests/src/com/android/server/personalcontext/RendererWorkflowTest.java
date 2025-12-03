@@ -19,11 +19,14 @@ package com.android.server.personalcontext;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import static java.util.Collections.emptyList;
 
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.BundleHint;
@@ -61,12 +64,12 @@ public class RendererWorkflowTest {
         }).when(INLINE_EXECUTOR).execute(any());
     }
 
-    private static ContextInsight buildInsight(RenderToken renderToken, SecretKeySpec key)
+    private static ContextInsight buildInsight(List<RenderToken> renderTokens, SecretKeySpec key)
             throws GeneralSecurityException {
         return new BundleInsight.Builder()
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .setRenderToken(renderToken)
+                                .addRenderTokens(renderTokens)
                                 .build())
                 .build();
     }
@@ -77,7 +80,7 @@ public class RendererWorkflowTest {
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
-        final ContextInsight insight = buildInsight(null, key);
+        final ContextInsight insight = buildInsight(emptyList(), key);
 
         doReturn(Collections.emptySet()).when(provider).getRenderers();
 
@@ -101,9 +104,9 @@ public class RendererWorkflowTest {
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = buildInsight(
-                new RenderToken.RenderTokenBuilder()
+                List.of(new RenderToken.RenderTokenBuilder()
                         .setRendererComponentId(UUID.randomUUID())
-                        .build(),
+                        .build()),
                 key);
 
         doReturn(null).when(provider).getRendererById(any());
@@ -126,13 +129,14 @@ public class RendererWorkflowTest {
         final UUID componentId = UUID.randomUUID();
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final Renderer renderer = mock(Renderer.class);
+        final RenderToken renderToken = new RenderToken.RenderTokenBuilder()
+                .setRendererComponentId(componentId)
+                .build();
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = buildInsight(
-                new RenderToken.RenderTokenBuilder()
-                        .setRendererComponentId(componentId)
-                        .build(),
+                List.of(renderToken),
                 key);
 
         doReturn(componentId).when(renderer).getComponentId();
@@ -149,7 +153,7 @@ public class RendererWorkflowTest {
         verify(listener).onInsightSentToRenderer(anyLong(), eq(insight), eq(renderer));
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener, never()).onRendererWorkflowError(anyLong(), any());
-        verify(renderer).render(eq(insight));
+        verify(renderer).render(eq(insight), eq(renderToken));
         verify(renderer, never()).isInterestedInInsight(any());
         verify(provider, never()).getRenderers();
     }
@@ -163,7 +167,7 @@ public class RendererWorkflowTest {
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
-        final ContextInsight insight = buildInsight(null, key);
+        final ContextInsight insight = buildInsight(emptyList(), key);
 
         doReturn(true).when(renderer1).isInterestedInInsight(any());
         doReturn(true).when(renderer2).isInterestedInInsight(any());
@@ -181,9 +185,9 @@ public class RendererWorkflowTest {
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener, never()).onRendererWorkflowError(anyLong(), any());
-        verify(renderer1).render(eq(insight));
-        verify(renderer2).render(eq(insight));
-        verify(renderer3, never()).render(eq(insight));
+        verify(renderer1).render(eq(insight), isNull());
+        verify(renderer2).render(eq(insight), isNull());
+        verify(renderer3, never()).render(eq(insight), isNull());
         verify(provider, never()).getRendererById(any());
     }
 
@@ -193,7 +197,7 @@ public class RendererWorkflowTest {
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
-        final ContextInsight insight = buildInsight(null, key);
+        final ContextInsight insight = buildInsight(emptyList(), key);
 
         RendererWorkflow.start(
                 provider,
@@ -218,15 +222,15 @@ public class RendererWorkflowTest {
         final ContextInsight insight = new BundleInsight.Builder()
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .setRenderToken(new RenderToken.RenderTokenBuilder()
+                                .addRenderTokens(List.of(new RenderToken.RenderTokenBuilder()
                                         .setRendererComponentId(UUID.randomUUID())
-                                        .build())
+                                        .build()))
                                 .build())
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .setRenderToken(new RenderToken.RenderTokenBuilder()
+                                .addRenderTokens(List.of(new RenderToken.RenderTokenBuilder()
                                         .setRendererComponentId(UUID.randomUUID())
-                                        .build())
+                                        .build()))
                                 .build())
                 .build();
 
