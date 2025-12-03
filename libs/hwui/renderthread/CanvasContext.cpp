@@ -633,8 +633,8 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
     mDamageAccumulator.finish(&dirty);
 
     // reset syncDelayDuration each time we draw
-    nsecs_t syncDelayDuration = mSyncDelayDuration;
-    nsecs_t idleDuration = mIdleDuration;
+    const nsecs_t syncDelayDuration = mSyncDelayDuration;
+    const nsecs_t idleDuration = mIdleDuration;
     mSyncDelayDuration = 0;
     mIdleDuration = 0;
 
@@ -704,6 +704,9 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
             ATRACE_FORMAT(
                 "frameTimelineInfo(frameNumber=%llu, vsyncId=%lld, inputEventId=0x%" PRIx32 ")",
                 frameCompleteNr, vsyncId, inputEventId);
+            const auto lastDequeueDuration =
+                    syncDelayDuration +
+                    ANativeWindow_getLastDequeueDuration(mNativeSurface->getNativeWindow());
             const ANativeWindowFrameTimelineInfo ftl = {
                     .frameNumber = frameCompleteNr,
                     .frameTimelineVsyncId = vsyncId,
@@ -717,6 +720,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                     .vsyncResyncedJitterNanos =
                             mCurrentFrameInfo->get(FrameInfoIndex::Vsync) -
                             mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync),
+                    .dequeueBufferDurationNanos = lastDequeueDuration,
             };
             native_window_set_frame_timeline_info(mNativeSurface->getNativeWindow(), ftl);
         }
