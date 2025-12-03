@@ -220,6 +220,9 @@ extern int register_com_android_internal_os_DebugStore(JNIEnv* env);
 extern int register_com_android_internal_os_FuseAppLoop(JNIEnv* env);
 extern int register_com_android_internal_os_KernelAllocationStats(JNIEnv* env);
 extern int register_com_android_internal_os_KernelCpuBpfTracking(JNIEnv* env);
+#ifdef __x86_64__
+extern int register_com_android_internal_os_KernelCpuCyclePerUidBpf(JNIEnv* env);
+#endif
 extern int register_com_android_internal_os_KernelCpuTotalBpfMapReader(JNIEnv* env);
 extern int register_com_android_internal_os_KernelCpuUidBpfMapReader(JNIEnv *env);
 extern int register_com_android_internal_os_KernelSingleProcessCpuThreadReader(JNIEnv* env);
@@ -1727,6 +1730,9 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_com_android_internal_os_FuseAppLoop),
         REG_JNI(register_com_android_internal_os_KernelAllocationStats),
         REG_JNI(register_com_android_internal_os_KernelCpuBpfTracking),
+#ifdef __x86_64__
+        REG_JNI(register_com_android_internal_os_KernelCpuCyclePerUidBpf),
+#endif
         REG_JNI(register_com_android_internal_os_KernelCpuTotalBpfMapReader),
         REG_JNI(register_com_android_internal_os_KernelCpuUidBpfMapReader),
         REG_JNI(register_com_android_internal_os_KernelSingleProcessCpuThreadReader),

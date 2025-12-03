@@ -304,7 +304,6 @@ cc_defaults_for_libandroid_runtime {
                 ],
                 default: [],
             }),
-
             static_libs: [
                 "android.os.flags-aconfig-cc",
                 "libasync_safe",
@@ -445,6 +444,7 @@ cc_defaults_for_libandroid_runtime {
                 "dnsproxyd_protocol_headers",
                 "flatbuffer_headers",
                 "tensorflow_headers",
+                "bpf_prog_headers",
             ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
                 true: [
                     "libzygote_messages_schema_headers",
@@ -453,6 +453,14 @@ cc_defaults_for_libandroid_runtime {
             }),
             runtime_libs: [
                 "libidmap2",
+            ],
+        },
+        android_x86_64: {
+            srcs: [
+                "com_android_internal_os_KernelCpuCyclePerUidBpf.cpp",
+            ],
+            shared_libs: [
+                "libcycleperuid",
             ],
         },
         host: {
