@@ -52,7 +52,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.HorizontalRuler
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -117,10 +116,6 @@ object Shade {
 
     object Dimensions {
         val HorizontalPadding = 16.dp
-    }
-
-    object Rulers {
-        val SingleShadeNestedScrollLayoutBottom = HorizontalRuler()
     }
 }
 

@@ -28,6 +28,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -164,6 +165,7 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         snapshotFlow { contentHeight.intValue < minScrimHeight.intValue && scrimOffset.value < 0f }
             .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.snapTo(0f) }
     }
+    var scrimHeight by remember { mutableIntStateOf(0) }
     Layout(
         modifier = modifier,
         contents =
@@ -238,13 +240,16 @@ fun ContentScope.SingleShadeNestedScrollLayout(
 
         // Reduce the Scrim's height so it only fills the visible space, when we offset it down.
         val layoutBottom = constraints.maxHeight
-        val constrainedScrimHeight = constraints.constrainHeight(layoutBottom - totalScrimOffset)
+
+        if (isLookingAhead) {
+            // Calculate height only in the lookahead pass (the idle state) to prevent the scrim
+            // from resizing during animations.
+            scrimHeight = constraints.constrainHeight(layoutBottom - totalScrimOffset)
+        }
+
         val scrim =
             measurables[2][0].measure(
-                constraints.copy(
-                    minHeight = constrainedScrimHeight,
-                    maxHeight = constrainedScrimHeight,
-                )
+                constraints.copy(minHeight = scrimHeight, maxHeight = scrimHeight)
             )
 
         // Update the last height of the header.
@@ -256,9 +261,6 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         layout(
             width = maxOf(alwaysVisibleHeader.width, overlappableHeader.width, scrim.width),
             height = layoutBottom,
-            rulers = {
-                Shade.Rulers.SingleShadeNestedScrollLayoutBottom provides layoutBottom.toFloat()
-            },
         ) {
             alwaysVisibleHeader.place(insetsLeft, insetsTop)
             overlappableHeader.place(insetsLeft, insetsTop + alwaysVisibleHeader.height)

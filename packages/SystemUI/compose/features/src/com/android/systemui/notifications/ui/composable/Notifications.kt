@@ -100,7 +100,6 @@ import com.android.systemui.scene.session.ui.composable.sessionCoroutineScope
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.ShadeColors
-import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
@@ -427,6 +426,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
     val interactionSource = remember { MutableInteractionSource() }
 
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+
     Layout(
         modifier =
             modifier
@@ -594,31 +595,28 @@ fun ContentScope.NestedScrollingNotificationPanel(
             val contentMeasurable = measurables[1][0]
 
             if (shouldFillMaxSize) {
-                // Fill the entire available space with the content, while constraining the
-                // background. We find a specific boundary (bottomRulerY) and force the background's
-                // height to match it, while ensuring it is at least as large as the content itself.
+                // Fill the entire available space with the content. We force the background to
+                // match the screen height to ensure it covers the full display area.
 
-                val maxConstraints = Constraints.fixed(constraints.maxWidth, constraints.maxHeight)
-                val content = contentMeasurable.measure(maxConstraints)
+                val content =
+                    contentMeasurable.measure(
+                        Constraints.fixed(
+                            width = constraints.maxWidth,
+                            height = constraints.maxHeight,
+                        )
+                    )
+
+                val background =
+                    backgroundMeasurable.measure(
+                        Constraints.fixed(
+                            width = constraints.maxWidth,
+                            height = screenHeightDp.roundToPx(),
+                        )
+                    )
+
                 layout(width = content.width, height = content.height) {
                     content.place(IntOffset.Zero)
-
-                    val bottomRulerY =
-                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(Float.MIN_VALUE)
-
-                    val backgroundConstraints =
-                        if (bottomRulerY == Float.MIN_VALUE) {
-                            // no ruler defined
-                            constraints
-                        } else {
-                            // maxHeight and minHeight must be >= 0
-                            Constraints.fixed(
-                                width = constraints.maxWidth,
-                                height = bottomRulerY.roundToInt().coerceAtLeast(content.height),
-                            )
-                        }
-
-                    backgroundMeasurable.measure(backgroundConstraints).place(IntOffset.Zero)
+                    background.place(IntOffset.Zero)
                 }
             } else {
                 // Make the background size match the content size.
