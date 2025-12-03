@@ -255,7 +255,14 @@ abstract class CrossActivityBackAnimation(
             enteringTransformation,
         )
         applyTransaction()
-        background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
+        if (fixCrossActivityBackAnimationInBubbles()) {
+            if (closingTarget!!.screenSpaceBounds.top <= statusbarHeight / 2) {
+                background.customizeStatusBarAppearance(
+                    (currentClosingRect.top + closingTarget!!.screenSpaceBounds.top).toInt())
+            }
+        } else {
+            background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
+        }
         velocityTracker.addPosition(backEvent.frameTimeMillis, progress)
     }
 
