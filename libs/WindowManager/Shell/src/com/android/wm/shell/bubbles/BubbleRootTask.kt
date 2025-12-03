@@ -84,6 +84,10 @@ class BubbleRootTask(
             taskInfo.token,
             true, /* reparentLeafTaskIfRelaunchFromHome */
         )
+        wct.setDisallowOverrideWindowingModeForChildren(
+            taskInfo.token,
+            true, /* disallowOverrideWindowingModeForChildren */
+        )
         wct.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* interceptBackPressed */)
         wct.setTaskForceExcludedFromRecents(taskInfo.token, true /* forceExcluded */)
         wct.setDisablePip(taskInfo.token, true /* disablePip */)

@@ -344,6 +344,35 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets whether to allow the child tasks to have override windowing modes.
+     *
+     * <p>When {@code true}, the system will ensure the child tasks of the given root task
+     * will have no override windowing modes. That is, the override windowing modes of the
+     * existing child tasks will be cleared, and the override windowing modes of any newly added
+     * child tasks afterward will also be cleared. This mechanism is specifically designed to be
+     * applied to a root task created by an organizer only.
+     *
+     * @param rootTaskContainer The window container of the task that created by organizer.
+     * @param disallowOverrideWindowingModeForChildren {@code true} to avoid the child tasks to
+     *                                                   have override windowing modes,
+     *                                                   {@code false} otherwise.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setDisallowOverrideWindowingModeForChildren(
+            @NonNull WindowContainerToken rootTaskContainer,
+            boolean disallowOverrideWindowingModeForChildren) {
+        final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
+                HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN)
+                .setContainer(rootTaskContainer.asBinder())
+                .setDisallowOverrideWindowingModeForChildren(
+                        disallowOverrideWindowingModeForChildren)
+                .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
      * Sets whether a container or its children should be hidden. When {@code false}, the existing
      * visibility of the container applies, but when {@code true} the container will be forced
      * to be hidden.
@@ -2127,6 +2156,8 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE = 28;
         public static final int HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE = 29;
         public static final int HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME = 30;
+        public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN =
+                31;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -2160,6 +2191,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE,
                 HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE,
                 HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
+                HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2251,6 +2283,8 @@ public final class WindowContainerTransaction implements Parcelable {
         private Rect mSafeRegionBounds;
 
         private boolean mDisallowOverrideBoundsForChildren;
+
+        private boolean mDisallowOverrideWindowingModeForChildren;
 
         private boolean mClearWindowingMode;
 
@@ -2454,6 +2488,8 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyHidingInsetsTypes = copy.mForciblyHidingInsetsTypes;
             mSafeRegionBounds = copy.mSafeRegionBounds;
             mDisallowOverrideBoundsForChildren = copy.mDisallowOverrideBoundsForChildren;
+            mDisallowOverrideWindowingModeForChildren =
+                    copy.mDisallowOverrideWindowingModeForChildren;
             mClearWindowingMode = copy.mClearWindowingMode;
         }
 
@@ -2486,6 +2522,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyHidingInsetsTypes = in.readInt();
             mSafeRegionBounds = in.readTypedObject(Rect.CREATOR);
             mDisallowOverrideBoundsForChildren = in.readBoolean();
+            mDisallowOverrideWindowingModeForChildren = in.readBoolean();
             mClearWindowingMode = in.readBoolean();
         }
 
@@ -2625,6 +2662,10 @@ public final class WindowContainerTransaction implements Parcelable {
             return mDisallowOverrideBoundsForChildren;
         }
 
+        public boolean getDisallowOverrideWindowingModeForChildren() {
+            return mDisallowOverrideWindowingModeForChildren;
+        }
+
         public boolean getClearWindowingMode() {
             return mClearWindowingMode;
         }
@@ -2669,6 +2710,8 @@ public final class WindowContainerTransaction implements Parcelable {
                     return "disallowOverrideBoundsForChildren";
                 case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE: return "setAnimationDelegate";
                 case HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE: return "setPackageUpdateHandled";
+                case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN:
+                    return "disallowOverrideWindowingModeForChildren";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2796,6 +2839,11 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE:
                     sb.append(" packageUpdateHandled=").append(mContainer);
                     break;
+                case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN:
+                    sb.append(" container=").append(mContainer)
+                            .append(" mDisallowOverrideWindowingModeForChildren=")
+                            .append(mDisallowOverrideWindowingModeForChildren);
+                    break;
                 default:
                     sb.append("container=").append(mContainer)
                             .append(" reparent=").append(mReparent)
@@ -2836,6 +2884,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mForciblyHidingInsetsTypes);
             dest.writeTypedObject(mSafeRegionBounds, flags);
             dest.writeBoolean(mDisallowOverrideBoundsForChildren);
+            dest.writeBoolean(mDisallowOverrideWindowingModeForChildren);
             dest.writeBoolean(mClearWindowingMode);
         }
 
@@ -2928,6 +2977,8 @@ public final class WindowContainerTransaction implements Parcelable {
             private Rect mSafeRegionBounds;
 
             private boolean mDisallowOverrideBoundsForChildren;
+
+            private boolean mDisallowOverrideWindowingModeForChildren;
 
             private boolean mClearWindowingMode;
 
@@ -3072,6 +3123,13 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setDisallowOverrideWindowingModeForChildren(
+                    boolean disallowOverrideWindowingModeForChildren) {
+                mDisallowOverrideWindowingModeForChildren =
+                        disallowOverrideWindowingModeForChildren;
+                return this;
+            }
+
             Builder setClearWindowingMode(boolean clearWindowingMode) {
                 mClearWindowingMode = clearWindowingMode;
                 return this;
@@ -3113,6 +3171,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mSafeRegionBounds = mSafeRegionBounds;
                 hierarchyOp.mDisallowOverrideBoundsForChildren = mDisallowOverrideBoundsForChildren;
                 hierarchyOp.mClearWindowingMode = mClearWindowingMode;
+                hierarchyOp.mDisallowOverrideWindowingModeForChildren =
+                        mDisallowOverrideWindowingModeForChildren;
                 return hierarchyOp;
             }
         }

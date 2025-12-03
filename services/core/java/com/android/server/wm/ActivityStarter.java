@@ -31,7 +31,6 @@ import static android.app.ActivityManager.isStartResultSuccessful;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
@@ -3178,9 +3177,7 @@ class ActivityStarter {
                         mStartActivity.appTimeTracker, DEFER_RESUME,
                         "bringingFoundTaskToFront");
                 mMovedToFront = !wasTopOfVisibleRootTask;
-            } else if (intentActivity.getWindowingMode() != WINDOWING_MODE_PINNED) {
-                // Leaves reparenting pinned task operations to task organizer to make sure it
-                // dismisses pinned task properly.
+            } else {
                 // TODO(b/199997762): Consider leaving all reparent operation of organized tasks
                 //  to task organizer.
                 intentTask.reparent(mTargetRootTask, ON_TOP, REPARENT_MOVE_ROOT_TASK_TO_FRONT,

@@ -49,6 +49,7 @@ object BubbleUtils {
             if (toBubble && rootToken != null) {
                 wct.reparent(token, rootToken, true /* onTop */)
                 wct.setBounds(rootToken, bounds)
+                wct.setBounds(token, Rect())
                 wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
             } else if (reparentToTda) {
                 wct.reparent(token, null, true /* onTop */)

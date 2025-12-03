@@ -1185,8 +1185,8 @@ public class BubbleTransitions {
                     opts.setTaskAlwaysOnTop(true);
                     opts.setLaunchNextToBubble(true);
                     opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
-                    opts.setLaunchBounds(launchBounds);
                 }
+                opts.setLaunchBounds(launchBounds);
                 // TODO(b/437451940): start the pending intent or shortcut via WCT
                 if (mBubble.isShortcut()) {
                     final LauncherApps launcherApps = mContext.getSystemService(

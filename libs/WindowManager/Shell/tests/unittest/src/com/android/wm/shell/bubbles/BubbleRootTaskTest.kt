@@ -22,6 +22,7 @@ import android.platform.test.annotations.EnableFlags
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME
 import androidx.test.filters.SmallTest
@@ -103,6 +104,7 @@ class BubbleRootTaskTest : ShellTestCase() {
         assertThat(wct.hierarchyOps.map { it.type }).containsAtLeast(
             HIERARCHY_OP_TYPE_REORDER,
             HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
+            HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
         )
 
         // verify changes
