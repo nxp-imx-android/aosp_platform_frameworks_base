@@ -24,7 +24,7 @@ import com.android.systemui.Flags
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -37,7 +37,7 @@ import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.buildDisposableHandle
 import com.android.systemui.util.kotlin.launchAndDispose
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,7 +49,7 @@ class NotificationScrollViewBinder
 @Inject
 constructor(
     dumpManager: DumpManager,
-    @Main private val mainImmediateDispatcher: CoroutineDispatcher,
+    @AndroidUi private val androidUiDispatcher: CoroutineContext,
     private val view: NotificationScrollView,
     private val viewModelFactory: NotificationScrollViewModel.Factory,
     @ShadeDisplayAware private val configuration: ConfigurationState,
@@ -66,7 +66,7 @@ constructor(
     }
 
     fun bindWhileAttached(): DisposableHandle {
-        return view.asView().repeatWhenAttached(mainImmediateDispatcher) { bind() }
+        return view.asView().repeatWhenAttached(androidUiDispatcher) { bind() }
     }
 
     suspend fun bind(): Nothing =

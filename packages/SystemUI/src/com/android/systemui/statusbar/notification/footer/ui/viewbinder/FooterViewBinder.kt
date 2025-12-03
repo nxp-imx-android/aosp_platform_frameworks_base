@@ -22,6 +22,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.NotificationActivityStarter.SettingsIntent
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
@@ -40,6 +41,7 @@ object FooterViewBinder {
         clearAllNotifications: View.OnClickListener,
         notificationActivityStarter: NotificationActivityStarter,
     ): DisposableHandle {
+        SceneContainerFlag.assertInLegacyMode()
         return footer.repeatWhenAttached {
             lifecycleScope.launch {
                 bind(footer, viewModel, clearAllNotifications, notificationActivityStarter)
@@ -47,7 +49,7 @@ object FooterViewBinder {
         }
     }
 
-    private suspend fun bind(
+    suspend fun bind(
         footer: FooterView,
         viewModel: FooterViewModel,
         clearAllNotifications: View.OnClickListener,

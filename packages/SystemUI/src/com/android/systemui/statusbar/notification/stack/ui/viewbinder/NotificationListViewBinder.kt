@@ -24,6 +24,7 @@ import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.nano.MetricsProto
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.setImportantForAccessibilityYesNo
+import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dagger.qualifiers.NotifInflation
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.repeatWhenAttachedToWindow
@@ -69,6 +70,8 @@ import com.android.systemui.util.ui.value
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import javax.inject.Provider
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
@@ -89,6 +92,7 @@ constructor(
     private val falsingManager: FalsingManager,
     private val hunBinder: HeadsUpNotificationViewBinder,
     private val logger: NotificationStatsLogger,
+    @AndroidUi private val androidUiDispatcher: CoroutineContext,
     private val metricsLogger: MetricsLogger,
     private val nicBinder: NotificationIconContainerShelfViewBinder,
     // Using a provider to avoid a circular dependency.
@@ -114,7 +118,9 @@ constructor(
         // Create viewModels once, and only when needed.
         val footerViewModel by lazy { viewModel.footerViewModelFactory.create() }
         val emptyShadeViewModel by lazy { viewModel.emptyShadeViewModelFactory.create() }
-        view.repeatWhenAttached {
+        view.repeatWhenAttached(
+            if (SceneContainerFlag.isEnabled) androidUiDispatcher else EmptyCoroutineContext
+        ) {
             lifecycleScope.launch {
                 if (SceneContainerFlag.isEnabled) {
                     launch { hunBinder.bindHeadsUpNotifications(view) }
@@ -205,21 +211,24 @@ constructor(
         parentView: NotificationStackScrollLayout,
         hasNonClearableSilentNotifications: StateFlow<Boolean>,
     ): Unit = coroutineScope {
-        val disposableHandle =
-            FooterViewBinder.bindWhileAttached(
-                footerView,
-                footerViewModel,
-                {
-                    clearAllNotifications(
-                        parentView,
-                        // Hide the silent section header (if present) if there will be
-                        // no remaining silent notifications upon clearing.
-                        hideSilentSection = !hasNonClearableSilentNotifications.value,
-                    )
-                },
-                notificationActivityStarter.get(),
-            )
         if (SceneContainerFlag.isEnabled) {
+            launch {
+                footerView.repeatWhenAttachedToWindow {
+                    FooterViewBinder.bind(
+                        footerView,
+                        footerViewModel,
+                        clearAllNotifications = {
+                            clearAllNotifications(
+                                parentView,
+                                // Hide the silent section header (if present) if there will be
+                                // no remaining silent notifications upon clearing.
+                                hideSilentSection = !hasNonClearableSilentNotifications.value,
+                            )
+                        },
+                        notificationActivityStarter.get(),
+                    )
+                }
+            }
             launch {
                 viewModel.shouldShowFooterView.collect { animatedVisibility ->
                     footerView.setVisible(
@@ -231,6 +240,20 @@ constructor(
                 }
             }
         } else {
+            val disposableHandle =
+                FooterViewBinder.bindWhileAttached(
+                    footerView,
+                    footerViewModel,
+                    {
+                        clearAllNotifications(
+                            parentView,
+                            // Hide the silent section header (if present) if there will be
+                            // no remaining silent notifications upon clearing.
+                            hideSilentSection = !hasNonClearableSilentNotifications.value,
+                        )
+                    },
+                    notificationActivityStarter.get(),
+                )
             launch {
                 viewModel.shouldIncludeFooterView.collect { animatedVisibility ->
                     footerView.setVisible(
@@ -240,8 +263,8 @@ constructor(
                 }
             }
             launch { viewModel.shouldHideFooterView.collect { footerView.setShouldBeHidden(it) } }
+            disposableHandle.awaitCancellationThenDispose()
         }
-        disposableHandle.awaitCancellationThenDispose()
     }
 
     private suspend fun reinflateAndBindEmptyShade(

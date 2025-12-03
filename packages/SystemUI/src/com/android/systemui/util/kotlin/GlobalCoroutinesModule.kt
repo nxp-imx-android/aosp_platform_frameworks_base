@@ -16,8 +16,10 @@
 
 package com.android.systemui.util.kotlin
 
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import com.android.systemui.Flags
 import com.android.systemui.coroutines.newTracingContext
+import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import dagger.Module
@@ -50,6 +52,11 @@ class GlobalCoroutinesModule {
         } else {
             Dispatchers.Main.immediate
         }
+
+    @Provides
+    @Singleton
+    @AndroidUi
+    fun androidUiDispatcher(): CoroutineContext = AndroidUiDispatcher.Main
 
     @Provides
     @Singleton
