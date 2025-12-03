@@ -353,8 +353,9 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>
             throw IllegalStateException("'type' is required")
         }
 
-        // keep a copy of the preference key
+        // keep a copy of the preference key and purpose
         val preferenceKey = key
+        val purpose = purpose
 
         return object : ApiFirstPreference<V>() {
             override val commonPermissions: PermissionsConfig? = permissionsConfig
@@ -364,6 +365,7 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>
             override val set: SetConfig<V>? = setConfig
             override val valueType: Class<V> = preferenceValueType // TODO: Use the passed `type`
             override val key: String = preferenceKey
+            override val purpose: Int = purpose
         }
     }
 }
