@@ -40,6 +40,7 @@ import android.os.UserManager;
 import android.util.DebugUtils;
 import android.util.Dumpable;
 import android.util.EventLog;
+import android.util.ImmutableIntArray;
 import android.util.IndentingPrintWriter;
 import android.util.IntArray;
 import android.util.Log;
@@ -194,7 +195,7 @@ public final class UserVisibilityMediator implements Dumpable {
      */
     @GuardedBy("mLock")
     @Nullable // TODO(b/456300837): make non-null once flag is gone
-    private final SparseArray<IntArray> mVisibleUserIdsPerDisplayCache =
+    private final SparseArray<ImmutableIntArray> mVisibleUserIdsPerDisplayCache =
             android.multiuser.Flags.hsuAllowlistActivities()
                     ? new SparseArray<>()
                     : null;
@@ -992,14 +993,15 @@ public final class UserVisibilityMediator implements Dumpable {
         return visibleUsers;
     }
 
+    // TODO(b/456300837): this method is not used anymore
     /**
      * Gets the {@code userIds} of the visible users in the given display.
      */
-    public IntArray getVisibleUsers(int displayId) {
+    public ImmutableIntArray getVisibleUsers(int displayId) {
         if (mVisibleUserIdsPerDisplayCache == null) {
             throw new IllegalStateException("not set - is flag hsu_allowlist_activities enabled?");
         }
-        IntArray visibleUserIds;
+        ImmutableIntArray visibleUserIds;
         synchronized (mLock) {
             visibleUserIds = mVisibleUserIdsPerDisplayCache.get(displayId);
             if (visibleUserIds == null) {
@@ -1055,7 +1057,7 @@ public final class UserVisibilityMediator implements Dumpable {
      * visible in that given display.
      */
     @GuardedBy("mLock")
-    private @Nullable IntArray updateVisibleUsersByDisplayCacheLocked(int displayId) {
+    private @Nullable ImmutableIntArray updateVisibleUsersByDisplayCacheLocked(int displayId) {
         if (mVisibleUserIdsPerDisplayCache == null) {
             return null;
         }
@@ -1063,7 +1065,7 @@ public final class UserVisibilityMediator implements Dumpable {
             Slogf.d(TAG, "updateVisibleUsersByDisplayCacheLocked(%d): before=%s", displayId,
                     mVisibleUserIdsPerDisplayCache.get(displayId));
         }
-        IntArray visibleUserIds = inferVisibleUsersLocked(displayId);
+        ImmutableIntArray visibleUserIds = inferVisibleUsersLocked(displayId);
         if (DBG) {
             Slogf.d(TAG, "updateVisibleUsersByDisplayCacheLocked(%d): after=%s", displayId,
                     visibleUserIds);
@@ -1073,7 +1075,7 @@ public final class UserVisibilityMediator implements Dumpable {
     }
 
     @GuardedBy("mLock")
-    private IntArray inferVisibleUsersLocked(int displayId) {
+    private ImmutableIntArray inferVisibleUsersLocked(int displayId) {
         // Optimize for default display on devices that don't support visible background users,
         // which is the most common case (only current users and its running profiles are visible)
         if (displayId == DEFAULT_DISPLAY && !mVisibleBackgroundUsersEnabled
@@ -1094,7 +1096,7 @@ public final class UserVisibilityMediator implements Dumpable {
                 Slogf.d(TAG, "inferVisibleUsersLocked(%d): optimized to %s", displayId,
                         visibleUsers);
             }
-            return visibleUsers;
+            return ImmutableIntArray.from(visibleUsers);
         }
 
         // TODO(b/258054362): logic below was mimicked by getVisibleUsers() (only the check in
@@ -1112,7 +1114,7 @@ public final class UserVisibilityMediator implements Dumpable {
         if (DBG) {
             Slogf.d(TAG, "inferVisibleUsersLocked(%d): %s", displayId, visibleUsers);
         }
-        return visibleUsers;
+        return ImmutableIntArray.from(visibleUsers);
     }
 
     /**
