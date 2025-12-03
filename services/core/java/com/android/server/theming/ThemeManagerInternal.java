@@ -33,6 +33,7 @@ import android.os.UserHandle;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.monet.ColorScheme;
 
 import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
@@ -82,7 +83,8 @@ public class ThemeManagerInternal {
      *
      * @param userId The ID of a Full User for which the theme was changed.
      */
-    void notifyThemeChanged(int userId) {
+    @VisibleForTesting
+    public void notifyThemeChanged(int userId) {
         final RemoteCallbackList<IThemeChangedCallback> userListeners;
         synchronized (mLock) {
             userListeners = mThemeChangedListeners.get(userId);
@@ -134,13 +136,22 @@ public class ThemeManagerInternal {
      * @param userId The ID of a Full User for whom to retrieve the theme information.
      * @return The {@link ThemeInfo} containing the user's current theme settings.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ThemeInfo getUserThemeInfo(int userId) {
         ThemeState state = mStateManager.getState(userId).getCurrentState();
         return new ThemeInfo(Color.valueOf(state.seedColor()), state.style(), state.contrast(),
                 DynamicScheme.DEFAULT_SPEC_VERSION.name(), DynamicScheme.DEFAULT_PLATFORM.name());
     }
 
-    void notifySettingsChange(@UserIdInt int userId, ThemeSettings oldSettings,
+    /**
+     * Notifies all registered listeners that the theme settings have changed for a specific user.
+     *
+     * @param userId The ID of a Full User for which the theme settings were changed.
+     * @param oldSettings The previous {@link ThemeSettings} before the change.
+     * @param newSettings The new {@link ThemeSettings} after the change.
+     */
+    @VisibleForTesting
+    public void notifySettingsChange(@UserIdInt int userId, ThemeSettings oldSettings,
             ThemeSettings newSettings) {
         final RemoteCallbackList<IThemeSettingsCallback> userListeners;
         synchronized (mLock) {

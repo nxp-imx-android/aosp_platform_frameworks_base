@@ -25,8 +25,11 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
+import android.content.pm.UserInfo;
 import android.content.theming.ThemeStyle;
 import android.os.UserHandle;
 import android.testing.TestableContext;
@@ -52,6 +55,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.concurrent.Executor;
 
 @RunWith(AndroidJUnit4.class)
 public class ThemeManagerServiceTests {
@@ -74,6 +78,13 @@ public class ThemeManagerServiceTests {
     private WallpaperManagerInternal mWallpaperManager;
     @Mock
     private UiModeManagerInternal mUiModeManagerInternal;
+    @Mock
+    private Executor mMainExecutor;
+
+    @Mock
+    private ThemeUserLifecycle mThemeUserLifecycle;
+    @Mock
+    private ThemeEventObserver mThemeEventObserver;
 
     @Rule
     public final TestableContext mMainContext = spy(
@@ -129,6 +140,7 @@ public class ThemeManagerServiceTests {
 
         doReturn(mUserContext).when(mMainContext).createContextAsUser(any(UserHandle.class),
                 anyInt());
+        doReturn(mMainExecutor).when(mMainContext).getMainExecutor();
 
         when(mUserManager.getProfileParentId(eq(DEFAULT_USER_ID))).thenReturn(DEFAULT_USER_ID);
         when(mUserManager.getProfileParentId(eq(PROFILE_ID))).thenReturn(DEFAULT_USER_ID);
@@ -141,11 +153,11 @@ public class ThemeManagerServiceTests {
 
     @Test
     @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
+    @SuppressLint("MissingPermission")
     public void test_onBootPhase_complete_colorSchemeNotApplied_shouldForceUpdate() {
-        // This test now creates its own ThemeService instance.
         mThemeManagerService = testableServiceStart();
 
-        // Pre-start the user manually to simulate state before boot phase
+        // creates user with seed color red, not the same as the default google_blue
         ThemeStatePair pair = startProvisionedUser();
 
         // Simulate boot phases
@@ -155,6 +167,31 @@ public class ThemeManagerServiceTests {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
                 pair.getCurrentState().timeStamp());
+
+        verify(mThemeUserLifecycle).onServicesReady(any(), any(), any());
+        verify(mThemeEventObserver).onServicesReady(any(), any(), any(), any(), any());
+        verify(mThemeEventObserver).registerListeners();
+    }
+
+    @Test
+    public void test_onUserStarting_delegatesToLifecycle() {
+        mThemeManagerService = testableServiceStart();
+        SystemService.TargetUser user = new SystemService.TargetUser(new UserInfo(10, "test", 0));
+
+        mThemeManagerService.onUserStarting(user);
+
+        verify(mThemeUserLifecycle).onUserStarting(user);
+    }
+
+    @Test
+    public void test_onUserSwitching_delegatesToLifecycle() {
+        mThemeManagerService = testableServiceStart();
+        SystemService.TargetUser from = new SystemService.TargetUser(new UserInfo(0, "from", 0));
+        SystemService.TargetUser to = new SystemService.TargetUser(new UserInfo(10, "to", 0));
+
+        mThemeManagerService.onUserSwitching(from, to);
+
+        verify(mThemeUserLifecycle).onUserSwitching(from, to);
     }
 
     private ThemeStatePair startProvisionedUser() {
@@ -166,6 +203,7 @@ public class ThemeManagerServiceTests {
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
         return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
-                mThemeStateManager, mWallpaperManager, mOverlayManager);
+                mThemeStateManager, mWallpaperManager, mOverlayManager, mThemeUserLifecycle,
+                mThemeEventObserver);
     }
 }

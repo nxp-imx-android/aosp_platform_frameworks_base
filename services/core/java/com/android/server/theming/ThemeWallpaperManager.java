@@ -31,7 +31,7 @@ import com.android.systemui.monet.ColorScheme;
  * <p>
  * This class handles cases where WallpaperManager might be missing (for example in Android Auto).
  */
-class ThemeWallpaperManager implements WallpaperColorsReader {
+public class ThemeWallpaperManager implements WallpaperColorsReader {
 
     @Nullable
     private final WallpaperManagerInternal mService;
@@ -44,7 +44,7 @@ class ThemeWallpaperManager implements WallpaperColorsReader {
      * Registers a listener for wallpaper color changes.
      * If the WallpaperManager is not available, this is a no-op.
      */
-    void addOnColorsChangedListener(
+    public void addOnColorsChangedListener(
             @NonNull WallpaperManagerInternal.ColorsChangedCallbackInternal listener,
             @NonNull Handler handler) {
         if (mService != null) {
