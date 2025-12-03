@@ -84,6 +84,7 @@ constructor(
                             }
                         contentDescription = setting.title
                     },
+                    isExpandedAudioTileDetailsView = isExpandedAudioTileDetailsView,
                 )
             }
             is DeviceSettingModel.MultiTogglePreference -> {
@@ -112,6 +113,7 @@ constructor(
                         modifier.onGloballyPositioned {
                             gravity = calculateGravity(it, screenWidth)
                         },
+                    isExpandedAudioTileDetailsView = isExpandedAudioTileDetailsView,
                 )
             }
             else -> {
