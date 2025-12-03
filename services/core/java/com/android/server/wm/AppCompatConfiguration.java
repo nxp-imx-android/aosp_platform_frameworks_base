@@ -439,6 +439,10 @@ final class AppCompatConfiguration {
                 .build();
     }
 
+    void onSystemReady() {
+        mAppCompatConfigurationPersister.onSystemReady(mContext);
+    }
+
     /**
      * Whether enabling ignoreOrientationRequest is allowed on the device. This value is controlled
      * via {@link android.provider.DeviceConfig}.
