@@ -48,7 +48,14 @@ interface IDreamManager {
     void forceAmbientDisplayEnabled(boolean enabled);
     ComponentName[] getDreamComponentsForUser(int userId);
     void setDreamComponentsForUser(int userId, in ComponentName[] componentNames);
-    void setSystemDreamComponent(in ComponentName componentName);
+    /**
+     * Sets the system dream component.
+     *
+     * @param componentName The component to set.
+     * @param token A binder token used to track the lifecycle of the requesting app.
+     * If the app dies, the system dream will be cleared automatically.
+     */
+    void setSystemDreamComponent(in ComponentName componentName, in IBinder token);
     void registerDreamOverlayService(in ComponentName componentName);
     void startDreamActivity(in Intent intent);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)")

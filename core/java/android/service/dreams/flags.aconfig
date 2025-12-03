@@ -151,3 +151,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "system_dream_death_recipient"
+    namespace: "systemui"
+    description: "Controls whether to use the death recipient for the system dream component"
+    bug: "452716180"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

@@ -20,6 +20,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+import static android.service.dreams.Flags.FLAG_SYSTEM_DREAM_DEATH_RECIPIENT;
 import static android.service.dreams.Flags.FLAG_WAKE_ON_STOPPING_DOZE;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
@@ -38,6 +39,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -59,6 +61,7 @@ import android.os.BatteryManagerInternal;
 import android.os.Binder;
 import android.content.ComponentName;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.UserHandle;
@@ -589,6 +592,62 @@ public class DreamManagerServiceTest {
                 any(),
                 anyString());
         assertThat(componentNameCaptor.getValue()).isEqualTo(defaultDream);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SYSTEM_DREAM_DEATH_RECIPIENT)
+    public void systemDreamComponent_isClearedOnBinderDeath() throws Exception {
+        enableDreaming();
+        setupDreamPreconditions();
+
+        // Set up a user-configured dream to verify fallback.
+        final ComponentName userDream = new ComponentName("user", "dream");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, userDream, true);
+
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        final ComponentName systemDream = new ComponentName("system", "dream");
+        final IBinder token = mock(IBinder.class);
+
+        // Set a system dream.
+        service.setSystemDreamComponentInternal(systemDream, token);
+
+        // Capture the death recipient so we can trigger it.
+        ArgumentCaptor<IBinder.DeathRecipient> deathRecipientCaptor =
+                ArgumentCaptor.forClass(IBinder.DeathRecipient.class);
+        verify(token).linkToDeath(deathRecipientCaptor.capture(), eq(0));
+        final IBinder.DeathRecipient deathRecipient = deathRecipientCaptor.getValue();
+
+        // Simulate the client process dying.
+        deathRecipient.binderDied();
+
+        // Verify the system service cleaned up the token.
+        verify(token).unlinkToDeath(deathRecipient, 0);
+
+        // Trigger a state update (battery change) to force a dream start evaluation.
+        sendBatteryChangeEvent();
+
+        // Start a dream, which should now be the user-configured dream.
+        service.startDreamInternal(false, "testing");
+
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mWakeLockMock).wrap(runnableCaptor.capture());
+        runnableCaptor.getValue().run();
+
+        ArgumentCaptor<ComponentName> componentNameCaptor =
+                ArgumentCaptor.forClass(ComponentName.class);
+        verify(mDreamControllerMock).startDream(
+                any(Binder.class),
+                componentNameCaptor.capture(),
+                eq(false), /* isPreviewMode */
+                eq(false), /* canDoze */
+                anyInt(),
+                any(PowerManager.WakeLock.class),
+                any(),
+                anyString());
+
+        assertThat(componentNameCaptor.getValue()).isEqualTo(userDream);
     }
 
     @Test
