@@ -91,7 +91,10 @@ class TaskStackTransitionObserver(
 
             // Find the first task that is opening, this should be the one at the front after
             // the transition
-            if (TransitionUtil.isOpeningType(change.mode)) {
+            if (TransitionUtil.isOpeningType(change.mode) ||
+                    (change.mode == TRANSIT_CHANGE &&
+                            change.flags and TransitionInfo.FLAG_MOVED_TO_TOP != 0)
+            ) {
                 notifyOnTaskMovedToFront(taskInfo)
                 break
             } else if (change.mode == TRANSIT_CHANGE) {

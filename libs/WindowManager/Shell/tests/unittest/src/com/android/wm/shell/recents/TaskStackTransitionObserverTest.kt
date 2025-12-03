@@ -186,6 +186,32 @@ class TaskStackTransitionObserverTest : ShellTestCase() {
 
     @Test
     @DisableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_TOP_TASK_TRACKING)
+    fun taskMovedToFront_changeTransition_listenerNotified() {
+        val listener = TestListener()
+        val executor = TestShellExecutor()
+        transitionObserver
+            .addTaskStackTransitionObserverListener(listener, executor)
+        val change =
+            createChange(
+                TRANSIT_CHANGE,
+                createTaskInfo(1, WINDOWING_MODE_FULLSCREEN),
+                flags = FLAG_MOVED_TO_TOP
+            )
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_CHANGE, 0).addChange(change).build()
+
+        callOnTransitionReady(transitionInfo)
+        callOnTransitionFinished()
+        executor.flushAll()
+
+        assertThat(listener.taskInfoOnTaskMovedToFront.taskId)
+            .isEqualTo(change.taskInfo?.taskId)
+        assertThat(listener.taskInfoOnTaskMovedToFront.windowingMode)
+            .isEqualTo(change.taskInfo?.windowingMode)
+    }
+
+    @Test
+    @DisableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_TOP_TASK_TRACKING)
     @EnableFlags(Flags.FLAG_ENABLE_TASK_STACK_OBSERVER_IN_SHELL)
     fun transitionMerged_withChange_onlyOpenChangeIsNotified() {
         val listener = TestListener()
