@@ -26,6 +26,8 @@ import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.screencapture.common.fakeScreenCaptureReleasable
+import com.android.systemui.screencapture.common.fakeScreenCaptureStartable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -103,10 +105,12 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
 
         screenCaptureUiInteractor.show(parameters)
         assertThat(component).isNotNull()
+        assertThat(fakeScreenCaptureStartable.isStarted).isTrue()
 
         screenCaptureUiInteractor.hide(screenCaptureType)
         advanceTimeBy(16)
         assertThat(component).isNull()
+        assertThat(fakeScreenCaptureReleasable.isReleased).isTrue()
 
         screenCaptureUiInteractor.show(parameters)
         val capturingComponent = component

@@ -48,7 +48,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @SysUISingleton
-class ScreenCaptureStartable
+class ScreenCaptureCoreStartable
 @Inject
 constructor(
     @Application private val appScope: CoroutineScope,
