@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,28 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * Values are in a linear space, as used by [DisplayManager].
  */
-interface ScreenBrightnessRepository {
+public interface ScreenBrightnessRepository {
     /** Current brightness as a value between [minLinearBrightness] and [maxLinearBrightness] */
-    val linearBrightness: Flow<LinearBrightness>
+    public val linearBrightness: Flow<LinearBrightness>
 
     /** Current minimum value for the brightness */
-    val minLinearBrightness: Flow<LinearBrightness>
+    public val minLinearBrightness: Flow<LinearBrightness>
 
     /** Current maximum value for the brightness */
-    val maxLinearBrightness: Flow<LinearBrightness>
+    public val maxLinearBrightness: Flow<LinearBrightness>
 
     /** Whether the current brightness value is overridden by the application window */
-    val isBrightnessOverriddenByWindow: StateFlow<Boolean>
+    public val isBrightnessOverriddenByWindow: StateFlow<Boolean>
 
     /** Gets the current values for min and max brightness */
-    suspend fun getMinMaxLinearBrightness(): Pair<LinearBrightness, LinearBrightness>
+    public suspend fun getMinMaxLinearBrightness(): Pair<LinearBrightness, LinearBrightness>
 
     /**
      * Sets the temporary value for the brightness. This should change the display brightness but
      * not trigger any updates.
      */
-    fun setTemporaryBrightness(value: LinearBrightness)
+    public fun setTemporaryBrightness(value: LinearBrightness)
 
     /** Sets the brightness definitively. */
-    fun setBrightness(value: LinearBrightness)
+    public fun setBrightness(value: LinearBrightness)
 }

@@ -48,7 +48,6 @@ import com.android.systemui.biometrics.domain.BiometricsDomainLayerModule;
 import com.android.systemui.bouncer.data.repository.BouncerRepositoryModule;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractorModule;
 import com.android.systemui.bouncer.ui.BouncerViewModule;
-import com.android.systemui.brightness.dagger.ScreenBrightnessModule;
 import com.android.systemui.brightness.impl.BrightnessModule;
 import com.android.systemui.classifier.FalsingModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayModule;
@@ -286,7 +285,6 @@ import javax.inject.Named;
         ReferenceModule.class,
         RetailModeModule.class,
         RotationModule.class,
-        ScreenBrightnessModule.class,
         ScreenshotModule.class,
         SecureLockDeviceModule.class,
         SensorModule.class,

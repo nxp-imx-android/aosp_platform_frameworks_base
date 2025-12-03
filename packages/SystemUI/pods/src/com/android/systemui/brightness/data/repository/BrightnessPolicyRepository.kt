@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@ import com.android.systemui.util.policy.PolicyRestriction
 import kotlinx.coroutines.flow.Flow
 
 /** Checks whether the current user is restricted to change the brightness ([RESTRICTION]) */
-interface BrightnessPolicyRepository {
+public interface BrightnessPolicyRepository {
 
     /**
      * Indicates whether the current user is restricted to change the brightness. As there is no way
      * to determine when a restriction has been added/removed. This value may be fetched eagerly and
      * not updated (unless the user changes) per flow.
      */
-    val restrictionPolicy: Flow<PolicyRestriction>
+    public val restrictionPolicy: Flow<PolicyRestriction>
 
-    companion object {
-        const val RESTRICTION = UserManager.DISALLOW_CONFIG_BRIGHTNESS
+    public companion object {
+        public const val RESTRICTION: String = UserManager.DISALLOW_CONFIG_BRIGHTNESS
     }
 }

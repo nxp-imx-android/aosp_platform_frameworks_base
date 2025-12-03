@@ -28,11 +28,14 @@ import com.android.systemui.util.policy.PolicyRestriction
 import com.android.systemui.util.policy.UserRestrictionChecker
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
-class BrightnessPolicyRepositoryImpl
+public class BrightnessPolicyRepositoryImpl
 @Inject
 constructor(
     userRepository: UserRepository,
@@ -40,7 +43,7 @@ constructor(
     @Application private val applicationContext: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : BrightnessPolicyRepository {
-    override val restrictionPolicy =
+    override val restrictionPolicy: Flow<PolicyRestriction> =
         userRepository.selectedUserInfo
             .mapLatest { user ->
                 userRestrictionChecker
