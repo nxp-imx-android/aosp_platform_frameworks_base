@@ -8991,7 +8991,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     throw new IllegalArgumentException(
                             "Invalid overlay surfacecontrol passed in for task=" + taskId);
                 }
-                final Task task = mRoot.getRootTask(taskId);
+                final Task task = mRoot.anyTaskForId(taskId);
                 if (task == null) {
                     throw new IllegalArgumentException("no task with taskId" + taskId);
                 }
@@ -9011,7 +9011,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     throw new IllegalArgumentException(
                             "Invalid overlay surfacecontrol passed in for task=" + taskId);
                 }
-                final Task task = mRoot.getRootTask(taskId);
+                final Task task = mRoot.anyTaskForId(taskId);
                 if (task == null) {
                     throw new IllegalArgumentException("no task with taskId" + taskId);
                 }
