@@ -26,6 +26,8 @@ import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON
 import static com.android.wm.shell.transition.DefaultMixedHandler.subCopy;
 import static com.android.wm.shell.transition.MixedTransitionHelper.animateEnterPipFromSplit;
 import static com.android.wm.shell.transition.MixedTransitionHelper.animateKeyguard;
+import static com.android.wm.shell.transition.MixedTransitionHelper.getTopSplitStageToKeep;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -457,16 +459,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         final TransitionInfo.Change bubblingTask = bubbleHelper.getEnterBubbleTask(info);
         // find previous split location for other task
-        @SplitScreen.StageType int topSplitStageToKeep = SplitScreen.STAGE_TYPE_UNDEFINED;
-        for (int i = info.getChanges().size() - 1; i >= 0; i--) {
-            TransitionInfo.Change change = info.getChanges().get(i);
-            if (change == bubblingTask) continue;
-            int prevStage = splitHandler.getSplitItemStage(change.getLastParent());
-            if (prevStage != SplitScreen.STAGE_TYPE_UNDEFINED) {
-                topSplitStageToKeep = prevStage;
-                break;
-            }
-        }
+        @SplitScreen.StageType int topSplitStageToKeep = getTopSplitStageToKeep(
+                info.getChanges(), splitHandler, bubblingTask);
         splitHandler.prepareDismissAnimation(topSplitStageToKeep,
                 SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE, info, startTransaction,
                 finishTransaction);
@@ -781,7 +775,6 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 mDesktopTasksController.mergeAnimation(
                         transition, info, startT, finishT, mergeTarget, finishCallback);
                 return;
-            case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE:
@@ -793,6 +786,13 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                             finishCallback);
                 }
                 return;
+            case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE:
+                // The split-to-bubble trampoline transition will be split to a bubble enter
+                // transition followed by a split dismiss transition. Then we tried to merge them
+                // here.
+                mergeSplitToBubbleTransitionIfPossible(transition, info, startT, finishT,
+                        mergeTarget, finishCallback);
+                return;
             case TYPE_ENTER_PIP_WITH_PINNED_LAYER_DISMISS:
                 mPipHandler.end();
                 mPinnedLayerHandler.mergeAnimation(transition, info, startT, finishT,
@@ -802,6 +802,52 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 throw new IllegalStateException("Playing a default mixed transition with unknown or"
                         + " illegal type: " + mType);
         }
+    }
+
+    private void mergeSplitToBubbleTransitionIfPossible(
+            @NonNull IBinder transition, @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startT, @NonNull SurfaceControl.Transaction finishT,
+            @NonNull IBinder mergeTarget,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        final Transitions.TransitionHandler handler =
+                mBubbleTransitions.getRunningEnterTransition(transition);
+        if (handler != null) {
+            handler.mergeAnimation(transition, info, startT, finishT, mergeTarget,
+                    finishCallback);
+            return;
+        }
+
+        if (!com.android.window.flags.Flags.enableForceOpaque()) {
+            return;
+        }
+
+        if (info.getType() != TRANSIT_SPLIT_DISMISS) {
+            // Not a split dismiss type animation. Early return.
+            return;
+        }
+
+        final Transitions.TransitionHandler mergeHandler =
+                mBubbleTransitions.getRunningEnterTransition(mergeTarget);
+        if (mergeHandler == null) {
+            // The merge target is not a bubble enter transition. Early return.
+            return;
+        }
+
+        final int topSplitStageToKeep = getTopSplitStageToKeep(
+                info.getChanges(), mSplitHandler, null /* bubblingTask */);
+        if (topSplitStageToKeep == SplitScreen.STAGE_TYPE_UNDEFINED) {
+            // There is no remaining split task. Early return.
+            return;
+        }
+
+        mSplitHandler.prepareDismissAnimation(
+                topSplitStageToKeep,
+                SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE,
+                info,
+                startT,
+                finishT);
+        mergeHandler.mergeAnimation(transition, info, startT, finishT, mergeTarget,
+                finishCallback);
     }
 
     @Override

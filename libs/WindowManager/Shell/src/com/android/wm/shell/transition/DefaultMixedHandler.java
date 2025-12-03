@@ -27,6 +27,8 @@ import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
+import static com.android.wm.shell.transition.MixedTransitionHelper.getTopSplitStageToKeep;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -65,6 +67,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.pip.PipFlags;
+import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
@@ -1137,12 +1140,34 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             if (mActiveTransitions.get(i).mTransition != mergeTarget) continue;
 
             MixedTransition mixed = mActiveTransitions.get(i);
-            if (mixed.mInFlightSubAnimations <= 0) {
+            if (mixed.mInFlightSubAnimations <= 0
+                    // The split-to-bubble trampoline transition also splits to two transitions.
+                    // Also merge these two transitions here.
+                    && !shouldMergeSplitToBubbleTrampolineTransition(mixed, info)) {
                 // Already done, so no need to end it.
                 return;
             }
             mixed.mergeAnimation(transition, info, startT, finishT, mergeTarget, finishCallback);
         }
+    }
+
+    private boolean shouldMergeSplitToBubbleTrampolineTransition(@NonNull MixedTransition mixed,
+            @NonNull TransitionInfo info) {
+        return com.android.window.flags.Flags.enableForceOpaque()
+                && isSplitToBubbleTrampolineTransition(mixed, info);
+    }
+
+    /**
+     * Returns whether the given transition is a split-to-bubble trampoline transition,
+     * which includes one launch-or-convert-to-bubble transition with one split dismiss transition.
+     */
+    private boolean isSplitToBubbleTrampolineTransition(@NonNull MixedTransition mixed,
+            @NonNull TransitionInfo info) {
+        return mixed.mType == MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE
+                && info.getType() == TRANSIT_SPLIT_DISMISS
+                && getTopSplitStageToKeep(
+                        info.getChanges(), mSplitHandler, null /* bubblingTask */)
+                                != SplitScreen.STAGE_TYPE_UNDEFINED;
     }
 
     @Override
