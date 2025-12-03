@@ -244,7 +244,11 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private String mUdcName = "";
 
     private static final String DEVICE_UAOA_ENABLED_PROPERTY = "ro.usb.userspace.aoa.enabled";
+    private static final String KERNEL_AOA_ENABLED_PATH =
+            "/sys/module/libcomposite/parameters/android_kernel_aoa_enabled";
     private boolean mEnableAoaUserspaceImplementation = false;
+
+    private static final Pattern KERNEL_VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+).*");
 
     /**
      * Counter for tracking UsbOperation operations.
@@ -379,7 +383,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 && deviceEnabledUserspaceAoa
                 && checkAccessoryFfsDirectories;
 
-        Slog.i(TAG, "Enabling userspace AOA: " + mEnableAoaUserspaceImplementation);
+        Slog.i(TAG, "Initial userspace AOA enablement: " + mEnableAoaUserspaceImplementation);
 
         int openControlResult = UsbStatsEnums.UNSPECIFIED;
         if (mEnableAoaUserspaceImplementation) {
@@ -388,8 +392,44 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             if (UsbStatsEnums.SUCCESS != openControlResult) {
                 Slog.e(TAG, "Failed to open control for accessory, disabling userspace AOA");
                 mEnableAoaUserspaceImplementation = false;
+            } else {
+                // nativeOpenAccessoryControl was successful. Now, check kernel version
+                // and disable kernel AOA if necessary.
+                Boolean isKernelOld = isKernelVersionLessThan(6, 6);
+
+                // isKernelOld can be true, false, or null.
+                // We need to disable the kernel driver if the kernel is old (true)
+                // or if we can't determine the version (null), just in case it's old.
+                // We do nothing if we know the kernel is new (false).
+                if (isKernelOld == null || isKernelOld) { // Covers true and null cases
+                    if (isKernelOld == null) {
+                        Slog.w(TAG, "Can't determine kernel version. Assuming it's old for "
+                                + "safety.");
+                    }
+
+                    File kernelAoaEnabledFile = new File(KERNEL_AOA_ENABLED_PATH);
+                    if (kernelAoaEnabledFile.exists()) {
+                        try {
+                            Slog.d(TAG, "Disabling kernel AOA");
+                            FileUtils.stringToFile(KERNEL_AOA_ENABLED_PATH, "0");
+                        } catch (IOException e) {
+                            Slog.e(TAG, "Failed to write to android_kernel_aoa_enabled, "
+                                    + "disabling userspace AOA.", e);
+                            mEnableAoaUserspaceImplementation = false;
+                        }
+                    } else {
+                        // If we have made it this far, the device has explicitly enabled uaoa, so
+                        // only consider a missing toggle an error if we are sure the kernel is old.
+                        if (Boolean.TRUE.equals(isKernelOld)) {
+                            Slog.e(TAG, "android_kernel_aoa_enabled not found on kernel < 6.6");
+                            mEnableAoaUserspaceImplementation = false;
+                        }
+                    }
+                }
             }
         }
+
+        Slog.i(TAG, "Userspace AOA enabled: " + mEnableAoaUserspaceImplementation);
 
         int userspaceAoaState = mEnableAoaUserspaceImplementation
                 ? UsbStatsEnums.USERSPACE_AOA_STATE_ENABLED :
@@ -519,6 +559,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         sEventLogger = new EventLogger(DUMPSYS_LOG_BUFFER, "UsbDeviceManager activity");
     }
+
     UsbProfileGroupSettingsManager getCurrentSettings() {
         synchronized (mLock) {
             return mCurrentSettings;
@@ -636,6 +677,27 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         if (pw != null) {
             pw.println(msg + e);
         }
+    }
+
+    private static Boolean isKernelVersionLessThan(int major, int minor) {
+        String kernelVersion = System.getProperty("os.version");
+        if (TextUtils.isEmpty(kernelVersion)) {
+            Slog.e(TAG, "os.version is null or empty");
+            return null;
+        }
+        Matcher matcher = KERNEL_VERSION_PATTERN.matcher(kernelVersion);
+        if (matcher.find()) {
+            try {
+                int kernelMajor = Integer.parseInt(matcher.group(1));
+                int kernelMinor = Integer.parseInt(matcher.group(2));
+                return kernelMajor < major || (kernelMajor == major && kernelMinor < minor);
+            } catch (NumberFormatException e) {
+                Slog.e(TAG, "Failed to parse kernel version string: " + kernelVersion, e);
+            }
+        } else {
+            Slog.e(TAG, "Could not parse kernel version from os.version: " + kernelVersion);
+        }
+        return null;
     }
 
     abstract static class UsbHandler extends Handler {
