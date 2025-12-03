@@ -139,16 +139,14 @@ public class UnprocessedPerfettoProtoLogImplTest {
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {
-        TEST_GROUP(true, true, false, "TEST_TAG");
+        TEST_GROUP(true, false, "TEST_TAG");
 
         private final boolean mEnabled;
-        private volatile boolean mLogToProto;
         private volatile boolean mLogToLogcat;
         private final String mTag;
 
-        TestProtoLogGroup(boolean enabled, boolean logToProto, boolean logToLogcat, String tag) {
+        TestProtoLogGroup(boolean enabled, boolean logToLogcat, String tag) {
             this.mEnabled = enabled;
-            this.mLogToProto = logToProto;
             this.mLogToLogcat = logToLogcat;
             this.mTag = tag;
         }
