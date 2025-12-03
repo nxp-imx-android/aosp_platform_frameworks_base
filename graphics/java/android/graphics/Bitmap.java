@@ -933,7 +933,7 @@ public final class Bitmap implements Parcelable {
     @NonNull
     public static Bitmap createScaledAshmemBitmap(
             @NonNull Bitmap src, int dstWidth, int dstHeight, boolean filter) {
-        if (!Flags.scaleBitmapToAshmem()) {
+        if (!Flags.scaleBitmapDirectlyToAshmem()) {
             return createScaledBitmap(src, dstWidth, dstHeight, filter);
         }
         src.checkRecycled("Can't copy a recycled bitmap");
