@@ -404,4 +404,7 @@
     <string name="open_by_default_splash_dialog_app_text">Stay in app</string>
     <!-- Text for open by default splash dialog option. -->
     <string name="open_by_default_splash_dialog_ask_me_later_text">Ask me later</string>
+
+    <!-- Text to show during package update. -->
+    <string name="package_update_text">Updating...</string>
 </resources>

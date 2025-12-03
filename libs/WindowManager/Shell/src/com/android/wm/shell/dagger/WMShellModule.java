@@ -200,6 +200,7 @@ import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -2144,12 +2145,16 @@ public abstract class WMShellModule {
             Transitions transitions,
             ShellTaskOrganizer shellTaskOrganizer,
             ShellInit shellInit,
-            UserProfileContexts userProfileContexts
+            UserProfileContexts userProfileContexts,
+            WindowDecorTaskResourceLoader taskResourceLoader,
+            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope
     ) {
         if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
             return Optional.of(
                     new PackageUpdateController(transitions, shellTaskOrganizer,
-                            shellInit, userProfileContexts));
+                            shellInit, userProfileContexts, taskResourceLoader,
+                            desktopModeWindowDecorViewModel, mainImmediateScope));
         }
         return Optional.empty();
     }

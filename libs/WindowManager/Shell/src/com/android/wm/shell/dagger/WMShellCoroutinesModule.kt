@@ -21,6 +21,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import dagger.Module
 import dagger.Provides
 import kotlin.coroutines.CoroutineContext
@@ -68,6 +69,13 @@ class WMShellCoroutinesModule {
     fun provideApplicationScope(
         @ShellMainThread applicationDispatcher: MainCoroutineDispatcher
     ): CoroutineScope = CoroutineScope(applicationDispatcher)
+
+    @Provides
+    @WMSingleton
+    @ShellMainThreadImmediate
+    fun provideMainImmediateScope(
+        @ShellMainThread mainDispatcher: MainCoroutineDispatcher
+    ): CoroutineScope = CoroutineScope(mainDispatcher.immediate)
 
     @Provides
     @WMSingleton

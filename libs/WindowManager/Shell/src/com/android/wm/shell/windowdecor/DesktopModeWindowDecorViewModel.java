@@ -1051,6 +1051,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         return snapshotList;
     }
 
+    /** Returns true if the task has a window decoration. */
+    public boolean hasWindowDecoration(int taskId) {
+        return mWindowDecorByTaskId.get(taskId) != null;
+    }
+
     @Override
     public boolean snapToHalfScreen(@NonNull RunningTaskInfo taskInfo,
             @NonNull Rect currentDragBounds, @NonNull SnapPosition position) {
