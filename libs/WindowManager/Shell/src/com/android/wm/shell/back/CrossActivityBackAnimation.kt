@@ -218,8 +218,9 @@ abstract class CrossActivityBackAnimation(
             transaction,
             statusbarHeight,
             backgroundCrop,
-            cornerRadius,
+                cornerRadius,
             closingTarget!!.taskInfo.getDisplayId(),
+            if (fixCrossActivityBackAnimationInBubbles()) enteringTarget!!.leash else null,
         )
         ensureScrimLayer()
         if (isLetterboxed && enteringHasSameLetterbox) {

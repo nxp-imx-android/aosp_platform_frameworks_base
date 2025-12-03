@@ -62,7 +62,7 @@ public class BackAnimationBackground {
     public void ensureBackground(Rect startRect, int color,
             @NonNull SurfaceControl.Transaction transaction, int statusbarHeight, int displayId) {
         ensureBackground(startRect, color, transaction, statusbarHeight,
-                null /* cropBounds */, 0 /* cornerRadius */, displayId);
+                null /* cropBounds */, 0 /* cornerRadius */, displayId, null /* relativeLeash */);
     }
 
     /**
@@ -74,10 +74,12 @@ public class BackAnimationBackground {
      * @param statusbarHeight The height of the statusbar (in px).
      * @param cropBounds The crop bounds of the surface, set to non-empty to show wallpaper.
      * @param cornerRadius The radius of corner, only work when cropBounds is not empty.
+     * @param relativeLeash The surface to layer the background relative to.
      */
     public void ensureBackground(Rect startRect, int color,
             @NonNull SurfaceControl.Transaction transaction, int statusbarHeight,
-            @Nullable Rect cropBounds, float cornerRadius, int displayId) {
+            @Nullable Rect cropBounds, float cornerRadius, int displayId,
+            @Nullable SurfaceControl relativeLeash) {
         if (mBackgroundSurface != null) {
             return;
         }
@@ -99,8 +101,12 @@ public class BackAnimationBackground {
         }
         mBackgroundSurface = colorLayerBuilder.build();
         transaction.setColor(mBackgroundSurface, colorComponents)
-                .setLayer(mBackgroundSurface, BACKGROUND_LAYER)
                 .show(mBackgroundSurface);
+        if (relativeLeash != null) {
+            transaction.setRelativeLayer(mBackgroundSurface, relativeLeash, BACKGROUND_LAYER);
+        } else {
+            transaction.setLayer(mBackgroundSurface, BACKGROUND_LAYER);
+        }
         if (cropBounds != null && !cropBounds.isEmpty()) {
             transaction.setCrop(mBackgroundSurface, cropBounds)
                     .setCornerRadius(mBackgroundSurface, cornerRadius);
