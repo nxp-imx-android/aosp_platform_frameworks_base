@@ -154,6 +154,7 @@ NativeDisplayEventReceiver::NativeDisplayEventReceiver(JNIEnv* env, jobject rece
 NativeDisplayEventReceiver::~NativeDisplayEventReceiver() {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->DeleteGlobalRef(mReceiverWeakGlobal);
+    env->DeleteGlobalRef(mVsyncEventDataWeakGlobal);
     ALOGV("receiver %p ~ dtor display event receiver.", this);
 }
 
