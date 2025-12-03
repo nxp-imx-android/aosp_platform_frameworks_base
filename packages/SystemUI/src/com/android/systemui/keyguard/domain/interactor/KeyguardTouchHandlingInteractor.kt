@@ -248,7 +248,8 @@ constructor(
             faceAuthInteractor.onNotificationPanelClicked()
         } else if (_isAnyPointerDeviceConnected.value) {
             attemptDeviceEntry(loggingReason = "Lockscreen clicked")
-        } else if (wallpaperFocalAreaInteractor.hasFocalArea.value) {
+        }
+        if (wallpaperFocalAreaInteractor.hasFocalArea.value) {
             wallpaperFocalAreaInteractor.sendTapPosition(x, y)
         }
     }
