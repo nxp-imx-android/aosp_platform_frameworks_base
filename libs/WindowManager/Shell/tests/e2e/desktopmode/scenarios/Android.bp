@@ -493,7 +493,7 @@ test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.switching.SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.switching.SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest"],
 }
 
 test_module_config {
