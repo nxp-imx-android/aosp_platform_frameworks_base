@@ -100,13 +100,13 @@ constructor(
                                     .collectAsStateWithLifecycle(emptyList())
                             ShortcutEditorDialogContent(
                                 shortcutType,
-                                infoList = allTargets,
+                                targets = allTargets,
                                 onDoneClick = { viewModel.onEditTargetsDoneClick(shortcutType) },
-                                onTargetToggled = { targetName, isEnabled ->
+                                onTargetToggled = { target ->
                                     viewModel.enableShortcutForTarget(
-                                        isEnabled,
+                                        !target.isAssigned,
                                         shortcutType,
-                                        targetName,
+                                        target.targetName,
                                     )
                                 },
                             )
@@ -120,7 +120,7 @@ constructor(
                             val isEditButtonVisible by
                                 viewModel.isEditButtonVisible.collectAsStateWithLifecycle(false)
                             ShortcutPickerDialogContent(
-                                infoList = assignedTargets,
+                                targets = assignedTargets,
                                 showEditButton = isEditButtonVisible,
                                 onEditClick = viewModel::showEditDialog,
                                 onDoneClick = viewModel::dismissDialog,

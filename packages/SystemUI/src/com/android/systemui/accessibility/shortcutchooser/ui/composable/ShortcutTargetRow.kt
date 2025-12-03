@@ -24,13 +24,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -54,9 +57,54 @@ private object Constants {
     const val ICON_SWITCH_SCALE = 40 / 52f
 }
 
+private enum class RowType {
+    CHECKBOX,
+    RADIO,
+    TOGGLE,
+}
+
+/**
+ * A shortcut target row that uses a radio button to represent a single-select option.
+ *
+ * Must be used within a container with the `selectableGroup` modifier.
+ */
 @Composable
-fun ShortcutPickerRow(
+fun ShortcutSingleSelectRow(
     target: AccessibilityTargetModel,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    ShortcutTargetRow(target, RowType.RADIO, modifier, onClick)
+}
+
+/** A shortcut target row that uses a checkbox to represent a multi-selectable option. */
+@Composable
+fun ShortcutMultiSelectRow(
+    target: AccessibilityTargetModel,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    ShortcutTargetRow(target, RowType.CHECKBOX, modifier, onClick)
+}
+
+/**
+ * A shortcut target row that uses a toggle switch to represent a toggleable option.
+ *
+ * If the target is not toggleable, the row will be just clickable without a toggle switch.
+ */
+@Composable
+fun ShortcutToggleRow(
+    target: AccessibilityTargetModel,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    ShortcutTargetRow(target, RowType.TOGGLE, modifier, onClick)
+}
+
+@Composable
+private fun ShortcutTargetRow(
+    target: AccessibilityTargetModel,
+    rowType: RowType,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -68,11 +116,17 @@ fun ShortcutPickerRow(
                 .clip(RoundedCornerShape(8.dp))
                 .testTag(target.targetName)
                 // Add interactable before padding so the entire row is clickable.
-                .interactable(target, onClick)
+                .interactable(target, rowType, onClick)
                 .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (rowType == RowType.CHECKBOX) {
+            Checkbox(checked = target.isAssigned, onCheckedChange = null)
+        } else if (rowType == RowType.RADIO) {
+            RadioButton(selected = target.isAssigned, onClick = null)
+        }
+
         Image(
             painter = rememberDrawablePainter(target.icon),
             contentDescription = null,
@@ -85,17 +139,40 @@ fun ShortcutPickerRow(
             style = MaterialTheme.typography.titleMedium,
         )
 
-        if (target.isToggleable) {
+        if (rowType == RowType.TOGGLE && target.isToggleable) {
             PickerSwitch(checked = target.isToggleOn)
         }
     }
 }
 
-private fun Modifier.interactable(target: AccessibilityTargetModel, onClick: () -> Unit): Modifier =
-    if (target.isToggleable) {
-        toggleable(value = target.isToggleOn, role = Role.Switch, onValueChange = { onClick() })
-    } else {
-        clickable { onClick() }
+private fun Modifier.interactable(
+    target: AccessibilityTargetModel,
+    rowType: RowType,
+    onClick: () -> Unit,
+): Modifier =
+    when (rowType) {
+        RowType.RADIO ->
+            selectable(
+                selected = target.isAssigned,
+                role = Role.RadioButton,
+                onClick = { onClick() },
+            )
+        RowType.CHECKBOX ->
+            toggleable(
+                value = target.isAssigned,
+                role = Role.Checkbox,
+                onValueChange = { onClick() },
+            )
+        RowType.TOGGLE ->
+            if (target.isToggleable) {
+                toggleable(
+                    value = target.isToggleOn,
+                    role = Role.Switch,
+                    onValueChange = { onClick() },
+                )
+            } else {
+                clickable { onClick() }
+            }
     }
 
 @Composable
