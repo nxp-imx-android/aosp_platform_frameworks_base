@@ -97,7 +97,7 @@ fun PrivacyChipContainer(
             }
             key("chevron") {
                 Icon(
-                    painter = painterResource(R.drawable.ic_chevron_icon),
+                    painter = painterResource(R.drawable.ic_chevron_end_round_filed),
                     contentDescription = null,
                     tint = Colors.chevronAndText,
                     modifier = Modifier.size(iconSize),
