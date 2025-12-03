@@ -531,3 +531,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_cross_activity_back_animation_in_bubbles"
+    namespace: "windowing_frontend"
+    description: "Enables the predictive cross-activity back animation in bubbles"
+    bug: "449125591"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
