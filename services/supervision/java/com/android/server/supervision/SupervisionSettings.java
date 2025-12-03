@@ -154,34 +154,8 @@ public class SupervisionSettings {
             XmlUtils.beginDocument(parser, PREF_DATA);
             final int outerDepth = parser.getDepth();
             while (XmlUtils.nextElementWithin(parser, outerDepth)) {
-                if (parser.getName().equals(PREF_USER_DATA)) {
-                    int userId = parser.getAttributeInt(null, KEY_USER_ID);
-                    SupervisionUserData data = getUserData(userId);
-                    data.supervisionRoleHolders = new ArraySet<>();
-                    data.supervisionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
-                    data.supervisionAppPackage = parser.getAttributeValue(null, KEY_APP_PACKAGE);
-                    if (data.supervisionAppPackage.isEmpty()) {
-                        data.supervisionAppPackage = null;
-                    }
-                    data.supervisionLockScreenEnabled =
-                            parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
-                    while (XmlUtils.nextElementWithin(parser, outerDepth + 1)) {
-                        if (parser.getName().equals(KEY_LOCK_SCREEN_OPTIONS)) {
-                            data.supervisionLockScreenOptions =
-                                    PersistableBundle.restoreFromXml(parser);
-                        } else if (parser.getName().equals(KEY_ROLE_HOLDERS_LIST)) {
-                            final int roleHoldersDepth = parser.getDepth();
-                            while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
-                                if (parser.getName().equals(KEY_ROLE_HOLDER)) {
-                                    String roleHolder = parser.getAttributeValue(null, "package");
-                                    data.supervisionRoleHolders.add(roleHolder);
-                                }
-                            }
-                        } else if (Flags.enableSupervisionManagerPolicyApis()
-                                && parser.getName().equals(KEY_POLICIES_LIST)) {
-                            parsePolicies(parser, data);
-                        }
-                    }
+                if (PREF_USER_DATA.equals(parser.getName())) {
+                    parseUserData(parser);
                 }
             }
         } catch (IOException | XmlPullParserException e) {
@@ -325,6 +299,50 @@ public class SupervisionSettings {
         } catch (IOException | XmlPullParserException e) {
             userDataFile.failWrite(stream);
             Slog.e(SupervisionLog.TAG, "Failed to save recovery info", e);
+        }
+    }
+
+    private void parseUserData(TypedXmlPullParser parser)
+            throws IOException, XmlPullParserException {
+        final int userId = parser.getAttributeInt(null, KEY_USER_ID);
+        final SupervisionUserData data = getUserData(userId);
+
+        data.supervisionRoleHolders = new ArraySet<>();
+        data.supervisionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
+        final String appPackage = parser.getAttributeValue(null, KEY_APP_PACKAGE);
+        data.supervisionAppPackage = "".equals(appPackage) ? null : appPackage;
+        data.supervisionLockScreenEnabled =
+                parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
+
+        final int depth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, depth)) {
+            final String tagName = parser.getName();
+            if (tagName == null) {
+                continue;
+            }
+            switch (tagName) {
+                case KEY_LOCK_SCREEN_OPTIONS -> data.supervisionLockScreenOptions =
+                        PersistableBundle.restoreFromXml(parser);
+                case KEY_ROLE_HOLDERS_LIST -> parseRoleHolders(parser, data);
+                case KEY_POLICIES_LIST -> {
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        parsePolicies(parser, data);
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseRoleHolders(TypedXmlPullParser parser, SupervisionUserData data)
+            throws IOException, XmlPullParserException {
+        final int roleHoldersDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
+            if (KEY_ROLE_HOLDER.equals(parser.getName())) {
+                final String roleHolder = parser.getAttributeValue(null, "package");
+                if (roleHolder != null) {
+                    data.supervisionRoleHolders.add(roleHolder);
+                }
+            }
         }
     }
 
