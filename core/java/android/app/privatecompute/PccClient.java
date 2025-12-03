@@ -90,8 +90,7 @@ public class PccClient {
      *                                    boolean, String, byte[])
      *                                    <li>{@link android.os.PersistableBundle}
      *                                    <li>Read-only {@link android.os.ParcelFileDescriptor}
-     *                                    <li>{@link android.os.SharedMemory}. If it has write
-     *                                    access, it will be silently restricted to read-only.
+     *                                    <li>Read-only {@link android.os.SharedMemory}
      *                                    <li>{@link android.graphics.Bitmap}
      *                                    <li>Custom {@link android.os.Parcelable} objects, must
      *                                    be serialized as a {@code byte[]} if the bundle contains
