@@ -400,7 +400,8 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 userspaceAoaState,
                 featureEnabledUserspaceAoa,
                 checkAccessoryFfsDirectories,
-                openControlResult
+                openControlResult,
+                deviceEnabledUserspaceAoa
         );
 
         if (mUsbGadgetHal == null) {
