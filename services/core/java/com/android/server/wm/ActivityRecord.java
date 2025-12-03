@@ -3674,7 +3674,7 @@ final class ActivityRecord extends WindowToken {
                             null /* resuming */, "finish");
                 }
 
-                if (endTask) {
+                if (endTask && !Flags.clearLockTaskWhenTaskEnd()) {
                     mAtmService.getLockTaskController().clearLockedTask(task);
                 }
             } else if (!isState(PAUSING)) {
@@ -4051,6 +4051,14 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         finishing = true;
+
+        if (Flags.clearLockTaskWhenTaskEnd()) {
+            // Clear the lock task if needed when the task ends.
+            if (task != null && task.getTopNonFinishingActivity() == null
+                    && !task.isClearingToReuseTask()) {
+                mAtmService.getLockTaskController().clearLockedTask(task);
+            }
+        }
 
         // Transfer the launch cookie to the next running activity above this in the same task.
         if (mLaunchCookie != null && mState != RESUMED && task != null && !task.mInRemoveTask

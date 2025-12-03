@@ -217,3 +217,13 @@ flag {
     description: "Track origination for the consecutive launch among trampoline activities"
     bug: "456621541"
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "clear_lock_task_when_task_end"
+    description: "Clear the lock task when the last activity in the task finishes"
+    bug: "461662709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
