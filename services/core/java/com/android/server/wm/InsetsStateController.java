@@ -274,13 +274,13 @@ class InsetsStateController {
                         || (caller == provider.getFakeControlTarget());
             } else if (isImeProvider) {
                 ImeTracker.forLogging().onCancelled(statsToken,
-                        ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
+                        ImeTracker.PHASE_SERVER_SET_REMOTE_TARGET_IME_VISIBILITY);
             }
         }
         if ((WindowInsets.Type.ime() & changedTypes) != 0 && !hasImeProvider) {
             // The ImeInsetsSourceProvider was not created yet (e.g. no IME window was set).
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
+                    ImeTracker.PHASE_SERVER_SET_REMOTE_TARGET_IME_VISIBILITY);
         }
         if (changed) {
             notifyInsetsChanged();

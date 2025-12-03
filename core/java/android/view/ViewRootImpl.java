@@ -10612,12 +10612,12 @@ public final class ViewRootImpl implements ViewParent,
      */
     public void notifyImeVisibilityChanged(boolean visible, @NonNull ImeTracker.Token statsToken) {
         ImeTracker.forLogging().onProgress(statsToken,
-                ImeTracker.PHASE_CLIENT_NOTIFY_IME_VISIBILITY_CHANGED);
+                ImeTracker.PHASE_IME_NOTIFY_IME_VISIBILITY_CHANGED);
         try {
             mWindowSession.notifyImeWindowVisibilityChangedFromClient(mWindow, visible, statsToken);
         } catch (RemoteException e) {
             ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_CLIENT_NOTIFY_IME_VISIBILITY_CHANGED);
+                    ImeTracker.PHASE_IME_NOTIFY_IME_VISIBILITY_CHANGED);
             e.rethrowFromSystemServer();
         }
     }
