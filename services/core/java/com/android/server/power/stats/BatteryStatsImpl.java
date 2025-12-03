@@ -117,6 +117,7 @@ import com.android.internal.os.BatteryStatsHistoryIterator;
 import com.android.internal.os.Clock;
 import com.android.internal.os.CpuScalingPolicies;
 import com.android.internal.os.KernelCpuSpeedReader;
+import com.android.internal.os.KernelCpuThreadReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidActiveTimeReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidClusterTimeReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidFreqTimeReader;
@@ -10924,21 +10925,27 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     private void initPowerProfile() {
-        int[] policies = mCpuScalingPolicies.getPolicies();
-        mKernelCpuSpeedReaders = new KernelCpuSpeedReader[policies.length];
-        for (int i = 0; i < policies.length; i++) {
-            int[] cpus = mCpuScalingPolicies.getRelatedCpus(policies[i]);
-            int[] freqs = mCpuScalingPolicies.getFrequencies(policies[i]);
-            // We need to initialize the KernelCpuSpeedReaders to read from
-            // the first cpu of each core. Once we have the CpuScalingPolicy, we have access to this
-            // information.
-            mKernelCpuSpeedReaders[i] = new KernelCpuSpeedReader(cpus[0], freqs.length);
-        }
-
         // Initialize the estimated battery capacity to a known preset one.
         mEstimatedBatteryCapacityMah = (int) mPowerProfile.getBatteryCapacity();
-
         setDisplayCountLocked(mPowerProfile.getNumDisplays());
+
+        if (KernelCpuThreadReader.isTimeInStateSupported()) {
+            int[] policies = mCpuScalingPolicies.getPolicies();
+            mKernelCpuSpeedReaders = new KernelCpuSpeedReader[policies.length];
+            for (int i = 0; i < policies.length; i++) {
+                int[] cpus = mCpuScalingPolicies.getRelatedCpus(policies[i]);
+                int[] freqs = mCpuScalingPolicies.getFrequencies(policies[i]);
+                // We need to initialize the KernelCpuSpeedReaders to read from
+                // the first cpu of each core. Once we have the CpuScalingPolicy, we have access
+                // to this information.
+                mKernelCpuSpeedReaders[i] = new KernelCpuSpeedReader(cpus[0], freqs.length);
+            }
+        } else {
+            // KernelCpuSpeedReader relies on sysfs files for time_in_state.
+            // If the file is not available (e.g. on x86), we bypass the initialization.
+            // On these platforms, power is calculated dynamically using RAPL.
+            mKernelCpuSpeedReaders = new KernelCpuSpeedReader[0];
+        }
     }
 
     public void setCallback(BatteryCallback cb) {
