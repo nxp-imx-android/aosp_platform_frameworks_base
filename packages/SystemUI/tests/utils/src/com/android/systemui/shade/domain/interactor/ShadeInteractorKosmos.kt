@@ -53,6 +53,7 @@ val Kosmos.shadeInteractorLegacyImpl by
         ShadeInteractorLegacyImpl(
             scope = applicationCoroutineScope,
             keyguardRepository = keyguardRepository,
+            keyguardTransitionInteractor = keyguardTransitionInteractor,
             repository = shadeRepository,
             shadeConfigRepository = shadeConfigRepository,
         )
