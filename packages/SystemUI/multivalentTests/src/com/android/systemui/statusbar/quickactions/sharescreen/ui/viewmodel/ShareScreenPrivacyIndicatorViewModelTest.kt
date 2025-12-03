@@ -23,8 +23,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -53,24 +53,24 @@ class ShareScreenPrivacyIndicatorViewModelTest : SysuiTestCase() {
     @Test
     fun chip_whenInteractorNotVisible_isHidden() =
         kosmos.runTest {
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Hidden::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
         }
 
     @Test
     fun chip_whenInteractorVisible_isShown() =
         kosmos.runTest {
             interactor.showChip()
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
         }
 
     @Test
     fun chip_shownThenHidden() =
         kosmos.runTest {
             interactor.showChip()
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
 
             // Hide the chip and verify it's hidden
             interactor.hideChip()
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Hidden::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
         }
 }

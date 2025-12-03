@@ -25,19 +25,19 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.media.shared.model.MediaControlChipModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ChipIcon
-import com.android.systemui.statusbar.quickactions.popups.ui.model.HoverBehavior
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
 
 /**
  * [StatusBarPopupChipViewModel] for a media control chip in the status bar. This view model is
- * responsible for converting the [MediaControlChipModel] to a [PopupChipModel] that can be used to
- * display a media control chip.
+ * responsible for converting the [MediaControlChipModel] to a [QuickActionChipUiState] that can be
+ * used to display a media control chip.
  */
 class MediaControlChipViewModel
 @AssistedInject
@@ -47,13 +47,13 @@ constructor(
 ) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     private val hydrator: Hydrator = Hydrator("MediaControlChipViewModel.hydrator")
     /**
-     * A snapshot [State] of the current [PopupChipModel]. This emits a new [PopupChipModel]
-     * whenever the underlying [MediaControlChipModel] changes.
+     * A snapshot [State] of the current [QuickActionChipUiState]. This emits a new
+     * [QuickActionChipUiState] whenever the underlying [MediaControlChipModel] changes.
      */
-    override val chip: PopupChipModel by
+    override val chip: QuickActionChipUiState by
         hydrator.hydratedStateOf(
             traceName = "chip",
-            initialValue = PopupChipModel.Hidden(PopupChipId.MediaControl),
+            initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.MediaControl),
             source =
                 mediaControlChipInteractor.mediaControlChipModel.map { model ->
                     toPopupChipModel(model)
@@ -64,9 +64,9 @@ constructor(
         hydrator.activate()
     }
 
-    private fun toPopupChipModel(model: MediaControlChipModel?): PopupChipModel {
+    private fun toPopupChipModel(model: MediaControlChipModel?): QuickActionChipUiState {
         if (model == null || model.songName.isNullOrEmpty()) {
-            return PopupChipModel.Hidden(PopupChipId.MediaControl)
+            return QuickActionChipUiState.Hidden(QuickActionChipId.MediaControl)
         }
 
         val contentDescription = model.appName?.let { ContentDescription.Loaded(description = it) }
@@ -84,8 +84,8 @@ constructor(
                 }
                 is MediaControlChipModel.Compose -> model.appIcon
             }
-        return PopupChipModel.Shown(
-            chipId = PopupChipId.MediaControl,
+        return QuickActionChipUiState.PopupChip(
+            chipId = QuickActionChipId.MediaControl,
             icons = listOf(ChipIcon(icon = defaultIcon)),
             chipText = model.songName.toString(),
             hoverBehavior = createHoverBehavior(model),

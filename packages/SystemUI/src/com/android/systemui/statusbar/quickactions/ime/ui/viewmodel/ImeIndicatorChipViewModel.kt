@@ -19,9 +19,9 @@ package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -32,25 +32,25 @@ class ImeIndicatorChipViewModel
 constructor(private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor) :
     StatusBarPopupChipViewModel, HydratedActivatable() {
 
-    override val chip: PopupChipModel by
+    override val chip: QuickActionChipUiState by
         imeIndicatorChipInteractor.isChipVisible
             .map { toPopupChipModel(it) }
             .hydratedStateOf(
                 traceName = "imeIndicatorChip",
-                initialValue = PopupChipModel.Hidden(PopupChipId.ImeIndicator),
+                initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator),
             )
 
-    private fun toPopupChipModel(isVisible: Boolean): PopupChipModel {
+    private fun toPopupChipModel(isVisible: Boolean): QuickActionChipUiState {
         return if (isVisible) {
-            PopupChipModel.Shown(
-                chipId = PopupChipId.ImeIndicator,
+            QuickActionChipUiState.PopupChip(
+                chipId = QuickActionChipId.ImeIndicator,
                 // TODO(b/458557858): Replace placeholder text with IME subtype short label or icon.
                 icons = emptyList(),
                 chipText = "IME",
                 showPopup = { imeIndicatorChipInteractor.showInputMethodPicker() },
             )
         } else {
-            PopupChipModel.Hidden(PopupChipId.ImeIndicator)
+            QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
     }
 

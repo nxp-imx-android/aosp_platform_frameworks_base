@@ -79,8 +79,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombine
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import dagger.assisted.AssistedFactory
@@ -180,7 +180,7 @@ interface HomeStatusBarViewModel : Activatable {
     val operatorNameViewModel: StatusBarOperatorNameViewModel
 
     /** The popup chips that should be shown on the right-hand side of the status bar. */
-    val popupChips: List<PopupChipModel.Shown>
+    val popupChips: List<QuickActionChipUiState.PopupChip>
 
     /**
      * True if the status bar should be visible.
@@ -323,7 +323,7 @@ constructor(
         shareToAppChipViewModel.stopDialogToShow
 
     override val popupChips
-        get() = statusBarPopupChips.shownPopupChips
+        get() = statusBarPopupChips.shownQuickActionChips
 
     private val isShadeExpandedEnough =
         // Keep the status bar visible while the shade is just starting to open or while a HUN is
