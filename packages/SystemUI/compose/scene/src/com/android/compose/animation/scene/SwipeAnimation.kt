@@ -72,10 +72,12 @@ internal fun createSwipeAnimation(
         // range.
         val distance =
             if (isUpOrLeft) {
-                animation.dragOffset = animation.dragOffset.fastCoerceIn(-absoluteDistance, 0f)
+                gestureContext.dragOffset =
+                    gestureContext.dragOffset.fastCoerceIn(-absoluteDistance, 0f)
                 -absoluteDistance
             } else {
-                animation.dragOffset = animation.dragOffset.fastCoerceIn(0f, absoluteDistance)
+                gestureContext.dragOffset =
+                    gestureContext.dragOffset.fastCoerceIn(0f, absoluteDistance)
                 absoluteDistance
             }
         lastDistance = distance
@@ -182,14 +184,22 @@ internal class SwipeAnimation<T : ContentKey>(
     private val isUpOrLeft: Boolean,
     val requiresFullDistanceSwipe: Boolean,
     private val distance: (SwipeAnimation<T>) -> Float,
-    currentContent: T = fromContent,
-    private val gestureContext: MutableDragOffsetGestureContext,
+    val gestureContext: MutableDragOffsetGestureContext,
     private val decayAnimationSpec: DecayAnimationSpec<Float>,
-) : MutableDragOffsetGestureContext by gestureContext {
+) {
+
+    /**
+     * The drag offset on which all progress computations are based on.
+     *
+     * This might be different from `gestureContext.dragOffset` if a gesture effect is applied.
+     */
+    val effectiveDragOffset: Float
+        get() = gestureContext.dragOffset
+
     /** The [TransitionState.Transition] whose implementation delegates to this [SwipeAnimation]. */
     lateinit var contentTransition: TransitionState.Transition
 
-    private var _currentContent by mutableStateOf(currentContent)
+    private var _currentContent by mutableStateOf(fromContent)
     var currentContent: T
         get() = _currentContent
         set(value) {
@@ -209,7 +219,7 @@ internal class SwipeAnimation<T : ContentKey>(
                 when {
                     isInPreviewStage -> 0f
                     animatable != null -> animatable.value
-                    else -> dragOffset
+                    else -> effectiveDragOffset
                 }
 
             return computeProgress(offset)
@@ -239,9 +249,9 @@ internal class SwipeAnimation<T : ContentKey>(
         get() {
             val offset =
                 if (isInPreviewStage) {
-                    offsetAnimation?.value ?: dragOffset
+                    offsetAnimation?.value ?: effectiveDragOffset
                 } else {
-                    dragOffset
+                    effectiveDragOffset
                 }
             return computeProgress(offset)
         }
@@ -334,7 +344,7 @@ internal class SwipeAnimation<T : ContentKey>(
             if (contentTransition.previewTransformationSpec != null && targetContent == toContent) {
                 0f
             } else {
-                dragOffset
+                effectiveDragOffset
             }
 
         val animatable =
@@ -638,7 +648,7 @@ private class ChangeSceneSwipeTransition(
     override val isUserInputOngoing: Boolean
         get() = swipeAnimation.isUserInputOngoing
 
-    override val gestureContext: GestureContext = swipeAnimation
+    override val gestureContext: GestureContext = swipeAnimation.gestureContext
 
     override suspend fun run() {
         swipeAnimation.run()
@@ -691,7 +701,7 @@ private class ShowOrHideOverlaySwipeTransition(
     override val isUserInputOngoing: Boolean
         get() = swipeAnimation.isUserInputOngoing
 
-    override val gestureContext: GestureContext = swipeAnimation
+    override val gestureContext: GestureContext = swipeAnimation.gestureContext
 
     override suspend fun run() {
         swipeAnimation.run()
@@ -740,7 +750,7 @@ private class ReplaceOverlaySwipeTransition(
     override val isUserInputOngoing: Boolean
         get() = swipeAnimation.isUserInputOngoing
 
-    override val gestureContext: GestureContext = swipeAnimation
+    override val gestureContext: GestureContext = swipeAnimation.gestureContext
 
     override suspend fun run() {
         swipeAnimation.run()

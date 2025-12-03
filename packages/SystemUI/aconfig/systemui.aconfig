@@ -1945,6 +1945,13 @@ flag {
 }
 
 flag {
+    name: "stl_user_action_gesture"
+    namespace: "systemui"
+    description: "Enables internal support for the UserActionGesture interface in STL"
+    bug: "419520966"
+}
+
+flag {
    name: "switch_user_on_bg"
    namespace: "systemui"
    description: "Does user switching on a background thread"
