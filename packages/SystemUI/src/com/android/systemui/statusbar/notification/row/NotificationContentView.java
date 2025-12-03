@@ -20,6 +20,7 @@ import static android.app.Flags.notificationsRedesignTemplates;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.Flags;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -1296,7 +1297,8 @@ public class NotificationContentView extends FrameLayout implements Notification
         return getVisualTypeForHeight(viewHeight);
     }
 
-    private int getVisualTypeForHeight(float viewHeight) {
+    @VisibleForTesting
+    public int getVisualTypeForHeight(float viewHeight) {
         boolean noExpandedChild = mExpandedChild == null;
         if (!noExpandedChild && viewHeight == getViewHeight(VISIBLE_TYPE_EXPANDED)) {
             return VISIBLE_TYPE_EXPANDED;
@@ -1305,6 +1307,13 @@ public class NotificationContentView extends FrameLayout implements Notification
 
         if (!mUserExpanding && shouldShowSingleLineView() && isSingleLinePresent) {
             return VISIBLE_TYPE_SINGLELINE;
+        }
+
+        if (Flags.richOngoingImprovements() && !noExpandedChild
+                && mContainingNotification.isPromotedOngoing()
+                && mContainingNotification.canPromotedNotificationShowExpanded(
+                        /* allowOnKeyguard = */false)) {
+            return VISIBLE_TYPE_EXPANDED;
         }
 
         if ((mIsHeadsUp || mHeadsUpAnimatingAway) && mHeadsUpChild != null
