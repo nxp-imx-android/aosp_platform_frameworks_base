@@ -16,42 +16,56 @@
 
 package com.android.test.ipcrendering;
 import static android.graphics.Paint.Style.FILL;
-import android.app.Activity;
-import android.animation.ValueAnimator;
+
+import android.R;
 import android.animation.ObjectAnimator;
-import android.view.animation.LinearInterpolator;
+import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.HardwareRenderer;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.RectF;
+import android.graphics.PorterDuff;
 import android.graphics.RecordingCanvas;
+import android.graphics.RectF;
 import android.graphics.RenderNode;
-import android.text.TextPaint;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.TextPaint;
+import android.util.Slog;
 import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.graphics.Paint;
-import android.util.Slog;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.R;
 
 public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback{
     private static final String TAG = "IPCRecordingCanvasTest";
     SurfaceView mSurfaceView;
 
     IpcCanvasContext mCanvasContext;
+    Renderer mRenderer;
 
-    private class IpcCanvasContext {
+    public interface Renderer {
+        void onSurfaceCreated(IpcCanvasContext context);
+    }
+
+    public void setRenderer(Renderer renderer) {
+        mRenderer = renderer;
+        if (mCanvasContext != null) {
+            mRenderer.onSurfaceCreated(mCanvasContext);
+        }
+    }
+
+    public class IpcCanvasContext {
         private final RenderNode mRenderNode;
         private HardwareRenderer mHardwareRenderer;
         private RecordingCanvas mCanvas;
@@ -109,18 +123,12 @@ public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback
         mSurfaceView.getHolder().addCallback(this);
     }
 
-    private void testRendering(Canvas c) {
-        Paint redPaint = new Paint();
-        redPaint.setColor(Color.RED);
-        c.drawRect(0, 0, 512, 512, redPaint);
-    }
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         mCanvasContext = new IpcCanvasContext(mSurfaceView.getSurfaceControl());
-        Canvas c = mCanvasContext.lockCanvas(512, 512);
-        testRendering(c);
-        mCanvasContext.unlockAndPost(c);
+        if (mRenderer != null) {
+            mRenderer.onSurfaceCreated(mCanvasContext);
+        }
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {

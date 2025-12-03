@@ -19,6 +19,7 @@
 
 #include "FeatureFlags.h"
 #include "HardwareBitmapUploader.h"
+#include "OutOfProcessRendering.h"
 #include "Properties.h"
 #include "utils/Color.h"
 #include <utils/Trace.h>
@@ -373,6 +374,7 @@ Bitmap::Bitmap(AHardwareBuffer* buffer, const SkImageInfo& info, size_t rowBytes
     setImmutable();  // HW bitmaps are always immutable
     mImage = SkImages::DeferredFromAHardwareBuffer(buffer, mInfo.alphaType(),
                                                    mInfo.refColorSpace());
+    uirenderer::oopr::registerBuffer(buffer, mImage);
     traceBitmapCreate();
 }
 #endif
@@ -397,6 +399,7 @@ Bitmap::~Bitmap() {
             break;
         case PixelStorageType::Hardware:
 #ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
+            uirenderer::oopr::deregisterBuffer(mImage);
             auto buffer = mPixelStorage.hardware.buffer;
             AHardwareBuffer_release(buffer);
             mPixelStorage.hardware.buffer = nullptr;
