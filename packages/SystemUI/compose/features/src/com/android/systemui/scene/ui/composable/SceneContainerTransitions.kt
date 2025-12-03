@@ -17,6 +17,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
@@ -47,6 +48,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSet
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
@@ -278,6 +280,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                         transitionDistancePx = lockscreenToShadeTransitionDistancePx
                     )
                 }
+            }
+            from(
+                Scenes.Shade,
+                to = Scenes.Lockscreen,
+                key = ToAlwaysOnDisplay,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
+            ) {
+                shadeToAlwaysOnDisplayTransition()
             }
             from(
                 Scenes.Shade,
