@@ -20,15 +20,12 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.RemoteAction;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
+import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.hint.ContextHint;
@@ -42,8 +39,11 @@ import android.service.personalcontext.insight.InsightDisplayDetails;
 import android.util.Log;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Renderer;
+import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
+import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,15 +76,26 @@ public class NotificationActionRenderer implements Renderer {
     private static final String NO_EXPLANATION = "";
 
     private final NotificationManagerInternal mNotificationManagerInternal;
+    private final ContextActionResolver mActionResolver;
     private final PackageManager mPackageManager;
     private final Context mContext;
     private final UUID mComponentId = UUID.randomUUID();
 
+    @VisibleForTesting
     public NotificationActionRenderer(
-            Context context, NotificationManagerInternal nmi, PackageManager pm) {
+            Context context,
+            NotificationManagerInternal nmi,
+            PackageManager pm,
+            ContextActionResolver actionResolver) {
         mContext = context;
         mNotificationManagerInternal = nmi;
         mPackageManager = pm;
+        mActionResolver = actionResolver;
+    }
+
+    public NotificationActionRenderer(
+            Context context, NotificationManagerInternal nmi, PackageManager pm) {
+        this(context, nmi, pm, new ContextActionResolver(context));
     }
 
     @Nullable
@@ -227,7 +238,6 @@ public class NotificationActionRenderer implements Renderer {
         }
 
         final StatusBarNotification sbn = insightGroup.mSbn;
-        final UserHandle user = sbn.getUser();
         final List<Notification.Action> notificationActions = new ArrayList<>();
         for (final ActionableInsight actionableInsight : insightGroup.mInsights) {
             if (notificationActions.size() >= MAX_NOTIFICATION_ACTIONS) {
@@ -236,7 +246,7 @@ public class NotificationActionRenderer implements Renderer {
                         "Max number of actions reached. Skipping insight: " + actionableInsight);
                 break;
             }
-            Notification.Action action = createNotificationAction(actionableInsight, user);
+            final Notification.Action action = createNotificationAction(actionableInsight);
             if (action != null) {
                 notificationActions.add(action);
             }
@@ -258,59 +268,52 @@ public class NotificationActionRenderer implements Renderer {
      * icon.
      *
      * @param insight The insight containing the details for the action.
-     * @param user The user for whom the action is being created.
      * @return A {@link Notification.Action} if it can be created, or {@code null} otherwise.
      */
     @Nullable
-    private Notification.Action createNotificationAction(
-            ActionableInsight insight, UserHandle user) {
-        Intent actionIntent = insight.getActionDetails().createActionIntent();
-        // TODO(b/462239221): simplify logic when we migrate remote action to pending intent
-        RemoteAction remoteAction = insight.getActionDetails().getRemoteAction();
-        PendingIntent pendingIntent;
-        if (actionIntent != null) {
-            // Action details contain intent, create a PendingIntent for the adjustment.
-            pendingIntent =
-                    PendingIntent.getActivityAsUser(
-                            mContext,
-                            /* requestCode= */ actionIntent.hashCode(),
-                            actionIntent,
-                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
-                            /* options= */ null,
-                            user);
-        } else if (remoteAction != null) {
-            // Action details contains RemoteAction, grab the intent and PendingIntent from that.
-            pendingIntent = remoteAction.getActionIntent();
-            actionIntent = pendingIntent.getIntent();
-        } else {
-            // Action details did not contain any action, give up.
-            return null;
-        }
-
-        if (actionIntent == null) {
-            return null;
-        }
-
-        final ActivityInfo activityInfo = getActivityInfo(actionIntent, user);
-
-        if (activityInfo == null) {
-            return null;
-        }
-
+    private Notification.Action createNotificationAction(ActionableInsight insight) {
         final InsightDisplayDetails displayDetails = insight.getDisplayDetails();
+        final boolean needsComponentInfo =
+                displayDetails.getTitle() == null || displayDetails.getIcon() == null;
 
-        final Icon icon = getIconOrDefault(displayDetails.getIcon(), activityInfo);
+        final ResolutionResult resolutionResult =
+                mActionResolver.resolveActionIntent(insight, needsComponentInfo);
+
+        if (resolutionResult == null || resolutionResult.pendingIntent == null) {
+            return null;
+        }
+
+        if (needsComponentInfo
+                && (resolutionResult.resolveInfo == null
+                        || resolutionResult.actionType == ActionType.UNKNOWN)) {
+            Slog.w(TAG, "Needed component info but could not resolve it.");
+            return null;
+        }
+
+        final PendingIntent pendingIntent = resolutionResult.pendingIntent;
+        final ResolveInfo resolveInfo = resolutionResult.resolveInfo;
+        final ActionType actionType = resolutionResult.actionType;
+        final ComponentInfo componentInfo =
+                resolveInfo != null ? resolveInfo.getComponentInfo() : null;
+
+        if (needsComponentInfo && componentInfo == null) {
+            Slog.w(TAG, "Missing title/icon, and component info is null.");
+            return null;
+        }
+
+        final Icon icon = getIconOrDefault(displayDetails.getIcon(), componentInfo);
 
         // TODO(b/460848566): icon is not included for some CUJs, handle gracefully
         if (icon == null) {
             Slog.w(
                     TAG,
                     "Could not get icon to create notification action for "
-                            + activityInfo.packageName);
+                            + (componentInfo != null ? componentInfo.packageName : "unknown"));
             return null;
         }
 
-        final CharSequence title = getTitleOrDefault(displayDetails.getTitle(), activityInfo);
+        final CharSequence title =
+                getTitleOrDefault(displayDetails.getTitle(), componentInfo, actionType);
 
         final Bundle extras = new Bundle();
         final CharSequence contentDescription = displayDetails.getContentDescription();
@@ -328,42 +331,39 @@ public class NotificationActionRenderer implements Renderer {
 
     @NonNull
     private CharSequence getTitleOrDefault(
-            @Nullable CharSequence title, @NonNull ActivityInfo activityInfo) {
+            @Nullable CharSequence title,
+            @Nullable ComponentInfo componentInfo,
+            @NonNull ActionType actionType) {
         if (title != null) {
             return title;
         }
+        if (componentInfo == null) {
+            return "";
+        }
         final CharSequence appLabel =
-                mPackageManager.getApplicationLabel(activityInfo.applicationInfo);
-        return mContext.getString(com.android.internal.R.string.open_app_name, appLabel);
+                mPackageManager.getApplicationLabel(componentInfo.applicationInfo);
+        if (actionType == ActionType.ACTIVITY) {
+            return mContext.getString(com.android.internal.R.string.open_app_name, appLabel);
+        }
+        return appLabel;
     }
 
     @Nullable
-    private ActivityInfo getActivityInfo(Intent actionIntent, UserHandle user) {
-        if (actionIntent == null) {
-            Slog.w(TAG, "Action intent is null for user: " + user);
-            return null;
-        }
-        final List<ResolveInfo> resolveInfos =
-                mPackageManager.queryIntentActivitiesAsUser(
-                        actionIntent, PackageManager.MATCH_ALL, user.getIdentifier());
-        if (resolveInfos == null || resolveInfos.isEmpty()) {
-            Slog.w(
-                    TAG,
-                    "Could not resolve action intent to get app info: "
-                            + actionIntent
-                            + " for user: "
-                            + user);
-            return null;
-        }
-        return resolveInfos.get(0).activityInfo;
-    }
-
-    @Nullable
-    private Icon getIconOrDefault(@Nullable Icon icon, @NonNull ActivityInfo activityInfo) {
+    private Icon getIconOrDefault(@Nullable Icon icon, @Nullable ComponentInfo componentInfo) {
         if (icon != null) {
             return icon;
         }
-        return Icon.createWithResource(activityInfo.packageName, activityInfo.getIconResource());
+        if (componentInfo == null) {
+            return null;
+        }
+        int iconRes = componentInfo.getIconResource();
+        if (iconRes == 0) {
+            iconRes = componentInfo.applicationInfo.icon;
+        }
+        if (iconRes != 0) {
+            return Icon.createWithResource(componentInfo.packageName, iconRes);
+        }
+        return null;
     }
 
     private Adjustment createAdjustment(
