@@ -721,6 +721,28 @@ public class NotificationManagerService extends SystemService {
 
     private LockPatternUtils mLockUtils;
     private AppLockInternal mAppLockInternal;
+    final AppLockInternal.PackageLockedStateListener mPackageLockedStateListener =
+            new AppLockInternal.PackageLockedStateListener() {
+                @Override
+                public void onPackageLockedStateChanged(@NonNull String packageName, int userId,
+                        boolean locked) {
+                    synchronized (mNotificationLock) {
+                        if (locked == isPackageLockedByAppLockLocked(packageName, userId)) {
+                            // Shouldn't happen, but this means it didn't change.
+                            Slog.w(TAG,
+                                    "onPackageLockedStateChanged called when the lock state "
+                                            + "didn't change");
+                            return;
+                        }
+                        // Cache the new value
+                        updateAppLockLockedPackagesLocked(packageName, userId, locked);
+
+                        mListeners.notifyPackageAppLockStatedChanged(
+                                findAppNotificationByListLocked(mNotificationList, packageName,
+                                        userId));
+                    }
+                }
+            };
 
     /**
      * Tracks packages that are currently in a locked state from App Lock.
@@ -729,9 +751,8 @@ public class NotificationManagerService extends SystemService {
      * the package names of the locked packages for that user. This information is queried by
      * {@link #isPackageLockedByAppLockLocked(String, int)}.
      *
-     * This is initially populated when system services are ready (i.e. ActivityManager).
-     *
-     * TODO(b/465743861): Update this map when locked state changes
+     * <p>This is initially populated when system services are ready (i.e. ActivityManager), and is
+     * kept up to date with {@link #mPackageLockedStateListener}.
      */
     @GuardedBy("mNotificationLock")
     private final SparseArray<ArraySet<String>> mAppLockLockedPackages = new SparseArray<>();
@@ -2136,8 +2157,6 @@ public class NotificationManagerService extends SystemService {
      * <p>This method checks the internal state of packages that are locked by App Lock, which is
      * stored in {@link #mAppLockLockedPackages}.
      *
-     * TODO(b/465743861): Update documentation, make sure this stays up to date using listeners
-     *
      * @param packageName the package name to check for the App Lock locked state
      * @param userId the user for whom to check the locked state
      * @return {@code true} if the package is locked for the given user, {@code false} otherwise
@@ -2148,6 +2167,29 @@ public class NotificationManagerService extends SystemService {
 
         return mAppLockLockedPackages.contains(userId) && mAppLockLockedPackages.get(
                 userId).contains(packageName);
+    }
+
+    @GuardedBy("mNotificationLock")
+    private void updateAppLockLockedPackagesLocked(String packageName, int userId, boolean locked) {
+        Objects.requireNonNull(packageName);
+
+        ArraySet<String> lockedPackages = mAppLockLockedPackages.get(userId);
+        if (locked) {
+            if (lockedPackages == null) {
+                lockedPackages = new ArraySet<>();
+                mAppLockLockedPackages.put(userId, lockedPackages);
+            }
+            lockedPackages.add(packageName);
+        } else {
+            if (lockedPackages == null) {
+                // The package is not locked, so there is nothing to do.
+                return;
+            }
+            lockedPackages.remove(packageName);
+            if (lockedPackages.isEmpty()) {
+                mAppLockLockedPackages.remove(userId);
+            }
+        }
     }
 
     private interface NotificationUpdate {
@@ -3596,6 +3638,7 @@ public class NotificationManagerService extends SystemService {
                         }
                     }
                 }
+                mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
             }
         } else if (phase == SystemService.PHASE_DEVICE_SPECIFIC_SERVICES_READY) {
             mPreferencesHelper.updateFixedImportance(mUm.getUsers());
@@ -14779,6 +14822,21 @@ public class NotificationManagerService extends SystemService {
                 Binder.restoreCallingIdentity(token);
             }
             return false;
+        }
+
+        @GuardedBy("mNotificationLock")
+        void notifyPackageAppLockStatedChanged(List<NotificationRecord> changedNotifications) {
+            if (changedNotifications == null || changedNotifications.size() == 0) {
+                return;
+            }
+
+            int numChangedNotifications = changedNotifications.size();
+            for (int i = 0; i < numChangedNotifications; i++) {
+                NotificationRecord rec = changedNotifications.get(i);
+                rec.getNotification().flags |= Notification.FLAG_SILENT;
+                // Remove old notification, and send the new "redacted ish" one
+                notifyPostedLocked(rec, rec, true);
+            }
         }
 
         /**

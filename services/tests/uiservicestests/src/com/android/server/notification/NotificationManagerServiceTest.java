@@ -15925,6 +15925,59 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(assistantRanking.getSmartActions()).isEqualTo(smartActions);
     }
 
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testOnPackageLockedStateChanged_notifiesListeners() throws Exception {
+        final int targetUser = mUserId;
+        final int otherUser = mUserId + 1;
+
+        NotificationRecord record1 = generateNotificationRecord(mTestNotificationChannel, 1,
+                targetUser);
+        NotificationRecord record2 = generateNotificationRecord(mTestNotificationChannel, 2,
+                targetUser);
+        NotificationRecord otherPkgRecord = new NotificationRecord(mContext,
+                generateSbn("other.pkg", mUid, 3, targetUser), mTestNotificationChannel);
+        NotificationRecord otherUserRecord = new NotificationRecord(mContext,
+                generateSbn(mPkg, mUid, 4, otherUser), mTestNotificationChannel);
+
+        mService.addNotification(record1);
+        mService.addNotification(record2);
+        mService.addNotification(otherPkgRecord);
+        mService.addNotification(otherUserRecord);
+
+        // GIVEN the package is initially unlocked
+        assertThat(mService.isPackageLockedByAppLockLocked(mPkg, targetUser)).isFalse();
+
+        // WHEN the package becomes locked
+        mService.mPackageLockedStateListener.onPackageLockedStateChanged(mPkg, targetUser, true);
+        waitForIdle();
+
+        // THEN the internal state is updated
+        assertThat(mService.isPackageLockedByAppLockLocked(mPkg, targetUser)).isTrue();
+
+        // THEN the listeners are notified with only the affected notifications
+        ArgumentCaptor<List<NotificationRecord>> captor = ArgumentCaptor.forClass(List.class);
+        verify(mListeners).notifyPackageAppLockStatedChanged(captor.capture());
+
+        List<NotificationRecord> updatedRecords = captor.getValue();
+        assertThat(updatedRecords).containsExactly(record1, record2);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testOnPackageLockedStateChanged_noChange_doesNothing() throws Exception {
+        final int targetUser = mUserId;
+
+        mService.mPackageLockedStateListener.onPackageLockedStateChanged(mPkg, targetUser, true);
+        waitForIdle();
+        reset(mListeners); // Reset mocks after initial setup call
+
+        mService.mPackageLockedStateListener.onPackageLockedStateChanged(mPkg, targetUser, true);
+        waitForIdle();
+
+        verify(mListeners, never()).notifyPackageAppLockStatedChanged(any());
+    }
+
     private void addSmartActionsAndReplies(NotificationRecord record) {
         Bundle b = new Bundle();
         ArrayList<Notification.Action> actions = new ArrayList<>();
