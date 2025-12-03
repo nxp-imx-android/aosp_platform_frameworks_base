@@ -49,7 +49,6 @@ import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
-
 import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
@@ -66,12 +65,14 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.util.ArraySet;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -87,6 +88,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Set;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -96,6 +98,7 @@ public class ComputerControlSessionProcessorTest {
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final String ANOTHER_TARGET_PACKAGE = "com.android.bar";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
+    private static final int NON_DEFAULT_DEVICE_ID = 7;
     private static final int VIRTUAL_DISPLAY_ID = 123;
     private static final int DEVICE_ID = 42;
     private static final String OWNER_PACKAGE_NAME = "com.package";
@@ -130,6 +133,8 @@ public class ComputerControlSessionProcessorTest {
     private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     @Mock
     private DevicePolicyManager mDevicePolicyManager;
+    @Mock
+    private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
     @Mock
     private InputManagerInternal mInputManagerInternal;
     @Mock
@@ -219,7 +224,8 @@ public class ComputerControlSessionProcessorTest {
                 eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
         mProcessor = new ComputerControlSessionProcessor(
-                context, mVirtualDeviceFactory, mPendingIntentFactory, mAllowlistController);
+                context, mVirtualDeviceManagerInternal, mVirtualDeviceFactory,
+                mPendingIntentFactory, mAllowlistController);
     }
 
     @After
@@ -235,14 +241,46 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    public void keyguardLocked_sessionNotCreated() throws Exception {
-        when(mKeyguardManager.isDeviceLocked(anyInt())).thenReturn(true);
+    public void defaultDevice_keyguardLocked_sessionNotCreated() throws Exception {
+        when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, Context.DEVICE_ID_DEFAULT))
+                .thenReturn(true);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    public void nonDefaultDevice_uidNotSeenOnDevice_fallbackToDefaultDevice() throws Exception {
+        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT)));
+        when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, Context.DEVICE_ID_DEFAULT))
+                .thenReturn(true);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    public void nonDefaultDevice_uidSeenOnDevice_sessionCreated() throws Exception {
+        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(
+                        new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));
+        when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, NON_DEFAULT_DEVICE_ID))
+                .thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any());
     }
 
     @Test
