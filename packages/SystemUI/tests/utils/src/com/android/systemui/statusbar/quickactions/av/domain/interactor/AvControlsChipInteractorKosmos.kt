@@ -16,15 +16,25 @@
 
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
+import android.app.AppOpsManager
+import android.app.activityManagerInterface
+import android.content.packageManager
+import android.content.testableContext
+import android.permission.PermissionManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.shade.data.repository.privacyChipRepository
 import com.android.systemui.statusbar.data.repository.statusBarModeRepository
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
+import com.android.systemui.statusbar.policy.FakeIndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.AvControlsChipModule
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivityModel
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import javax.inject.Provider
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.mockito.Mockito.mock
 
 val Kosmos.avControlsChipInteractor: AvControlsChipInteractor by
     Kosmos.Fixture {
@@ -35,12 +45,25 @@ val Kosmos.avControlsChipInteractor: AvControlsChipInteractor by
             )
     }
 
+val Kosmos.sensorPrivacyController: FakeIndividualSensorPrivacyController by
+    Kosmos.Fixture { FakeIndividualSensorPrivacyController() }
+
+val Kosmos.appOpsManagerMock: AppOpsManager by Kosmos.Fixture { mock(AppOpsManager::class.java) }
+
 val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractorImpl by
     Kosmos.Fixture {
         AvControlsChipInteractorImpl(
             backgroundScope = backgroundScope,
             privacyChipRepository = privacyChipRepository,
+            bgDispatcher = testDispatcher,
             statusBarModeRepositoryStore = statusBarModeRepository,
+            sensorPrivacyController = sensorPrivacyController,
+            permissionManager = PermissionManager(testableContext),
+            packageManager = packageManager,
+            selectedUserInteractor = selectedUserInteractor,
+            appIconProvider = appIconProvider,
+            appOpsManager = appOpsManagerMock,
+            activityManager = activityManagerInterface,
         )
     }
 
@@ -54,4 +77,20 @@ class FakeAvControlsChipInteractor : AvControlsChipInteractor {
     override val model: MutableStateFlow<AvControlsChipModel> =
         MutableStateFlow(AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive))
     override val isShowingAvChip: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    private val _cameraBlocked = MutableStateFlow(false)
+    override val cameraBlocked = _cameraBlocked
+
+    override fun setCameraBlocked(value: Boolean) {
+        _cameraBlocked.value = value
+    }
+
+    private val _microphoneBlocked = MutableStateFlow(false)
+    override val microphoneBlocked = _microphoneBlocked
+
+    override fun setMicrophoneBlocked(value: Boolean) {
+        _microphoneBlocked.value = value
+    }
+
+    override fun closeApp(packageName: String) {}
 }

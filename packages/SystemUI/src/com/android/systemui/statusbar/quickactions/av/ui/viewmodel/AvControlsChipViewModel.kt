@@ -62,6 +62,7 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
         val chipId = PopupChipId.AvControlsIndicator
         return when (val sensorActivityModel = avControlsChipModel.sensorActivityModel) {
             is SensorActivityModel.Inactive -> PopupChipModel.Hidden(chipId)
+
             is SensorActivityModel.Active ->
                 PopupChipModel.Shown(
                     chipId = chipId,
@@ -81,8 +82,10 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
         when (sensorActivityModel.sensors) {
             SensorActivityModel.Active.Sensors.CAMERA ->
                 ContentDescription.Resource(R.string.accessibility_camera_in_use)
+
             SensorActivityModel.Active.Sensors.MICROPHONE ->
                 ContentDescription.Resource(R.string.accessibility_microphone_in_use)
+
             SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE ->
                 ContentDescription.Resource(R.string.accessibility_camera_and_microphone_in_use)
         }

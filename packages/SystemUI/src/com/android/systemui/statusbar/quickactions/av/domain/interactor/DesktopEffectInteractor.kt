@@ -17,12 +17,14 @@
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.quickactions.av.shared.model.BlurLevel
 import com.android.systemui.statusbar.quickactions.av.shared.model.DesktopEffectModel
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.settings.repository.SecureSettingsForUserRepository
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 
 /**
  * Interactor for desktop effects.
@@ -40,10 +43,12 @@ import kotlinx.coroutines.flow.stateIn
  * and exposes a [StateFlow] of [DesktopEffectModel] that represents the current state of the
  * effects.
  */
+@SysUISingleton
 class DesktopEffectInteractor
 @Inject
 constructor(
     @Background private val backgroundScope: CoroutineScope,
+    @Background private val bgDispatcher: CoroutineDispatcher,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val secureSettingsForUserRepository: SecureSettingsForUserRepository,
 ) {
@@ -64,13 +69,14 @@ constructor(
      * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
      *   for the currently selected user.
      */
-    suspend fun setStudioMic(newValue: Boolean, userId: Int? = null) {
-        secureSettingsForUserRepository.setBoolForUser(
-            userId.asValidUserId(),
-            DESKTOP_EFFECTS_STUDIO_MIC_KEY,
-            newValue,
-        )
-    }
+    suspend fun setStudioMic(newValue: Boolean, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            secureSettingsForUserRepository.setBoolForUser(
+                userId.asValidUserId(),
+                DESKTOP_EFFECTS_STUDIO_MIC_KEY,
+                newValue,
+            )
+        }
 
     /**
      * Sets the value of the portrait relight effect.
@@ -79,13 +85,14 @@ constructor(
      * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
      *   for the currently selected user.
      */
-    suspend fun setPortraitRelight(newValue: Boolean, userId: Int? = null) {
-        secureSettingsForUserRepository.setBoolForUser(
-            userId.asValidUserId(),
-            DESKTOP_EFFECTS_PORTRAIT_RELIGHT_KEY,
-            newValue,
-        )
-    }
+    suspend fun setPortraitRelight(newValue: Boolean, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            secureSettingsForUserRepository.setBoolForUser(
+                userId.asValidUserId(),
+                DESKTOP_EFFECTS_PORTRAIT_RELIGHT_KEY,
+                newValue,
+            )
+        }
 
     /**
      * Sets the value of the face retouch effect.
@@ -94,13 +101,14 @@ constructor(
      * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
      *   for the currently selected user.
      */
-    suspend fun setFaceRetouch(newValue: Boolean, userId: Int? = null) {
-        secureSettingsForUserRepository.setBoolForUser(
-            userId.asValidUserId(),
-            DESKTOP_EFFECTS_FACE_RETOUCH_KEY,
-            newValue,
-        )
-    }
+    suspend fun setFaceRetouch(newValue: Boolean, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            secureSettingsForUserRepository.setBoolForUser(
+                userId.asValidUserId(),
+                DESKTOP_EFFECTS_FACE_RETOUCH_KEY,
+                newValue,
+            )
+        }
 
     /**
      * Sets the value of the blur level effect.
@@ -109,13 +117,14 @@ constructor(
      * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
      *   for the currently selected user.
      */
-    suspend fun setBlurLevel(newValue: BlurLevel, userId: Int? = null) {
-        secureSettingsForUserRepository.setIntForUser(
-            userId.asValidUserId(),
-            DESKTOP_EFFECTS_BLUR_LEVEL_KEY,
-            newValue.code,
-        )
-    }
+    suspend fun setBlurLevel(newValue: BlurLevel, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            secureSettingsForUserRepository.setIntForUser(
+                userId.asValidUserId(),
+                DESKTOP_EFFECTS_BLUR_LEVEL_KEY,
+                newValue.code,
+            )
+        }
 
     /**
      * Returns a [Flow] of [DesktopEffectModel] for the given user.
