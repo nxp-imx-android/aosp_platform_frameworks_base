@@ -196,7 +196,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
 
     /**
      * Types of fallback provided by the framework. These can be cleared using
-     * {@link Builder#clearFallbackOption(int)} (int)}. Custom fallback options can be added using
+     * {@link Builder#setHideSystemFallbackOption(int)}. Custom fallback options can be added using
      * {@link Builder#addFallbackOption(CharSequence, int, Executor,
      * DialogInterface.OnClickListener)}.
      *
@@ -556,7 +556,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
         @SystemApi
         @FlaggedApi(FLAG_CLEAR_FALLBACK_OPTION)
         @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
-        public Builder clearFallbackOption(@FallbackType int fallbackOptionType) {
+        public Builder setHideSystemFallbackOption(@FallbackType int fallbackOptionType) {
             if (fallbackOptionType == FALLBACK_TYPE_IDENTITY_CHECK) {
                 mPromptInfo.clearIdentityCheckFallbackOption();
             } else {
