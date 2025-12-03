@@ -83,6 +83,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.LatencyTracker;
 import com.android.internal.view.AppearanceRegion;
 import com.android.wm.shell.R;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -97,6 +98,7 @@ import com.android.wm.shell.transition.Transitions;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -182,6 +184,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     @VisibleForTesting
     RemoteAnimationTarget[] mApps;
 
+    private final Optional<BubbleController> mOptionalBubbles;
+
     @VisibleForTesting
     final RemoteCallback mNavigationObserver = new RemoteCallback(
             new RemoteCallback.OnResultListener() {
@@ -242,7 +246,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler,
+            Optional<BubbleController> optionalBubbles) {
         this(
                 shellInit,
                 shellController,
@@ -253,7 +258,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 shellBackAnimationRegistry,
                 shellCommandHandler,
                 transitions,
-                handler);
+                handler,
+                optionalBubbles);
     }
 
     @VisibleForTesting
@@ -267,7 +273,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @NonNull @ShellMainThread Handler handler) {
+            @NonNull @ShellMainThread Handler handler,
+            Optional<BubbleController> optionalBubbles) {
         mShellController = shellController;
         mShellExecutor = shellExecutor;
         mActivityTaskManager = activityTaskManager;
@@ -290,6 +297,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         updateTouchableArea();
         mAnimationScaleChangeListener = scale -> mShellExecutor.execute(
                 this::updateAnimationScale);
+        mOptionalBubbles = optionalBubbles;
     }
 
     private void onInit() {
@@ -1172,8 +1180,19 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             return;
         }
 
-        final BackAnimationRunner runner =
-                mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo);
+        final BackAnimationRunner runner;
+        final int taskId = mBackNavigationInfo.getFocusedTaskId();
+        final int type = mBackNavigationInfo.getType();
+        float cornerRadius = -1f;
+
+        if (mOptionalBubbles.isPresent() && type == BackNavigationInfo.TYPE_CROSS_ACTIVITY
+                && mOptionalBubbles.get().hasStableBubbleForTask(taskId)) {
+            // Use a custom corner radius when we're inside a Bubble.
+            cornerRadius = mOptionalBubbles.get().getBubbleCornerRadius(taskId);
+        }
+
+        runner = mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo,
+                cornerRadius);
         if (runner == null) {
             if (mBackAnimationFinishedCallback != null) {
                 try {

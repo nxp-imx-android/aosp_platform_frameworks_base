@@ -182,8 +182,9 @@ class CustomCrossActivityBackAnimation(
     override fun prepareNextAnimation(
         animationInfo: BackNavigationInfo.CustomAnimationInfo?,
         letterboxColor: Int,
+        cornerRadius: Float,
     ): Boolean {
-        super.prepareNextAnimation(animationInfo, letterboxColor)
+        super.prepareNextAnimation(animationInfo, letterboxColor, cornerRadius)
         if (animationInfo == null) return false
         customAnimationLoader.loadAll(animationInfo)?.let { result ->
             closeAnimation = result.closeAnimation

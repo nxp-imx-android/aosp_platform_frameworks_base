@@ -27,6 +27,7 @@ import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.window.flags.Flags.FLAG_FIX_CROSS_ACTIVITY_BACK_ANIMATION_IN_BUBBLES;
 import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_QUICK_DOUBLE_BACK_SWIPES;
 
 import static org.junit.Assert.assertFalse;
@@ -88,6 +89,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -100,6 +102,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
 
 /**
  * atest WMShellUnitTests:BackAnimationControllerTest
@@ -148,6 +152,8 @@ public class BackAnimationControllerTest extends ShellTestCase {
     private Handler mHandler;
     @Mock
     private Transitions.TransitionHandler mTakeoverHandler;
+    @Mock
+    private BubbleController mMockBubbleController;
 
     private BackAnimationController mController;
 
@@ -164,8 +170,8 @@ public class BackAnimationControllerTest extends ShellTestCase {
         mContext.addMockSystemService(InputManager.class, mInputManager);
         mContext.getApplicationInfo().privateFlags |= ApplicationInfo.PRIVATE_FLAG_PRIVILEGED;
         mShellInit = spy(new ShellInit(mShellExecutor));
-        mDefaultCrossActivityBackAnimation = new DefaultCrossActivityBackAnimation(mContext,
-                mAnimationBackground, mRootTaskDisplayAreaOrganizer, mHandler);
+        mDefaultCrossActivityBackAnimation = spy(new DefaultCrossActivityBackAnimation(mContext,
+                mAnimationBackground, mRootTaskDisplayAreaOrganizer, mHandler));
         mCrossTaskBackAnimation = new CrossTaskBackAnimation(mContext, mAnimationBackground,
                 mHandler);
         mShellBackAnimationRegistry =
@@ -185,7 +191,8 @@ public class BackAnimationControllerTest extends ShellTestCase {
                         mShellBackAnimationRegistry,
                         mShellCommandHandler,
                         mTransitions,
-                        mHandler);
+                        mHandler,
+                        Optional.of(mMockBubbleController));
         mShellInit.init();
         mShellExecutor.flushAll();
         mTouchableRegion = new Rect(0, 0, 100, 100);
@@ -193,6 +200,37 @@ public class BackAnimationControllerTest extends ShellTestCase {
         mBackTransitionHandler = mController.mBackTransitionHandler;
         spyOn(mBackTransitionHandler);
         doReturn(true).when(mActivityTaskManager).startPredictiveBackAnimation();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_FIX_CROSS_ACTIVITY_BACK_ANIMATION_IN_BUBBLES)
+    public void testBubbleCornerRadiusIsForwardedAndReset() throws RemoteException {
+        final int taskId = 123;
+        final float bubbleCornerRadius = 24.5f;
+
+        // Configure mockBubbleController to report a stable bubble with a specific corner radius
+        doReturn(true).when(mMockBubbleController).hasStableBubbleForTask(eq(taskId));
+        doReturn(bubbleCornerRadius).when(mMockBubbleController).getBubbleCornerRadius(eq(taskId));
+
+        createNavigationInfo(new BackNavigationInfo.Builder()
+                .setType(BackNavigationInfo.TYPE_CROSS_ACTIVITY)
+                .setFocusedTaskId(taskId)
+                .setOnBackInvokedCallback(mAppCallback)
+                .setPrepareRemoteAnimation(true)
+                .setOnBackNavigationDone(new RemoteCallback((bundle) -> {}))
+                .setTouchableRegion(mTouchableRegion));
+
+        triggerBackGesture();
+        simulateRemoteAnimationStart();
+        mShellExecutor.flushAll();
+
+        // Verify that the bubble corner radius was forwarded
+        verify(mDefaultCrossActivityBackAnimation).prepareNextAnimation(
+                isNull(), anyInt(), eq(bubbleCornerRadius));
+
+        releaseBackGesture();
+        simulateRemoteAnimationFinished();
+        mShellExecutor.flushAll();
     }
 
     private void createNavigationInfo(int backType,

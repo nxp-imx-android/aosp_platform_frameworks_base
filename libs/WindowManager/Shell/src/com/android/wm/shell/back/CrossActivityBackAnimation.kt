@@ -529,8 +529,14 @@ abstract class CrossActivityBackAnimation(
     override fun prepareNextAnimation(
         animationInfo: BackNavigationInfo.CustomAnimationInfo?,
         letterboxColor: Int,
+        cornerRadius: Float,
     ): Boolean {
         this.letterboxColor = letterboxColor
+        this.cornerRadius = if (fixCrossActivityBackAnimationInBubbles() && cornerRadius >= 0) {
+            cornerRadius
+        } else {
+            ScreenDecorationsUtils.getWindowCornerRadius(context)
+        }
         return false
     }
 
