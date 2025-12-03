@@ -80,6 +80,7 @@ cc_library_static {
         ":lib_oomConnection_native",
         ":lib_anrTimer_native",
         ":lib_lazilyRegisteredServices_native",
+        ":lib_memoryLimiter_native",
         ":lib_phantomProcessList_native",
     ],
 
@@ -253,6 +254,13 @@ filegroup {
     name: "lib_anrTimer_native",
     srcs: [
         "com_android_server_utils_AnrTimer.cpp",
+    ],
+}
+
+filegroup {
+    name: "lib_memoryLimiter_native",
+    srcs: [
+        "com_android_server_am_MemoryLimiter.cpp",
     ],
 }
 
