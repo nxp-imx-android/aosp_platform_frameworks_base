@@ -326,6 +326,7 @@ class BubbleStackViewTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
     fun setExpandedTrue_thenDataCollapsed_whenImeHides_doesNotExpand() {
         val bubble = createAndInflateBubble()
 
