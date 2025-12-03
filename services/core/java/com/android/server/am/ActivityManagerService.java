@@ -272,6 +272,7 @@ import android.app.ContentProviderHolder;
 import android.app.ForegroundServiceDelegationOptions;
 import android.app.IActivityController;
 import android.app.IActivityManager;
+import android.app.IAnrWarningCallback;
 import android.app.IApplicationStartInfoCompleteListener;
 import android.app.IApplicationThread;
 import android.app.IForegroundServiceObserver;
@@ -1529,6 +1530,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     final AnrHelper mAnrHelper = new AnrHelper(this);
+
+    private final AnrWarningController mAnrWarningController = new AnrWarningController();
 
     /** Set to true after the system has finished booting. */
     volatile boolean mBooted = false;
@@ -12476,7 +12479,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 pw.println("  --checkin: dump data for a checkin");
                 pw.println("  --proto: dump data to proto");
                 pw.println("  --logstats: log native allocator statistics.");
-                pw.println("  --unreachable: dump unreachable native memory with libmemunreachable.");
+                pw.println(
+                        "  --unreachable: dump unreachable native memory with libmemunreachable.");
                 pw.println("If [process] is specified it can be the name or ");
                 pw.println("pid of a specific process to dump.");
                 return;
@@ -20530,5 +20534,31 @@ public class ActivityManagerService extends IActivityManager.Stub
             return;
         }
         r.getWindowProcessController().setOptimizationInfo(compilerFilter, compilationReason);
+    }
+
+    // uid indexed collection of lists of ANR warning callback.
+    @GuardedBy("mAnrWarningCallbacks")
+    private final SparseArray<List<IAnrWarningCallback>> mAnrWarningCallbacks = new SparseArray<>();
+
+    @Override
+    public void registerAnrWarningListener(IAnrWarningCallback callback) {
+        mAnrWarningController.registerAnrWarningListener(Binder.getCallingUid(), callback);
+    }
+
+    @Override
+    public void unregisterAnrWarningListener(IAnrWarningCallback callback) {
+        mAnrWarningController.unregisterAnrWarningListener(Binder.getCallingUid(), callback);
+    }
+
+    /** Notifies the app about a potential ANR. */
+    public void notifyAnrWarning(
+            int uid,
+            int anrId,
+            int anrType,
+            long consumedTimeMs,
+            long timeoutMs,
+            String description) {
+        mAnrWarningController.notifyAnrWarning(
+                uid, anrId, anrType, consumedTimeMs, timeoutMs, description);
     }
 }

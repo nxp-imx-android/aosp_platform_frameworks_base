@@ -6661,6 +6661,111 @@ public class ActivityManager {
         }
     }
 
+    // Map of App listener to executor.
+    private final Map<Consumer<AnrWarningResult>, Executor> mAnrWarningAppListeners =
+            new ArrayMap<>();
+
+    // Binder callback for receiving imminent ANR warnings from the system.
+    // This is registered with the Activity Manager Service when the first ANR warning listener is
+    // added to this process.
+    @GuardedBy("mAnrWarningAppListeners")
+    @Nullable
+    private IAnrWarningCallback mAnrWarningCallback = null;
+
+    private void dispatchAnrWarning(AnrWarningResult anrWarningResult) {
+        synchronized (mAnrWarningAppListeners) {
+            mAnrWarningAppListeners.forEach(
+                    (listener, executor) ->
+                            executor.execute(() -> listener.accept(anrWarningResult)));
+        }
+    }
+
+    /**
+     * Registers a listener that is called when the app is close to the ANR timeout.
+     *
+     * <p>This is intended to give the app a chance to collect and store any additional information
+     * they may want to gather at this time, or take any pre-ANR actions. Note that these listeners
+     * are called at best-effort, and may not be successfully called (or be provided time to
+     * execute) before the ANR occurs and the app is killed.
+     *
+     * <p>If the app registers multiple distinct listeners, all registered listeners will be
+     * notified on the potential ANR condition. The order in which listeners are notified is not
+     * guaranteed.
+     *
+     * <p>The app can unregister the listener using {@link #unregisterAnrWarningListener}.
+     *
+     * @param executor The executor on which listener will be invoked. This should not be the
+     *     application's main thread.
+     * @param listener The listener to be triggered on the ANR warning condition.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_ENABLE_ANR_WARNING_CALLBACK)
+    public void registerAnrWarningListener(
+            @NonNull Executor executor, @NonNull Consumer<AnrWarningResult> listener) {
+        Objects.requireNonNull(listener, "listener should not be null");
+        Objects.requireNonNull(executor, "executor should not be null");
+
+        synchronized (mAnrWarningAppListeners) {
+            if (mAnrWarningAppListeners.containsKey(listener)) {
+                return;
+            }
+
+            mAnrWarningAppListeners.put(listener, executor);
+
+            // Only register the first listener with the Activity Manager service to avoid redundant
+            // IPC calls. Subsequent listeners will be notified when the first one receives the
+            // event.
+            if (mAnrWarningAppListeners.size() == 1) {
+                if (mAnrWarningCallback == null) {
+                    mAnrWarningCallback =
+                            new IAnrWarningCallback.Stub() {
+                                @Override
+                                public void onAnrImminent(AnrWarningResult anrWarningResult) {
+                                    dispatchAnrWarning(anrWarningResult);
+                                }
+                            };
+                }
+
+                try {
+                    getService().registerAnrWarningListener(mAnrWarningCallback);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Unable to register ANR callback with ActivityManagerService", e);
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        }
+    }
+
+    /**
+     * Unregisters a previously registered ANR warning listener.
+     *
+     * @param listener The listener to unregister. This must be the same object that was previously
+     *     passed to {@link #registerAnrWarningListener}.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_ENABLE_ANR_WARNING_CALLBACK)
+    public void unregisterAnrWarningListener(@NonNull Consumer<AnrWarningResult> listener) {
+        Objects.requireNonNull(listener, "listener should not be null");
+
+        synchronized (mAnrWarningAppListeners) {
+            if (!mAnrWarningAppListeners.containsKey(listener)) {
+                return;
+            }
+            mAnrWarningAppListeners.remove(listener);
+
+            // When app unregisters all the ANR warning listeners, also unregister the binder
+            // callback for ANR warning from the ActivityManagerService.
+            if (mAnrWarningAppListeners.isEmpty()) {
+                try {
+                    getService().unregisterAnrWarningListener(mAnrWarningCallback);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Unable to unregister ANR callback with ActivityManagerService", e);
+                    throw e.rethrowFromSystemServer();
+                } finally {
+                    mAnrWarningCallback = null;
+                }
+            }
+        }
+    }
+
     /**
      * Register to be notified when the visibility of the home screen changes.
      *
