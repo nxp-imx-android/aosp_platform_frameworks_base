@@ -30,3 +30,11 @@ flag {
     description: "Include the ANR subreason in the description retrieved from ApplicationExitInfo"
     bug: "295599954"
 }
+
+flag {
+    name: "include_anr_info"
+    namespace: "system_performance"
+    is_exported: true
+    description: "Include the ANR info object in the ApplicationExitInfo which contains anr id, anr type, user perceptible, timeout "
+    bug: "459886343"
+}
