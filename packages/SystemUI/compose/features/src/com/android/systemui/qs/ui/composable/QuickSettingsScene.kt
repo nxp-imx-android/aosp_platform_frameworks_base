@@ -346,7 +346,8 @@ private fun ContentScope.QuickSettingsContent(
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 Column(
                     modifier =
-                        Modifier.verticalScroll(scrollState, enabled = isScrollable)
+                        Modifier.disableSwipesWhenScrolling()
+                            .verticalScroll(scrollState, enabled = isScrollable)
                             .clipScrollableContainer(Orientation.Horizontal)
                             .fillMaxWidth()
                             .wrapContentHeight(unbounded = true)
