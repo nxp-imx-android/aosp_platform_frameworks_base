@@ -53,6 +53,7 @@ import android.graphics.Rect;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableLooper;
+import android.testing.UiThreadTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -466,6 +467,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    @UiThreadTest
     public void onWindowBoundsChanged_updateDraggableWindowBounds() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -502,6 +504,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    @UiThreadTest
     public void onScreenSizeChanged_resetPositionToRightBottomCorner() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,

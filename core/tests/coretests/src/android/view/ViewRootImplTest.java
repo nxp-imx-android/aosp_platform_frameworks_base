@@ -284,6 +284,7 @@ public class ViewRootImplTest {
         assertEquals(fitMaxInsets, attrs.isFitInsetsIgnoringVisibility());
     }
 
+    @UiThreadTest
     @Test
     public void adjustLayoutParamsForCompatibility_noAdjustAppearance() {
         final InsetsController controller = mViewRootImpl.getInsetsController();
@@ -307,6 +308,7 @@ public class ViewRootImplTest {
         assertEquals(appearance, controller.getSystemBarsAppearance());
     }
 
+    @UiThreadTest
     @Test
     public void adjustLayoutParamsForCompatibility_noAdjustBehavior() {
         final InsetsController controller = mViewRootImpl.getInsetsController();
