@@ -25,10 +25,10 @@ import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
-import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.bouncer.data.repository.bouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.bouncer.shared.model.BouncerInputSide

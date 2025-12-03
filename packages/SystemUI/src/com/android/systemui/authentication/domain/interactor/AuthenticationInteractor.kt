@@ -28,6 +28,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel.WipeTarget
 import com.android.systemui.dagger.SysUISingleton
@@ -360,14 +361,4 @@ constructor(
     companion object {
         const val TAG = "AuthenticationInteractor"
     }
-}
-
-/** Result of a user authentication attempt. */
-enum class AuthenticationResult {
-    /** Authentication succeeded. */
-    SUCCEEDED,
-    /** Authentication failed. */
-    FAILED,
-    /** Authentication was not performed, e.g. due to insufficient input. */
-    SKIPPED,
 }
