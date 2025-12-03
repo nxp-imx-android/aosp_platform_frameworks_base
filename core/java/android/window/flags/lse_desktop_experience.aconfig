@@ -1329,6 +1329,17 @@ flag {
 }
 
 flag {
+   name: "home_package_windowing_exemptions_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
+                 "check."
+    bug: "447111827"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
