@@ -167,6 +167,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                             text = stringResource(R.string.biometric_dialog_manage_identity_check),
                             index = index,
                             total = total,
+                            modifier = Modifier.sysuiResTag("manage_identity_check"),
                             onClick = {
                                 fallbackViewModel.manageIdentityCheck(context)
                                 callback.onUserCanceled()
