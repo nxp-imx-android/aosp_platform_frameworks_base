@@ -266,13 +266,15 @@ public final class ComputerControlSessionProcessor {
         }
 
         Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
-        final ComputerControlSessionImpl session = new ComputerControlSessionImpl(
-                mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
-                mVirtualDeviceFactory, (closedSession) -> {
-            synchronized (mSessions) {
-                mSessions.remove(closedSession);
-            }
-        });
+        final ComputerControlSessionImpl session = Binder.withCleanCallingIdentity(
+                () -> new ComputerControlSessionImpl(
+                        mContext, mAllowlistController, callback.asBinder(), params,
+                        attributionSource,
+                        mVirtualDeviceFactory, (closedSession) -> {
+                    synchronized (mSessions) {
+                        mSessions.remove(closedSession);
+                    }
+                }));
         synchronized (mSessions) {
             mSessions.add(session);
         }

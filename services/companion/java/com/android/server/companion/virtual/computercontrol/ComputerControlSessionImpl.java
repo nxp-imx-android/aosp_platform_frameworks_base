@@ -327,21 +327,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 PixelFormat.RGBA_8888, /* maxImages= */ 1);
 
         try {
-            mVirtualDevice = Binder.withCleanCallingIdentity(
-                    () -> virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
-                            virtualDeviceParams));
+            mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
+                    virtualDeviceParams);
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
 
             // Create the display with a clean identity so it can be trusted. The virtual display's
             // token must not be leaked to the client.
-            mVirtualDisplay = Binder.withCleanCallingIdentity(() -> {
-                VirtualDisplay virtualDisplay = mVirtualDevice.createVirtualDisplay(
-                        virtualDisplayConfig, null, null);
-                mWindowManagerInternal.setAnimationsDisabledForDisplay(
-                        virtualDisplay.getDisplay().getDisplayId(), true);
-                return virtualDisplay;
-            });
+            mVirtualDisplay = mVirtualDevice.createVirtualDisplay(
+                    virtualDisplayConfig, null, null);
+            mWindowManagerInternal.setAnimationsDisabledForDisplay(
+                    mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
 
             mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
