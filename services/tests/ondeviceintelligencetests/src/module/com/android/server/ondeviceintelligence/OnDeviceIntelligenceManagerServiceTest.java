@@ -25,13 +25,18 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.UserHandle;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.server.ondeviceintelligence.util.ForegroundThread;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +49,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(AndroidJUnit4.class)
@@ -52,7 +60,8 @@ public class OnDeviceIntelligenceManagerServiceTest {
     @Mock Context mMockContext;
     @Mock ActivityManager mMockActivityManager;
     @Mock Resources mMockResources;
-    @Mock RemoteOnDeviceSandboxedInferenceService mMockRemoteInferenceService;
+    @Mock PackageManager mMockPackageManager;
+    @Mock ServiceInfo mMockServiceInfo;
 
     private OnDeviceIntelligenceManagerService mService;
     private ActivityManager.OnUidImportanceListener mUidImportanceListener;
@@ -69,6 +78,7 @@ public class OnDeviceIntelligenceManagerServiceTest {
 
         when(mMockContext.getSystemService(ActivityManager.class)).thenReturn(mMockActivityManager);
         when(mMockContext.getResources()).thenReturn(mMockResources);
+        when(mMockContext.getUser()).thenReturn(UserHandle.SYSTEM);
         when(mMockContext.bindServiceAsUser(any(), any(), anyInt(), any(UserHandle.class)))
                 .thenReturn(true);
         when(mMockContext.createContextAsUser(any(UserHandle.class), anyInt()))
@@ -80,12 +90,17 @@ public class OnDeviceIntelligenceManagerServiceTest {
         when(mMockResources.getString(
                         com.android.internal.R.string.config_defaultOnDeviceIntelligenceService))
                 .thenReturn(TEST_SERVICE_NAME);
+        when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+        when(mMockPackageManager.getServiceInfo(any(), anyInt())).thenReturn(mMockServiceInfo);
+        mMockServiceInfo.permission =
+                Manifest.permission.BIND_ON_DEVICE_SANDBOXED_INFERENCE_SERVICE;
+        mMockServiceInfo.flags = ServiceInfo.FLAG_ISOLATED_PROCESS;
 
         mService = new OnDeviceIntelligenceManagerService(mMockContext);
+        mService.ensureRemoteInferenceServiceInitialized(true);
 
-        setField(mService, "mIsServiceEnabled", true);
-        setField(mService, "mActivityManager", mMockActivityManager);
-        setField(mService, "mRemoteInferenceService", mMockRemoteInferenceService);
+        mService.mIsServiceEnabled = true;
+        mService.mActivityManager = mMockActivityManager;
 
         mService.onBootPhase(OnDeviceIntelligenceManagerService.PHASE_SYSTEM_SERVICES_READY);
 
@@ -96,33 +111,6 @@ public class OnDeviceIntelligenceManagerServiceTest {
         assertNotNull(mUidImportanceListener);
     }
 
-    private void setField(Object target, String fieldName, Object value) throws Exception {
-        Field field = OnDeviceIntelligenceManagerService.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
-
-    private Map<Integer, Integer> getUidJobCounts() throws Exception {
-        Field field = OnDeviceIntelligenceManagerService.class.getDeclaredField("mUidJobCounts");
-        field.setAccessible(true);
-        return (Map<Integer, Integer>) field.get(mService);
-    }
-
-    private RemoteOnDeviceSandboxedInferenceService getHighPriorityConnection() throws Exception {
-        Field field =
-                OnDeviceIntelligenceManagerService.class.getDeclaredField(
-                        "mHighPriorityConnection");
-        field.setAccessible(true);
-        return (RemoteOnDeviceSandboxedInferenceService) field.get(mService);
-    }
-
-    private Set<Integer> getHighPriorityUids() throws Exception {
-        Field field =
-                OnDeviceIntelligenceManagerService.class.getDeclaredField("mHighPriorityUids");
-        field.setAccessible(true);
-        return (Set<Integer>) field.get(mService);
-    }
-
     @Test
     public void testTrackJob_foregroundUid_createsHighPriorityBinding() throws Exception {
         when(mMockActivityManager.getUidImportance(TEST_UID_1))
@@ -130,9 +118,9 @@ public class OnDeviceIntelligenceManagerServiceTest {
 
         mService.trackJobElevated(TEST_UID_1);
 
-        assertNotNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().contains(TEST_UID_1));
-        assertEquals(1, (int) getUidJobCounts().get(TEST_UID_1));
+        assertNotNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.contains(TEST_UID_1));
+        assertEquals(1, (int) mService.mJobCountsByUid.get(TEST_UID_1));
     }
 
     @Test
@@ -142,8 +130,8 @@ public class OnDeviceIntelligenceManagerServiceTest {
 
         mService.trackJobElevated(TEST_UID_1);
 
-        assertNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().isEmpty());
+        assertNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.isEmpty());
     }
 
     @Test
@@ -151,13 +139,13 @@ public class OnDeviceIntelligenceManagerServiceTest {
         when(mMockActivityManager.getUidImportance(TEST_UID_1))
                 .thenReturn(ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
         mService.trackJobElevated(TEST_UID_1);
-        assertNotNull(getHighPriorityConnection());
+        assertNotNull(mService.mHighPriorityConnection);
 
         mService.untrackJobElevated(TEST_UID_1);
 
-        assertNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().isEmpty());
-        assertNull(getUidJobCounts().get(TEST_UID_1));
+        assertNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.isEmpty());
+        assertNull(mService.mJobCountsByUid.get(TEST_UID_1));
     }
 
     @Test
@@ -168,22 +156,22 @@ public class OnDeviceIntelligenceManagerServiceTest {
                 .thenReturn(ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
 
         mService.trackJobElevated(TEST_UID_1);
-        RemoteOnDeviceSandboxedInferenceService conn1 = getHighPriorityConnection();
+        RemoteOnDeviceSandboxedInferenceService conn1 = mService.mHighPriorityConnection;
         assertNotNull(conn1);
 
         mService.trackJobElevated(TEST_UID_2);
-        RemoteOnDeviceSandboxedInferenceService conn2 = getHighPriorityConnection();
+        RemoteOnDeviceSandboxedInferenceService conn2 = mService.mHighPriorityConnection;
         assertNotNull(conn2);
         assertEquals(conn1, conn2); // Check it's the same shared connection
 
-        assertTrue(getHighPriorityUids().contains(TEST_UID_1));
-        assertTrue(getHighPriorityUids().contains(TEST_UID_2));
+        assertTrue(mService.mHighPriorityUids.contains(TEST_UID_1));
+        assertTrue(mService.mHighPriorityUids.contains(TEST_UID_2));
 
         mService.untrackJobElevated(TEST_UID_1);
-        assertNotNull(getHighPriorityConnection()); // Still should be alive
+        assertNotNull(mService.mHighPriorityConnection); // Still should be alive
 
         mService.untrackJobElevated(TEST_UID_2);
-        assertNull(getHighPriorityConnection()); // Now should be gone
+        assertNull(mService.mHighPriorityConnection); // Now should be gone
     }
 
     @Test
@@ -191,28 +179,30 @@ public class OnDeviceIntelligenceManagerServiceTest {
         when(mMockActivityManager.getUidImportance(TEST_UID_1))
                 .thenReturn(ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED);
         mService.trackJobElevated(TEST_UID_1);
-        assertNull(getHighPriorityConnection());
+        assertNull(mService.mHighPriorityConnection);
 
         mUidImportanceListener.onUidImportance(
                 TEST_UID_1, ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
 
-        assertNotNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().contains(TEST_UID_1));
+        waitForForegroundThread();
+        assertNotNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.contains(TEST_UID_1));
     }
 
     @Test
     public void testUidImportanceListener_toForeground_noJobs_doesNotCreateBinding()
             throws Exception {
         // Ensure no jobs are tracked for this UID
-        assertTrue(getUidJobCounts().isEmpty());
+        assertTrue(mService.mJobCountsByUid.isEmpty());
 
         // Notify listener that UID is in foreground
         mUidImportanceListener.onUidImportance(
                 TEST_UID_1, ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
 
+        waitForForegroundThread();
         // Verify that no high-priority connection is created
-        assertNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().isEmpty());
+        assertNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.isEmpty());
     }
 
     @Test
@@ -220,12 +210,21 @@ public class OnDeviceIntelligenceManagerServiceTest {
         when(mMockActivityManager.getUidImportance(TEST_UID_1))
                 .thenReturn(ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
         mService.trackJobElevated(TEST_UID_1);
-        assertNotNull(getHighPriorityConnection());
+        assertNotNull(mService.mHighPriorityConnection);
 
         mUidImportanceListener.onUidImportance(
                 TEST_UID_1, ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED);
 
-        assertNull(getHighPriorityConnection());
-        assertTrue(getHighPriorityUids().isEmpty());
+        waitForForegroundThread();
+        assertNull(mService.mHighPriorityConnection);
+        assertTrue(mService.mHighPriorityUids.isEmpty());
+    }
+
+    private void waitForForegroundThread() throws InterruptedException, TimeoutException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        ForegroundThread.getHandler().post(latch::countDown);
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+            throw new TimeoutException("Timed out waiting for foreground thread.");
+        }
     }
 }

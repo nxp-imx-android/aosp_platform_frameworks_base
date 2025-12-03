@@ -22,7 +22,6 @@ import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
-
 import java.util.Objects;
 
 /**
@@ -55,7 +54,7 @@ public final class Feature implements Parcelable {
         this.mType = type;
         this.mVariant = variant;
         this.mFeatureParams = Objects.requireNonNull(featureParams,
-                "featureParams should be non-null.");
+                "featureParams must not be null.");
     }
 
     /** Returns the unique and immutable identifier of this feature. */
@@ -163,7 +162,8 @@ public final class Feature implements Parcelable {
         this.mModelName = modelName;
         this.mType = type;
         this.mVariant = variant;
-        this.mFeatureParams = featureParams;
+        this.mFeatureParams = Objects.requireNonNull(featureParams,
+                "featureParams must not be null.");
     }
 
     public static final @NonNull Parcelable.Creator<Feature> CREATOR
@@ -195,7 +195,6 @@ public final class Feature implements Parcelable {
 
         /**
          * Provides a builder instance to create a feature for given id.
-         *
          * @param id the unique identifier for the feature.
          */
         public Builder(int id) {

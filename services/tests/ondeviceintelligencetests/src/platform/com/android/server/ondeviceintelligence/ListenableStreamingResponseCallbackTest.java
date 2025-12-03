@@ -48,6 +48,7 @@ import java.util.concurrent.TimeoutException;
 
 @RunWith(AndroidJUnit4.class)
 public class ListenableStreamingResponseCallbackTest {
+
     private IStreamingResponseCallback mMockCallback;
     private AndroidFuture<Void> mFuture;
     private Handler mHandler;
@@ -56,10 +57,7 @@ public class ListenableStreamingResponseCallbackTest {
 
     @Before
     public void setUp() {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-        mHandler = new Handler(Looper.myLooper());
+        mHandler = new Handler(Looper.getMainLooper());
         mMockCallback = mock(IStreamingResponseCallback.class);
         mFuture = new AndroidFuture<>();
     }
