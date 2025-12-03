@@ -26,6 +26,7 @@ import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.apifirst.preconditions.Allowed
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
+import com.android.settingslib.metadata.apifirst.preconditions.Disallowed
 import com.android.settingslib.metadata.apifirst.types.ApiFirstType
 
 /** Configuration of the [ApiFirstPreference] permissions. */
@@ -152,9 +153,25 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 }
 
             override fun <T : Any> setValue(storeKey: String, valueType: Class<T>, value: T?) {
-                if (storeKey == key) {
-                    // This cast is safe because the framework ensures `value` is of type `V`.
-                    set?.execute(context, value as V)
+                // Catalyst's KeyValueStore is designed to handle arbitrary key/value pairs.
+                // However, the api-first approach dictates that each ApiFirstPreference instance
+                // is responsible for a single, specific key. Thus, ignoring calls for other keys.
+                if (storeKey != key) {
+                    return
+                }
+
+                // If value type is not of the preference valueType (V), throw an exception
+                if (!this@ApiFirstPreference.valueType.isInstance(value)) {
+                    throw IllegalArgumentException("Value type mismatch")
+                }
+
+                // This cast is safe because we already checked the `value` is of type `V`
+                val valueV = value as V
+                val valuePreconditionsCheck =
+                    set?.valuePreconditions?.invoke(context, valueV) ?: Allowed
+                when (valuePreconditionsCheck) {
+                    Allowed -> set?.execute(context, valueV)
+                    is Disallowed -> throw IllegalStateException(valuePreconditionsCheck.reason)
                 }
             }
         }

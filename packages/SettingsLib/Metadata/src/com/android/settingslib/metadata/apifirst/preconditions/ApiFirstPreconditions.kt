@@ -17,3 +17,15 @@
 package com.android.settingslib.metadata.apifirst.preconditions
 
 interface ApiFirstPreconditions
+
+/** All preconditions are met and get can be called. */
+object Allowed : ApiFirstPreconditions
+
+/**
+ * Represents a failed precondition check.
+ * Every implementation of `Disallowed` needs to provide a `reason`.
+ */
+interface Disallowed : ApiFirstPreconditions {
+    /** A human-readable reason explaining why the precondition failed. */
+    val reason: String
+}

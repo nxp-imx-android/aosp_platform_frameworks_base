@@ -20,6 +20,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.metadata.apifirst.category.Category
+import com.android.settingslib.metadata.apifirst.preconditions.Allowed
+import com.android.settingslib.metadata.apifirst.preconditions.Custom
 import com.android.settingslib.metadata.apifirst.types.AnyBoolean
 import com.android.settingslib.metadata.apifirst.types.AnyInt
 import com.android.settingslib.preference.PreferenceFragment
@@ -139,11 +141,15 @@ class ApiFirstPreferenceScreenTest {
 
         // Check that getters return the correct value
         val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
-        assertThat(firstPreference.get.execute(context)).isEqualTo(preferenceValue1)
+        assertThat(
+            firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
+        ).isEqualTo(preferenceValue1)
 
         val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo("ApiFirstPreference2")
-        assertThat(secondPreference.get.execute(context)).isEqualTo(preferenceValue2)
+        assertThat(
+            secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
+        ).isEqualTo(preferenceValue2)
     }
 
     @Test
@@ -195,18 +201,86 @@ class ApiFirstPreferenceScreenTest {
         // First preference doesn't have a setter, so the getter should return the same value
         val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
-        assertThat(firstPreference.set?.execute(context, true)).isEqualTo(null)
-        assertThat(firstPreference.get.execute(context)).isEqualTo(preferenceValue1)
+        firstPreference.storage(context).setValue(preferenceKey1, Boolean::class.java, true)
+        assertThat(
+            firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
+        ).isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
         val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
+        secondPreference.storage(context)
+            .setValue(preferenceKey2, Int::class.java, newPreferenceValue2)
         assertThat(
-            secondPreference.set?.execute(
-                context, newPreferenceValue2
-            )
-        ).isNotEqualTo(null)
-        assertThat(secondPreference.get.execute(context)).isEqualTo(newPreferenceValue2)
+            secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
+        ).isEqualTo(newPreferenceValue2)
+    }
+
+    @Test
+    fun createApiFirstPreferenceScreenWithGetterAndSetter_withValuePreconditions() {
+        val initialPreferenceValue = 0
+        var preferenceValue = initialPreferenceValue
+        val preferenceKey = "ApiFirstPreference"
+        val newPreferenceWrongValue = 23
+        val newPreferenceValue = 112
+
+        val preferenceScreen = object : ApiFirstPreferenceScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = 0
+        ) {
+            init {
+                preference(
+                    key = preferenceKey, purpose = 0, type = AnyInt
+                ) {
+                    get {
+                        execute {
+                            preferenceValue
+                        }
+                    }
+
+                    set {
+                        valuePreconditions("Value's digits must add up to even number") { _, value ->
+                            var sum = 0
+                            for (digit in value.toString()) {
+                                sum += digit.digitToInt()
+                            }
+                            if (sum % 2 == 0) {
+                                Allowed
+                            } else {
+                                Custom("Wrong value")
+                            }
+                        }
+
+                        execute { _, value ->
+                            preferenceValue = value
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check we only have 1 preference in the list
+        assertThat(preferenceScreen.preferencesList.size).isEqualTo(1)
+
+        // Trying to set a wrong value throws exception and value stays the same
+        val preference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Int>
+        assertThat(preference.key).isEqualTo(preferenceKey)
+        assertThrows(IllegalStateException::class.java) {
+            preference.storage(context)
+                .setValue(preferenceKey, Int::class.java, newPreferenceWrongValue)
+        }
+        assertThat(
+            preference.storage(context).getValue(preferenceKey, Int::class.java)
+        ).isEqualTo(initialPreferenceValue)
+
+        // Setting correct value succeeds
+        assertThat(preference.key).isEqualTo(preferenceKey)
+        preference.storage(context).setValue(preferenceKey, Int::class.java, newPreferenceValue)
+        assertThat(
+            preference.storage(context).getValue(preferenceKey, Int::class.java)
+        ).isEqualTo(newPreferenceValue)
     }
 
     companion object {

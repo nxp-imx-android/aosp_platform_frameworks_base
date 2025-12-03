@@ -21,4 +21,4 @@ package com.android.settingslib.metadata.apifirst.preconditions
  * settings team if you feel you need to use this - it may be appropriate for us to create a new
  * result type.
  */
-class Custom(reason: String): ApiFirstPreconditions
+class Custom(override val reason: String) : Disallowed
