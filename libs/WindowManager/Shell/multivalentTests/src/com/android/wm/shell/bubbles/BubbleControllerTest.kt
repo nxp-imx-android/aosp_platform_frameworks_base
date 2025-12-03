@@ -845,6 +845,49 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.INVISIBLE)
     }
 
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
+    fun removeLastBubbleInBubbleBar_hidesLayerViewAndRemovesWindow() {
+        // Verifies that when the last bubble is removed in bubble bar mode, the layer view is
+        // hidden and the window is removed via the animation callback. This exercises the logic
+        // containing the change under test.
+
+        // GIVEN bubble bar mode is active with one bubble
+        bubblePositioner.update(deviceConfigUnfolded)
+        bubblePositioner.isShowingInBubbleBar = true
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(true)
+            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+        }
+
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        val layerView = bubbleController.layerView
+        assertThat(layerView).isNotNull()
+        verify(windowManager).addView(eq(layerView), any())
+
+        // WHEN the last bubble is dismissed
+        getInstrumentation().runOnMainSync {
+            bubbleController.dismissBubble("key", DISMISS_USER_GESTURE)
+        }
+        assertThat(bubbleData.hasBubbles()).isFalse()
+
+        // THEN the layer view is made invisible and removed from the window manager
+        // The animation end callback in BubbleBarLayerView#removeBubble should run, which
+        // executes the lambda in BubbleController that hides the view and posts the removal.
+        mainExecutor.flushAll()
+        bgExecutor.flushAll()
+
+        assertThat(layerView!!.visibility).isEqualTo(View.INVISIBLE)
+        verify(windowManager).removeView(layerView)
+    }
+
     @Test
     fun testOnThemeChanged_skipInflationForOverflowBubbles() {
         val taskInfo1 =
