@@ -740,7 +740,6 @@ public class BubbleData {
      */
     public void removeBubblesWithInvalidShortcuts(
             String packageName, List<ShortcutInfo> validShortcuts, int reason) {
-        BubbleLog.d("BubbleData.removeBubblesWithInvalidShortcuts() package=%s", packageName);
         final Set<String> validShortcutIds = new HashSet<String>();
         for (ShortcutInfo info : validShortcuts) {
             validShortcutIds.add(info.getId());
@@ -757,7 +756,12 @@ public class BubbleData {
                             && bubble.getShortcutInfo() != null
                             && bubble.getShortcutInfo().isEnabled()
                             && validShortcutIds.contains(bubble.getShortcutInfo().getId());
-            return bubbleIsFromPackage && !hasShortcutIdAndValidShortcut;
+            boolean isInvalidBubble = bubbleIsFromPackage && !hasShortcutIdAndValidShortcut;
+            if (isInvalidBubble) {
+                BubbleLog.d("BubbleData.removeBubblesWithInvalidShortcuts() bubble=%s",
+                        bubble.getKey());
+            }
+            return isInvalidBubble;
         };
 
         final Consumer<Bubble> removeBubble = bubble ->
