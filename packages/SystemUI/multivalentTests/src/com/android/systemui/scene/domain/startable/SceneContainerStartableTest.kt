@@ -907,6 +907,26 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun switchToOccluded_whenWakingUp_whileOccluded() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            prepareState(
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Lockscreen,
+                startsAwake = false,
+            )
+            underTest.start()
+            runCurrent()
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
     @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
     fun playSuccessHaptics_onSuccessfulLockscreenAuth_udfps() =
         kosmos.runTest {

@@ -752,6 +752,14 @@ constructor(
                             overlay = Overlays.Bouncer,
                             loggingReason = "device is starting to wake up with a locked sim",
                         )
+                    } else if (
+                        occlusionInteractor.isKeyguardOccluded.value &&
+                            !keyguardInteractor.isDreaming.value
+                    ) {
+                        switchToScene(
+                            targetSceneKey = Scenes.Occluded,
+                            loggingReason = "device is waking up while occluded",
+                        )
                     }
                 }
             }
