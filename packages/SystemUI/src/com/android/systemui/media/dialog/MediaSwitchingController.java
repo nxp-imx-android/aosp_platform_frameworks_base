@@ -91,6 +91,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.SystemClock;
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 
 import dagger.assisted.Assisted;
@@ -172,6 +173,7 @@ public class MediaSwitchingController
     @Nullable private Boolean mGroupSelectedItems = null; // Unset until the first render.
     private final JavaAdapter mJavaAdapter;
     private final AudioSharingRepository mAudioSharingRepository;
+    private final boolean mIsExpandedAudioTileDetailsFeatureEnabled;
     private boolean mInAudioSharing = false;
     @Nullable private Job mAudioShareJob = null;
 
@@ -208,7 +210,8 @@ public class MediaSwitchingController
             VolumePanelGlobalStateInteractor volumePanelGlobalStateInteractor,
             UserTracker userTracker,
             JavaAdapter javaAdapter,
-            AudioSharingRepository audioSharingRepository) {
+            AudioSharingRepository audioSharingRepository,
+            ExpandedAudioTileDetailsFeatureInteractor expandedAudioTileDetailsFeatureInteractor) {
         mContext = context;
         mPackageName = packageName;
         mUserHandle = userHandle;
@@ -249,6 +252,8 @@ public class MediaSwitchingController
 
         mJavaAdapter = javaAdapter;
         mAudioSharingRepository = audioSharingRepository;
+        mIsExpandedAudioTileDetailsFeatureEnabled =
+                expandedAudioTileDetailsFeatureInteractor.isEnabled();
     }
 
     @AssistedFactory
@@ -1023,6 +1028,10 @@ public class MediaSwitchingController
 
     boolean isVolumeControlEnabledForSession() {
         return mLocalMediaManager.isMediaSessionAvailableForVolumeControl();
+    }
+
+    boolean isExpandedAudioTileDetailsFeatureEnabled() {
+        return mIsExpandedAudioTileDetailsFeatureEnabled;
     }
 
     /**
