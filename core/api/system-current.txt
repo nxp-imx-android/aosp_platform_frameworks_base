@@ -16367,6 +16367,7 @@ package android.telephony {
     method public int getProfileClass();
     method @FlaggedApi("com.android.internal.telephony.flags.support_psim_to_esim_conversion") public int getTransferStatus();
     method public boolean isGroupDisabled();
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_is_private_network_api") public boolean isPrivateNetwork();
   }
 
   public class SubscriptionManager {

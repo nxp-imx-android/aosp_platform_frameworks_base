@@ -5204,6 +5204,14 @@ public final class Telephony {
         public static final String COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY =
                 "satellite_entitlement_voice_service_policy";
 
+        /**
+         * TelephonyProvider column name for whether a subscription is for private network.
+         * <p>Type: INTEGER (int), 1 for private network or 0 for not.
+         *
+         * @hide
+         */
+        public static final String COLUMN_IS_PRIVATE_NETWORK = "is_private_network";
+
         /** All columns in {@link SimInfo} table. */
         private static final List<String> ALL_COLUMNS = List.of(
                 COLUMN_UNIQUE_KEY_SUBSCRIPTION_ID,
@@ -5287,7 +5295,8 @@ public final class Telephony {
                 COLUMN_SATELLITE_ENTITLEMENT_DATA_PLAN_PLMNS,
                 COLUMN_SATELLITE_ENTITLEMENT_SERVICE_TYPE_MAP,
                 COLUMN_SATELLITE_ENTITLEMENT_DATA_SERVICE_POLICY,
-                COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY
+                COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY,
+                COLUMN_IS_PRIVATE_NETWORK
         );
 
         /**

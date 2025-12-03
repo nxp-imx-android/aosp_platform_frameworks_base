@@ -11454,6 +11454,15 @@ public class CarrierConfigManager {
      */
     public static final String KEY_APN_MATCHED_REQUIRED = "apn_matched_required";
 
+    /**
+     * Controls whether the subscription is used exclusively for private networks.
+     *
+     * <p>If {@code true}, this subscription will be considered a private network subscription.
+     * System apps like Settings and SystemUI may adjust their behavior based on this flag.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_IS_PRIVATE_NETWORK_API)
+    public static final String KEY_IS_PRIVATE_NETWORK_BOOL = "is_private_network_bool";
+
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
 
@@ -12368,6 +12377,7 @@ public class CarrierConfigManager {
                 PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
         sDefaults.putBoolean(KEY_SUPPORT_PHONE_NUMBER_SOURCE_TS43_BOOL, false);
         sDefaults.putBoolean(KEY_APN_MATCHED_REQUIRED, true);
+        sDefaults.putBoolean(KEY_IS_PRIVATE_NETWORK_BOOL, false);
     }
 
     /**
