@@ -130,6 +130,7 @@ import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.UserProfileContexts
+import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.desktopmode.DesktopImmersiveController.ExitResult
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -330,6 +331,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
     @Mock private lateinit var lockTaskChangeListener: LockTaskChangeListener
     @Mock private lateinit var launcherApps: LauncherApps
+    @Mock private lateinit var transitionStateHolder: TransitionStateHolder
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -579,6 +581,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             Optional.of(pipTransitionState),
             lockTaskChangeListener,
             launcherApps,
+            transitionStateHolder,
         )
 
     @After

@@ -117,6 +117,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.UserProfileContexts
+import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler.PendingMixedTransition
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -278,6 +279,7 @@ class DesktopTasksController(
     private val pipTransitionState: Optional<PipTransitionState>,
     private val lockTaskChangeListener: LockTaskChangeListener,
     private val launcherApps: LauncherApps,
+    private val transitionStateHolder: TransitionStateHolder,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -4512,6 +4514,16 @@ class DesktopTasksController(
                 )
             runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
+        } else {
+            // The task is being placed in the desk that is already active. No need to activate,
+            // but cancel any scheduled deactivations on overview hide for the case where overview
+            // is active in screenshot mode (and hence a deactivation was scheduled), but we know
+            // that launching a new task inside the desk means we want the desk to stay active.
+            deskDeactivationFromOverviewScheduler.cancel(
+                deskId = targetDeskId,
+                displayId = targetDisplayId,
+                userId = userId,
+            )
         }
 
         if (desktopConfig.useDesktopOverrideDensity) {
@@ -6270,7 +6282,8 @@ class DesktopTasksController(
     private fun getDefaultDensityDpi(): Int = context.resources.displayMetrics.densityDpi
 
     /** Creates a new instance of the external interface to pass to another process. */
-    private fun createExternalInterface(): ExternalInterfaceBinder = IDesktopModeImpl(this)
+    private fun createExternalInterface(): ExternalInterfaceBinder =
+        IDesktopModeImpl(shellController, transitionStateHolder, this)
 
     /** Get connection interface between sysui and shell */
     fun asDesktopMode(): DesktopMode {
@@ -7049,8 +7062,11 @@ class DesktopTasksController(
 
     /** The interface for calls from outside the host process. */
     @BinderThread
-    private class IDesktopModeImpl(private var controller: DesktopTasksController?) :
-        IDesktopMode.Stub(), ExternalInterfaceBinder {
+    private class IDesktopModeImpl(
+        private var shellController: ShellController?,
+        private var transitionStateHolder: TransitionStateHolder?,
+        private var controller: DesktopTasksController?,
+    ) : IDesktopMode.Stub(), ExternalInterfaceBinder {
 
         private lateinit var remoteListener:
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
@@ -7101,6 +7117,21 @@ class DesktopTasksController(
                         canCreateDesks,
                     )
                     remoteListener.call { l -> l.onCanCreateDesksChanged(canCreateDesks) }
+                }
+
+                override fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int) {
+                    if (shellController?.isOverviewVisible(displayId) != true) return
+                    if (transitionStateHolder?.isRecentsTransitionRunning() != false) return
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onTaskAppearingInDesk taskId=%d displayId=%d deskId=%d",
+                        taskId,
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l ->
+                        l.onTaskAppearingInDeskWithOverviewShowing(taskId, displayId, deskId)
+                    }
                 }
             }
 
@@ -7186,6 +7217,8 @@ class DesktopTasksController(
         override fun invalidate() {
             remoteListener.unregister()
             controller = null
+            shellController = null
+            transitionStateHolder = null
         }
 
         override fun createDesk(displayId: Int) {
@@ -7442,6 +7475,7 @@ class DesktopTasksController(
                     object : OverviewVisibilityChangeListener {
                         override fun onOverviewHidden(displayId: Int) {
                             displayIdToScheduledDeactivations[displayId]?.forEach { request ->
+                                logger.v("onOverviewHidden: deactivating desk request=%s", request)
                                 controller.deactivateDesk(
                                     deskId = request.deskId,
                                     userId = request.userId,

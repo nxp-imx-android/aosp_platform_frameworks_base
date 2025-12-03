@@ -512,6 +512,9 @@ public final class WMShell implements
             public void onCanCreateDesksChanged(boolean canCreateDesks) {
 
             }
+
+            @Override
+            public void onTaskAppearingInDesk(int displayId, int deskId, int taskId) {}
         }, mSysUiMainExecutor);
         mCommandQueue.addCallback(new CommandQueue.Callbacks() {
             @Override
