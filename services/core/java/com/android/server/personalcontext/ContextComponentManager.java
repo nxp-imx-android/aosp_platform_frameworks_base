@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.service.personalcontext.renderer.InsightRendererService;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -62,9 +63,6 @@ class ContextComponentManager
 
     public static final String ACTION_TRANSFORMER_SERVICE =
             "android.service.personalcontext.TransformerService";
-
-    public static final String ACTION_RENDERER_SERVICE =
-            "android.service.personalcontext.RendererService";
 
     private static final String TAG = "ContextComponentManager";
 
@@ -139,7 +137,8 @@ class ContextComponentManager
                     mTransformersByPackage);
         }
 
-        for (ServiceInfo serviceInfo : getServiceInfo(ACTION_RENDERER_SERVICE, packageName)) {
+        for (ServiceInfo serviceInfo :
+                getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
             registerComponent(
                     new ServiceClientRenderer(mContext, UUID.randomUUID(), serviceInfo),
                     mRenderers,

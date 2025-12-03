@@ -59,7 +59,7 @@ import java.util.UUID;
  *             android:permission="android.permission.BIND_INSIGHT_RENDERER_SERVICE"&gt;
  *         &lt;intent-filter&gt;
  *             &lt;action
- *             android:name="android.service.personalcontext.RendererService"
+ *             android:name="android.service.personalcontext.renderer.InsightRendererService"
  *             /&gt;
  *         &lt;/intent-filter&gt;
  *     &lt;/service&gt;
