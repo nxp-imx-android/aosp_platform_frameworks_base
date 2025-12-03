@@ -1569,13 +1569,6 @@ flag {
 }
 
 flag {
-  name: "shade_expands_on_status_bar_long_press"
-  namespace: "systemui"
-  description: "Expands the shade on long press of any status bar"
-  bug: "371224114"
-}
-
-flag {
   name: "shade_qsvisible_logic"
   namespace: "systemui"
   description: "Changes the way that QS visibility is calculated"

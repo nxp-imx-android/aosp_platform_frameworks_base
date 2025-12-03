@@ -32,7 +32,6 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.ShadeController
-import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress
 import com.android.systemui.shade.ShadeLogger
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
@@ -207,9 +206,7 @@ private constructor(
         }
 
         addCursorSupportToIconContainers()
-        if (ShadeExpandsOnStatusBarLongPress.isEnabled) {
-            mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
-        }
+        mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
 
         progressProvider?.setReadyToHandleTransition(true)
         configurationController.addCallback(configurationListener)

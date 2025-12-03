@@ -39,7 +39,6 @@ import androidx.annotation.NonNull;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
-import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.phone.userswitcher.StatusBarUserSwitcherContainer;
@@ -88,9 +87,7 @@ public class PhoneStatusBarView extends FrameLayout {
 
     void setLongPressGestureDetector(
             StatusBarLongPressGestureDetector statusBarLongPressGestureDetector) {
-        if (ShadeExpandsOnStatusBarLongPress.isEnabled()) {
-            mStatusBarLongPressGestureDetector = statusBarLongPressGestureDetector;
-        }
+        mStatusBarLongPressGestureDetector = statusBarLongPressGestureDetector;
     }
 
     void setTouchEventHandler(Gefingerpoken handler) {
@@ -258,8 +255,7 @@ public class PhoneStatusBarView extends FrameLayout {
             return false;
         }
 
-        if (ShadeExpandsOnStatusBarLongPress.isEnabled()
-                && mStatusBarLongPressGestureDetector != null) {
+        if (mStatusBarLongPressGestureDetector != null) {
             mStatusBarLongPressGestureDetector.handleTouch(event);
         }
         if (mTouchEventHandler == null) {
