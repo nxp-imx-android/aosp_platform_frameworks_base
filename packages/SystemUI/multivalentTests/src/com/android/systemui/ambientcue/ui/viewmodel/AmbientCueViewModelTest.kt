@@ -339,29 +339,99 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             verify(kosmos.ambientCueLogger).setClickedCloseButtonStatus()
         }
 
-    private fun testActions(applicationContext: Context) =
-        listOf(
-            ActionModel(
-                icon =
-                    IconModel(
-                        small =
-                            applicationContext.resources.getDrawable(
-                                R.drawable.ic_content_paste_spark,
-                                applicationContext.theme,
-                            ),
-                        large =
-                            applicationContext.resources.getDrawable(
-                                R.drawable.ic_content_paste_spark,
-                                applicationContext.theme,
-                            ),
-                        iconId = "test.icon",
-                    ),
-                label = "Sunday Morning",
-                attribution = null,
-                onPerformAction = {},
-                onPerformLongClick = {},
-            )
+    @Test
+    fun hide_dismissesGroupIds() =
+        kosmos.runTest {
+            // Sets up some default actions
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            // Set up actions with specific dismissalGroupIds
+            val actionsWithGroupIds =
+                listOf(
+                    testActionModel(applicationContext, dismissalGroupId = "group1"),
+                    testActionModel(applicationContext, dismissalGroupId = "group2"),
+                    testActionModel(applicationContext, dismissalGroupId = "group1"), // Duplicate
+                    testActionModel(applicationContext, dismissalGroupId = ""), // Empty
+                    testActionModel(applicationContext, dismissalGroupId = null), // Null
+                )
+            ambientCueRepository.fake.setActions(actionsWithGroupIds)
+            runCurrent()
+            advanceTimeBy(AmbientCueViewModel.ACTIONS_DEBOUNCE_MS.milliseconds) // Wait for debounce
+            runCurrent()
+
+            viewModel.hide()
+            runCurrent()
+
+            // Verify that deactivation is set
+            assertThat(ambientCueRepository.fake.isDeactivated.value).isTrue()
+            // Verify that dismissGroupIds was called with the correct set of IDs
+            val expectedIds = setOf("group1", "group2")
+            assertThat(ambientCueRepository.fake.dismissedGroups.value.keys)
+                .containsExactlyElementsIn(expectedIds)
+            // Verify logger was called
+            verify(kosmos.ambientCueLogger).setClickedCloseButtonStatus()
+        }
+
+    @Test
+    fun hide_noGroupIds_doesNotCallDismiss() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            // Set up actions without any dismissalGroupIds
+            val actionsWithoutGroupIds =
+                listOf(
+                    testActionModel(applicationContext, dismissalGroupId = null),
+                    testActionModel(applicationContext, dismissalGroupId = ""),
+                )
+            ambientCueRepository.fake.setActions(actionsWithoutGroupIds)
+            runCurrent()
+            advanceTimeBy(AmbientCueViewModel.ACTIONS_DEBOUNCE_MS.milliseconds) // Wait for debounce
+            runCurrent()
+            val initialDismissedIds = ambientCueRepository.fake.dismissedGroups.value
+
+            viewModel.hide()
+            runCurrent()
+
+            // Verify that deactivation is set
+            assertThat(ambientCueRepository.fake.isDeactivated.value).isTrue()
+            // Verify that dismissGroupIds was NOT called by checking the fake repo state
+            assertThat(ambientCueRepository.fake.dismissedGroups.value)
+                .isEqualTo(initialDismissedIds)
+            // Verify logger was called
+            verify(kosmos.ambientCueLogger).setClickedCloseButtonStatus()
+        }
+
+    // Helper function to create ActionModel instances for testing
+    private fun testActionModel(
+        context: Context,
+        label: String = "Test Action",
+        dismissalGroupId: String? = null,
+    ): ActionModel {
+        return ActionModel(
+            icon =
+                IconModel(
+                    small =
+                        context.resources.getDrawable(
+                            R.drawable.ic_content_paste_spark,
+                            context.theme,
+                        ),
+                    large =
+                        context.resources.getDrawable(
+                            R.drawable.ic_content_paste_spark,
+                            context.theme,
+                        ),
+                    iconId = "test.icon",
+                ),
+            label = label,
+            attribution = null,
+            onPerformAction = {},
+            onPerformLongClick = {},
+            dismissalGroupId = dismissalGroupId,
         )
+    }
+
+    private fun testActions(applicationContext: Context) =
+        listOf(testActionModel(applicationContext, "Sunday Morning"))
 
     private fun Kosmos.initializeIsVisible() {
         ambientCueRepository.fake.setActions(testActions(applicationContext))
