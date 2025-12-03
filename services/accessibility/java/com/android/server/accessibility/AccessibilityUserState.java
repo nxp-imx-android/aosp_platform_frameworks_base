@@ -955,7 +955,15 @@ public class AccessibilityUserState {
 
         final DevicePolicyManager dpm = mContext.getSystemService(
                 DevicePolicyManager.class);
-        final List<String> permittedPackageNames = dpm.getPermittedAccessibilityServices(userId);
+        final List<String> permittedPackageNames;
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            permittedPackageNames = dpm != null ? dpm.getPermittedAccessibilityServices(userId)
+                    : new ArrayList<>();
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+
         Set<String> permittedPackageNameSet = permittedPackageNames == null ? null : new HashSet<>(
                 permittedPackageNames);
 
