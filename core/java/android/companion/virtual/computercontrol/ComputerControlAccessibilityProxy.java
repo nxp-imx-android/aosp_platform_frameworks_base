@@ -74,14 +74,14 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
      * Sets a {@link ComputerControlSession.StabilityListener} to be invoked on a given
      * {@link Executor} whenever a session is considered stable.
      */
-    void setStabilityListener(@CallbackExecutor @NonNull Executor executor,
+    void setStabilityListener(long timeoutMillis, @CallbackExecutor @NonNull Executor executor,
             @NonNull ComputerControlSession.StabilityListener listener) {
         synchronized (this) {
             if (mStabilitySignalTracker != null) {
                 throw new IllegalStateException("A stability listener is already set.");
             }
             mStabilitySignalTracker =
-                    new StabilitySignalTracker(mHandler,
+                    new StabilitySignalTracker(timeoutMillis, mHandler,
                             () -> executor.execute(listener::onSessionStable));
         }
     }
@@ -110,14 +110,14 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
 
     private static final class StabilitySignalTracker implements AutoCloseable,
             EventIdleTracker.Callback {
-        private static final long STABILITY_TIMER_MS = 500L;
 
         private final ComputerControlSession.StabilityListener mStabilityListener;
         private final EventIdleTracker mEventIdleTracker;
 
-        StabilitySignalTracker(Handler handler, ComputerControlSession.StabilityListener listener) {
+        StabilitySignalTracker(long timeoutMillis, Handler handler,
+                ComputerControlSession.StabilityListener listener) {
             mStabilityListener = listener;
-            mEventIdleTracker = new EventIdleTracker(handler, STABILITY_TIMER_MS);
+            mEventIdleTracker = new EventIdleTracker(handler, timeoutMillis);
         }
 
         void onAccessibilityEvent() {
