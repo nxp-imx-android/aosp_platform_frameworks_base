@@ -107,7 +107,7 @@ object LockscreenElementKeys {
 
         object AOD {
             /** Icon shelf for AOD display */
-            val IconShelf = ElementKey("AODNotificationIconShelf")
+            val IconShelf = MovableElementKey("AODNotificationIconShelf", ContentPicker)
 
             /** Notifications for the AOD Promoted Region */
             val Promoted = ElementKey("AODPromotedNotifications")
