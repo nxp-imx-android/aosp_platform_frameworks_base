@@ -18,6 +18,7 @@ import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.StatusBarState
@@ -112,6 +113,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val bigGap = notifSectionDividerGap
     private val smallGap = px(R.dimen.notification_section_divider_height_lockscreen)
     private val groupingDisabledSectionGapHeight = px(R.dimen.grouping_disabled_section_gap_height)
+    private val headsUpCyclingPadding = px(R.dimen.heads_up_cycling_padding)
 
     companion object {
         @JvmStatic
@@ -1068,8 +1070,10 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun resetViewStates_hiddenShelf_allRowsBecomesTransparent() {
         hostView.removeAllViews()
         val row1 = mockExpandableNotificationRow()
+        whenever(row1.getKey()).thenReturn("row1")
         hostView.addView(row1)
         val row2 = mockExpandableNotificationRow()
+        whenever(row2.getKey()).thenReturn("row2")
         hostView.addView(row2)
 
         whenever(row1.isHeadsUpState).thenReturn(true)
@@ -1956,6 +1960,30 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         // THEN the HUN's yTranslation is exactly headsUpTop
         assertThat(notificationRow.viewState.yTranslation).isEqualTo(headsUpTop)
+    }
+
+    @Test
+    @EnableFlags(NotificationHeadsUpCycling.FLAG_NAME)
+    @EnableSceneContainer
+    fun resetViewStates_hunCyclingOut_updatesYTranslation() {
+        // GIVEN a row that is cycling out BUT not pinned and not yet animating away
+        whenever(notificationRow.isHeadsUp).thenReturn(false)
+        whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(false)
+
+        whenever(avalancheController.previousHunKey).thenReturn("key")
+        whenever(avalancheController.getShowingHunKey()).thenReturn("key")
+        notificationRow.viewState.setYTranslation(0f, "test")
+        ambientState.headsUpTop = 50f
+
+        hostView.removeAllViews()
+        hostView.addView(notificationRow)
+
+        // WHEN we reset for this frame
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // THEN the HUN is NOT skipped and gets the correct yTranslation
+        val expectedY = headsUpCyclingPadding + ambientState.headsUpTop
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(expectedY)
     }
 
     private fun createHunViewMock(

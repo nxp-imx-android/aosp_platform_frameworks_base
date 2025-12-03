@@ -981,7 +981,10 @@ public class StackScrollAlgorithm {
             if (!(child instanceof ExpandableNotificationRow row)) {
                 continue;
             }
-            if (!(row.isHeadsUp() || row.isHeadsUpAnimatingAway())) {
+            final boolean isCyclingOut = NotificationHeadsUpCycling.isEnabled()
+                    && isCyclingOut(row, ambientState);
+            if (!(row.isHeadsUp() || row.isHeadsUpAnimatingAway()
+                    || (SceneContainerFlag.isEnabled() && isCyclingOut))) {
                 continue;
             }
             ExpandableViewState childState = row.getViewState();
@@ -1123,8 +1126,8 @@ public class StackScrollAlgorithm {
                             "StackScrollAlgorithm.updateHeadsUpStates.scroll");
                 }
             }
-            if (row.isHeadsUpAnimatingAway()) {
-                if (NotificationHeadsUpCycling.isEnabled() && isCyclingOut(row, ambientState)) {
+            if (row.isHeadsUpAnimatingAway() || isCyclingOut) {
+                if (isCyclingOut) {
                     // If the two HUNs in the cycling animation have different heights, we need
                     // an extra y translation to align the animation.
                     int extraTranslation;
