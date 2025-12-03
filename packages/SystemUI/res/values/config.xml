@@ -772,6 +772,7 @@
          Message ids correspond with the acquired ids in BiometricFaceConstants -->
     <integer-array name="config_face_help_msgs_when_fingerprint_enrolled">
         <item>3</item> <!-- TOO_DARK -->
+        <item>10</item> <!-- GAZE -->
         <item>25</item> <!-- DARK_GLASSES -->
         <item>26</item> <!-- MOUTH_COVERING_DETECTED -->
     </integer-array>
@@ -786,6 +787,7 @@
         <item>7</item> <!-- TOO_LOW -->
         <item>8</item> <!-- TOO_RIGHT -->
         <item>9</item> <!-- TOO_LEFT -->
+        <item>10</item> <!-- GAZE -->
         <item>25</item> <!-- DARK_GLASSES -->
         <item>26</item> <!-- MOUTH_COVERING_DETECTED -->
     </integer-array>
