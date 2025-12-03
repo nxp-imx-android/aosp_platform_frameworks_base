@@ -22,6 +22,7 @@ import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternView
 import com.android.internal.widget.LockscreenCredential
 import com.android.systemui.authentication.data.repository.AuthenticationRepository
+import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Password
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
@@ -37,6 +38,7 @@ import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -64,6 +66,7 @@ class AuthenticationInteractor
 constructor(
     @Application private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val clock: SystemClock,
     private val repository: AuthenticationRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
 ) {
@@ -262,6 +265,22 @@ constructor(
      */
     fun getPowerButtonInstantlyLocks(): Boolean {
         return repository.getPowerButtonInstantlyLocks()
+    }
+
+    /**
+     * Sends a signal to the system to trigger warm ups of any LSKF auth system components that may
+     * be in a low power state. The signal is expected to be handled by the system and return
+     * instantly without throwing any exceptions.
+
+     * This signal will be ignored if the system has already received one within the last 5 seconds.
+     */
+    suspend fun triggerAuthWarmUp() {
+        val now = clock.elapsedRealtime().milliseconds
+        val lastWarmUpTrigger = repository.lastWarmUpTrigger
+        if (now - lastWarmUpTrigger >= WARM_UP_THROTTLE_DURATION) {
+            repository.triggerAuthWarmUp()
+            repository.lastWarmUpTrigger = now
+        }
     }
 
     private suspend fun shouldSkipAuthenticationAttempt(

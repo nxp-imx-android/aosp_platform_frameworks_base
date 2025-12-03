@@ -21,12 +21,14 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
+import com.android.systemui.util.time.systemClock
 
 val Kosmos.authenticationInteractor by
     Kosmos.Fixture {
         AuthenticationInteractor(
             applicationScope = applicationCoroutineScope,
             backgroundDispatcher = testDispatcher,
+            clock = systemClock,
             repository = authenticationRepository,
             selectedUserInteractor = selectedUserInteractor,
         )
