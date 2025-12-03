@@ -41,6 +41,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.shared.TransactionPool
@@ -85,6 +86,9 @@ class PinnedLayerControllerTest : ShellTestCase() {
     @Mock private lateinit var leash: SurfaceControl
     @Mock private lateinit var displayController: DisplayController
     @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock
+    private lateinit var multiDisplayDragMoveIndicatorController:
+        MultiDisplayDragMoveIndicatorController
 
     private lateinit var defaultDisplayToken: WindowContainerToken
     private lateinit var desktopState: FakeDesktopState
@@ -116,6 +120,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
                 transactionPool,
+                multiDisplayDragMoveIndicatorController,
             )
     }
 
@@ -177,7 +182,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
         dragEndBounds.offset(displayLayout.width(), 0)
 
         val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
-        assertTrue(result)
+        assertFalse(result)
 
         val wctCaptor = argumentCaptor<WindowContainerTransaction>()
         verify(transitions).startTransition(any(), wctCaptor.capture(), anyOrNull())

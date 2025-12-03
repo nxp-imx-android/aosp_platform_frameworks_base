@@ -33,6 +33,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logD
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
@@ -62,6 +63,7 @@ class PinnedLayerController(
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
     private val windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
     private val transactionPool: TransactionPool,
+    private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
 ) : Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
@@ -187,7 +189,12 @@ class PinnedLayerController(
      *   [displayId] coordinate system.
      * @return `true` when started a transition to move task to a new display, `false` otherwise.
      */
-    fun moveToDisplay(task: TaskInfo, displayId: Int, bounds: Rect? = null): Boolean {
+    fun moveToDisplay(
+        task: TaskInfo,
+        displayId: Int,
+        bounds: Rect? = null,
+        handler: Transitions.TransitionHandler? = null,
+    ): Boolean {
         val displayAreaInfo = taskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         val isPinned = isPinned(task.taskId)
         val isSameDisplay = task.taskId == displayId
@@ -232,7 +239,7 @@ class PinnedLayerController(
         }
 
         wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
-        transitions.startTransition(TRANSIT_CHANGE, wct, null)
+        transitions.startTransition(TRANSIT_CHANGE, wct, handler)
         return true
     }
 
@@ -261,8 +268,13 @@ class PinnedLayerController(
         if (isNotPinned(taskInfo.taskId)) return false
 
         val isCrossDisplayDrag = taskInfo.displayId != displayId
-        if (isCrossDisplayDrag && moveToDisplay(taskInfo, displayId, dragEndBounds)) {
-            return true
+        if (
+            isCrossDisplayDrag &&
+                moveToDisplay(taskInfo, displayId, dragEndBounds, windowDragTransitionHandler)
+        ) {
+            // Mirroring surfaces will be cleared by the window drag handler, until then we keep
+            // them to prevent flickering.
+            return false
         }
 
         // Post-process final drag bounds to keep them inside the valid drag area.
@@ -283,14 +295,18 @@ class PinnedLayerController(
         }
 
         if (destinationBounds != dragEndBounds) {
-            // TODO(b/449118417): Fix flickering when mirrored leash is removed.
             // Drag bounds were snapped and we want to animate that.
+            val onTransitionStateChange: (SurfaceControl.Transaction) -> Unit = { transition ->
+                multiDisplayDragMoveIndicatorController.onDragEnd(taskInfo.taskId, transition)
+            }
             windowRepositionAnimationHandler.startTransition(
                 taskInfo,
                 dragEndBounds,
                 destinationBounds,
+                onAnimationStart = onTransitionStateChange,
+                onAnimationCanceled = onTransitionStateChange,
             )
-            return true
+            return false
         }
 
         // That's a simple user drag, just match task bounds to leash bounds.

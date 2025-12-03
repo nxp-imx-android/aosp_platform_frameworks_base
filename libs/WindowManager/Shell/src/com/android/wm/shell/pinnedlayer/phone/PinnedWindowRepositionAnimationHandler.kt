@@ -47,6 +47,8 @@ class PinnedWindowRepositionAnimationHandler(
 
     private val rectEvaluator = RectEvaluator(Rect())
     private var startBounds: Rect? = null
+    private var onAnimationStartCallback: (SurfaceControl.Transaction) -> Unit = {}
+    private var onAnimationCanceled: (SurfaceControl.Transaction) -> Unit = {}
 
     private var onTaskRepositionAnimationListener: OnTaskRepositionAnimationListener? = null
 
@@ -67,10 +69,24 @@ class PinnedWindowRepositionAnimationHandler(
      *   [TransitionInfo.Change.getStartAbsBounds] because contains actual task bounds while
      *   [startBounds] contain mirrored leash start bounds.
      * @param endBounds a [Rect] with the final bounds where the task should be positioned.
+     * @param onAnimationStart a callback that's invoked on the animation start, it provides an
+     *   access to the startTransaction. Do not [SurfaceControl.Transaction.apply] since it's called
+     *   by the handler itself.
+     * @param onAnimationCanceled a callback that's invoked when animation is canceled when
+     *   transition is consumed. The callback accepts finishTransition, so do not call
+     *   [SurfaceControl.Transaction.apply].
      */
-    fun startTransition(taskInfo: TaskInfo, startBounds: Rect? = null, endBounds: Rect) {
+    fun startTransition(
+        taskInfo: TaskInfo,
+        startBounds: Rect? = null,
+        endBounds: Rect,
+        onAnimationStart: (SurfaceControl.Transaction) -> Unit = {},
+        onAnimationCanceled: (SurfaceControl.Transaction) -> Unit = {},
+    ) {
         // TODO: Consider waiting for the transition to end before starting a new one.
         this.startBounds = startBounds
+        onAnimationStartCallback = onAnimationStart
+        this@PinnedWindowRepositionAnimationHandler.onAnimationCanceled = onAnimationCanceled
 
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, endBounds)
@@ -106,6 +122,7 @@ class PinnedWindowRepositionAnimationHandler(
                 .apply {
                     addListener(
                         onStart = {
+                            onAnimationStartCallback(startTransaction)
                             startTransaction
                                 .setPosition(
                                     leash,
@@ -132,6 +149,14 @@ class PinnedWindowRepositionAnimationHandler(
 
         animator.start()
         return true
+    }
+
+    override fun onTransitionConsumed(
+        transition: IBinder,
+        aborted: Boolean,
+        finishTransaction: SurfaceControl.Transaction?,
+    ) {
+        finishTransaction?.run { onAnimationCanceled(this) }
     }
 
     private companion object {
