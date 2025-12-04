@@ -1246,6 +1246,45 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         verify(mInvalidateLockoutEndTimeCacheMock).run();
     }
 
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE
+    })
+    @DisableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
+    public void testGetLockoutEndTime_doesNotAccountForWeaverTimeoutWhenFlagDisabled()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ZERO;
+        final Duration hwTimeout = Duration.ofMinutes(5);
+
+        mInjector.setTimeSinceBoot(now);
+        mSpManager.enableWeaver();
+        mSpManager.injectWeaverTimeout(hwTimeout);
+        setCredential(userId, credential);
+        assertEquals(Duration.ZERO, mService.getLockoutEndTime(userId).getDuration());
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+        android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
+    })
+    public void testGetLockoutEndTime_accountsForWeaverTimeout() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ZERO;
+        final Duration hwTimeout = Duration.ofMinutes(5);
+
+        mInjector.setTimeSinceBoot(now);
+        mSpManager.enableWeaver();
+        mSpManager.injectWeaverTimeout(hwTimeout);
+        setCredential(userId, credential);
+        assertEquals(hwTimeout, mService.getLockoutEndTime(userId).getDuration());
+    }
+
     private void guessWrongCredential(int userId, int times) {
         guessWrongCredential(userId, times, Duration.ZERO);
     }

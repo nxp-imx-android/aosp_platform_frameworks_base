@@ -272,6 +272,16 @@ class SoftwareRateLimiter {
                     //
                     // Likewise, rebooting causes any saved wrong guesses to be forgotten.
                     RateLimiterState state = new RateLimiterState(readFailureCounter(id));
+                    Duration hwTimeout = mInjector.getHardwareRateLimiterTimeout(id);
+                    if (hwTimeout.isPositive()) {
+                        Slogf.i(
+                                TAG,
+                                "Loaded hwTimeout=%s for user %d, protector %016x",
+                                hwTimeout,
+                                id.userId,
+                                id.protectorId);
+                        updateLockoutEndTime(state, now, now.plus(hwTimeout));
+                    }
                     evaluateSoftwareRateLimit(state, now);
                     return state;
                 });
@@ -626,6 +636,8 @@ class SoftwareRateLimiter {
         void postDelayed(Runnable runnable, Object token, long delayMillis);
 
         int getHardwareRateLimiter(LskfIdentifier id);
+
+        Duration getHardwareRateLimiterTimeout(LskfIdentifier id);
 
         void invalidateLockoutEndTimeCache();
     }

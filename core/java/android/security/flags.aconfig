@@ -212,6 +212,13 @@ flag {
 }
 
 flag {
+    name: "enable_weaver_get_timeout"
+    namespace: "security"
+    description: "Use IWeaver#getTimeout() to improve accuracy of lockout end time reporting"
+    bug: "449795194"
+}
+
+flag {
     name: "lockscreen_indicate_duplicate_guesses"
     namespace: "security"
     description: "Indicate explicitly that duplicate failed lockscreen guesses are duplicates"

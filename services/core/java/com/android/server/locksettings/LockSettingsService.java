@@ -717,6 +717,11 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
 
         @Override
+        public Duration getHardwareRateLimiterTimeout(LskfIdentifier id) {
+            return mSpManager.getHardwareRateLimiterTimeout(id);
+        }
+
+        @Override
         public void invalidateLockoutEndTimeCache() {
             mInjector.invalidateLockoutEndTimeCache();
         }
