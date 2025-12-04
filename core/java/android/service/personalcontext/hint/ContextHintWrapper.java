@@ -25,6 +25,7 @@ import android.service.personalcontext.Flags;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Wrapper for parceling/unparceling {@link ContextHint}.
@@ -58,6 +59,18 @@ public final class ContextHintWrapper implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeBundle(mContextHint.toBundle());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextHintWrapper that = (ContextHintWrapper) o;
+        return Objects.equals(mContextHint, that.mContextHint);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(mContextHint);
     }
 
     /**
