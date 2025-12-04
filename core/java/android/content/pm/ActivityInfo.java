@@ -2532,7 +2532,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * Width of activity in pixels.
          *
          * @attr ref android.R.styleable#AndroidManifestLayout_defaultWidth
+         * @deprecated This field contains the pixel value resolved at install time using the
+         * default device density. It does not reflect the actual constraint on displays with
+         * different densities (e.g. external monitors). The system automatically enforces the
+         * correct constraints at runtime based on the current display context. Do not use this
+         * value for manual layout calculations.
          */
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public final int width;
 
         /**
@@ -2547,7 +2554,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * Height of activity in pixels.
          *
          * @attr ref android.R.styleable#AndroidManifestLayout_defaultHeight
+         * @deprecated This field contains the pixel value resolved at install time using the
+         * default device density. It does not reflect the actual constraint on displays with
+         * different densities (e.g. external monitors). The system automatically enforces the
+         * correct constraints at runtime based on the current display context. Do not use this
+         * value for manual layout calculations.
          */
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public final int height;
 
         /**
@@ -2576,7 +2590,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * task. It will also ignore any other minimal width attributes of non-root activities.
          *
          * @attr ref android.R.styleable#AndroidManifestLayout_minWidth
+         * @deprecated This field contains the pixel value resolved at install time using the
+         * default device density. It does not reflect the actual constraint on displays with
+         * different densities (e.g. external monitors). The system automatically enforces the
+         * correct constraints at runtime based on the current display context. Do not use this
+         * value for manual layout calculations.
          */
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public final int minWidth;
 
         /**
@@ -2588,7 +2609,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * task. It will also ignore any other minimal height attributes of non-root activities.
          *
          * @attr ref android.R.styleable#AndroidManifestLayout_minHeight
+         * @deprecated This field contains the pixel value resolved at install time using the
+         * default device density. It does not reflect the actual constraint on displays with
+         * different densities (e.g. external monitors). The system automatically enforces the
+         * correct constraints at runtime based on the current display context. Do not use this
+         * value for manual layout calculations.
          */
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public final int minHeight;
 
         /**
