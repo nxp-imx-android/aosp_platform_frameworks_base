@@ -107,3 +107,13 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "enable_trusted_callers"
+    description: "Allows trusted system components to trigger vibrations without the VIBRATE permission."
+    bug: "461931133"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
