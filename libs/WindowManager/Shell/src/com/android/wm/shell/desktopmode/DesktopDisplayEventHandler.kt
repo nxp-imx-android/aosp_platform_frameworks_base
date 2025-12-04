@@ -30,7 +30,6 @@ import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
-import android.window.DesktopModeFlags
 import android.window.DisplayAreaInfo
 import android.window.TransitionInfo
 import com.android.app.tracing.traceSection
@@ -135,10 +134,14 @@ class DesktopDisplayEventHandler(
         val oldDisplayLayout = oldDpiLayoutByDisplayId[displayId] ?: oldLayout
         if (oldDisplayLayout == null || newDisplayLayout == null) return
         newConfig?.let { displayConfigById.put(displayId, it) }
-        if (newDisplayLayout.densityDpi() == oldDisplayLayout.densityDpi()) {
+        if (
+            newDisplayLayout.densityDpi() == oldDisplayLayout.densityDpi() &&
+                newDisplayLayout.width() == oldDisplayLayout.width() &&
+                newDisplayLayout.height() == oldDisplayLayout.height()
+        ) {
             return
         }
-        oldDpiLayoutByDisplayId.put(displayId, oldDisplayLayout)
+        oldDpiLayoutByDisplayId[displayId] = oldDisplayLayout
         val oldStableBounds = Rect()
         val newStableBounds = Rect()
         oldDisplayLayout.getStableBounds(oldStableBounds)
@@ -180,7 +183,7 @@ class DesktopDisplayEventHandler(
         val newLayout = displayController.getDisplayLayout(displayId)
         val config = displayConfigById[displayId]
         if (oldestLayout == null || newLayout == null) return
-        oldDpiLayoutByDisplayId.put(displayId, oldestLayout)
+        oldDpiLayoutByDisplayId[displayId] = oldestLayout
         oldestLayout.getStableBounds(oldStableBounds)
         newLayout.getStableBounds(newStableBounds)
         when {
@@ -484,8 +487,8 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    private fun isUserDesktopEligible(userId: Int): Boolean = !(UserManager.isHeadlessSystemUserMode() &&
-        UserHandle.USER_SYSTEM == userId)
+    private fun isUserDesktopEligible(userId: Int): Boolean =
+        !(UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
