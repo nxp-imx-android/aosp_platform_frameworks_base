@@ -476,3 +476,13 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "anisotropy_corrected_mode_by_default"
+    namespace: "display_manager"
+    description: "Feature flag for selection anisotropy corrected mode by default for external display"
+    bug: "443033926"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
