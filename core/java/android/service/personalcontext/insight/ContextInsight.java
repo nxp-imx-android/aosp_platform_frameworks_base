@@ -114,6 +114,11 @@ public abstract class ContextInsight {
         Bundle toBundleImpl() {
             return new Bundle();
         }
+
+        @Override
+        public void accept(@NonNull InsightVisitor visitor) {
+            visitor.visitUnknown(this);
+        }
     };
 
     private final UUID mId;
@@ -139,6 +144,28 @@ public abstract class ContextInsight {
      */
     @InsightType
     public abstract int getInsightType();
+
+    /**
+     * Accepts a visitor.
+     *
+     * @param visitor The visitor to accept.
+     *
+     * @hide
+     */
+    public abstract void accept(@NonNull InsightVisitor visitor);
+
+    /**
+     * Returns the children of this insight.
+     *
+     * @return A collection of child {@link ContextInsight} objects. If there are no children, this
+     *     method should return an empty collection, not null.
+     *
+     * @hide
+     */
+    @NonNull
+    public Collection<ContextInsight> getChildren() {
+        return Collections.emptyList();
+    }
 
     /**
      * Returns the unique identifier for this insight.

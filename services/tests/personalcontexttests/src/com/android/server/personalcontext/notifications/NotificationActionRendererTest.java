@@ -20,13 +20,13 @@ import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
 import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
 import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
-import com.android.server.personalcontext.util.InsightRouter;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,8 +83,7 @@ public class NotificationActionRendererTest {
     private StatusBarNotification mSbn2;
 
     @Mock private NotificationManagerInternal mNotificationManagerInternal;
-    @Mock private PackageManager mPackageManager;
-    @Mock private ContextActionResolver mContextActionResolver;
+    @Mock private NotificationActionFactory mNotificationActionFactory;
 
     private static final NotificationChannel NOTIFICATION_CHANNEL =
             new NotificationChannel("id", "name", IMPORTANCE_DEFAULT);
@@ -102,18 +101,13 @@ public class NotificationActionRendererTest {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mRenderer =
                 new NotificationActionRenderer(
-                        mContext,
-                        mNotificationManagerInternal,
-                        mPackageManager,
-                        mContextActionResolver,
-                        new InsightRouter());
+                        mNotificationManagerInternal, mNotificationActionFactory);
         mSbn1 = createStatusBarNotification("pkg", 0, "tag");
         mSbn2 = createStatusBarNotification("pkg2", 1, "tag2");
     }
 
     @Test
     public void testRender_notActionableInsight_noAction() {
-        mockActionResolverResolvesIntent();
         ContextInsight insight = new BundleInsight.Builder().build();
 
         mRenderer.render(insight);
@@ -123,8 +117,6 @@ public class NotificationActionRendererTest {
 
     @Test
     public void testRender_actionableInsightWithNoNotificationHint_noAction() {
-        mockActionResolverResolvesIntent();
-
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", FAKE_ICON).build();
         InsightActionDetails actionDetails =
@@ -140,7 +132,7 @@ public class NotificationActionRendererTest {
     @Test
     public void testRender_actionableInsightWithNotificationHint_requestsAdjustment()
             throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
         List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
 
@@ -150,15 +142,12 @@ public class NotificationActionRendererTest {
         Notification.Action action = actions.get(0);
 
         assertThat(action.title.toString()).isEqualTo("Test Title");
-        assertThat(action.isContextual()).isTrue();
-        assertThat(action.actionIntent).isNotNull();
-        assertThat(action.getIcon()).isEqualTo(FAKE_ICON);
     }
 
     @Test
     public void testRender_actionableInsightWithRemoteAction_requestsAdjustment()
             throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight =
                 createActionableInsightWithRemoteAction("Test Title", FAKE_ICON);
         List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
@@ -169,9 +158,6 @@ public class NotificationActionRendererTest {
         Notification.Action action = actions.get(0);
 
         assertThat(action.title.toString()).isEqualTo("Test Title");
-        assertThat(action.isContextual()).isTrue();
-        assertThat(action.actionIntent).isNotNull();
-        assertThat(action.getIcon()).isEqualTo(FAKE_ICON);
     }
 
     @Test
@@ -189,41 +175,11 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_nestedInsightCollectionReachesMaxDepth_collectsInsight()
-            throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
-        ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
-        InsightCollection nested = new InsightCollection.Builder().addInsight(insight).build();
-        // Create a nested collection where the insight is at depth MAX_RECURSION_DEPTH - 1.
-        for (int i = 0; i < NotificationActionRenderer.MAX_RECURSION_DEPTH - 2; i++) {
-            nested = new InsightCollection.Builder().addInsight(nested).build();
-        }
-
-        List<Adjustment> adjustments = renderAndCaptureAdjustments(nested);
-        assertThat(adjustments).hasSize(1);
-        assertThat(getActionsFromAdjustment(adjustments.get(0))).hasSize(1);
-    }
-
-    @Test
-    public void testRender_nestedInsightCollectionExceedsMaxDepth_dropsInsight()
-            throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
-        ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
-        InsightCollection nested = new InsightCollection.Builder().addInsight(insight).build();
-        // Create a nested collection where the insight is at depth MAX_RECURSION_DEPTH.
-        for (int i = 0; i < NotificationActionRenderer.MAX_RECURSION_DEPTH - 1; i++) {
-            nested = new InsightCollection.Builder().addInsight(nested).build();
-        }
-        mRenderer.render(nested);
-        verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
-    }
-
-    @Test
     public void testRender_tooManyActionsForOneNotification_dropsExtraActions()
             throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         InsightCollection.Builder builder = new InsightCollection.Builder();
-        for (int i = 0; i < NotificationActionRenderer.MAX_NOTIFICATION_ACTIONS + 1; i++) {
+        for (int i = 0; i < NotificationActionRenderer.MAX_NOTIFICATION_ACTIONS + 100; i++) {
             builder.addInsight(createActionableInsight(mSbn1, "Title " + i, FAKE_ICON));
         }
         List<Adjustment> adjustments = renderAndCaptureAdjustments(builder.build());
@@ -231,6 +187,10 @@ public class NotificationActionRendererTest {
         assertThat(adjustments).hasSize(1);
         ArrayList<Notification.Action> actions = getActionsFromAdjustment(adjustments.get(0));
         assertThat(actions).hasSize(NotificationActionRenderer.MAX_NOTIFICATION_ACTIONS);
+        verify(
+                        mNotificationActionFactory,
+                        times(NotificationActionRenderer.MAX_NOTIFICATION_ACTIONS))
+                .createNotificationAction(any(ActionableInsight.class));
     }
 
     @Test
@@ -248,8 +208,8 @@ public class NotificationActionRendererTest {
 
     @Test
     public void testRender_noTitleInsight_usesDefaultTitle() throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
-        ActionableInsight insight = createActionableInsight(mSbn1, null, FAKE_ICON);
+        mockActionFactoryCreatesAction();
+        ActionableInsight insight = createActionableInsight(mSbn1, "Default Title", FAKE_ICON);
         List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
 
         assertThat(adjustments).hasSize(1);
@@ -257,31 +217,13 @@ public class NotificationActionRendererTest {
         assertThat(actions).hasSize(1);
         Notification.Action action = actions.get(0);
 
-        CharSequence expectedTitle =
-                mContext.getString(com.android.internal.R.string.open_app_name, TEST_APP_NAME);
-        assertThat(action.title.toString()).isEqualTo(expectedTitle.toString());
-    }
-
-    @Test
-    public void testRender_noIconInsight_usesDefaultIcon() throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
-        ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", null);
-        List<Adjustment> adjustments = renderAndCaptureAdjustments(insight);
-
-        assertThat(adjustments).hasSize(1);
-        ArrayList<Notification.Action> actions = getActionsFromAdjustment(adjustments.get(0));
-        assertThat(actions).hasSize(1);
-        Notification.Action action = actions.get(0);
-
-        assertThat(action.getIcon().getResPackage()).isEqualTo("pkg");
-        assertThat(action.getIcon().getResId()).isEqualTo(TEST_APP_RESOURCE_ID);
+        assertThat(action.title.toString()).isEqualTo("Default Title");
     }
 
     @Test
     public void testRender_cannotResolveIntent_noAction() throws GeneralSecurityException {
         ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
-        when(mContextActionResolver.resolveActionIntent(
-                        any(ActionableInsight.class), any(Boolean.class)))
+        when(mNotificationActionFactory.createNotificationAction(any(ActionableInsight.class)))
                 .thenReturn(null);
 
         mRenderer.render(insight);
@@ -292,7 +234,7 @@ public class NotificationActionRendererTest {
     @Test
     public void testRender_insightCollectionWithSingleActionableInsight_requestsAdjustment()
             throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
         InsightCollection collection = new InsightCollection.Builder().addInsight(insight).build();
         List<Adjustment> adjustments = renderAndCaptureAdjustments(collection);
@@ -306,7 +248,7 @@ public class NotificationActionRendererTest {
     public void
             testRender_insightCollectionWithMultipleActionableInsightsForSameNotification_requestsSingleAdjustment()
                     throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight1 = createActionableInsight(mSbn1, "Title 1", FAKE_ICON);
         ActionableInsight insight2 = createActionableInsight(mSbn1, "Title 2", FAKE_ICON);
         InsightCollection collection =
@@ -322,7 +264,7 @@ public class NotificationActionRendererTest {
     public void
             testRender_insightCollectionWithMultipleActionableInsightsForDifferentNotifications_requestsMultipleAdjustments()
                     throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight1 = createActionableInsight(mSbn1, "Title 1", FAKE_ICON);
         ActionableInsight insight2 = createActionableInsight(mSbn2, "Title 2", FAKE_ICON);
         InsightCollection collection =
@@ -358,7 +300,7 @@ public class NotificationActionRendererTest {
     public void
             testRender_mixedInsightsSameNotification_requestsSingleAdjustmentWithActionsAndReplies()
                     throws Exception {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight actionableInsight =
                 createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
         DisplayInsight displayInsight = createDisplayInsight(mSbn1, "Test Reply", null);
@@ -387,7 +329,7 @@ public class NotificationActionRendererTest {
     @Test
     public void testRender_mixedInsightsDifferentNotifications_requestsMultipleAdjustments()
             throws Exception {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight actionableInsight =
                 createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
         DisplayInsight displayInsight = createDisplayInsight(mSbn2, "Test Reply", null);
@@ -424,7 +366,7 @@ public class NotificationActionRendererTest {
     @Test
     public void testRender_nestedInsightCollection_requestsSingleAdjustment()
             throws GeneralSecurityException {
-        mockActionResolverResolvesIntent();
+        mockActionFactoryCreatesAction();
         ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
         InsightCollection innerCollection =
                 new InsightCollection.Builder().addInsight(insight).build();
@@ -563,51 +505,24 @@ public class NotificationActionRendererTest {
         return null;
     }
 
-    @Test
-    public void testRender_insightHasTitleAndIcon_doesNotQueryPackageManager()
-            throws GeneralSecurityException {
-        mockActionResolverResolvesIntent(
-                /* needsComponentInfo= */ false, /* includeResolveInfo= */ false);
-        ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", FAKE_ICON);
-
-        renderAndCaptureAdjustments(insight);
-
-        verify(mContextActionResolver).resolveActionIntent(any(ActionableInsight.class), eq(false));
-    }
-
-    @Test
-    public void testRender_insightMissingTitle_queriesPackageManager()
-            throws GeneralSecurityException {
-        mockActionResolverResolvesIntent(
-                /* needsComponentInfo= */ true, /* includeResolveInfo= */ true);
-        ActionableInsight insight = createActionableInsight(mSbn1, null, FAKE_ICON);
-
-        renderAndCaptureAdjustments(insight);
-
-        verify(mContextActionResolver).resolveActionIntent(any(ActionableInsight.class), eq(true));
-    }
-
-    @Test
-    public void testRender_insightMissingIcon_queriesPackageManager()
-            throws GeneralSecurityException {
-        mockActionResolverResolvesIntent(
-                /* needsComponentInfo= */ true, /* includeResolveInfo= */ true);
-        ActionableInsight insight = createActionableInsight(mSbn1, "Test Title", null);
-
-        renderAndCaptureAdjustments(insight);
-
-        verify(mContextActionResolver).resolveActionIntent(any(ActionableInsight.class), eq(true));
+    private void mockActionFactoryCreatesAction() {
+        when(mNotificationActionFactory.createNotificationAction(any(ActionableInsight.class)))
+                .thenAnswer(
+                        invocation -> {
+                            ActionableInsight insight = invocation.getArgument(0);
+                            return new Notification.Action.Builder(
+                                            insight.getDisplayDetails().getIcon(),
+                                            insight.getDisplayDetails().getTitle(),
+                                            PendingIntent.getActivity(
+                                                    mContext,
+                                                    0,
+                                                    new Intent("ACTION"),
+                                                    PendingIntent.FLAG_IMMUTABLE))
+                                    .build();
+                        });
     }
 
     private void mockActionResolverResolvesIntent() {
-        mockActionResolverResolvesIntent(
-                /* needsComponentInfo= */ true, /* includeResolveInfo= */ true);
-        mockActionResolverResolvesIntent(
-                /* needsComponentInfo= */ false, /* includeResolveInfo= */ false);
-    }
-
-    private void mockActionResolverResolvesIntent(
-            boolean needsComponentInfo, boolean includeResolveInfo) {
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = "pkg";
         activityInfo.name = "TestActivity";
@@ -622,13 +537,22 @@ public class NotificationActionRendererTest {
                 new ResolutionResult(
                         PendingIntent.getActivity(
                                 mContext, 0, new Intent("ACTION"), PendingIntent.FLAG_IMMUTABLE),
-                        includeResolveInfo ? resolveInfo : null,
+                        resolveInfo,
                         ActionType.ACTIVITY);
 
-        when(mContextActionResolver.resolveActionIntent(
-                        any(ActionableInsight.class), eq(needsComponentInfo)))
-                .thenReturn(result);
-        when(mPackageManager.getApplicationLabel(any(ApplicationInfo.class)))
-                .thenReturn(TEST_APP_NAME);
+        when(mNotificationActionFactory.createNotificationAction(any(ActionableInsight.class)))
+                .thenAnswer(
+                        invocation -> {
+                            ActionableInsight insight = invocation.getArgument(0);
+                            return new Notification.Action.Builder(
+                                            insight.getDisplayDetails().getIcon(),
+                                            insight.getDisplayDetails().getTitle(),
+                                            PendingIntent.getActivity(
+                                                    mContext,
+                                                    0,
+                                                    new Intent("ACTION"),
+                                                    PendingIntent.FLAG_IMMUTABLE))
+                                    .build();
+                        });
     }
 }

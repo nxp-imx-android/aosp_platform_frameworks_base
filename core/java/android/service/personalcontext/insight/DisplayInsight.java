@@ -74,6 +74,12 @@ public final class DisplayInsight extends ContextInsight {
         return INSIGHT_TYPE_DISPLAY;
     }
 
+    /** @hide */
+    @Override
+    public void accept(@NonNull InsightVisitor visitor) {
+        visitor.visit(this);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof DisplayInsight that)) return false;
