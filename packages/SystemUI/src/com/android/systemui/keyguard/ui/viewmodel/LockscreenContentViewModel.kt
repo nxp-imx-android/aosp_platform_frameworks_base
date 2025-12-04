@@ -23,7 +23,6 @@ import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimati
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -88,8 +87,7 @@ constructor(
     fun shouldContentFadeIn(currentTransition: TransitionState.Transition): Boolean {
         return shadeMode != ShadeMode.Dual &&
             currentTransition.isInitiatedByUserInput &&
-            (currentTransition.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ||
-                currentTransition.isTransitioning(from = Overlays.Bouncer, to = Scenes.Lockscreen))
+            (currentTransition.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen))
     }
 
     @AssistedFactory

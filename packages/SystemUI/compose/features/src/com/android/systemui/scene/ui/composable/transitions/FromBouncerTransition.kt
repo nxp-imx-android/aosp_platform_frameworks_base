@@ -36,8 +36,8 @@ fun TransitionBuilder.fromBouncerTransition(translateUpwards: Boolean = false) {
 
     val translateDirection = if (translateUpwards) -1 else 1
     translate(Bouncer.Elements.Content, y = translateDirection * BOUNCER_INITIAL_TRANSLATION)
-    fractionRange(end = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Background) }
-    fractionRange(start = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Content) }
+    fractionRange(end = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Content) }
+    fractionRange(start = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Background) }
 }
 
 fun TransitionBuilder.fromBouncerPreview() {
