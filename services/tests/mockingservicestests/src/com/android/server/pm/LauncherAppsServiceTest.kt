@@ -40,7 +40,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.LocalServices
 import com.android.server.extendedtestutils.wheneverStatic
 import com.android.server.testutils.mock
-import com.android.server.testutils.whenever
 import com.android.server.wm.ActivityTaskManagerInternal
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -51,7 +50,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
@@ -60,6 +58,10 @@ import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.KArgumentCaptor
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 
 /**
  * Build/Install/Run:
@@ -88,13 +90,13 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         super.setup()
 
         mockUmInternal = rule.mocks().userManagerInternal
+        mockUmInternal.stub {
+            on { userInfos } doReturn arrayOf(mockUserInfo)
+            on { getUserInfo(eq(TEST_USER_ID)) } doReturn mockUserInfo
+        }
 
         wheneverStatic { LocalServices.getService(UserManagerInternal::class.java) }
             .thenReturn(mockUmInternal)
-        whenever(mockUmInternal.getUserInfos())
-            .thenReturn(arrayOf(mockUserInfo))
-        whenever(mockUmInternal.getUserInfo(TEST_USER_ID))
-            .thenReturn(mockUserInfo)
         wheneverStatic { LocalServices.getService(UsageStatsManagerInternal::class.java) }
             .thenReturn(mockUsmInternal)
         wheneverStatic { LocalServices.getService(ActivityManagerInternal::class.java) }
@@ -404,7 +406,9 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         val onPackageChangedLatch = CountDownLatch(1)
         val listener = TestOnAppsChangedListener(onPackageChangedLatch)
         val spyPackageMonitor = spy(launcherAppsService.mPackageMonitor)
-        whenever(spyPackageMonitor.changingUserId).thenReturn(changedUserId)
+        spyPackageMonitor.stub {
+            on { changingUserId } doReturn changedUserId
+        }
         mockPackageVisibilityAndProfileAccess(
             changedUserId, changedPackage, isProfileAccessible, isPackageFiltered
         )
@@ -433,7 +437,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
 
     private fun verifyCapturedFlagsHaveGetAppLockInfoFlag(
         appLocksPermissionGranted: Boolean,
-        verification: ArgumentCaptor<Long>.() -> Unit,
+        verification: KArgumentCaptor<Long>.() -> Unit,
     ) {
         verifyCapturedFlagsForAppLockInfoFlag(
             appLockApisEnabled = true,
@@ -443,7 +447,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     }
 
     private fun verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag(
-        verification: ArgumentCaptor<Long>.() -> Unit
+        verification: KArgumentCaptor<Long>.() -> Unit
     ) {
         verifyCapturedFlagsForAppLockInfoFlag(
             appLockApisEnabled = false,
@@ -455,15 +459,16 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     private fun verifyCapturedFlagsForAppLockInfoFlag(
         appLockApisEnabled: Boolean,
         appLocksPermissionGranted: Boolean,
-        verification: ArgumentCaptor<Long>.() -> Unit,
+        verification: KArgumentCaptor<Long>.() -> Unit,
     ) {
-        val flagsArgCaptor = ArgumentCaptor.forClass(Long::class.java)
+        val flagsArgCaptor = argumentCaptor<Long>()
         verification(flagsArgCaptor)
+        val expectedFlags = PackageManager.GET_APP_LOCK_INFO
         for (capturedFlags in flagsArgCaptor.allValues) {
             if (appLockApisEnabled && appLocksPermissionGranted) {
-                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isNotEqualTo(0L)
+                assertThat(capturedFlags and expectedFlags).isEqualTo(expectedFlags)
             } else {
-                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isEqualTo(0L)
+                assertThat(capturedFlags and expectedFlags).isEqualTo(0L)
             }
         }
     }
@@ -491,19 +496,26 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     private fun mockPackageVisibilityAndProfileAccess(
         userId: Int, packageName: String, isProfileAccessible: Boolean, isPackageFiltered: Boolean
     ) {
-        whenever(
-            mockUmInternal.isProfileAccessible(
-                anyInt(), eq(userId), anyString(), anyBoolean()
-            )
-        ).thenReturn(isProfileAccessible)
-        whenever(
-            mockPmInternal.filterAppAccess(
-                eq(packageName),
-                anyInt(),
-                eq(userId),
-                eq(false)
-            )
-        ).thenReturn(isPackageFiltered)
+        mockUmInternal.stub {
+            on {
+                isProfileAccessible(
+                    anyInt(), /* callingUserId */
+                    eq(userId),
+                    anyString(), /* debugMsg */
+                    anyBoolean(), /* throwSecurityException */
+                )
+            } doReturn isProfileAccessible
+        }
+        mockPmInternal.stub {
+            on {
+                filterAppAccess(
+                    eq(packageName),
+                    anyInt(), /* callingUserId */
+                    eq(userId),
+                    eq(false), /* filterUninstalled */
+                )
+            } doReturn isPackageFiltered
+        }
     }
 
     private class TestOnAppsChangedListener(val onPackageChangedLatch: CountDownLatch) :
