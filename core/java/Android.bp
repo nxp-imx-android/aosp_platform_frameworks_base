@@ -899,6 +899,7 @@ filegroup {
         "android/os/binder/IBinderStatsConsumerService.aidl",
         "android/os/binder/BinderCallsStats.aidl",
         "android/os/binder/BinderSpamStats.aidl",
+        "android/os/binder/SingleSecondBinderStats.aidl",
     ],
     visibility: ["//frameworks/native/libs/binder"],
 }

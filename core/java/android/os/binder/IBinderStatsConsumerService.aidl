@@ -18,6 +18,7 @@ package android.os.binder;
 
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
+import android.os.binder.SingleSecondBinderStats;
 
 /**
  * Service to help collect binder stats.
@@ -49,4 +50,13 @@ interface IBinderStatsConsumerService {
      * @param spamStatsArray spam reports to be pushed to statsd.
      */
     oneway void reportSpamStats(in BinderSpamStats[] spamStatsArray);
+
+    /**
+     * Reports aggregated binder statistics, with each entry representing calls made within a
+     * single second to a particular Binder API.
+     *
+     * @param singleSecondBinderStats An array of {@link PerSecondBinderStats} reports to be sent
+     * to statsd.
+     */
+    oneway void reportSecondGranularityStats(in SingleSecondBinderStats[] singleSecondBinderStats);
 }
