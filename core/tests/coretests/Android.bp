@@ -250,11 +250,13 @@ android_ravenwood_test {
         "platform-compat-test-rules",
         "platform-parametric-runner-lib",
         "platform-test-annotations",
+        "ravenwood-junit",
         "testng",
         "TestParameterInjector",
     ],
     srcs: [
         "src/android/app/ActivityManagerTest.java",
+        "src/android/app/FullscreenRequestHandlerTest.java",
         "src/android/app/PropertyInvalidatedCacheTests.java",
         "src/android/app/QueuedWorkTest.java",
         "src/android/colormodel/CamTest.java",

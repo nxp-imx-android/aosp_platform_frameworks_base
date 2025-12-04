@@ -26,6 +26,7 @@ android.app.ClientTransactionHandler
 android.app.ComponentOptions
 android.app.ConfigurationChangedListenerController
 android.app.ContextImpl
+android.app.FullscreenRequestHandler
 android.app.Instrumentation
 android.app.LoadedApk
 android.app.LocaleConfig
