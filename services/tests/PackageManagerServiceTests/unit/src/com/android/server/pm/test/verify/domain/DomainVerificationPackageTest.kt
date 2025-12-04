@@ -464,17 +464,23 @@ class DomainVerificationPackageTest {
         // Re-enable link handling to check that the 3/4 domains were stripped
         service.setDomainVerificationLinkHandlingAllowed(pkg1.packageName, true, USER_ID)
 
-        assertThat(service.getOwnersForDomain(DOMAIN_1, USER_ID))
+        assertThat(service
+                .getOwnersForDomain(DOMAIN_1, USER_ID, true /*= includeUnverifiedOwners */))
                 .containsExactly(DomainOwner(PKG_ONE, false))
 
-        assertThat(service.getOwnersForDomain(DOMAIN_2, USER_ID))
+        assertThat(service
+                .getOwnersForDomain(DOMAIN_2, USER_ID, true /*= includeUnverifiedOwners */))
                 .containsExactly(DomainOwner(PKG_ONE, true))
 
-        assertThat(service.getOwnersForDomain(DOMAIN_2, USER_ID + 10)).isEmpty()
+        assertThat(
+            service.getOwnersForDomain(
+                DOMAIN_2, USER_ID + 10, true /*= includeUnverifiedOwners */)).isEmpty()
 
         listOf(DOMAIN_3, DOMAIN_4).forEach { domain ->
             listOf(USER_ID, USER_ID + 10).forEach {  userId ->
-                assertThat(service.getOwnersForDomain(domain, userId)).isEmpty()
+                assertThat(
+                    service.getOwnersForDomain(
+                        domain, userId, true /*= includeUnverifiedOwners */)).isEmpty()
             }
         }
     }

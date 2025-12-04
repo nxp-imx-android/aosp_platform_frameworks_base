@@ -242,9 +242,28 @@ public class DomainVerificationEnforcer {
                 callingPid, callingUid, "Caller " + callingUid + " does not hold "
                         + android.Manifest.permission.QUERY_ALL_PACKAGES);
 
-        mContext.enforcePermission(
-                android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION,
-                callingPid, callingUid, "Caller is not allowed to query user selections");
+        if (android.content.pm.Flags.enableQueryDomainVerification()) {
+            int updateDomainVerificationUserSelectionPermission =
+                    mContext.checkPermission(
+                            android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION,
+                            callingPid, callingUid);
+
+            int queryDomainVerificationPermission =
+                    mContext.checkPermission(
+                            android.Manifest.permission.QUERY_DOMAIN_VERIFICATION,
+                            callingPid, callingUid);
+
+            if (updateDomainVerificationUserSelectionPermission != PackageManager.PERMISSION_GRANTED
+                    && queryDomainVerificationPermission != PackageManager.PERMISSION_GRANTED) {
+                throw new SecurityException(
+                        "Caller " + callingUid + " does not have any of the following permission: "
+                        + "UPDATE_DOMAIN_VERIFICATION_USER_SELECTION, QUERY_DOMAIN_VERIFICATION.");
+            }
+        } else {
+            mContext.enforcePermission(
+                    android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION,
+                    callingPid, callingUid, "Caller is not allowed to query user selections");
+        }
 
         if (!mCallback.doesUserExist(callingUserId)) {
             throw new SecurityException("User " + callingUserId + " does not exist");

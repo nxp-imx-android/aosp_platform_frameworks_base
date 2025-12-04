@@ -281,7 +281,10 @@ public final class DomainVerificationManager {
      */
     @SystemApi
     @Nullable
-    @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT)
+    @RequiresPermission(anyOf={
+        android.Manifest.permission.DOMAIN_VERIFICATION_AGENT,
+        android.Manifest.permission.QUERY_DOMAIN_VERIFICATION
+    })
     public DomainVerificationInfo getDomainVerificationInfo(@NonNull String packageName)
             throws NameNotFoundException {
         try {
@@ -456,12 +459,42 @@ public final class DomainVerificationManager {
      */
     @SystemApi
     @NonNull
-    @RequiresPermission(android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION)
+    @RequiresPermission(anyOf={
+        android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION,
+        android.Manifest.permission.QUERY_DOMAIN_VERIFICATION
+    })
     public SortedSet<DomainOwner> getOwnersForDomain(@NonNull String domain) {
         try {
             Objects.requireNonNull(domain);
             final List<DomainOwner> orderedList = mDomainVerificationManager.getOwnersForDomain(
-                    domain, mContext.getUserId());
+                    domain, mContext.getUserId(), true /* =includeUnverifiedOwners */);
+            SortedSet<DomainOwner> set = new TreeSet<>(
+                    Comparator.comparingInt(orderedList::indexOf));
+            set.addAll(orderedList);
+            return set;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * For the given domain, return all verified apps which are approved to open it.
+     *
+     * The set will be ordered from lowest to highest priority.
+     *
+     * @param domain The host to query for. An invalid domain will result in an empty set.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.content.pm.Flags.FLAG_ENABLE_QUERY_DOMAIN_VERIFICATION)
+    @SystemApi
+    @NonNull
+    @RequiresPermission(android.Manifest.permission.QUERY_DOMAIN_VERIFICATION)
+    public SortedSet<DomainOwner> getVerifiedOwnersForDomain(@NonNull String domain) {
+        try {
+            Objects.requireNonNull(domain);
+            final List<DomainOwner> orderedList = mDomainVerificationManager.getOwnersForDomain(
+                    domain, mContext.getUserId(), false /* =includeUnverifiedOwners */);
             SortedSet<DomainOwner> set = new TreeSet<>(
                     Comparator.comparingInt(orderedList::indexOf));
             set.addAll(orderedList);
