@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.ui
 import android.content.applicationContext
 import android.graphics.drawable.Icon
 import android.net.Uri
+import android.view.Display
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.record.smallscreen.ui.postRecordSnackbarDialogs
 import com.android.systemui.screenrecord.ui.postRecordingViewModelFactory
@@ -27,11 +28,12 @@ import com.android.systemui.statusbar.phone.systemUIDialogFactory
 val Kosmos.postRecordingShelfFactory by
     Kosmos.Fixture {
         object : PostRecordingShelf.Factory {
-            override fun create(uri: Uri, thumbnail: Icon?): PostRecordingShelf =
+            override fun create(uri: Uri, thumbnail: Icon?, display: Display): PostRecordingShelf =
                 PostRecordingShelf(
                     uri = uri,
                     thumbnail = thumbnail,
                     context = applicationContext,
+                    display = display,
                     dialogFactory = systemUIDialogFactory,
                     viewModelFactory = postRecordingViewModelFactory,
                     postRecordSnackbarDialogs = postRecordSnackbarDialogs,
