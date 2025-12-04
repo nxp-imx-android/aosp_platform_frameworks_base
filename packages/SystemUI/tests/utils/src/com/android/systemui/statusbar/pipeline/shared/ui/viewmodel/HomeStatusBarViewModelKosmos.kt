@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.log.logBufferFactory
 import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.display.domain.interactor.shadeExpansionTargetDisplayInteractor
@@ -78,6 +79,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 systemStatusIconsViewModelFactory,
                 statusBarBoundsViewModelFactory,
                 appHandlesViewModelFactory,
+                logBufferFactory,
                 tableLogBufferFactory,
                 mainResources,
                 homeStatusBarInteractor,
