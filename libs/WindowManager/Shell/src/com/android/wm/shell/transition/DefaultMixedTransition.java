@@ -772,8 +772,6 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                         finishCallback);
                 return;
             case TYPE_OPEN_IN_DESKTOP:
-                mDesktopTasksController.mergeAnimation(
-                        transition, info, startT, finishT, mergeTarget, finishCallback);
                 return;
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE:
@@ -873,7 +871,6 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 mUnfoldHandler.onTransitionConsumed(transition, aborted, finishT);
                 break;
             case TYPE_OPEN_IN_DESKTOP:
-                mDesktopTasksController.onTransitionConsumed(transition, aborted, finishT);
                 break;
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE:
