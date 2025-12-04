@@ -17,13 +17,14 @@
 package com.android.systemui.brightness.domain.interactor
 
 import com.android.systemui.brightness.data.repository.screenBrightnessRepository
+import com.android.systemui.brightness.domain.interactor.impl.ScreenBrightnessInteractorImpl
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 
 val Kosmos.screenBrightnessInteractor by
     Kosmos.Fixture {
-        ScreenBrightnessInteractor(
+        ScreenBrightnessInteractorImpl(
             screenBrightnessRepository,
             applicationCoroutineScope,
             logcatTableLogBuffer(this, "screenBrightness"),

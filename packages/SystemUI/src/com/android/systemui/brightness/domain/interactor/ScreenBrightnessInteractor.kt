@@ -16,97 +16,27 @@
 
 package com.android.systemui.brightness.domain.interactor
 
-import com.android.settingslib.display.BrightnessUtils
-import com.android.systemui.brightness.data.model.LinearBrightness
-import com.android.systemui.brightness.data.repository.ScreenBrightnessRepository
-import com.android.systemui.brightness.shared.BrightnessLog
-import com.android.systemui.brightness.shared.model.GammaBrightness
-import com.android.systemui.brightness.shared.model.logDiffForTable
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.log.table.TableLogBuffer
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
+import com.android.systemui.brightness.domain.model.GammaBrightness
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.StateFlow
 
-/**
- * Converts between [GammaBrightness] and [LinearBrightness].
- *
- * @see BrightnessUtils
- */
-@SysUISingleton
-class ScreenBrightnessInteractor
-@Inject
-constructor(
-    private val screenBrightnessRepository: ScreenBrightnessRepository,
-    @Application private val applicationScope: CoroutineScope,
-    @BrightnessLog private val tableBuffer: TableLogBuffer,
-) {
+interface ScreenBrightnessInteractor {
     /** Maximum value in the Gamma space for brightness */
-    val maxGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MAX)
+    val maxGammaBrightness: GammaBrightness
 
     /** Minimum value in the Gamma space for brightness */
-    val minGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MIN)
+    val minGammaBrightness: GammaBrightness
 
     /**
      * Brightness in the Gamma space for the current display. It will always represent a value
      * between [minGammaBrightness] and [maxGammaBrightness]
      */
-    val gammaBrightness: Flow<GammaBrightness> =
-        with(screenBrightnessRepository) {
-            combine(linearBrightness, minLinearBrightness, maxLinearBrightness) {
-                    brightness,
-                    min,
-                    max ->
-                    brightness.toGammaBrightness(min, max)
-                }
-                .logDiffForTable(tableBuffer, TABLE_PREFIX_GAMMA, TABLE_COLUMN_BRIGHTNESS, null)
-                .stateIn(applicationScope, SharingStarted.WhileSubscribed(), GammaBrightness(0))
-        }
-
-    val brightnessOverriddenByWindow = screenBrightnessRepository.isBrightnessOverriddenByWindow
+    val gammaBrightness: Flow<GammaBrightness>
+    val brightnessOverriddenByWindow: StateFlow<Boolean>
 
     /** Sets the brightness temporarily, while the user is changing it. */
-    suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness) {
-        screenBrightnessRepository.setTemporaryBrightness(
-            gammaBrightness.clamp().toLinearBrightness()
-        )
-    }
+    suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness)
 
     /** Sets the brightness definitely. */
-    suspend fun setBrightness(gammaBrightness: GammaBrightness) {
-        screenBrightnessRepository.setBrightness(gammaBrightness.clamp().toLinearBrightness())
-    }
-
-    private suspend fun GammaBrightness.toLinearBrightness(): LinearBrightness {
-        val bounds = screenBrightnessRepository.getMinMaxLinearBrightness()
-        return LinearBrightness(
-            BrightnessUtils.convertGammaToLinearFloat(
-                value,
-                bounds.first.floatValue,
-                bounds.second.floatValue,
-            )
-        )
-    }
-
-    private fun GammaBrightness.clamp(): GammaBrightness {
-        return GammaBrightness(value.coerceIn(minGammaBrightness.value, maxGammaBrightness.value))
-    }
-
-    private fun LinearBrightness.toGammaBrightness(
-        min: LinearBrightness,
-        max: LinearBrightness,
-    ): GammaBrightness {
-        return GammaBrightness(
-            BrightnessUtils.convertLinearToGammaFloat(floatValue, min.floatValue, max.floatValue)
-        )
-    }
-
-    private companion object {
-        const val TABLE_COLUMN_BRIGHTNESS = "brightness"
-        const val TABLE_PREFIX_GAMMA = "gamma"
-    }
+    suspend fun setBrightness(gammaBrightness: GammaBrightness)
 }
