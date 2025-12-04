@@ -15,10 +15,19 @@
  */
 package com.android.server.pm;
 
-import static com.android.server.pm.UserActivitiesAllowlist.DEBUG;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.pm.GenericAllowlist.allowlistModeToString;
+import static com.android.server.pm.GenericAllowlist.AllowlistMode;
+import static com.android.server.pm.GenericAllowlist.ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_DISABLED;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_LOG_ONLY;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_ENABLED;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_INVALID;
+import static com.android.server.pm.GenericAllowlist.DEBUG;
 
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 
 import static java.util.Arrays.asList;
@@ -26,15 +35,17 @@ import static java.util.Collections.emptyList;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.util.Slog;
 
+import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.modules.utils.testing.ExtendedMockitoRule.SpyStatic;
 import com.android.server.ExpectableTestCase;
+import com.android.server.pm.GenericAllowlist.AllowlistMode;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -51,8 +62,11 @@ import java.util.List;
 abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         extends ExpectableTestCase {
 
+    private static final int UNKNOWN_MODE = 666;
+
     @Rule
-    public final MockitoRule mocks = MockitoJUnit.rule();
+    public final ExtendedMockitoRule extendedMockito =
+            new ExtendedMockitoRule.Builder(this).build();
 
     private final Context mRealContext =
             androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
@@ -73,6 +87,8 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         mPlural = pluralName;
     }
 
+    protected abstract A createAllowlist(@AllowlistMode int mode, String... configAllowlist);
+
     protected abstract String getPermanentName1();
     protected abstract String getPermanentName2();
     protected abstract String getPermanentName3();
@@ -90,6 +106,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     protected abstract String getInvalidName();
 
     protected abstract E getNotAllowlistedElement();
+    protected abstract String getNotAllowlistedName();
 
     // TODO(b/455912167): methods below are used to check activities that could be represented
     // by ether a full or "flattened" name. They might not apply to other subclass (like
@@ -166,6 +183,49 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         expectNotAllowed(allowlist, getNotAllowlistedElement());
         expectAllowed(allowlist, getElementWithFullName());
         expectEffectiveAllowlist(allowlist, getElementWithFullName());
+    }
+
+    @Test
+    public final void testIsAllowed_modeDisabled() throws Exception {
+        var allowlist = createAllowlist(ALLOWLIST_MODE_DISABLED, getPermanentName1());
+
+        expectAllowed(allowlist, getNotAllowlistedElement(), getPermanentElement1(),
+                getPermanentElement2(), getPermanentElement3());
+        expectEffectiveAllowlist(allowlist, getPermanentElement1());
+    }
+
+    @Test
+    @SpyStatic(Slog.class)
+    public final void testIsAllowed_modeLogOnly() throws Exception {
+        var allowlist = createAllowlist(ALLOWLIST_MODE_LOG_ONLY, getPermanentName1());
+
+        expectAllowed(allowlist, getNotAllowlistedElement(), getPermanentElement1(),
+                getPermanentElement2(), getPermanentElement3());
+        expectEffectiveAllowlist(allowlist, getPermanentElement1());
+        // Make sure it was logged
+        verifyLogged(allowlist, getNotAllowlistedName());
+        verifyLogged(allowlist, getPermanentName2());
+        verifyLogged(allowlist, getPermanentName3());
+        // getPermanentName1() is not logged because it's allowlisted
+        verifyNotLogged(allowlist, getPermanentName1());
+    }
+
+    @Test
+    public final void testIsAllowed_invalidModes() throws Exception {
+        testIsAllowedWhenConstructorWithInvalidMode(UNKNOWN_MODE);
+        testIsAllowedWhenConstructorWithInvalidMode(ALLOWLIST_MODE_INVALID);
+    }
+
+    private void testIsAllowedWhenConstructorWithInvalidMode(int mode) throws Exception {
+        var allowlist = createAllowlist(mode, getPermanentName1());
+
+        expectWithMessage("getMode()")
+                .that(allowlist.getMode())
+                .isEqualTo(ALLOWLIST_MODE_INVALID);
+
+        expectAllowed(allowlist, getNotAllowlistedElement(), getPermanentElement1(),
+                getPermanentElement2(), getPermanentElement3());
+        expectEffectiveAllowlist(allowlist, getPermanentElement1());
     }
 
     @Test
@@ -288,8 +348,9 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
-                        %s allowlist status: allowlisting disabled
+                        %s allowlist status: disabled (empty permanent list)
                         permanent %s allowlist is empty.
                         temporary %s allowlist is not set.
                            """,
@@ -307,6 +368,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using permanent allowlist
                         permanent %s allowlist has 1 %s:
@@ -315,6 +377,49 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                            """,
                            allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
     }
+
+    @Test
+    public final void testDump_configWithOneElement_disabled() throws Exception {
+        var name1 = getPermanentName1();
+        var allowlist = createAllowlist(ALLOWLIST_MODE_DISABLED, name1);
+
+        String dump = dump(allowlist);
+
+        expectWithMessage("dump()").that(dump)
+                .isEqualTo(String.format("""
+                      Dumpo:
+                        id: %s
+                        mode: 0 (DISABLED)
+                        DEBUG: %b
+                        %s allowlist status: disabled (by config)
+                        permanent %s allowlist has 1 %s:
+                          %s
+                        temporary %s allowlist is not set.
+                           """,
+                           allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
+    }
+
+    @Test
+    public final void testDump_configWithOneElement_logOnly() throws Exception {
+        var name1 = getPermanentName1();
+        var allowlist = createAllowlist(ALLOWLIST_MODE_LOG_ONLY, name1);
+
+        String dump = dump(allowlist);
+
+        expectWithMessage("dump()").that(dump)
+                .isEqualTo(String.format("""
+                      Dumpo:
+                        id: %s
+                        mode: 2 (LOG_ONLY)
+                        DEBUG: %b
+                        %s allowlist status: disabled (log-only)
+                        permanent %s allowlist has 1 %s:
+                          %s
+                        temporary %s allowlist is not set.
+                           """,
+                           allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
+    }
+
 
     @Test
     public final void testDump_configWithMultipleElements() throws Exception {
@@ -328,6 +433,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using permanent allowlist
                         permanent %s allowlist has 2 %s:
@@ -348,8 +454,9 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                         Dumpo:
                           id: %s
+                          mode: 1 (ENABLED)
                           DEBUG: %b
-                          %s allowlist status: allowlisting disabled
+                          %s allowlist status: disabled (empty permanent list)
                           permanent %s allowlist is empty.
                           temporary %s allowlist is not set.
                              """,
@@ -368,6 +475,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using permanent allowlist
                         permanent %s allowlist has 2 %s:
@@ -389,6 +497,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using permanent allowlist
                         permanent %s allowlist has 1 %s:
@@ -410,6 +519,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using permanent allowlist
                         permanent %s allowlist has 1 %s:
@@ -430,8 +540,9 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
-                        %s allowlist status: allowlisting disabled
+                        %s allowlist status: disabled (empty temporary list)
                         permanent %s allowlist is empty.
                         temporary %s allowlist is empty.
                            """,
@@ -451,8 +562,9 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
-                        %s allowlist status: allowlisting disabled
+                        %s allowlist status: disabled (empty temporary list)
                         permanent %s allowlist has 2 %s:
                           %s
                           %s
@@ -473,6 +585,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using temporary allowlist
                         permanent %s allowlist is empty.
@@ -499,6 +612,7 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .isEqualTo(String.format("""
                       Dumpo:
                         id: %s
+                        mode: 1 (ENABLED)
                         DEBUG: %b
                         %s allowlist status: using temporary allowlist
                         permanent %s allowlist has 2 %s:
@@ -540,6 +654,51 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         testConversion(getFullName(), getElementWithShortName());
     }
 
+    @Test
+    public final void testAllowlistModeToString() {
+        expectWithMessage("AllowlistModeToString(ALLOWLIST_MODE_DISABLED)")
+                .that(allowlistModeToString(ALLOWLIST_MODE_DISABLED)).isEqualTo("DISABLED");
+        expectWithMessage("AllowlistModeToString(ALLOWLIST_MODE_ENABLED)")
+                .that(allowlistModeToString(ALLOWLIST_MODE_ENABLED)).isEqualTo("ENABLED");
+        expectWithMessage("AllowlistModeToString(ALLOWLIST_MODE_LOG_ONLY)")
+                .that(allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY)).isEqualTo("LOG_ONLY");
+        expectWithMessage("AllowlistModeToString(ALLOWLIST_MODE_INVALID)")
+                .that(allowlistModeToString(ALLOWLIST_MODE_INVALID)).isEqualTo("INVALID");
+        expectWithMessage("AllowlistModeToString(UNKNOWN_MODE)")
+                .that(allowlistModeToString(UNKNOWN_MODE))
+                .isEqualTo("ALLOWLIST_MODE_" + UNKNOWN_MODE);
+    }
+
+    @Test
+    public final void testSetGetMode() {
+        var allowlist = createAllowlist(ALLOWLIST_MODE_ENABLED);
+        expectWithMessage("getMode() after constructor")
+                .that(allowlist.getMode())
+                .isEqualTo(ALLOWLIST_MODE_ENABLED);
+
+        setAndAssertMode(allowlist, ALLOWLIST_MODE_DISABLED);
+        setAndAssertMode(allowlist, ALLOWLIST_MODE_ENABLED);
+        setAndAssertMode(allowlist, ALLOWLIST_MODE_LOG_ONLY);
+    }
+
+    private void setAndAssertMode(A allowlist, @AllowlistMode int mode) {
+        allowlist.setMode(mode);
+        expectWithMessage("getMode() after setMode(%s=%s)", mode, allowlistModeToString(mode))
+                .that(allowlist.getMode())
+                .isEqualTo(mode);
+    }
+
+    @Test
+    public final void testSetMode_invalid() {
+        var allowlist = createAllowlist(ALLOWLIST_MODE_ENABLED);
+
+        assertThrows(IllegalArgumentException.class, () -> allowlist.setMode(UNKNOWN_MODE));
+
+        expectWithMessage("getMode() after setMode() with invalid value")
+                .that(allowlist.getMode())
+                .isEqualTo(ALLOWLIST_MODE_ENABLED);
+    }
+
     // Asserts that originalElement is converted into expectedConvertedName (and returns the latter)
     private String testConversion(E originalElement, String expectedConvertedName) {
         A allowlist = createAllowlist();
@@ -574,7 +733,10 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         testConversion(convertedName, originalElement);
     }
 
-    protected abstract A createAllowlist(String... configAllowlist);
+    private A createAllowlist(String... configAllowlist) {
+        return createAllowlist(ALLOWLIST_MODE_ENABLED, configAllowlist);
+    }
+
 
     @SafeVarargs
     private void expectNotAllowed(A allowlist, E... elements) {
@@ -622,6 +784,22 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     private void expectDefaultPermanentElementsNotAllowed(A allowlist) {
         expectNotAllowed(allowlist,
                 getPermanentElement1(), getPermanentElement2(), getPermanentElement3());
+    }
+
+    // NOTE: caller must be annotated with: @SpyStatic(Slog.class)
+    private void verifyLogged(A allowlist, String elementName) {
+        String mode = allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY);
+        String message = String.format(ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, elementName, mode);
+
+        verify(() -> Slog.w(allowlist.mTag, message));
+    }
+
+    // NOTE: caller must be annotated with: @SpyStatic(Slog.class)
+    private void verifyNotLogged(A allowlist, String elementName) {
+        String mode = allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY);
+        String message = String.format(ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, elementName, mode);
+
+        verify(() -> Slog.w(allowlist.mTag, message), never());
     }
 
     private String dump(A allowlist) throws IOException {

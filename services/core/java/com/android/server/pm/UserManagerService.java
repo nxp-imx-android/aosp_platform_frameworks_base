@@ -5254,8 +5254,10 @@ public class UserManagerService extends IUserManager.Stub {
                         allowlistedActivities.length, userType);
 
             }
+
+            int allowlistMode = resources.getInteger(R.integer.config_hsuActivitiesAllowlistMode);
             userActivitiesAllowlist.put(userType,
-                    new UserActivitiesAllowlist(allowlistedActivities));
+                    new UserActivitiesAllowlist(allowlistMode, allowlistedActivities));
         }
         return userActivitiesAllowlist;
     }
