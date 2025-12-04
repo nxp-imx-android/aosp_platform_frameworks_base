@@ -304,6 +304,24 @@ public final class HubEndpointInfo implements Parcelable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(mId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof HubEndpointInfo other)) {
+            return false;
+        }
+        // HubEndpointInfo objects are considered equal if their unique identifiers are equal.
+        // Other fields are descriptive attributes of the endpoint identified by mId.
+        return Objects.equals(mId, other.mId);
+    }
+
+    @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
         out.append("Endpoint [0x");
