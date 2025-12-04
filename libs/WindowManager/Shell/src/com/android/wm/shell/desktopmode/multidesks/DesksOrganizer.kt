@@ -104,6 +104,9 @@ interface DesksOrganizer {
     /** Allows for other classes to respond to task vanishes this organizer receives. */
     fun addOnDesktopTaskVanishedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
 
+    /** Allows another class to respond to back presses this organizer receives. */
+    fun setBackPressOnDeskListener(listener: (task: ActivityManager.RunningTaskInfo) -> Unit)
+
     /** Move a desk to the given display area. */
     fun moveDeskToDisplay(
         wct: WindowContainerTransaction,

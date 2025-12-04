@@ -431,6 +431,9 @@ class DesktopTasksController(
         desksOrganizer.addOnDesktopTaskInfoChangedListener { taskInfo ->
             onTaskInfoChanged(taskInfo)
         }
+        desksOrganizer.setBackPressOnDeskListener { task ->
+            minimizeTask(task, MinimizeReason.KEY_GESTURE)
+        }
     }
 
     @VisibleForTesting
