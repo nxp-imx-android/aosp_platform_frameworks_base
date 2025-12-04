@@ -1057,6 +1057,7 @@
     <!-- Permissions required for CTS test - CtsModernMediaProviderTests -->
     <uses-permission android:name="com.android.providers.media.permission.ACCESS_OEM_METADATA" />
     <uses-permission android:name="com.android.providers.media.permission.UPDATE_OEM_METADATA" />
+    <uses-permission android:name="com.android.providers.media.permission.BIND_SEARCH_MEDIA_SERVICE" />
 
     <!-- Permission required for trade-in mode testing -->
     <uses-permission android:name="android.permission.ENTER_TRADE_IN_MODE" />
