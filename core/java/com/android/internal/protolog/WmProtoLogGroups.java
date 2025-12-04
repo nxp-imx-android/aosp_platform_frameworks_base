@@ -65,7 +65,7 @@ public enum WmProtoLogGroups implements IProtoLogGroup {
     WM_DEBUG_WALLPAPER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_BACK_PREVIEW(Consts.ENABLE_DEBUG, true, "CoreBackPreview"),
     WM_DEBUG_DREAM(Consts.ENABLE_DEBUG, true, Consts.TAG_WM),
-
+    WM_DEBUG_CAMERA_COMPAT(Consts.ENABLE_DEBUG, true, Consts.TAG_WM),
     WM_DEBUG_DIMMER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_TPL(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_EMBEDDED_WINDOWS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),

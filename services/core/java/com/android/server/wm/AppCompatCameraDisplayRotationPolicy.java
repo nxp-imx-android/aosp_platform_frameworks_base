@@ -29,7 +29,7 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Display.TYPE_INTERNAL;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.DisplayRotationReversionController.REVERSION_TYPE_CAMERA_COMPAT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -41,7 +41,6 @@ import android.annotation.StringRes;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.util.Slog;
 import android.widget.Toast;
 
 import com.android.internal.R;
@@ -180,10 +179,11 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 || (!isPortraitActivity && !isNaturalDisplayOrientationPortrait)
                 ? SCREEN_ORIENTATION_PORTRAIT
                 : SCREEN_ORIENTATION_LANDSCAPE;
-        ProtoLog.v(WM_DEBUG_ORIENTATION,
-                "Display id=%d is ignoring all orientation requests, camera is active "
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                "%s: Display id=%d is ignoring all orientation requests, camera is active "
                         + "and the top activity is eligible for force rotation, return %s,"
                         + "portrait activity: %b, is natural orientation portrait: %b.",
+                TAG,
                 topActivity.getDisplayContent().mDisplayId, screenOrientationToString(orientation),
                 isPortraitActivity, isNaturalDisplayOrientationPortrait);
         return orientation;
@@ -231,8 +231,9 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         }
         if (mDisplayContent.getRotationReversionController().revertOverride(
                 REVERSION_TYPE_CAMERA_COMPAT)) {
-            ProtoLog.v(WM_DEBUG_ORIENTATION,
-                    "Reverting orientation after camera compat force rotation");
+            ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Reverting orientation after camera compat force rotation",
+                    TAG);
             // Reset last orientation source since we have reverted the orientation.
             mDisplayContent.mLastOrientationSource = null;
         }
@@ -247,9 +248,9 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         if (!isOrientationOverridden()) {
             mDisplayContent.getRotationReversionController().beforeOverrideApplied(
                     REVERSION_TYPE_CAMERA_COMPAT);
-            ProtoLog.v(WM_DEBUG_ORIENTATION,
-                    "Saving original orientation before camera compat, last orientation is %d",
-                    mDisplayContent.getLastOrientation());
+            ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Saving original orientation before camera compat, last orientation is %d",
+                    TAG, mDisplayContent.getLastOrientation());
         }
     }
 
@@ -342,7 +343,8 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
             @NonNull Task cameraTask) {
         final ActivityRecord cameraActivity = getTopActivity(cameraTask);
         if (cameraActivity == null) {
-            Slog.w(TAG, "Camera activity is null in onCameraOpened().");
+            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Camera activity is null in onCameraOpened().", TAG);
             return;
         }
 
@@ -365,10 +367,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                                 packageManager.getApplicationInfo(cameraActivity.packageName,
                                         /* flags */ 0)));
             } catch (PackageManager.NameNotFoundException e) {
-                ProtoLog.e(WM_DEBUG_ORIENTATION,
-                        "DisplayRotationCompatPolicy: Multi-window toast not shown as "
+                ProtoLog.e(WM_DEBUG_CAMERA_COMPAT,
+                        "%s: Multi-window toast not shown as "
                                 + "package '%s' cannot be found.",
-                        cameraActivity.packageName);
+                        TAG, cameraActivity.packageName);
             }
         }
     }
@@ -398,10 +400,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
         synchronized (this) {
             if (isActivityForCameraIdRefreshing(topActivity, cameraId)) {
-                ProtoLog.v(WM_DEBUG_ORIENTATION,
-                        "Display id=%d is notified that camera is closed but activity is"
+                ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                        "%s: Display id=%d is notified that camera is closed but activity is"
                                 + " still refreshing. Rescheduling an update.",
-                        mDisplayContent.mDisplayId);
+                        TAG, mDisplayContent.mDisplayId);
                 return false;
             }
         }
@@ -415,9 +417,9 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
             return;
         }
 
-        ProtoLog.v(WM_DEBUG_ORIENTATION,
-                "Display id=%d is notified that Camera is closed, updating rotation.",
-                mDisplayContent.mDisplayId);
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                "%s: Display id=%d is notified that Camera is closed, updating rotation.",
+                TAG, mDisplayContent.mDisplayId);
         // Checking whether an activity in fullscreen rather than the task as this camera compat
         // treatment doesn't cover activity embedding.
         if (topActivity.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {
