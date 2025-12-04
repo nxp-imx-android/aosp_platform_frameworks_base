@@ -263,7 +263,7 @@ constructor(
         contentBuilder.colors =
             PromotedNotificationContentModel.Colors(
                 backgroundColor = colorsFromNotif.backgroundColor,
-                primaryTextColor = colorsFromNotif.primaryTextColor,
+                textColor = colorsFromNotif.textColor,
             )
 
         recoveredBuilder.extractStyleContent(

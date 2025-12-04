@@ -1456,8 +1456,7 @@ public class NotificationTest {
             // When a color is provided, night mode should have no effect on the notification
             // Exception: ProtectionColor will not match, since it has different values for LT/DT
             assertEquals(cDay.getBackgroundColor(), cNight.getBackgroundColor());
-            assertEquals(cDay.getPrimaryTextColor(), cNight.getPrimaryTextColor());
-            assertEquals(cDay.getSecondaryTextColor(), cNight.getSecondaryTextColor());
+            assertEquals(cDay.getTextColor(), cNight.getTextColor());
             assertEquals(cDay.getPrimaryAccentColor(), cNight.getPrimaryAccentColor());
             assertEquals(cDay.getSecondaryAccentColor(), cNight.getSecondaryAccentColor());
             assertEquals(cDay.getTertiaryAccentColor(), cNight.getTertiaryAccentColor());
@@ -2997,8 +2996,7 @@ public class NotificationTest {
         // Assert that all colors are populated
         assertThat(c.getBackgroundColor()).isNotEqualTo(Notification.COLOR_INVALID);
         assertThat(c.getProtectionColor()).isNotEqualTo(Notification.COLOR_INVALID);
-        assertThat(c.getPrimaryTextColor()).isNotEqualTo(Notification.COLOR_INVALID);
-        assertThat(c.getSecondaryTextColor()).isNotEqualTo(Notification.COLOR_INVALID);
+        assertThat(c.getTextColor()).isNotEqualTo(Notification.COLOR_INVALID);
         assertThat(c.getPrimaryAccentColor()).isNotEqualTo(Notification.COLOR_INVALID);
         assertThat(c.getSecondaryAccentColor()).isNotEqualTo(Notification.COLOR_INVALID);
         assertThat(c.getTertiaryAccentColor()).isNotEqualTo(Notification.COLOR_INVALID);
@@ -3011,8 +3009,7 @@ public class NotificationTest {
         assertThat(c.getRippleAlpha()).isAtMost(0xff);
 
         // Assert that various colors have sufficient contrast with the background
-        assertContrastIsAtLeast(c.getPrimaryTextColor(), c.getBackgroundColor(), 4.5);
-        assertContrastIsAtLeast(c.getSecondaryTextColor(), c.getBackgroundColor(), 4.5);
+        assertContrastIsAtLeast(c.getTextColor(), c.getBackgroundColor(), 4.5);
         assertContrastIsAtLeast(c.getPrimaryAccentColor(), c.getBackgroundColor(), 4.5);
         assertContrastIsAtLeast(c.getErrorColor(), c.getBackgroundColor(), 4.5);
         assertContrastIsAtLeast(c.getContrastColor(), c.getBackgroundColor(), 4.5);

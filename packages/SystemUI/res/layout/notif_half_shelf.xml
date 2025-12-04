@@ -58,7 +58,6 @@
                     android:padding="8dp" />
 
                 <TextView
-                    android:featureFlag="android.app.notifications_redesign_fonts"
                     android:id="@+id/app_name"
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
@@ -72,21 +71,6 @@
                     android:fontFamily="variable-title-medium"
                     android:textSize="16sp"
                 />
-                <TextView
-                    android:featureFlag="!android.app.notifications_redesign_fonts"
-                    android:id="@+id/app_name"
-                    android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    android:gravity="center_vertical|start"
-                    android:ellipsize="end"
-                    android:maxLines="2"
-                    android:textColor="@androidprv:color/materialColorOnSurface"
-                    android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
-                    android:textSize="16sp"
-                    />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:theme="@style/Theme.Material3.DynamicColors.DayNight"

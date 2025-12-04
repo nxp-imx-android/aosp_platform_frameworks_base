@@ -120,7 +120,7 @@ data class PromotedNotificationContentModel(
         var skeletonLargeIcon: ImageModel? = null
         var oldProgress: OldProgress? = null
         var style: Style = Style.Ineligible
-        var colors: Colors = Colors(backgroundColor = 0, primaryTextColor = 0)
+        var colors: Colors = Colors(backgroundColor = 0, textColor = 0)
 
         // for CallStyle:
         var verificationIcon: ImageModel? = null
@@ -185,7 +185,7 @@ data class PromotedNotificationContentModel(
     }
 
     /** The colors used to display the notification. */
-    data class Colors(@ColorInt val backgroundColor: Int, @ColorInt val primaryTextColor: Int)
+    data class Colors(@ColorInt val backgroundColor: Int, @ColorInt val textColor: Int)
 
     /** The fields needed to render the old-style progress bar. */
     data class OldProgress(val progress: Int, val max: Int, val isIndeterminate: Boolean)

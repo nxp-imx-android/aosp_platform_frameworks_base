@@ -75,7 +75,7 @@ public class HybridConversationNotificationView extends HybridNotificationView {
         mConversationFacePileStub =
                 requireViewById(com.android.internal.R.id.conversation_face_pile);
         mConversationSenderName = requireViewById(R.id.conversation_notification_sender);
-        applyTextColor(mConversationSenderName, mSecondaryTextColor);
+        applyTextColor(mConversationSenderName, mTextColor);
         if (Flags.notificationsRedesignTemplates()) {
             mFacePileSize = getResources()
                     .getDimensionPixelSize(R.dimen.notification_2025_single_line_face_pile_size);
