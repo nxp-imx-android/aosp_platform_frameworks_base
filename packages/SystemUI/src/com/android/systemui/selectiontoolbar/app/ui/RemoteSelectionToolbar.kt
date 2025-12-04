@@ -1218,9 +1218,9 @@ class RemoteSelectionToolbar(
     /** A helper for generating views for the overflow panel. */
     private class OverflowPanelViewHelper(context: Context, private val mIconTextSpacing: Int) {
         private val mContext = Objects.requireNonNull(context)
-        private val mCalculator: View = createMenuButton(null)
         private val mSidePadding: Int =
             context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_overflow_side_padding)
+        private val mCalculator: View = createMenuButton(null)
 
         fun getView(menuItem: ToolbarMenuItem, minimumWidth: Int, convertView: View?): View {
             var convertView = convertView
