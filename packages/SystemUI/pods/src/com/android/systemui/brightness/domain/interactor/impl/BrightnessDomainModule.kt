@@ -22,13 +22,15 @@ import dagger.Binds
 import dagger.Module
 
 @Module
-interface BrightnessDomainModule {
+public interface BrightnessDomainModule {
 
     @Binds
-    fun bindBrightnessInteractor(impl: ScreenBrightnessInteractorImpl): ScreenBrightnessInteractor
+    public fun bindBrightnessInteractor(
+        impl: ScreenBrightnessInteractorImpl
+    ): ScreenBrightnessInteractor
 
     @Binds
-    fun bindBrightnessPolicyEnforcementInteractor(
+    public fun bindBrightnessPolicyEnforcementInteractor(
         impl: BrightnessPolicyEnforcementInteractorImpl
     ): BrightnessPolicyEnforcementInteractor
 }

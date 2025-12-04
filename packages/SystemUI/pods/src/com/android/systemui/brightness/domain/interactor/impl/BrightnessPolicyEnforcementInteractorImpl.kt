@@ -23,10 +23,11 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.util.policy.PolicyRestriction
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
 /** Interactor for enforcing the policy that may disallow brightness changing. */
 @SysUISingleton
-class BrightnessPolicyEnforcementInteractorImpl
+public class BrightnessPolicyEnforcementInteractorImpl
 @Inject
 constructor(
     brightnessPolicyRepository: BrightnessPolicyRepository,
@@ -34,7 +35,8 @@ constructor(
 ) : BrightnessPolicyEnforcementInteractor {
 
     /** Brightness policy restriction for the current user. */
-    override val brightnessPolicyRestriction = brightnessPolicyRepository.restrictionPolicy
+    override val brightnessPolicyRestriction: Flow<PolicyRestriction> =
+        brightnessPolicyRepository.restrictionPolicy
 
     /**
      * Starts the dialog with details about the current restriction for changing brightness. Should

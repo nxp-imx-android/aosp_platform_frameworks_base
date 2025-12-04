@@ -20,23 +20,25 @@ import com.android.systemui.brightness.domain.model.GammaBrightness
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-interface ScreenBrightnessInteractor {
+public interface ScreenBrightnessInteractor {
     /** Maximum value in the Gamma space for brightness */
-    val maxGammaBrightness: GammaBrightness
+    public val maxGammaBrightness: GammaBrightness
 
     /** Minimum value in the Gamma space for brightness */
-    val minGammaBrightness: GammaBrightness
+    public val minGammaBrightness: GammaBrightness
 
     /**
      * Brightness in the Gamma space for the current display. It will always represent a value
      * between [minGammaBrightness] and [maxGammaBrightness]
      */
-    val gammaBrightness: Flow<GammaBrightness>
-    val brightnessOverriddenByWindow: StateFlow<Boolean>
+    public val gammaBrightness: Flow<GammaBrightness>
+
+    /** Whether the brightness is overridden by the window and cannot be changed by a user */
+    public val brightnessOverriddenByWindow: StateFlow<Boolean>
 
     /** Sets the brightness temporarily, while the user is changing it. */
-    suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness)
+    public suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness)
 
     /** Sets the brightness definitely. */
-    suspend fun setBrightness(gammaBrightness: GammaBrightness)
+    public suspend fun setBrightness(gammaBrightness: GammaBrightness)
 }

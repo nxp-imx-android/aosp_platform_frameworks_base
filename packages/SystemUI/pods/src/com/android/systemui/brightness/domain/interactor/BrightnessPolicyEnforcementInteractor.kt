@@ -19,13 +19,13 @@ package com.android.systemui.brightness.domain.interactor
 import com.android.systemui.util.policy.PolicyRestriction
 import kotlinx.coroutines.flow.Flow
 
-interface BrightnessPolicyEnforcementInteractor {
+public interface BrightnessPolicyEnforcementInteractor {
     /** Brightness policy restriction for the current user. */
-    val brightnessPolicyRestriction: Flow<PolicyRestriction>
+    public val brightnessPolicyRestriction: Flow<PolicyRestriction>
 
     /**
      * Starts the dialog with details about the current restriction for changing brightness. Should
      * be triggered when a restricted user tries to change the brightness.
      */
-    fun startAdminSupportDetailsDialog(restriction: PolicyRestriction.Restricted)
+    public fun startAdminSupportDetailsDialog(restriction: PolicyRestriction.Restricted)
 }

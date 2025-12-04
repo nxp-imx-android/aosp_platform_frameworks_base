@@ -20,10 +20,10 @@ import androidx.annotation.IntRange
 import com.android.settingslib.display.BrightnessUtils
 
 @JvmInline
-value class GammaBrightness(
+public value class GammaBrightness(
     @IntRange(
         from = BrightnessUtils.GAMMA_SPACE_MIN.toLong(),
         to = BrightnessUtils.GAMMA_SPACE_MAX.toLong(),
     )
-    val value: Int
+    public val value: Int
 )

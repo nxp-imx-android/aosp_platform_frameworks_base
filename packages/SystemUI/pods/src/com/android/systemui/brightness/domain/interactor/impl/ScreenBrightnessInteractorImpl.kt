@@ -30,6 +30,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
@@ -39,7 +40,7 @@ import kotlinx.coroutines.flow.stateIn
  * @see BrightnessUtils
  */
 @SysUISingleton
-class ScreenBrightnessInteractorImpl
+public class ScreenBrightnessInteractorImpl
 @Inject
 constructor(
     private val screenBrightnessRepository: ScreenBrightnessRepository,
@@ -47,10 +48,12 @@ constructor(
     @BrightnessLog private val tableBuffer: TableLogBuffer,
 ) : ScreenBrightnessInteractor {
     /** Maximum value in the Gamma space for brightness */
-    override val maxGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MAX)
+    override val maxGammaBrightness: GammaBrightness =
+        GammaBrightness(BrightnessUtils.GAMMA_SPACE_MAX)
 
     /** Minimum value in the Gamma space for brightness */
-    override val minGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MIN)
+    override val minGammaBrightness: GammaBrightness =
+        GammaBrightness(BrightnessUtils.GAMMA_SPACE_MIN)
 
     /**
      * Brightness in the Gamma space for the current display. It will always represent a value
@@ -68,7 +71,7 @@ constructor(
                 .stateIn(applicationScope, SharingStarted.WhileSubscribed(), GammaBrightness(0))
         }
 
-    override val brightnessOverriddenByWindow =
+    override val brightnessOverriddenByWindow: StateFlow<Boolean> =
         screenBrightnessRepository.isBrightnessOverriddenByWindow
 
     /** Sets the brightness temporarily, while the user is changing it. */
