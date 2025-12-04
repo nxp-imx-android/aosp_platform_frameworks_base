@@ -6690,6 +6690,25 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return createSafeActivityOptionsWithBalAllowed(ActivityOptions.fromBundle(bOptions));
     }
 
+    /**
+     * Retrieves the destination activity's package name associated
+     * with an original launching activity.
+     * This is used for Activity Trampolines, where an initial activity redirects to a final
+     * destination activity.
+     *
+     * @param originalPackageName The package name of the first activity in the launch chain.
+     * @return The package name of the final destination activity, or the provided
+     * {@code originalPackageName} if no redirection is found.
+     */
+    @Override
+    public String getDestinationPackage(String originalPackageName) {
+        enforceTaskPermission("getDestinationPackage()");
+        synchronized (mGlobalLock) {
+            return mTaskSupervisor.getActivityMetricsLogger().getDestinationPackage(
+                    originalPackageName);
+        }
+    }
+
     final class H extends Handler {
         static final int REPORT_TIME_TRACKER_MSG = 1;
         static final int END_POWER_MODE_UNKNOWN_VISIBILITY_MSG = 3;

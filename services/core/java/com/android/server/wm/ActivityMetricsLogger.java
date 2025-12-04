@@ -195,6 +195,9 @@ class ActivityMetricsLogger {
     private final ArrayMap<String, Boolean> mLastHibernationStates = new ArrayMap<>();
     private AppHibernationManagerInternal mAppHibernationManagerInternal;
 
+    private final CrossPackageLaunchTracker mCrossPackageLaunchTracker =
+            new CrossPackageLaunchTracker();
+
     /**
      * The information created when an intent is incoming but we do not yet know whether it will be
      * launched successfully.
@@ -309,6 +312,8 @@ class ActivityMetricsLogger {
         final boolean mIsInTaskActivityStart;
         /** Whether the last launched activity has reported drawn. */
         boolean mIsDrawn;
+        /** The first activity launched in the launch sequence (which may be a trampoline). */
+        @NonNull final ActivityRecord mStartActivity;
         /** The latest activity to have been launched. */
         @NonNull ActivityRecord mLastLaunchedActivity;
         /** The next activity if the latest launched activity in the same task is finishing. */
@@ -378,6 +383,7 @@ class ActivityMetricsLogger {
             mProcessOomAdj = processOomAdj;
             mIsInTaskActivityStart = isInTaskActivityStart;
             setLatestLaunchedActivity(r);
+            mStartActivity = mLastLaunchedActivity;
             // The launching state can be reused by consecutive launch. Its original association
             // shouldn't be changed by a separated transition.
             if (launchingState.mAssociatedTransitionInfo == null) {
@@ -605,6 +611,42 @@ class ActivityMetricsLogger {
         @Nullable ActivityRecord mLastLoggedActivity;
     }
 
+    private static final class CrossPackageLaunchTracker {
+        // Hardcode the max package size to 50.
+        private static final int PACKAGE_MAX_SIZE = 50;
+        // Maps the package name of the original activity (A) to the package name of the
+        // activity it launched (B), where A != B.
+        private final ArrayMap<String, String> mOriginalToDestinationPackageMap = new ArrayMap<>();
+        /**
+         * Tracking the packaged if the launch represents a new, cross-package transition
+         * that can be coalesced.
+         */
+        void track(@NonNull String startPackage, @NonNull String launchedPackage) {
+            if (!mOriginalToDestinationPackageMap.containsKey(startPackage)
+                    && mOriginalToDestinationPackageMap.size() >= PACKAGE_MAX_SIZE) {
+                mOriginalToDestinationPackageMap.removeAt(0);
+            }
+
+            mOriginalToDestinationPackageMap.put(startPackage, launchedPackage);
+        }
+
+        /**
+         * Retrieves the package name of the destination activity for a given original package.
+         *
+         * @param originalPackageName The package name of the activity that initiated the
+         *         transition.
+         * @return The destination package name, or the original package name if no transition is
+         *         tracked.
+         */
+        String getDestinationPackage(String originalPackageName) {
+            final String destinationPackage = mOriginalToDestinationPackageMap.getOrDefault(
+                    originalPackageName, originalPackageName);
+            Slog.d(TAG,
+                    "getDestinationPackage " + originalPackageName + " -> " + destinationPackage);
+            return destinationPackage;
+        }
+    }
+
     ActivityMetricsLogger(ActivityTaskSupervisor supervisor, Looper looper) {
         mLastLogTimeSecs = SystemClock.elapsedRealtime() / 1000;
         mSupervisor = supervisor;
@@ -723,8 +765,8 @@ class ActivityMetricsLogger {
      * @param launchingState The launching state to track the new or active transition.
      * @param resultCode One of the {@link android.app.ActivityManager}.START_* flags, indicating
      *                   the result of the launch.
-     * @param launchedActivity The activity that is being launched
      * @param newActivityCreated Whether a new activity instance is created.
+     * @param launchedActivity The activity that is being launched
      * @param options The given options of the launching activity.
      */
     void notifyActivityLaunched(@NonNull LaunchingState launchingState, int resultCode,
@@ -777,6 +819,10 @@ class ActivityMetricsLogger {
                     !info.mLastLaunchedActivity.packageName.equals(launchedActivity.packageName);
             // The trace name uses package name so different packages should be separated.
             if (crossPackage) {
+                if (com.android.wm.shell.Flags.resolveTrampolineDestinationPackages()) {
+                    mCrossPackageLaunchTracker.track(info.mStartActivity.packageName,
+                            launchedActivity.packageName);
+                }
                 stopLaunchTrace(info);
             }
 
@@ -840,6 +886,10 @@ class ActivityMetricsLogger {
                 scheduleCheckActivityToBeDrawn(prevInfo.mLastLaunchedActivity, 0 /* delay */);
             }
         }
+    }
+
+    String getDestinationPackage(String originalPackageName) {
+        return mCrossPackageLaunchTracker.getDestinationPackage(originalPackageName);
     }
 
     /**
