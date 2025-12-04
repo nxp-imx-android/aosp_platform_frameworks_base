@@ -22681,9 +22681,9 @@ package android.media {
     method public int getRingerMode();
     method @Deprecated public int getRouting(int);
     method @NonNull public android.media.Spatializer getSpatializer();
-    method @FlaggedApi("android.media.audio.guard_stream_volume_apis") @RequiresPermission(value=android.Manifest.permission.QUERY_AUDIO_VOLUME, conditional=true) public int getStreamMaxVolume(int);
+    method public int getStreamMaxVolume(int);
     method public int getStreamMinVolume(int);
-    method @FlaggedApi("android.media.audio.guard_stream_volume_apis") @RequiresPermission(value=android.Manifest.permission.QUERY_AUDIO_VOLUME, conditional=true) public int getStreamVolume(int);
+    method public int getStreamVolume(int);
     method public float getStreamVolumeDb(int, int, int);
     method @FlaggedApi("android.media.audio.supported_device_types_api") @NonNull public java.util.Set<java.lang.Integer> getSupportedDeviceTypes(int);
     method @NonNull public java.util.List<android.media.AudioMixerAttributes> getSupportedMixerAttributes(@NonNull android.media.AudioDeviceInfo);
