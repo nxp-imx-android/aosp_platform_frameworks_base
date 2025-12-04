@@ -220,13 +220,15 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                     }
                 },
             ),
-    ) { measurables, constraints ->
+    ) { measurables, layoutConstraints ->
         check(measurables.size == 3)
         check(measurables[0].size == 1) { "headers compose only top-level composable" }
         check(measurables[1].size == 1) { "headers should compose only top-level composable" }
         check(measurables[2].size == 1) { "content should compose only top-level composable" }
 
         val cutoutInsets: WindowInsets? = cutoutInsetsProvider()
+        // Don't propagate min constraints to children, to allow them to be smaller if they want to.
+        val constraints = layoutConstraints.copyMaxDimensions()
         val constraintsWithCutout = applyCutout(constraints, cutoutInsets)
         val insetsLeft = cutoutInsets?.getLeft(this, layoutDirection) ?: 0
         val insetsTop = cutoutInsets?.getTop(this) ?: 0

@@ -21,8 +21,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -217,10 +216,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
         rule.setContent {
             TestContentScope {
                 TestLayout(
-                    modifier =
-                        Modifier.testTag(TAG_LAYOUT)
-                            .width(LayoutSize)
-                            .heightIn(min = 0.dp, max = LayoutSize),
+                    modifier = Modifier.testTag(TAG_LAYOUT).size(LayoutSize),
                     statusBarHeader = {
                         Box(Modifier.testTag(TAG_SB).fillMaxWidth().height(StatusBarHeight))
                     },
