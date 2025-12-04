@@ -494,6 +494,14 @@ package android.os {
     method @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ENHANCED_CONFIRMATION_STATES) public java.util.Set<android.content.pm.SignedPackage> getEnhancedConfirmationTrustedPackages();
   }
 
+  @FlaggedApi("android.telecom.flags.telecom_mainline_api") public class TelecomServiceManager {
+    method @NonNull public static android.os.TelecomServiceManager.ServiceRegisterer getTelecomServiceRegisterer();
+  }
+
+  public static final class TelecomServiceManager.ServiceRegisterer {
+    method @Nullable public android.os.IBinder get();
+  }
+
   @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public final class TelephonyServiceManager {
     method @NonNull public android.os.TelephonyServiceManager.ServiceRegisterer getPhoneNumberServiceRegisterer();
   }

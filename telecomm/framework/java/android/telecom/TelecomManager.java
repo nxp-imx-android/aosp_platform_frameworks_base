@@ -45,7 +45,7 @@ import android.os.IBinder;
 import android.os.OutcomeReceiver;
 import android.os.Process;
 import android.os.RemoteException;
-import android.os.ServiceManager;
+import android.os.TelecomServiceManager;
 import android.os.UserHandle;
 import android.telephony.Annotation.CallState;
 import android.telephony.Annotation.TtyMode;
@@ -3469,9 +3469,8 @@ public class TelecomManager {
             return mTelecomServiceOverride;
         }
         if (sTelecomService == null) {
-            ITelecomService temp =
-                    ITelecomService.Stub.asInterface(
-                            ServiceManager.getService(Context.TELECOM_SERVICE));
+            ITelecomService temp = ITelecomService.Stub.asInterface(
+                    TelecomServiceManager.getTelecomServiceRegisterer().get());
             synchronized (CACHE_LOCK) {
                 if (sTelecomService == null && temp != null) {
                     try {

@@ -321,6 +321,7 @@ import com.android.internal.net.INetworkWatchlistManager;
 import com.android.internal.os.IBinaryTransparencyService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.policy.PhoneLayoutInflater;
+import com.android.internal.telecom.TelecomDependencies;
 import com.android.internal.util.Preconditions;
 import com.android.modules.utils.ravenwood.RavenwoodHelper;
 
@@ -830,12 +831,15 @@ public final class SystemServiceRegistry {
                     return new TelephonyRegistryManager(ctx);
                 }});
 
-        registerService(Context.TELECOM_SERVICE, TelecomManager.class,
+        if (!android.telecom.flags.Flags.telecomMainlineApi()) {
+            registerService(Context.TELECOM_SERVICE, TelecomManager.class,
                 new CachedServiceFetcher<TelecomManager>() {
-            @Override
-            public TelecomManager createService(ContextImpl ctx) {
-                return new TelecomManager(ctx.getOuterContext());
-            }});
+                    @Override
+                    public TelecomManager createService(ContextImpl ctx) {
+                        return TelecomDependencies.createTelecomManager(ctx);
+                    }
+                });
+        }
 
         registerService(Context.MMS_SERVICE, MmsManager.class,
                 new CachedServiceFetcher<MmsManager>() {
@@ -2087,6 +2091,10 @@ public final class SystemServiceRegistry {
             NpuManagerFrameworkInitializer.registerServiceWrappers();
             VirtualizationFrameworkInitializer.registerServiceWrappers();
             ConnectivityFrameworkInitializerBaklava.registerServiceWrappers();
+
+            if (android.telecom.flags.Flags.telecomMainlineApi()) {
+                TelecomDependencies.registerServiceWrapper();
+            }
 
             if (com.android.webapp.flags.Flags.enableWebAppService()) {
                 WebAppFrameworkInitializer.registerServiceWrappers();

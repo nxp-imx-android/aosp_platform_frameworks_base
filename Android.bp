@@ -89,6 +89,8 @@ filegroup {
         ":ProxyHandler-aidl-sources",
         ":vcn-utils-platform-sources",
         ":net-utils-framework-common-srcs",
+        // Temporary dependencies during Telecom Mainline launch
+        ":telecom_mainline_deps_srcs",
 
         // AIDL from frameworks/base/native/
         ":platform-compat-native-aidl",
