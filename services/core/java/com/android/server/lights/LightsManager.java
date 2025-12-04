@@ -35,4 +35,11 @@ public abstract class LightsManager {
      */
     @Nullable
     public abstract LogicalLight getLight(int id);
+
+    /**
+     * Set overall lights enable/disable state, when it is necessary to limit
+     * light emission to avoid interfering with use cases such as video recording
+     */
+    public abstract void setEnabledState(boolean enabled);
+
 }
