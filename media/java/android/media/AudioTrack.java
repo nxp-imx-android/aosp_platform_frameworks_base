@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
+import static android.media.audio.Flags.FLAG_CODEC_PROVENANCE_API;
 import static android.media.audio.Flags.FLAG_ROUTED_DEVICE_IDS;
 import static android.media.audio.Flags.FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD;
 
@@ -652,6 +653,12 @@ public class AudioTrack extends PlayerBase
      * When offloaded track: padding for decoder in frames
      */
     private int mOffloadPaddingFrames = 0;
+    /**
+     * Media type for the original codec (Atmos, IAMF), which is preserved
+     * even when the AudioTrack format is PCM. The provenance is used later
+     * for selecting the best spatial renderer.
+     */
+    private String mCodecProvenance = "";
 
     /**
      * The log session id used for metrics.
@@ -832,12 +839,13 @@ public class AudioTrack extends PlayerBase
             int mode, int sessionId)
                     throws IllegalArgumentException {
         this(null /* context */, attributes, format, bufferSizeInBytes, mode, sessionId,
-                false /*offload*/, ENCAPSULATION_MODE_NONE, null /* tunerConfiguration */);
+                false /*offload*/, ENCAPSULATION_MODE_NONE, null /* tunerConfiguration */,
+                null /*codecProvenance*/);
     }
 
     private AudioTrack(@Nullable Context context, AudioAttributes attributes, AudioFormat format,
             int bufferSizeInBytes, int mode, int sessionId, boolean offload, int encapsulationMode,
-            @Nullable TunerConfiguration tunerConfiguration)
+            @Nullable TunerConfiguration tunerConfiguration, @Nullable String codecProvenance)
                     throws IllegalArgumentException {
         super(attributes, AudioPlaybackConfiguration.PLAYER_TYPE_JAM_AUDIOTRACK);
         // mState already == STATE_UNINITIALIZED
@@ -904,13 +912,20 @@ public class AudioTrack extends PlayerBase
         AttributionSource attributionSource = context == null
                 ? AttributionSource.myAttributionSource() : context.getAttributionSource();
 
+        if (codecProvenance == null) {
+            codecProvenance = "";
+        }
+        validateCodecProvenance(codecProvenance);
+        mCodecProvenance = codecProvenance;
+
         // native initialization
         try (ScopedParcelState attributionSourceState = attributionSource.asScopedParcelState()) {
             int initResult = native_setup(new WeakReference<AudioTrack>(this), mAttributes,
                     sampleRate, mChannelMask, mChannelIndexMask, mAudioFormat,
                     mNativeBufferSizeInBytes, mDataLoadMode, session,
                     attributionSourceState.getParcel(), 0 /*nativeTrackInJavaObj*/, offload,
-                    encapsulationMode, tunerConfiguration, getCurrentOpPackageName());
+                    encapsulationMode, tunerConfiguration, getCurrentOpPackageName(),
+                    mCodecProvenance);
             if (initResult != SUCCESS) {
                 loge("Error code " + initResult + " when initializing AudioTrack.");
                 return; // with mState == STATE_UNINITIALIZED
@@ -1002,7 +1017,7 @@ public class AudioTrack extends PlayerBase
                         false /*offload*/,
                         ENCAPSULATION_MODE_NONE,
                         null /* tunerConfiguration */,
-                        "" /* opPackagename */);
+                        "" /* opPackagename */, "" /* codecProvenance */);
                 if (initResult != SUCCESS) {
                     loge("Error code " + initResult + " when initializing AudioTrack.");
                     return; // with mState == STATE_UNINITIALIZED
@@ -1131,6 +1146,7 @@ public class AudioTrack extends PlayerBase
         private boolean mOffload = false;
         private TunerConfiguration mTunerConfiguration;
         private int mCallRedirectionMode = AudioManager.CALL_REDIRECT_NONE;
+        private String mCodecMediaType;
 
         /**
          * Constructs a new Builder with the default values as described above.
@@ -1372,6 +1388,28 @@ public class AudioTrack extends PlayerBase
             return this;
         }
 
+       /**
+        * Sets the source codec of the audio data using a media type.
+        * This information may be used by the audio framework and the audio
+        * HAL for selecting the best spatial renderer. Used when the format
+        * of the audio data used for the {@link AudioTrack} is different from
+        * the original codec.
+        *
+        * The values for codec media types should be provided using corresponding constants
+        * from the {@link MediaFormat} class.
+        *
+        * @param codecMediaType a non-null string indicating codec type using media string
+        * @return the same Builder instance
+        * @throws IllegalArgumentException if {@code codecMediaType} is null or is invalid media
+        *         type string
+        */
+        @FlaggedApi(FLAG_CODEC_PROVENANCE_API)
+        public @NonNull Builder setCodecProvenance(@NonNull String codecMediaType) {
+            validateCodecProvenance(codecMediaType);
+            mCodecMediaType = codecMediaType;
+            return this;
+        }
+
         private @NonNull AudioTrack buildCallInjectionTrack() {
             AudioMixingRule audioMixingRule = new AudioMixingRule.Builder()
                     .addMixRule(AudioMixingRule.RULE_MATCH_ATTRIBUTE_CAPTURE_PRESET,
@@ -1483,7 +1521,7 @@ public class AudioTrack extends PlayerBase
             try {
                 final AudioTrack track = new AudioTrack(
                         mContext, mAttributes, mFormat, mBufferSizeInBytes, mMode, mSessionId,
-                        mOffload, mEncapsulationMode, mTunerConfiguration);
+                        mOffload, mEncapsulationMode, mTunerConfiguration, mCodecMediaType);
                 if (track.getState() == STATE_UNINITIALIZED) {
                     // release is not necessary
                     throw new UnsupportedOperationException("Cannot create AudioTrack");
@@ -2237,6 +2275,28 @@ public class AudioTrack extends PlayerBase
             builder.setChannelIndexMask(mChannelIndexMask);
         }
         return builder.build();
+    }
+
+    /**
+     * Returns the codec provenance of the <code>AudioTrack</code> specified at
+     * the time of configuration.
+     * @return a media type of the audio codec or an empty string if the codec
+     *         provenance is not set.
+     */
+    @FlaggedApi(FLAG_CODEC_PROVENANCE_API)
+    public @NonNull String getCodecProvenance() {
+        return mCodecProvenance;
+    }
+
+    private static void validateCodecProvenance(String codecMediaType) {
+        final String prefixAudio = "audio/";
+        if (codecMediaType != null && (codecMediaType.isEmpty()
+                        || (codecMediaType.startsWith(prefixAudio)
+                                && codecMediaType.length() > prefixAudio.length()))) {
+            return;
+        }
+        throw new IllegalArgumentException("Invalid codec provenance media type: "
+                + codecMediaType);
     }
 
     /**
@@ -4565,7 +4625,8 @@ public class AudioTrack extends PlayerBase
             int[] sampleRate, int channelMask, int channelIndexMask, int audioFormat,
             int buffSizeInBytes, int mode, int[] sessionId, @NonNull Parcel attributionSource,
             long nativeAudioTrack, boolean offload, int encapsulationMode,
-            Object tunerConfiguration, @NonNull String opPackageName);
+            Object tunerConfiguration, @NonNull String opPackageName,
+            @NonNull String codecProvenance);
 
     private native final void native_finalize();
 

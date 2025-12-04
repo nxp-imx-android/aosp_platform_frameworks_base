@@ -23180,6 +23180,7 @@ package android.media {
     method @IntRange(from=0) public int getBufferSizeInFrames();
     method public int getChannelConfiguration();
     method public int getChannelCount();
+    method @FlaggedApi("android.media.audio.codec_provenance_api") @NonNull public String getCodecProvenance();
     method public int getDualMonoMode();
     method @NonNull public android.media.AudioFormat getFormat();
     method @NonNull public android.media.metrics.LogSessionId getLogSessionId();
@@ -23287,6 +23288,7 @@ package android.media {
     method @NonNull public android.media.AudioTrack.Builder setAudioAttributes(@NonNull android.media.AudioAttributes) throws java.lang.IllegalArgumentException;
     method @NonNull public android.media.AudioTrack.Builder setAudioFormat(@NonNull android.media.AudioFormat) throws java.lang.IllegalArgumentException;
     method @NonNull public android.media.AudioTrack.Builder setBufferSizeInBytes(@IntRange(from=0) int) throws java.lang.IllegalArgumentException;
+    method @FlaggedApi("android.media.audio.codec_provenance_api") @NonNull public android.media.AudioTrack.Builder setCodecProvenance(@NonNull String);
     method @NonNull public android.media.AudioTrack.Builder setContext(@NonNull android.content.Context);
     method @NonNull public android.media.AudioTrack.Builder setEncapsulationMode(int);
     method @NonNull public android.media.AudioTrack.Builder setOffloadedPlayback(boolean);

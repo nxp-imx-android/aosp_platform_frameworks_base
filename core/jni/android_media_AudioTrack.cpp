@@ -248,7 +248,7 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
                                            jintArray jSession, jobject jAttributionSource,
                                            jlong nativeAudioTrack, jboolean offload,
                                            jint encapsulationMode, jobject tunerConfiguration,
-                                           jstring opPackageName) {
+                                           jstring opPackageName, jstring codecProvenance) {
     ALOGV("sampleRates=%p, channel mask=%x, index mask=%x, audioFormat(Java)=%d, buffSize=%d,"
           " nativeAudioTrack=0x%" PRIX64 ", offload=%d encapsulationMode=%d tuner=%p",
           jSampleRate, channelPositionMask, channelIndexMask, audioFormat, buffSizeInBytes,
@@ -327,6 +327,7 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
 
         // create the native AudioTrack object
         ScopedUtfChars opPackageNameStr(env, opPackageName);
+        ScopedUtfChars codecProvenanceStr(env, codecProvenance);
 
         android::content::AttributionSourceState attributionSource;
         attributionSource.readFromParcel(parcelForJavaObject(env, jAttributionSource));
@@ -386,7 +387,9 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
                                           : AudioTrack::TRANSFER_SYNC,
                                   (offload || encapsulationMode) ? &offloadInfo : NULL,
                                   attributionSource, // Passed from Java
-                                  paa.get());
+                                  paa.get(),
+                                  codecProvenanceStr.c_str() != nullptr ? codecProvenanceStr.c_str()
+                                                                        : "");
             break;
 
         case MODE_STATIC:
@@ -1473,7 +1476,7 @@ static const JNINativeMethod gMethods[] = {
         {"native_flush", "()V", (void *)android_media_AudioTrack_flush},
         {"native_setup",
          "(Ljava/lang/Object;Ljava/lang/Object;[IIIIII[ILandroid/os/Parcel;"
-         "JZILjava/lang/Object;Ljava/lang/String;)I",
+         "JZILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;)I",
          (void *)android_media_AudioTrack_setup},
         {"native_finalize", "()V", (void *)android_media_AudioTrack_finalize},
         {"native_release", "()V", (void *)android_media_AudioTrack_release},
