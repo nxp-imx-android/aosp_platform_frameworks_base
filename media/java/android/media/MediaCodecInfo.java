@@ -3562,8 +3562,8 @@ public final class MediaCodecInfo {
                         mBlockCountRange.getLower() * (long)mFrameRateRange.getLower(),
                         mBlockCountRange.getUpper() * (long)mFrameRateRange.getUpper());
                 mFrameRateRange = mFrameRateRange.intersect(
-                        (int)(mBlocksPerSecondRange.getLower()
-                                / mBlockCountRange.getUpper()),
+                        (int)Math.ceil(mBlocksPerSecondRange.getLower()
+                                / (double)mBlockCountRange.getUpper()),
                         (int)(mBlocksPerSecondRange.getUpper()
                                 / (double)mBlockCountRange.getLower()));
             }
