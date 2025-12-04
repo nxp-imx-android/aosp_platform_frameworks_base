@@ -26,14 +26,17 @@ import android.hardware.usb.UsbAccessory
 import android.hardware.usb.UsbConfiguration
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.View
 import android.view.WindowManager
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.intercepting.SingleActivityFactory
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.internal.app.AlertController
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -219,9 +222,22 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         mAlertParams = activityRule.activity.getAlertParams()
     }
 
-    @Test
-    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
-    fun testHideNonSystemOverlay() {
+    protected fun checkNewUiIsNotInitialized() {
+        if (mAlertParams.mView != null) {
+            assertThat(mAlertParams.mView.findViewById<View>(R.id.usb_device_dialog)).isNull()
+        }
+    }
+
+    protected fun checkOldUiIsNotInitialized() {
+        assertThat(mAlertParams.mTitle).isNull()
+        assertThat(mAlertParams.mMessage).isNull()
+        assertThat(mAlertParams.mPositiveButtonText).isNull()
+        assertThat(mAlertParams.mNegativeButtonText).isNull()
+        assertThat(mAlertParams.mPositiveButtonListener).isNull()
+        assertThat(mAlertParams.mNegativeButtonListener).isNull()
+    }
+
+    private fun verifyHideNonSystemOverlay() {
         deviceConfiguration(isUsbDevice = false)
         assertThat(
                 activityRule.activity.window.attributes.privateFlags and
@@ -231,13 +247,14 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     }
 
     @Test
-    @EnableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    @DisableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testHideNonSystemOverlay() {
+        verifyHideNonSystemOverlay()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
     fun testHideNonSystemOverlayNewDialog() {
-        deviceConfiguration(isUsbDevice = false)
-        assertThat(
-                activityRule.activity.window.attributes.privateFlags and
-                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS
-            )
-            .isEqualTo(WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS)
+        verifyHideNonSystemOverlay()
     }
 }
