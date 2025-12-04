@@ -575,9 +575,19 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     private void enforceAdminUser(UserHandle user) {
         UserInfo info = mUserManager.getUserInfo(user.getIdentifier());
-        if (!info.isAdmin()) {
+        if (!info.isAdmin() && !treatAsAdminAnyway(user)) {
             throw new SecurityException("Only an admin user can manage advanced protection mode");
         }
+    }
+
+    private boolean treatAsAdminAnyway(UserHandle user) {
+        // TODO(b/455113492): On most devices, the SYSTEM is already an Admin. But for HSUM devices,
+        //  the HSU is no longer an Admin. Currently, that breaks stuff on HSUM, so - for now -
+        //  treat the SYSTEM user as if it were an Admin regardless in these otherwise-broken areas.
+        //  However, this Admin requirement is likely inappropriate anyway and should be revisited.
+        return android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()
+                && user.isSystem();
     }
 
     /**
