@@ -51,9 +51,7 @@ abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable
             junit3Builder(),
             new AndroidJUnit4Builder(0));
 
-    boolean mRealRunnerTakesRunnerBuilder = false;
-
-    class RavenwoodAnnotatedBuilder extends RunnerBuilder {
+    static class RavenwoodAnnotatedBuilder extends RunnerBuilder {
         @Override
         public Runner runnerForClass(Class<?> testClass) throws Exception {
             final InnerRunner innerRunnerAnnotation = testClass.getAnnotation(InnerRunner.class);
@@ -66,10 +64,8 @@ abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable
                     try {
                         return clazz.getConstructor(Class.class).newInstance(testClass);
                     } catch (NoSuchMethodException ignored) {
-                        var constructor = clazz.getConstructor(Class.class, RunnerBuilder.class);
-                        mRealRunnerTakesRunnerBuilder = true;
-                        return constructor.newInstance(testClass,
-                                new AllDefaultPossibilitiesBuilder());
+                        return clazz.getConstructor(Class.class, RunnerBuilder.class)
+                                .newInstance(testClass, new AllDefaultPossibilitiesBuilder());
                     }
                 } catch (Exception e) {
                     throw logAndFail("Failed to instantiate " + clazz, e);

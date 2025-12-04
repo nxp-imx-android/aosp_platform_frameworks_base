@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodErrorHandler;
 import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
 import android.platform.test.ravenwood.RavenwoodUtils;
@@ -36,7 +35,6 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-@NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     /**
      * Test around exceptions on handler threads.

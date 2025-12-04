@@ -122,9 +122,6 @@ public final class RavenwoodEnvironment {
     @NonNull
     private final File mArtifactsDir;
 
-    @NonNull
-    private final Thread mTestThread;
-
     @GuardedBy("mLock")
     private final Map<String, File> mAppDataDirs = new HashMap<>();
 
@@ -144,8 +141,7 @@ public final class RavenwoodEnvironment {
             @NonNull String instrumentationClass,
             @NonNull String moduleName,
             @Nullable String resourceApk,
-            @Nullable String targetResourceApk,
-            @NonNull Thread testThread
+            @Nullable String targetResourceApk
     ) throws IOException {
         mUid = uid;
         mPid = pid;
@@ -156,7 +152,6 @@ public final class RavenwoodEnvironment {
         mModuleName = Objects.requireNonNull(moduleName);
         mResourceApk = resourceApk;
         mTargetResourceApk = targetResourceApk;
-        mTestThread = testThread;
 
         mRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
 
@@ -205,8 +200,7 @@ public final class RavenwoodEnvironment {
                 instrumentationClass,
                 moduleName,
                 resourceApk,
-                targetResourceApk,
-                Thread.currentThread() // Test thread
+                targetResourceApk
         );
         if (!sInstance.compareAndSet(null, instance)) {
             throw new RuntimeException("RavenwoodEnvironment already initialized!");
@@ -269,11 +263,6 @@ public final class RavenwoodEnvironment {
     @NonNull
     public File getArtifactsDir() {
         return mArtifactsDir;
-    }
-
-    @NonNull
-    public Thread getTestThread() {
-        return mTestThread;
     }
 
     public long getDefaultCallingIdentity() {

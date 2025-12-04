@@ -21,6 +21,9 @@ import static androidx.test.internal.util.AndroidRunnerBuilderUtil.isJUnit3Test;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.ensureIsPublicVoidMethod;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
@@ -30,6 +33,8 @@ import android.util.Log;
 import androidx.test.internal.runner.EmptyTestRunner;
 import androidx.test.internal.runner.junit3.JUnit38ClassRunner;
 
+import com.android.internal.annotations.GuardedBy;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -38,7 +43,6 @@ import org.junit.runner.manipulation.Filterable;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.Suite;
 import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
@@ -49,6 +53,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -67,32 +73,28 @@ import java.util.function.BiConsumer;
  * - Handle {@link android.platform.test.annotations.DisabledOnRavenwood}.
  */
 public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase {
-    /** Scope of a hook. */
-    public enum Scope {
-        Class,
-        Instance,
-    }
-
-    /** Order of a hook. */
-    public enum Order {
-        Outer,
-        Inner,
-    }
-
-    // A rule that does nothing
-    private static final TestRule sNoopRule = (base, desc) -> base;
 
     // The following rule will be injected to tests by the Ravenizer tool.
     public static final TestRule sImplicitInstOuterRule = new MethodOuterHook();
 
-    /** Keeps track of the runner on the current thread. */
-    private static final ThreadLocal<RavenwoodAwareTestRunner> sCurrentRunner = new ThreadLocal<>();
+    /** The test thread that drives the test. */
+    public static final Thread sTestThread = Thread.currentThread();
+
+    /** Keeps track of runners. */
+    @GuardedBy("sActiveRunners")
+    private static final Deque<RavenwoodAwareTestRunner> sActiveRunners = new ArrayDeque<>();
+
+    static RavenwoodAwareTestRunner getCurrentRunnerNoCheck() {
+        synchronized (sActiveRunners) {
+            return sActiveRunners.peekLast();
+        }
+    }
 
     static RavenwoodAwareTestRunner getCurrentRunner() {
-        var runner = sCurrentRunner.get();
-        if (runner == null) {
-            throw new RuntimeException("Current test runner not set!");
-        }
+        assertEquals("Current test runner can only be obtained on the test thread!",
+                sTestThread, Thread.currentThread());
+        var runner = getCurrentRunnerNoCheck();
+        assertNotNull("Current test runner not set!", runner);
         return runner;
     }
 
@@ -104,7 +106,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Stores internal states / methods associated with this runner that's only needed in
      * junit-impl.
      */
-    final RavenwoodRunnerState mState = new RavenwoodRunnerState(this);
+    final RavenwoodRunnerState mState = new RavenwoodRunnerState();
 
     /**
      * Constructor.
@@ -145,6 +147,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
                 }
             }
 
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.v(TAG, "enterTestRunner: " + this);
+            }
             mState.enterTestRunner();
         } catch (Throwable throwable) {
             // If any exception occurs during the real runner instantiation, delegate to
@@ -218,32 +223,33 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             dumpDescription(description);
         }
 
-        // TODO(b/365976974): handle nested classes better
-        final boolean skipRunnerHook =
-                mRealRunnerTakesRunnerBuilder && mRealRunner instanceof Suite;
-
-        sCurrentRunner.set(this);
+        synchronized (sActiveRunners) {
+            sActiveRunners.offerLast(this);
+        }
         try {
-            if (!skipRunnerHook) {
-                try {
-                    mState.enterTestClass();
-                } catch (Throwable th) {
-                    notifier.reportBeforeTestFailure(description, th);
-                    return;
-                }
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.v(TAG, "enterTestClass: " + mTestJavaClass.getName());
+            }
+            try {
+                mState.enterTestClass();
+            } catch (Throwable th) {
+                notifier.reportBeforeTestFailure(description, th);
+                return;
             }
 
             // Delegate to the inner runner.
             mRealRunner.run(notifier);
         } finally {
-            sCurrentRunner.remove();
-
-            if (!skipRunnerHook) {
-                try {
-                    mState.exitTestClass();
-                } catch (Throwable th) {
-                    notifier.reportAfterTestFailure(th);
-                }
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.v(TAG, "exitTestClass: " + mTestJavaClass.getName());
+            }
+            synchronized (sActiveRunners) {
+                assertEquals(this, sActiveRunners.pollLast());
+            }
+            try {
+                mState.exitTestClass();
+            } catch (Throwable th) {
+                notifier.reportAfterTestFailure(th);
             }
         }
     }
