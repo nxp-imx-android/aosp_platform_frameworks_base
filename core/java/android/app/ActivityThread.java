@@ -4697,7 +4697,8 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
-        if (android.tracing.Flags.surfaceControlRegistryProtolog()) {
+        if (android.tracing.Flags.surfaceControlRegistryProtolog()
+                || android.tracing.Flags.imetrackerProtolog()) {
             if (android.tracing.Flags.protologAsyncInit()) {
                 ProtoLog.initAsync();
             } else {
