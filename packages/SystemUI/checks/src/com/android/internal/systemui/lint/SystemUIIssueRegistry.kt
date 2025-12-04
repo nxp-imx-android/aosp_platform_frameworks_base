@@ -56,6 +56,8 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 SoftwareBitmapDetector.ISSUE,
                 StaticSettingsProviderDetector.ISSUE,
                 TestFunctionNameViolationDetector.ISSUE,
+                UseNoMetricInFunctionalDetector.ISSUE_BEFORE,
+                UseNoMetricInFunctionalDetector.ISSUE_AFTER,
             )
 
     override val api: Int
