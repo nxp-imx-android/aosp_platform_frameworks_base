@@ -30,7 +30,6 @@ import com.android.app.displaylib.ExternalDisplayConnectionType.MIRROR
 import com.android.app.displaylib.ExternalDisplayConnectionType.NOT_SPECIFIED
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
-import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -115,6 +114,7 @@ constructor(
 
     private fun PendingDisplay.showConnectionDialog(
         showConcurrentDisplayInfo: Boolean,
+        isDesktopModeSupported: Boolean,
         isInKioskMode: Boolean,
     ) {
         var saveChoice = false
@@ -131,6 +131,7 @@ constructor(
                 },
                 insetsProvider = { getInsetsOf(context, displayCutout() or navigationBars()) },
                 showConcurrentDisplayInfo = showConcurrentDisplayInfo,
+                isDesktopModeSupported = isDesktopModeSupported,
                 isInKioskMode = isInKioskMode,
             )
 
@@ -157,6 +158,7 @@ constructor(
                 pendingDisplay.showConnectionDialog(
                     concurrentDisplaysInProgress,
                     isInKioskMode = true,
+                    isDesktopModeSupported = desktopState.canEnterDesktopMode,
                 )
             }
             isInExtendedMode -> {
@@ -171,6 +173,7 @@ constructor(
                         pendingDisplay.showConnectionDialog(
                             concurrentDisplaysInProgress,
                             isInKioskMode = false,
+                            isDesktopModeSupported = desktopState.canEnterDesktopMode,
                         )
                 }
             }
