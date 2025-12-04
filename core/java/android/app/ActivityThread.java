@@ -4737,7 +4737,7 @@ public final class ActivityThread extends ClientTransactionHandler
             // Size configurations of a destroyed activity is meaningless.
             return;
         }
-        Configuration[] configurations = r.activity.getResources().getSizeConfigurations();
+        Configuration[] configurations = r.activity.getResources().getResourceConfigurations();
         if (configurations == null) {
             return;
         }

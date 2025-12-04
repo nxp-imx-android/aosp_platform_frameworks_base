@@ -2266,16 +2266,6 @@ public class Resources {
         return mResourcesImpl.getConfiguration();
     }
 
-    /** @hide */
-    public Configuration[] getSizeConfigurations() {
-        return mResourcesImpl.getSizeConfigurations();
-    }
-
-    /** @hide */
-    public Configuration[] getSizeAndUiModeConfigurations() {
-        return mResourcesImpl.getSizeAndUiModeConfigurations();
-    }
-
     /**
      * Return a subset of the fields of the resource configurations, including
      * smallestScreenWidthDp, screenWidthDp, screenHeightDp, screenLayout, uiMode, keyboard,

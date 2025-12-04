@@ -272,14 +272,6 @@ public class ResourcesImpl {
         return mConfiguration;
     }
 
-    Configuration[] getSizeConfigurations() {
-        return mAssets.getSizeConfigurations();
-    }
-
-    Configuration[] getSizeAndUiModeConfigurations() {
-        return mAssets.getSizeAndUiModeConfigurations();
-    }
-
     Configuration[] getResourceConfigurations() {
         return mAssets.getResourceConfigurations();
     }

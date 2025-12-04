@@ -8684,7 +8684,7 @@ final class ActivityRecord extends WindowToken {
             Resources packageResources = mAtmService.mContext.createPackageContextAsUser(
                     packageName, 0, UserHandle.of(mUserId)).getResources();
             for (Configuration sizeConfiguration :
-                    packageResources.getSizeAndUiModeConfigurations()) {
+                    packageResources.getResourceConfigurations()) {
                 if (isInDeskUiMode(sizeConfiguration)) {
                     mHasDeskResources = true;
                     break;
