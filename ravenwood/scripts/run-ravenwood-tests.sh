@@ -79,7 +79,7 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rDRhXc" opt; do
+while getopts "sx:f:dtbLa:rDRhXcT" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -99,13 +99,16 @@ case "$opt" in
         run export RAVENWOOD_LOG_OUT=-
         disable_tf_rolling_log
         ;;
-    a) # atest options (e.g. "-t")
+    T) # Disable live logcat
+        run unset RAVENWOOD_LOG_OUT
+        ;;
+    a) # Set atest options (e.g. "-t")
         atest_opts="$OPTARG"
         ;;
-    L) # exclude large tests
+    L) # Exclude large tests
         exclude_large_tests=1
         ;;
-    r) # only run tests under frameworks/base/ravenwood/
+    r) # Only run tests under frameworks/base/ravenwood/
         list_options="$list_options -r"
         ;;
     D) # Only run device tests under frameworks/base/ravenwood/
@@ -124,7 +127,7 @@ case "$opt" in
         ;;
     c) # Clean output -- don't show disabled tests in atest output
         run export RAVENWOOD_HIDE_DISABLED_TESTS=1
-	;;
+        ;;
     h) # Show help
         show_help
         exit 0
