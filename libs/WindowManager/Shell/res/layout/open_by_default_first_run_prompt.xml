@@ -51,7 +51,7 @@
                     android:layout_height="32dp"
                     android:layout_gravity="center_horizontal"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/desktop_mode_ic_handle_menu_open_by_default_settings"
+                    android:src="@drawable/link_24px"
                     android:tint="?android:attr/colorAccent"
                     android:scaleType="fitCenter"/>
 
