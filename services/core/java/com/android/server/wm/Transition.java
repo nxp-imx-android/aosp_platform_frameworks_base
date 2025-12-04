@@ -712,6 +712,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /**
+     * @return true if the existence of the given container has changed in this transition.
+     */
+    boolean getExistenceChanged(@NonNull WindowContainer wc) {
+        final ChangeInfo info = mChanges.get(wc);
+        return info != null && info.mExistenceChanged;
+    }
+
+    /**
      * Sets the FLAG_TRANSIENT_LAUNCH flag to all changes associated with the given activity
      * container and parent tasks. This is mainly used to force a change when keyguard is occluded.
      */
