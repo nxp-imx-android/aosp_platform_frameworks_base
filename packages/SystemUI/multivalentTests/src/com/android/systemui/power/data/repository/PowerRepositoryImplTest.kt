@@ -20,13 +20,14 @@ package com.android.systemui.power.data.repository
 import android.content.Intent
 import android.os.PowerManager
 import android.os.powerManager
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.userActivityNotifier
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -44,10 +45,16 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class PowerRepositoryImplTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class PowerRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private val kosmos = testKosmosNew()
 
     private var isInteractive = true
@@ -62,6 +69,7 @@ class PowerRepositoryImplTest : SysuiTestCase() {
             PowerRepositoryImpl(
                 manager,
                 context.applicationContext,
+                kosmos.testScope.backgroundScope,
                 kosmos.testScope.backgroundScope,
                 kosmos.fakeSystemClock,
                 kosmos.broadcastDispatcher,
@@ -206,5 +214,13 @@ class PowerRepositoryImplTest : SysuiTestCase() {
 
     private fun Kosmos.verifyRegistered() {
         assertThat(broadcastDispatcher.numReceiversRegistered).isEqualTo(1)
+    }
+
+    private companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+        }
     }
 }
