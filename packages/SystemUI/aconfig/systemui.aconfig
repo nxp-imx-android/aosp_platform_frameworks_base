@@ -236,16 +236,6 @@ flag {
 }
 
 flag {
-  name: "communal_widget_trampoline_fix"
-  namespace: "systemui"
-  description: "fixes activity starts caused by non-activity trampolines from widgets."
-  bug: "350468769"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "compose_bouncer"
     namespace: "systemui"
     description: "Use the new compose bouncer in SystemUI"
