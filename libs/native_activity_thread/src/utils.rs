@@ -97,8 +97,23 @@ bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct RuntimeFlags: u32 {
         const DEBUG_ENABLE_JDWP = 1;
+        const DEBUG_ENABLE_CHECKJNI = 1 << 1;
+        const DEBUG_ENABLE_ASSERT = 1 << 2;
+        const DEBUG_ENABLE_SAFEMODE = 1 << 3;
+        const DEBUG_ENABLE_JNI_LOGGING = 1 << 4;
+        const DEBUG_GENERATE_DEBUG_INFO = 1 << 5;
+        const DEBUG_ALWAYS_JIT = 1 << 6;
+        const DEBUG_NATIVE_DEBUGGABLE = 1 << 7;
+        const DEBUG_JAVA_DEBUGGABLE = 1 << 8;
+        const DISABLE_VERIFIER = 1 << 9;
+        const ONLY_USE_SYSTEM_OAT_FILES = 1 << 10;
+        const DEBUG_GENERATE_MINI_DEBUG_INFO = 1 << 11;
+        const API_ENFORCEMENT_POLICY_MASK = (1 << 12) | (1 << 13);
         const PROFILE_SYSTEM_SERVER = 1 << 14;
         const PROFILE_FROM_SHELL = 1 << 15;
+        const USE_APP_IMAGE_STARTUP_CACHE = 1 << 16;
+        const DEBUG_IGNORE_APP_SIGNAL_HANDLER = 1 << 17;
+        const DISABLE_TEST_API_ENFORCEMENT_POLICY = 1 << 18;
         const MEMORY_TAG_LEVEL_MASK = (1 << 19) | (1 << 20);
         const MEMORY_TAG_LEVEL_TBI = 1 << 19;
         const MEMORY_TAG_LEVEL_ASYNC = 2 << 19;
@@ -143,13 +158,9 @@ impl RuntimeFlags {
     }
 }
 
-pub fn apply_runtime_flags(runtime_flags: u32) {
-    let flags = match RuntimeFlags::from_bits(runtime_flags) {
-        Some(flags) => flags,
-        None => {
-            log::warn!("runtime_flags doesn't have a valid representation: {}", runtime_flags);
-            return;
-        }
+pub fn apply_runtime_flags(runtime_flags: u32) -> Result<()> {
+    let Some(flags) = RuntimeFlags::from_bits(runtime_flags) else {
+        bail!("runtime_flags doesn't have a valid representation: {:#x}", runtime_flags);
     };
 
     // Set process properties to enable debugging if required.
@@ -190,6 +201,8 @@ pub fn apply_runtime_flags(runtime_flags: u32) {
         // of the callback.
         unsafe { dl_iterate_phdr(Some(disable_execute_only), std::ptr::null_mut()) };
     }
+
+    Ok(())
 }
 
 // Enum corresponding to SUID_DUMP_* defined in linux/sched/coredump.h.
