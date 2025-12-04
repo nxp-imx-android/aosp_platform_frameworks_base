@@ -684,6 +684,8 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_DOCUMENTS"/>
         <!-- Permission required for CTS test - StatusBarManagerTest -->
         <permission name="android.permission.SHOW_POWER_MENU_PRIVILEGED" />
+        <!-- Permission required for Health Connect CTS tests -->
+        <permission name="android.permission.PROVIDE_HEALTH_CONNECT_DEVICE_DATA" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
