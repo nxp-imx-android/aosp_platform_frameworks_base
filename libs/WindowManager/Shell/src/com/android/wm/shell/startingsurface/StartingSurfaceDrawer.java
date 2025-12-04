@@ -73,7 +73,8 @@ public class StartingSurfaceDrawer {
      * @param splashScreenExecutor The thread used to control add and remove starting window.
      */
     public StartingSurfaceDrawer(Context context, ShellExecutor splashScreenExecutor,
-            IconProvider iconProvider, TransactionPool pool, long minimumIconShowDuration) {
+            IconProvider iconProvider, TransactionPool pool, long minimumIconShowDuration,
+            ShellExecutor bgExecutor) {
         mSplashScreenExecutor = splashScreenExecutor;
         final DisplayManager displayManager = context.getSystemService(DisplayManager.class);
         mSplashscreenContentDrawer = new SplashscreenContentDrawer(context, iconProvider, pool,
@@ -82,7 +83,7 @@ public class StartingSurfaceDrawer {
 
         mSplashscreenWindowCreator = new SplashscreenWindowCreator(mSplashscreenContentDrawer,
                 context, splashScreenExecutor, displayManager, mWindowRecords);
-        mSnapshotWindowCreator = new SnapshotWindowCreator(splashScreenExecutor,
+        mSnapshotWindowCreator = new SnapshotWindowCreator(splashScreenExecutor, bgExecutor,
                 mWindowRecords);
         mWindowlessSplashWindowCreator = new WindowlessSplashWindowCreator(
                 mSplashscreenContentDrawer, context, splashScreenExecutor, displayManager,
