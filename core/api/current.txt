@@ -263,8 +263,6 @@ package android {
     field public static final String QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES";
     field @FlaggedApi("android.media.audio.guard_stream_volume_apis") public static final String QUERY_AUDIO_VOLUME = "android.permission.QUERY_AUDIO_VOLUME";
     field @FlaggedApi("android.view.inputmethod.guard_input_method_list_apis") public static final String QUERY_INPUT_METHOD = "android.permission.QUERY_INPUT_METHOD";
-    field @FlaggedApi("com.android.internal.telephony.flags.guard_identifier_and_network_country_apis") public static final String QUERY_NETWORK_COUNTRY = "android.permission.QUERY_NETWORK_COUNTRY";
-    field @FlaggedApi("com.android.internal.telephony.flags.guard_identifier_and_network_country_apis") public static final String QUERY_NETWORK_IDENTIFIERS = "android.permission.QUERY_NETWORK_IDENTIFIERS";
     field @FlaggedApi("android.permission.flags.ranging_permission_enabled") public static final String RANGING = "android.permission.RANGING";
     field public static final String READ_ASSISTANT_APP_SEARCH_DATA = "android.permission.READ_ASSISTANT_APP_SEARCH_DATA";
     field @FlaggedApi("android.permission.flags.restrict_assist_structure_screen_content_enabled") public static final String READ_ASSIST_STRUCTURE_SCREEN_CONTENT = "android.permission.READ_ASSIST_STRUCTURE_SCREEN_CONTENT";

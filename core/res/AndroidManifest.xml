@@ -9864,30 +9864,6 @@
         android:featureFlag="com.android.npumanager.npumanager_enabled" />
 
 
-    <!-- @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-        Purpose guarded permission to query subscriber ID API.
-        {@link android.telephony.TelephonyManager}
-        <p>Protection level: normal
-    -->
-    <permission android:name="android.permission.QUERY_NETWORK_IDENTIFIERS"
-            android:protectionLevel="normal"
-            android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurposeTargetSdkVersion="37">
-            <valid-purpose android:name="notForIdentification" />
-    </permission>
-
-    <!-- @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-            Purpose guarded permission to query network country ISO API.
-            {@link android.telephony.TelephonyManager}
-            <p>Protection level: normal
-    -->
-    <permission android:name="android.permission.QUERY_NETWORK_COUNTRY"
-            android:protectionLevel="normal"
-            android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurposeTargetSdkVersion="37">
-            <valid-purpose android:name="notForIdentification" />
-    </permission>
-
     <!--
     Permission needed to request to show the Power Menu.
     <p>Granted to the current holder of the ASSISTANT role.
