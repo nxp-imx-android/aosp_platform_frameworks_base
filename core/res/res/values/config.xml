@@ -3349,7 +3349,9 @@
          ignored, since an initial Admin MainUser will necessarily be created regardless. -->
     <bool name="config_createInitialAdminUserOnHsum">true</bool>
 
-    <!-- Whether the system should "designate" the main user on boot:
+    <!-- Experimental development-only config specifying whether the system should "designate" the
+         main user on boot.
+         TODO(b/428080837): Remove this config now that it is no longer needed.
          - If it's true and the device doesn't have a main user (meaning it's the first boot or it
            migrated from false to true), then the system will either promote the first admin
            (migration) to be the main user, or create a main user (first boot).
@@ -3359,7 +3361,7 @@
          Notice that if config_isMainUserPermanentAdmin is true, this config is
          ignored (i.e, the system will act as it was true) as main user is required in this case.
     -->
-    <bool name="config_designateMainUser">false</bool>
+    <bool name="config_experimental_designateMainUser">false</bool>
 
     <!-- Whether switching to the headless system user is allowed.
          If allowed, the headless system user can run in the foreground even though it is not a

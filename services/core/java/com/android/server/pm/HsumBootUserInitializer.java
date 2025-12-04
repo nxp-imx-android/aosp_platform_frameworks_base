@@ -416,8 +416,8 @@ public final class HsumBootUserInitializer {
 
         pw.print("Designate main user on boot: ");
         pw.println(designateMainUserOnBoot(context));
-        pw.print("  config_designateMainUser: ");
-        pw.print(res.getBoolean(R.bool.config_designateMainUser));
+        pw.print("  config_experimental_designateMainUser: ");
+        pw.print(res.getBoolean(R.bool.config_experimental_designateMainUser));
         pw.print(" config_isMainUserPermanentAdmin: ");
         pw.print(res.getBoolean(R.bool.config_isMainUserPermanentAdmin));
         pw.print(" " + SYSPROP_DESIGNATE_MAIN_USER + ": ");
@@ -519,13 +519,14 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     static boolean designateMainUserOnBoot(Context context) {
         var res = context.getResources();
-        boolean defaultValue = res.getBoolean(R.bool.config_designateMainUser)
+        boolean defaultValue = res.getBoolean(R.bool.config_experimental_designateMainUser)
                 || res.getBoolean(R.bool.config_isMainUserPermanentAdmin);
         if (DEBUG) {
             Slogf.d(TAG, "designateMainUserOnBoot(): defaultValue=%b (because "
-                    + "config_designateMainUser=%b and config_isMainUserPermanentAdmin=%b)",
+                    + "config_experimental_designateMainUser=%b and "
+                    + "config_isMainUserPermanentAdmin=%b)",
                     defaultValue,
-                    res.getBoolean(R.bool.config_designateMainUser),
+                    res.getBoolean(R.bool.config_experimental_designateMainUser),
                     res.getBoolean(R.bool.config_isMainUserPermanentAdmin));
         }
         // Ignore devices that should not create a main user while flag is not ramped up yet
