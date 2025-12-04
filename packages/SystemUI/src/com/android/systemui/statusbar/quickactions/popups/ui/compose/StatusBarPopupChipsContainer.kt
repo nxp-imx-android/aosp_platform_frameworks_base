@@ -52,19 +52,21 @@ fun StatusBarPopupChipsContainer(
     }
 
     //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
-    Box {
-        Row(
-            modifier = modifier.padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            chips.forEach { chip ->
-                StatusBarPopupChip(chip)
-                if (chip.isPopupShown) {
-                    StatusBarPopup(
-                        viewModel = chip,
-                        mediaViewModelFactory = mediaViewModelFactory,
-                        mediaHost = mediaHost,
-                    )
+    if (chips.isNotEmpty()) {
+        Box {
+            Row(
+                modifier = modifier.padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                chips.forEach { chip ->
+                    StatusBarPopupChip(chip)
+                    if (chip.isPopupShown) {
+                        StatusBarPopup(
+                            viewModel = chip,
+                            mediaViewModelFactory = mediaViewModelFactory,
+                            mediaHost = mediaHost,
+                        )
+                    }
                 }
             }
         }
