@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.systemui.statusbar.notification.promoted
 
 import android.annotation.WorkerThread
@@ -47,7 +46,6 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import androidx.compose.ui.util.trace
 import com.android.internal.R
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
@@ -92,7 +90,6 @@ constructor(
     private val systemClock: SystemClock,
     private val logger: PromotedNotificationLogger,
 ) : PromotedNotificationContentExtractor {
-
     @WorkerThread
     override fun extractContent(
         entry: NotificationEntry,
@@ -109,14 +106,12 @@ constructor(
             }
             return null
         }
-
         if (!notification.isPromotedOngoing()) {
             if (LOG_NOT_EXTRACTED) {
                 logger.logExtractionSkipped(entry, "isPromotedOngoing returned false")
             }
             return null
         }
-
         val privateVersion =
             extractPrivateContent(
                 key = entry.key,
@@ -127,11 +122,9 @@ constructor(
                 packageContext = packageContext,
                 systemUiContext = systemUiContext,
             )
-
         if (privateVersion.notificationView == null) {
             logger.logSkeletonInflationFailed(entry, "Private View inflation failed")
         }
-
         val publicVersion =
             if (redactionType == REDACTION_TYPE_NONE) {
                 privateVersion
@@ -149,11 +142,9 @@ constructor(
                         systemUiContext = systemUiContext,
                     )
             }
-
         if (redactionType != REDACTION_TYPE_NONE && publicVersion.notificationView == null) {
             logger.logSkeletonInflationFailed(entry, "Public View inflation failed")
         }
-
         return PromotedNotificationContentModels(
                 privateVersion = privateVersion,
                 publicVersion = publicVersion,
@@ -229,16 +220,12 @@ constructor(
         systemUiContext: Context,
     ): PromotedNotificationContentModel {
         val notification = sbn.notification
-
         val contentBuilder = PromotedNotificationContentModel.Builder(key)
-
         // TODO: Pitch a fit if style is unsupported or mandatory fields are missing once
         // FLAG_PROMOTED_ONGOING is set reliably and we're not testing status bar chips.
-
         contentBuilder.skeletonNotifIcon =
             sbn.skeletonAppIcon(packageContext)
                 ?: notification.skeletonSmallIcon(imageModelProvider)
-
         contentBuilder.iconLevel = notification.iconLevel
         contentBuilder.appName = notification.loadHeaderAppName(packageContext)
         contentBuilder.subText = notification.subText()
@@ -253,14 +240,13 @@ constructor(
         contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
         contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
-        contentBuilder.oldProgress = notification.oldProgress()
+        contentBuilder.oldProgress = recoveredBuilder.oldProgress(notification)
         val colorsFromNotif = recoveredBuilder.getColors(/* isHeader= */ false)
         contentBuilder.colors =
             PromotedNotificationContentModel.Colors(
                 backgroundColor = colorsFromNotif.backgroundColor,
                 textColor = colorsFromNotif.textColor,
             )
-
         recoveredBuilder.extractStyleContent(
             notification,
             contentBuilder,
@@ -268,7 +254,6 @@ constructor(
             systemUiContext,
         )
         inflateNotificationView(contentBuilder, systemUiContext)
-
         return contentBuilder.build()
     }
 
@@ -291,7 +276,6 @@ constructor(
                 } catch (_: Throwable) {
                     null
                 }
-
             contentBuilder.notificationView?.setTag(
                 com.android.systemui.res.R.id.aod_promoted_notification_inflation_identity,
                 InflationIdentity(
@@ -315,7 +299,6 @@ constructor(
                     if (apiNotificationActionCustom())
                         R.layout.notification_2025_template_promoted_progress
                     else R.layout.notification_2025_template_expanded_progress
-
                 Style.Metric -> R.layout.notification_2025_template_expanded_metric
                 Style.MetricSingle -> R.layout.notification_2025_template_promoted_single_metric
                 Style.Ineligible -> null
@@ -374,6 +357,8 @@ constructor(
         getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
 
     private fun Notification.text(styleClass: Class<out Notification.Style>?): CharSequence? {
+        if (styleClass == MetricStyle::class.java) return null
+
         return when (styleClass) {
             BigTextStyle::class.java -> bigText()
             else -> null
@@ -388,16 +373,21 @@ constructor(
 
     private fun Notification.skeletonLargeIcon(
         imageModelProvider: ImageModelProvider
-    ): ImageModel? =
-        getLargeIcon()?.let {
+    ): ImageModel? {
+        if (notificationStyle == MetricStyle::class.java) return null
+        return getLargeIcon()?.let {
             imageModelProvider.getImageModel(it, MediumSquare, skeletonImageTransform)
         }
+    }
 
-    private fun Notification.oldProgress(): OldProgress? {
-        val progress = progress() ?: return null
-        val max = progressMax() ?: return null
-        val isIndeterminate = progressIndeterminate() ?: return null
-
+    private fun Notification.Builder.oldProgress(notification: Notification): OldProgress? {
+        if (style is ProgressStyle || style is CallStyle || style is MetricStyle) {
+            return null
+        }
+        val progress = notification.progress() ?: return null
+        val max = notification.progressMax() ?: return null
+        val isIndeterminate = notification.progressIndeterminate() ?: return null
+        if (progress == 0 && max == 0) return null
         return OldProgress(progress = progress, max = max, isIndeterminate = isIndeterminate)
     }
 
@@ -410,7 +400,6 @@ constructor(
 
     private fun Notification.extractWhen(): When? {
         val whenTime = getWhen()
-
         return when {
             showsChronometer() -> {
                 When.Chronometer(
@@ -419,9 +408,7 @@ constructor(
                     isCountDown = chronometerCountDown(),
                 )
             }
-
             showsTime() -> When.Time(currentTimeMillis = whenTime)
-
             else -> null
         }
     }
@@ -443,31 +430,27 @@ constructor(
         systemUiContext: Context,
     ) {
         val style = this.style
-
         contentBuilder.style =
             when (style) {
                 null -> Style.Base
-
                 is BigTextStyle -> {
                     Style.BigText
                 }
-
                 is CallStyle -> {
                     extractCallStyleContent(notification, contentBuilder, imageModelProvider)
                     Style.Call
                 }
-
                 is ProgressStyle -> {
                     style.extractContent(contentBuilder)
                     Style.Progress
                 }
-
                 is MetricStyle -> {
                     style.extractMetricStyleContent(systemUiContext, contentBuilder)
                     if (style.metrics.size == 1) Style.MetricSingle else Style.Metric
                 }
-
-                else -> Style.Ineligible
+                else -> {
+                    Style.Ineligible
+                }
             }
     }
 
@@ -502,7 +485,6 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
-
                             metricValue.zeroElapsedRealtime != null ->
                                 Metric.TimeDifference.ElapsedRealtime(
                                     zeroElapsedRealtime =
@@ -511,7 +493,6 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
-
                             metricValue.pausedDuration != null ->
                                 Metric.TimeDifference.Paused(
                                     pausedDuration = checkNotNull(metricValue.pausedDuration),
@@ -519,11 +500,9 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
-
                             else -> Metric.Text(valueString.text(), label)
                         }
                     }
-
                     else -> Metric.Text(valueString.text(), label)
                 }
             }
