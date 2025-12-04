@@ -316,7 +316,7 @@ public final class NetworkSecurityEvent implements Parcelable {
     private final @AlertCategory int mAlertCategory;
     private final @AlertStatus int mAlertStatus;
     private final @NonNull @ReasonCode int[] mReasonCodes;
-    private final long mCellId;
+    private final int mCellId;
     private final int mPhysicalCellId;
     private final int mArfcn;
     private final @NonNull String mPlmn;
@@ -333,7 +333,7 @@ public final class NetworkSecurityEvent implements Parcelable {
             @AlertCategory int alertCategory,
             @AlertStatus int alertStatus,
             @NonNull @ReasonCode int[] reasonCodes,
-            long cellId,
+            int cellId,
             int physicalCellId,
             int arfcn,
             @NonNull String plmn,
@@ -354,7 +354,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         mAlertCategory = in.readInt();
         mAlertStatus = in.readInt();
         mReasonCodes = in.createIntArray();
-        mCellId = in.readLong();
+        mCellId = in.readInt();
         mPhysicalCellId = in.readInt();
         mArfcn = in.readInt();
         mPlmn = in.readString8();
@@ -386,7 +386,7 @@ public final class NetworkSecurityEvent implements Parcelable {
     /**
      * @return The cell ID where the event occurred.
      */
-    public long getCellId() {
+    public int getCellId() {
         return mCellId;
     }
 
@@ -437,7 +437,7 @@ public final class NetworkSecurityEvent implements Parcelable {
         out.writeInt(mAlertCategory);
         out.writeInt(mAlertStatus);
         out.writeIntArray(mReasonCodes);
-        out.writeLong(mCellId);
+        out.writeInt(mCellId);
         out.writeInt(mPhysicalCellId);
         out.writeInt(mArfcn);
         out.writeString8(mPlmn);
