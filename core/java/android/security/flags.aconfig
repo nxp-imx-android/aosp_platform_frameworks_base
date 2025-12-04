@@ -181,6 +181,13 @@ flag {
 }
 
 flag {
+    name: "talisman_service_api"
+    namespace: "cross_device_authentication"
+    description: "Enable the Talisman service API."
+    bug: "433283951"
+}
+
+flag {
     name: "lockscreen_timeout_deactivate_pin_pad"
     namespace: "security"
     description: "Deactivate pin pad buttons when lockscreen is timed out"
