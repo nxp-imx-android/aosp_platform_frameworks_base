@@ -83,7 +83,7 @@ abstract class CrossActivityBackAnimation(
     private val cropRect = Rect()
     private val tempRectF = RectF()
 
-    private var cornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context)
+    protected var cornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context)
     private var statusbarHeight = SystemBarUtils.getStatusBarHeight(context)
 
     private val backAnimationRunner =
@@ -607,6 +607,8 @@ abstract class CrossActivityBackAnimation(
     companion object {
         /** Max scale of the closing window. */
         internal const val MAX_SCALE = 0.9f
+        /** Initial scale of the entering window. */
+        internal const val INITIAL_ENTERING_SCALE = 0.95f
         private const val MAX_SCRIM_ALPHA_DARK = 0.8f
         private const val MAX_SCRIM_ALPHA_LIGHT = 0.2f
         private const val SPRING_SCALE = 100f
