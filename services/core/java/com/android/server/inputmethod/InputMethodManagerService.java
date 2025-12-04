@@ -64,14 +64,12 @@ import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
+
 import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal;
-import android.app.compat.CompatChanges;
-import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledSince;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentProvider;
@@ -271,13 +269,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private static final String TAG_TRY_SUPPRESSING_IME_SWITCHER = "TrySuppressingImeSwitcher";
     private static final String HANDLER_THREAD_NAME = "android.imms";
     private static final String PACKAGE_MONITOR_THREAD_NAME = "android.imms2";
-
-    // TODO(b/419394842) - Remove and use defined build version code when available.
-    private static final int BUILD_VERSION_CODE_C = android.os.Build.VERSION_CODES.BAKLAVA + 1;
-
-    @ChangeId
-    @EnabledSince(targetSdkVersion = BUILD_VERSION_CODE_C)
-    static final long INPUT_METHOD_LIST_API_PERMISSION_ENABLED = 417788162L;
 
     /**
      * When set, {@link #startInputUncheckedLocked} will return
@@ -1577,16 +1568,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodInfoSafeList getInputMethodList(@UserIdInt int userId,
             @DirectBootAwareness int directBootAwareness) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve input method list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -1607,15 +1590,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodInfoSafeList getEnabledInputMethodList(@UserIdInt int userId) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve enabled input method list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -1706,16 +1681,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
             boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve enabled input method subtype list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
