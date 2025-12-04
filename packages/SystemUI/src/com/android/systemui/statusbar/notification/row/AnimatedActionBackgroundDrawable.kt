@@ -70,6 +70,10 @@ class AnimatedActionBackgroundDrawable(
             )
         }
     }
+
+    fun animate() {
+        (getDrawable(0) as? BaseBackgroundDrawable)?.animate()
+    }
 }
 
 class BaseBackgroundDrawable(
@@ -162,7 +166,6 @@ class BaseBackgroundDrawable(
                     rotationAngle = rotationStart + animatedValue * 720f // Rotate in a spiral
                     invalidateSelf()
                 }
-                start()
             }
         fadeAnimator =
             ValueAnimator.ofFloat(0f, 1f).apply {
@@ -180,8 +183,12 @@ class BaseBackgroundDrawable(
                         }
                     }
                 )
-                start()
             }
+    }
+
+    fun animate() {
+        gradientAnimator.start()
+        fadeAnimator?.start()
     }
 
     override fun draw(canvas: Canvas) {
