@@ -21,11 +21,16 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputmethod.data.repository.InputMethodRepository
+import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
+import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Interactor for managing the state of the IME indicator chip in the status bar. */
@@ -35,12 +40,31 @@ class ImeIndicatorChipInteractor
 constructor(
     @param:Background private val scope: CoroutineScope,
     private val inputMethodRepository: InputMethodRepository,
+    private val userRepository: UserRepository,
 ) {
     private val isFeatureEnabled: Boolean
         get() = Flags.statusBarImeChip()
 
-    // TODO(b/458558606): Add logic to show / hide chip depending on enabled IME subtypes.
-    val isChipVisible: StateFlow<Boolean> = MutableStateFlow(isFeatureEnabled).asStateFlow()
+    /** The current state of the IME indicator chip. */
+    val chipModel: StateFlow<ImeIndicatorChipModel> =
+        if (isFeatureEnabled) {
+                // TODO(b/458558606): Add logic to show / hide chip depending on enabled IME
+                // subtypes.
+                userRepository.selectedUserInfo
+                    .flatMapLatest { userInfo ->
+                        inputMethodRepository.selectedInputMethodSubtype(userInfo.userHandle)
+                    }
+                    .map { subtype ->
+                        ImeIndicatorChipModel(isVisible = true, selectedSubtype = subtype)
+                    }
+            } else {
+                flowOf(ImeIndicatorChipModel(isVisible = false, selectedSubtype = null))
+            }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = ImeIndicatorChipModel(isFeatureEnabled, selectedSubtype = null),
+            )
 
     fun showInputMethodPicker() {
         // TODO(b/458557860): Show on the display containing the chip.
