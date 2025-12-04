@@ -111,37 +111,15 @@ interface PerDisplayStatusBarModule {
         impl: SwipeStatusBarAwayGestureHandler
     ): SwipeStatusBarAwayGestureHandler
 
-    companion object {
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun disableFlagsRepo(
-            factory: DisableFlagsRepositoryImpl.Factory,
-            @DisplayAware actualDisplayId: Int,
-            @DisplayAware displayScope: CoroutineScope,
-            @Default defaultRepositoryLazy: Lazy<DisableFlagsRepository>,
-        ): DisableFlagsRepository {
-            return if (Flags.disableFlagsPerDisplay()) {
-                factory.create(actualDisplayId, displayScope)
-            } else {
-                defaultRepositoryLazy.get()
-            }
-        }
+    @Binds
+    @DisplayAware
+    fun disableFlagsRepo(impl: DisableFlagsRepositoryImpl): DisableFlagsRepository
 
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun disableFlagsInteractor(
-            factory: DisableFlagsInteractor.Factory,
-            @DisplayAware repo: DisableFlagsRepository,
-            @Default defaultInteractorLazy: Lazy<DisableFlagsInteractor>,
-        ): DisableFlagsInteractor {
-            return if (Flags.disableFlagsPerDisplay()) {
-                factory.create(repo)
-            } else {
-                defaultInteractorLazy.get()
-            }
-        }
+    @Binds
+    @DisplayAware
+    fun disableFlagsInteractor(impl: DisableFlagsInteractor): DisableFlagsInteractor
+
+    companion object {
 
         @Provides
         @PerDisplaySingleton

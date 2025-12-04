@@ -21,7 +21,6 @@ import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.createFakeDisplaySubcomponent
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
@@ -34,7 +33,6 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.data.repository.FakeDisableFlagsRepository
-import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.createDisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
@@ -225,8 +223,8 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME, Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
-    fun disableFlags_perDisplayDisableFlagsEnabled_updatesAfterDisplayChange() =
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun disableFlags_updatesAfterDisplayChange() =
         kosmos.runTest {
             val disableFlags by collectLastValue(underTest.disableFlags)
 
@@ -235,21 +233,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
 
             fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
             assertThat(disableFlags).isEqualTo(secondaryDisableFlags)
-        }
-
-    @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    @DisableFlags(Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
-    fun disableFlags_perDisplayDisabledFlagsDisabled_alwaysUsesSingleDisplayDisableFlags() =
-        kosmos.runTest {
-            val disableFlags by collectLastValue(underTest.disableFlags)
-            fakeDisableFlagsRepository.disableFlags.value = singleDisplayDisableFlags
-
-            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
-            assertThat(disableFlags).isEqualTo(singleDisplayDisableFlags)
-
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
-            assertThat(disableFlags).isEqualTo(singleDisplayDisableFlags)
         }
 
     /** Helper to create a mock HomeStatusBarComponent */
