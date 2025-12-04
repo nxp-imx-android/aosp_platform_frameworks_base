@@ -45,7 +45,7 @@ import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.compose.animation.scene.debug.StlDebugConfig.DebugLabelPosition
+import com.android.compose.animation.scene.debug.StlDebugConfig.elementFilterList
 import com.android.compose.animation.scene.getAllNestedTransitionStates
 import java.util.Locale
 import kotlin.collections.mutableMapOf
@@ -60,8 +60,9 @@ internal fun Modifier.debugElement(key: ElementKey): Modifier {
     return this.drawWithContent {
         // Draw Content first (so border is on top)
         drawContent()
+        val position = StlDebugConfig.elementLabelPosition
+        if (filterOutElement(key)) return@drawWithContent
         Snapshot.withoutReadObservation {
-            if (filterOutElement(key)) return@drawWithContent
             val seed = key.hashCode()
             val color = generateDebugColor(seed)
             val strokeWidth = 1.dp
@@ -81,7 +82,7 @@ internal fun Modifier.debugElement(key: ElementKey): Modifier {
                     phase = (dashSize * 2).toFloat(),
                 )
 
-            if (StlDebugConfig.showElementBorders) {
+            if (StlDebugConfig.showElementBorders()) {
                 drawDebugBorder(
                     color = color,
                     strokeWidth = strokePx,
@@ -90,11 +91,11 @@ internal fun Modifier.debugElement(key: ElementKey): Modifier {
                 )
             }
 
-            if (StlDebugConfig.showElementLabels) {
+            if (StlDebugConfig.showElementLabels()) {
                 drawDebugLabel(
                     text = listOf(key.debugName),
                     color = color,
-                    position = StlDebugConfig.elementLabelPosition,
+                    position = position,
                     verticalOffset = 0f,
                     textSize = 12.sp,
                 )
@@ -109,7 +110,7 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
         val color = generateDebugColor(seed)
         val strokeWidth = 2.dp.toPx()
 
-        if (StlDebugConfig.showSceneBorders) {
+        if (StlDebugConfig.showSceneBorders()) {
             Snapshot.withoutReadObservation {
                 // 1. Draw Border FIRST (so it ends up behind the content)
                 drawDebugBorder(
@@ -124,13 +125,14 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
         // border)
         drawContent()
 
-        if (StlDebugConfig.showSceneLabels) {
+        if (StlDebugConfig.showSceneLabels()) {
+            val position = StlDebugConfig.sceneLabelPosition
             Snapshot.withoutReadObservation {
                 // 3. Draw Label (Always on top)
                 drawDebugLabel(
                     text = listOf("Scene: ${key.debugName}"),
                     color = color,
-                    position = StlDebugConfig.sceneLabelPosition,
+                    position = position,
                     textSize = 12.sp,
                 )
             }
@@ -145,21 +147,23 @@ internal fun Modifier.debugStl(
 ): Modifier {
     return this.drawWithContent {
         drawContent()
+        val position = StlDebugConfig.stlLabelPosition
         Snapshot.withoutReadObservation {
             val textSize = 12.sp
             val isNested = nestingLevel > 0
-            val color = generateDebugColor(nestingLevel)
+            val seed = debugName.hashCode()
+            val color = generateDebugColor(seed)
             val strokeWidth = 2.dp.toPx()
             val labelPadding = 8f
             val inset = nestingLevel * (textSize.toPx() + labelPadding) * 2
 
-            if (StlDebugConfig.showStlBorders) {
+            if (StlDebugConfig.showStlBorders()) {
                 // 1. Draw Border
                 drawDebugBorder(
                     color = color,
                     strokeWidth = strokeWidth,
                     pathEffect = null,
-                    inset = inset,
+                    inset = 0f,
                 )
             }
 
@@ -173,12 +177,12 @@ internal fun Modifier.debugStl(
                         "[${currentState.fromContent.debugName} -> ${currentState.toContent.debugName}]"
                 }
 
-            if (StlDebugConfig.showStlLabels) {
+            if (StlDebugConfig.showStlLabels()) {
                 // 3. Draw Label
                 drawDebugLabel(
                     text = listOf("$debugName$typeLabel:", stateText),
                     color = color,
-                    position = StlDebugConfig.stlLabelPosition,
+                    position = position,
                     textSize = textSize,
                     verticalOffset = inset,
                 )
@@ -320,7 +324,7 @@ internal fun Modifier.logElementsOnTransitionChange(
         layout(placeable.width, placeable.height) {
             Snapshot.withoutReadObservation {
                 // Clear placedInContents so we only observe this frame
-                if (StlDebugConfig.logElements) {
+                if (StlDebugConfig.logElements()) {
                     layoutImpl.elements.keys.forEach { placedInContents[it]?.clear() }
                 }
             }
@@ -329,7 +333,7 @@ internal fun Modifier.logElementsOnTransitionChange(
 
             Snapshot.withoutReadObservation {
                 // Now placedInContents is up-to-date, we can log the results.
-                if (StlDebugConfig.logElements) {
+                if (StlDebugConfig.logElements()) {
                     logger.logOnNewTransition(layoutImpl, layoutImpl.state.transitionState)
                 }
             }
@@ -377,10 +381,8 @@ internal class StateLogger {
         sb.appendLine("==============================================================")
 
         sb.append("Total Elements: ${layoutImpl.elements.size}")
-        if (StlDebugConfig.elementKeyFilter.isNotBlank()) {
-            sb.appendLine(
-                " - Filtered for Elements containing \"${StlDebugConfig.elementKeyFilter}\""
-            )
+        if (elementFilterList.isNotEmpty()) {
+            sb.appendLine(" - Filtered for Elements containing \"${elementFilterList}\"")
         }
 
         layoutImpl.elements.forEach { (key, element) ->
@@ -476,8 +478,8 @@ internal fun Modifier.logElementState(
 
         layout(placeable.width, placeable.height) {
             placeable.place(0, 0)
-            if (filterOutElementExclusive(key)) return@layout
 
+            if (filterOutElementExclusive(key)) return@layout
             Snapshot.withoutReadObservation {
                 val element = layoutImpl.elements[key]
                 val placedInContents = placedInContents[key] ?: emptyList()
@@ -536,22 +538,22 @@ private fun getContextString(contentKey: ContentKey?, elementKey: ElementKey): S
 }
 
 /**
- * Returns true if the Element should be filtered out. It is filtered out when the key does not
- * contain the filter string. If an empty filter is set, filter out everything (always returns
- * true).
+ * Returns true if the Element should be filtered out. It is filtered out when none of the filters
+ * match the debugName (case insensitive). If an empty filter is set, filter out everything (always
+ * returns true).
  */
 internal fun filterOutElementExclusive(key: ElementKey): Boolean {
-    if (StlDebugConfig.elementKeyFilter.isBlank()) return true
-    return filterOutElement(key)
+    return elementFilterList.all { token -> !key.debugName.equals(token, ignoreCase = true) }
 }
 
 /**
- * Returns true if the Element should be filtered out. It is filtered out when the key does not
- * contain the filter string. If an empty filter is set, nothing is filtered out (always returns
- * false).
+ * Returns true if the Element should be filtered out. It is filtered out when none of the filters
+ * match the debugName (case insensitive). If an empty filter is set, nothing is filtered out
+ * (always returns false).
  */
 internal fun filterOutElement(key: ElementKey): Boolean {
-    return !key.debugName.contains(StlDebugConfig.elementKeyFilter, ignoreCase = true)
+    if (elementFilterList.isEmpty()) return false
+    return filterOutElementExclusive(key)
 }
 
-const val TAG = "StlDebug"
+internal const val TAG = "StlDebug"
