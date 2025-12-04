@@ -64,7 +64,6 @@ pub struct DestroyServiceRequest {
 pub struct BindServiceRequest {
     pub service_token: SpIBinder,
     pub bind_token: SpIBinder,
-    pub intent_hash: i32,
     pub action: Option<String>,
     pub data: Option<String>,
     pub rebind: bool,
@@ -75,7 +74,6 @@ pub struct BindServiceRequest {
 pub struct UnbindServiceRequest {
     pub service_token: SpIBinder,
     pub bind_token: SpIBinder,
-    pub intent_hash: i32,
 }
 
 pub enum NativeApplicationThreadRequest {
@@ -155,7 +153,6 @@ impl INativeApplicationThread for NativeApplicationThread {
         &self,
         service_token: &SpIBinder,
         bind_token: &SpIBinder,
-        intent_hash: i32,
         action: Option<&str>,
         data: Option<&str>,
         rebind: bool,
@@ -170,7 +167,6 @@ impl INativeApplicationThread for NativeApplicationThread {
             .send(NativeApplicationThreadRequest::BindService(BindServiceRequest {
                 service_token: service_token.clone(),
                 bind_token: bind_token.clone(),
-                intent_hash,
                 action: action.map(|s| s.to_string()),
                 data: data.map(|s| s.to_string()),
                 rebind,
@@ -190,14 +186,12 @@ impl INativeApplicationThread for NativeApplicationThread {
         &self,
         service_token: &SpIBinder,
         bind_token: &SpIBinder,
-        intent_hash: i32,
     ) -> binder::Result<()> {
         info!("scheduleUnbindService thread id={:?}", thread::current().id());
         self.sender
             .send(NativeApplicationThreadRequest::UnbindService(UnbindServiceRequest {
                 service_token: service_token.clone(),
                 bind_token: bind_token.clone(),
-                intent_hash,
             }))
             .map_err(|e| {
                 binder::Status::new_exception_str(

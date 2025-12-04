@@ -203,7 +203,6 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         mNativeThread.scheduleBindService(
                 token,
                 bindToken,
-                intent.hashCode(),
                 intent.getAction(),
                 data,
                 rebind,
@@ -214,7 +213,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
     @Override
     public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent)
             throws RemoteException {
-        mNativeThread.scheduleUnbindService(token, bindToken, intent.hashCode());
+        mNativeThread.scheduleUnbindService(token, bindToken);
     }
 
     @Override
