@@ -260,21 +260,23 @@ class PinnedLayerController(
     ): Boolean {
         if (isNotPinned(taskInfo.taskId)) return false
 
-        if (taskInfo.displayId != displayId && moveToDisplay(taskInfo, displayId, dragEndBounds)) {
+        val isCrossDisplayDrag = taskInfo.displayId != displayId
+        if (isCrossDisplayDrag && moveToDisplay(taskInfo, displayId, dragEndBounds)) {
             return true
         }
 
         // Post-process final drag bounds to keep them inside the valid drag area.
         val destinationBounds =
-            // TODO(b/463648549): should never be null.
-            requireNotNull(presentationController.clampToDisplay(taskInfo, dragEndBounds)) {
-                "Clamped destination bounds for the pinned window can't be null."
-            }
-
-        if (destinationBounds == dragStartBounds && destinationBounds == dragEndBounds) {
-            // The task was dragged back to original position, set position and show the task.
+            presentationController.clampToDisplay(taskInfo, dragEndBounds) ?: dragStartBounds
+        val isTargetDisplayAvailable =
+            taskDisplayAreaOrganizer.getDisplayAreaInfo(displayId) != null
+        val isOriginalTaskBounds =
+            destinationBounds == dragStartBounds && destinationBounds == dragEndBounds
+        if (!isTargetDisplayAvailable || isOriginalTaskBounds) {
+            // The task was dragged back to original position or there's no longer a valid display
+            // to drag to, so calculating final bounds in case display is not available.
             val t = transactionPool.acquire()
-            t.setPosition(leash, destinationBounds.left.toFloat(), destinationBounds.top.toFloat())
+            t.setPosition(leash, dragStartBounds.left.toFloat(), dragStartBounds.top.toFloat())
             t.apply()
             transactionPool.release(t)
             return true
@@ -283,7 +285,11 @@ class PinnedLayerController(
         if (destinationBounds != dragEndBounds) {
             // TODO(b/449118417): Fix flickering when mirrored leash is removed.
             // Drag bounds were snapped and we want to animate that.
-            windowRepositionAnimationHandler.startTransition(taskInfo, dragEndBounds, destinationBounds)
+            windowRepositionAnimationHandler.startTransition(
+                taskInfo,
+                dragEndBounds,
+                destinationBounds,
+            )
             return true
         }
 

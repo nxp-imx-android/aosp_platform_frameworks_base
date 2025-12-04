@@ -47,6 +47,7 @@ import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import kotlin.math.roundToInt
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -297,6 +298,37 @@ class PinnedLayerControllerTest : ShellTestCase() {
             )
 
         assertEquals(expectedBounds, changeBounds)
+    }
+
+    @Test
+    fun onDragEnded_displayIsDisconnected_moveToOriginalBounds() {
+        val task = setupTask()
+        pinTask(task)
+        setupDisplay(DISPLAY_1)
+
+        // Disconnect the display.
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DISPLAY_1)).thenReturn(null)
+        whenever(displayController.getDisplayLayout(DISPLAY_1)).thenReturn(null)
+
+        val newBounds = Rect(DEFAULT_TASK_BOUNDS)
+        // Assert no transitions has been started and mirrors will be cleared by the API caller.
+        val result =
+            pinnedLayerController.onDragEnded(
+                leash,
+                task,
+                DEFAULT_TASK_BOUNDS,
+                newBounds,
+                DISPLAY_1,
+            )
+        assertTrue(result)
+
+        // Verify bounds restored to the start drag bounds.
+        val leftCaptor = argumentCaptor<Float>()
+        val topCaptor = argumentCaptor<Float>()
+        verify(poolTransaction).setPosition(any(), leftCaptor.capture(), topCaptor.capture())
+
+        assertEquals(DEFAULT_TASK_BOUNDS.left, leftCaptor.firstValue.roundToInt())
+        assertEquals(DEFAULT_TASK_BOUNDS.top, topCaptor.firstValue.roundToInt())
     }
 
     private fun setupTask(
