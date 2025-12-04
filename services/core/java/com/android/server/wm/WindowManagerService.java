@@ -616,6 +616,7 @@ public class WindowManagerService extends IWindowManager.Stub
     final PermissionManager mPermissionManager;
     final AppOpsManager mAppOps;
     final PackageManagerInternal mPmInternal;
+    final WindowManagerInternal mInternal;
     private final TestUtilityService mTestUtilityService;
 
     @NonNull
@@ -1493,7 +1494,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mConstants = new WindowManagerConstants(this, DeviceConfigInterface.REAL);
         mConstants.start(new HandlerExecutor(mH));
 
-        LocalServices.addService(WindowManagerInternal.class, new LocalService());
+        mInternal = new LocalService();
+        LocalServices.addService(WindowManagerInternal.class, mInternal);
         mEmbeddedWindowController = new EmbeddedWindowController(mAtmService, inputManager);
 
         mDisplayAreaPolicyProvider = DisplayAreaPolicy.Provider.fromResources(
@@ -3569,9 +3571,13 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public void moveDisplayToTopIfAllowed(int displayId) {
+        moveDisplayToTopIfAllowed(displayId, true /* waitForAnimations */);
+    }
+
+    void moveDisplayToTopIfAllowed(int displayId, boolean waitForAnimations) {
         final boolean moved = moveDisplayToTopInternal(displayId);
         if (moved) {
-            syncInputTransactions(true /* waitForAnimations */);
+            syncInputTransactions(waitForAnimations);
         }
     }
 
