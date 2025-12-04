@@ -280,6 +280,16 @@
         <item>"302723"</item>
         <!-- Telstra - Australia -->
         <item>"50511"</item>
+        <!-- AST -->
+        <item>313210"</item>
+        <!-- DOCOMO - Japan -->
+        <item>44026</item>
+        <!-- SoftBank - Japan -->
+        <item>44025</item>
+        <!-- O2postpaid - Great Britain -->
+        <item>23402</item>
+        <!--Entel - Peru -->
+        <item>771688</item>
     </string-array>
     <java-symbol type="array" name="config_satellite_providers" />
 
