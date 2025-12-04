@@ -23,6 +23,8 @@ import static android.app.ActivityOptions.ANIM_SCENE_TRANSITION;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.ActivityTaskManager.INVALID_WINDOWING_MODE;
 import static android.app.FullscreenRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_ENTER;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_EXIT;
 import static android.app.FullscreenRequestHandler.RESULT_APPROVED;
 import static android.app.FullscreenRequestHandler.RESULT_FAILED_ALREADY_FULLY_EXPANDED;
 import static android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
@@ -71,6 +73,7 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
+import android.app.FullscreenRequestHandler.RequestAllowMode;
 import android.app.FullscreenRequestHandler.RequestResult;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
@@ -1318,8 +1321,19 @@ class ActivityClientController extends IActivityClientController.Stub {
             // Requesting fullscreen exit but was not fullscreen, reject the request.
             return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
         }
-        // TODO: b/296268915 - Add early validation through shell-controlled allowed/disallowed
-        //  overrides.
+        if (Flags.delegateRequestFullscreenHandlingToShell()) {
+            final @RequestAllowMode int allowMode =
+                    requesterActivity.getTask().getFullscreenRequestAllowMode();
+            if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER) {
+                if (allowMode != REQUEST_ALLOW_MODE_ENTER) {
+                    return RESULT_FAILED_NOT_SUPPORTED;
+                }
+            } else if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_EXIT) {
+                if (allowMode != REQUEST_ALLOW_MODE_EXIT) {
+                    return RESULT_FAILED_NOT_SUPPORTED;
+                }
+            }
+        }
         return RESULT_APPROVED;
     }
 

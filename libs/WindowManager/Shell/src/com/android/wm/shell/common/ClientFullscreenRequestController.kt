@@ -19,12 +19,14 @@ import android.app.Activity
 import android.app.Activity.FULLSCREEN_MODE_REQUEST_ENTER
 import android.app.Activity.FULLSCREEN_MODE_REQUEST_EXIT
 import android.app.ActivityManager.RunningTaskInfo
-import android.app.FullscreenRequestHandler.RequestResult
-import android.app.FullscreenRequestHandler.RESULT_APPROVED
 import android.app.FullscreenRequestHandler.REMOTE_CALLBACK_RESULT_KEY
+import android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_EXIT
+import android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_INHERIT
+import android.app.FullscreenRequestHandler.RESULT_APPROVED
 import android.app.FullscreenRequestHandler.RESULT_FAILED_ALREADY_FULLY_EXPANDED
 import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY
 import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED
+import android.app.FullscreenRequestHandler.RequestResult
 import android.app.FullscreenRequestHandler.requestResultToString
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.graphics.Rect
@@ -100,19 +102,21 @@ class ClientFullscreenRequestController(
             callback != null,
             transition,
         )
-        val result = when (mode) {
-            FULLSCREEN_MODE_REQUEST_ENTER -> {
-                handlers.firstNotNullOf { it.handleEnterFullscreen(transition, task) }
-                    .also { result ->
-                        saveRestorableState(task.taskId, result)
-                    }
+        val result =
+            when (mode) {
+                FULLSCREEN_MODE_REQUEST_ENTER -> {
+                    handlers
+                        .firstNotNullOf { it.handleEnterFullscreen(transition, task) }
+                        .also { result -> handleEnterResult(task, result) }
+                }
+                FULLSCREEN_MODE_REQUEST_EXIT -> {
+                    val restorable = removeRestorableState(task.taskId)
+                    handlers
+                        .firstNotNullOf { it.handleExitFullscreen(transition, task, restorable) }
+                        .also { result -> handleExitResult(task, result) }
+                }
+                else -> error("Unexpected fullscreen request mode: $mode")
             }
-            FULLSCREEN_MODE_REQUEST_EXIT -> {
-                val restorable = removeRestorableState(task.taskId)
-                handlers.firstNotNullOf { it.handleExitFullscreen(transition, task, restorable) }
-            }
-            else -> error("Unexpected fullscreen request mode: $mode")
-        }
         logV("handle result=%s", result)
         reportResult(callback, result)
         return result.wct
@@ -141,10 +145,33 @@ class ClientFullscreenRequestController(
         }
     }
 
-    private fun saveRestorableState(taskId: Int, enterResult: EnterResult) {
-        if (enterResult !is EnterResult.Approved) return
-        logV("saveRestorableState taskId=%d state=%s", taskId, enterResult.restorableState)
-        taskToRestorableState[taskId] = enterResult.restorableState
+    private fun handleEnterResult(task: RunningTaskInfo, result: EnterResult) {
+        when (result) {
+            is EnterResult.Approved -> {
+                // Successfully entered fullscreen.
+                saveRestorableState(task.taskId, result)
+                // Let this task request exit from now on.
+                result.wct.setFullscreenRequestAllowMode(task.token, REQUEST_ALLOW_MODE_EXIT)
+                // TODO: b/296268915 - monitor mode changes to invalidate the allowed exit.
+            }
+            is EnterResult.Failed -> {}
+        }
+    }
+
+    private fun handleExitResult(task: RunningTaskInfo, result: ExitResult) {
+        when (result) {
+            is ExitResult.Approved -> {
+                // Successfully exited fullscreen.
+                // Reset the allowed mode back to the default.
+                result.wct.setFullscreenRequestAllowMode(task.token, REQUEST_ALLOW_MODE_INHERIT)
+            }
+            is ExitResult.Failed -> {}
+        }
+    }
+
+    private fun saveRestorableState(taskId: Int, result: EnterResult.Approved) {
+        logV("saveRestorableState taskId=%d state=%s", taskId, result.restorableState)
+        taskToRestorableState[taskId] = result.restorableState
     }
 
     private fun removeRestorableState(taskId: Int): RestorableState? {
@@ -152,7 +179,7 @@ class ClientFullscreenRequestController(
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {
-        ProtoLog.w(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
     }
 
     private fun logW(msg: String, vararg arguments: Any?) {

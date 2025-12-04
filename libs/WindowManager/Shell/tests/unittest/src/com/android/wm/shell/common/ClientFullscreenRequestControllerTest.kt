@@ -31,7 +31,9 @@ import android.testing.AndroidTestingRunner
 import android.view.WindowManager
 import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.FullscreenRequestChange
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.Change
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -40,6 +42,7 @@ import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenR
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -243,6 +246,58 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
         assertThat(handler.receivedRestorableState).isNull()
     }
 
+    @Test
+    fun enterFullscreen_approved_setsTaskAllowedToExit() {
+        val wct = WindowContainerTransaction()
+        val restorableState = EnterResult.Approved.RestorableState.Desktop(
+            originalDeskId = 123,
+            bounds = Rect(200, 200, 800, 800)
+        )
+        val handler = TestHandler(
+            enterResult = EnterResult.Approved(wct, mock(), restorableState),
+        )
+        controller.addHandler(handler)
+        val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
+        val enterRequest = request(enterTask, FULLSCREEN_MODE_REQUEST_ENTER)
+
+        val resultWct = controller.handleRequest(Binder(), enterRequest)
+
+        assertNotNull(resultWct)
+        resultWct.assertSetFullscreenAllowMode(
+            container = enterTask.token,
+            mode = FullscreenRequestHandler.REQUEST_ALLOW_MODE_EXIT,
+        )
+    }
+
+    @Test
+    fun exitFullscreen_afterApprovedEnter_setsTaskInheritsAllowMode() {
+        val wct = WindowContainerTransaction()
+        val restorableState = EnterResult.Approved.RestorableState.Desktop(
+            originalDeskId = 123,
+            bounds = Rect(200, 200, 800, 800)
+        )
+        val handler = TestHandler(
+            enterResult = EnterResult.Approved(wct, mock(), restorableState),
+            exitResult = ExitResult.Approved(wct, mock())
+        )
+        controller.addHandler(handler)
+
+        val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
+        val enterRequest = request(enterTask, FULLSCREEN_MODE_REQUEST_ENTER)
+        // Enter fullscreen.
+        controller.handleRequest(Binder(), enterRequest)
+
+        val exitTask = enterTask.apply { setWindowingMode(WINDOWING_MODE_FULLSCREEN) }
+        val exitRequest = request(exitTask, FULLSCREEN_MODE_REQUEST_EXIT)
+        // Exit fullscreen.
+        val resultWct = controller.handleRequest(Binder(), exitRequest)
+        assertNotNull(resultWct)
+        resultWct.assertSetFullscreenAllowMode(
+            container = exitTask.token,
+            mode = FullscreenRequestHandler.REQUEST_ALLOW_MODE_INHERIT,
+        )
+    }
+
     private fun createTask(windowingMode: Int): RunningTaskInfo {
         return TestRunningTaskInfoBuilder()
             .setWindowingMode(windowingMode)
@@ -279,6 +334,18 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
         val bundle = bundleCaptor.value
         val resultCode = bundle.getInt(FullscreenRequestHandler.REMOTE_CALLBACK_RESULT_KEY)
         assertThat(resultCode).isEqualTo(expectedResultCode)
+    }
+
+    private fun WindowContainerTransaction.assertSetFullscreenAllowMode(
+        container: WindowContainerToken,
+        @FullscreenRequestHandler.RequestAllowMode mode: Int,
+    ) {
+        assertThat(changes.any { change ->
+            change.key == container.asBinder() &&
+                    (change.value.changeMask and
+                            Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE != 0) &&
+                    change.value.fullscreenRequestAllowMode == mode
+        }).isTrue()
     }
 
     /** A test handler that can be configured to accept or reject future requests. */

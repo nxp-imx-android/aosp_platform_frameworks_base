@@ -16,6 +16,7 @@
 
 package android.window;
 
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_INHERIT;
 import static android.app.Instrumentation.DEBUG_START_ACTIVITY;
 import static android.app.TaskInfo.SELF_MOVABLE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -35,6 +36,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.FullscreenRequestHandler;
+import android.app.FullscreenRequestHandler.RequestAllowMode;
 import android.app.Instrumentation;
 import android.app.PendingIntent;
 import android.app.TaskInfo.SelfMovable;
@@ -51,6 +54,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.ArrayMap;
+import android.util.DebugUtils;
 import android.util.Log;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -1103,6 +1107,22 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Sets the fullscreen request allow mode for the specified container. See
+     * {@link android.app.Activity#requestFullscreenMode}.
+     *
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setFullscreenRequestAllowMode(
+            @NonNull WindowContainerToken container,
+            @RequestAllowMode int allowMode) {
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mChangeMask |= Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE;
+        chg.mFullscreenRequestAllowMode = allowMode;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * PIP
@@ -1703,6 +1723,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_IS_TASK_MOVE_ALLOWED = 1 << 13;
         public static final int CHANGE_INTERCEPT_BACK_PRESSED = 1 << 14;
         public static final int CHANGE_HANDLE_PACKAGE_UPDATE = 1 << 15;
+        public static final int CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE = 1 << 16;
 
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
@@ -1721,7 +1742,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_DISABLE_LAUNCH_ADJACENT,
                 CHANGE_IS_TASK_MOVE_ALLOWED,
                 CHANGE_INTERCEPT_BACK_PRESSED,
-                CHANGE_HANDLE_PACKAGE_UPDATE
+                CHANGE_HANDLE_PACKAGE_UPDATE,
+                CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1751,6 +1773,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private int mActivityWindowingMode = -1;
         private int mWindowingMode = -1;
         private @SelfMovable int mSelfMovable = SELF_MOVABLE_UNSET;
+        private @RequestAllowMode int mFullscreenRequestAllowMode = REQUEST_ALLOW_MODE_INHERIT;
 
         private boolean mLaunchNextToBubble = false;
 
@@ -1786,6 +1809,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mWindowingMode = in.readInt();
             mActivityWindowingMode = in.readInt();
             mSelfMovable = in.readInt();
+            mFullscreenRequestAllowMode = in.readInt();
         }
 
         /**
@@ -1846,6 +1870,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if (other.mSelfMovable != SELF_MOVABLE_UNSET) {
                 mSelfMovable = other.mSelfMovable;
+            }
+            if (other.mFullscreenRequestAllowMode != REQUEST_ALLOW_MODE_INHERIT) {
+                mFullscreenRequestAllowMode = other.mFullscreenRequestAllowMode;
             }
             if (other.mRelativeBounds != null) {
                 mRelativeBounds = transfer
@@ -1975,6 +2002,18 @@ public final class WindowContainerTransaction implements Parcelable {
             return mIsTaskMoveAllowed;
         }
 
+        /**
+         * Returns the allow mode for fullscreen requests.
+         */
+        @RequestAllowMode
+        public int getFullscreenRequestAllowMode() {
+            if ((mChangeMask & CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE) == 0) {
+                throw new RuntimeException("Fullscreen request allow mode not set. "
+                        + "Check CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE first");
+            }
+            return mFullscreenRequestAllowMode;
+        }
+
         @ChangeMask
         public int getChangeMask() {
             return mChangeMask;
@@ -2065,6 +2104,11 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
                 sb.append("handlePackageUpdate:" + mHandlePackageUpdate + ",");
             }
+            if ((mChangeMask & CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE) != 0) {
+                sb.append("fullscreenRequestAllowMode:")
+                        .append(DebugUtils.valueToString(FullscreenRequestHandler.class,
+                                "REQUEST_ALLOW_MODE_", mFullscreenRequestAllowMode)).append(",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -2115,6 +2159,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mWindowingMode);
             dest.writeInt(mActivityWindowingMode);
             dest.writeInt(mSelfMovable);
+            dest.writeInt(mFullscreenRequestAllowMode);
         }
 
         @Override

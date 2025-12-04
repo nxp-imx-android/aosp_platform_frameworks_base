@@ -2291,6 +2291,7 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
     public void testRestoreWindowingMode_reparentsToAttachedParent() {
         // Create a parent task that the child task will be restored to.
         final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
@@ -2314,6 +2315,7 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
     public void testRestoreWindowingMode_doesNotReparentToDetachedParent() {
         // Create a parent task that will be removed.
         final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
