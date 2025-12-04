@@ -1613,10 +1613,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
-        // The activity may be waiting for stop, but that is no longer
-        // appropriate for it.
-        mTaskSupervisor.mStoppingActivities.remove(next);
-
         if (DEBUG_SWITCH) Slog.v(TAG_SWITCH, "Resuming " + next);
 
         mTaskSupervisor.setLaunchSource(next.getUid());
@@ -1770,6 +1766,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             mAtmService.updateCpuStats();
 
             ProtoLog.v(WM_DEBUG_STATES, "Moving to RESUMED: %s (in existing)", next);
+
+            // The activity may be waiting for stop, but that is no longer
+            // appropriate for it.
+            mTaskSupervisor.mStoppingActivities.remove(next);
 
             next.setState(RESUMED, "resumeTopActivity");
 
