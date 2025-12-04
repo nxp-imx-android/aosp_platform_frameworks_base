@@ -39,6 +39,7 @@ import androidx.core.animation.ObjectAnimator;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
@@ -325,10 +326,14 @@ public class ExpandHelper implements Gefingerpoken {
                 final float xspan = mSGD.getCurrentSpanX();
                 if (xspan > mPullGestureMinXSpan &&
                         xspan > mSGD.getCurrentSpanY() && !mExpanding) {
-                    // detect a vertical pulling gesture with fingers somewhat separated
-                    if (DEBUG_SCALE) Log.v(TAG, "got pull gesture (xspan=" + xspan + "px)");
-                    startExpanding(mResizedView, PULL);
-                    mWatchingForPull = false;
+                        // Disable two-finger expand if SceneContainer, as it interferes with
+                        // scrolling.
+                        if (!SceneContainerFlag.isEnabled()) {
+                            // detect a vertical pulling gesture with fingers somewhat separated
+                            if (DEBUG_SCALE) Log.v(TAG, "got pull gesture (xspan=" + xspan + "px)");
+                            startExpanding(mResizedView, PULL);
+                            mWatchingForPull = false;
+                        }
                 }
                 if (mWatchingForPull) {
                     final float yDiff = ev.getRawY() - mInitialTouchY;
