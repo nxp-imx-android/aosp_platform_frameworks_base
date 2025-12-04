@@ -69,6 +69,7 @@ import android.view.SurfaceControl;
 import android.view.SurfaceControl.IdleScreenRefreshRateConfig;
 import android.view.SurfaceControl.RefreshRateRange;
 import android.view.SurfaceControl.RefreshRateRanges;
+import android.view.SurfaceControl.WorkDuration;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -363,7 +364,7 @@ public class DisplayModeDirector {
                 final RefreshRateRanges ranges = new RefreshRateRanges(range, range);
                 return new DesiredDisplayModeSpecs(defaultMode.getModeId(),
                         /*allowGroupSwitching */ false,
-                        ranges, ranges, mBrightnessObserver.getIdleScreenRefreshRateConfig());
+                        ranges, ranges, mBrightnessObserver.getIdleScreenRefreshRateConfig(), null);
             }
 
             boolean modeSwitchingDisabled =
@@ -396,6 +397,15 @@ public class DisplayModeDirector {
                 appRequestSummary.maxRenderFrameRate = Math.max(baseMode.getRefreshRate(),
                         appRequestSummary.maxRenderFrameRate);
             }
+            if (Flags.enableWorkDurations() && primarySummary.workDurationsData == null) {
+                DisplayDeviceConfig config = mDisplayDeviceConfigByDisplay.get(displayId);
+                if (config != null) {
+                    RefreshRateData refreshRateData = config.getRefreshRateData();
+                    if (refreshRateData != null) {
+                        primarySummary.workDurationsData = refreshRateData.defaultWorkDurations;
+                    }
+                }
+            }
 
             return new DesiredDisplayModeSpecs(baseMode.getModeId(),
                     allowGroupSwitching,
@@ -413,7 +423,8 @@ public class DisplayModeDirector {
                             new RefreshRateRange(
                                     appRequestSummary.minRenderFrameRate,
                                     appRequestSummary.maxRenderFrameRate)),
-                    mBrightnessObserver.getIdleScreenRefreshRateConfig());
+                    mBrightnessObserver.getIdleScreenRefreshRateConfig(),
+                    primarySummary.workDurationsData);
         }
     }
 
@@ -835,6 +846,11 @@ public class DisplayModeDirector {
          */
         public final RefreshRateRanges appRequest;
 
+        /**
+         * The work durations data depending on low power mode, thermal throttling, or none.
+         */
+        public WorkDuration workDurationsData = null;
+
         public DesiredDisplayModeSpecs() {
             primary = new RefreshRateRanges();
             appRequest = new RefreshRateRanges();
@@ -844,12 +860,14 @@ public class DisplayModeDirector {
                 boolean allowGroupSwitching,
                 @NonNull RefreshRateRanges primary,
                 @NonNull RefreshRateRanges appRequest,
-                @Nullable SurfaceControl.IdleScreenRefreshRateConfig idleScreenRefreshRateConfig) {
+                @Nullable SurfaceControl.IdleScreenRefreshRateConfig idleScreenRefreshRateConfig,
+                                       @Nullable WorkDuration workDurationsData) {
             this.baseModeId = baseModeId;
             this.allowGroupSwitching = allowGroupSwitching;
             this.primary = primary;
             this.appRequest = appRequest;
             this.mIdleScreenRefreshRateConfig = idleScreenRefreshRateConfig;
+            this.workDurationsData = workDurationsData;
         }
 
         /**
@@ -860,9 +878,11 @@ public class DisplayModeDirector {
             return String.format("baseModeId=%d allowGroupSwitching=%b"
                             + " primary=%s"
                             + " appRequest=%s"
-                            + " idleScreenRefreshRateConfig=%s",
+                            + " idleScreenRefreshRateConfig=%s"
+                            + " workDurationsData=%s",
                     baseModeId, allowGroupSwitching, primary.toString(),
-                    appRequest.toString(), String.valueOf(mIdleScreenRefreshRateConfig));
+                    appRequest.toString(), String.valueOf(mIdleScreenRefreshRateConfig),
+                    workDurationsData);
         }
 
         /**
@@ -898,6 +918,10 @@ public class DisplayModeDirector {
                     desiredDisplayModeSpecs.mIdleScreenRefreshRateConfig)) {
                 return false;
             }
+
+            if (!Objects.equals(workDurationsData, desiredDisplayModeSpecs.workDurationsData)) {
+                return false;
+            }
             return true;
         }
 
@@ -922,6 +946,8 @@ public class DisplayModeDirector {
             appRequest.physical.max = other.appRequest.physical.max;
             appRequest.render.min = other.appRequest.render.min;
             appRequest.render.max = other.appRequest.render.max;
+
+            workDurationsData = other.workDurationsData;
 
             if (other.mIdleScreenRefreshRateConfig == null) {
                 mIdleScreenRefreshRateConfig = null;
@@ -948,6 +974,7 @@ public class DisplayModeDirector {
         private final Handler mHandler;
         private float mDefaultPeakRefreshRate;
         private float mDefaultRefreshRate;
+
         private boolean mIsLowPower = false;
 
         private final DisplayManager.DisplayListener mDisplayListener =
@@ -1113,10 +1140,23 @@ public class DisplayModeDirector {
                     }
                     List<SupportedModeData> supportedModes = config
                             .getRefreshRateData().lowPowerSupportedModes;
+                    Vote vote;
+                    if (Flags.enableWorkDurations()) {
+                        WorkDuration lowPowerWorkDurations = null;
+                        if (config.getRefreshRateData() != null) {
+                            lowPowerWorkDurations =
+                                    config.getRefreshRateData().lowPowerWorkDurations;
+                        }
+                        vote = Vote.forVotes(Arrays.asList(
+                                Vote.forSupportedRefreshRates(supportedModes),
+                                Vote.forWorkDurations(lowPowerWorkDurations)));
+                    } else {
+                        vote = Vote.forSupportedRefreshRates(supportedModes);
+                    }
                     mVotesStorage.updateVote(
                             mDisplayDeviceConfigByDisplay.keyAt(i),
                             Vote.PRIORITY_LOW_POWER_MODE_MODES,
-                            Vote.forSupportedRefreshRates(supportedModes));
+                            vote);
                 }
             } else {
                 mVotesStorage.removeAllVotesForPriority(Vote.PRIORITY_LOW_POWER_MODE_MODES);

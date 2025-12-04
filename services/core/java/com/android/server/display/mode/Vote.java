@@ -18,6 +18,7 @@ package com.android.server.display.mode;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.view.SurfaceControl.WorkDuration;
 
 import com.android.server.display.config.SupportedModeData;
 
@@ -248,12 +249,26 @@ interface Vote {
         return new SupportedRefreshRatesVote(rates);
     }
 
+    static Vote forWorkDurations(WorkDuration workDurationsData) {
+        return new WorkDurationsVote(workDurationsData);
+    }
+
     static Vote forSupportedModes(List<Integer> modeIds) {
         return new SupportedModesVote(modeIds);
     }
 
     static Vote forRejectedModes(Set<Integer> modeIds) {
         return new RejectedModesVote(modeIds);
+    }
+
+    static CombinedVote forVotes(List<Vote> votes) {
+        List<Vote> combinedVotes = new ArrayList<>();
+        for (Vote vote : votes) {
+            if (vote != null) {
+                combinedVotes.add(vote);
+            }
+        }
+        return new CombinedVote(combinedVotes);
     }
 
     static String priorityToString(int priority) {
