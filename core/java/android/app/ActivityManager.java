@@ -3718,11 +3718,11 @@ public class ActivityManager {
         public long availMem;
 
         /**
-         * The free memory on the system.  This is the unused RAM size of the
+         * The free memory on the system. This is the unused RAM size of the
          * device. Unlike {@link #availMem}, it's a basic snapshot of free RAM,
          * not accounting for reclaimable memory.
          */
-        @FlaggedApi(Flags.FLAG_GET_FREE_MEMORY)
+        @FlaggedApi(Flags.FLAG_GET_FREE_MEMORY_V2)
         @SuppressLint("MutableBareField")
         public long freeMem;
 
