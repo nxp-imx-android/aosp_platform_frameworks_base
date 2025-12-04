@@ -167,7 +167,7 @@ public class ThemeEventObserver {
         mThemeUserLifecycle.loadUserStateAndNotifyStateManager(newUserOrProfileId);
 
         Integer parentId = mStateManager.parentOf(newUserOrProfileId);
-        if (parentId == null || shouldIgnoreForHsum(UserHandle.of(parentId), "onProfileAdd")) {
+        if (parentId == null || !shouldHandleEventForUser(parentId, "onProfileAdd")) {
             return;
         }
 
@@ -188,7 +188,7 @@ public class ThemeEventObserver {
 
     private void handleWallpaperColorsChanged(WallpaperColors wallpaperColors, int userId,
             boolean fromForegroundApp) {
-        if (shouldIgnoreForHsum(UserHandle.of(userId), "onColorsChanged")) {
+        if (!shouldHandleEventForUser(userId, "onColorsChanged")) {
             return;
         }
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
@@ -210,7 +210,7 @@ public class ThemeEventObserver {
     }
 
     private void handleContrastChanged(int userId, float contrast) {
-        if (shouldIgnoreForHsum(UserHandle.of(userId), "onContrastChange")) {
+        if (!shouldHandleEventForUser(userId, "onContrastChange")) {
             return;
         }
         mStateManager.onContrastChange(userId, contrast);
@@ -233,7 +233,7 @@ public class ThemeEventObserver {
     };
 
     private void handleUserSetupChanged(int userId) {
-        if (shouldIgnoreForHsum(UserHandle.of(userId), "onFinishSetup")) {
+        if (!shouldHandleEventForUser(userId, "onFinishSetup")) {
             return;
         }
         Slog.d(TAG, "User: " + userId + " setup complete");
@@ -251,7 +251,7 @@ public class ThemeEventObserver {
     };
 
     private void handleThemeCustomizationChanged(int userId) {
-        if (shouldIgnoreForHsum(UserHandle.of(userId), "onStyleChange")) {
+        if (!shouldHandleEventForUser(userId, "onStyleChange")) {
             return;
         }
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
@@ -269,12 +269,17 @@ public class ThemeEventObserver {
 
     // Helper Methods
 
-    private boolean shouldIgnoreForHsum(UserHandle userHandle, String methodName) {
+    private boolean shouldHandleEventForUser(int userId, String methodName) {
         if (mUserManagerInternal != null && mUserManagerInternal.isHeadlessSystemUserMode()
-                && userHandle.isSystem()) {
+                && userId == UserHandle.USER_SYSTEM) {
             Slog.d(TAG, "Ignoring " + methodName + " for system user in HSUM");
-            return true;
+            return false;
         }
-        return false;
+        if (!mStateManager.hasState(userId)) {
+            Slog.d(TAG, "Event " + methodName + " for user " + userId + " but state missing. "
+                    + "Loading it now.");
+            mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId);
+        }
+        return true;
     }
 }
