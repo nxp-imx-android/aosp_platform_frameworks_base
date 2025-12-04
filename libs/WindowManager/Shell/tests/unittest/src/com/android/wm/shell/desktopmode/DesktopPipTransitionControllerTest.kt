@@ -24,6 +24,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
@@ -333,6 +334,25 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
         verify(mockDesktopTasksController, never())
             .minimizeMultiActivityPipTask(wct = any(), deskId = anyOrNull(), task = any())
+    }
+
+    @Test
+    fun handleRemovePipTransition_notInDesktop_wctEmpty() {
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+
+        controller.handleRemovePipTransition(wct = wct, token = taskInfo.token)
+
+        assertThat(wct.changes.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun handleRemovePipTransition_inDesktop_wctRemoveTask() {
+        controller.handleRemovePipTransition(wct = wct, token = taskInfo.token)
+
+        assertThat(wct.hierarchyOps).hasSize(1)
+        val taskRemoval = wct.hierarchyOps.find { op -> op.container == taskInfo.token.asBinder() }
+        assertThat(taskRemoval).isNotNull()
+        assertThat(taskRemoval!!.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
     }
 
     private companion object {

@@ -151,6 +151,9 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
         wct.reorder(pipTaskToken, false);
+        if (mDesktopPipTransitionController.isPresent()) {
+            mDesktopPipTransitionController.get().handleRemovePipTransition(wct, pipTaskToken);
+        }
 
         final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
         if (PipUtils.isContentPip(pipTaskInfo)) {
