@@ -105,3 +105,11 @@ flag {
     description: "This flag will enable the content sync state document column"
     bug: "415947063"
 }
+
+#OWNER=zhaotian TARGET=26Q2
+flag {
+    name: "expose_vpn_app_exclusion_settings"
+    namespace: "android_settings"
+    description: "Allows VpnManager-based apps to launch a Settings screen to select apps excluded from the VPN"
+    bug: "459584692"
+}
