@@ -2626,7 +2626,7 @@ public final class JobStatus {
             reasons.add(JobScheduler.PENDING_JOB_REASON_UNDEFINED);
         }
 
-        final int[] reasonsArr = new int[reasons.size()];
+        @JobScheduler.PendingJobReason final int[] reasonsArr = new int[reasons.size()];
         for (int i = 0; i < reasonsArr.length; i++) {
             reasonsArr[i] = reasons.get(i);
         }
