@@ -37,7 +37,6 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.domain.interactor.remoteInputInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationContainerInteractor
-import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
 import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
@@ -135,6 +134,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 lightRevealScrim = lightRevealScrimViewModel,
                 wallpaperViewModel = wallpaperViewModel,
                 keyguardInteractor = keyguardInteractor,
+                keyguardTransitionInteractor = keyguardTransitionInteractor,
                 burnIn = aodBurnInViewModel,
                 clock = keyguardClockViewModel,
                 onBootTransitionInteractor = onBootTransitionInteractor,
