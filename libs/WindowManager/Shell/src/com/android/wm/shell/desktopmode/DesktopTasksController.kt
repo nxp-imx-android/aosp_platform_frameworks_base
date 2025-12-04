@@ -3776,7 +3776,6 @@ class DesktopTasksController(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        logger.v("handleRequest request=%s", request)
         val userChange = request.userChange
         if (userChange != null) {
             return handleUserChangeTransitionRequest(transition, request)

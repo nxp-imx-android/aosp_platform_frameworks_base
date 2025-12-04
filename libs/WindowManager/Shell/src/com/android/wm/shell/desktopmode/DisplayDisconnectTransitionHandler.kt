@@ -76,12 +76,6 @@ class DisplayDisconnectTransitionHandler(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        ProtoLog.v(
-            WM_SHELL_DESKTOP_MODE,
-            "$TAG: handleRequest: transition=%s, request=%s",
-            transition,
-            request,
-        )
         val displayChange = request.displayChange
         if (
             !(DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
