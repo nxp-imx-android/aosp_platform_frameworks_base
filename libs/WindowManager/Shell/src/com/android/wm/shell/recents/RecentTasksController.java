@@ -1023,6 +1023,11 @@ public class RecentTasksController implements TaskStackListenerCallback,
         // No-op for now.
     }
 
+    @Override
+    public void onTaskAppearingInDesk(int displayId, int deskId, int taskId) {
+        // No-op for now.
+    }
+
     /**
      * The interface for calls from outside the host process.
      */

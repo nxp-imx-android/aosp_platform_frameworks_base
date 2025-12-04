@@ -336,6 +336,29 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addTaskToDesk_notifiesTaskAppearingInDeskListener() {
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 5,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        executor.flushAll()
+
+        val lastAppearance = assertNotNull(listener.lastTaskAppearingInDesk)
+        assertThat(lastAppearance.taskId).isEqualTo(1)
+        assertThat(lastAppearance.displayId).isEqualTo(DEFAULT_DISPLAY)
+        assertThat(lastAppearance.deskId).isEqualTo(5)
+    }
+
+    @Test
     fun removeActiveTask_notifiesActiveTaskListener() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
@@ -2842,6 +2865,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         var lastCanCreateDesks: Boolean? = null
             private set
 
+        var lastTaskAppearingInDesk: LastTaskAppearingInDesk? = null
+            private set
+
         override fun onDeskAdded(displayId: Int, deskId: Int) {
             lastAddition = LastAddition(displayId, deskId)
         }
@@ -2867,11 +2893,17 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             lastCanCreateDesks = canCreateDesks
         }
 
+        override fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int) {
+            lastTaskAppearingInDesk = LastTaskAppearingInDesk(taskId, displayId, deskId)
+        }
+
         data class LastAddition(val displayId: Int, val deskId: Int)
 
         data class LastRemoval(val displayId: Int, val deskId: Int)
 
         data class ActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
+
+        data class LastTaskAppearingInDesk(val taskId: Int, val displayId: Int, val deskId: Int)
     }
 
     class TestListener : DesktopRepository.ActiveTasksListener {

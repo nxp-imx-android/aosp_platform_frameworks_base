@@ -103,6 +103,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.common.transition.TransitionStateHolder;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
@@ -1046,7 +1047,8 @@ public abstract class WMShellModule {
             TransactionPool transactionPool,
             PipTransitionState pipTransitionState,
             LockTaskChangeListener lockTaskChangeListener,
-            LauncherApps launcherApps) {
+            LauncherApps launcherApps,
+            TransitionStateHolder transitionStateHolder) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1102,7 +1104,8 @@ public abstract class WMShellModule {
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
                         : Optional.empty(),
                 lockTaskChangeListener,
-                launcherApps);
+                launcherApps,
+                transitionStateHolder);
     }
 
     @WMSingleton

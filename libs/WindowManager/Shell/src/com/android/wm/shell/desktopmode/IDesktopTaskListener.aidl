@@ -71,4 +71,7 @@ oneway interface IDesktopTaskListener {
      * If `oldActiveDesk` is -1, it means a desk was not active on the display.
      */
     void onActiveDeskChanged(int displayId, int newActiveDesk, int oldActiveDesk);
+
+    /** Called when overview is showing and a new task appears in a desk. */
+    void onTaskAppearingInDeskWithOverviewShowing(int taskId, int displayId, int deskId);
 }
