@@ -41,10 +41,12 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
 
     private final String TAG = "VRInsetsControllerHost";
 
+    @NonNull
     private final ViewRootImpl mViewRoot;
+
     private SyncRtSurfaceTransactionApplier mApplier;
 
-    public ViewRootInsetsControllerHost(ViewRootImpl viewRoot) {
+    public ViewRootInsetsControllerHost(@NonNull ViewRootImpl viewRoot) {
         mViewRoot = viewRoot;
     }
 
@@ -196,14 +198,9 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     @Override
     public void updateAnimatingTypes(@WindowInsets.Type.InsetsType int animatingTypes,
             @Nullable ImeTracker.Token statsToken) {
-        if (mViewRoot != null) {
-            ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
-            mViewRoot.updateAnimatingTypes(animatingTypes, statsToken);
-        } else {
-            ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
-        }
+        ImeTracker.forLogging().onProgress(statsToken,
+                ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
+        mViewRoot.updateAnimatingTypes(animatingTypes, statsToken);
     }
 
     @Override
@@ -276,32 +273,23 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     @Nullable
     @Override
     public String getRootViewTitle() {
-        if (mViewRoot == null) {
-            return null;
-        }
         return mViewRoot.getTitle().toString();
     }
 
     @Nullable
     @Override
     public Context getRootViewContext() {
-        return mViewRoot != null ? mViewRoot.mContext : null;
+        return mViewRoot.mContext;
     }
 
     @Override
     public int dipToPx(int dips) {
-        if (mViewRoot != null) {
-            return mViewRoot.dipToPx(dips);
-        }
-        return 0;
+        return mViewRoot.dipToPx(dips);
     }
 
     @Nullable
     @Override
     public IBinder getWindowToken() {
-        if (mViewRoot == null) {
-            return null;
-        }
         final View view = mViewRoot.getView();
         if (view == null) {
             return null;
@@ -312,15 +300,12 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     @Nullable
     @Override
     public CompatibilityInfo.Translator getTranslator() {
-        if (mViewRoot != null) {
-            return mViewRoot.mTranslator;
-        }
-        return null;
+        return mViewRoot.mTranslator;
     }
 
     @Override
     public boolean isHandlingPointerEvent() {
-        return mViewRoot != null && mViewRoot.isHandlingPointerEvent();
+        return mViewRoot.isHandlingPointerEvent();
     }
 
     private boolean isVisibleToUser() {
