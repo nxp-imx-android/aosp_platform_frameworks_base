@@ -165,6 +165,7 @@ import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.WindowStateTransactionItem;
 import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ClipData;
@@ -208,6 +209,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.DropBoxManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -367,6 +369,38 @@ public final class ViewRootImpl implements ViewParent,
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private static final long DISABLE_DRAW_WAKE_LOCK = 349153669L;
+
+    /**
+     * When enabled, {@link #checkThreadCompat} will throw an exception if called from the wrong
+     * thread.
+     * <p>When disabled, an exception will be logged instead.
+     *
+     * @hide
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    public static final long ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS = 464275874L;
+
+    /**
+     * When enabled, if {@link #checkThreadCompat} detects that the calling thread is not the
+     * correct thread, and an exception isn't thrown, the caller may proceed to perform the action.
+     *
+     * <p>When disabled, if {@link #checkThreadCompat} detects that the calling thread is not the
+     * correct thread, and an exception isn't thrown, the caller will proceed to post the action to
+     * the correct thread.
+     *
+     * <p>This leniency may be required for apps that rely on being able to perform the action
+     * inline, even if it means performing the action on the wrong thread. For such apps, disable
+     * this flag.
+     *
+     * <p>Note that if {@link #ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} is enabled then this
+     * flag practically does nothing, since {@link #checkThreadCompat} will throw an exception
+     * before this flag is checked.
+     *
+     * @hide
+     */
+    @ChangeId
+    public static final long ALLOW_INLINE_CALL_ON_FAILED_THREAD_CHECK = 464275875L;
 
     /**
      * Set to false if we do not want to use the multi threaded renderer even though
@@ -543,6 +577,7 @@ public final class ViewRootImpl implements ViewParent,
      * target SDK versions.
      */
     private static boolean sCompatibilityDone = false;
+    private static int sCalledFromWrongThreadCount = 0;
 
     /**
      * Always assign focus if a focusable View is available.
@@ -1446,6 +1481,10 @@ public final class ViewRootImpl implements ViewParent,
      * compat control state updates.
      */
     public void setActivityConfigCallback(@Nullable ActivityConfigCallback callback) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> setActivityConfigCallback(callback));
+            return;
+        }
         mActivityConfigCallback = callback;
         if (callback == null) {
             mPendingActivityWindowInfo = null;
@@ -1457,6 +1496,10 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     public void setOnContentApplyWindowInsetsListener(OnContentApplyWindowInsetsListener listener) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> setOnContentApplyWindowInsetsListener(listener));
+            return;
+        }
         mAttachInfo.mContentOnApplyWindowInsetsListener = listener;
 
         // System windows will be fitted on first traversal, so no reason to request additional
@@ -1467,14 +1510,26 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     public void addWindowCallbacks(WindowCallbacks callback) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> addWindowCallbacks(callback));
+            return;
+        }
         mWindowCallbacks.add(callback);
     }
 
     public void removeWindowCallbacks(WindowCallbacks callback) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> removeWindowCallbacks(callback));
+            return;
+        }
         mWindowCallbacks.remove(callback);
     }
 
     public void reportDrawFinish() {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(this::reportDrawFinish);
+            return;
+        }
         if (mWindowDrawCountDown != null) {
             mWindowDrawCountDown.countDown();
         }
@@ -1497,6 +1552,10 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     public void notifyChildRebuilt() {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(this::notifyChildRebuilt);
+            return;
+        }
         if (mView instanceof RootViewSurfaceTaker) {
             if (mSurfaceHolderCallback != null) {
                 mSurfaceHolder.removeCallback(mSurfaceHolderCallback);
@@ -1557,6 +1616,11 @@ public final class ViewRootImpl implements ViewParent,
      */
     public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView,
             int userId) {
+        if (!checkThreadCompat()) {
+            final WindowManager.LayoutParams capturedAttrs = attrs;
+            executeOnCorrectThread(() -> setView(view, capturedAttrs, panelParentView, userId));
+            return;
+        }
         synchronized (this) {
             if (mView == null) {
                 mView = view;
@@ -2002,6 +2066,10 @@ public final class ViewRootImpl implements ViewParent,
      * @param animator animator to register with the hardware renderer
      */
     public void registerAnimatingRenderNode(RenderNode animator) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> registerAnimatingRenderNode(animator));
+            return;
+        }
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.registerAnimatingRenderNode(animator);
         } else {
@@ -2016,6 +2084,10 @@ public final class ViewRootImpl implements ViewParent,
      * @param animator animator to register with the hardware renderer
      */
     public void registerVectorDrawableAnimator(NativeVectorDrawableAnimator animator) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> registerVectorDrawableAnimator(animator));
+            return;
+        }
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.registerVectorDrawableAnimator(animator);
         }
@@ -2029,6 +2101,10 @@ public final class ViewRootImpl implements ViewParent,
      * @param callback The callback to register.
      */
     public void registerRtFrameCallback(@NonNull FrameDrawingCallback callback) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> registerRtFrameCallback(callback));
+            return;
+        }
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.registerRtFrameCallback(new FrameDrawingCallback() {
                 @Override
@@ -2192,6 +2268,10 @@ public final class ViewRootImpl implements ViewParent,
 
     @VisibleForTesting
     public void setLayoutParams(WindowManager.LayoutParams attrs, boolean newView) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> setLayoutParams(attrs, newView));
+            return;
+        }
         synchronized (this) {
             final int oldInsetLeft = mWindowAttributes.surfaceInsets.left;
             final int oldInsetTop = mWindowAttributes.surfaceInsets.top;
@@ -2571,6 +2651,10 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     public void onMovedToDisplay(int displayId, Configuration config) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> onMovedToDisplay(displayId, config));
+            return;
+        }
         if (mDisplay.getDisplayId() == displayId) {
             return;
         }
@@ -2663,6 +2747,10 @@ public final class ViewRootImpl implements ViewParent,
      */
     public void updateAnimatingTypes(@InsetsType int animatingTypes,
             @Nullable ImeTracker.Token statsToken) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> updateAnimatingTypes(animatingTypes, statsToken));
+            return;
+        }
         if (sToolkitSetFrameRateReadOnlyFlagValue) {
             boolean running = animatingTypes != 0;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
@@ -2830,10 +2918,18 @@ public final class ViewRootImpl implements ViewParent,
 
     private final ArrayList<SurfaceChangedCallback> mSurfaceChangedCallbacks = new ArrayList<>();
     public void addSurfaceChangedCallback(SurfaceChangedCallback c) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> addSurfaceChangedCallback(c));
+            return;
+        }
         mSurfaceChangedCallbacks.add(c);
     }
 
     public void removeSurfaceChangedCallback(SurfaceChangedCallback c) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> removeSurfaceChangedCallback(c));
+            return;
+        }
         mSurfaceChangedCallbacks.remove(c);
     }
 
@@ -3077,6 +3173,10 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     public void requestTransitionStart(LayoutTransition transition) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> requestTransitionStart(transition));
+            return;
+        }
         if (mPendingTransitions == null || !mPendingTransitions.contains(transition)) {
             if (mPendingTransitions == null) {
                  mPendingTransitions = new ArrayList<LayoutTransition>();
@@ -3133,6 +3233,10 @@ public final class ViewRootImpl implements ViewParent,
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     void scheduleTraversals() {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> scheduleTraversals());
+            return;
+        }
         if (!mTraversalScheduled) {
             mTraversalScheduled = true;
             // The following behavior is load-bearing for public API correctness.
@@ -3162,6 +3266,10 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     void unscheduleTraversals() {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> unscheduleTraversals());
+            return;
+        }
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             mQueue.removeSyncBarrier(mTraversalBarrier);
@@ -6877,6 +6985,10 @@ public final class ViewRootImpl implements ViewParent,
      * @param newDisplayId Id of new display if moved, {@link Display#INVALID_DISPLAY} otherwise.
      */
     public void updateConfiguration(int newDisplayId) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> updateConfiguration(newDisplayId));
+            return;
+        }
         if (mView == null) {
             return;
         }
@@ -11677,10 +11789,85 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void throwCalledFromWrongThreadException() {
-        throw new CalledFromWrongThreadException(
+        throw newCalledFromWrongThreadException();
+    }
+
+    private CalledFromWrongThreadException newCalledFromWrongThreadException() {
+        return new CalledFromWrongThreadException(
                 "Only the original thread that created a view hierarchy can touch its views."
                         + " Expected: " + mThread.getName()
                         + " Calling: " + Thread.currentThread().getName());
+    }
+
+    /**
+     * Checks if the current thread is the same as the thread that created the view hierarchy.
+     *
+     * <p>If the check fails, logs or throws an exception depending on the {@link
+     * ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId.
+     *
+     * <p>If logging, logs at most once per process lifetime.
+     *
+     * @return true if the caller may proceed to perform the action on the current thread.
+     *         false if the caller must post the work using {@link #executeOnCorrectThread}.
+     */
+    // TODO(b/465527827): eventually delete this method, replace with plain checkThread()
+    private boolean checkThreadCompat() {
+        final Thread current = Thread.currentThread();
+        if (mThread == current) {
+            return true;
+        }
+
+        if (CompatChanges.isChangeEnabled(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)) {
+            throwCalledFromWrongThreadException();
+        }
+
+        // Log the issue, but not too many times per process.
+        // Note that this counter is not atomic, so it's possible we log more than the requisite
+        // times per process lifetime. That's fine because the precise number of logs isn't
+        // important so long as we eventually stop logging.
+        if (++sCalledFromWrongThreadCount <= 10) {
+            final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
+            Log.e(
+                    TAG,
+                    "Attempt to call method from wrong thread. "
+                            + "This will throw an exception in a future version.",
+                    e);
+            // TODO(b/464275874): remove the dropbox logging once we've fixed the SysUI bug
+            final DropBoxManager db = mContext.getSystemService(DropBoxManager.class);
+            if (db != null) {
+                db.addText("view_wrong_thread", Log.getStackTraceString(e));
+            }
+        }
+
+        if (CompatChanges.isChangeEnabled(ALLOW_INLINE_CALL_ON_FAILED_THREAD_CHECK)) {
+            // Allow the caller to proceed to perform the action as if the thread check passed.
+            return true;
+        } else {
+            // Notify the caller that they must post the work to the correct thread.
+            return false;
+        }
+    }
+
+    /**
+     * Executes the given action on the correct thread.
+     *
+     * @param action the action to execute
+     */
+    private void executeOnCorrectThread(Runnable action) {
+        // Post the wrapper to the head of the correct thread's queue, skipping sync barriers if any
+        final Message msg = Message.obtain(mHandler, action);
+        msg.setAsynchronous(true);
+        mHandler.sendMessageAtFrontOfQueue(msg);
+
+        // Note that when this method returns, the action likely hasn't run yet.
+        // This is a subtle behavior change. Before we guarded against races, calling a method on
+        // the wrong thread would execute that method inline. Now that we post the work to the
+        // correct thread and return immediately, we risk introducing a race in the caller.
+        // We could maintain that behavior in compatibility mode by blocking on the posted Runnable.
+        // However, that risks introducing deadlocks.
+        // We choose the former over the latter, because code that runs on the wrong thread is
+        // already arcy, and blocking on the posted Runnable can make the problem
+        // worse.
     }
 
     @Override
@@ -11976,6 +12163,10 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     public void setReportNextDraw(boolean syncBuffer, String reason) {
+        if (!checkThreadCompat()) {
+            executeOnCorrectThread(() -> setReportNextDraw(syncBuffer, reason));
+            return;
+        }
         mSyncBuffer = syncBuffer;
         reportNextDraw(reason);
         invalidate();
