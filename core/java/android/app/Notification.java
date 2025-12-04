@@ -1906,6 +1906,12 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     static final String EXTRA_METRICS = "android.metrics";
 
+    /**
+     * {@link #extras} key: an int pointing to an index in {@link #EXTRA_METRICS}.
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    static final String EXTRA_METRICS_CRITICAL_INDEX = "android.metrics.criticalIndex";
+
     /** {@link #extras} key: Bundle corresponding to {@link CompactContent}. */
     @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
     static final String EXTRA_COMPACT_CONTENT = "android.compactContent";
@@ -12371,9 +12377,19 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     public static final class MetricStyle extends Style {
 
+        /**
+         * Special value for {@link #setCriticalMetric(int)} to indicate that none of the metrics
+         * should be considered the "most important" one.
+         */
+        public static final int METRIC_INDEX_NONE = -1;
+
+        /* Index of the default critical metric (the first one). */
+        private static final int CRITICAL_METRIC_DEFAULT = 0;
+
         private static final int MAX_METRICS = 3;
 
         private final List<Metric> mMetrics = new ArrayList<>();
+        private int mCriticalMetric = CRITICAL_METRIC_DEFAULT;
 
         public MetricStyle() {
         }
@@ -12382,17 +12398,21 @@ public class Notification implements Parcelable
         public boolean equals(Object obj) {
             if (!(obj instanceof MetricStyle that)) return false;
             if (this == that) return true;
-            return Objects.equals(this.mMetrics, that.mMetrics);
+            return Objects.equals(this.mMetrics, that.mMetrics)
+                    && this.mCriticalMetric == that.mCriticalMetric;
         }
 
         @Override
         public int hashCode() {
-            return mMetrics.hashCode();
+            return Objects.hash(mMetrics, mCriticalMetric);
         }
 
         @Override
         public String toString() {
-            return "MetricStyle{" + mMetrics + "}";
+            return "MetricStyle{"
+                    + "mMetrics=" + mMetrics
+                    + ", mCriticalMetric=" + mCriticalMetric
+                    + "}";
         }
 
         /** Adds a {@link Metric} to this {@link MetricStyle}. */
@@ -12422,6 +12442,37 @@ public class Notification implements Parcelable
         @NonNull
         public List<Metric> getMetrics() {
             return Collections.unmodifiableList(mMetrics);
+        }
+
+        /**
+         * Indicates which of the metrics is considered the "most important". This may be used when
+         * the notification is displayed in other surfaces (such as a status bar chip).
+         *
+         * @param index either the index (0-based) of an item in {@link #getMetrics()}, or
+         *              {@link #METRIC_INDEX_NONE} to indicate no {@link Metric} should be used
+         *              for this purpose
+         */
+        @NonNull
+        public MetricStyle setCriticalMetric(int index) {
+            mCriticalMetric = index;
+            return this;
+        }
+
+        /**
+         * Returns which, if any, of the metrics is considered the "most important", or {@code null}
+         * if none are. This may be used when the notification is displayed in other surfaces (such
+         * as a status bar chip).
+         *
+         * <p>By default, unless {@link #setCriticalMetric(int)} has been set, the first metric in
+         * the list is considered the critical one.
+         */
+        @Nullable
+        public Metric getCriticalMetric() {
+            if (mCriticalMetric >= 0 && mCriticalMetric < mMetrics.size()) {
+                return mMetrics.get(mCriticalMetric);
+            } else {
+                return null;
+            }
         }
 
         /** @hide */
@@ -12457,6 +12508,7 @@ public class Notification implements Parcelable
                 bundles.add(Metric.toBundle(metric));
             }
             extras.putParcelableArrayList(EXTRA_METRICS, bundles);
+            extras.putInt(EXTRA_METRICS_CRITICAL_INDEX, mCriticalMetric);
         }
 
         /** @hide */
@@ -12478,6 +12530,8 @@ public class Notification implements Parcelable
                     }
                 }
             }
+
+            mCriticalMetric = extras.getInt(EXTRA_METRICS_CRITICAL_INDEX, CRITICAL_METRIC_DEFAULT);
         }
 
         /** @hide */
@@ -15632,8 +15686,9 @@ public class Notification implements Parcelable
             compactText = CompactText.useShortCriticalText();
         } else if (Flags.apiMetricStyle()
                 && builder.getStyle() instanceof MetricStyle metricStyle
-                && !metricStyle.getMetrics().isEmpty()) {
-            compactText = CompactText.useStyleMetric(0);
+                && metricStyle.getCriticalMetric() != null) {
+            compactText = CompactText.useStyleMetric(
+                    metricStyle.getMetrics().indexOf(metricStyle.getCriticalMetric()));
         } else if (showsChronometer()) {
             boolean isCountdown = extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
             compactText = CompactText.useWhenAsChronometer(isCountdown);
