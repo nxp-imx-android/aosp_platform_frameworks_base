@@ -359,7 +359,7 @@ constructor(
                 contentAlignment = Alignment.Center,
             ) {
                 LockscreenElement(Region.Clock.Large)
-                Notifications(aodAlignment = notifAlignment)
+                AODNotifications(context.burnInModifier.align(notifAlignment))
             }
         }
 
