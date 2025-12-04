@@ -47,27 +47,18 @@ abstract class ApiFirstPreferenceScreen(
         coroutineScope: CoroutineScope,
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
-            for (preference in preferencesList) {
-                preference.apply {
-                    screenPermissions = preferencesPermissions
-                    screenPreconditions = preferencesPreconditionsFun
-                }
+            for (preference in preferences) {
                 +preference
             }
         }
 
     var parametersSchema: KeyParametersSchema? = null
-    val preferencesPermissions = mutableListOf<String>()
+    var screenPermissions: PermissionsConfig? = null
+    var screenPreconditions: PreconditionsConfig? = null
 
-    // TODO: Wrap this in a single subtype
-    var preferencesPreconditionsDescription: String? = null
-    var preferencesPreconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
-
-    val preferencesList = mutableListOf<ApiFirstPreference<*>>()
+    val preferences = mutableListOf<ApiFirstPreference<*>>()
 
     /**
-     * TODO: Update comment example
-     *
      * A factory function to create an instance of [ApiFirstPreference].
      * This is a convenient way to instantiate a preference without creating a new concrete class.
      *
@@ -77,7 +68,25 @@ abstract class ApiFirstPreferenceScreen(
      *     purpose = R.string.my_preference_purpose,
      *     type = AnyString
      * ) {
+     *     permissions(listOf(Manifest.permission.PERMISSION))
+     *     preconditions("My precondition description") { context ->
+     *         if (conditionFoo(context)) {
+     *             Allowed
+     *         } else {
+     *             HardwareUnsupported("Hardware Foo not connected")
+     *         }
+     *     }
+     *
      *     get {
+     *         permissions(listOf(Manifest.permission.PERMISSION_GET))
+     *         preconditions("My get precondition description") { context ->
+     *             if (conditionBar(context)) {
+     *                 Allowed
+     *             } else {
+     *                 EnterpriseRestriction("Admin Bar restriction")
+     *             }
+     *         }
+     *
      *         execute { context ->
      *             // Get the value
      *             Foo(context)
@@ -85,6 +94,22 @@ abstract class ApiFirstPreferenceScreen(
      *     }
      *
      *     set {
+     *         permissions(listOf(Manifest.permission.PERMISSION_SET))
+     *         preconditions("My set precondition description") { context ->
+     *             if (conditionFooBar(context)) {
+     *                 Allowed
+     *             } else {
+     *                 Custom("condition FooBar not met")
+     *             }
+     *         }
+     *         valuePreconditions("My value precondition description") { context, value ->
+     *             if (conditionBarFoo(context, value)) {
+     *                 Allowed
+     *             } else {
+     *                 Custom("Value not allowed to be set")
+     *             }
+     *         }
+     *
      *         execute { context, value ->
      *             // Set the value
      *             Bar(context, value)
@@ -99,9 +124,16 @@ abstract class ApiFirstPreferenceScreen(
         type: ApiFirstType<V>,
         lambda: ApiFirstPreferenceConfigBuilder<V>.() -> Unit
     ) {
-        val builder = ApiFirstPreferenceConfigBuilder(key, purpose, type, V::class.java)
+        val builder = ApiFirstPreferenceConfigBuilder(
+            key,
+            purpose,
+            type,
+            V::class.java,
+            screenPermissions,
+            screenPreconditions
+        )
         builder.lambda()
-        preferencesList.add(builder.build())
+        preferences.add(builder.build())
     }
 
     protected fun parameters(lambda: KeyParametersSchema.Builder.() -> Unit) {
@@ -109,14 +141,13 @@ abstract class ApiFirstPreferenceScreen(
     }
 
     protected fun permissions(permissions: List<String>) {
-        preferencesPermissions.addAll(permissions)
+        screenPermissions = PermissionsConfig(permissions)
     }
 
     protected fun preconditions(
         description: String,
         lambda: (Context) -> ApiFirstPreconditions
     ) {
-        preferencesPreconditionsDescription = description
-        preferencesPreconditionsFun = lambda
+        screenPreconditions = PreconditionsConfig(description, lambda)
     }
 }

@@ -89,13 +89,13 @@ class ApiFirstPreferenceScreenTest {
         }
 
         // Check we only have 2 preferences in the list
-        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check preference order is correct
-        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
 
-        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
     }
 
@@ -137,15 +137,15 @@ class ApiFirstPreferenceScreenTest {
 
 
         // Check we only have 2 preferences in the list
-        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check that getters return the correct value
-        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
         assertThat(
             firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
         ).isEqualTo(preferenceValue1)
 
-        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo("ApiFirstPreference2")
         assertThat(
             secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
@@ -196,10 +196,10 @@ class ApiFirstPreferenceScreenTest {
         }
 
         // Check we only have 2 preferences in the list
-        assertThat(preferenceScreen.preferencesList.size).isEqualTo(2)
+        assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // First preference doesn't have a setter, so the getter should return the same value
-        val firstPreference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
         firstPreference.storage(context).setValue(preferenceKey1, Boolean::class.java, true)
         assertThat(
@@ -207,7 +207,7 @@ class ApiFirstPreferenceScreenTest {
         ).isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
-        val secondPreference = preferenceScreen.preferencesList[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
         secondPreference.storage(context)
             .setValue(preferenceKey2, Int::class.java, newPreferenceValue2)
@@ -262,10 +262,10 @@ class ApiFirstPreferenceScreenTest {
         }
 
         // Check we only have 1 preference in the list
-        assertThat(preferenceScreen.preferencesList.size).isEqualTo(1)
+        assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Trying to set a wrong value throws exception and value stays the same
-        val preference = preferenceScreen.preferencesList[0] as ApiFirstPreference<Int>
+        val preference = preferenceScreen.preferences[0] as ApiFirstPreference<Int>
         assertThat(preference.key).isEqualTo(preferenceKey)
         assertThrows(IllegalStateException::class.java) {
             preference.storage(context)

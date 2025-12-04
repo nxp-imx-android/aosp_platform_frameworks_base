@@ -30,27 +30,35 @@ import com.android.settingslib.metadata.apifirst.preconditions.Disallowed
 import com.android.settingslib.metadata.apifirst.types.ApiFirstType
 
 /** Configuration of the [ApiFirstPreference] permissions. */
-data class PermissionsConfig(
-    val permissions: List<String>,
-)
+class PermissionsConfig(incomingPermissions: List<String>) {
+    // Create a new, immutable list from the incoming one, avoiding unforeseen changes to the list
+    val permissions: List<String> = incomingPermissions.toList()
+}
 
 /** Configuration of the [ApiFirstPreference] preconditions. */
-data class PreconditionsConfig(
-    val preconditions: (Context) -> ApiFirstPreconditions,
+class PreconditionsConfig(
+    val description: String,
+    val check: (Context) -> ApiFirstPreconditions,
 )
 
 /** Configuration of the [ApiFirstPreference] get. */
-data class GetConfig<V : Any>(
-    val permissions: List<String>? = null,
-    val preconditions: ((Context) -> ApiFirstPreconditions)? = null,
+class GetConfig<V : Any>(
+    val permissions: PermissionsConfig? = null,
+    val preconditions: PreconditionsConfig? = null,
     val execute: (Context) -> V
 )
 
+/** Configuration of the [ApiFirstPreference] value preconditions. */
+class ValuePreconditionsConfig<V : Any>(
+    val description: String,
+    val check: ((Context, V) -> ApiFirstPreconditions),
+)
+
 /** Configuration of the [ApiFirstPreference] set. */
-data class SetConfig<V : Any>(
-    val permissions: List<String>? = null,
-    val preconditions: ((Context) -> ApiFirstPreconditions)? = null,
-    val valuePreconditions: ((Context, V) -> ApiFirstPreconditions)? = null,
+class SetConfig<V : Any>(
+    val permissions: PermissionsConfig? = null,
+    val preconditions: PreconditionsConfig? = null,
+    val valuePreconditions: ValuePreconditionsConfig<V>? = null,
     val execute: (Context, V) -> Unit
 )
 
@@ -62,79 +70,54 @@ data class SetConfig<V : Any>(
  * partner teams to write and the methods which Catalyst expects.
  */
 abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
-    // TODO: Maybe refactor, use common function for both get/setPermissions
-    private fun getPermissions(): Permissions {
+    /**
+     * Builds the final [Permissions] object by combining screen-level, common, and
+     * operation-specific permissions.
+     */
+    private fun buildPermissions(operationPermissions: PermissionsConfig?): Permissions {
         val permissionsList = mutableListOf<String>()
-        screenPermissions?.let { permissionsList.addAll(it) }
-        commonPermissions?.let { permissionsList.addAll(it.permissions) }
-        get.permissions?.let { permissionsList.addAll(it) }
+        screenPermissions?.let { permissionsList.addAll(it.permissions) }
+        permissions?.let { permissionsList.addAll(it.permissions) }
+        operationPermissions?.let { permissionsList.addAll(it.permissions) }
 
-        var perms = Permissions.EMPTY
-        for (perm in permissionsList) {
-            perms = perms and perm
-        }
-
-        return perms
+        return permissionsList.fold(Permissions.EMPTY) { acc, perm -> acc and perm }
     }
 
-    private fun setPermissions(): Permissions {
-        val permissionsList = mutableListOf<String>()
-        screenPermissions?.let { permissionsList.addAll(it) }
-        commonPermissions?.let { permissionsList.addAll(it.permissions) }
-        set?.permissions?.let { permissionsList.addAll(it) }
-
-        var perms = Permissions.EMPTY
-        for (perm in permissionsList) {
-            perms = perms and perm
-        }
-
-        return perms
-    }
-
-    // TODO: Maybe refactor, use common function for both get/setPreconditions
-    private fun getPreconditions(context: Context): ApiFirstPreconditions {
-        screenPreconditions?.invoke(context)?.let {
+    /**
+     * Evaluates preconditions in order: screen-level, common, and operation-specific.
+     * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
+     * are met.
+     */
+    private fun evaluatePreconditions(
+        context: Context,
+        operationPreconditions: PreconditionsConfig?
+    ): ApiFirstPreconditions {
+        screenPreconditions?.check(context)?.let {
             if (it != Allowed) return it
         }
 
-        commonPreconditions?.preconditions?.invoke(context)?.let {
+        preconditions?.check(context)?.let {
             if (it != Allowed) return it
         }
 
-        get.preconditions?.invoke(context)?.let {
+        operationPreconditions?.check(context)?.let {
             if (it != Allowed) return it
         }
 
         return Allowed
     }
 
-    private fun setPreconditions(context: Context): ApiFirstPreconditions {
-        screenPreconditions?.invoke(context)?.let {
-            if (it != Allowed) return it
-        }
-
-        commonPreconditions?.preconditions?.invoke(context)?.let {
-            if (it != Allowed) return it
-        }
-
-        set?.preconditions?.invoke(context)?.let {
-            if (it != Allowed) return it
-        }
-
-        return Allowed
-    }
-
-    override fun getReadPermissions(context: Context) = getPermissions()
-    override fun getWritePermissions(context: Context) = setPermissions()
+    override fun getReadPermissions(context: Context) = buildPermissions(get.permissions)
+    override fun getWritePermissions(context: Context) = buildPermissions(set?.permissions)
 
     override fun getReadPermit(context: Context, callingPid: Int, callingUid: Int) =
-        when (getPreconditions(context)) {
+        when (evaluatePreconditions(context, get.preconditions)) {
             Allowed -> ReadWritePermit.ALLOW
             else -> ReadWritePermit.DISALLOW
         }
 
     override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
-        when (setPreconditions(context)) {
+        when (evaluatePreconditions(context, set?.preconditions)) {
             Allowed -> ReadWritePermit.ALLOW
             else -> ReadWritePermit.DISALLOW
         }
@@ -168,7 +151,7 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 // This cast is safe because we already checked the `value` is of type `V`
                 val valueV = value as V
                 val valuePreconditionsCheck =
-                    set?.valuePreconditions?.invoke(context, valueV) ?: Allowed
+                    set?.valuePreconditions?.check?.invoke(context, valueV) ?: Allowed
                 when (valuePreconditionsCheck) {
                     Allowed -> set?.execute(context, valueV)
                     is Disallowed -> throw IllegalStateException(valuePreconditionsCheck.reason)
@@ -176,15 +159,17 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
             }
         }
 
-    var screenPermissions: List<String>? = null
-    // TODO: Also consider the preconditions description
-    var screenPreconditions: ((Context) -> ApiFirstPreconditions)? = null
+    /** Preference's permission on the screen level. */
+    abstract val screenPermissions: PermissionsConfig?
 
-    /** Permissions of the preference's value. */
-    abstract val commonPermissions: PermissionsConfig?
+    /** Preference's preconditions on the screen level. */
+    abstract val screenPreconditions: PreconditionsConfig?
 
-    /** Preconditions of the preference's value. */
-    abstract val commonPreconditions: PreconditionsConfig?
+    /** Preference's permission. */
+    abstract val permissions: PermissionsConfig?
+
+    /** Preference's preconditions. */
+    abstract val preconditions: PreconditionsConfig?
 
     /** Get block with logic for retrieving the preference's value. */
     abstract val get: GetConfig<V>
@@ -197,24 +182,23 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
 internal annotation class ApiFirstPreferenceDsl
 
 @ApiFirstPreferenceDsl
-class PermissionsConfigBuilder(perms: List<String>) {
-    private var permissionsList: List<String> = perms
-
+class PermissionsConfigBuilder(val permissions: List<String>) {
     internal fun build(): PermissionsConfig {
         return PermissionsConfig(
-            permissions = permissionsList,
+            incomingPermissions = permissions,
         )
     }
 }
 
 @ApiFirstPreferenceDsl
-class PreconditionsConfigBuilder(description: String, lambda: (Context) -> ApiFirstPreconditions) {
-    private var preconditionsFun: (Context) -> ApiFirstPreconditions = lambda
-    private var preconditionsDescription: String = description // TODO: Make use of this, too
-
+class PreconditionsConfigBuilder(
+    val description: String,
+    val lambda: (Context) -> ApiFirstPreconditions
+) {
     internal fun build(): PreconditionsConfig {
         return PreconditionsConfig(
-            preconditions = preconditionsFun,
+            description = description,
+            check = lambda,
         )
     }
 }
@@ -233,20 +217,18 @@ class PreconditionsConfigBuilder(description: String, lambda: (Context) -> ApiFi
  */
 @ApiFirstPreferenceDsl
 class GetConfigBuilder<V : Any> {
-    private var permissionsRequired: List<String>? = null
-    private var preconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
-    private var preconditionDescription: String? = null
-    private var executeFun: ((Context) -> V)? = null
+    private var permissionsConfig: PermissionsConfig? = null
+    private var preconditionsConfig: PreconditionsConfig? = null
+    private var executeBlock: ((Context) -> V)? = null
 
     /** Sets permissions for the get. */
     fun permissions(permissionsList: List<String>) {
-        permissionsRequired = permissionsList
+        permissionsConfig = PermissionsConfig(permissionsList)
     }
 
     /** Defines a precondition check that must pass for the get to be executed. */
     fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
-        preconditionDescription = description
-        preconditionsFun = lambda
+        preconditionsConfig = PreconditionsConfig(description, lambda)
     }
 
     /*
@@ -255,14 +237,14 @@ class GetConfigBuilder<V : Any> {
      */
     /** Declare the execute block of the get. */
     fun execute(lambda: (Context) -> V) {
-        executeFun = lambda
+        executeBlock = lambda
     }
 
     internal fun build(): GetConfig<V> {
         return GetConfig(
-            permissions = permissionsRequired,
-            preconditions = preconditionsFun,
-            execute = executeFun
+            permissions = permissionsConfig,
+            preconditions = preconditionsConfig,
+            execute = executeBlock
                 ?: throw IllegalStateException("get 'execute' block is required")
         )
     }
@@ -282,28 +264,24 @@ class GetConfigBuilder<V : Any> {
  */
 @ApiFirstPreferenceDsl
 class SetConfigBuilder<V : Any> {
-    private var permissionsRequired: List<String>? = null
-    private var preconditionsFun: ((Context) -> ApiFirstPreconditions)? = null
-    private var preconditionDescription: String? = null
-    private var valuePreconditionsFun: ((Context, V) -> ApiFirstPreconditions)? = null
-    private var valuePreconditionDescription: String? = null
-    private var executeFun: ((Context, V) -> Unit)? = null
+    private var permissionsConfig: PermissionsConfig? = null
+    private var preconditionsConfig: PreconditionsConfig? = null
+    private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
+    private var executeBlock: ((Context, V) -> Unit)? = null
 
     /** Sets permissions for the set. */
     fun permissions(permissionsList: List<String>) {
-        permissionsRequired = permissionsList
+        permissionsConfig = PermissionsConfig(permissionsList)
     }
 
     /** Defines a precondition check that must pass for the set to be executed. */
     fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
-        preconditionDescription = description
-        preconditionsFun = lambda
+        preconditionsConfig = PreconditionsConfig(description, lambda)
     }
 
     /** Defines a value precondition check that must pass for the set to be executed. */
     fun valuePreconditions(description: String, lambda: (Context, V) -> ApiFirstPreconditions) {
-        valuePreconditionDescription = description
-        valuePreconditionsFun = lambda
+        valuePreconditionsConfig = ValuePreconditionsConfig<V>(description, lambda)
     }
 
     /*
@@ -312,15 +290,15 @@ class SetConfigBuilder<V : Any> {
      */
     /** Declare the execute block of the set. */
     fun execute(lambda: (Context, V) -> Unit) {
-        executeFun = lambda
+        executeBlock = lambda
     }
 
     internal fun build(): SetConfig<V> {
         return SetConfig(
-            permissions = permissionsRequired,
-            preconditions = preconditionsFun,
-            valuePreconditions = valuePreconditionsFun,
-            execute = executeFun
+            permissions = permissionsConfig,
+            preconditions = preconditionsConfig,
+            valuePreconditions = valuePreconditionsConfig,
+            execute = executeBlock
                 ?: throw IllegalStateException("Set 'execute' block is required")
         )
     }
@@ -331,7 +309,10 @@ class SetConfigBuilder<V : Any> {
 class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
                                                @StringRes val purpose: Int,
                                                val type: ApiFirstType<V>,
-                                               val valueType: Class<V>) {
+                                               val valueType: Class<V>,
+                                               val screenPermissions: PermissionsConfig?,
+                                               val screenPreconditions: PreconditionsConfig?)
+{
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var getConfig: GetConfig<V>? = null
@@ -372,16 +353,16 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
     }
 
     /** Create an instance of [ApiFirstPreference] from its configuration. */
-    fun build(): ApiFirstPreference<V> {
-        return object : ApiFirstPreference<V>() {
-            override val commonPermissions: PermissionsConfig? = permissionsConfig
-            override val commonPreconditions: PreconditionsConfig? = preconditionsConfig
-            override val get: GetConfig<V> =
-                getConfig ?: throw IllegalStateException("'get' block is required")
-            override val set: SetConfig<V>? = setConfig
-            override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
-            override val key: String = this@ApiFirstPreferenceConfigBuilder.key
-            override val purpose: Int = this@ApiFirstPreferenceConfigBuilder.purpose
-        }
+    fun build() = object : ApiFirstPreference<V>() {
+        override val screenPermissions = this@ApiFirstPreferenceConfigBuilder.screenPermissions
+        override val screenPreconditions = this@ApiFirstPreferenceConfigBuilder.screenPreconditions
+        override val permissions: PermissionsConfig? = permissionsConfig
+        override val preconditions: PreconditionsConfig? = preconditionsConfig
+        override val get: GetConfig<V> =
+            getConfig ?: throw IllegalStateException("'get' block is required")
+        override val set: SetConfig<V>? = setConfig
+        override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
+        override val key: String = this@ApiFirstPreferenceConfigBuilder.key
+        override val purpose: Int = this@ApiFirstPreferenceConfigBuilder.purpose
     }
 }
