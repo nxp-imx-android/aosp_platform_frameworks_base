@@ -140,6 +140,8 @@ java_import {
         ":android.test.mock.impl{.jar}",
         // Adds android.test classes
         ":android.test.legacy{.jar}",
+        // Adds android.testing classes
+        ":testable-framework-libs{.jar}",
     ],
     visibility: ["//visibility:private"],
 }

@@ -16,13 +16,12 @@
 package com.android.ravenwoodtest.coretest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import android.app.RavenwoodAppDriver;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
@@ -42,6 +41,7 @@ public class RavenwoodSettingsProviderTest {
 
     @Before
     public void setup() {
+        RavenwoodAppDriver.getInstance().reset();
         mContext =  InstrumentationRegistry.getInstrumentation().getContext();
         mCr = mContext.getContentResolver();
     }
@@ -53,36 +53,31 @@ public class RavenwoodSettingsProviderTest {
 
         assertEquals(999, Global.getInt(mCr, Global.AIRPLANE_MODE_ON, 999));
 
-        assertEquals(null, Secure.getString(mCr, Secure.AUTOFILL_SERVICE));
+        assertNull(Secure.getString(mCr, Secure.AUTOFILL_SERVICE));
 
         assertEquals(1, System.getInt(mCr, System.MIN_REFRESH_RATE, 1));
     }
 
+    private void testPutValue(ContentResolver cr) {
+        Global.putInt(cr, Global.AIRPLANE_MODE_ON, 1000);
+        assertEquals(1000, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 0));
+
+        Secure.putString(cr, Secure.AUTOFILL_SERVICE, "abc");
+        assertEquals("abc", Secure.getString(cr, Secure.AUTOFILL_SERVICE));
+
+        Secure.putInt(cr, System.MIN_REFRESH_RATE, 3);
+        assertEquals(3, Secure.getInt(cr, System.MIN_REFRESH_RATE, 0));
+    }
+
     @Test
     public void testPutValue() {
-        try {
-            Settings.Global.putInt(mCr, Settings.Global.AIRPLANE_MODE_ON, 999);
-            fail("putInt should not be allowed");
-        } catch (RavenwoodUnsupportedApiException e) {
-            assertTrue(e.getReason().contains("SettingsProvider#call"));
-        }
+        testPutValue(mCr);
     }
 
     @Test
     public void testTestableSettingsProvider() {
         try (var context = new TestableContext(mContext)) {
-            var cr = context.getContentResolver();
-            assertEquals(999, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
-
-            Global.putInt(cr, Global.AIRPLANE_MODE_ON, 1000);
-
-            assertEquals(1000, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
-
-            Secure.putString(cr, Secure.AUTOFILL_SERVICE, "abc");
-            assertEquals("abc", Secure.getString(cr, Secure.AUTOFILL_SERVICE));
-
-            Secure.putInt(cr, System.MIN_REFRESH_RATE, 3);
-            assertEquals(3, Secure.getInt(cr, System.MIN_REFRESH_RATE, 0));
+            testPutValue(context.getContentResolver());
         }
     }
 }
