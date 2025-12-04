@@ -21,6 +21,7 @@ import static android.hardware.devicestate.feature.flags.Flags.FLAG_DEVICE_STATE
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD;
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_DISPLAY_GROUP_REMOVED;
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH;
+import static android.os.PowerManager.GO_TO_SLEEP_REASON_UNKNOWN;
 import static android.os.PowerManager.WAKE_REASON_LID;
 import static android.os.PowerManager.WAKE_REASON_UNFOLD_DEVICE;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -938,6 +939,24 @@ public class LogicalDisplayMapperTest {
         verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
         verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_DEVICE_FOLD),
                 eq(PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP));
+    }
+
+    @Test
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testStateChange_TriggersSleepWithUnknownReason() {
+        DeviceState triggerSleepState = createDeviceState(0,
+                "Trigger sleep", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP),
+                Collections.emptySet());
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
+        initLogicalDisplayMapper();
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                triggerSleepState);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_UNKNOWN),
+                eq(0));
     }
 
     @Test
