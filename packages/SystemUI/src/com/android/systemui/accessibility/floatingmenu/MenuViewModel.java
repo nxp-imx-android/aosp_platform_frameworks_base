@@ -52,8 +52,6 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
             HearingAidDeviceManager.ConnectionStatus.NO_DEVICE_BONDED);
     private final LiveData<Integer> mHearingDeviceTargetIndex = Transformations.map(
             mTargetFeaturesData, this::getHearingDeviceTargetIndex);
-    private final MutableLiveData<MenuPosition> mPositionData =
-            new MutableLiveData<>(MenuPosition.BOTTOM_LEFT);
 
     private final MenuInfoRepository mInfoRepository;
 
@@ -119,21 +117,6 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     LiveData<Position> getPercentagePositionData() {
         mInfoRepository.loadMenuPosition(mPercentagePositionData::setValue);
         return mPercentagePositionData;
-    }
-
-    LiveData<MenuPosition> getPositionData() {
-        return mPositionData;
-    }
-
-    void cycleMenuPosition() {
-        MenuPosition currentPosition = mPositionData.getValue();
-        MenuPosition nextPosition = switch (currentPosition) {
-            case TOP_LEFT -> MenuPosition.TOP_RIGHT;
-            case TOP_RIGHT -> MenuPosition.BOTTOM_RIGHT;
-            case BOTTOM_RIGHT -> MenuPosition.BOTTOM_LEFT;
-            default -> MenuPosition.TOP_LEFT;
-        };
-        mPositionData.setValue(nextPosition);
     }
 
     LiveData<Integer> getSizeTypeData() {
