@@ -593,6 +593,39 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun resetViewStates_newHunAboveOldHun_onAod() {
+        // Given two HUNs on AOD (mustStayOnScreen = true, isPinned = false)
+        val newHun = mockExpandableNotificationRow()
+        whenever(newHun.mustStayOnScreen()).thenReturn(true)
+        whenever(newHun.isPinned).thenReturn(false)
+        whenever(newHun.isHeadsUp).thenReturn(true)
+
+        val oldHun = mockExpandableNotificationRow()
+        whenever(oldHun.mustStayOnScreen()).thenReturn(true)
+        whenever(oldHun.isPinned).thenReturn(false)
+        whenever(oldHun.isHeadsUp).thenReturn(true)
+
+        // Add views in order:
+        // index 0: new HUN, index 1: old HUN
+        hostView.removeAllViews()
+        hostView.addView(newHun)
+        hostView.addView(oldHun)
+
+        // Enable dozing to trigger the AOD-specific logic
+        ambientState.isDozing = true
+
+        // When
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        // Then: New HUN (index 0) should be above old HUN (index 1)
+        // Logic: The algorithm iterates backwards (from index 1 to 0).
+        // 1. oldHun (index 1): childrenOnTop increments to 1 -> Z = baseZ + 1 * extra
+        // 2. newHun (index 0): childrenOnTop increments to 2 -> Z = baseZ + 2 * extra
+        assertThat(newHun.viewState.zTranslation).isGreaterThan(oldHun.viewState.zTranslation)
+    }
+
+    @Test
+    @EnableSceneContainer
     fun resetViewStates_defaultHunInShade_stackOverscrolledHun_hunClampedToHeadsUpTop() {
         // Given: headsUpTop << stackScrollTop -> stack has fully overscrolled the HUN
         val stackScrollTop = -500f
