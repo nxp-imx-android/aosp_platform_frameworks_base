@@ -842,6 +842,7 @@ android_library {
         "kairos",
         "displaylib",
         "device_policy_aconfig_flags_lib",
+        "SurfaceEffectsComposeLib",
     ],
 }
 
