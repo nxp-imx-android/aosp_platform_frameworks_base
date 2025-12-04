@@ -759,6 +759,7 @@ public final class ActiveServicesTest {
         r.appInfo.pccUid = 30001;
         r.appInfo.packageName = "com.android.pcc";
         final ServiceInfo si = new ServiceInfo();
+        si.applicationInfo = r.appInfo;
         si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "processName", "test");
