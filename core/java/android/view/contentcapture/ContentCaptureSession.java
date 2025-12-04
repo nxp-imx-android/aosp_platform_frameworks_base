@@ -20,6 +20,7 @@ import static android.view.contentcapture.ContentCaptureHelper.sDebug;
 import static android.view.contentcapture.ContentCaptureHelper.sVerbose;
 import static android.view.contentcapture.ContentCaptureManager.NO_SESSION_ID;
 import static android.view.contentcapture.flags.Flags.FLAG_CCAPI_BAKLAVA_ENABLED;
+import static android.view.contentcapture.flags.Flags.FLAG_CONTENT_INTERACTION_API_ENABLED;
 
 import android.annotation.CallSuper;
 import android.annotation.FlaggedApi;
@@ -578,6 +579,24 @@ public abstract class ContentCaptureSession implements AutoCloseable {
 
     /** @hide */
     abstract void internalNotifySessionFlushEvent(int sessionId);
+
+    /**
+     * Notifies the Intelligence Service that a view has been interacted.
+     *
+     * <p>The view must have appeared before sending the interaction event.
+     *
+     * @param autofillId id of the node.
+     */
+    @FlaggedApi(FLAG_CONTENT_INTERACTION_API_ENABLED)
+    public void notifyContentInteractionEvent(@NonNull AutofillId autofillId) {
+        if (!isContentCaptureEnabled()) return;
+
+        internalNotifyContentInteractionEvent(mId, autofillId);
+    }
+
+    /** @hide */
+    abstract void internalNotifyContentInteractionEvent(int sessionId, AutofillId autofillId);
+
 
     /** @hide */
     public void notifyViewTreeEvent(boolean started) {

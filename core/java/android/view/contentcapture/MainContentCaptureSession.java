@@ -16,6 +16,7 @@
 package android.view.contentcapture;
 
 import static android.view.contentcapture.ContentCaptureCondition.CONDITION_ENABLE_EXPORTING_VIRTUAL_CHILDREN;
+import static android.view.contentcapture.ContentCaptureEvent.TYPE_CONTENT_INTERACTION;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_CONTEXT_UPDATED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FINISHED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FLUSH;
@@ -968,6 +969,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
     void internalNotifySessionFlushEvent(int sessionId) {
         final ContentCaptureEvent event = new ContentCaptureEvent(sessionId, TYPE_SESSION_FLUSH);
         enqueueEvent(event, FORCE_FLUSH);
+    }
+
+    @Override
+    void internalNotifyContentInteractionEvent(int sessionId, @NonNull AutofillId autofillId) {
+        final ContentCaptureEvent event =
+                new ContentCaptureEvent(sessionId, TYPE_CONTENT_INTERACTION)
+                        .setAutofillId(autofillId);
+        enqueueEvent(event);
     }
 
     private List<ContentCaptureEvent> clearBufferEvents() {

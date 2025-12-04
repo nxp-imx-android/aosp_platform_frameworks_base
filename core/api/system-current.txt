@@ -19652,6 +19652,7 @@ package android.view.contentcapture {
     method @Nullable public android.view.contentcapture.ViewNode getViewNode();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.contentcapture.ContentCaptureEvent> CREATOR;
+    field @FlaggedApi("android.view.contentcapture.flags.content_interaction_api_enabled") public static final int TYPE_CONTENT_INTERACTION = 12; // 0xc
     field public static final int TYPE_CONTEXT_UPDATED = 6; // 0x6
     field @FlaggedApi("android.view.contentcapture.flags.ccapi_baklava_enabled") public static final int TYPE_SESSION_FLUSH = 11; // 0xb
     field public static final int TYPE_SESSION_PAUSED = 8; // 0x8

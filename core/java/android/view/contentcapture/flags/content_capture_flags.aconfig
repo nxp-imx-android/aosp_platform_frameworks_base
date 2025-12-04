@@ -76,3 +76,10 @@ flag {
   description: "Controls the deprecation of the ContentCaptureManager#setContentCaptureEnabled method."
   bug: "454307959"
 }
+
+flag {
+    name: "content_interaction_api_enabled"
+    namespace: "ailabs"
+    description: "Feature flag to enable content interaction API."
+    bug: "460569434"
+}
