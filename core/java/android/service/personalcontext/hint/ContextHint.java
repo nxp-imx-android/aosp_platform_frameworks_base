@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -66,7 +68,8 @@ public abstract class ContextHint {
                 HINT_TYPE_CONVERSATION,
                 HINT_TYPE_RECENT_VIEW,
                 HINT_TYPE_USER_INPUT,
-                HINT_TYPE_AUTOFILL_INLINE_REQUEST
+                HINT_TYPE_AUTOFILL_INLINE_REQUEST,
+                HINT_TYPE_CALL
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -100,6 +103,9 @@ public abstract class ContextHint {
      * Hint type for {@link AutofillInlineRequestHint}.
      */
     static final int HINT_TYPE_AUTOFILL_INLINE_REQUEST = 7;
+
+    /** Hint type for {@link CallHint}. */
+    static final int HINT_TYPE_CALL = 8;
 
     /**
      * Object returned when there is an unparceling error.
@@ -224,6 +230,7 @@ public abstract class ContextHint {
                 case HINT_TYPE_USER_INPUT -> new UserInputHint(constructorParams, data);
                 case HINT_TYPE_AUTOFILL_INLINE_REQUEST -> new AutofillInlineRequestHint(
                         constructorParams, data);
+                case HINT_TYPE_CALL ->  new CallHint(constructorParams, data);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
@@ -272,7 +279,7 @@ public abstract class ContextHint {
              */
             @NonNull
             Builder addToken(@NonNull Token token) {
-                mTokens.add(token);
+                mTokens.add(requireNonNull(token, "token must not be null"));
                 return this;
             }
 
