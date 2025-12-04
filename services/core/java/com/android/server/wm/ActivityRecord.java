@@ -8593,10 +8593,14 @@ final class ActivityRecord extends WindowToken {
      * @param changes the changes due to the given configuration.
      * @param changesConfig the configuration that was used to calculate the given changes via a
      *        call to getConfigurationChanges.
+     *
+     * TODO(b/464080038): Migrate this method to AppCompatRecreateOnConfigChangePolicy
      */
     private boolean shouldRelaunchLocked(int changes, Configuration changesConfig) {
-        int configChanged = info.getRealConfigChanged();
-        if ((configChanged & CONFIG_RESOURCES_UNUSED) != 0) {
+        // Bitmask of configuration changes that will be handled by the activity itself. If a
+        // configuration change occurs that is covered by this mask, skip relaunching the activity.
+        int skipRelaunchConfigMask = info.getRealConfigChanged();
+        if ((skipRelaunchConfigMask & CONFIG_RESOURCES_UNUSED) != 0) {
             // Don't relaunch any activities that claim they do not use resources at all.
             // If they still do, the onConfigurationChanged() callback will get called to
             // let them know anyway.
@@ -8612,18 +8616,18 @@ final class ActivityRecord extends WindowToken {
         if (info.applicationInfo.targetSdkVersion < O
                 && requestedVrComponent != null
                 && onlyVrUiModeChanged) {
-            configChanged |= CONFIG_UI_MODE;
+            skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
 
         // TODO(b/274944389): remove workaround after long-term solution is implemented
         // Don't restart due to desk mode change if the app does not have desk resources.
         if (mWmService.mSkipActivityRelaunchWhenDocking && onlyDeskInUiModeChanged(changesConfig)
                 && !hasDeskResources()) {
-            configChanged |= CONFIG_UI_MODE;
+            skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
 
         // Some apps relaunch unexpectedly with display move and crash.
-        configChanged |= mAppCompatController.getDisplayCompatModePolicy()
+        skipRelaunchConfigMask |= mAppCompatController.getDisplayCompatModePolicy()
                 .getDisplayCompatModeConfigMask();
 
         // For CONFIG_ASSETS_PATHS change, check the constraints for the resource overlays which
@@ -8632,14 +8636,18 @@ final class ActivityRecord extends WindowToken {
         // done.
         // TODO(b/454293961): Explore if display-specific configuration changes can be applied for
         // RROs with constraints, and if so, then remove this temporary solution.
-        if ((configChanged & CONFIG_ASSETS_PATHS) == 0
+        if ((skipRelaunchConfigMask & CONFIG_ASSETS_PATHS) == 0
                 && (changes & CONFIG_ASSETS_PATHS) != 0
                 && !mAppCompatController.getResourceOverlayPolicy()
                 .doResourceOverlayChangesAffectActivity()) {
-            configChanged |= CONFIG_ASSETS_PATHS;
+            skipRelaunchConfigMask |= CONFIG_ASSETS_PATHS;
         }
 
-        return (changes & (~configChanged)) != 0;
+        // If the app has resource for a specific config, relaunch the activity.
+        skipRelaunchConfigMask &= (~mAppCompatController.getRecreateOnConfigChangePolicy()
+                .getRecreateConfigMask());
+
+        return (changes & (~skipRelaunchConfigMask)) != 0;
     }
 
     /**

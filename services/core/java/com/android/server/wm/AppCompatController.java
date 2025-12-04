@@ -54,6 +54,8 @@ class AppCompatController {
     private final AppCompatDisplayCompatModePolicy mDisplayCompatModePolicy;
     @NonNull
     private final AppCompatResourceOverlayPolicy mResourceOverlayPolicy;
+    @NonNull
+    private final AppCompatRecreateOnConfigChangePolicy mRecreateOnConfigChangePolicy;
 
     AppCompatController(@NonNull WindowManagerService wmService,
                         @NonNull ActivityRecord activityRecord) {
@@ -80,6 +82,7 @@ class AppCompatController {
         mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
         mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy(activityRecord);
         mResourceOverlayPolicy = new AppCompatResourceOverlayPolicy(activityRecord);
+        mRecreateOnConfigChangePolicy = new AppCompatRecreateOnConfigChangePolicy(activityRecord);
     }
 
     @NonNull
@@ -182,12 +185,18 @@ class AppCompatController {
         return mAppCompatOverrides.getDisplayOverrides();
     }
 
+    @NonNull
+    AppCompatRecreateOnConfigChangePolicy getRecreateOnConfigChangePolicy() {
+        return mRecreateOnConfigChangePolicy;
+    }
+
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);
         getSizeCompatModePolicy().dump(pw, prefix);
         getDisplayCompatModePolicy().dump(pw, prefix);
         getSafeRegionPolicy().dump(pw, prefix);
+        getRecreateOnConfigChangePolicy().dump(pw, prefix);
     }
 
     void dumpDebug(@NonNull ProtoOutputStream proto) {

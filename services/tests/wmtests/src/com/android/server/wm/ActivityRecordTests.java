@@ -23,6 +23,11 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
+import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
+import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
+import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
+import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
+import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.content.pm.ActivityInfo.CONFIG_ORIENTATION;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_LAYOUT;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_SIZE;
@@ -3511,6 +3516,53 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         activity2.makeFinishingLocked();
         assertNull(activity1.getTask().getTaskInfo().capturedLink);
+    }
+
+    @Test
+    public void testConfigChange_doesNotRelaunch() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.info.configChanges = CONFIG_KEYBOARD | CONFIG_KEYBOARD_HIDDEN | CONFIG_NAVIGATION
+                | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE;
+        // The activity will already be relaunching out of the gate, finish the relaunch so we can
+        // test properly.
+        activity.finishRelaunching();
+
+        final Task task = activity.getTask();
+        activity.setState(RESUMED, "Testing");
+
+        final Configuration newConfig = new Configuration();
+        newConfig.keyboard |= Configuration.KEYBOARD_QWERTY;
+        newConfig.keyboardHidden |= Configuration.KEYBOARDHIDDEN_NO;
+        newConfig.navigation |= Configuration.NAVIGATION_DPAD;
+        newConfig.touchscreen |= Configuration.TOUCHSCREEN_FINGER;
+        newConfig.colorMode |= Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_YES;
+        task.onRequestedOverrideConfigurationChanged(newConfig);
+        ensureActivityConfiguration(activity);
+
+        assertFalse(activity.isRelaunching());
+    }
+
+    @Test
+    public void testKeyboardConfigChange_relaunchWithKeyboardResources() {
+        final ActivityRecord activity = createActivityWithTask();
+        // The activity will already be relaunching out of the gate, finish the relaunch so we can
+        // test properly.
+        activity.finishRelaunching();
+
+        AppCompatRecreateOnConfigChangePolicy policy = activity.mAppCompatController
+                .getRecreateOnConfigChangePolicy();
+        spyOn(policy);
+        doReturn(ActivityInfo.CONFIG_KEYBOARD).when(policy).getRecreateConfigMask();
+
+        final Task task = activity.getTask();
+        activity.setState(RESUMED, "Testing");
+
+        final Configuration newConfig = new Configuration();
+        newConfig.keyboard |= Configuration.KEYBOARD_QWERTY;
+        task.onRequestedOverrideConfigurationChanged(newConfig);
+        ensureActivityConfiguration(activity);
+
+        assertTrue(activity.isRelaunching());
     }
 
     private ActivityRecord setupDisplayAndActivityForCameraCompat(boolean isCameraRunning,
