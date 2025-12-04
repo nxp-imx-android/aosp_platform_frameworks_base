@@ -102,6 +102,13 @@ flag {
 }
 
 flag {
+    name: "dreams_switcher"
+    namespace: "systemui"
+    description: "Enables the dream switcher improvements"
+    bug: "448814507"
+}
+
+flag {
     name: "nap_when_dream_enabled"
     namespace: "systemui"
     description: "Allows napping only when dream settings is enabled"
