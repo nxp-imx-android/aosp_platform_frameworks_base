@@ -19,8 +19,12 @@ package com.android.server.location.contexthub;
 import static com.android.server.location.contexthub.ContextHubTransactionManager.RELIABLE_MESSAGE_DUPLICATE_DETECTION_TIMEOUT;
 
 import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.hardware.contexthub.DataFlowConsumerHandle;
+import android.hardware.contexthub.DataFlowId;
+import android.hardware.contexthub.DataFlowInfo;
 import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
 import android.hardware.contexthub.HubEndpointInfo;
@@ -31,6 +35,8 @@ import android.hardware.contexthub.IEndpointCommunication;
 import android.hardware.contexthub.Message;
 import android.hardware.contexthub.MessageDeliveryStatus;
 import android.hardware.contexthub.Reason;
+import android.hardware.contexthub.SharedDataRegion;
+import android.hardware.contexthub.SharedDataRegionRequirements;
 import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.IContextHubTransactionCallback;
 import android.hardware.location.NanoAppState;
@@ -40,6 +46,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
+import android.os.ServiceSpecificException;
 import android.os.WorkSource;
 import android.util.Log;
 import android.util.SparseArray;
@@ -58,8 +65,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -508,6 +513,167 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         releaseWakeLock();
     }
 
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public SharedDataRegion allocateSharedDataRegion(SharedDataRegionRequirements requirements) {
+        super.allocateSharedDataRegion_enforcePermission();
+        if (requirements == null) {
+            throw new IllegalArgumentException(
+                    "requirements must be provided when allocating a shared data region");
+        }
+
+        try {
+            return getHubInterface().allocateSharedDataRegion(requirements);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException
+                | UnsupportedOperationException
+                | ServiceSpecificException e) {
+            Log.e(TAG, "HAL exception in allocateSharedDataRegion", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public void freeSharedDataRegion(int id) {
+        super.freeSharedDataRegion_enforcePermission();
+
+        try {
+            getHubInterface().freeSharedDataRegion(id);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException
+                | IllegalStateException
+                | UnsupportedOperationException e) {
+            Log.e(TAG, "HAL exception in freeSharedDataRegion", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public int registerDataFlowHostProducer(DataFlowInfo info) {
+        super.registerDataFlowHostProducer_enforcePermission();
+        if (info == null) {
+            throw new IllegalArgumentException(
+                    "info must be provided when registering a data flow host producer");
+        }
+        if (!isRegistered()) {
+            throw new IllegalStateException(
+                    "Endpoint is not registered, cannot register data flow host producer");
+        }
+
+        try {
+            return getHubInterface().registerDataFlowHostProducer(mHalEndpointInfo.id, info);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            Log.e(TAG, "HAL exception in registerDataFlowHostProducer", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public void unregisterDataFlowHostProducer(int id) {
+        super.unregisterDataFlowHostProducer_enforcePermission();
+
+        try {
+            getHubInterface().unregisterDataFlowHostProducer(id);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            Log.e(TAG, "HAL exception in unregisterDataFlowHostProducer", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public void registerDataFlowOffloadConsumer(
+            DataFlowConsumerHandle handle,
+            HubEndpointInfo consumer,
+            IContextHubEndpoint.IRegisterOffloadConsumerCallback callback,
+            HubMessage msg,
+            int sessionId,
+            IContextHubTransactionCallback transactionCallback) {
+        super.registerDataFlowOffloadConsumer_enforcePermission();
+
+        if (handle == null) {
+            throw new IllegalArgumentException(
+                    "handle must be provided when registering a data flow offload consumer");
+        }
+        if (consumer == null) {
+            throw new IllegalArgumentException(
+                    "consumer must be provided when registering a data flow offload consumer");
+        }
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                    "callback must be provided when registering a data flow offload consumer");
+        }
+
+        Message halMessage = (msg != null) ? ContextHubServiceUtil.createHalMessage(msg) : null;
+        IEndpointCommunication.IRegisterOffloadConsumerCallback halCallback =
+                new IEndpointCommunication.IRegisterOffloadConsumerCallback.Stub() {
+                    @Override
+                    @RequiresNoPermission
+                    public long addConsumerInRegion(SharedDataRegion region)
+                            throws RemoteException {
+                        return callback.addConsumerInRegion(region);
+                    }
+
+                    @Override
+                    @RequiresNoPermission
+                    public int getInterfaceVersion() throws RemoteException {
+                        return IEndpointCommunication.IRegisterOffloadConsumerCallback.VERSION;
+                    }
+
+                    @Override
+                    @RequiresNoPermission
+                    public String getInterfaceHash() throws RemoteException {
+                        return IEndpointCommunication.IRegisterOffloadConsumerCallback.HASH;
+                    }
+                };
+
+        try {
+            getHubInterface()
+                    .registerDataFlowOffloadConsumer(
+                            handle,
+                            ContextHubServiceUtil.convertHalEndpointInfo(consumer).id,
+                            halCallback,
+                            halMessage,
+                            sessionId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException e) {
+            Log.e(TAG, "HAL exception in registerDataFlowOffloadConsumer", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    public void unregisterDataFlowHostConsumer(DataFlowId dataFlowId) {
+        super.unregisterDataFlowHostConsumer_enforcePermission();
+        if (dataFlowId == null) {
+            throw new IllegalArgumentException("dataFlowId cannot be null");
+        }
+        if (!isRegistered()) {
+            throw new IllegalStateException(
+                    "Endpoint is not registered, cannot unregister data flow host consumer");
+        }
+
+        try {
+            getHubInterface().unregisterDataFlowHostConsumer(mHalEndpointInfo.id, dataFlowId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            Log.e(TAG, "HAL exception in unregisterDataFlowHostConsumer", e);
+            throw e;
+        }
+    }
+
     /** Invoked when the underlying binder of this broker has died at the client process. */
     @Override
     public void binderDied() {
@@ -650,6 +816,25 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             info.setReliableMessageCompleted(sequenceNumber);
         }
         mTransactionManager.onMessageDeliveryResponse(sequenceNumber, errorCode == ErrorCode.OK);
+    }
+
+    /* package */ void onDataFlowHostConsumerRegistered(
+            DataFlowConsumerHandle handle,
+            HubEndpointInfo producer,
+            HubMessage msg,
+            int sessionId) {
+        // TODO(b/457452333): Check the session.
+        invokeCallback(
+                (consumer) ->
+                        consumer.onDataFlowHostConsumerRegistered(
+                                handle, producer, msg, sessionId));
+    }
+
+    /* package */ void onDataFlowOffloadEndpointUnregistered(
+            DataFlowId dataFlowId, HubEndpointInfo endpoint) {
+        invokeCallback(
+                (consumer) ->
+                        consumer.onDataFlowOffloadEndpointUnregistered(dataFlowId, endpoint));
     }
 
     /* package */ boolean hasSessionId(int sessionId) {
