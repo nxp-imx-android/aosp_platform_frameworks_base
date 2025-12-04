@@ -16,13 +16,20 @@
 
 package com.android.server.wm;
 
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
+
 import android.annotation.Nullable;
 import android.os.PersistableBundle;
+import android.os.UserHandle;
 import android.util.ArrayMap;
-import android.util.Slog;
+import android.util.ArraySet;
 
+import com.android.internal.content.PackageMonitor;
+import com.android.internal.os.BackgroundThread;
+import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -34,8 +41,7 @@ import java.util.Map;
  *
  * <p>State is stored on a per-task basis, mapped by package name.
  */
-class PackageUpdateManager {
-    private static final String TAG = "PackageUpdateManager";
+class PackageUpdateManager extends PackageMonitor {
     private final ActivityTaskManagerService mService;
 
     /**
@@ -47,8 +53,23 @@ class PackageUpdateManager {
     private final Map<String, Map<Integer, PersistableBundle>> mUpdatingPackageToPersistentTasks =
             new ArrayMap<>();
 
+    /**
+     * A map to store tasks for packages undergoing an update.
+     * The map is keyed by {@code packageName}, and the value is {@code taskId} of the updating
+     * tasks.
+     */
+    private final Map<String, ArrayList<Integer>> mUpdatingPackageToAllTasks =
+            new ArrayMap<>();
+
     PackageUpdateManager(ActivityTaskManagerService service) {
         mService = service;
+    }
+
+    void onSystemReady() {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return;
+        }
+        register(mService.mContext, UserHandle.ALL, BackgroundThread.getHandler());
     }
 
     /**
@@ -59,7 +80,8 @@ class PackageUpdateManager {
         if (!Flags.enableAppRestartAfterUpdate()) {
             return;
         }
-        Slog.d(TAG, "Adding pkg= " + pkg + " with task " + taskId);
+        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Adding pkg= %s with task %d to persistent tasks", pkg,
+                taskId);
         mUpdatingPackageToPersistentTasks
                 .computeIfAbsent(pkg, k -> new ArrayMap<>())
                 .put(taskId, persistableBundle);
@@ -78,7 +100,8 @@ class PackageUpdateManager {
         final Map<Integer, PersistableBundle> tasks = mUpdatingPackageToPersistentTasks.get(pkg);
 
         if (tasks == null) {
-            Slog.d(TAG, "Couldn't find a persistent state for task= " + task.mTaskId);
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Couldn't find a persistent state for task= %d",
+                    task.mTaskId);
             return null;
         }
 
@@ -91,13 +114,13 @@ class PackageUpdateManager {
 
         // If a matching persistent state was found.
         if (persistentStateMatchingTaskId != null) {
-            Slog.d(TAG,
-                    "Found a persistent state for task= " + task.mTaskId + " through id match!");
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE,
+                    "Found a persistent state for task= %d through id match!", task.mTaskId);
             return persistentStateMatchingTaskId;
         }
 
-        Slog.d(TAG,
-                "Package found but couldn't find a persistent state for task= " + task.mTaskId);
+        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE,
+                "Package found but couldn't find a persistent state for task= %d", task.mTaskId);
 
         // TODO: b/457451784 - Handle if a launch is using a new task.
 
@@ -106,5 +129,50 @@ class PackageUpdateManager {
 
         // TODO: b/457453769 - Remove tasks when they are removed from recents
         return null;
+    }
+
+    void addUpdatingTasksForPackage(String pkg, ArraySet<Task> updatingTasks) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return;
+        }
+        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Adding updating tasks for pkg= %s", pkg);
+        ArrayList<Integer> allTasks = mUpdatingPackageToAllTasks.computeIfAbsent(pkg,
+                k -> new ArrayList<>());
+        for (int i = 0; i < updatingTasks.size(); i++) {
+            Task task = updatingTasks.valueAt(i);
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Added task: %d", task.mTaskId);
+            allTasks.add(task.mTaskId);
+        }
+    }
+
+    @Override
+    public void onPackageUpdateFinished(String packageName, int uid) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return;
+        }
+        synchronized (mService.mGlobalLock) {
+            ArrayList<Integer> updatingTasks = mUpdatingPackageToAllTasks.remove(packageName);
+
+            if (updatingTasks == null) {
+                return;
+            }
+
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Package update finished for pkg= %s", packageName);
+            ArrayList<Task> updatedTasks = new ArrayList<>();
+            for (int i = 0; i < updatingTasks.size(); i++) {
+                Task task = mService.mRootWindowContainer.anyTaskForId(updatingTasks.get(i));
+                if (task != null) {
+                    ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Notifying for task: %d", task.mTaskId);
+                    updatedTasks.add(task);
+                } else {
+                    ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Previously updating task not found: %d",
+                            updatingTasks.get(i));
+                }
+            }
+
+            if (!updatedTasks.isEmpty()) {
+                mService.mTaskOrganizerController.onPackageUpdateFinished(updatedTasks);
+            }
+        }
     }
 }

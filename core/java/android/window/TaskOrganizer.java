@@ -264,6 +264,16 @@ public class TaskOrganizer extends WindowOrganizer {
     }
 
     /**
+     * Called when a package update is finished.
+     *
+     * @param updatedTasks The tasks that are updated.
+     * @hide
+     */
+    @BinderThread
+    public void onPackageUpdateFinished(
+            @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
+
+    /**
      * @deprecated Use {@link #createRootTask(CreateRootTaskRequest)}
      * @hide
      */
@@ -497,6 +507,11 @@ public class TaskOrganizer extends WindowOrganizer {
         @Override
         public void onPackageUpdateRequested(List<ActivityManager.RunningTaskInfo> updatingTasks) {
             mExecutor.execute(() -> TaskOrganizer.this.onPackageUpdateRequested(updatingTasks));
+        }
+
+        @Override
+        public void onPackageUpdateFinished(List<ActivityManager.RunningTaskInfo> updatedTasks) {
+            mExecutor.execute(() -> TaskOrganizer.this.onPackageUpdateFinished(updatedTasks));
         }
     };
 

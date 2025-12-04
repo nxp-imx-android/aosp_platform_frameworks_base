@@ -132,4 +132,12 @@ oneway interface ITaskOrganizer {
      *                          {@link WindowContainerTransaction#setHandlePackageUpdateForTask}.
      */
     void onPackageUpdateRequested(in List<ActivityManager.RunningTaskInfo> updatingTaskInfos);
+
+    /**
+    * Called when a group of tasks belonging to a package has finished updating. Tasks here
+    * match the tasks previously sent through {@link ITaskOrganizer#onPackageUpdateRequested}.
+    *
+    * @param updatedTaskInfos Information about the tasks that are updated.
+    */
+    void onPackageUpdateFinished(in List<ActivityManager.RunningTaskInfo> updatedTaskInfos);
 }

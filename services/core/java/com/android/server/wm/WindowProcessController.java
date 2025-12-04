@@ -1618,7 +1618,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         if (!mUpdatingTasks.isEmpty()) {
             // TODO: b/455568724 - Wait for shells response to go ahead with killing
             mAtm.mTaskOrganizerController.onPackageUpdateRequest(mUpdatingTasks);
-
+            mAtm.mPackageUpdateManager.addUpdatingTasksForPackage(pkg, mUpdatingTasks);
             // Only stop the activities that are not meant to be handled by Shell.
             for (int i = 0; i < mActivitiesToBeStopped.size(); i++) {
                 final ActivityRecord ar = mActivitiesToBeStopped.get(i);
