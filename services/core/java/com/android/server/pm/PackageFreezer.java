@@ -79,9 +79,12 @@ final class PackageFreezer implements AutoCloseable {
         mPackageName = packageName;
         mInstallRequest = request;
         final PackageSetting ps;
-        // We only focus on the install Freeze metrics now
+        // We only focus on the metrics for STEP_FREEZE_INSTALL and its sub-steps.
         if (mInstallRequest != null) {
             mInstallRequest.onFreezeStarted();
+            if (waitAppStopped) {
+                mInstallRequest.onStopAndKillStarted();
+            }
         }
         synchronized (mPm.mLock) {
             final int refCounts = mPm.mFrozenPackages

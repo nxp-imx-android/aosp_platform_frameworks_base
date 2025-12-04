@@ -70,14 +70,17 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class PackageMetrics {
     private static final String TAG = "PackageMetrics";
+    // When adding a new step, use the next available integer to preserve metrics.
+    // Next step number: 10
     public static final int STEP_PREPARE = 1;
     public static final int STEP_SCAN = 2;
     public static final int STEP_RECONCILE = 3;
     public static final int STEP_COMMIT = 4;
     public static final int STEP_DEXOPT = 5;
-    public static final int STEP_FREEZE_INSTALL = 6;
-    public static final int STEP_RESTORE = 7;
     public static final int STEP_WAIT_DEXOPT = 8;
+    public static final int STEP_FREEZE_INSTALL = 6;
+    public static final int STEP_FREEZE_INSTALL_STOP_AND_KILL = 9;
+    public static final int STEP_RESTORE = 7;
 
     @IntDef(prefix = {"STEP_"}, value = {
             STEP_PREPARE,
@@ -85,9 +88,10 @@ public final class PackageMetrics {
             STEP_RECONCILE,
             STEP_COMMIT,
             STEP_DEXOPT,
+            STEP_WAIT_DEXOPT,
             STEP_FREEZE_INSTALL,
-            STEP_RESTORE,
-            STEP_WAIT_DEXOPT
+            STEP_FREEZE_INSTALL_STOP_AND_KILL,
+            STEP_RESTORE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface StepInt {

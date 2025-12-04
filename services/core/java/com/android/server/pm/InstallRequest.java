@@ -1059,6 +1059,18 @@ final class InstallRequest {
         }
     }
 
+    public void onStopAndKillStarted() {
+        if (mPackageMetrics != null) {
+            mPackageMetrics.onStepStarted(PackageMetrics.STEP_FREEZE_INSTALL_STOP_AND_KILL);
+        }
+    }
+
+    public void onStopAndKillFinished() {
+        if (mPackageMetrics != null) {
+            mPackageMetrics.onStepFinished(PackageMetrics.STEP_FREEZE_INSTALL_STOP_AND_KILL);
+        }
+    }
+
     public void onInstallCompleted() {
         if (getReturnCode() == INSTALL_SUCCEEDED) {
             if (mPackageMetrics != null) {

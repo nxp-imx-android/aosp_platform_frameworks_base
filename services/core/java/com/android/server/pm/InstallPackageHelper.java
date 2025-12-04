@@ -1457,10 +1457,14 @@ final class InstallPackageHelper {
         }
 
         // Wait for all packages to freeze in parallel on a dedicated ThreadPool
-        CompletableFuture.allOf(freezerFutures.toArray(new CompletableFuture[0]))
+        var unused = CompletableFuture.allOf(freezerFutures.toArray(new CompletableFuture[0]))
                 .thenRunAsync(() -> {
                     // Once we are done waiting for all package freeze, we switch back to
                     // mHandler again as before for rest of the installation flow
+                    for (ReconciledPackage reconciledPkg: reconciledPackages) {
+                        // We are done waiting for stopAndKill
+                        reconciledPkg.mInstallRequest.onStopAndKillFinished();
+                    }
                     try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
                         synchronized (mPm.mLock) {
                             try {
