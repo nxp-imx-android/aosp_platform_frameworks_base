@@ -65,7 +65,8 @@ public final class BrightnessInfo implements Parcelable {
                 BRIGHTNESS_MAX_REASON_POWER_IC,
                 BRIGHTNESS_MAX_REASON_WEAR_BEDTIME_MODE,
                 BRIGHTNESS_MAX_REASON_MODES,
-                BRIGHTNESS_MAX_REASON_MINMODE
+                BRIGHTNESS_MAX_REASON_MINMODE,
+                BRIGHTNESS_MAX_REASON_PLUGIN
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BrightnessMaxReason {}
@@ -99,6 +100,11 @@ public final class BrightnessInfo implements Parcelable {
      * Maximum brightness is restricted due to the MinMode
      */
     public static final int BRIGHTNESS_MAX_REASON_MINMODE = 5;
+
+    /**
+     * Maximum brightness is restricted due to a plugin.
+     */
+    public static final int BRIGHTNESS_MAX_REASON_PLUGIN = 6;
 
     /** Brightness */
     public final float brightness;
@@ -185,6 +191,8 @@ public final class BrightnessInfo implements Parcelable {
                 return "wear bedtime";
             case BRIGHTNESS_MAX_REASON_MODES:
                 return "modes";
+            case BRIGHTNESS_MAX_REASON_PLUGIN:
+                return "plugin";
         }
         return "invalid";
     }
