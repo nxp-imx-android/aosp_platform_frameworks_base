@@ -166,12 +166,13 @@ public class UsbResolverActivity extends ResolverActivity {
         try {
             IBinder b = ServiceManager.getService(USB_SERVICE);
             IUsbManager service = IUsbManager.Stub.asInterface(b);
+            final String packageName = ri.activityInfo.packageName;
             final int uid = ri.activityInfo.applicationInfo.uid;
             final int userId = UserHandle.myUserId();
 
             if (mDevice != null) {
                 // grant permission for the device
-                service.grantDevicePermission(mDevice, uid);
+                service.grantDevicePermission(mDevice, packageName, uid, /*isPersistent=*/false);
                 // set or clear default setting
                 if (alwaysCheck) {
                     service.setDevicePackage(mDevice, ri.activityInfo.packageName, userId);
@@ -180,7 +181,7 @@ public class UsbResolverActivity extends ResolverActivity {
                 }
             } else if (mAccessory != null) {
                 // grant permission for the accessory
-                service.grantAccessoryPermission(mAccessory, uid);
+                service.grantAccessoryPermission(mAccessory, packageName, uid);
                 // set or clear default setting
                 if (alwaysCheck) {
                     service.setAccessoryPackage(mAccessory, ri.activityInfo.packageName, userId);

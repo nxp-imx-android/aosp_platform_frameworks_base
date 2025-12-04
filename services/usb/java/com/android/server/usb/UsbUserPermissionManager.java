@@ -157,9 +157,12 @@ class UsbUserPermissionManager {
      * Grants permission for USB device without showing system dialog for package with uid.
      *
      * @param device to grant permission for
+     * @param packageName to grant permission for
      * @param uid to grant permission for
+     * @param isPersistent to set whether permission is temporary or persisted
      */
-    void grantDevicePermission(@NonNull UsbDevice device, int uid) {
+    void grantDevicePermission(
+            @NonNull UsbDevice device, String packageName, int uid, boolean isPersistent) {
         synchronized (mLock) {
             String deviceName = device.getDeviceName();
             SparseBooleanArray uidList = mDevicePermissionMap.get(deviceName);
@@ -175,9 +178,10 @@ class UsbUserPermissionManager {
      * Grants permission for USB accessory without showing system dialog for package with uid.
      *
      * @param accessory to grant permission for
+     * @param packageName to grant permission for
      * @param uid to grant permission for
      */
-    void grantAccessoryPermission(@NonNull UsbAccessory accessory, int uid) {
+    void grantAccessoryPermission(@NonNull UsbAccessory accessory, String packageName, int uid) {
         synchronized (mLock) {
             SparseBooleanArray uidList = mAccessoryPermissionMap.get(accessory);
             if (uidList == null) {
@@ -243,10 +247,11 @@ class UsbUserPermissionManager {
      * Returns true if caller has permission to access the accessory.
      *
      * @param accessory to check permission for
+     * @param packageName to check permission for
      * @param uid to check permission for
      * @return {@code true} if caller has permssion
      */
-    boolean hasPermission(@NonNull UsbAccessory accessory, int pid, int uid) {
+    boolean hasPermission(@NonNull UsbAccessory accessory, String packageName, int pid, int uid) {
         synchronized (mLock) {
             if (uid == Process.SYSTEM_UID
                     || mDisablePermissionDialogs
@@ -272,8 +277,8 @@ class UsbUserPermissionManager {
         }
     }
 
-    void setDevicePersistentPermission(@NonNull UsbDevice device, int uid, boolean isGranted) {
-
+    private void setDevicePersistentPermission(
+            @NonNull UsbDevice device, int uid, boolean isGranted) {
         boolean isChanged;
         DeviceFilter filter = new DeviceFilter(device);
         synchronized (mLock) {
@@ -297,7 +302,7 @@ class UsbUserPermissionManager {
         }
     }
 
-    void setAccessoryPersistentPermission(@NonNull UsbAccessory accessory, int uid,
+    private void setAccessoryPersistentPermission(@NonNull UsbAccessory accessory, int uid,
             boolean isGranted) {
 
         boolean isChanged;
@@ -679,8 +684,8 @@ class UsbUserPermissionManager {
         }
     }
 
-    public void checkPermission(UsbAccessory accessory, int pid, int uid) {
-        if (!hasPermission(accessory, pid, uid)) {
+    public void checkPermission(UsbAccessory accessory, String packageName, int pid, int uid) {
+        if (!hasPermission(accessory, packageName, pid, uid)) {
             throw new SecurityException("User has not given " + uid + " permission to accessory "
                     + accessory);
         }
@@ -751,7 +756,7 @@ class UsbUserPermissionManager {
     public void requestPermission(UsbAccessory accessory, String packageName, PendingIntent pi,
             int pid, int uid) {
         // respond immediately if permission has already been granted
-        if (hasPermission(accessory, pid, uid)) {
+        if (hasPermission(accessory, packageName, pid, uid)) {
             Intent intent = new Intent();
             intent.putExtra(UsbManager.EXTRA_ACCESSORY, accessory);
             intent.putExtra(UsbManager.EXTRA_PERMISSION_GRANTED, true);

@@ -169,9 +169,10 @@ public class UsbDialogHelper {
     public void grantUidAccessPermission() {
         try {
             if (mIsUsbDevice) {
-                mUsbService.grantDevicePermission(mDevice, mUid);
+                mUsbService.grantDevicePermission(
+                        mDevice, mPackageName, mUid, /* isPersistent= */ false);
             } else {
-                mUsbService.grantAccessoryPermission(mAccessory, mUid);
+                mUsbService.grantAccessoryPermission(mAccessory, mPackageName, mUid);
             }
         } catch (RemoteException e) {
             Log.e(TAG, "IUsbService connection failed", e);

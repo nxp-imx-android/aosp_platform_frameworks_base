@@ -846,13 +846,14 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
 
         if (isInSetupWizard() || (mConnectedBrailleDisplaySerialNumber != null
                 && mConnectedBrailleDisplaySerialNumber.equals(device.getSerialNumber()))) {
+            // Uid of client's app
             int clientUid = getClientUid();
             if (clientUid == UID_UNKNOWN) {
                 return;
             }
 
             UsbManager usbManager = mContext.getSystemService(UsbManager.class);
-            usbManager.grantPermission(device, /* uid of client's App */ clientUid);
+            usbManager.grantPermission(device, getClientPackageName(), clientUid);
 
             String usbSerialNumber = device.getSerialNumber();
             if (!TextUtils.isEmpty(usbSerialNumber)) {
@@ -861,6 +862,16 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
                 mConnectedBrailleDisplaySerialNumber = usbSerialNumber;
             }
         }
+    }
+
+    private @NonNull String getClientPackageName() {
+        ResolveInfo resolveInfo = mAccessibilityServiceInfo.getResolveInfo();
+        if (resolveInfo != null && resolveInfo.serviceInfo != null
+                && resolveInfo.serviceInfo.applicationInfo != null) {
+            return resolveInfo.serviceInfo.applicationInfo.packageName;
+        }
+
+        return "";
     }
 
     private int getClientUid() {
