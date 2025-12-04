@@ -2024,4 +2024,15 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wider_landscape_notifications"
+    namespace: "systemui"
+    description: "Make notifications take up more horizontal space in landscape single shade."
+    bug: "433921584"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end
