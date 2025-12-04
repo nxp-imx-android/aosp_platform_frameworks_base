@@ -2276,4 +2276,17 @@
     <dimen name="notification_background_blur_radius">25dp</dimen>
     <!-- Lockscreen blur values end -->
 
+    <!-- Usb Device Dialog values -->
+    <dimen name="usb_device_dialog_space_small1">16dp</dimen>
+    <dimen name="usb_device_dialog_space_small4">24dp</dimen>
+    <dimen name="usb_device_dialog_button_margin_vertical">4dp</dimen>
+    <dimen name="usb_device_dialog_button_space">8dp</dimen>
+    <dimen name="usb_device_dialog_button_padding_vertical">10dp</dimen>
+    <dimen name="usb_device_dialog_always_use_checkbox_corners_radius">20dp</dimen>
+    <dimen name="usb_device_dialog_always_use_checkbox_padding_vertical">12dp</dimen>
+    <dimen name="usb_device_dialog_always_use_checkbox_margin_horizontal">16dp</dimen>
+    <dimen name="usb_device_dialog_icon_size">32dp</dimen>
+    <dimen name="usb_device_dialog_button_height">40dp</dimen>
+    <!-- Usb Device Dialog values end -->
+
 </resources>

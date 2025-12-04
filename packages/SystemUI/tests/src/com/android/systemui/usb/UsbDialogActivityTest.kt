@@ -26,6 +26,8 @@ import android.hardware.usb.UsbAccessory
 import android.hardware.usb.UsbConfiguration
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.intercepting.SingleActivityFactory
@@ -218,7 +220,19 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     }
 
     @Test
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
     fun testHideNonSystemOverlay() {
+        deviceConfiguration(isUsbDevice = false)
+        assertThat(
+                activityRule.activity.window.attributes.privateFlags and
+                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS
+            )
+            .isEqualTo(WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS)
+    }
+
+    @Test
+    @EnableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
+    fun testHideNonSystemOverlayNewDialog() {
         deviceConfiguration(isUsbDevice = false)
         assertThat(
                 activityRule.activity.window.attributes.privateFlags and
