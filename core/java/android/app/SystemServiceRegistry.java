@@ -18,6 +18,7 @@ package android.app;
 
 import static android.aiseal.Flags.aisealHostApis;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
+import static android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.PackageManager.FEATURE_AISEAL;
@@ -235,6 +236,8 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.os.allowlist.AllowlistManager;
+import android.os.allowlist.IAllowlistService;
 import android.os.flagging.ConfigInfrastructureFrameworkInitializer;
 import android.os.health.SystemHealthManager;
 import android.os.image.DynamicSystemManager;
@@ -2081,6 +2084,21 @@ public final class SystemServiceRegistry {
                                 return null;
                             }
                             return new AiSealManager(ctx);
+                        }
+                    });
+        }
+
+        if (enableAppFunctionPermissionV2()) {
+            registerService(
+                    Context.ALLOWLIST_SERVICE,
+                    AllowlistManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public AllowlistManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder b = ServiceManager.getServiceOrThrow(Context.ALLOWLIST_SERVICE);
+                            IAllowlistService service = IAllowlistService.Stub.asInterface(b);
+                            return new AllowlistManager(ctx, service);
                         }
                     });
         }

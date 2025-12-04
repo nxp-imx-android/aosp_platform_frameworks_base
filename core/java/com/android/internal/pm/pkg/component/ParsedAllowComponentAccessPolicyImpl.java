@@ -43,7 +43,7 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
 
     @Override
     public void writeToParcel(@NonNull android.os.Parcel dest, int flags) {
-        if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+        if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
             dest.writeTypedList(mParsedAllowlistedSignedPackages);
         } else {
             List<SignedPackageParcel> parcels =
@@ -62,7 +62,7 @@ public final class ParsedAllowComponentAccessPolicyImpl implements ParsedAllowCo
 
     private ParsedAllowComponentAccessPolicyImpl(@NonNull android.os.Parcel in) {
         ArrayList<SignedPackage> list;
-        if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+        if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
             list = in.createTypedArrayList(SignedPackage.CREATOR);
         } else {
             ArrayList<SignedPackageParcel> parcelList =

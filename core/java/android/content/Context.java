@@ -92,6 +92,7 @@ import android.os.Looper;
 import android.os.StatFs;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.allowlist.AllowlistManager;
 import android.os.storage.StorageManager;
 import android.provider.E2eeContactKeysManager;
 import android.provider.MediaStore;
@@ -7367,6 +7368,17 @@ public abstract class Context {
     @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
     @SystemApi
     public static final String AISEAL_HOST_SERVICE = "aiseal_host";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve an
+     * {@link AllowlistManager}.
+     *
+     * @see #getSystemService(String)
+     * @hide
+     */
+    @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+    @SystemApi
+    public static final String ALLOWLIST_SERVICE = "allowlist";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

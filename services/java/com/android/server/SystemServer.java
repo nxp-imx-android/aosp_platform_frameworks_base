@@ -126,6 +126,7 @@ import com.android.server.accounts.AccountManagerService;
 import com.android.server.adb.AdbService;
 import com.android.server.aiseal.AiSealSystemService;
 import com.android.server.alarm.AlarmManagerService;
+import com.android.server.allowlist.AllowlistService;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.ambientcontext.AmbientContextManagerService;
 import com.android.server.app.GameManagerService;
@@ -1682,6 +1683,12 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartHintManager");
             mSystemServiceManager.startService(HintManagerService.class);
             t.traceEnd();
+
+            if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                t.traceBegin("StartAllowlistService");
+                mSystemServiceManager.startService(AllowlistService.class);
+                t.traceEnd();
+            }
 
             // Grants default permissions and defines roles
             t.traceBegin("StartRoleManagerService");

@@ -10358,6 +10358,24 @@
             android:featureFlag="android.service.notification.enable_dnd_sync">
     </permission>
 
+    <!-- @SystemApi Required to bind to the {@link AllowlistProviderService}
+         <p> Protection level: internal
+         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+         @hide
+    -->
+    <permission android:name="android.permission.BIND_ALLOWLIST_PROVIDER_SERVICE"
+        android:protectionLevel="internal"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2" />
+
+    <!-- @SystemApi Required to query through {@link AllowlistManager}
+         <p> Protection level: signature|module
+         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+         @hide
+    -->
+    <permission android:name="android.permission.QUERY_ALLOWLIST"
+        android:protectionLevel="signature|module"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2" />
+
     <!-- Allows an application to register listener with user attention service.
          This permission is associated with the
          {@link android.app.role.RoleManager#ROLE_SYSTEM_VENDOR_INTELLIGENCE} role.

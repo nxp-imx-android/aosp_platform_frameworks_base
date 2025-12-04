@@ -204,7 +204,7 @@ public class SystemConfigManager {
     @NonNull
     public Set<SignedPackage> getEnhancedConfirmationTrustedPackages() {
         try {
-            if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+            if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
                 List<SignedPackage> parcels = mInterface.getEnhancedConfirmationTrustedPackages();
                 return new ArraySet<>(parcels);
             } else {
@@ -242,7 +242,7 @@ public class SystemConfigManager {
     @NonNull
     public Set<SignedPackage> getEnhancedConfirmationTrustedInstallers() {
         try {
-            if (android.permission.flags.Flags.allowlistServiceEnabled()) {
+            if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
                 List<SignedPackage> parcels = mInterface.getEnhancedConfirmationTrustedInstallers();
                 return new ArraySet<>(parcels);
             } else {
