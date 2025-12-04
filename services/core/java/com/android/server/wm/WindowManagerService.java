@@ -1116,7 +1116,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     boolean mPointerLocationEnabled = false;
 
-    private final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
+    @VisibleForTesting
+    final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
             new SharedMemoryBackedCurrentAnimatorScale();
 
     @NonNull
@@ -1239,6 +1240,10 @@ public class WindowManagerService extends IWindowManager.Stub
             }
         }
     };
+
+    // TODO(b/464052878): Make mAppLockController @NonNull when App Lock flags are removed.
+    @Nullable
+    final AppLockController mAppLockController;
 
     private final ScreenRecordingCallbackController mScreenRecordingCallbackController;
 
@@ -1507,6 +1512,9 @@ public class WindowManagerService extends IWindowManager.Stub
         mStartingSurfaceController = new StartingSurfaceController(this);
         mPresentationController = new PresentationController();
 
+        mAppLockController =
+                (android.security.Flags.appLockApis() && android.security.Flags.appLockCore())
+                        ? new AppLockController(this) : null;
         mBlurController = new BlurController(mContext, mPowerManager);
         mTaskFpsCallbackController = new TaskFpsCallbackController();
         mAccessibilityController = new AccessibilityController(this);
@@ -6000,6 +6008,9 @@ public class WindowManagerService extends IWindowManager.Stub
             } catch (RemoteException e) {
                 // Ignore, we cannot do anything if we failed to register VR mode listener
             }
+        }
+        if (mAppLockController != null) {
+            mAppLockController.systemReady();
         }
     }
 

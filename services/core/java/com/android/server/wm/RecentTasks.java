@@ -762,6 +762,35 @@ class RecentTasks {
         }
     }
 
+    /**
+     * Called when the App Lock enabled state changes for a package.
+     *
+     * <p>Updates the App Lock enabled state for relevant tasks and persists the change.
+     *
+     * @param packageName the package name whose App Lock state changed.
+     * @param userId      the user ID for whom the App Lock state changed.
+     * @param enabled     {@code true} if App Lock is enabled, {@code false} otherwise.
+     */
+    void onPackageAppLockEnabledChanged(String packageName, int userId, boolean enabled) {
+        if (!android.security.Flags.appLockCore()) {
+            return;
+        }
+        synchronized (mService.mGlobalLock) {
+            ProtoLog.d(WM_DEBUG_TASKS, "onPackageAppLockEnabledChanged: package=%s, userId=%d,"
+                    + " enabled=%b", packageName, userId, enabled);
+            for (int i = mTasks.size() - 1; i >= 0; --i) {
+                final Task task = mTasks.get(i);
+                if (task.realActivity != null
+                        && task.realActivity.getPackageName().equals(packageName)
+                        && task.mUserId == userId
+                        && task.mRealActivityAppLockEnabled != enabled) {
+                    task.mRealActivityAppLockEnabled = enabled;
+                    notifyTaskPersisterLocked(task, /* flush= */ false);
+                }
+            }
+        }
+    }
+
     void onLockTaskModeStateChanged(int lockTaskModeState, int userId) {
         if (lockTaskModeState != ActivityManager.LOCK_TASK_MODE_LOCKED) {
             return;

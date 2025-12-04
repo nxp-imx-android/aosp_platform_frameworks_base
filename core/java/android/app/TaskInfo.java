@@ -154,6 +154,12 @@ public class TaskInfo {
     public ComponentName realActivity;
 
     /**
+     * Whether the package of {@link #realActivity} has App Lock enabled.
+     * @hide
+     */
+    public boolean isRealActivityAppLockEnabled;
+
+    /**
      * The number of activities in this task (including running).
      */
     public int numActivities;
@@ -616,6 +622,7 @@ public class TaskInfo {
         topActivity = ComponentName.readFromParcel(source);
         origActivity = ComponentName.readFromParcel(source);
         realActivity = ComponentName.readFromParcel(source);
+        isRealActivityAppLockEnabled = source.readBoolean();
 
         numActivities = source.readInt();
         lastActiveTime = source.readLong();
@@ -675,6 +682,7 @@ public class TaskInfo {
         ComponentName.writeToParcel(topActivity, dest);
         ComponentName.writeToParcel(origActivity, dest);
         ComponentName.writeToParcel(realActivity, dest);
+        dest.writeBoolean(isRealActivityAppLockEnabled);
 
         dest.writeInt(numActivities);
         dest.writeLong(lastActiveTime);
@@ -729,6 +737,7 @@ public class TaskInfo {
                 + " topActivity=" + topActivity
                 + " origActivity=" + origActivity
                 + " realActivity=" + realActivity
+                + " realActivityIsAppLockEnabled=" + isRealActivityAppLockEnabled
                 + " numActivities=" + numActivities
                 + " lastActiveTime=" + lastActiveTime
                 + " supportsMultiWindow=" + supportsMultiWindow

@@ -220,6 +220,8 @@ class Task extends TaskFragment {
     private static final String TAG_AFFINITYINTENT = "affinity_intent";
     private static final String ATTR_REALACTIVITY = "real_activity";
     private static final String ATTR_REALACTIVITY_SUSPENDED = "real_activity_suspended";
+    private static final String ATTR_REALACTIVITY_APP_LOCK_ENABLED =
+            "real_activity_app_lock_enabled";
     private static final String ATTR_ORIGACTIVITY = "orig_activity";
     private static final String TAG_ACTIVITY = "activity";
     private static final String ATTR_AFFINITY = "affinity";
@@ -320,6 +322,8 @@ class Task extends TaskFragment {
     ComponentName realActivity; // The actual activity component that started the task.
     boolean realActivitySuspended; // True if the actual activity component that started the
                                    // task is suspended.
+    boolean mRealActivityAppLockEnabled; // True if the actual activity component's package has App
+                                         // Lock enabled.
     boolean inRecents;      // Actually in the recents list?
     long lastActiveTime;    // Last time this task was active in the current device session,
                             // including sleep. This time is initialized to the elapsed time when
@@ -672,7 +676,7 @@ class Task extends TaskFragment {
             @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
             boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
-            boolean isForceOpaque) {
+            boolean isForceOpaque, boolean _realActivityAppLockEnabled) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
@@ -688,6 +692,7 @@ class Task extends TaskFragment {
         voiceInteractor = _voiceInteractor;
         realActivity = _realActivity;
         realActivitySuspended = _realActivitySuspended;
+        mRealActivityAppLockEnabled = _realActivityAppLockEnabled;
         origActivity = _origActivity;
         rootWasReset = _rootWasReset;
         isAvailable = true;
@@ -1048,6 +1053,11 @@ class Task extends TaskFragment {
             rootWasReset = true;
         }
         mUserId = UserHandle.getUserId(info.getUid());
+        if (android.security.Flags.appLockCore() && realActivity != null) {
+            mRealActivityAppLockEnabled =
+                    mAtmService.getPackageManagerInternalLocked().isPackageAppLockEnabled(
+                            realActivity.getPackageName(), mUserId);
+        }
         mUserSetupComplete = Settings.Secure.getIntForUser(
                 mAtmService.mContext.getContentResolver(), USER_SETUP_COMPLETE, 0, mUserId) != 0;
         if ((info.flags & ActivityInfo.FLAG_AUTO_REMOVE_FROM_RECENTS) != 0) {
@@ -3419,6 +3429,7 @@ class Task extends TaskFragment {
         info.topActivity = top != null ? top.mActivityComponent : null;
         info.origActivity = origActivity;
         info.realActivity = realActivity;
+        info.isRealActivityAppLockEnabled = mRealActivityAppLockEnabled;
         info.lastActiveTime = lastActiveTime;
         info.taskDescription = new ActivityManager.TaskDescription(getTaskDescription());
         info.supportsMultiWindow = supportsMultiWindowInDisplayArea(tda);
@@ -3969,6 +3980,7 @@ class Task extends TaskFragment {
             out.attribute(null, ATTR_REALACTIVITY, realActivity.flattenToShortString());
         }
         out.attributeBoolean(null, ATTR_REALACTIVITY_SUSPENDED, realActivitySuspended);
+        out.attributeBoolean(null, ATTR_REALACTIVITY_APP_LOCK_ENABLED, mRealActivityAppLockEnabled);
         if (origActivity != null) {
             out.attribute(null, ATTR_ORIGACTIVITY, origActivity.flattenToShortString());
         }
@@ -4066,6 +4078,7 @@ class Task extends TaskFragment {
         ArrayList<ActivityRecord> activities = new ArrayList<>();
         ComponentName realActivity = null;
         boolean realActivitySuspended = false;
+        boolean realActivityAppLockEnabled = false;
         ComponentName origActivity = null;
         String affinity = null;
         String rootAffinity = null;
@@ -4112,6 +4125,9 @@ class Task extends TaskFragment {
                     break;
                 case ATTR_REALACTIVITY_SUSPENDED:
                     realActivitySuspended = Boolean.valueOf(attrValue);
+                    break;
+                case ATTR_REALACTIVITY_APP_LOCK_ENABLED:
+                    realActivityAppLockEnabled = Boolean.valueOf(attrValue);
                     break;
                 case ATTR_ORIGACTIVITY:
                     origActivity = ComponentName.unflattenFromString(attrValue);
@@ -4291,6 +4307,7 @@ class Task extends TaskFragment {
                 .setResizeMode(resizeMode)
                 .setSupportsPictureInPicture(supportsPictureInPicture)
                 .setRealActivitySuspended(realActivitySuspended)
+                .setRealActivityAppLockEnabled(realActivityAppLockEnabled)
                 .setUserSetupComplete(userSetupComplete)
                 .setMinWidth(minWidth)
                 .setMinHeight(minHeight)
@@ -6670,6 +6687,7 @@ class Task extends TaskFragment {
         private int mResizeMode = RESIZE_MODE_RESIZEABLE;
         private boolean mSupportsPictureInPicture;
         private boolean mRealActivitySuspended;
+        private boolean mRealActivityAppLockEnabled;
         private boolean mUserSetupComplete;
         private int mMinWidth = INVALID_MIN_SIZE;
         private int mMinHeight = INVALID_MIN_SIZE;
@@ -6897,6 +6915,11 @@ class Task extends TaskFragment {
             return this;
         }
 
+        private Builder setRealActivityAppLockEnabled(boolean realActivityAppLockEnabled) {
+            mRealActivityAppLockEnabled = realActivityAppLockEnabled;
+            return this;
+        }
+
         private Builder setLastDescription(String lastDescription) {
             mLastDescription = lastDescription;
             return this;
@@ -7068,7 +7091,7 @@ class Task extends TaskFragment {
                     mRealActivitySuspended, mUserSetupComplete, mMinWidth, mMinHeight,
                     mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
                     mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
-                    mIsForceOpaque);
+                    mIsForceOpaque, mRealActivityAppLockEnabled);
         }
     }
 
