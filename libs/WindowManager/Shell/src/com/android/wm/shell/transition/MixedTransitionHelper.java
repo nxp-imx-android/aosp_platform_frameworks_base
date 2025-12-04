@@ -316,4 +316,19 @@ public class MixedTransitionHelper {
         }
         return SplitScreen.STAGE_TYPE_UNDEFINED;
     }
+
+    /**
+     * Find the first change in this transition that is for the home task.
+     *
+     * @return change or {@code null} if the home task is not in the list of changes
+     */
+    static @Nullable TransitionInfo.Change getHomeChange(@NonNull TransitionInfo info) {
+        for (TransitionInfo.Change change : info.getChanges()) {
+            if (change.getTaskInfo() != null
+                    && change.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+                return change;
+            }
+        }
+        return null;
+    }
 }

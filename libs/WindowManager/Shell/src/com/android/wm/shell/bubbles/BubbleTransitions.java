@@ -257,10 +257,11 @@ public class BubbleTransitions {
     }
 
     /**
-     * Initiates axed bubble-to-bubble launch/existing bubble convert for the given transition.
+     * Expands and selects the given task in a bubble when there is already a running transition
+     * for it.
      */
-    public void startBubbleToBubbleLaunchOrExistingBubbleConvert(@NonNull IBinder transition,
-            @NonNull ActivityManager.RunningTaskInfo launchingTask,
+    public void startExpandAndSelectBubbleForExistingTransition(
+            @NonNull IBinder transition, @NonNull ActivityManager.RunningTaskInfo launchingTask,
             @NonNull Consumer<TransitionHandler> onInflatedCallback) {
         final TransitionHandler handler =
                 mBubbleController.expandStackAndSelectBubbleForExistingTransition(
@@ -641,6 +642,9 @@ public class BubbleTransitions {
         @Override
         public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
                 @NonNull SurfaceControl.Transaction finishTransaction) {
+            BubbleLog.d(
+                    "LaunchNewTaskBubbleForExistingTransition.onTransitionConsumed() aborted=%b",
+                    aborted);
             if (!aborted) return;
             cleanup();
         }

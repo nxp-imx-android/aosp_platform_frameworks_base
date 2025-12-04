@@ -22,16 +22,19 @@ import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.IRemoteTransition
 import android.window.RemoteTransition
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.Flags.FLAG_FIX_OPEN_APP_BUBBLE_FROM_LOCKSCREEN
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -57,6 +60,7 @@ import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -270,7 +274,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
 
-        verify(bubbleTransitions, never()).startBubbleToBubbleLaunchOrExistingBubbleConvert(
+        verify(bubbleTransitions, never()).startExpandAndSelectBubbleForExistingTransition(
             any(), any(), any())
     }
 
@@ -291,7 +295,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
 
-        verify(bubbleTransitions).startBubbleToBubbleLaunchOrExistingBubbleConvert(
+        verify(bubbleTransitions).startExpandAndSelectBubbleForExistingTransition(
             any(), any(), any())
     }
 
@@ -341,6 +345,62 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
         verify(mixedTransition).onTransitionConsumed(eq(transition), eq(true), any())
         assertThat(mixedHandler.mActiveTransitions.contains(mixedTransition)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_FIX_OPEN_APP_BUBBLE_FROM_LOCKSCREEN)
+    fun test_startAnimation_bubbleOpensFromKeyguard() {
+        val transition = Binder()
+        val info = TransitionInfo(TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY)
+
+        // Set up bubble change
+        val change = TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
+        change.mode = TRANSIT_OPEN
+        change.taskInfo = createRunningTask()
+        info.addChange(change)
+        bubbleHelper.stub {
+            onGeneric { isAppBubbleTask(any()) } doReturn true
+            onGeneric { getEnterBubbleTask(any()) } doReturn change
+        }
+        bubbleTransitions.stub {
+            on { canAnimateTransition(any(), any()) } doReturn true
+        }
+
+        val mixedTransition = DefaultMixedTransition(
+            TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition, transitions, mixedHandler,
+            pipTransitionController, splitScreenController.getTransitionHandler(),
+            keyguardTransitionHandler, unfoldTransitionHandler, activityEmbeddingController,
+            desktopTasksController, bubbleTransitions, bubbleHelper, pinnedLayerHandler
+        )
+        mixedHandler.mActiveTransitions.add(mixedTransition)
+
+        // Make sure keyguard handles it
+        keyguardTransitionHandler.stub {
+            on { startAnimation(eq(transition), any(), any(), any(), any()) } doReturn true
+        }
+
+        val startT = mock<SurfaceControl.Transaction>()
+        val finishT = mock<SurfaceControl.Transaction>()
+        val finishCallback = mock<Transitions.TransitionFinishCallback>()
+        mixedHandler.startAnimation(transition, info, startT, finishT, finishCallback)
+
+        // Verify Keyguard handler started
+        val callbackCaptor = argumentCaptor<Transitions.TransitionFinishCallback>()
+        verify(keyguardTransitionHandler).startAnimation(
+            eq(transition), any(), eq(startT), eq(finishT), callbackCaptor.capture()
+        )
+
+        // Verify bubble NOT started yet
+        verify(bubbleTransitions, never())
+            .startExpandAndSelectBubbleForExistingTransition(any(), any(), any())
+
+        // Check that bubble starts after keyguard finishes
+        val wct = mock<WindowContainerTransaction>()
+        callbackCaptor.firstValue.onTransitionFinished(wct)
+
+        verify(bubbleTransitions).startExpandAndSelectBubbleForExistingTransition(
+            eq(transition), eq(change.taskInfo!!), any()
+        )
     }
 
     private fun createTransitionRequestInfo(

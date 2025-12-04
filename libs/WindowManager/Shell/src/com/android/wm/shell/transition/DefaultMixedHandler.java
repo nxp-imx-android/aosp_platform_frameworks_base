@@ -51,6 +51,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.bubbles.BubbleHelper;
@@ -77,9 +78,11 @@ import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -825,9 +828,15 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                     mActiveTransitions.remove(keyguardMixed);
                     finishCallback.onTransitionFinished(wct);
                 };
-                final boolean hasAnimateKeyguard = animateKeyguard(
-                        keyguardMixed, info, startTransaction, finishTransaction, callback,
-                        mKeyguardHandler, mPipHandler);
+                final boolean hasAnimateKeyguard;
+                if (Flags.fixOpenAppBubbleFromLockscreen()
+                        && MixedTransition.isAppBubbleTypeTransition(mixed.mType)) {
+                    hasAnimateKeyguard = animateKeyguardWithBubbles(keyguardMixed, transition, info,
+                            startTransaction, finishTransaction, callback);
+                } else {
+                    hasAnimateKeyguard = animateKeyguard(keyguardMixed, info, startTransaction,
+                            finishTransaction, callback, mKeyguardHandler, mPipHandler);
+                }
                 if (hasAnimateKeyguard) {
                     ProtoLog.w(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                             "Converting mixed transition into a keyguard transition");
@@ -1010,6 +1019,85 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             pipHandler.syncPipSurfaceState(info, startTransaction, finishTransaction);
         }
         return mixed.startSubAnimation(keyguardHandler, info, startTransaction, finishTransaction);
+    }
+
+    /**
+     * Animate keyguard when the transition also contains changes related to app bubbles.
+     * Runs the animation in stages by first animating away the keyguard. Once that is complete,
+     * starts the animation for bubbles.
+     * Bubbles animation needs to run after keyguard as bubbles views are hidden as long as keyguard
+     * or notification shade is visible.
+     */
+    private boolean animateKeyguardWithBubbles(MixedTransition keyguardMixed,
+            @NonNull IBinder transition, @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+
+        // We need to split out bubbles changes from the other changes
+        final TransitionInfo keyguardInfo = subCopy(info, info.getType(), /* withChanges= */ false);
+        final TransitionInfo bubbleInfo = subCopy(info, info.getType(), /* withChanges= */ false);
+        // Copy over flags as keyguard handler uses them to detect if it should animate
+        keyguardInfo.setFlags(info.getFlags());
+
+        final Set<Integer> bubbleChangeIndexes = new HashSet<>(
+                getOpeningAppBubbleChangeIndexes(mBubbleTransitions, info));
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getTaskInfo() != null
+                    && change.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+                // Add home change to both as both handlers want to animate it
+                bubbleInfo.addChange(change);
+                keyguardInfo.addChange(change);
+                continue;
+            }
+            if (bubbleChangeIndexes.contains(i)) {
+                bubbleInfo.addChange(change);
+            } else {
+                keyguardInfo.addChange(change);
+            }
+        }
+
+        // Start bubbles animation from keyguard finishCallback so it runs after keyguard
+        Transitions.TransitionFinishCallback keyguardFinishCallback = wct -> {
+            animateExpandBubblesFromKeyguard(transition, bubbleInfo,
+                    new SurfaceControl.Transaction(), finishTransaction, finishCallback);
+        };
+
+        return animateKeyguard(keyguardMixed, keyguardInfo, startTransaction, finishTransaction,
+                keyguardFinishCallback, mKeyguardHandler, mPipHandler);
+    }
+
+    private void animateExpandBubblesFromKeyguard(@NonNull IBinder transition,
+            @NonNull TransitionInfo info, @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        final TransitionInfo.Change bubbleTask = mBubbleHelper.getEnterBubbleTask(info);
+        if (bubbleTask == null || bubbleTask.getTaskInfo() == null) {
+            ProtoLog.w(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                    "Tried to open bubbles from keyguard but bubbles changes are missing");
+            finishCallback.onTransitionFinished(null);
+            return;
+        }
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                "Animating bubbles expand as part of keyguard going away transition");
+        // Home task is reparented under the notification shade during keyguard animation.
+        // In order for home to show up behind bubbles animation, we need to move it
+        // to the transition root while the bubbles part of the transition is animating.
+        TransitionInfo.Change homeChange = MixedTransitionHelper.getHomeChange(info);
+        if (homeChange != null) {
+            // Create a new transaction as the bubbles handler first inflates the bubble views,
+            // and only after that is complete, applies the startTransaction.
+            try (SurfaceControl.Transaction tx = new SurfaceControl.Transaction()) {
+                tx.reparent(homeChange.getLeash(), info.getRoot(0).getLeash());
+                tx.apply();
+            }
+        }
+        Consumer<Transitions.TransitionHandler> onInflatedCallback =
+                handler -> handler.startAnimation(transition, info, startTransaction,
+                        finishTransaction, finishCallback);
+        mBubbleTransitions.startExpandAndSelectBubbleForExistingTransition(transition,
+                bubbleTask.getTaskInfo(), onInflatedCallback);
     }
 
     /**
