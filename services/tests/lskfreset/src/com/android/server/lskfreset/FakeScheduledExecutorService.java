@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -39,7 +40,66 @@ import java.util.concurrent.TimeoutException;
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
-    private final DelayQueue<FakeScheduledFuture<?>> mFutures = new DelayQueue<>();
+
+    // Helper wrapper that manages all the queuing of futures and timeouts. This is implemented by
+    // extending a semaphore because that turns out to be a very useful primative for allowing tests
+    // to wait on a certain number of things to be blocked on a timeout, and in particular we need
+    // to extend Semaphore rather than just including one internally in order to make use of
+    // the protected reducePermits().
+    private static class DelayTracker extends Semaphore {
+        private final DelayQueue<FakeScheduledFuture<?>> mFutureQueue = new DelayQueue<>();
+        private final DelayQueue<FakeScheduledFuture<?>.WaitForTimeout> mTimeoutQueue =
+                new DelayQueue<>();
+
+        DelayTracker() {
+            super(0);
+        }
+
+        int numFutures() {
+            return mFutureQueue.size();
+        }
+
+        boolean contains(FakeScheduledFuture<?> future) {
+            return mFutureQueue.contains(future);
+        }
+
+        void put(FakeScheduledFuture<?> future) {
+            mFutureQueue.put(future);
+        }
+
+        void put(FakeScheduledFuture<?>.WaitForTimeout waiter) {
+            mTimeoutQueue.put(waiter);
+            release();
+        }
+
+        boolean remove(FakeScheduledFuture<?> future) {
+            return mFutureQueue.remove(future);
+        }
+
+        boolean remove(FakeScheduledFuture<?>.WaitForTimeout waiter) {
+            if (mTimeoutQueue.remove(waiter)) {
+                reducePermits(1);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        List<FakeScheduledFuture<?>> drainFutures() {
+            List<FakeScheduledFuture<?>> drained = new ArrayList<>();
+            mFutureQueue.drainTo(drained);
+            return drained;
+        }
+
+        List<FakeScheduledFuture<?>.WaitForTimeout> drainTimeouts() {
+            List<FakeScheduledFuture<?>.WaitForTimeout> drained = new ArrayList<>();
+            mTimeoutQueue.drainTo(drained);
+            reducePermits(drained.size());
+            return drained;
+        }
+    }
+
+    private final DelayTracker mDelays = new DelayTracker();
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -72,7 +132,21 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      * @return The number of tasks currently awaiting execution.
      */
     int numTasks() {
-        return mFutures.size();
+        return mDelays.numFutures();
+    }
+
+    /**
+     * Waits for the number of blocked-with-timeouts to reach a given count.
+     *
+     * <p>This is useful in tests that want to launch a bunch of test threads and then wait for them
+     * all to reach a point where they're blocked on a future that can timeout. Because timeouts a
+     * relative to the current time, you need a way to ensure that all the threads have started
+     * their timeout before you fast-forward time, and this method provides that.
+     */
+    void waitForNumTimeoutWaiters(int numWaiters) {
+        assertExecutionThread();
+        mDelays.acquireUninterruptibly(numWaiters);
+        mDelays.release(numWaiters);
     }
 
     /**
@@ -84,10 +158,13 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     int fastForwardMillis(long millis) {
         assertExecutionThread();
         mElapsedMillis += millis;
-        List<FakeScheduledFuture<?>> readyFutures = new ArrayList<>();
-        mFutures.drainTo(readyFutures);
+        List<FakeScheduledFuture<?>> readyFutures = mDelays.drainFutures();
         for (FakeScheduledFuture<?> future : readyFutures) {
             future.execute();
+        }
+        List<FakeScheduledFuture<?>.WaitForTimeout> readyTimeouts = mDelays.drainTimeouts();
+        for (FakeScheduledFuture<?>.WaitForTimeout waiter : readyTimeouts) {
+            waiter.signal();
         }
         return readyFutures.size();
     }
@@ -95,14 +172,14 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         FakeScheduledFuture<?> future = new FakeScheduledFuture<>(command, unit.toMillis(delay));
-        mFutures.put(future);
+        mDelays.put(future);
         return future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
         FakeScheduledFuture<V> future = new FakeScheduledFuture<>(callable, unit.toMillis(delay));
-        mFutures.put(future);
+        mDelays.put(future);
         return future;
     }
 
@@ -211,6 +288,41 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
         private boolean mCancelled = false;
 
+        private final List<WaitForTimeout> mTimeouts = new ArrayList<>();
+
+        private class WaitForTimeout implements Delayed {
+            private final long mTimeoutAt;
+            private final CountDownLatch mTimeoutLatch = new CountDownLatch(1);
+
+            WaitForTimeout(long timeout, TimeUnit unit) {
+                mTimeoutAt = mElapsedMillis + unit.toMillis(timeout);
+            }
+
+            @Override
+            public long getDelay(TimeUnit unit) {
+                long delayInMs = mTimeoutAt - mElapsedMillis;
+                return unit.convert(delayInMs, TimeUnit.MILLISECONDS);
+            }
+
+            @Override
+            public int compareTo(Delayed o) {
+                long lhs = getDelay(TimeUnit.NANOSECONDS);
+                long rhs = o.getDelay(TimeUnit.NANOSECONDS);
+                return Long.compare(lhs, rhs);
+            }
+
+            private void await() throws InterruptedException, TimeoutException {
+                mTimeoutLatch.await();
+                if (mCompletionLatch.getCount() > 0) {
+                    throw new TimeoutException();
+                }
+            }
+
+            private void signal() {
+                mTimeoutLatch.countDown();
+            }
+        }
+
         private FakeScheduledFuture(Runnable runnable, long delay) {
             mRunnable = runnable;
             mCallable = null;
@@ -235,7 +347,15 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
                     }
                 }
             } finally {
-                mCompletionLatch.countDown();
+                // Trigger the completion latch and anything waiting on a timeout.
+                synchronized (mTimeouts) {
+                    mCompletionLatch.countDown();
+                    for (WaitForTimeout waiter : mTimeouts) {
+                        mDelays.remove(waiter);
+                        waiter.signal();
+                    }
+                    mTimeouts.clear();
+                }
             }
         }
 
@@ -255,7 +375,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             mCancelled = true;
-            return mFutures.remove(this);
+            return mDelays.remove(this);
         }
 
         @Override
@@ -265,7 +385,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public boolean isDone() {
-            return !mFutures.contains(this);
+            return !mDelays.contains(this);
         }
 
         @Override
@@ -282,7 +402,22 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         @Override
         public V get(long timeout, TimeUnit unit)
                 throws ExecutionException, InterruptedException, TimeoutException {
-            throw new UnsupportedOperationException();
+            assertNotExecutionThread();
+            WaitForTimeout waiter;
+            synchronized (mTimeouts) {
+                // If the future is already complete we can return immediately. Otherwise we need
+                // to queue up a wait-for-timeout.
+                if (mCompletionLatch.getCount() == 0) {
+                    return get();
+                }
+                waiter = new WaitForTimeout(timeout, unit);
+                mTimeouts.add(waiter);
+                mDelays.put(waiter);
+            }
+            // Wait for completion or timeout. Do this outside of the synchronized block or else
+            // this will deadlock with execute().
+            waiter.await();
+            return get();
         }
     }
 }

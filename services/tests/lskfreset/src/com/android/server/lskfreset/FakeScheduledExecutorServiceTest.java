@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -170,6 +171,50 @@ public class FakeScheduledExecutorServiceTest {
         assertTrue(future.isDone());
         assertEquals(1, executions.get());
         futureGetThread.join();
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertTrue(future.isDone());
+        assertEquals(1, executions.get());
+    }
+
+    @Test
+    public void testScheduleCallableWithResultAndTimeout() throws InterruptedException {
+        AtomicInteger executions = new AtomicInteger(0);
+        ScheduledFuture<Integer> future =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                            return 31415;
+                        },
+                        2,
+                        TimeUnit.SECONDS);
+        Thread futureGetTimeoutThread =
+                new Thread(
+                        () -> {
+                            assertThrows(
+                                    TimeoutException.class, () -> future.get(1, TimeUnit.SECONDS));
+                        });
+        Thread futureGetSuccessThread =
+                new Thread(
+                        () -> {
+                            try {
+                                assertEquals(31415, future.get(3, TimeUnit.SECONDS).intValue());
+                            } catch (Exception e) {
+                                fail("future.get() threw unexpected exception: " + e);
+                            }
+                        });
+        futureGetTimeoutThread.start();
+        futureGetSuccessThread.start();
+        mExecutor.waitForNumTimeoutWaiters(2);
+        assertFalse(future.isDone());
+        assertEquals(0, executions.get());
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertFalse(future.isDone());
+        assertEquals(0, executions.get());
+        futureGetTimeoutThread.join();
+        assertEquals(1, mExecutor.fastForwardMillis(1000));
+        assertTrue(future.isDone());
+        assertEquals(1, executions.get());
+        futureGetSuccessThread.join();
         assertEquals(0, mExecutor.fastForwardMillis(1000));
         assertTrue(future.isDone());
         assertEquals(1, executions.get());
