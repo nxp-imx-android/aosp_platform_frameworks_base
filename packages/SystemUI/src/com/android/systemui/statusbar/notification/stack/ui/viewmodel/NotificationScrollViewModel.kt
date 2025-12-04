@@ -26,11 +26,13 @@ import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ChangeScene
 import com.android.compose.animation.scene.OverlayKey
+import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.notifications.ui.NotificationPlaceholderStateStorage
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -48,6 +50,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.Accessibil
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimClipping
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_DELAYED_STACK_FADE_IN
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
 import com.android.systemui.util.kotlin.ActivatableFlowDumper
@@ -75,6 +78,7 @@ class NotificationScrollViewModel
 @AssistedInject
 constructor(
     dumpManager: DumpManager,
+    placeholderStateStorage: NotificationPlaceholderStateStorage,
     private val stackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAppearanceInteractor: LockscreenNotificationDisplayConfigInteractor,
     brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
@@ -403,6 +407,21 @@ constructor(
         combine(stackAppearanceInteractor.qsPanelShapeInWindow, viewLeft) { shapeInWindow, left ->
             shapeInWindow?.copy(bounds = shapeInWindow.bounds.minus(leftOffset = left))
         }
+
+    /** Y coordinate for the top of the notification stack, including the scroll offset. */
+    val stackScrollTop: ObservableState<Float> = placeholderStateStorage.stackScrollTop
+
+    /** Vertical bounds for the user visible area of the notification stack. */
+    val stackBounds: ObservableState<YSpace> = placeholderStateStorage.stackBounds
+
+    /** Vertical bounds of the top HUN. */
+    val headsUpBounds: ObservableState<YSpace> = placeholderStateStorage.hunBounds
+
+    /** Alpha requested by the StackPlaceholder STL element. */
+    val stackPlaceholderAlpha: ObservableState<Float> = placeholderStateStorage.stackAlpha
+
+    /** Draw scale requested by the StackPlaceholder STL element. */
+    val stackPlaceholderScale: ObservableState<Scale> = placeholderStateStorage.stackScale
 
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.

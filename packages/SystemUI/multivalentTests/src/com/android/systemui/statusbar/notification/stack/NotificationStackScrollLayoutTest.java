@@ -566,7 +566,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully collapsed
@@ -593,7 +593,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is expanding
@@ -621,7 +621,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully expanded
@@ -1159,7 +1159,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackViewPortHeight = stackBottom - stackTop;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
         when(mStackSizeCalculator.computeHeight(
                 eq(mStackScroller),
@@ -1197,7 +1197,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // Given we have a limit on max displayed notifications

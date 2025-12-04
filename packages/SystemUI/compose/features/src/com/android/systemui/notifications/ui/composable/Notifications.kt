@@ -64,6 +64,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -87,6 +88,7 @@ import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
+import com.android.compose.modifiers.onUnplaced
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
@@ -97,7 +99,6 @@ import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadi
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.sessionCoroutineScope
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.ShadeColors
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
@@ -126,12 +127,18 @@ object Notifications {
          * The [ElementKey] identifying the space reserved for the main list of notifications. This
          * key only links to an empty box sized to the height of the Stack (placeholder), so STL
          * transitions are not fully supported here, except vertical positioning.
+         *
+         * If you change the contentPicker of this element, consider also changing
+         * [StackPlaceholderContentPicker].
          */
         val StackPlaceholder = ElementKey("StackPlaceholder")
         /**
          * The [ElementKey] identifying the space reserved for the top HUN. This key only links to
          * an empty box sized to the height of Notifications (placeholder), so STL transitions are
          * not fully supported here, except vertical positioning.
+         *
+         * If you change the contentPicker of this element, consider also changing
+         * [HeadsUpPlaceholderContentPicker].
          */
         val HeadsUpNotificationPlaceholder =
             ElementKey("HeadsUpNotificationPlaceholder", contentPicker = LowestZIndexContentPicker)
@@ -150,17 +157,19 @@ fun ContentScope.ConstrainedNotificationStack(
         modifier =
             modifier
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
-                .onGloballyPositioned {
-                    if (shouldUseLockscreenStackBounds(sceneContainerLayoutState)) {
-                        stackScrollView.updateStackBounds(it.rawBoundsInWindow())
-                    }
+                .onPlaced {
+                    val rawBounds = it.rawBoundsInWindow()
+                    debugLog(viewModel) { "Constrained.container onPlaced bounds=$rawBounds" }
+                    viewModel.setStackBounds(rawBounds)
+                }
+                .onUnplaced {
+                    debugLog(viewModel) { "Constrained.container onUnplaced" }
+                    viewModel.resetStackBounds()
                 }
     ) {
         StackPlaceholder(
             tag = "Constrained",
-            stackScrollView = stackScrollView,
             viewModel = viewModel,
-            useStackBounds = { shouldUseLockscreenStackBounds(sceneContainerLayoutState) },
             modifier =
                 Modifier.fillMaxWidth()
                     .notificationStackHeight(view = stackScrollView, constrainToMaxHeight = true)
@@ -174,12 +183,6 @@ fun ContentScope.ConstrainedNotificationStack(
             tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
-            useHunBounds = {
-                shouldUseLockscreenHunBounds(
-                    sceneContainerLayoutState,
-                    viewModel.quickSettingsShadeContentKey,
-                )
-            },
             modifier = Modifier.align(Alignment.TopCenter),
         )
     }
@@ -506,12 +509,18 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         Column(
                             modifier =
                                 Modifier.padding(top = stackTopPadding, bottom = stackBottomPadding)
-                                    .onGloballyPositioned {
-                                        if (!shouldUseLockscreenStackBounds(layoutState)) {
-                                            stackScrollView.updateStackBounds(
-                                                it.rawBoundsInWindow()
-                                            )
+                                    .onPlaced {
+                                        val rawBounds = it.rawBoundsInWindow()
+                                        debugLog(viewModel) {
+                                            "$tag.NestedScroll.container onPlaced bounds=$rawBounds"
                                         }
+                                        viewModel.setStackBounds(rawBounds)
+                                    }
+                                    .onUnplaced {
+                                        debugLog(viewModel) {
+                                            "$tag.NestedScroll.container onUnplaced"
+                                        }
+                                        viewModel.resetStackBounds()
                                     }
                                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
                                     .disableSwipesWhenScrolling()
@@ -540,9 +549,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         ) {
                             StackPlaceholder(
                                 tag = "NestedScroll",
-                                stackScrollView = stackScrollView,
                                 viewModel = viewModel,
-                                useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },
                                 modifier =
                                     Modifier.notificationStackHeight(view = stackScrollView)
                                         .onSizeChanged { size ->
@@ -574,12 +581,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                 tag = "$tag.Nested",
                                 stackScrollView = stackScrollView,
                                 viewModel = viewModel,
-                                useHunBounds = {
-                                    !shouldUseLockscreenHunBounds(
-                                        layoutState,
-                                        viewModel.quickSettingsShadeContentKey,
-                                    )
-                                },
                                 modifier = Modifier.padding(top = stackTopPadding),
                             )
                         }
@@ -657,48 +658,6 @@ private suspend fun scrollStackWithNestedScroll(
             source = NestedScrollSource.UserInput,
         )
     return consumed + preConsumed + postConsumed
-}
-
-private fun SceneTransitionLayoutState.isIdleOnLockscreenWithNoShade(): Boolean {
-    return isIdle(Scenes.Lockscreen) &&
-        !isInCurrentOverlays(Overlays.NotificationsShade) &&
-        !isInCurrentOverlays(Overlays.QuickSettingsShade)
-}
-
-private fun shouldUseLockscreenStackBounds(state: SceneTransitionLayoutState): Boolean {
-    return when {
-        // Idle on the Lockscreen without Shade overlays.
-        state.isIdleOnLockscreenWithNoShade() -> true
-
-        // When going from Lockscreen to a content without the placeholder, keep the LS bounds.
-        state.isTransitioning(from = Scenes.Lockscreen) &&
-            !state.isTransitioning(to = Scenes.Shade) &&
-            !state.isTransitioning(to = Overlays.NotificationsShade) &&
-            !state.isTransitioning(to = Scenes.QuickSettings) -> true
-
-        // When transitioning between LS and Bouncer, keep using the LS bounds, because there is no
-        // placeholder on Bouncer.
-        state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer) -> true
-
-        // Otherwise don't use the LS bounds.
-        else -> false
-    }
-}
-
-private fun shouldUseLockscreenHunBounds(
-    state: SceneTransitionLayoutState,
-    quickSettingsShade: ContentKey,
-): Boolean {
-    return when {
-        // Idle on the Lockscreen without Shade overlays.
-        state.isIdleOnLockscreenWithNoShade() -> true
-
-        // Transitioning from QS to LS.
-        state.isTransitioning(from = quickSettingsShade, to = Scenes.Lockscreen) -> true
-
-        // Otherwise don't use the LS bounds.
-        else -> false
-    }
 }
 
 private fun shouldAnimateScrimCornerRadius(

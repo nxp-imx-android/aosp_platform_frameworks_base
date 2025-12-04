@@ -119,7 +119,7 @@ class SynchronouslyObservableStateMap<K, V, T>(private val selector: (Map<K, V>)
         observer: (value: T) -> Unit,
     ): DisposableHandle = internalState.observe(sendCurrentValue, observer)
 
-    override fun toString(): String = "SynchronouslyObservableStateMap($value)"
+    override fun toString(): String = "StateMap(value:$value storedValues:$valuesMap)"
 }
 
 abstract class DownstreamObservableState<R> : ObservableState<R> {

@@ -21,6 +21,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.notifications.ui.notificationPlaceholderStateStorage
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -33,6 +34,7 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.notif
 val Kosmos.notificationScrollViewModel by Fixture {
     NotificationScrollViewModel(
         dumpManager = dumpManager,
+        placeholderStateStorage = notificationPlaceholderStateStorage,
         lockscreenAppearanceInteractor = lockscreenNotificationDisplayConfigInteractor,
         stackAppearanceInteractor = notificationStackAppearanceInteractor,
         brightnessMirrorShowingInteractorLazy = { brightnessMirrorShowingInteractor },

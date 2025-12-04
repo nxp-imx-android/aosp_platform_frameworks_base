@@ -29,7 +29,6 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.SnoozableHeadsUpNotificationPlaceholder
 import com.android.systemui.qs.shared.ui.QuickSettings
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -71,13 +70,6 @@ constructor(
         Spacer(modifier.fillMaxSize())
         SnoozableHeadsUpNotificationPlaceholder(
             tag = "GoneScene",
-            useStackBounds = {
-                with(layoutState.transitionState) {
-                    isIdle(key) &&
-                        !isIdle(Overlays.NotificationsShade) &&
-                        !isIdle(Overlays.QuickSettingsShade)
-                }
-            },
             stackScrollView = notificationStackScrollView.get(),
             viewModel =
                 rememberViewModel("GoneScene") {

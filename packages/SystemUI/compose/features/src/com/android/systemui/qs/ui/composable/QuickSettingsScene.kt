@@ -391,7 +391,6 @@ private fun ContentScope.QuickSettingsContent(
             tag = "QSScene",
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
-            useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .navigationBarsPadding()
