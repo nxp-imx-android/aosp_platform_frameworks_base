@@ -28355,6 +28355,7 @@ package android.media.quality {
     method @NonNull public android.os.Bundle getCapabilities();
     method @NonNull public String getParameterName();
     method public int getParameterType();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public boolean isMutable();
     method public boolean isSupported();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field public static final String CAPABILITY_DEFAULT = "default";
