@@ -8443,6 +8443,7 @@ package android.app.admin {
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
+    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String LOCKSCREEN_INFO_POLICY = "lockScreenInfo";
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";
@@ -8673,7 +8674,7 @@ package android.app.admin {
     method public void setDefaultDialerApplication(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_DEFAULT_SMS, conditional=true) public void setDefaultSmsApplication(@Nullable android.content.ComponentName, @NonNull String);
     method public void setDelegatedScopes(@NonNull android.content.ComponentName, @NonNull String, @NonNull java.util.List<java.lang.String>);
-    method public void setDeviceOwnerLockScreenInfo(@NonNull android.content.ComponentName, CharSequence);
+    method public void setDeviceOwnerLockScreenInfo(@Nullable android.content.ComponentName, CharSequence);
     method public void setEndUserSessionMessage(@NonNull android.content.ComponentName, @Nullable CharSequence);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET, conditional=true) public void setFactoryResetProtectionPolicy(@Nullable android.content.ComponentName, @Nullable android.app.admin.FactoryResetProtectionPolicy);
     method public int setGlobalPrivateDnsModeOpportunistic(@NonNull android.content.ComponentName);

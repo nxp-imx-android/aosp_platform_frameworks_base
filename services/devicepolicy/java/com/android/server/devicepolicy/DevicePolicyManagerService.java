@@ -33,6 +33,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_KEYGUARD;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
@@ -249,6 +250,7 @@ import static android.provider.Telephony.Carriers.ENFORCE_KEY;
 import static android.provider.Telephony.Carriers.ENFORCE_MANAGED_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
 import static android.security.keystore.AttestationUtils.USE_INDIVIDUAL_ATTESTATION;
+
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_ENTRY_POINT_ADB;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
@@ -362,6 +364,7 @@ import android.app.admin.PreferentialNetworkServiceConfig;
 import android.app.admin.SecurityLog;
 import android.app.admin.SecurityLog.SecurityEvent;
 import android.app.admin.StartInstallingUpdateCallback;
+import android.app.admin.StringPolicyValue;
 import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
 import android.app.admin.UnsafeStateException;
@@ -482,11 +485,11 @@ import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
-import android.util.SparseArray;
 import android.util.StatsEvent;
 import android.util.Xml;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
+
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -530,6 +533,9 @@ import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -570,7 +576,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implementation of the device policy APIs.
@@ -3137,6 +3142,51 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         Slog.i(LOG_TAG, "Marking Common Criteria Mode migration complete");
         mOwners.markCommonCriteriaModeMigrated();
+
+        return true;
+    }
+
+    @GuardedBy("getLockObject()")
+    private boolean maybeMigrateLockScreenInfoLocked(String backupId) {
+        if (!Flags.lockscreenInfoCoexistence()) {
+            return false;
+        }
+        if (mOwners.isLockScreenInfoMigrated()) {
+            return false;
+        }
+
+        Slog.i(LOG_TAG, "Migrating Lock Screen Info to policy engine");
+
+        // Lock Screen Info can be set either by DO or by COPE PO.
+        final ActiveAdmin admin =
+                mDeviceAdmins.getDeviceOwnerOrProfileOwnerOfOrganizationOwnedDevice();
+        if (admin == null) {
+            Slog.i(LOG_TAG, "No appropriate admin found for migrating Lock Screen Info");
+            return false;
+        }
+
+        final String lockScreenInfo = mLockPatternUtils.getDeviceOwnerInfo();
+        if (lockScreenInfo != null) {
+            // Create backup if none exists, but only if a policy value will be written.
+            mDevicePolicyEngine.createBackup(backupId);
+            Slog.i(LOG_TAG, "Backup made: " + backupId);
+
+            EnforcingAdmin enforcingAdmin = EnforcingAdmin.createEnterpriseEnforcingAdmin(
+                    admin.info.getComponent(),
+                    admin.getUserHandle().getIdentifier()
+            );
+
+            final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
+                    PolicyDefinition.LOCKSCREEN_INFO,
+                    enforcingAdmin,
+                    new StringPolicyValue(lockScreenInfo)
+            );
+        } else {
+            Slog.i(LOG_TAG, "Lock Screen Info is empty, skip setting policy in policy engine");
+        }
+
+        Slog.i(LOG_TAG, "Marking Lock Screen Info migration complete");
+        mOwners.markLockScreenInfoMigrated();
 
         return true;
     }
@@ -10000,12 +10050,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     @Override
-    public void setDeviceOwnerLockScreenInfo(ComponentName who, CharSequence info) {
+    public void setDeviceOwnerLockScreenInfo(ComponentName who, String callerPackageName,
+            CharSequence info) {
         if (!mHasFeature) {
             return;
         }
-        Objects.requireNonNull(who, "ComponentName is null");
+        if (Flags.lockscreenInfoCoexistence()) {
+            setDeviceOwnerLockScreenInfoCoexistence(who, callerPackageName, info);
+            return;
+        }
 
+        Objects.requireNonNull(who, "ComponentName is null");
         final CallerIdentity caller = getCallerIdentity(who);
         Preconditions.checkCallAuthorization(
                 isDefaultDeviceOwner(caller) || isProfileOwnerOfOrganizationOwnedDevice(caller));
@@ -10019,13 +10074,45 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 .write();
     }
 
+    private void setDeviceOwnerLockScreenInfoCoexistence(ComponentName who,
+            String callerPackageName, CharSequence info) {
+        final CallerIdentity caller = getCallerIdentity(who, callerPackageName);
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO, caller, UserHandle.USER_ALL);
+
+        synchronized (getLockObject()) {
+            final EnforcingAdmin admin = getEnforcingAdmin(caller);
+            if (info != null && !info.isEmpty()) {
+                final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
+                        PolicyDefinition.LOCKSCREEN_INFO,
+                        admin,
+                        new StringPolicyValue(info.toString())
+                );
+            } else {
+                final CompletableFuture<Integer> unused = mDevicePolicyEngine.removeGlobalPolicy(
+                        PolicyDefinition.LOCKSCREEN_INFO,
+                        admin);
+            }
+        }
+    }
+
     @Override
     public CharSequence getDeviceOwnerLockScreenInfo() {
+        if (Flags.lockscreenInfoCoexistence()) {
+            return getDeviceOwnerLockScreenInfoCoexistence();
+        }
+
         final CallerIdentity caller = getCallerIdentity();
         Preconditions.checkCallAuthorization(
                 isDefaultDeviceOwner(caller) || isProfileOwnerOfOrganizationOwnedDevice(caller));
         return mInjector.binderWithCleanCallingIdentity(() ->
             mLockPatternUtils.getDeviceOwnerInfo());
+    }
+
+    private CharSequence getDeviceOwnerLockScreenInfoCoexistence() {
+        final CallerIdentity caller = getCallerIdentity();
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO, caller, UserHandle.USER_ALL);
+        return mDevicePolicyEngine.getResolvedPolicy(
+                PolicyDefinition.LOCKSCREEN_INFO, UserHandle.USER_ALL);
     }
 
     private void clearUserPoliciesLocked(int userId) {
@@ -23985,6 +24072,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         if (commonCriteriaModeEnabledMigrated) {
             Slogf.i(LOG_TAG, "Backup made: " + commonCriteriaModeEnabledBackupId);
         }
+
+        final String lockScreenInfoBackupId = "37.5.lockscreen-info";
+        final boolean unused = maybeMigrateLockScreenInfoLocked(lockScreenInfoBackupId);
 
         // Additional migration steps should repeat the pattern above with a new backupId.
     }

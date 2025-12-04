@@ -10264,15 +10264,17 @@ public class DevicePolicyManager {
      * <p>
      * May be called by the device owner or the profile owner of an organization-owned device.
      *
-     * @param admin The name of the admin component to check.
+     * @param admin The name of the admin component to check. Null if the caller is not a device
+     *              admin.
      * @param info Device owner information which will be displayed instead of the user owner info.
      * @throws SecurityException if {@code admin} is not a device owner.
      */
-    public void setDeviceOwnerLockScreenInfo(@NonNull ComponentName admin, CharSequence info) {
+    public void setDeviceOwnerLockScreenInfo(@SuppressLint("InvalidNullConversion")
+            @Nullable ComponentName admin, CharSequence info) {
         throwIfParentInstance("setDeviceOwnerLockScreenInfo");
         if (mService != null) {
             try {
-                mService.setDeviceOwnerLockScreenInfo(admin, info);
+                mService.setDeviceOwnerLockScreenInfo(admin, mContext.getPackageName(), info);
             } catch (RemoteException re) {
                 throw re.rethrowFromSystemServer();
             }
