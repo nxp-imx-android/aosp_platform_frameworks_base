@@ -25,14 +25,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ApproachLayoutModifierNode
+import androidx.compose.ui.layout.ApproachMeasureScope
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
-import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.node.DelegatableNode
-import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.compose.gesture.effect.OffsetOverscrollEffect.Companion.DefaultMaxDistance
 import kotlin.math.roundToInt
@@ -81,15 +84,22 @@ class OffsetOverscrollEffect(
     maxDistance: Dp = DefaultMaxDistance,
 ) : BaseContentOverscrollEffect(animationScope, animationSpec) {
     override val node: DelegatableNode =
-        object : Modifier.Node(), LayoutModifierNode {
-            override fun MeasureScope.measure(
+        object : Modifier.Node(), ApproachLayoutModifierNode {
+            override fun isMeasurementApproachInProgress(lookaheadSize: IntSize) = false
+
+            override fun Placeable.PlacementScope.isPlacementApproachInProgress(
+                lookaheadCoordinates: LayoutCoordinates
+            ): Boolean {
+                return isInProgress
+            }
+
+            override fun ApproachMeasureScope.approachMeasure(
                 measurable: Measurable,
                 constraints: Constraints,
             ): MeasureResult {
                 val placeable = measurable.measure(constraints)
                 return layout(placeable.width, placeable.height) {
-                    val offsetPx =
-                        computeOffset(density = this@measure, overscrollDistance, maxDistance)
+                    val offsetPx = computeOffset(density = this, overscrollDistance, maxDistance)
                     if (offsetPx != 0) {
                         placeable.placeWithLayer(
                             with(requireConverter()) { offsetPx.toIntOffset() }

@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.doubleClick
@@ -95,42 +96,44 @@ class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
         val snapshotViewModel = remember { snapshotViewModelFactory.create() }
+        // TODO(b/467024654): Remove LookaheadScope when the bug is fixed.
+        LookaheadScope {
+            PlatformTheme {
+                DefaultEditTileGrid(
+                    listState = listState,
+                    allTiles = allTiles,
+                    modifier = Modifier.fillMaxSize(),
+                    snapshotViewModel = snapshotViewModel,
+                    topBarActions = remember { mutableStateListOf() },
+                    onStopEditing = {},
+                ) { action ->
+                    snapshotViewModel.takeSnapshot(
+                        currentTiles.map { it.tileSpec },
+                        TestLargeTilesSpecs,
+                    )
 
-        PlatformTheme {
-            DefaultEditTileGrid(
-                listState = listState,
-                allTiles = allTiles,
-                modifier = Modifier.fillMaxSize(),
-                snapshotViewModel = snapshotViewModel,
-                topBarActions = remember { mutableStateListOf() },
-                onStopEditing = {},
-            ) { action ->
-                snapshotViewModel.takeSnapshot(
-                    currentTiles.map { it.tileSpec },
-                    TestLargeTilesSpecs,
-                )
-
-                when (action) {
-                    is EditAction.AddTile -> {
-                        val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
-                        allTiles[index] = allTiles[index].copy(isCurrent = true)
-                    }
-                    is EditAction.InsertTile -> {
-                        val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
-                        allTiles[index] = allTiles[index].copy(isCurrent = true)
-                    }
-                    is EditAction.RemoveTile -> {
-                        val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
-                        allTiles[index] = allTiles[index].copy(isCurrent = false)
-                    }
-                    is EditAction.ResizeTile -> {
-                        if (action.toIcon) {
-                            largeTiles.remove(action.tileSpec)
-                        } else {
-                            largeTiles.add(action.tileSpec)
+                    when (action) {
+                        is EditAction.AddTile -> {
+                            val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
+                            allTiles[index] = allTiles[index].copy(isCurrent = true)
                         }
+                        is EditAction.InsertTile -> {
+                            val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
+                            allTiles[index] = allTiles[index].copy(isCurrent = true)
+                        }
+                        is EditAction.RemoveTile -> {
+                            val index = allTiles.indexOfFirst { it.tileSpec == action.tileSpec }
+                            allTiles[index] = allTiles[index].copy(isCurrent = false)
+                        }
+                        is EditAction.ResizeTile -> {
+                            if (action.toIcon) {
+                                largeTiles.remove(action.tileSpec)
+                            } else {
+                                largeTiles.add(action.tileSpec)
+                            }
+                        }
+                        else -> error("Not expecting action $action from test")
                     }
-                    else -> error("Not expecting action $action from test")
                 }
             }
         }
