@@ -68,7 +68,7 @@ abstract class FocusAppFromTaskbarOverflow(val rotation: Rotation = Rotation.ROT
 
     @Test
     open fun focusAppFromTaskbarOverflow() {
-        tapl.launchedAppState.taskbar.launchTaskFromTaskbarOverflowByRecencyIndex(0)
+        tapl.launchedAppState.taskbar.launchTaskFromTaskbarOverflowByRecencyIndex(3) // Recency index: fourthApp = 0, thirdApp = 1, secondApp = 2, firstApp = 3
         tapl.launchedAppState.assertAppInDesktop(firstApp.packageName)
     }
 
