@@ -294,7 +294,6 @@ public class FaceProviderTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_INTERNAL_CLEANUP_FOR_ALL_PROFILES)
     public void testGetHalInstance_whenDaemonIsNull() {
         mFaceProvider.setTestHalEnabled(false);
         for (SensorProps sensor: mSensorProps) {

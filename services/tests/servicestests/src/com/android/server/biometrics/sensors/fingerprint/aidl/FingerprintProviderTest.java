@@ -328,7 +328,6 @@ public class FingerprintProviderTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_INTERNAL_CLEANUP_FOR_ALL_PROFILES)
     public void testGetHalInstance_whenDaemonIsNull() {
         mFingerprintProvider.setTestHalEnabled(false);
         for (SensorProps sensor : mSensorProps) {
