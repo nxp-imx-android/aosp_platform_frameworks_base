@@ -26,6 +26,7 @@ import static com.android.app.tracing.TrackGroupUtils.trackGroup;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
 import static com.android.systemui.Flags.physicalNotificationMovement;
+import static com.android.systemui.Flags.widerLandscapeNotifications;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_RECS;
@@ -994,27 +995,30 @@ public class NotificationStackScrollLayout
         final int orientation = getResources().getConfiguration().orientation;
 
         mLastUpdateSidePaddingDumpString = "viewWidth=" + viewWidth
-                + " orientation=" + orientation;
+                + " orientation=" + orientation
+                + " shouldUseSplitNotificationShade=" + mShouldUseSplitNotificationShade;
 
+        mSidePaddings = mMinimumPaddings;
         if (viewWidth == 0) {
             Log.e(TAG, "updateSidePadding: viewWidth is zero");
-            mSidePaddings = mMinimumPaddings;
             return;
         }
 
-        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSidePaddings = mMinimumPaddings;
-            return;
-        }
-
-        if (mShouldUseSplitNotificationShade) {
-            mSidePaddings = mMinimumPaddings;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT || mShouldUseSplitNotificationShade) {
             return;
         }
 
         final int innerWidth = viewWidth - mMinimumPaddings * 2;
-        final int qsTileWidth = (innerWidth - mQsTilePadding * 3) / 4;
-        mSidePaddings = mMinimumPaddings + qsTileWidth + mQsTilePadding;
+        if (widerLandscapeNotifications()) {
+            // We can fit 8 small QS tiles on the screen in landscape, plus the padding between
+            // them. We want our side padding to essentially be one small QS tile on each side, plus
+            // the minimum padding that also applies to the QS tiles.
+            final int smallQsTileWidth = (innerWidth + mQsTilePadding) / 8 - mQsTilePadding;
+            mSidePaddings = mMinimumPaddings + smallQsTileWidth + mQsTilePadding;
+        } else {
+            final int qsTileWidth = (innerWidth - mQsTilePadding * 3) / 4;
+            mSidePaddings = mMinimumPaddings + qsTileWidth + mQsTilePadding;
+        }
     }
 
     void updateCornerRadius() {
