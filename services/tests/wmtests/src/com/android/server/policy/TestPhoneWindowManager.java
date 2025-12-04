@@ -206,13 +206,13 @@ class TestPhoneWindowManager {
         }
 
         @Override
-        boolean toggleTalkback(int currentUserId) {
+        public boolean toggleTalkback(int currentUserId) {
             mIsTalkBackEnabled = !mIsTalkBackEnabled;
             return mIsTalkBackEnabled;
         }
 
         @Override
-        boolean isTalkBackShortcutGestureEnabled() {
+        public boolean isTalkBackShortcutGestureEnabled() {
             return mIsTalkBackShortcutGestureEnabled;
         }
     }
