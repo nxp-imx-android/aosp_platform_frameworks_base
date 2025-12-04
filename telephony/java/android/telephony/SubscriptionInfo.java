@@ -279,6 +279,11 @@ public class SubscriptionInfo implements Parcelable {
     private final boolean mIsSatelliteESOSSupported;
 
     /**
+     * Whether this subscription is used exclusively for a private network.
+     */
+    private final boolean mIsPrivateNetwork;
+
+    /**
      * @hide
      *
      * @deprecated Use {@link SubscriptionInfo.Builder}.
@@ -406,6 +411,7 @@ public class SubscriptionInfo implements Parcelable {
         this.mServiceCapabilities = 0;
         this.mTransferStatus = 0;
         this.mIsSatelliteESOSSupported = false;
+        this.mIsPrivateNetwork = false;
     }
 
     /**
@@ -448,6 +454,7 @@ public class SubscriptionInfo implements Parcelable {
         this.mServiceCapabilities = builder.mServiceCapabilities;
         this.mTransferStatus = builder.mTransferStatus;
         this.mIsSatelliteESOSSupported = builder.mIsSatelliteESOSSupported;
+        this.mIsPrivateNetwork = builder.mIsPrivateNetwork;
     }
 
     /**
@@ -916,6 +923,24 @@ public class SubscriptionInfo implements Parcelable {
         return mIsSatelliteESOSSupported;
     }
 
+    /**
+     * Checks if the subscription is exclusively for a private network.
+     *
+     * <p>A private network subscription is typically constrained to a specific geo-fenced area or a
+     * particular enterprise/venue. System apps like Settings and SystemUI may adjust their behavior
+     * based on this flag.
+     *
+     * <p>The default value is determined by the carrier configuration.
+     *
+     * @return {@code true} if the subscription is for a private network, {@code false} otherwise.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_IS_PRIVATE_NETWORK_API)
+    public boolean isPrivateNetwork() {
+        return mIsPrivateNetwork;
+    }
+
     // TODO(b/316183370): replace @code with @link in javadoc after feature is released
     /**
      * Retrieves the service capabilities for the current subscription.
@@ -1007,6 +1032,7 @@ public class SubscriptionInfo implements Parcelable {
                             SubscriptionManager.getServiceCapabilitiesSet(source.readInt()))
                     .setTransferStatus(source.readInt())
                     .setSatelliteESOSSupported(source.readBoolean())
+                    .setIsPrivateNetwork(source.readBoolean())
                     .build();
         }
 
@@ -1052,6 +1078,7 @@ public class SubscriptionInfo implements Parcelable {
         dest.writeInt(mServiceCapabilities);
         dest.writeInt(mTransferStatus);
         dest.writeBoolean(mIsSatelliteESOSSupported);
+        dest.writeBoolean(mIsPrivateNetwork);
     }
 
     @Override
@@ -1119,6 +1146,7 @@ public class SubscriptionInfo implements Parcelable {
                 mServiceCapabilities).toString()
                 + " transferStatus=" + mTransferStatus
                 + " isSatelliteESOSSupported=" + mIsSatelliteESOSSupported
+                + " isPrivateNetwork=" + mIsPrivateNetwork
                 + "]";
     }
 
@@ -1147,7 +1175,8 @@ public class SubscriptionInfo implements Parcelable {
                 && mIsOnlyNonTerrestrialNetwork == that.mIsOnlyNonTerrestrialNetwork
                 && mServiceCapabilities == that.mServiceCapabilities
                 && mTransferStatus == that.mTransferStatus
-                && mIsSatelliteESOSSupported == that.mIsSatelliteESOSSupported;
+                && mIsSatelliteESOSSupported == that.mIsSatelliteESOSSupported
+                && mIsPrivateNetwork == that.mIsPrivateNetwork;
     }
 
     @Override
@@ -1157,7 +1186,7 @@ public class SubscriptionInfo implements Parcelable {
                 mCardString, mIsOpportunistic, mGroupUuid, mCountryIso, mCarrierId, mProfileClass,
                 mType, mGroupOwner, mAreUiccApplicationsEnabled, mPortIndex, mUsageSetting, mCardId,
                 mIsGroupDisabled, mIsOnlyNonTerrestrialNetwork, mServiceCapabilities,
-                mTransferStatus, mIsSatelliteESOSSupported);
+                mTransferStatus, mIsSatelliteESOSSupported, mIsPrivateNetwork);
         result = 31 * result + Arrays.hashCode(mEhplmns);
         result = 31 * result + Arrays.hashCode(mHplmns);
         result = 31 * result + Arrays.hashCode(mNativeAccessRules);
@@ -1374,6 +1403,11 @@ public class SubscriptionInfo implements Parcelable {
         private boolean mIsSatelliteESOSSupported = false;
 
         /**
+         * Whether the subscription is for private network.
+         */
+        private boolean mIsPrivateNetwork = false;
+
+        /**
          * Default constructor.
          */
         public Builder() {
@@ -1419,6 +1453,7 @@ public class SubscriptionInfo implements Parcelable {
             mServiceCapabilities = info.mServiceCapabilities;
             mTransferStatus = info.mTransferStatus;
             mIsSatelliteESOSSupported = info.mIsSatelliteESOSSupported;
+            mIsPrivateNetwork = info.mIsPrivateNetwork;
         }
 
         /**
@@ -1864,6 +1899,19 @@ public class SubscriptionInfo implements Parcelable {
         @NonNull
         public Builder setSatelliteESOSSupported(boolean isSatelliteESOSSupported) {
             mIsSatelliteESOSSupported = isSatelliteESOSSupported;
+            return this;
+        }
+
+        /**
+         * Set whether the subscription is for private network.
+         *
+         * @param isPrivateNetwork {@code true} if the subscription is for private network.
+         * @return The builder.
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_ENABLE_IS_PRIVATE_NETWORK_API)
+        public Builder setIsPrivateNetwork(boolean isPrivateNetwork) {
+            mIsPrivateNetwork = isPrivateNetwork;
             return this;
         }
 

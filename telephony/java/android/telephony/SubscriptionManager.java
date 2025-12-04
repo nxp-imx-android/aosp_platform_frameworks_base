@@ -970,6 +970,13 @@ public class SubscriptionManager {
     public static final String IS_OPPORTUNISTIC = SimInfo.COLUMN_IS_OPPORTUNISTIC;
 
     /**
+     * TelephonyProvider column name for whether a subscription is for private network.
+     * <p>Type: INTEGER (int), 1 for private network or 0 for not.
+     * @hide
+     */
+    public static final String IS_PRIVATE_NETWORK = SimInfo.COLUMN_IS_PRIVATE_NETWORK;
+
+    /**
      * TelephonyProvider column name for group ID. Subscriptions with same group ID
      * are considered bundled together, and should behave as a single subscription at
      * certain scenarios.
