@@ -176,4 +176,9 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="android.os.usertype.profile.PRIVATE" />
     </install-in-user-type>
 
+    <!-- System Chooser (IntentResolver) -->
+    <install-in-user-type package="com.android.intentresolver">
+        <install-in user-type="FULL" />
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
 </config>
