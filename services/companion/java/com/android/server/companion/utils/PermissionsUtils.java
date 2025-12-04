@@ -105,8 +105,10 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
+import android.companion.Flags;
 import android.content.Context;
 import android.os.Binder;
 import android.os.RemoteException;
@@ -382,6 +384,66 @@ public final class PermissionsUtils {
         if (callingUid == SHELL_UID || callingUid == ROOT_UID) return;
 
         throw new SecurityException("Caller is neither Shell nor Root");
+    }
+
+    /**
+     * Enforce caller must have either ACCESS_COMPANION_MESSAGE_PCC or USE_COMPANION_TRANSPORTS
+     * permission. For the app holds ACCESS_COMPANION_MESSAGE_PCC permission,
+     * we must verify that all associations are trusted. This method also enforce non system caller
+     * must use their own app's name as the serviceName.
+     */
+    public static void enforceRequestActionPermissions(@NonNull Context context,
+            @NonNull List<AssociationInfo> associations,
+            @NonNull String serviceName, @NonNull String callingPackageName) {
+        if (Binder.getCallingUid() == SYSTEM_UID) return;
+
+        boolean hasTransportsPermission =
+                context.checkCallingPermission(USE_COMPANION_TRANSPORTS)
+                        == PERMISSION_GRANTED;
+        if (hasTransportsPermission) return;
+
+        boolean hasPccPermission = checkPccPermissionAndTrustedAssociations(context, associations);
+
+        if (!hasPccPermission) {
+            throw new SecurityException(
+                    "Caller (uid=" + getCallingUid() + ") must have either "
+                            + ACCESS_COMPANION_MESSAGE_PCC + " or "
+                            + USE_COMPANION_TRANSPORTS + " permission."
+            );
+        }
+
+        if (!serviceName.equals(callingPackageName)) {
+            throw new SecurityException("None system caller must"
+                    + " use their own app's name as the serviceName");
+        }
+    }
+
+    /**
+     * Checks if the calling app holds the PCC permission and validates
+     * that all associations are marked as trusted.
+     */
+    public static boolean checkPccPermissionAndTrustedAssociations(
+            @NonNull Context context,
+            @NonNull List<AssociationInfo> associations) {
+
+        final boolean hasPccPermission = Flags.trustedDevices()
+                && context.checkCallingPermission(ACCESS_COMPANION_MESSAGE_PCC)
+                == PERMISSION_GRANTED;
+
+        if (hasPccPermission) {
+            // If the caller has the PCC permission, we must ensure the association is trusted.
+            for (AssociationInfo association : associations) {
+                if (!association.isTrusted()) {
+                    throw new SecurityException(String.format(
+                            "Caller with %s permission can only operate on"
+                                    + " trusted associations."
+                                    + " Association ID %d is not trusted.",
+                            ACCESS_COMPANION_MESSAGE_PCC, association.getId()));
+                }
+            }
+        }
+
+        return hasPccPermission;
     }
 
     /**

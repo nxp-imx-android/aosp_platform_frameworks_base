@@ -33,6 +33,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
 import android.annotation.StringDef;
@@ -1474,15 +1475,24 @@ public final class CompanionDeviceManager {
      * <p>This method establishes a single listener for a given {@code serviceName}.
      * If a listener is already registered for the same service, it will be replaced.
      *
+     * If the caller relies on the {@link android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}
+     * permission, the system requires that the targeted association has been verified as a
+     * {@link AssociationInfo#isTrusted() trusted device}.
+     *
      * @param associationIds The specific association IDs to listen for.
      * @param serviceName A unique, stable name for the calling service. This name is used to
      *                    identify and manage the listener.
      * @param executor The executor on which to deliver the callback.
      * @param listener The listener that will receive the action results.
+     *
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.USE_COMPANION_TRANSPORTS,
+            android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC
+    })
     public void setOnActionResultListener(
             @NonNull int[] associationIds,
             @NonNull String serviceName,
@@ -1506,7 +1516,7 @@ public final class CompanionDeviceManager {
                 new OnActionResultListenerProxy(executor, listener);
         try {
             mService.setOnActionResultListener(
-                    associationIds, serviceName, proxy, mContext.getUserId());
+                    associationIds, serviceName, mContext.getOpPackageName(), proxy);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1519,18 +1529,23 @@ public final class CompanionDeviceManager {
      *                    {@link #setOnActionResultListener(int[], String, Executor,
      *                    BiConsumer)
      *                    register the listener}.
+     * @see #setOnActionResultListener(int[], String, Executor, BiConsumer)
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    @RequiresPermission(Manifest.permission.USE_COMPANION_TRANSPORTS)
-    public void removeOnActionResultListener(@NonNull String serviceName) {
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.USE_COMPANION_TRANSPORTS,
+            android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC
+    })
+    public void clearOnActionResultListener(@NonNull String serviceName) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
         }
         Objects.requireNonNull(serviceName, "serviceName cannot be null.");
         try {
-            mService.removeOnActionResultListener(serviceName, mContext.getUserId());
+            mService.clearOnActionResultListener(serviceName, mContext.getOpPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2408,6 +2423,10 @@ public final class CompanionDeviceManager {
      *   </li>
      * </ul>
      *
+     * If the caller relies on the {@link android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}
+     * permission, the system requires that the targeted association has been verified as a
+     * {@link AssociationInfo#isTrusted() trusted device}.
+     *
      * @param request The {@link ActionRequest} to perform. Use
      *                {@link ActionRequest.Builder} to construct this object.
      * @param serviceName A unique, stable name for the calling service (e.g.,
@@ -2418,10 +2437,14 @@ public final class CompanionDeviceManager {
      * @see #setOnActionResultListener(int[], String, Executor, BiConsumer)
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.USE_COMPANION_TRANSPORTS,
+            android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC
+    })
     public void requestAction(@NonNull ActionRequest request, @NonNull String serviceName,
-            int[] associationIds) {
+            @NonNull int[] associationIds) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -2431,7 +2454,8 @@ public final class CompanionDeviceManager {
         Objects.requireNonNull(serviceName, "serviceName can not be null");
 
         try {
-            mService.requestAction(request, serviceName, associationIds);
+            mService.requestAction(
+                    request, serviceName, mContext.getOpPackageName(), associationIds);
         }  catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2448,6 +2472,14 @@ public final class CompanionDeviceManager {
      * <p>This is useful for determining if the system is ready to handle data transfers
      * before calling {@link #startSystemDataTransfer(int, Executor, OutcomeReceiver)}.
      *
+     * <p>The caller must meet one of the following requirements:
+     * <ul>
+     *     <li>It is the package that originally created the association.
+     *     <li>It holds the {@code android.permission.ACCESS_COMPANION_MESSAGE_PCC} permission
+     *     and the association must be verified as a
+     *     {@link AssociationInfo#isTrusted() trusted device}
+     * </ul>
+     *
      * @param associationId The unique {@link AssociationInfo#getId() id} of the device association
      *
      * @return {@code true} if a system data transport is attached for the given association id,
@@ -2456,8 +2488,12 @@ public final class CompanionDeviceManager {
      * @see #attachSystemDataTransport(int, InputStream, OutputStream)
      * @see #detachSystemDataTransport(int)
      * @see #startSystemDataTransfer(int, Executor, OutcomeReceiver)
+     * @see AssociationInfo#isTrusted()
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(
+            value = android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC, conditional = true)
+    @PermissionManuallyEnforced
     public boolean isSystemDataTransportAttached(int associationId) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -2496,8 +2532,6 @@ public final class CompanionDeviceManager {
             throw e.rethrowFromSystemServer();
         }
     }
-
-
 
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {
         private final Handler mHandler;
