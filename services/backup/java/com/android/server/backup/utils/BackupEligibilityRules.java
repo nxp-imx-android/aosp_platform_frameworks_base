@@ -41,6 +41,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
 import android.os.Build;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Slog;
@@ -188,7 +189,7 @@ public class BackupEligibilityRules {
         if (UserHandle.isCore(app.uid)) {
             // System apps are additionally checked:
             // ...if not allowed for the current user (governed by user-specific allowlists)
-            if (!isSystemPackageAllowedForCurrentUser(app.packageName)) {
+            if (!isSystemPackageAllowedForCurrentUser(app)) {
                 return false;
             }
 
@@ -217,7 +218,8 @@ public class BackupEligibilityRules {
      * type (profile, HSUM main, etc.) and specific allowlists.
      */
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
-    private boolean isSystemPackageAllowedForCurrentUser(String packageName) {
+    private boolean isSystemPackageAllowedForCurrentUser(ApplicationInfo app) {
+        String packageName = app.packageName;
         if (mUserId == UserHandle.USER_SYSTEM) {
             return true;
         }
@@ -229,7 +231,8 @@ public class BackupEligibilityRules {
         // In Headless System User Mode, certain packages are only backed up for the admin users.
         if (UserManager.isHeadlessSystemUserMode()) {
             if (mUserManagerInternal.getUserInfo(mUserId).isAdmin()) {
-                return systemPackagesAllowedForHsumAdminUser.contains(packageName);
+                return systemPackagesAllowedForHsumAdminUser.contains(packageName)
+                        || (UserHandle.getAppId(app.uid) == Process.BLUETOOTH_UID);
             }
         }
 

@@ -194,6 +194,32 @@ public class BackupEligibilityRulesTest {
     }
 
     @Test
+    public void appIsEligibleForBackup_systemUid_hsumAdminUser_bluetoothPackage_returnsTrue()
+            throws Exception {
+        mockHeadlessSystemUserMode(true);
+
+        // Current user is an admin user.
+        mUserId = NON_SYSTEM_USER_ID;
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
+        when(mUserInfo.isAdmin()).thenReturn(true);
+
+        mockContextForFullUser();
+        mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
+
+        ApplicationInfo applicationInfo =
+                getApplicationInfo(
+                        Process.BLUETOOTH_UID,
+                        ApplicationInfo.FLAG_ALLOW_BACKUP,
+                        CUSTOM_BACKUP_AGENT_NAME,
+                        "com.android.bluetooth");
+
+        boolean isEligible = mBackupEligibilityRules.appIsEligibleForBackup(applicationInfo);
+
+        // Bluetooth package is allowed for the admin user in HSUM.
+        assertThat(isEligible).isTrue();
+    }
+
+    @Test
     public void appIsEligibleForBackup_systemUid_hsumNonAdminUser_telephonyPackage_returnsFalse()
             throws Exception {
         mockHeadlessSystemUserMode(true);
