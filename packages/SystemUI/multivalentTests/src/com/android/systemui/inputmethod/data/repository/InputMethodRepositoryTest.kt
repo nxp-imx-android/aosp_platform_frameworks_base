@@ -17,15 +17,19 @@
 package com.android.systemui.inputmethod.data.repository
 
 import android.os.UserHandle
+import android.provider.Settings
 import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodSubtype
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.test.runTest
@@ -44,12 +48,14 @@ class InputMethodRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
+    private val settings = kosmos.fakeSettings
 
     private val inputMethodManager = mock<InputMethodManager>()
     private val underTest =
         InputMethodRepositoryImpl(
             backgroundDispatcher = kosmos.testDispatcher,
             inputMethodManager = inputMethodManager,
+            secureSettings = settings,
         )
 
     @Test
@@ -97,6 +103,43 @@ class InputMethodRepositoryTest : SysuiTestCase() {
             assertThat(result).hasSize(1)
             assertThat(result.first().subtypeId).isEqualTo(subtypeId)
             assertThat(result.first().isAuxiliary).isEqualTo(isAuxiliary)
+        }
+
+    @Test
+    fun selectedInputMethodSubtype_returnsSubtype() =
+        testScope.runTest {
+            val subtype1 =
+                InputMethodSubtype.InputMethodSubtypeBuilder()
+                    .setSubtypeId(123)
+                    .setIsAuxiliary(true)
+                    .build()
+            val subtype2 =
+                InputMethodSubtype.InputMethodSubtypeBuilder()
+                    .setSubtypeId(456)
+                    .setIsAuxiliary(false)
+                    .build()
+            val selectedImiId = "imiId"
+            val selectedImi = mock<InputMethodInfo> { on { id } doReturn selectedImiId }
+            inputMethodManager.stub {
+                on { getCurrentInputMethodInfoAsUser(eq(USER_HANDLE)) }.thenReturn(selectedImi)
+                on {
+                        getEnabledInputMethodSubtypeListAsUser(
+                            eq(selectedImiId),
+                            any(),
+                            eq(USER_HANDLE),
+                        )
+                    }
+                    .thenReturn(listOf(subtype1, subtype2))
+            }
+            settings.putIntForUser(
+                Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
+                subtype2.subtypeId,
+                USER_HANDLE.identifier,
+            )
+
+            val result by collectLastValue(underTest.selectedInputMethodSubtype(USER_HANDLE))
+            val expectedSubtype = InputMethodModel.Subtype(subtypeId = 456, isAuxiliary = false)
+            assertThat(result).isEqualTo(expectedSubtype)
         }
 
     @Test

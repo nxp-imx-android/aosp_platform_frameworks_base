@@ -20,11 +20,15 @@ import android.os.UserHandle
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class FakeInputMethodRepository : InputMethodRepository {
+
+    private val selectedSubtypeId = MutableStateFlow<Int?>(null)
 
     private var usersToEnabledInputMethods: MutableMap<Int, Flow<InputMethodModel>> = mutableMapOf()
 
@@ -35,6 +39,10 @@ class FakeInputMethodRepository : InputMethodRepository {
      * not shown.
      */
     var inputMethodPickerShownDisplayId: Int? = null
+
+    fun setSelectedInputMethodSubtypeId(subtypeId: Int?) {
+        selectedSubtypeId.value = subtypeId
+    }
 
     fun setEnabledInputMethods(userId: Int, vararg enabledInputMethods: InputMethodModel) {
         usersToEnabledInputMethods[userId] = enabledInputMethods.asFlow()
@@ -50,6 +58,13 @@ class FakeInputMethodRepository : InputMethodRepository {
     override suspend fun selectedInputMethodSubtypes(
         user: UserHandle,
     ): List<InputMethodModel.Subtype> = selectedInputMethodSubtypes
+
+
+    override fun selectedInputMethodSubtype(user: UserHandle): Flow<InputMethodModel.Subtype?> {
+        return selectedSubtypeId.map { id: Int? ->
+            id?.let { selectedInputMethodSubtypes.find { it.subtypeId == id } }
+        }
+    }
 
     override suspend fun showInputMethodPicker(displayId: Int, showAuxiliarySubtypes: Boolean) {
         inputMethodPickerShownDisplayId = displayId
