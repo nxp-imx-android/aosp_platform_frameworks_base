@@ -361,12 +361,8 @@ class ActivityStarter {
                 if (mService.mRootWindowContainer == null) {
                     throw new IllegalStateException("Too early to start activity.");
                 }
-                UserHelper userHelper = android.multiuser.Flags.hsuAllowlistActivities()
-                        ? new UserHelper(mService.getUserManagerInternal())
-                        : null;
-
                 starter = new ActivityStarter(mController, mService, mSupervisor, mInterceptor,
-                        userHelper);
+                        mService.mRootWindowContainer.getUserHelper());
             }
 
             return starter;

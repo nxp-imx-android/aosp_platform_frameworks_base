@@ -40,6 +40,7 @@ import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityStarter.Request;
 
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // NOTE: UserController would be be a better name, but there's one on c.a.server.am. already...
 /**
@@ -68,6 +69,10 @@ final class UserHelper {
     private final UserManagerInternal mUmi;
     private final @ActivityLaunchIntegrationStatus int mActivityLaunchIntegrationStatus;
 
+    // NOTE: We could set it with USER_SYSTEM, but it's safer to explicitly set it on constructor
+    // with the value returned by AM.
+    private final @UserIdInt AtomicInteger mCurrentUserId = new AtomicInteger(UserHandle.USER_NULL);
+
     UserHelper(UserManagerInternal umi) {
         mIsHeadlessSystemUserMode = umi.isHeadlessSystemUserMode();
         mUmi = umi;
@@ -75,6 +80,14 @@ final class UserHelper {
         mActivityLaunchIntegrationStatus = mIsHeadlessSystemUserMode
                 ? ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
                 : ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM;
+        setCurrentUserId(ActivityManager.getCurrentUser());
+    }
+
+    void setCurrentUserId(@UserIdInt int userId) {
+        int previous = mCurrentUserId.getAndSet(userId);
+        if (previous != userId) {
+            Slogf.i(TAG, "UserHelper.setCurrentUserId(): changed from %d to %d", previous , userId);
+        }
     }
 
     /**
@@ -151,9 +164,9 @@ final class UserHelper {
         return START_SUCCESS;
     }
 
-    // TODO(b/412177078): use callback to set it locally (when user switches) and inline it instead
-    private @UserIdInt int getCurrentUserId() {
-        return ActivityManager.getCurrentUser();
+    @VisibleForTesting
+    @UserIdInt int getCurrentUserId() {
+        return mCurrentUserId.get();
     }
 
     /**
@@ -202,6 +215,14 @@ final class UserHelper {
         pw.printf("%smActivityLaunchIntegrationStatus=%d (%s)\n", prefix2,
                 mActivityLaunchIntegrationStatus,
                 activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus));
+        pw.printf("%smCurrentUserId=%s\n", prefix2, mCurrentUserId);
+    }
+
+    @Override
+    public String toString() {
+        return "UserHelper[activityLaunchIntegrationStatus="
+                + activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus)
+                + ", currentUserId=" + mCurrentUserId + "]";
     }
 
     private static String activityLaunchIntegrationStatusToString(@ActivityLaunchIntegrationStatus
