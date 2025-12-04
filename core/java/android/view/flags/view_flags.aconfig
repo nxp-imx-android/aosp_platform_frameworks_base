@@ -173,6 +173,14 @@ flag {
 }
 
 flag {
+  name: "sms_provider_redact_otp_app_compat_api"
+  namespace: "telephony"
+  description: "SmsProvider App Compat API flag for redacting OTP messages from untrusted packages"
+  is_exported: true
+  bug: "437043173"
+}
+
+flag {
   name: "redact_otp_app_compat_api"
   namespace: "telephony"
   description: "App Compat API flag for redacting OTP messages from untrusted packages"
