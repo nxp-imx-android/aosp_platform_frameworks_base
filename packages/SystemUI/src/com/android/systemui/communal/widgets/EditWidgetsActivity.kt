@@ -38,7 +38,6 @@ import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.Flags.communalEditWidgetsActivityFinishFix
 import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
@@ -99,16 +98,6 @@ constructor(
         fun setActivityFullyVisible(fullyVisible: Boolean) {}
     }
 
-    /**
-     * A nop ActivityController to be use when the communalEditWidgetsActivityFinishFix flag is
-     * false.
-     */
-    class NopActivityController : ActivityController
-
-    /**
-     * A functional ActivityController to be used when the communalEditWidgetsActivityFinishFix flag
-     * is true.
-     */
     class ActivityControllerImpl(activity: Activity) : ActivityController {
         companion object {
             private const val STATE_EXTRA_IS_WAITING_FOR_RESULT = "extra_is_waiting_for_result"
@@ -180,9 +169,7 @@ constructor(
 
     private var shouldOpenWidgetPickerOnStart = false
 
-    private val activityController: ActivityController =
-        if (communalEditWidgetsActivityFinishFix()) ActivityControllerImpl(this)
-        else NopActivityController()
+    private val activityController: ActivityController = ActivityControllerImpl(this)
 
     // Completes when the activity UI is rendered and ready for the hub to edit mode transition.
     private val readyDeferred = CompletableDeferred<Unit>()
