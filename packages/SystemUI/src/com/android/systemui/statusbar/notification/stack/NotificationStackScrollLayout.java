@@ -241,9 +241,6 @@ public class NotificationStackScrollLayout
     private float mQsExpansionFraction;
     private final int mSplitShadeMinContentHeight;
     private String mLastUpdateSidePaddingDumpString;
-    private long mLastUpdateSidePaddingElapsedRealtime;
-    private String mLastInitViewDumpString;
-    private long mLastInitViewElapsedRealtime;
 
     private final HeadsUpAnimator mHeadsUpAnimator;
     /**
@@ -503,7 +500,6 @@ public class NotificationStackScrollLayout
     private int mCornerRadius;
     private int mMinimumPaddings;
     private int mQsTilePadding;
-    private boolean mSkinnyNotifsInLandscape;
     private int mSidePaddings;
     private final Rect mBackgroundAnimationRect = new Rect();
     private final ArrayList<BiConsumer<Float, Float>> mExpandedHeightListeners = new ArrayList<>();
@@ -611,7 +607,6 @@ public class NotificationStackScrollLayout
     private boolean mShouldUseSplitNotificationShade;
     private boolean mShouldSkipTopPaddingAnimationAfterFold = false;
     @Nullable private SplitShadeStateController mSplitShadeStateController = null;
-    private boolean mIsSmallLandscapeLockscreenEnabled = false;
 
     /**
      * Suppress the stackEndHeight updates for UI stability.
@@ -685,8 +680,6 @@ public class NotificationStackScrollLayout
         super(context, attrs, 0, 0);
         Resources res = getResources();
         mFeatureFlags = Dependency.get(FeatureFlags.class);
-        mIsSmallLandscapeLockscreenEnabled = mFeatureFlags.isEnabled(
-                Flags.LOCKSCREEN_ENABLE_LANDSCAPE);
         mDebugLines = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_LINES);
         mDebugRemoveAnimation = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_REMOVE_ANIMATION);
         mSectionsManager = Dependency.get(NotificationSectionsManager.class);
@@ -974,29 +967,6 @@ public class NotificationStackScrollLayout
 
         Resources res = context.getResources();
         mSwipeHelper.updateResourceProperties(res);
-        final boolean isSmallScreenLandscape = res.getBoolean(R.bool.is_small_screen_landscape);
-        boolean useSmallLandscapeLockscreenResources = mIsSmallLandscapeLockscreenEnabled
-                && isSmallScreenLandscape;
-        // TODO (b/293252410) remove condition here when flag is launched
-        //  Instead update the config_skinnyNotifsInLandscape to be false whenever
-        //  is_small_screen_landscape is true. Then, only use the config_skinnyNotifsInLandscape.
-        final boolean configSkinnyNotifsInLandscape = res.getBoolean(
-                R.bool.config_skinnyNotifsInLandscape);
-        if (useSmallLandscapeLockscreenResources) {
-            mSkinnyNotifsInLandscape = false;
-        } else {
-            mSkinnyNotifsInLandscape = configSkinnyNotifsInLandscape;
-        }
-
-        mLastInitViewDumpString =
-                "mIsSmallLandscapeLockscreenEnabled=" + mIsSmallLandscapeLockscreenEnabled
-                        + " isSmallScreenLandscape=" + isSmallScreenLandscape
-                        + " useSmallLandscapeLockscreenResources="
-                        + useSmallLandscapeLockscreenResources
-                        + " skinnyNotifsInLandscape=" + configSkinnyNotifsInLandscape
-                        + " mSkinnyNotifsInLandscape=" + mSkinnyNotifsInLandscape;
-        mLastInitViewElapsedRealtime = SystemClock.elapsedRealtime();
-
         mGapHeight = res.getDimensionPixelSize(R.dimen.notification_section_divider_height);
         mStackScrollAlgorithm.initView(context);
         mStateAnimator.initView(context);
@@ -1024,9 +994,7 @@ public class NotificationStackScrollLayout
         final int orientation = getResources().getConfiguration().orientation;
 
         mLastUpdateSidePaddingDumpString = "viewWidth=" + viewWidth
-                + " skinnyNotifsInLandscape=" + mSkinnyNotifsInLandscape
                 + " orientation=" + orientation;
-        mLastUpdateSidePaddingElapsedRealtime = SystemClock.elapsedRealtime();
 
         if (viewWidth == 0) {
             Log.e(TAG, "updateSidePadding: viewWidth is zero");
@@ -1040,9 +1008,6 @@ public class NotificationStackScrollLayout
         }
 
         if (mShouldUseSplitNotificationShade) {
-            if (mSkinnyNotifsInLandscape) {
-                Log.e(TAG, "updateSidePadding: mSkinnyNotifsInLandscape has betrayed us!");
-            }
             mSidePaddings = mMinimumPaddings;
             return;
         }
@@ -5935,21 +5900,12 @@ public class NotificationStackScrollLayout
             println(pw, "translationX", getTranslationX());
             println(pw, "translationY", getTranslationY());
             println(pw, "translationZ", getTranslationZ());
-            println(pw, "skinnyNotifsInLandscape", mSkinnyNotifsInLandscape);
             println(pw, "minimumPaddings", mMinimumPaddings);
             println(pw, "qsTilePadding", mQsTilePadding);
             println(pw, "sidePaddings", mSidePaddings);
             println(pw, "elapsedRealtime", elapsedRealtime);
-            println(pw, "lastInitView", mLastInitViewDumpString);
-            println(pw, "lastInitViewElapsedRealtime", mLastInitViewElapsedRealtime);
-            println(pw, "lastInitViewMillisAgo", elapsedRealtime - mLastInitViewElapsedRealtime);
             println(pw, "shouldUseSplitNotificationShade", mShouldUseSplitNotificationShade);
             println(pw, "lastUpdateSidePadding", mLastUpdateSidePaddingDumpString);
-            println(pw, "lastUpdateSidePaddingElapsedRealtime",
-                    mLastUpdateSidePaddingElapsedRealtime);
-            println(pw, "lastUpdateSidePaddingMillisAgo",
-                    elapsedRealtime - mLastUpdateSidePaddingElapsedRealtime);
-            println(pw, "isSmallLandscapeLockscreenEnabled", mIsSmallLandscapeLockscreenEnabled);
             println(pw, "isAnimating", isCurrentlyAnimating());
             mNotificationStackSizeCalculator.dump(pw, args);
             mScrollViewFields.dump(pw);

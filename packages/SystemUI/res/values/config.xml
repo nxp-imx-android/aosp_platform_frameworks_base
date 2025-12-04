@@ -453,9 +453,6 @@
      vibrator is capable of subtle vibrations -->
     <bool name="config_vibrateOnIconAnimation">false</bool>
 
-    <!-- Notifications are sized to match the width of two (of 4) qs tiles in landscape. -->
-    <bool name="config_skinnyNotifsInLandscape">true</bool>
-
     <!-- Snooze: default notificaiton snooze time. -->
     <integer name="config_notification_snooze_time_default">60</integer>
 
