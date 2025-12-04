@@ -92,9 +92,19 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
         // Otherwise a real snapshot can be taken even if the activity disables recents screenshot.
         spyOn(mWm.mTaskSnapshotController);
         final int disabledInRecentsTaskId = disabledWindow.getTask().mTaskId;
-        mAtm.takeTaskSnapshot(disabledInRecentsTaskId, true /* updateCache */);
+        if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+            mWm.mSnapshotController.mSnapshotManagerService.takeTaskSnapshot(
+                    disabledInRecentsTaskId, true /* updateCache */, false /* isLowRes */);
+        } else {
+            mAtm.takeTaskSnapshot(disabledInRecentsTaskId, true /* updateCache */);
+        }
         verify(mWm.mTaskSnapshotController, never()).prepareTaskSnapshot(any(), any());
-        mAtm.takeTaskSnapshot(disabledInRecentsTaskId, false /* updateCache */);
+        if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
+            mWm.mSnapshotController.mSnapshotManagerService.takeTaskSnapshot(
+                    disabledInRecentsTaskId, false /* updateCache */, false /* isLowRes */);
+        } else {
+            mAtm.takeTaskSnapshot(disabledInRecentsTaskId, false /* updateCache */);
+        }
         verify(mWm.mTaskSnapshotController).prepareTaskSnapshot(any(), any());
     }
 
