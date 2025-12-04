@@ -18,6 +18,7 @@ package com.android.server.input;
 
 import static android.hardware.input.InputGestureData.createKeyTrigger;
 
+import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 import static com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
@@ -215,6 +216,15 @@ final class InputGestureManager {
                     createKeyGesture(KeyEvent.KEYCODE_S,
                             KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
+        if (enableColorInversionKeyGestures()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_I,
+                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
                             /* allowCaptureByFocusedWindow = */true
                     ));
         }

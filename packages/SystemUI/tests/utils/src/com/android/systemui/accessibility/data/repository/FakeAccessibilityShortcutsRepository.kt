@@ -36,8 +36,9 @@ class FakeAccessibilityShortcutsRepository(
     @param:Main private val handler: Handler,
 ) : AccessibilityShortcutsRepository {
     companion object {
-        const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
+        const val FAKE_COLOR_INVERSION_TARGET_NAME = "com.android.test/.FakeColorInversion"
         const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
+        const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
         const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
     }
 
@@ -61,6 +62,7 @@ class FakeAccessibilityShortcutsRepository(
 
     private val featureNameTestMap =
         mapOf(
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION to "Color Inversion",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to "Magnification",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER to "Screen Reader",
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
@@ -78,6 +80,7 @@ class FakeAccessibilityShortcutsRepository(
         displayId: Int,
     ): KeyGestureConfirmInfo? =
         when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,

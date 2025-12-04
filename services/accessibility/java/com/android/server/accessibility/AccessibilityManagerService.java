@@ -49,7 +49,9 @@ import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
+import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
+import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.CHOOSER_PACKAGE_NAME;
@@ -684,6 +686,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         mAccessibilityContentObserver.register(mContext.getContentResolver());
 
         List<Integer> supportedGestures = new ArrayList<>();
+        if (enableColorInversionKeyGestures()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION);
+        }
         if (enableSelectToSpeakKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
         }
@@ -768,6 +773,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION) {
             return MAGNIFICATION_CONTROLLER_NAME;
         }
+        if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION) {
+            return COLOR_INVERSION_COMPONENT_NAME.flattenToString();
+        }
 
         String feature = switch (gestureType) {
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK ->
@@ -796,6 +804,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         String targetName;
         switch (gestureType) {
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION:
+                targetName = getTargetNameFromKeyGestureType(gestureType);
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION:
                 targetName = ShortcutUtils.getTargetFromKeyGestureEvent(mContext, event);
                 break;
@@ -4661,6 +4672,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         + ", shortcutTargets: " + shortcutTargets + ", userId: " + userId);
 
         if (shortcutType == UserShortcutType.KEY_GESTURE) {
+            if (!enableColorInversionKeyGestures() && shortcutTargets.contains(
+                    getTargetNameFromKeyGestureType(
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION))) {
+                Slog.w(LOG_TAG,
+                        "KEY_GESTURE type color inversion shortcuts are "
+                                + "disabled by feature flag");
+                return;
+            }
             if (!enableTalkbackAndMagnifierKeyGestures()
                     && shortcutTargets.contains(getTargetNameFromKeyGestureType(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION))) {

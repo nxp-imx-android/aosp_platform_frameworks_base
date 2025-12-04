@@ -21,6 +21,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATIN
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_GESTURE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
 
+import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.AccessibilityFragmentType.INVISIBLE_TOGGLE;
 import static com.android.internal.accessibility.common.ShortcutConstants.SERVICES_SEPARATOR;
@@ -437,6 +438,7 @@ public final class ShortcutUtils {
      */
     public static String getLabelFromKeyCode(int keyCode) {
         return switch (keyCode) {
+            case KeyEvent.KEYCODE_I -> "I";
             case KeyEvent.KEYCODE_M -> "M";
             case KeyEvent.KEYCODE_S -> "S";
             case KeyEvent.KEYCODE_T -> "T";
@@ -475,7 +477,9 @@ public final class ShortcutUtils {
 
     private static int getKeyCodeFromTarget(Context context, String targetName) {
         // Magnification uses the package name rather than a component name.
-        if (targetName.equals(MAGNIFICATION_CONTROLLER_NAME)) {
+        if (targetName.equals(COLOR_INVERSION_COMPONENT_NAME.flattenToString())) {
+            return KeyEvent.KEYCODE_I;
+        } else if (targetName.equals(MAGNIFICATION_CONTROLLER_NAME)) {
             return KeyEvent.KEYCODE_M;
         }
 
@@ -508,7 +512,9 @@ public final class ShortcutUtils {
 
     private static String getTargetFromKeyCode(Context context, int keyCode) {
         // Magnification uses the package name rather than a component name.
-        if (keyCode == KeyEvent.KEYCODE_M) {
+        if (keyCode == KeyEvent.KEYCODE_I) {
+            return COLOR_INVERSION_COMPONENT_NAME.flattenToString();
+        } else if (keyCode == KeyEvent.KEYCODE_M) {
             return MAGNIFICATION_CONTROLLER_NAME;
         }
 
