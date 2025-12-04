@@ -29,6 +29,10 @@ interface MediaSessionModel {
     /** Unique identifier. */
     val key: Any
 
+    val uid: Int
+
+    val packageName: String
+
     val appName: String
 
     val appIcon: Icon

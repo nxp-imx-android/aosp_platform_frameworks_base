@@ -202,6 +202,12 @@ constructor(
             override val key
                 get() = dataModel.instanceId
 
+            override val uid: Int
+                get() = dataModel.appUid
+
+            override val packageName: String
+                get() = dataModel.packageName
+
             override val appName
                 get() = dataModel.appName
 
