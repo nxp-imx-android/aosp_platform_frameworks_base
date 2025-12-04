@@ -21,9 +21,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
 import android.annotation.NonNull;
+import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.flags.Flags;
 import android.content.Context;
@@ -42,12 +45,15 @@ import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.Pair;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.server.SystemConfig;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,6 +64,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.util.Collections;
 import java.util.List;
@@ -86,11 +93,16 @@ public class BugreportManagerServiceImplTest {
     private UserManager mMockUserManager;
     @Mock
     private DevicePolicyManager mMockDevicePolicyManager;
+    @Mock
+    private SystemConfig mMockSystemConfig;
+    @Mock
+    private AppOpsManager mMockAppOpsManager;
 
     private TestInjector mInjector;
 
     private int mCallingUid = 1234;
-    private String mCallingPackage  = "test.package";
+    private String mCallingPackage;
+
     private AtomicFile mMappingFile;
 
     private String mBugreportFile = "bugreport-file.zip";
@@ -100,16 +112,28 @@ public class BugreportManagerServiceImplTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
-        mMappingFile = new AtomicFile(mContext.getFilesDir(), "bugreport-mapping.xml");
-        ArraySet<String> mAllowlistedPackages = new ArraySet<>();
-        mAllowlistedPackages.add(mContext.getPackageName());
-        mInjector = new TestInjector(mContext, mAllowlistedPackages, mMappingFile,
-                mMockUserManager, mMockDevicePolicyManager, null);
+        mCallingPackage = mContext.getPackageName();
+        mMappingFile = new AtomicFile(new File(mContext.getFilesDir(), "bugreport-mapping.xml"));
+        ArraySet<String> bugreportAllowlist = new ArraySet<>();
+        bugreportAllowlist.add(mCallingPackage);
+        // Default empty non-admin allowlist.
+        when(mMockSystemConfig.getNonAdminBugreportAllowlistedPackages())
+                .thenReturn(new ArraySet<>());
+        mInjector = new TestInjector(mContext, bugreportAllowlist, mMappingFile,
+                mMockUserManager, mMockDevicePolicyManager, null, mMockSystemConfig,
+                mPackageManager, mMockAppOpsManager);
         mService = new BugreportManagerServiceImpl(mInjector);
-        mBugreportFileManager = new BugreportManagerServiceImpl.BugreportFileManager(mMappingFile);
-        when(mPackageManager.getPackageUidAsUser(anyString(), anyInt())).thenReturn(mCallingUid);
-        // The calling user is an admin user by default.
+        mBugreportFileManager =
+                new BugreportManagerServiceImpl.BugreportFileManager(mMappingFile, mInjector);
+        when(mPackageManager.getNameForUid(anyInt())).thenReturn(mCallingPackage);
+        when(mPackageManager.getPackageUidAsUser(anyString(), anyInt()))
+                .thenReturn(mCallingUid);
+
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(true);
+        doNothing().when(mMockAppOpsManager).checkPackage(anyInt(), anyString());
+        mInjector.setPermissionResult(Manifest.permission.DUMP, PackageManager.PERMISSION_GRANTED);
+        mInjector.setPermissionResult(Manifest.permission.INTERACT_ACROSS_USERS,
+                PackageManager.PERMISSION_GRANTED);
     }
 
     @After
@@ -225,6 +249,39 @@ public class BugreportManagerServiceImplTest {
     }
 
     @Test
+    public void testStartBugreport_nonAdminAllowed() throws Exception {
+        when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+
+        ArraySet<String> nonAdminAllowed = new ArraySet<>();
+        nonAdminAllowed.add(mCallingPackage);
+        when(mMockSystemConfig.getNonAdminBugreportAllowlistedPackages())
+                .thenReturn(nonAdminAllowed);
+
+        mService.startBugreport(Binder.getCallingUid(), mCallingPackage,
+                new FileDescriptor(), /* screenshotFd= */ null,
+                BugreportParams.BUGREPORT_MODE_FULL,
+                /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                /* isScreenshotRequested= */ false,
+                /* skipUserConsentUnused = */ false);
+        assertThat(mInjector.isBugreportStarted()).isTrue();
+    }
+
+    @Test
+    public void testStartBugreport_nonAdminNotAllowed() throws Exception {
+        when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+
+        // mCallingPackage is NOT in the non-admin allowlist
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> mService.startBugreport(Binder.getCallingUid(), mCallingPackage,
+                        new FileDescriptor(), /* screenshotFd= */ null,
+                        BugreportParams.BUGREPORT_MODE_FULL,
+                        /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                        /* isScreenshotRequested= */ false,
+                        /* skipUserConsentUnused = */ false));
+        assertThat(thrown.getMessage()).contains("not an admin user");
+    }
+
+    @Test
     public void testStartBugreport_throwsForNotAffiliatedUser() throws Exception {
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
         when(mMockDevicePolicyManager.getDeviceOwnerUserId()).thenReturn(-1);
@@ -272,7 +329,8 @@ public class BugreportManagerServiceImplTest {
         // Create a new service to clear the allowlist
         mService = new BugreportManagerServiceImpl(
                 new TestInjector(mContext, new ArraySet<>(), mMappingFile,
-                        mMockUserManager, mMockDevicePolicyManager, null));
+                        mMockUserManager, mMockDevicePolicyManager, null, mMockSystemConfig,
+                    mPackageManager, mMockAppOpsManager));
 
         assertThrows(SecurityException.class, () -> mService.cancelBugreport(
                 Binder.getCallingUid(), mContext.getPackageName()));
@@ -280,11 +338,13 @@ public class BugreportManagerServiceImplTest {
 
     @Test
     public void testCancelBugreportWithRole() throws Exception {
-        // Create a new service to clear the allowlist, but override the role manager
-        mService = new BugreportManagerServiceImpl(
-                new TestInjector(mContext, new ArraySet<>(), mMappingFile,
+        TestInjector injector = new TestInjector(mContext, new ArraySet<>(), mMappingFile,
                         mMockUserManager, mMockDevicePolicyManager,
-                        "android.app.role.SYSTEM_AUTOMOTIVE_PROJECTION"));
+                        "android.app.role.SYSTEM_AUTOMOTIVE_PROJECTION", mMockSystemConfig,
+                        mPackageManager, mMockAppOpsManager);
+        injector.setPermissionResult(Manifest.permission.DUMP, PackageManager.PERMISSION_GRANTED);
+        // Create a new service to clear the allowlist, but override the role manager
+        BugreportManagerServiceImpl mService = new BugreportManagerServiceImpl(injector);
 
         mService.cancelBugreport(Binder.getCallingUid(), mContext.getPackageName());
     }
@@ -346,34 +406,47 @@ public class BugreportManagerServiceImplTest {
         private final UserManager mUserManager;
         private final DevicePolicyManager mDevicePolicyManager;
         private boolean mBugreportStarted = false;
+        private final SystemConfig mSystemConfig;
+        private final PackageManager mPackageManager;
+        private final AppOpsManager mAppOpsManager;
+        private final ArrayMap<String, Integer> mPermissionResults = new ArrayMap<>();
 
         TestInjector(Context context, ArraySet<String> allowlistedPackages, AtomicFile mappingFile,
-                UserManager um, DevicePolicyManager dpm, String grantedRole) {
+                UserManager um, DevicePolicyManager dpm, String grantedRole,
+                SystemConfig systemConfig, PackageManager pm, AppOpsManager appOps) {
             super(context, allowlistedPackages, mappingFile);
-            mUserManager = um;
-            mDevicePolicyManager = dpm;
+            this.mUserManager = um;
+            this.mDevicePolicyManager = dpm;
+            this.mSystemConfig = systemConfig;
+            this.mPackageManager = pm;
+            this.mAppOpsManager = appOps;
 
             if (grantedRole != null) {
-                mRoleManagerWrapper =
-                        new BugreportManagerServiceImpl.Injector.RoleManagerWrapper() {
-                            @Override
-                            List<String> getRoleHolders(@NonNull String roleName) {
-                                return roleName.equals(grantedRole)
-                                        ? Collections.singletonList(mContext.getPackageName())
-                                        : Collections.emptyList();
-                            }
-                        };
+                mRoleManagerWrapper = new RoleManagerWrapper() {
+                    @Override
+                    List<String> getRoleHolders(@NonNull String roleName) {
+                        return roleName.equals(grantedRole)
+                                ? Collections.singletonList(mContext.getPackageName())
+                                : Collections.emptyList();
+                    }
+                };
             }
         }
 
-        @Override
-        public UserManager getUserManager() {
+        @Override public SystemConfig getSystemConfig() {
+            return mSystemConfig;
+        }
+        @Override public UserManager getUserManager() {
             return mUserManager;
         }
-
-        @Override
-        public DevicePolicyManager getDevicePolicyManager() {
+        @Override public DevicePolicyManager getDevicePolicyManager() {
             return mDevicePolicyManager;
+        }
+        @Override public PackageManager getPackageManager() {
+            return mPackageManager;
+        }
+        @Override public AppOpsManager getAppOpsManager() {
+            return mAppOpsManager;
         }
 
         @Override
@@ -385,6 +458,15 @@ public class BugreportManagerServiceImplTest {
             } else if (SYSTEM_PROPERTY_BUGREPORT_STOP.equals(key)) {
                 mBugreportStarted = false;
             }
+        }
+
+        @Override
+        int checkCallingOrSelfPermission(String permission) {
+            return mPermissionResults.getOrDefault(permission, PackageManager.PERMISSION_DENIED);
+        }
+
+        void setPermissionResult(String permission, int result) {
+            mPermissionResults.put(permission, result);
         }
 
         public boolean isBugreportStarted() {
