@@ -198,8 +198,8 @@ public final class ConversationData implements Parcelable {
     void writeToSignatureParcel(@NonNull Parcel dest) {
         dest.writeLong(mProcessingStartTimestamp.toEpochMilli());
         dest.writeLong(mProcessingEndTimestamp.toEpochMilli());
-        dest.writeTypedObject(mComponentName, /*flags=*/ 0);
-        dest.writeTypedObject(mInputBoxAutofillId, /*flags=*/ 0);
+        dest.writeTypedObject(mComponentName, /* flags= */ 0);
+        dest.writeTypedObject(mInputBoxAutofillId, /* flags= */ 0);
         dest.writeString8(mInputBoxText);
         dest.writeString8(mConversationTitle);
         dest.writeBoolean(mIsKeyboardShown);
@@ -395,16 +395,32 @@ public final class ConversationData implements Parcelable {
         public ConversationData build() {
             return new ConversationData(
                     mActivityId,
-                    requireNonNull(mProcessingStartTimestamp),
-                    requireNonNull(mProcessingEndTimestamp),
-                    requireNonNull(mComponentName),
+                    requireNonNull(
+                            mProcessingStartTimestamp,
+                            "ConversationData Builder: must use setProcessingStartTimestamp()"),
+                    requireNonNull(
+                            mProcessingEndTimestamp,
+                            "ConversationData Builder: must use setProcessingEndTimestamp()"),
+                    requireNonNull(
+                            mComponentName,
+                            "ConversationData Builder: must use setComponentName()"),
                     mInputBoxAutofillId,
-                    requireNonNull(mInputBoxText),
-                    requireNonNull(mConversationTitle),
-                    requireNonNull(mIsKeyboardShown),
-                    requireNonNull(mIsLastMessageFromTheUser),
-                    requireNonNull(mHasNewMessage),
-                    requireNonNull(mChatMessages));
+                    requireNonNull(
+                            mInputBoxText, "ConversationData Builder: must use setInputBoxText()"),
+                    requireNonNull(
+                            mConversationTitle,
+                            "ConversationData Builder: must use setConversationTitle()"),
+                    requireNonNull(
+                            mIsKeyboardShown,
+                            "ConversationData Builder: must use setKeyboardShown()"),
+                    requireNonNull(
+                            mIsLastMessageFromTheUser,
+                            "ConversationData Builder: must use setLastMessageFromTheUser()"),
+                    requireNonNull(
+                            mHasNewMessage,
+                            "ConversationData Builder: must use setHasNewMessage()"),
+                    requireNonNull(
+                            mChatMessages, "ConversationData Builder: must use setChatMessages()"));
         }
     }
 
