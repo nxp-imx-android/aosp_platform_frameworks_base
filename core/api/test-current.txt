@@ -1008,6 +1008,7 @@ package android.companion {
 
   public final class CompanionDeviceManager {
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void overrideTransportType(int);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission("android.Manifest.permission.USE_COMPANION_TRANSPORTS") public void setRequestActionAllowList(@Nullable java.util.List<java.lang.String>);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {

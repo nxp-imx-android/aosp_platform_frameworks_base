@@ -40,6 +40,7 @@ import com.android.server.companion.devicepresence.CompanionServiceConnector;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +56,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class ActionRequestProcessor implements AssociationStore.OnChangeListener {
     private static final String TAG = "CDM_ActionRequestProcessor";
+
+    private @Nullable List<String> mRequestActionAllowList = null;
 
     @NonNull
     private final AssociationStore mAssociationStore;
@@ -149,6 +152,11 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
         Objects.requireNonNull(request, "request cannot be null.");
         Objects.requireNonNull(serviceName, "serviceName cannot be null.");
         Objects.requireNonNull(associationIds, "associationIds cannot be null.");
+
+        if (isRequestBlocked(serviceName)) {
+            // Does not need to send the ActionResult since it for test purpose only.
+            return;
+        }
 
         final int action = request.getAction();
 
@@ -283,6 +291,19 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
             }
         }
         out.println();
+    }
+
+    /**
+     * Set the requestAction allowlist.
+     * @hide
+     */
+    public void setRequestActionAllowList(@Nullable List<String> allowList) {
+        Slog.i(TAG, "Setting requestAction allow-list to: " + allowList);
+        if (allowList == null) {
+            mRequestActionAllowList = null;
+        } else {
+            mRequestActionAllowList = new ArrayList<>(allowList);
+        }
     }
 
     private void handleActionRequest(@NonNull AssociationInfo association,
@@ -462,5 +483,31 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
 
         int mState = STATE_IDLE;
         final Set<String> mRequestingServices = ConcurrentHashMap.newKeySet();
+    }
+
+    private boolean isRequestBlocked(String serviceName) {
+        // If the allow-list is null, test mode is off. Do not block.
+        if (mRequestActionAllowList == null) {
+            return false;
+        }
+
+        // Test mode is ON. If the allow-list is empty, block ALL requests.
+        if (mRequestActionAllowList.isEmpty()) {
+            Slog.w(TAG, "Blocking background request from [" + serviceName + "] "
+                    + "because test mode is active and allow-list is empty.");
+            return true;
+        }
+
+
+        // Test mode is ON. If the service is on the list, it is NOT blocked.
+        if (mRequestActionAllowList.contains(serviceName)) {
+            return false;
+        }
+
+        // The test mode is active, and the service was not on the list. Block it.
+        Slog.w(TAG, "Blocking background request from [" + serviceName + "] "
+                + "because test mode is active and it is not in the allow-list: "
+                + mRequestActionAllowList);
+        return true;
     }
 }

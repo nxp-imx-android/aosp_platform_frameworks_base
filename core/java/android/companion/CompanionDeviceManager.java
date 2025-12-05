@@ -2471,6 +2471,32 @@ public final class CompanionDeviceManager {
         }
     }
 
+    /**
+     * Sets a test-only allow-list for the requestAction() API.
+     * When the provided allow-list is non-empty, all action requests will be blocked
+     * unless the requesting service's component name is present in the list.
+     * Passing a {@code null} list will deactivate this test mode and an empty list will block all
+     * the requests.
+     *
+     * @param allowList A list of service component names to allow, or {@code null} to disable.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission("android.Manifest.permission.USE_COMPANION_TRANSPORTS")
+    public void setRequestActionAllowList(@Nullable List<String> allowList) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        try {
+            mService.setRequestActionAllowList(allowList);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
 
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {

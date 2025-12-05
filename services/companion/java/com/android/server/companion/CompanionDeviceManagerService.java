@@ -748,6 +748,15 @@ public class CompanionDeviceManagerService extends SystemService {
 
             mActionRequestProcessor.requestAction(request, serviceName, associationIds);
         }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void setRequestActionAllowList(List<String> allowList) {
+            setRequestActionAllowList_enforcePermission();
+
+            mActionRequestProcessor.setRequestActionAllowList(allowList);
+        }
+
         @Override
         public boolean isCompanionApplicationBound(String packageName, int userId) {
             return mCompanionAppBinder.isCompanionApplicationBound(userId, packageName);
