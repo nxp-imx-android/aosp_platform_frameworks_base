@@ -1190,6 +1190,13 @@ public class ActivityManagerService extends IActivityManager.Stub
                         startInfo.getRealUid(),
                         startInfo.getPackageName(),
                         ProfilingTrigger.TRIGGER_TYPE_APP_FULLY_DRAWN);
+
+                if (android.os.profiling.Flags.profilingTriggerColdStart()) {
+                    stopActiveProfiling(
+                            startInfo.getRealUid(),
+                            startInfo.getPackageName(),
+                            ProfilingTrigger.TRIGGER_TYPE_COLD_START);
+                }
             }
         }
     };
@@ -20434,6 +20441,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     /** Helper method for sending profiling triggers asynchronously. */
+    // TODO: b/465855549 - Refactor profiling logic out of ActivityManagerService
     public void sendProfilingTrigger(int uid, @NonNull String packageName, int triggerType) {
         mHandler.post(new Runnable() {
             @Override public void run() {
@@ -20443,6 +20451,23 @@ public class ActivityManagerService extends IActivityManager.Stub
                 } catch (IllegalStateException e) {
                     // Service isn't set up yet, do nothing, trigger will not be sent.
                    Slog.d(TAG, "Profiling trigger not sent due to Service not running.", e);
+                }
+            }
+        });
+    }
+
+    /**
+     * Stops all active profiling sessions for the given uid, package and trigger type.
+     */
+    private void stopActiveProfiling(int uid, @NonNull String packageName, int triggerType) {
+        mHandler.post(new Runnable() {
+            @Override public void run() {
+                try {
+                    ProfilingServiceHelper.getInstance().stopActiveProfiling(
+                            uid, packageName, triggerType);
+                } catch (IllegalStateException e) {
+                    Slog.d(TAG, "Stop profiling for uid " + uid + ", package " + packageName
+                            + " failed due to service not running.", e);
                 }
             }
         });
