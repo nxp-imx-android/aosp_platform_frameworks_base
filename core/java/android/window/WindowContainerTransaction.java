@@ -1932,7 +1932,7 @@ public final class WindowContainerTransaction implements Parcelable {
         }
 
         /** Gets the handle package update state. */
-        public boolean gethandlePackageUpdate() {
+        public boolean getHandlePackageUpdate() {
             return mHandlePackageUpdate;
         }
 
