@@ -188,7 +188,7 @@ class FakeAccessibilityShortcutsRepository(
             icon = ColorDrawable(Color.RED),
             isAssigned = isTargetAssigned(shortcutType, targetName),
             isToggleable = isToggleable,
-            isToggleOn = isTargetEnabled(targetName),
+            isStateOn = isTargetEnabled(targetName),
         )
 
     /** Toggle the target on/off. */

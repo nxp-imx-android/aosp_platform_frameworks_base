@@ -137,8 +137,8 @@ constructor(
     private val packageManager: PackageManager,
     private val userTracker: UserTracker,
     private val secureSettings: SecureSettings,
-    @Main private val resources: Resources,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @param:Main private val resources: Resources,
+    @param:Background private val backgroundDispatcher: CoroutineDispatcher,
     @param:Main private val handler: Handler,
 ) : AccessibilityShortcutsRepository {
     // Action key
@@ -379,7 +379,7 @@ constructor(
             icon = icon,
             isAssigned = isShortcutEnabled,
             isToggleable = isToggleable,
-            isToggleOn = if (isToggleable) isStateOn else false,
+            isStateOn = isStateOn,
         )
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {

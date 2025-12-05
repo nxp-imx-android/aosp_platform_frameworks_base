@@ -19,20 +19,21 @@ package com.android.systemui.accessibility.shortcutchooser.shared.model
 import android.graphics.drawable.Drawable
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 
-/* The model is used to initialize the ShortcutChooser dialogs. */
+/** The model that represents the state of an accessibility target in ShortcutChooser dialogs. */
 data class AccessibilityTargetModel(
-    @UserShortcutType val shortcutType: Int,
+    @param:UserShortcutType val shortcutType: Int,
     /**
      * The flattened [ComponentName] string or the class name of a system class implementing a
-     * supported accessibility feature
+     * supported accessibility feature.
      */
     val targetName: String,
-    /** The name of the accessibility feature itself shown to users */
+    /** The name of the accessibility feature itself shown to users. */
     val featureName: String,
     val icon: Drawable,
-    /** True if the feature is assigned to the `shortcutType` shortcuts. */
+    /** True if the feature is assigned to the `shortcutType` shortcut. */
     val isAssigned: Boolean,
+    /** True if the target has a toggle. */
     val isToggleable: Boolean,
-    /** This field is only relevant if [isToggleable] is true. */
-    val isToggleOn: Boolean = false,
+    /** True if the accessibility feature is turned on. */
+    val isStateOn: Boolean,
 )

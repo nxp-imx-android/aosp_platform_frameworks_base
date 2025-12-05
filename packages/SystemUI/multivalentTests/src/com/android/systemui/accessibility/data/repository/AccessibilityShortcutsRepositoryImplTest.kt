@@ -398,7 +398,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 .addAccessibilityServicesStateChangeListener(listenerCaptor.capture())
 
             assertThat(emissions).hasSize(1)
-            assertThat(emissions.last().any { it.featureName == serviceName && !it.isToggleOn })
+            assertThat(emissions.last().any { it.featureName == serviceName && !it.isStateOn })
                 .isTrue()
 
             // Simulate a service state change.
@@ -408,7 +408,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             advanceUntilIdle()
 
             assertThat(emissions).hasSize(2)
-            assertThat(emissions.last().any { it.featureName == serviceName && it.isToggleOn })
+            assertThat(emissions.last().any { it.featureName == serviceName && it.isStateOn })
                 .isTrue()
 
             job.cancel()

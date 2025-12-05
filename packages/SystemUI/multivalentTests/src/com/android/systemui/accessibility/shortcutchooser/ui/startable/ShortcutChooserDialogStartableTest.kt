@@ -256,7 +256,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             composeTestRule.waitForIdle()
 
             // Will toggle Talkback feature on/off and dismiss the dialog.
-            assertThat(getToggledOnTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
+            assertThat(getEnabledTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
             assertCurrentDialog(DialogType.NONE)
         }
 
@@ -622,12 +622,12 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             .map { it.targetName }
             .toSet()
 
-    private fun Kosmos.getToggledOnTargetNames(
+    private fun Kosmos.getEnabledTargetNames(
         @UserShortcutType shortcutType: Int = SHORTCUT_TYPE
     ): Set<String> =
         accessibilityShortcutsRepository
             .getAllAccessibilityTargetsInfo(shortcutType)
-            .filter { it.isToggleOn }
+            .filter { it.isStateOn }
             .map { it.targetName }
             .toSet()
 
