@@ -303,7 +303,7 @@ public final class AssociationDiskStore {
      */
     public String readLastRemovedAssociation(@UserIdInt int userId) {
         final AtomicFile file = createStorageFileForUser(
-                userId, FILE_NAME_LAST_REMOVED_ASSOCIATION);
+                userId, FILE_NAME_LAST_REMOVED_ASSOCIATION, true);
         StringBuilder sb = new StringBuilder();
         int c;
         try (FileInputStream fis = file.openRead()) {
@@ -338,7 +338,7 @@ public final class AssociationDiskStore {
         AssociationInfo redactedAssociation = builder.build();
 
         final AtomicFile file = createStorageFileForUser(
-                redactedAssociation.getUserId(), FILE_NAME_LAST_REMOVED_ASSOCIATION);
+                redactedAssociation.getUserId(), FILE_NAME_LAST_REMOVED_ASSOCIATION, true);
         writeToFileSafely(file, out -> {
             out.write(String.valueOf(System.currentTimeMillis()).getBytes());
             out.write(' ');
@@ -419,7 +419,7 @@ public final class AssociationDiskStore {
     @NonNull
     private AtomicFile getStorageFileForUser(@UserIdInt int userId) {
         return mUserIdToStorageFile.computeIfAbsent(userId,
-                u -> createStorageFileForUser(userId, FILE_NAME));
+                u -> createStorageFileForUser(userId, FILE_NAME, true));
     }
 
     /**
