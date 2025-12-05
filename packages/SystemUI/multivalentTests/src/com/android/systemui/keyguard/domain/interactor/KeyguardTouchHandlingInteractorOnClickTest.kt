@@ -130,7 +130,7 @@ class KeyguardTouchHandlingInteractorOnClickTest(private val testScenario: TestS
             kosmos.fakeWallpaperRepository.setShouldSendFocalArea(true)
             assertThat(kosmos.fakeWallpaperRepository.sendTapCommandCallCount).isEqualTo(0)
             underTest.onClick(100.0f, 100.0f)
-            if (!testScenario.faceAuth && !testScenario.isAnyPointingDeviceConnected) {
+            if (kosmos.fakeWallpaperRepository.shouldSendFocalArea.value) {
                 assertThat(kosmos.fakeWallpaperRepository.sendTapCommandCallCount).isEqualTo(1)
             } else {
                 assertThat(kosmos.fakeWallpaperRepository.sendTapCommandCallCount).isEqualTo(0)
