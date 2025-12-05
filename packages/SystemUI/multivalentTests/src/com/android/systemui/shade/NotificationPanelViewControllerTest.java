@@ -65,7 +65,6 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_SHADE_EXPANDS_ON_STATUS_BAR_LONG_PRESS)
     public void onStatusBarLongPress_shadeExpands() {
         //TODO(b/394977231) delete this temporary workaround used only by tests
         Assume.assumeFalse(Build.HARDWARE.equals("cutf_cvm"));
@@ -93,7 +92,6 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_SHADE_EXPANDS_ON_STATUS_BAR_LONG_PRESS)
     public void onStatusBarLongPress_qsExpands() {
         //TODO(b/394977231) delete this temporary workaround used only by tests
         Assume.assumeFalse(Build.HARDWARE.equals("cutf_cvm"));
