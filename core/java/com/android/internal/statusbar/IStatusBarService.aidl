@@ -71,9 +71,10 @@ interface IStatusBarService
      * @param displayId The id of the display to which the IME is bound.
      * @param vis The IME window visibility.
      * @param backDisposition The IME back disposition mode.
-     * @param showImeSwitcher Whether the IME Switcher button should be shown.
+     * @param showImeSwitcherButton Whether the IME Switcher button should be shown.
      */
-    void setImeWindowStatus(int displayId, int vis, int backDisposition, boolean showImeSwitcher);
+    void setImeWindowStatus(int displayId, int vis, int backDisposition,
+            boolean showImeSwitcherButton);
     void expandSettingsPanel(String subPanel);
 
     // ---- Methods below are for use by the status bar policy services ----

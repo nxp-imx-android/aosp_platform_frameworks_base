@@ -73,7 +73,7 @@ class FakeStatusBarService : IStatusBarService.Stub() {
         )
     var imeWindowVis = 987
     var imeBackDisposition = 654
-    var showImeSwitcher = true
+    var showImeSwitcherButton = true
     var disabledFlags2 = 7654321
     var navbarColorManagedByIme = true
     var behavior = 234
@@ -119,7 +119,7 @@ class FakeStatusBarService : IStatusBarService.Stub() {
         )
     var imeWindowVisSecondaryDisplay = 9876
     var imeBackDispositionSecondaryDisplay = 654
-    var showImeSwitcherSecondaryDisplay = true
+    var showImeSwitcherButtonSecondaryDisplay = true
     var disabledFlags2SecondaryDisplay = 87654321
     var navbarColorManagedByImeSecondaryDisplay = true
     var behaviorSecondaryDisplay = 234
@@ -154,7 +154,7 @@ class FakeStatusBarService : IStatusBarService.Stub() {
                 appearanceRegions,
                 imeWindowVis,
                 imeBackDisposition,
-                showImeSwitcher,
+                showImeSwitcherButton,
                 disabledFlags2,
                 navbarColorManagedByIme,
                 behavior,
@@ -173,7 +173,7 @@ class FakeStatusBarService : IStatusBarService.Stub() {
                 appearanceRegionsSecondaryDisplay,
                 imeWindowVisSecondaryDisplay,
                 imeBackDispositionSecondaryDisplay,
-                showImeSwitcherSecondaryDisplay,
+                showImeSwitcherButtonSecondaryDisplay,
                 disabledFlags2SecondaryDisplay,
                 navbarColorManagedByImeSecondaryDisplay,
                 behaviorSecondaryDisplay,
@@ -225,7 +225,7 @@ class FakeStatusBarService : IStatusBarService.Stub() {
         displayId: Int,
         vis: Int,
         backDisposition: Int,
-        showImeSwitcher: Boolean,
+        showImeSwitcherButton: Boolean,
     ) {}
 
     override fun expandSettingsPanel(subPanel: String) {}

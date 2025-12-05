@@ -550,9 +550,9 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
 
         @Override
         public void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-                @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+                @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
             StatusBarManagerService.this.setImeWindowStatus(displayId, vis, backDisposition,
-                    showImeSwitcher);
+                    showImeSwitcherButton);
         }
 
         @Override
@@ -1288,7 +1288,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
 
     @Override
     public void setImeWindowStatus(int displayId, @ImeWindowVisibility final int vis,
-            @BackDispositionMode final int backDisposition, final boolean showImeSwitcher) {
+            @BackDispositionMode final int backDisposition, final boolean showImeSwitcherButton) {
         enforceStatusBar();
         enforceValidCallingUser();
 
@@ -1300,12 +1300,12 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             // In case of IME change, we need to call up setImeWindowStatus() regardless of
             // mImeWindowVis because mImeWindowVis may not have been set to false when the
             // previous IME was destroyed.
-            getUiState(displayId).setImeWindowState(vis, backDisposition, showImeSwitcher);
+            getUiState(displayId).setImeWindowStatus(vis, backDisposition, showImeSwitcherButton);
 
             mHandler.post(() -> {
                 runWithStatusBarIfPresent(
                         bar -> bar.setImeWindowStatus(
-                                displayId, vis, backDisposition, showImeSwitcher));
+                                displayId, vis, backDisposition, showImeSwitcherButton));
             });
         }
     }
@@ -1365,7 +1365,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         private int mImeWindowVis = 0;
         @BackDispositionMode
         private int mImeBackDisposition = BACK_DISPOSITION_DEFAULT;
-        private boolean mShowImeSwitcher = false;
+        private boolean mShowImeSwitcherButton = false;
         private LetterboxDetails[] mLetterboxDetails = new LetterboxDetails[0];
 
         private void setBarAttributes(@Appearance int appearance,
@@ -1407,12 +1407,11 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             return mDisabled1 == disabled1 && mDisabled2 == disabled2;
         }
 
-        private void setImeWindowState(@ImeWindowVisibility final int vis,
-                @BackDispositionMode final int backDisposition,
-                final boolean showImeSwitcher) {
+        private void setImeWindowStatus(@ImeWindowVisibility int vis,
+                @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
             mImeWindowVis = vis;
             mImeBackDisposition = backDisposition;
-            mShowImeSwitcher = showImeSwitcher;
+            mShowImeSwitcherButton = showImeSwitcherButton;
         }
     }
 
@@ -1508,7 +1507,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             final UiState state = mDisplayUiState.get(DEFAULT_DISPLAY);
             return new RegisterStatusBarResult(icons, gatherDisableActionsLocked(mCurrentUserId, 1),
                     state.mAppearance, state.mAppearanceRegions, state.mImeWindowVis,
-                    state.mImeBackDisposition, state.mShowImeSwitcher,
+                    state.mImeBackDisposition, state.mShowImeSwitcherButton,
                     gatherDisableActionsLocked(mCurrentUserId, 2),
                     state.mNavbarColorManagedByIme, state.mBehavior, state.mRequestedVisibleTypes,
                     state.mPackageName, state.mTransientBarTypes, state.mLetterboxDetails);
@@ -1543,7 +1542,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                                     gatherDisableActionsLocked(mCurrentUserId, 1),
                                     state.mAppearance, state.mAppearanceRegions,
                                     state.mImeWindowVis,
-                                    state.mImeBackDisposition, state.mShowImeSwitcher,
+                                    state.mImeBackDisposition, state.mShowImeSwitcherButton,
                                     gatherDisableActionsLocked(mCurrentUserId, 2),
                                     state.mNavbarColorManagedByIme, state.mBehavior,
                                     state.mRequestedVisibleTypes,

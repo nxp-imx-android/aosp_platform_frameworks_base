@@ -281,13 +281,13 @@ public abstract class InputMethodManagerInternal {
     public abstract void updateImeWindowStatus(boolean disableImeIcon, int displayId);
 
     /**
-     * Updates and reports whether the IME switcher button should be shown, regardless whether
+     * Updates and reports whether the IME Switcher button should be shown, regardless whether
      * SystemUI or the IME is responsible for drawing it and the corresponding navigation bar.
      *
      * @param displayId the display for which to update the IME switcher button visibility.
      * @param userId    the user for which to update the IME switcher button visibility.
      */
-    public abstract void updateShouldShowImeSwitcher(int displayId, @UserIdInt int userId);
+    public abstract void updateShouldShowImeSwitcherButton(int displayId, @UserIdInt int userId);
 
     /**
      * Finish stylus handwriting by calling {@link InputMethodService#finishStylusHandwriting()} if
@@ -451,7 +451,8 @@ public abstract class InputMethodManagerInternal {
                 }
 
                 @Override
-                public void updateShouldShowImeSwitcher(int displayId, @UserIdInt int userId) {
+                public void updateShouldShowImeSwitcherButton(int displayId,
+                        @UserIdInt int userId) {
                 }
 
                 @Override
