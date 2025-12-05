@@ -209,3 +209,10 @@ flag {
   description: "Add API for partial decoding of gainmap images with ImageDecoder"
   bug: "437807032"
 }
+
+flag {
+  name: "animated_image_frame_rate_hint"
+  namespace: "core_graphics"
+  description: "Enables AnimatedImageDrawable to send frame rate hints to its callback for power savings."
+  bug: "454016825"
+}

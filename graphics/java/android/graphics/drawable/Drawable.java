@@ -433,6 +433,17 @@ public abstract class Drawable {
          * @param what The action being unscheduled.
          */
         void unscheduleDrawable(@NonNull Drawable who, @NonNull Runnable what);
+
+        /**
+         * Called by a Drawable to notify its container of a preferred frame rate.
+         * A value of 0 indicates the hint is no longer active.
+         *
+         * @param source The Drawable providing the hint.
+         * @param fps The suggested frame rate in frames per second. 0 indicates no hint.
+         *
+         * @hide
+         */
+        default void onFrameRateHint(@NonNull Drawable source, float fps) {}
     }
 
     /**
