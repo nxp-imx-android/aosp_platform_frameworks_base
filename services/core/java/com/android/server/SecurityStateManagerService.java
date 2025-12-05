@@ -17,9 +17,10 @@
 package com.android.server;
 
 import static android.os.SecurityStateManager.KEY_KERNEL_VERSION;
-import static android.os.SecurityStateManager.KEY_SUPPLEMENTAL_PATCHES;
+import static android.os.SecurityStateManager.KEY_SYSTEM_SUPPLEMENTAL_PATCHES;
 import static android.os.SecurityStateManager.KEY_SYSTEM_SPL;
 import static android.os.SecurityStateManager.KEY_VENDOR_SPL;
+import static android.os.SecurityStateManager.KEY_VENDOR_SUPPLEMENTAL_PATCHES;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -46,7 +47,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -57,34 +60,50 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
 
     static final String VENDOR_SECURITY_PATCH_PROPERTY_KEY = "ro.vendor.build.security_patch";
     static final Pattern KERNEL_RELEASE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+)(.*)");
-    static final String SUPPLEMENTAL_PATCH_CONFIG_FILE =
+
+    static final String SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILE =
             "/system/etc/security/supplemental_security_patches.xml";
 
+    static final String VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILE =
+            "/vendor/etc/security/supplemental_security_patches.xml";
+
+    private Map<String, String[]> mPartitionToCve = new HashMap<>();
     private SecurityPatches mSecurityPatches;
 
     private final Context mContext;
     private final PackageManager mPackageManager;
 
     public SecurityStateManagerService(Context context) {
-        this(context, SUPPLEMENTAL_PATCH_CONFIG_FILE);
+        this(
+                context,
+                SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILE,
+                VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILE);
     }
 
     @VisibleForTesting
-    SecurityStateManagerService(Context context, String configFilePath) {
+    SecurityStateManagerService(
+            Context context,
+            String systemSupplementalPatchConfigPath,
+            String vendorSupplementalPatchConfigPath) {
         mContext = context;
         mPackageManager = context.getPackageManager();
         if (Flags.supplementalSecurityPatches()) {
-            loadCvePatches(configFilePath);
+            mPartitionToCve.put(
+                    KEY_SYSTEM_SUPPLEMENTAL_PATCHES,
+                    loadCvePatches(systemSupplementalPatchConfigPath));
+            mPartitionToCve.put(
+                    KEY_VENDOR_SUPPLEMENTAL_PATCHES,
+                    loadCvePatches(vendorSupplementalPatchConfigPath));
         }
     }
 
-    private void loadCvePatches(String configFilePath) {
+    private String[] loadCvePatches(String configFilePath) {
         File configFile = new File(configFilePath);
 
         // Return if file does not exist
         if (!configFile.exists()) {
             Slog.e(TAG, "CVE patches configuration file not found.");
-            return;
+            return new String[0];
         }
 
         try (InputStream in = new FileInputStream(configFile)) {
@@ -97,19 +116,19 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
         } catch (IOException e) {
             Slog.e(TAG, "Error opening security patches configuration file.", e);
         }
-    }
 
-    private String[] getPatchedCveIds() {
+        String[] cveIdArrayList = new String[0];
+
         if (mSecurityPatches != null) {
             List<String> cveIdList =
                     mSecurityPatches.getPatch().stream()
                             .map(SecurityPatches.Patch::getId)
                             .collect(Collectors.toList());
 
-           return cveIdList.toArray(new String[0]);
+            cveIdArrayList = cveIdList.toArray(new String[0]);
         }
 
-        return new String[0];
+        return cveIdArrayList;
     }
 
     @Override
@@ -126,7 +145,9 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
         Bundle globalSecurityState = new Bundle();
 
         if (Flags.supplementalSecurityPatches()) {
-            globalSecurityState.putStringArray(KEY_SUPPLEMENTAL_PATCHES, getPatchedCveIds());
+            for (Map.Entry<String, String[]> entry : mPartitionToCve.entrySet()) {
+                globalSecurityState.putStringArray(entry.getKey(), entry.getValue());
+            }
         }
         globalSecurityState.putString(KEY_SYSTEM_SPL, Build.VERSION.SECURITY_PATCH);
         globalSecurityState.putString(KEY_VENDOR_SPL,

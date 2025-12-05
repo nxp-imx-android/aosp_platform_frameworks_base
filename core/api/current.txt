@@ -35738,9 +35738,10 @@ package android.os {
   @FlaggedApi("android.os.security_state_service") public class SecurityStateManager {
     method @FlaggedApi("android.os.security_state_service") @NonNull public android.os.Bundle getGlobalSecurityState();
     field public static final String KEY_KERNEL_VERSION = "kernel_version";
-    field @FlaggedApi("android.os.supplemental_security_patches") public static final String KEY_SUPPLEMENTAL_PATCHES = "supplemental_security_patches";
     field public static final String KEY_SYSTEM_SPL = "system_spl";
+    field @FlaggedApi("android.os.supplemental_security_patches") public static final String KEY_SYSTEM_SUPPLEMENTAL_PATCHES = "system_supplemental_security_patches";
     field public static final String KEY_VENDOR_SPL = "vendor_spl";
+    field @FlaggedApi("android.os.supplemental_security_patches") public static final String KEY_VENDOR_SUPPLEMENTAL_PATCHES = "vendor_supplemental_security_patches";
   }
 
   public final class SharedMemory implements java.io.Closeable android.os.Parcelable {
