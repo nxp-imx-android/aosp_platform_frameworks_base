@@ -16,54 +16,58 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
-import android.app.ActivityManager
-import android.graphics.Rect as AndroidRect
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect as ComposeRect
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
+import com.android.systemui.screencapture.record.largescreen.shared.model.AppWindowModel
 
 @Composable
-fun AppWindowBox(taskInfo: ActivityManager.RunningTaskInfo?, modifier: Modifier = Modifier) {
-    val density = LocalDensity.current
-    val bounds = taskInfo?.configuration?.windowConfiguration?.bounds
-    val borderStrokeWidth = 4.dp
-    val cornerRadius = 16.dp
-
+fun AppWindowBox(appWindowModel: AppWindowModel?, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().background(color = ScreenCaptureColors.scrimColor)) {
-        if (bounds != null) {
-            val boundsRect = bounds.toComposeRect()
-            val boxWidthDp = with(density) { bounds.width().toDp() }
-            val boxHeightDp = with(density) { bounds.height().toDp() }
+        appWindowModel?.let { model ->
+            val maskColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)
+            val cornerRadius = 16.dp
+            val density = LocalDensity.current
+            val cornerRadiusPx = with(density) { cornerRadius.toPx() }
 
-            Box(
-                modifier =
-                    Modifier.offset { IntOffset(bounds.left, bounds.top) }
-                        .size(boxWidthDp, boxHeightDp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.32f),
-                            RoundedCornerShape(cornerRadius),
-                        )
-            ) {}
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                // Draw the main rounded rect for the selected window
+                val taskBounds = model.taskBounds
+                drawRoundRect(
+                    color = maskColor,
+                    topLeft = Offset(taskBounds.left.toFloat(), taskBounds.top.toFloat()),
+                    size = Size(taskBounds.width().toFloat(), taskBounds.height().toFloat()),
+                    cornerRadius = CornerRadius(cornerRadiusPx),
+                )
+
+                // Cut out the overlapping rectangles
+                model.overlappingBounds.forEach { overlappingRect ->
+                    drawRoundRect(
+                        color = Color.Transparent,
+                        topLeft =
+                            Offset(overlappingRect.left.toFloat(), overlappingRect.top.toFloat()),
+                        size =
+                            Size(
+                                overlappingRect.width().toFloat(),
+                                overlappingRect.height().toFloat(),
+                            ),
+                        cornerRadius = CornerRadius(cornerRadiusPx),
+                        blendMode = BlendMode.Clear,
+                    )
+                }
+            }
         }
     }
-}
-
-private fun AndroidRect.toComposeRect(): ComposeRect {
-    return ComposeRect(
-        left = this.left.toFloat(),
-        top = this.top.toFloat(),
-        right = this.right.toFloat(),
-        bottom = this.bottom.toFloat(),
-    )
 }

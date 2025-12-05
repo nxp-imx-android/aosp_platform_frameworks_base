@@ -634,6 +634,149 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(viewModel.topTask).isEqualTo(taskOnCorrectDisplay)
         }
 
+    @Test
+    fun calculateVisibleArea_noOverlappingTasks() =
+        kosmos.runTest {
+            val task1 = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val task2 = createRunningTaskInfo(taskId = 2, bounds = Rect(60, 60, 100, 100))
+            val runningTasks = listOf(task1, task2)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(75, 75))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(task2.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds).isEmpty()
+        }
+
+    @Test
+    fun calculateVisibleArea_oneFullyOverlappingTask() =
+        kosmos.runTest {
+            val topTask = createRunningTaskInfo(taskId = 1, bounds = Rect(10, 10, 40, 40))
+            val bottomTask = createRunningTaskInfo(taskId = 2, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(topTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(5, 5))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(bottomTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds)
+                .containsExactly(topTask.configuration.windowConfiguration.bounds)
+        }
+
+    @Test
+    fun calculateVisibleArea_onePartiallyOverlappingTask() =
+        kosmos.runTest {
+            val topTask = createRunningTaskInfo(taskId = 1, bounds = Rect(30, 30, 70, 70))
+            val bottomTask = createRunningTaskInfo(taskId = 2, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(topTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(bottomTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds)
+                .containsExactly(topTask.configuration.windowConfiguration.bounds)
+        }
+
+    @Test
+    fun calculateVisibleArea_multipleOverlappingTasks() =
+        kosmos.runTest {
+            val topTask1 = createRunningTaskInfo(taskId = 1, bounds = Rect(10, 10, 20, 20))
+            val topTask2 = createRunningTaskInfo(taskId = 2, bounds = Rect(30, 30, 40, 40))
+            val nonOverlappingTask =
+                createRunningTaskInfo(taskId = 3, bounds = Rect(80, 80, 90, 90))
+            val bottomTask = createRunningTaskInfo(taskId = 4, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(topTask1, topTask2, nonOverlappingTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(bottomTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds)
+                .containsExactly(
+                    topTask1.configuration.windowConfiguration.bounds,
+                    topTask2.configuration.windowConfiguration.bounds,
+                )
+        }
+
+    @Test
+    fun calculateVisibleArea_nonVisibleTaskIsIgnored() =
+        kosmos.runTest {
+            val topTask =
+                createRunningTaskInfo(taskId = 1, bounds = Rect(10, 10, 40, 40), isVisible = false)
+            val bottomTask = createRunningTaskInfo(taskId = 2, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(topTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(bottomTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds).isEmpty()
+        }
+
+    @Test
+    fun calculateVisibleArea_taskBelowIsIgnored() =
+        kosmos.runTest {
+            val topTask = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val bottomTask = createRunningTaskInfo(taskId = 2, bounds = Rect(30, 30, 70, 70))
+            val runningTasks = listOf(topTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(topTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds).isEmpty()
+        }
+
+    @Test
+    fun calculateVisibleArea_nonIntersectingTaskIsIgnored() =
+        kosmos.runTest {
+            val topTask = createRunningTaskInfo(taskId = 1, bounds = Rect(60, 60, 100, 100))
+            val bottomTask = createRunningTaskInfo(taskId = 2, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(topTask, bottomTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            runCurrent()
+
+            val appWindowSelection = viewModel.appWindowSelection
+            assertThat(appWindowSelection?.taskBounds)
+                .isEqualTo(bottomTask.configuration.windowConfiguration.bounds)
+            assertThat(appWindowSelection?.overlappingBounds).isEmpty()
+        }
+
     private fun setupViewModel(uiParams: LargeScreenCaptureUiParameters? = null) {
         if (uiParams != null) {
             kosmos.largeScreenCaptureUiParameters = uiParams
@@ -659,10 +802,11 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         taskId: Int,
         bounds: Rect,
         displayId: Int = this.displayId,
+        isVisible: Boolean = true,
     ): ActivityManager.RunningTaskInfo {
         return ActivityManager.RunningTaskInfo().apply {
             this.taskId = taskId
-            this.isVisible = true
+            this.isVisible = isVisible
             this.displayId = displayId
             this.topActivity = ComponentName("test.pkg", "test.class")
             this.configuration.windowConfiguration.apply {
