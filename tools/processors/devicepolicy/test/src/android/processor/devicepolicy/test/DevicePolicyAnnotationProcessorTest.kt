@@ -46,13 +46,13 @@ class DevicePolicyAnnotationProcessorTest {
         // Can be used by tests that do not care about the allowedDpcTypes field.
         const val ALLOWED_DPC_TYPES_SNIPPET = """
             allowedDpcTypes = @AllowedDpcTypes(
-                    defaultDeviceOwner = DISALLOWED,
+                    deviceOwner = DISALLOWED,
                     financedDeviceOwner = DISALLOWED,
-                    profileOwner = DISALLOWED,
-                    profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                    managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                    managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
                     profileOwnerOnUser0 = DISALLOWED,
-                    profileOwnerOnUser = DISALLOWED,
-                    affiliatedProfileOwnerOnUser = DISALLOWED)
+                    unaffiliatedFullUserProfileOwner = DISALLOWED,
+                    affiliatedFullUserProfileOwner = DISALLOWED)
         """
 
         val METADATA_FILES_JAVA = setOf(

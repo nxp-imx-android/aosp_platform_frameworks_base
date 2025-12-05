@@ -63,13 +63,10 @@ public final class PolicyIdentifier<T> {
                                     "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL",
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY =
             new PolicyIdentifier<>("SIMPLE_BOOLEAN_POLICY");
 
@@ -115,13 +112,10 @@ public final class PolicyIdentifier<T> {
                                     "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)),
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
             defaultValue = ENUM_ENTRY_2,
             intDef = SimpleEnumPolicyEnum.class)
     public static final PolicyIdentifier<Integer> SIMPLE_ENUM_POLICY =
@@ -141,13 +135,10 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY =
             new PolicyIdentifier<>("SIMPLE_INTEGER_POLICY");
 
@@ -165,13 +156,11 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED
+                                            )))
     public static final PolicyIdentifier<String> SIMPLE_STRING_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_POLICY");
 
@@ -192,15 +181,12 @@ public final class PolicyIdentifier<T> {
                                             // values.
                                             allowedDpcTypes =
                                                     @AllowedDpcTypes(
-                                                            defaultDeviceOwner = DISALLOWED,
-                                                            financedDeviceOwner = DISALLOWED,
-                                                            profileOwnerOfOrganizationOwnedDevice =
+                                                            deviceOwner = DISALLOWED,
+                                                            managedProfileOwnerOfOrganizationOwnedDevice =
                                                                     DISALLOWED,
-                                                            profileOwnerOnUser0 = DISALLOWED,
-                                                            profileOwner = DISALLOWED,
-                                                            profileOwnerOnUser = DISALLOWED,
-                                                            affiliatedProfileOwnerOnUser =
-                                                                    DISALLOWED)),
+                                                            managedProfileOwnerOfPersonalOwnedDevice =
+                                                                    DISALLOWED,
+                                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
                             emptyStringAllowed = true))
     public static final PolicyIdentifier<List<String>> SIMPLE_STRING_LIST_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_LIST_POLICY");
@@ -217,13 +203,10 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = ALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_DEFAULT_DEVICE_OWNER_ALLOWED =
             new PolicyIdentifier<>("TEST_DEFAULT_DEVICE_OWNER_ALLOWED");
 
@@ -239,13 +222,11 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
+                                            deviceOwner = DISALLOWED,
                                             financedDeviceOwner = ALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_FINANCED_DEVICE_OWNER_ALLOWED =
             new PolicyIdentifier<>("TEST_FINANCED_DEVICE_OWNER_ALLOWED");
 
@@ -261,13 +242,10 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = ALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer>
             TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED =
                     new PolicyIdentifier<>(
@@ -285,13 +263,11 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
                                             profileOwnerOnUser0 = ALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_PROFILE_OWNER_ON_USER0_ALLOWED =
             new PolicyIdentifier<>("TEST_PROFILE_OWNER_ON_USER0_ALLOWED");
 
@@ -307,13 +283,10 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = ALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_PROFILE_OWNER_ALLOWED =
             new PolicyIdentifier<>("TEST_PROFILE_OWNER_ALLOWED");
 
@@ -329,13 +302,10 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = ALLOWED,
-                                            affiliatedProfileOwnerOnUser = DISALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = ALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_PROFILE_OWNER_ON_USER_ALLOWED =
             new PolicyIdentifier<>("TEST_PROFILE_OWNER_ON_USER_ALLOWED");
 
@@ -351,13 +321,11 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = DISALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = DISALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = ALLOWED)))
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED,
+                                            affiliatedFullUserProfileOwner = ALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED =
             new PolicyIdentifier<>("TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED");
 
@@ -373,13 +341,11 @@ public final class PolicyIdentifier<T> {
                             // values.
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = ALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = ALLOWED,
-                                            profileOwnerOnUser0 = DISALLOWED,
-                                            profileOwner = ALLOWED,
-                                            profileOwnerOnUser = DISALLOWED,
-                                            affiliatedProfileOwnerOnUser = ALLOWED)))
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED,
+                                            affiliatedFullUserProfileOwner = ALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_MULTIPLE_DPC_TYPES_ALLOWED =
             new PolicyIdentifier<>("TEST_MULTIPLE_DPC_TYPES_ALLOWED");
 }

@@ -375,28 +375,28 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     private fun convertDpcTypes(input: AllowedDpcTypes): List<PolicyMetadata.DpcType> {
         var result = mutableListOf<PolicyMetadata.DpcType>()
 
-        if (input.defaultDeviceOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER)
+        if (input.deviceOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER)
         }
         if (input.financedDeviceOwner == AllowedDpcTypes.ALLOWED) {
             result.add(PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER)
         }
-        if (input.profileOwnerOfOrganizationOwnedDevice == AllowedDpcTypes.ALLOWED) {
+        if (input.managedProfileOwnerOfOrganizationOwnedDevice == AllowedDpcTypes.ALLOWED) {
             result.add(
-                PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
             )
         }
         if (input.profileOwnerOnUser0 == AllowedDpcTypes.ALLOWED) {
             result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0)
         }
-        if (input.profileOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER)
+        if (input.managedProfileOwnerOfPersonalOwnedDevice == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE)
         }
-        if (input.profileOwnerOnUser == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER)
+        if (input.unaffiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER)
         }
-        if (input.affiliatedProfileOwnerOnUser == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER)
+        if (input.affiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
         }
 
         return result

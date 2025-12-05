@@ -33,16 +33,13 @@ public @interface AllowedDpcTypes {
      */
     public static final int DISALLOWED = 2;
 
-    public int defaultDeviceOwner();
-    public int financedDeviceOwner();
-    public int profileOwnerOfOrganizationOwnedDevice();
-    public int profileOwnerOnUser0();
-    /**
-     * When set to {@link #ALLOWED}, the policy can be set by a profile owner.
-     * Note that this only applies to profile owners that fall not in any of the other
-     * profile owner categories, for example affiliated profile owners are not covered by this.
-     */
-    public int profileOwner();
-    public int profileOwnerOnUser();
-    public int affiliatedProfileOwnerOnUser();
+    public int deviceOwner();
+    public int managedProfileOwnerOfOrganizationOwnedDevice();
+    public int managedProfileOwnerOfPersonalOwnedDevice();
+    public int unaffiliatedFullUserProfileOwner();
+
+    // Niche DPC types. You most likely don't need to use these.
+    public int financedDeviceOwner() default DISALLOWED;
+    public int profileOwnerOnUser0() default DISALLOWED;
+    public int affiliatedFullUserProfileOwner() default DISALLOWED;
 }
