@@ -37,6 +37,7 @@ import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TR
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_A11Y_BUTTON_CLICKABLE;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_A11Y_BUTTON_LONG_CLICKABLE;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -59,6 +60,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -76,6 +78,7 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shared.Flags;
@@ -400,17 +403,15 @@ public final class NavBarHelper implements
         mEdgeBackGestureHandler.onConfigurationChanged(newConfig);
     }
 
-    private int getNumOfA11yShortcutTargetsForNavSystem() {
+    @MainThread
+    private int getShortcutType() {
         final int buttonMode = mAccessibilityButtonModeObserver.getCurrentAccessibilityButtonMode();
-        final int shortcutType;
-
         if (mNavBarMode == NAV_BAR_MODE_GESTURAL) {
-            shortcutType = GESTURE;
+            return GESTURE;
         } else {
-            shortcutType = buttonMode == ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
+            return buttonMode == ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
                     ? SOFTWARE : DEFAULT;
         }
-        return mAccessibilityManager.getAccessibilityShortcutTargets(shortcutType).size();
     }
 
     /**
@@ -419,15 +420,30 @@ public final class NavBarHelper implements
      * {@link Secure#ACCESSIBILITY_BUTTON_MODE_GESTURE}, otherwise it is reset to 0.
      */
     @VisibleForTesting
+    @SuppressLint("MissingPermission")
     void updateA11yState() {
+        final int shortcutType = getShortcutType();
+        if (SceneContainerFlag.isEnabled()) {
+            mBgHandler.post(() -> {
+                // AccessibilityManager#getAccessibilityShortcutTargets is a binder call, so put it
+                // on the background.
+                int clickableServices = mAccessibilityManager
+                        .getAccessibilityShortcutTargets(shortcutType).size();
+                mMainExecutor.execute(() -> onNumClickableServicesReceived(clickableServices));
+            });
+        } else {
+            int clickableServices = mAccessibilityManager
+                    .getAccessibilityShortcutTargets(shortcutType).size();
+            onNumClickableServicesReceived(clickableServices);
+        }
+    }
+
+    private void onNumClickableServicesReceived(int clickableServices) {
         final long prevState = mA11yButtonState;
-        final boolean clickable;
-        final boolean longClickable;
-        int clickableServices = getNumOfA11yShortcutTargetsForNavSystem();
-        clickable = clickableServices >= 1;
+        final boolean clickable = clickableServices >= 1;
         // `longClickable` is used to determine whether to pop up the accessibility chooser
         // dialog or not, and it’s also only for multiple services.
-        longClickable = clickableServices >= 2;
+        final boolean longClickable = clickableServices >= 2;
         mA11yButtonState = (clickable ? SYSUI_STATE_A11Y_BUTTON_CLICKABLE : 0)
                 | (longClickable ? SYSUI_STATE_A11Y_BUTTON_LONG_CLICKABLE : 0);
 
