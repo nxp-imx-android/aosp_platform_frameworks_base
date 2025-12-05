@@ -302,7 +302,12 @@ fun ContentScope.ExpandedShadeHeader(
                     .defaultMinSize(minHeight = ShadeHeader.Dimensions.ExpandedHeight),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                Clock(onClick = viewModel::onClockClicked, scale = 2.57f, textColor = textColor)
+                Clock(
+                    onClick = viewModel::onClockClicked,
+                    scale = 2.57f,
+                    textColor = textColor,
+                    modifier = Modifier.sysuiResTag("expanded_header_clock"),
+                )
                 Box(
                     modifier =
                         Modifier.element(ShadeHeader.Elements.ShadeCarrierGroup).fillMaxWidth()
