@@ -2331,6 +2331,10 @@ final class ActivityRecord extends WindowToken {
                 // Add a reference before removing snapshot from cache.
                 snapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                 mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
+            } else if (from != null && (mActivityComponent.equals(from.mActivityComponent)
+                    || from.mStartingData instanceof SplashScreenStartingData)
+                    && transferStartingWindow(from)) {
+                return true;
             }
             return createSnapshot(snapshot, typeParameter);
         }
