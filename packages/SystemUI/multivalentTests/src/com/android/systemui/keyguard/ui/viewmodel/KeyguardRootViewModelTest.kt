@@ -445,7 +445,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
 
     @Test
     @EnableSceneContainer
-    fun alpha_transitionToHub_isZero_scene_container() =
+    fun alpha_transitionToHub_isDefault_scene_container() =
         testScope.runTest {
             val alpha by collectLastValue(underTest.alpha(viewState))
 
@@ -465,7 +465,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
                 testScope,
             )
 
-            assertThat(alpha).isEqualTo(0f)
+            assertThat(alpha).isEqualTo(1f)
         }
 
     @Test
