@@ -347,20 +347,6 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
-    public boolean isHandoffEnabled(IBinder token) {
-        final long origId = Binder.clearCallingIdentity();
-        boolean isHandoffEnabled = false;
-        synchronized (mGlobalLock) {
-            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
-            if (r != null) {
-                isHandoffEnabled = r.isHandoffEnabled();
-            }
-        }
-        Binder.restoreCallingIdentity(origId);
-        return isHandoffEnabled;
-    }
-
-    @Override
     @Nullable
     public HandoffActivityParams getHandoffActivityParams(IBinder token) {
         final long origId = Binder.clearCallingIdentity();
