@@ -19,6 +19,7 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.os.Process.INVALID_PID;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
+import static com.android.server.wm.AppCompatCameraPolicy.TAG_CAMERA_COMPAT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
@@ -247,7 +248,8 @@ class AppCompatCameraStateStrategyForTask {
         });
 
         if (activitiesOfPackageWhichOpenedCamera.isEmpty()) {
-            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT, "%s: Cannot find camera activity.", TAG);
+            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT, "%s: Cannot find camera activity.",
+                    TAG_CAMERA_COMPAT);
             return null;
         }
 
@@ -258,7 +260,7 @@ class AppCompatCameraStateStrategyForTask {
         // Return null if we cannot determine which activity opened camera. This is preferred to
         // applying treatment to the wrong activity.
         ProtoLog.w(WM_DEBUG_CAMERA_COMPAT, "%s: Cannot determine which activity opened camera.",
-                TAG);
+                TAG_CAMERA_COMPAT);
         return null;
     }
 

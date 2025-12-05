@@ -30,6 +30,7 @@ import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Display.TYPE_INTERNAL;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
+import static com.android.server.wm.AppCompatCameraPolicy.TAG_CAMERA_COMPAT;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.DisplayRotationReversionController.REVERSION_TYPE_CAMERA_COMPAT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -183,7 +184,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 "%s: Display id=%d is ignoring all orientation requests, camera is active "
                         + "and the top activity is eligible for force rotation, return %s,"
                         + "portrait activity: %b, is natural orientation portrait: %b.",
-                TAG,
+                TAG_CAMERA_COMPAT,
                 topActivity.getDisplayContent().mDisplayId, screenOrientationToString(orientation),
                 isPortraitActivity, isNaturalDisplayOrientationPortrait);
         return orientation;
@@ -233,7 +234,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 REVERSION_TYPE_CAMERA_COMPAT)) {
             ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                     "%s: Reverting orientation after camera compat force rotation",
-                    TAG);
+                    TAG_CAMERA_COMPAT);
             // Reset last orientation source since we have reverted the orientation.
             mDisplayContent.mLastOrientationSource = null;
         }
@@ -250,7 +251,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                     REVERSION_TYPE_CAMERA_COMPAT);
             ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                     "%s: Saving original orientation before camera compat, last orientation is %d",
-                    TAG, mDisplayContent.getLastOrientation());
+                    TAG_CAMERA_COMPAT, mDisplayContent.getLastOrientation());
         }
     }
 
@@ -344,7 +345,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         final ActivityRecord cameraActivity = getTopActivity(cameraTask);
         if (cameraActivity == null) {
             ProtoLog.w(WM_DEBUG_CAMERA_COMPAT,
-                    "%s: Camera activity is null in onCameraOpened().", TAG);
+                    "%s: Camera activity is null in onCameraOpened().", TAG_CAMERA_COMPAT);
             return;
         }
 
@@ -370,7 +371,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 ProtoLog.e(WM_DEBUG_CAMERA_COMPAT,
                         "%s: Multi-window toast not shown as "
                                 + "package '%s' cannot be found.",
-                        TAG, cameraActivity.packageName);
+                        TAG_CAMERA_COMPAT, cameraActivity.packageName);
             }
         }
     }
@@ -403,7 +404,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                         "%s: Display id=%d is notified that camera is closed but activity is"
                                 + " still refreshing. Rescheduling an update.",
-                        TAG, mDisplayContent.mDisplayId);
+                        TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId);
                 return false;
             }
         }
@@ -419,7 +420,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
         ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                 "%s: Display id=%d is notified that Camera is closed, updating rotation.",
-                TAG, mDisplayContent.mDisplayId);
+                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId);
         // Checking whether an activity in fullscreen rather than the task as this camera compat
         // treatment doesn't cover activity embedding.
         if (topActivity.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {

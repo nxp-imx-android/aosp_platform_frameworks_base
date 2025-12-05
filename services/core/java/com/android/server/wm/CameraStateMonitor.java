@@ -16,6 +16,7 @@
 package com.android.server.wm;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
+import static com.android.server.wm.AppCompatCameraPolicy.TAG_CAMERA_COMPAT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
@@ -139,7 +140,7 @@ class CameraStateMonitor {
         // quickly closed and reopened.
         ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                 "%s: Display id=%d is notified that Camera %s is open for package %s",
-                TAG, mDisplayContent.mDisplayId, cameraId, packageName);
+                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId, cameraId, packageName);
         final CameraAppInfo cameraAppInfo = mAppCompatCameraStateStrategy.trackOnCameraOpened(
                 cameraId, packageName);
         mHandler.postDelayed(() -> {
@@ -162,7 +163,7 @@ class CameraStateMonitor {
     private void notifyCameraClosedWithDelay(@NonNull String cameraId) {
         ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                 "%s: Display id=%d is notified that Camera %s is closed.",
-                TAG, mDisplayContent.mDisplayId, cameraId);
+                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId, cameraId);
         scheduleRemoveCameraId(cameraId);
     }
 
