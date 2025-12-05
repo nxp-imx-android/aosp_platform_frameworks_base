@@ -2096,7 +2096,7 @@ public final class SystemServiceRegistry {
                 TelecomDependencies.registerServiceWrapper();
             }
 
-            if (com.android.webapp.flags.Flags.enableWebAppService()) {
+            if (com.android.webapp.flags.Flags.enableWebAppServiceV2()) {
                 WebAppFrameworkInitializer.registerServiceWrappers();
             }
 
