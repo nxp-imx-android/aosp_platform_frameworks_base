@@ -382,7 +382,7 @@ private fun Card(
             useModifierBasedImplementation = true,
         ) {
             key(stlState) {
-                SceneTransitionLayout(state = stlState) {
+                SceneTransitionLayout(state = stlState, debugName = "Media Card") {
                     scene(Media.Scenes.Default) {
                         CardForeground(
                             expandable = it,

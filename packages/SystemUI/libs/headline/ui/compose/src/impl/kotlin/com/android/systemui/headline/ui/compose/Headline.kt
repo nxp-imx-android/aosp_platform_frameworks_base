@@ -78,6 +78,7 @@ fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
             state = viewModel.state,
             transitions = HeadlineTransitions,
             modifier = modifier,
+            debugName = "Headline",
         ) {
             scene(GoneScene) { GoneScene() }
 

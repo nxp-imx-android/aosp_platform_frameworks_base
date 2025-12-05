@@ -722,7 +722,7 @@ private fun FoldAware(
         }
     }
 
-    SceneTransitionLayout(state, modifier = modifier) {
+    SceneTransitionLayout(state, modifier = modifier, debugName = "FoldAware Bouncer") {
         scene(SceneKeys.ContiguousSceneKey) {
             FoldableScene(
                 aboveFold = aboveFold,

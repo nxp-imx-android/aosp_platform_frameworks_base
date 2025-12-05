@@ -119,13 +119,14 @@ class NestedElementTransformationTest {
                 scene(TestScenes.SceneB) {
                     Box(Modifier.fillMaxSize()) {
                         TestElement(elementVariant0B)
-                        NestedSceneTransitionLayout(states[1], modifier = Modifier) {
+                        NestedSceneTransitionLayout(states[1], modifier = Modifier, "NestedStl") {
                             scene(Scenes.NestedSceneA) {
                                 Box(Modifier.fillMaxSize()) {
                                     TestElement(elementVariant1A)
                                     NestedSceneTransitionLayout(
                                         state = states[2],
                                         modifier = Modifier,
+                                        debugName = "NestedNestedStl",
                                     ) {
                                         scene(Scenes.NestedNestedSceneA) {
                                             TestElement(elementVariant2A)

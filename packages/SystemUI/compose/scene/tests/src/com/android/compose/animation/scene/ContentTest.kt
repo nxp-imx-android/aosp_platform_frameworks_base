@@ -136,7 +136,7 @@ class ContentTest {
             touchSlop = LocalViewConfiguration.current.touchSlop
             SceneTransitionLayout(state) {
                 scene(SceneA, mapOf(Swipe.Down to SceneB)) {
-                    NestedSceneTransitionLayout(nestedState, Modifier) {
+                    NestedSceneTransitionLayout(nestedState, Modifier, debugName = "NestedStl") {
                         scene(SceneC, mapOf(Swipe.Down to SceneD)) {
                             Box(
                                 Modifier.fillMaxSize()
@@ -287,7 +287,7 @@ class ContentTest {
                     scene(outerSceneA, alwaysCompose = true) {
                         Visibility { outerSceneAVisible = it }
 
-                        NestedSceneTransitionLayout(innerState, Modifier) {
+                        NestedSceneTransitionLayout(innerState, Modifier, "NestedStl") {
                             scene(innerSceneA, alwaysCompose = true) {
                                 Visibility { innerSceneAVisible = it }
                             }
@@ -394,10 +394,10 @@ class ContentTest {
             SceneTransitionLayout(outerState) {
                 scene(SceneA) {
                     OnLayoutState { outerStateFromScope = it }
-                    NestedSceneTransitionLayout(middleState, Modifier) {
+                    NestedSceneTransitionLayout(middleState, Modifier, "NestedStl") {
                         scene(SceneB) {
                             OnLayoutState { middleStateFromScope = it }
-                            NestedSceneTransitionLayout(innerState, Modifier) {
+                            NestedSceneTransitionLayout(innerState, Modifier, "NestedStl") {
                                 scene(SceneC) {
                                     OnLayoutState { innerStateFromScope = it }
                                     Box(Modifier.fillMaxSize())
