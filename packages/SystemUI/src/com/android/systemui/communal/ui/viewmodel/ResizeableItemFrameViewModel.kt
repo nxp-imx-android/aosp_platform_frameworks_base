@@ -20,7 +20,7 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.coroutineScopeTraced as coroutineScope
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -53,7 +53,8 @@ data class ResizeInfo(
     val isExpanding = spans > 0
 }
 
-class ResizeableItemFrameViewModel : ExclusiveActivatable() {
+class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivations = true) {
+
     data class GridLayoutInfo(
         val currentRow: Int,
         val currentSpan: Int,
@@ -119,7 +120,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     /** Handle expansion to the next anchor. Tries bottom handle first. */
-    suspend fun expandToNextAnchor() {
+    fun expandToNextAnchor() {
         if (canExpand(ResizeHandle.BOTTOM)) {
             expand(ResizeHandle.BOTTOM)
         } else if (canExpand(ResizeHandle.TOP)) {
@@ -128,7 +129,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     /** Handle shrinking to the next anchor. Tries top handle first. */
-    suspend fun shrinkToNextAnchor() {
+    fun shrinkToNextAnchor() {
         if (canShrink(ResizeHandle.TOP)) {
             shrink(ResizeHandle.TOP)
         } else if (canShrink(ResizeHandle.BOTTOM)) {
@@ -153,34 +154,20 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     /** Handle expansion to the next anchor from a specific handle. */
-    suspend fun expand(handle: ResizeHandle) {
-        when (handle) {
-            ResizeHandle.TOP -> {
-                getNextAnchor(state = topResizeState, moveUp = true)?.let {
-                    topResizeState.snapTo(it)
-                }
-            }
-            ResizeHandle.BOTTOM -> {
-                getNextAnchor(state = bottomResizeState, moveUp = false)?.let {
-                    bottomResizeState.snapTo(it)
-                }
-            }
-        }
-    }
+    fun expand(handle: ResizeHandle) = performResize(handle, isExpand = true)
 
     /** Handle shrinking to the next anchor from a specific handle. */
-    suspend fun shrink(handle: ResizeHandle) {
-        when (handle) {
-            ResizeHandle.TOP -> {
-                getNextAnchor(state = topResizeState, moveUp = false)?.let {
-                    topResizeState.snapTo(it)
+    fun shrink(handle: ResizeHandle) = performResize(handle, isExpand = false)
+
+    private fun performResize(handle: ResizeHandle, isExpand: Boolean) {
+        enqueueOnActivatedScope {
+            val (state, moveUp) =
+                if (handle == ResizeHandle.TOP) {
+                    topResizeState to isExpand
+                } else {
+                    bottomResizeState to !isExpand
                 }
-            }
-            ResizeHandle.BOTTOM -> {
-                getNextAnchor(state = bottomResizeState, moveUp = true)?.let {
-                    bottomResizeState.snapTo(it)
-                }
-            }
+            getNextAnchor(state = state, moveUp = moveUp)?.let { state.snapTo(it) }
         }
     }
 
