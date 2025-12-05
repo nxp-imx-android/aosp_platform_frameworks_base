@@ -62,6 +62,9 @@ per-file AndroidForwardingOS.java = file:RESOURCES_OWNERS
 # AppInteraction
 per-file *AppInteraction* = file:/core/java/android/app/appfunctions/OWNERS
 
+# App Lock
+per-file *AppLock* = file:/core/java/android/content/pm/APP_LOCK_OWNERS
+
 # AppOps
 per-file *AppOp* = file:/core/java/android/permission/OWNERS
 

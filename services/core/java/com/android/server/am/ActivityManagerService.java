@@ -257,6 +257,7 @@ import android.app.ActivityTaskManager.RootTaskInfo;
 import android.app.ActivityThread;
 import android.app.AnrController;
 import android.app.AppGlobals;
+import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.AttributionFlags;
 import android.app.AppOpsManagerInternal.CheckOpsDelegate;
@@ -1554,6 +1555,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     UriGrantsManagerInternal mUgmInternal;
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public final ActivityManagerInternal mInternal;
+    @Nullable private final AppLockLocalService mAppLockLocalService;
     final ActivityThread mSystemThread;
 
     final UidObserverController mUidObserverController;
@@ -2511,6 +2513,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         mFactoryTest = FACTORY_TEST_OFF;
         mUgmInternal = LocalServices.getService(UriGrantsManagerInternal.class);
         mInternal = new LocalService();
+        mAppLockLocalService =
+                (android.security.Flags.appLockApis() && android.security.Flags.appLockCore())
+                        ? new AppLockLocalService(this) : null;
         mPendingStartActivityUids = new PendingStartActivityUids();
         mUseFifoUiScheduling = false;
         mBroadcastQueue = injector.getBroadcastQueue(this);
@@ -2629,6 +2634,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         mInternal = new LocalService();
+        mAppLockLocalService =
+                (android.security.Flags.appLockApis() && android.security.Flags.appLockCore())
+                        ? new AppLockLocalService(this) : null;
         mPendingStartActivityUids = new PendingStartActivityUids();
         mTraceErrorLogger = new TraceErrorLogger();
         mComponentAliasResolver = new ComponentAliasResolver(this);
@@ -2674,6 +2682,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         mProcessStats.publish();
         Slog.d("AppOps", "AppOpsService published");
         LocalServices.addService(ActivityManagerInternal.class, mInternal);
+        if (mAppLockLocalService != null) {
+            LocalServices.addService(AppLockInternal.class, mAppLockLocalService);
+        }
         LocalManagerRegistry.addManager(ActivityManagerLocal.class,
                 (ActivityManagerLocal) mInternal);
         mActivityTaskManager.onActivityManagerInternalAdded();
