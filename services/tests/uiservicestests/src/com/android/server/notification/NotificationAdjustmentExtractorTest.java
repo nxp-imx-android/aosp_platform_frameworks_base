@@ -42,15 +42,13 @@ import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.Adjustment;
 import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
 
-import com.android.server.UiServiceTestCase;
+import androidx.test.runner.AndroidJUnit4;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
+import com.android.server.UiServiceTestCase;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,20 +58,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@RunWith(ParameterizedAndroidJunit4.class)
+@RunWith(AndroidJUnit4.class)
 public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(DEVICE_DEFAULT);
-
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS);
-    }
-
-    public NotificationAdjustmentExtractorTest(FlagsParameterization flags) {
-        mSetFlagsRule.setFlagsParameterization(flags);
-    }
 
     @Test
     public void testExtractsAdjustment() {
@@ -144,7 +130,6 @@ public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS})
     public void testClassificationAdjustments_noisy_notImmediately() {
         NotificationChannel social = new NotificationChannel(
                 SOCIAL_MEDIA_ID, "social", IMPORTANCE_LOW);
@@ -168,7 +153,6 @@ public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS})
     public void testClassificationAdjustments_noisy_okAfterDelay() {
         NotificationChannel social = new NotificationChannel(
                 SOCIAL_MEDIA_ID, "social", IMPORTANCE_LOW);

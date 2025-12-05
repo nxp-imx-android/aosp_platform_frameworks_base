@@ -413,8 +413,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4.class)
 @RunWithLooper
+@RunWith(ParameterizedAndroidJunit4.class)
 @SuppressLint("GuardedBy") // It's ok for this test to access guarded methods from the service.
 public class NotificationManagerServiceTest extends UiServiceTestCase {
     private static final String TEST_CHANNEL_ID = "NotificationManagerServiceTestChannelId";
@@ -643,7 +643,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
