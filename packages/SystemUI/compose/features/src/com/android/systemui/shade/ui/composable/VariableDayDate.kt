@@ -40,19 +40,24 @@ fun VariableDayDate(
         modifier = modifier,
     ) { measurables, constraints ->
         check(measurables.size == 2)
-        val longerMeasurable = measurables[0]
-        val shorterMeasurable = measurables[1]
 
         // 1. Measure with infinite constraint to determine the natural desired width of the text.
         val unconstrained = Constraints(maxHeight = constraints.maxHeight)
 
+        // We MUST measure both measurables even if the first one fits.
+        // Conditional measurement causes issues with LookaheadScope: if logic diverges between the
+        // lookahead pass and the approach pass (e.g. during animations), both measurables need to
+        // have been measured to avoid crashes or layout bugs (see b/463395847).
+        val longer = measurables[0].measure(unconstrained)
+        val shorter = measurables[1].measure(unconstrained)
+
         // 2. Decide which placeable to use.
         val selectedPlaceable =
-            // Try the longer option first.
-            longerMeasurable.measure(unconstrained).takeIf { it.fitsWithin(constraints) }
-
-                // If the longer one didn't fit, try the shorter one.
-                ?: shorterMeasurable.measure(unconstrained).takeIf { it.fitsWithin(constraints) }
+            when {
+                longer.fitsWithin(constraints) -> longer
+                shorter.fitsWithin(constraints) -> shorter
+                else -> null
+            }
 
         if (selectedPlaceable == null) {
             // Neither fits, render nothing.
