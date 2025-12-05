@@ -495,6 +495,8 @@ public class LogicalDisplayTest {
 
     @Test
     public void testSetCanHostTasks_nonDefaultNormalDisplay() {
+        // create a non-default display that allows content mode switch
+        mDisplayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
         mLogicalDisplay =
                 new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
                         mDisplayInfoCacheMocked);
@@ -572,6 +574,21 @@ public class LogicalDisplayTest {
                 new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
                         mDisplayInfoCacheMocked);
         mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        mLogicalDisplay.setCanHostTasksLocked(true);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+
+        mLogicalDisplay.setCanHostTasksLocked(false);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+    }
+
+    @Test
+    public void testSetCanHostTasks_doesNotAllowContentModeSwitch() {
+        // Disable FLAG_ALLOWS_CONTENT_MODE_SWITCH
+        mDisplayDeviceInfo.flags = 0;
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
+                        mDisplayInfoCacheMocked);
 
         mLogicalDisplay.setCanHostTasksLocked(true);
         assertTrue(mLogicalDisplay.canHostTasksLocked());

@@ -39,6 +39,7 @@ import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_CHA
 import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_REMOVED;
 import static com.android.server.display.DisplayDeviceInfo.DIFF_EVERYTHING;
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
+import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
@@ -1325,7 +1326,7 @@ public class LogicalDisplayMapperTest {
         DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
                 FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
         DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
-                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY | FLAG_ALLOWS_CONTENT_MODE_SWITCH);
 
         LogicalDisplay display1 = add(device1);
         display1.setCanHostTasksLocked(true);
