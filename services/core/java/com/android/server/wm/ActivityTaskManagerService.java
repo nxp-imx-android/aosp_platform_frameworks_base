@@ -1250,6 +1250,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
+        public void onUserStopping(@NonNull TargetUser user) {
+            final PersisterQueue persisterQueue;
+            synchronized (mService.getGlobalLock()) {
+                persisterQueue = mService.mTaskSupervisor.mPersisterQueue;
+            }
+            persisterQueue.flush();
+        }
+
+        @Override
         public void onUserStopped(@NonNull TargetUser user) {
             synchronized (mService.getGlobalLock()) {
                 mService.mTaskSupervisor.mLaunchParamsPersister

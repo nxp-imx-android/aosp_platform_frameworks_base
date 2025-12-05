@@ -6011,6 +6011,7 @@ public class WindowManagerService extends IWindowManager.Stub
         if (mAppLockController != null) {
             mAppLockController.systemReady();
         }
+        mAppCompatConfiguration.onSystemReady();
     }
 
 
