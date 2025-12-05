@@ -18,7 +18,6 @@ package com.android.ravenwoodtest.runnercallbacktests;
 import static org.junit.Assume.assumeTrue;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -36,11 +35,11 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -48,7 +47,6 @@ import platform.test.runner.parameterized.Parameters;
  * error situations in places such as @BeforeClass / @AfterClass / Constructors, which are
  * out of test method bodies.
  */
-@NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
 
     /**

@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Looper;
-import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner;
 import android.platform.test.ravenwood.RavenwoodConfigPrivate;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker;
@@ -30,6 +29,7 @@ import android.util.Log;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -68,7 +68,6 @@ import java.util.function.BiConsumer;
  * junit-params.
  */
 @RunWith(JUnitParamsRunner.class)
-@NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public abstract class RavenwoodRunnerTestBase {
     private static final String TAG = "RavenwoodRunnerTestBase";
 
