@@ -299,7 +299,7 @@ public final class CompanionDeviceManager {
             MESSAGE_ONEWAY_PING, MESSAGE_REQUEST_REMOTE_AUTHENTICATION,
             MESSAGE_REQUEST_CONTEXT_SYNC, MESSAGE_ONEWAY_TASK_CONTINUITY,
             MESSAGE_REQUEST_PERMISSION_RESTORE, MESSAGE_REQUEST_METADATA_UPDATE,
-            MESSAGE_ONEWAY_TO_WEARABLE})
+            MESSAGE_REQUEST_TRUSTED_DEVICE, MESSAGE_ONEWAY_TO_WEARABLE})
     public @interface MessageType {}
 
 
@@ -363,6 +363,12 @@ public final class CompanionDeviceManager {
      */
     @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_METADATA_UPDATE = 0x63776885; // ?MDU
+    /**
+     * Message header assigned to the trusted devices verification request.
+     *
+     * @hide
+     */
+    public static final int MESSAGE_REQUEST_TRUSTED_DEVICE = 0x63846886; // ?TDV
     /**
      * Message header assigned to the one-way message sent from the wearable device.
      *

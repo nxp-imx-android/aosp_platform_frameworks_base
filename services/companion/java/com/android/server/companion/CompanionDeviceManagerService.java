@@ -120,6 +120,8 @@ import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.devicepresence.ObservableUuidStore;
+import com.android.server.companion.devicetrust.TrustedDevicesManager;
+import com.android.server.companion.devicetrust.TrustedDevicesStore;
 import com.android.server.companion.transport.CompanionTransportManager;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -141,6 +143,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final AssociationStore mAssociationStore;
     private final SystemDataTransferRequestStore mSystemDataTransferRequestStore;
     private final ObservableUuidStore mObservableUuidStore;
+    private final TrustedDevicesStore mTrustedDevicesStore;
 
     private final CompanionExemptionProcessor mCompanionExemptionProcessor;
     private final AssociationRequestsProcessor mAssociationRequestsProcessor;
@@ -153,6 +156,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final CrossDeviceSyncController mCrossDeviceSyncController;
     private final LocalMetadataStore mLocalMetadataStore;
     private final DataSyncProcessor mDataSyncProcessor;
+    private final TrustedDevicesManager mTrustedDevicesManager;
     private final ActionRequestProcessor mActionRequestProcessor;
     private final Object mPackageLock = new Object();
 
@@ -180,6 +184,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mSystemDataTransferRequestStore = new SystemDataTransferRequestStore();
         mObservableUuidStore = new ObservableUuidStore();
         mLocalMetadataStore = new LocalMetadataStore();
+        mTrustedDevicesStore = new TrustedDevicesStore();
 
         // Init processors
         mAssociationRequestsProcessor = new AssociationRequestsProcessor(context,
@@ -206,7 +211,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mDisassociationProcessor = new DisassociationProcessor(context, activityManager,
                 mAssociationStore, packageManagerInternal, mDevicePresenceProcessor,
                 mCompanionAppBinder, mSystemDataTransferRequestStore, mTransportManager,
-                notificationManager);
+                mTrustedDevicesStore, notificationManager);
 
         mSystemDataTransferProcessor = new SystemDataTransferProcessor(this,
                 packageManagerInternal, mAssociationStore,
@@ -214,6 +219,9 @@ public class CompanionDeviceManagerService extends SystemService {
 
         mDataSyncProcessor = new DataSyncProcessor(mAssociationStore, mLocalMetadataStore,
                 mTransportManager);
+
+        mTrustedDevicesManager = new TrustedDevicesManager(context, mAssociationStore,
+                mTrustedDevicesStore, mTransportManager);
 
         // TODO(b/279663946): move context sync to a dedicated system service
         mCrossDeviceSyncController = new CrossDeviceSyncController(getContext(), mTransportManager);
@@ -266,8 +274,13 @@ public class CompanionDeviceManagerService extends SystemService {
     @Override
     public void onUserUnlocked(@NonNull TargetUser user) {
         Slog.i(TAG, "onUserUnlocked() user=" + user);
+        final int userId = user.getUserIdentifier();
+
         // Notify and bind the app after the phone is unlocked.
-        mDevicePresenceProcessor.sendDevicePresenceEventOnUnlocked(user.getUserIdentifier());
+        mDevicePresenceProcessor.sendDevicePresenceEventOnUnlocked(userId);
+
+        // Load user's session keys from disk.
+        mTrustedDevicesStore.readSessionKeysForUser(userId);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> mCompanionExemptionProcessor.updateAutoRevokeExemptions(
