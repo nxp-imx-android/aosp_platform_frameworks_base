@@ -929,7 +929,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
      * @return whether disabled state was changed.
      */
     boolean setDisabled(boolean disabled) {
-        return mDisabled.compareAndSet(!disabled, disabled);
+        final boolean changed = mDisabled.compareAndSet(!disabled, disabled);
+        if (changed) {
+            Trace.instant(
+                    Trace.TRACE_TAG_VIEW,
+                    disabled ? "contentCaptureDisabled" : "contentCaptureEnabled");
+        }
+
+        return changed;
     }
 
     @Override
