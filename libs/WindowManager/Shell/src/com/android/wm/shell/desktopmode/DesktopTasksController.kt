@@ -615,6 +615,19 @@ class DesktopTasksController(
         }
     }
 
+    /**
+     * Returns a list of tasks that should be excluded from display restoration on a projected
+     * display device. This ultimately ends up being focused non-desktop tasks and pipped task.
+     */
+    fun getExcludedFromProjectedRestoreTasks(displayId: Int, userId: Int): List<RunningTaskInfo> {
+        val list = mutableListOf<RunningTaskInfo>()
+        list.addAll(getFocusedNonDesktopTasks(displayId, userId))
+        pipTransitionState.get().pipTaskInfo?.let { pipTaskInfo ->
+            if (pipTaskInfo is RunningTaskInfo) list.add(pipTaskInfo)
+        }
+        return list
+    }
+
     /** Moves a desktop task into fullscreen mode. */
     private fun moveDesktopTaskToFullscreen(
         task: RunningTaskInfo,
@@ -1202,8 +1215,15 @@ class DesktopTasksController(
         var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
+        // Exclude tasks from restore on projected devices.
         val excludedTasks =
-            getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
+            if (desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
+                listOf()
+            } else {
+                getExcludedFromProjectedRestoreTasks(DEFAULT_DISPLAY, userId).map { task ->
+                    task.taskId
+                }
+            }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
         val globallyFocusedTask =
             shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
@@ -1231,8 +1251,15 @@ class DesktopTasksController(
                     )
                 }
 
+                val pipTask = pipTransitionState.getOrNull()?.pipTaskInfo
                 preservedTaskIds.asReversed().forEach { taskId ->
                     if (!excludedTasks.contains(taskId)) {
+                        if (taskId == pipTask?.taskId) {
+                            mPipScheduler.scheduleExitPipViaExpand(
+                                /* wasVisible= */ true,
+                                displayId,
+                            )
+                        }
                         addRestoreTaskToDeskChanges(
                                 wct = wct,
                                 deskId = newDeskId,

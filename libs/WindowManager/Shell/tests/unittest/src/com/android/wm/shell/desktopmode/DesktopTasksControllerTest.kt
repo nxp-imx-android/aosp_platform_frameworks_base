@@ -10629,6 +10629,111 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreTaskToDisplay_withPipTaskOnExtendedDevice_schedulesExitPip() =
+        testScope.runTest {
+            // Extended device
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+            val taskBounds = Rect(400, 400, 1600, 900)
+            val deskTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = taskBounds,
+                )
+            // Disconnect, preserve display.
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected to find preserved display.")
+            // Move task to pip post-disconnect.
+            whenever(pipTransitionState.pipTaskInfo).thenReturn(deskTask)
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            runCurrent()
+
+            verify(pipScheduler).scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreTaskToDisplay_withPipTaskOnProjectedDevice_doesNotExitPip() =
+        testScope.runTest {
+            // Projected device
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+            val taskBounds = Rect(400, 400, 1600, 900)
+            val deskTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = taskBounds,
+                )
+            // Disconnect, preserve display.
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected to find preserved display.")
+            // Move task to pip post-disconnect.
+            whenever(pipTransitionState.pipTaskInfo).thenReturn(deskTask)
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            runCurrent()
+
+            verify(pipScheduler, never())
+                .scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
+        }
+
+    @Test
+    @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,

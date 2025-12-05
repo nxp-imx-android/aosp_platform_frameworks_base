@@ -382,11 +382,14 @@ class DesktopDisplayEventHandler(
             currentUserRepository.getPreservedTasks(preservedDisplay).toMutableList()
         // Projected mode: Do not move anything focused on the internal display.
         if (!desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
-            val focusedDefaultDisplayTaskIds =
+            val excludedFromRestoreTasks =
                 desktopTasksController
-                    .getFocusedNonDesktopTasks(DEFAULT_DISPLAY, currentUserRepository.userId)
+                    .getExcludedFromProjectedRestoreTasks(
+                        DEFAULT_DISPLAY,
+                        currentUserRepository.userId,
+                    )
                     .map { task -> task.taskId }
-            preservedTasks.removeAll { taskId -> focusedDefaultDisplayTaskIds.contains(taskId) }
+            preservedTasks.removeAll { taskId -> excludedFromRestoreTasks.contains(taskId) }
         }
         if (preservedTasks.isEmpty()) {
             // If we don't restore anything, skip the restoration and return false so we
