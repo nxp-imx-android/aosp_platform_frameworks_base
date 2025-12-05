@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -119,36 +118,49 @@ private fun UpdateGridLayoutInfo(
 }
 
 @Composable
-private fun BoxScope.DragHandle(
+private fun DragPill(brush: Brush, radius: Dp, alpha: () -> Float, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        drawCircle(
+            brush = brush,
+            radius = radius.toPx(),
+            center = Offset(size.width / 2, size.height / 2),
+            alpha = alpha(),
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.UnifiedResizeHandle(
     handle: ResizeHandle,
     dragState: AnchoredDraggableState<Int>,
-    radius: Dp,
+    dragHandleRadius: Dp,
     outlinePadding: Dp,
     brush: Brush,
-    alpha: () -> Float,
+    contentAlpha: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val directionalModifier = if (handle == ResizeHandle.TOP) -1 else 1
     val alignment = if (handle == ResizeHandle.TOP) Alignment.TopCenter else Alignment.BottomCenter
+
     Box(
-        modifier
-            .align(alignment)
-            .graphicsLayer {
-                translationY =
-                    directionalModifier * (size.height / 2 + outlinePadding.toPx()) +
-                        (dragState.offset.takeIf { it.fastIsFinite() } ?: 0f)
-            }
-            .anchoredDraggable(dragState, Orientation.Vertical)
+        modifier =
+            modifier
+                .align(alignment)
+                .graphicsLayer {
+                    translationY =
+                        directionalModifier * (size.height / 2 + outlinePadding.toPx()) +
+                            (dragState.offset.takeIf { it.fastIsFinite() } ?: 0f)
+                }
+                .anchoredDraggable(state = dragState, orientation = Orientation.Vertical)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            if (dragState.anchors.size > 1) {
-                drawCircle(
-                    brush = brush,
-                    radius = radius.toPx(),
-                    center = Offset(size.width / 2, size.height / 2),
-                    alpha = alpha(),
-                )
-            }
+        // TODO(b/431683508): Add accessibility controls
+        if (dragState.anchors.size > 1) {
+            DragPill(
+                brush = brush,
+                radius = dragHandleRadius,
+                alpha = contentAlpha,
+                modifier = Modifier.fillMaxWidth().height(dragHandleRadius * 2),
+            )
         }
     }
 }
@@ -218,23 +230,23 @@ fun ResizableItemFrame(
         content()
 
         if (enabled) {
-            DragHandle(
+            UnifiedResizeHandle(
                 handle = ResizeHandle.TOP,
                 dragState = viewModel.topResizeState,
-                radius = dragHandleRadius,
+                dragHandleRadius = dragHandleRadius,
                 outlinePadding = outlinePadding,
                 brush = brush,
-                alpha = alpha,
+                contentAlpha = alpha,
                 modifier = Modifier.fillMaxWidth().height(dragHandleHeight),
             )
 
-            DragHandle(
+            UnifiedResizeHandle(
                 handle = ResizeHandle.BOTTOM,
                 dragState = viewModel.bottomResizeState,
-                radius = dragHandleRadius,
+                dragHandleRadius = dragHandleRadius,
                 outlinePadding = outlinePadding,
                 brush = brush,
-                alpha = alpha,
+                contentAlpha = alpha,
                 modifier = Modifier.fillMaxWidth().height(dragHandleHeight),
             )
 
