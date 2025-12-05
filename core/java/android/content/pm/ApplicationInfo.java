@@ -3107,4 +3107,31 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
             privateFlagsExt &= ~PRIVATE_FLAG_EXT_ENABLE_ON_BACK_INVOKED_CALLBACK;
         }
     }
+
+    /** @hide */
+    public boolean isBundledApp() {
+        boolean bundled = isSystemApp() && !isUpdatedSystemApp();
+
+        // Vendor apks are treated as bundled only when /vendor/lib is in the default search
+        // paths. If not, they are treated as unbundled; access to system libs is limited.
+        // Having /vendor/lib in the default search paths means that all system processes
+        // are allowed to use any vendor library, which in turn means that system is dependent
+        // on vendor partition. In the contrary, not having /vendor/lib in the default search
+        // paths mean that the two partitions are separated and thus we can treat vendor apks
+        // as unbundled.
+        final String defaultSearchPaths = System.getProperty("java.library.path");
+        final boolean treatVendorApkAsUnbundled = !defaultSearchPaths.contains("/vendor/lib");
+        if (getCodePath() != null && isVendor() && treatVendorApkAsUnbundled) {
+            bundled = false;
+        }
+
+        // Similar to vendor apks, we should add /product/lib for apks from product partition
+        // when product apps are marked as unbundled. Product is separated as long as the
+        // partition exists, so it can be handled with same approach from the vendor partition.
+        if (getCodePath() != null && isProduct()) {
+            bundled = false;
+        }
+
+        return bundled;
+    }
 }

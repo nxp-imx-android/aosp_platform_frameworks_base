@@ -34,8 +34,8 @@ rust_bindgen {
     ],
 }
 
-rust_library {
-    name: "libnative_activity_thread",
+rust_defaults {
+    name: "libnative_activity_thread_defaults",
     crate_name: "native_activity_thread",
     edition: "2021",
     srcs: [
@@ -64,4 +64,16 @@ rust_library {
         ],
         default: [],
     }),
+}
+
+rust_library {
+    name: "libnative_activity_thread",
+    defaults: ["libnative_activity_thread_defaults"],
+}
+
+rust_test {
+    name: "libnative_activity_thread_tests",
+    defaults: ["libnative_activity_thread_defaults"],
+    test_suites: ["general-tests"],
+    team: "trendy_team_system_performance",
 }

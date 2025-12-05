@@ -176,7 +176,8 @@ static jint android_os_NativeZygoteProcess_startNativeChildZygote(
         JNIEnv* env, jclass /* classObj */, jobject sockFd, jint uid, jint gid, jstring niceName,
         jstring seInfo, jint targetSdkVersion, jint runtimeFlags, jstring serverPath,
         jint uidRangeStart, jint uidRangeEnd, jstring allowedLibPath, jstring librarySearchPaths,
-        jstring libraryPath, jstring preloadFunc) {
+        jboolean isShared, jstring zipPath, jstring nativeSharedLibPath, jstring libraryPath,
+        jstring preloadFunc) {
     int fd = jniGetFDFromFileDescriptor(env, sockFd);
     if (fd < 0) {
         jniThrowRuntimeException(env, "Failed to get a valid file descriptor");
@@ -189,6 +190,8 @@ static jint android_os_NativeZygoteProcess_startNativeChildZygote(
     auto librarySearchChars = extract_jstring(env, librarySearchPaths);
     auto preloadFuncChars = extract_jstring(env, preloadFunc);
     auto serverPathName = extract_jstring(env, serverPath);
+    auto zipPathChars = extract_jstring(env, zipPath);
+    auto nativeSharedLibPathChars = extract_jstring(env, nativeSharedLibPath);
 
     const char* niceNameStr = niceNameChars ? niceNameChars->c_str() : nullptr;
     const char* seInfoStr = seInfoChars ? seInfoChars->c_str() : nullptr;
@@ -197,6 +200,9 @@ static jint android_os_NativeZygoteProcess_startNativeChildZygote(
     const char* librarySearchStr = librarySearchChars ? librarySearchChars->c_str() : nullptr;
     const char* preloadFuncStr = preloadFuncChars ? preloadFuncChars->c_str() : nullptr;
     const char* serverPathStr = serverPathName ? serverPathName->c_str() : nullptr;
+    const char* zipPathStr = zipPathChars ? zipPathChars->c_str() : nullptr;
+    const char* nativeSharedLibPathStr =
+            nativeSharedLibPathChars ? nativeSharedLibPathChars->c_str() : nullptr;
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -204,8 +210,9 @@ static jint android_os_NativeZygoteProcess_startNativeChildZygote(
             CreateSpawnSubspeciesAndroidNativeDirect(builder, targetSdkVersion,
                                                      static_cast<unsigned>(runtimeFlags),
                                                      libraryPathStr, librarySearchStr,
-                                                     allowedLibPathStr, preloadFuncStr,
-                                                     uidRangeStart, uidRangeEnd);
+                                                     allowedLibPathStr, isShared == JNI_TRUE,
+                                                     zipPathStr, nativeSharedLibPathStr,
+                                                     preloadFuncStr, uidRangeStart, uidRangeEnd);
 
     CreateSpawnParcel(builder, env, uid, gid, niceNameStr, /**is_child_zygote=*/true, seInfoStr,
                       serverPathStr, SpawnPayload_SpawnSubspeciesAndroidNative,
@@ -257,7 +264,8 @@ static const JNINativeMethod method_table[] = {
          (void*)android_os_NativeZygoteProcess_startNativeProcess},
         {"nativeStartNativeChildZygote",
          "(Ljava/io/FileDescriptor;IILjava/lang/String;Ljava/lang/String;II"
-         "Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+         "Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/"
+         "String;Ljava/lang/String;"
          "Ljava/lang/String;)I",
          (void*)android_os_NativeZygoteProcess_startNativeChildZygote},
         {"nativeEnsureNativeZygoteReadyBlocking", "()Z",
