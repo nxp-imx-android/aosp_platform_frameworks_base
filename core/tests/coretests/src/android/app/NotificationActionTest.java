@@ -24,9 +24,12 @@ import android.app.Notification.Action;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.text.Spanned;
+import android.text.style.ImageSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -141,7 +144,95 @@ public class NotificationActionTest {
                 .isEqualTo(2);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_actionWithNullText_skipped() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .addAction(new Action.Builder(mIcon, "Action 1", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, null, mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 3", mPendingIntent).build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        assertThat(actionsLayout.getChildCount()).isEqualTo(2);
+        assertThat(((Button) actionsLayout.getChildAt(0)).getText().toString())
+                .isEqualTo("Action 1");
+        assertThat(((Button) actionsLayout.getChildAt(1)).getText().toString())
+                .isEqualTo("Action 3");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_mediaStyleActionWithNullText_kept() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new Notification.MediaStyle())
+                .addAction(new Action.Builder(mIcon, "Action 1", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, null, mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 3", mPendingIntent).build());
+
+        View mediaLayout = makeLayout(n);
+
+        assertThat(mediaLayout.findViewById(R.id.action0).getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mediaLayout.findViewById(R.id.action1).getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mediaLayout.findViewById(R.id.action2).getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mediaLayout.findViewById(R.id.action3).getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_actionWithEmptyText_skipped() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .addAction(new Action.Builder(mIcon, "Action 1", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "  ", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 3", mPendingIntent).build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        assertThat(actionsLayout.getChildCount()).isEqualTo(2);
+        assertThat(((Button) actionsLayout.getChildAt(0)).getText().toString())
+                .isEqualTo("Action 1");
+        assertThat(((Button) actionsLayout.getChildAt(1)).getText().toString())
+                .isEqualTo("Action 3");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_actionWithIconOnly_showsOnlyIcon() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setFlag(Notification.FLAG_PROMOTED_ONGOING, true)
+                .addAction(
+                        new Action.Builder(mIcon, "Hidden text", mPendingIntent)
+                                .setStyleHint(Action.STYLE_ICON_ONLY)
+                                .build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+        Spanned buttonText = (Spanned) ((Button) actionsLayout.getChildAt(0)).getText();
+
+        assertThat(buttonText.getSpans(0, buttonText.length(), ImageSpan.class)).hasLength(1);
+        assertThat(buttonText.toString()).isEqualTo("\ufffd"); // Replacement character
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_actionWithIconOnlyButNoIcon_showsText() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setFlag(Notification.FLAG_PROMOTED_ONGOING, true)
+                .addAction(
+                        new Action.Builder(/* icon= */ null, "Hidden text?", mPendingIntent)
+                                .setStyleHint(Action.STYLE_ICON_ONLY)
+                                .build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        assertThat(((Button) actionsLayout.getChildAt(0)).getText().toString())
+                .isEqualTo("Hidden text?");
+    }
+
     private NotificationActionListLayout makeActionsLayout(Notification.Builder builder) {
+        return requireNonNull(makeLayout(builder).findViewById(R.id.actions));
+    }
+
+    private View makeLayout(Notification.Builder builder) {
         RemoteViews remoteViews = builder.getStyle() != null
                 ? builder.getStyle().makeExpandedContentView()
                 : builder.createBigContentView();
@@ -149,6 +240,6 @@ public class NotificationActionTest {
         FrameLayout container = new FrameLayout(mContext);
         container.addView(remoteViews.apply(mContext, container));
         container.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        return requireNonNull(container.findViewById(R.id.actions));
+        return requireNonNull(container.getChildAt(0));
     }
 }

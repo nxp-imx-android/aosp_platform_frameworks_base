@@ -2218,7 +2218,10 @@ public class Notification implements Parcelable
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         public static final int STYLE_ICON_AND_TEXT = 2;
 
-        /** The action is best represented by only its icon. */
+        /**
+         * The action is best represented by only its {@link #getIcon() icon}. Note that a non-null
+         * {@link #title} is still mandatory, or the action might be ignored.
+         */
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         public static final int STYLE_ICON_ONLY = 3;
 
@@ -7302,6 +7305,7 @@ public class Notification implements Parcelable
          * Returns the subset of actions to be shown in the actions "row" of a notification.
          * <ul>
          *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
+         *     <li>Excludes actions with null or empty title (except in MediaStyle).
          *     <li>Excludes contextual actions, which are shown separately.
          *     <li>Resolves {@link Action#STYLE_AUTO} and {@link Action#EMPHASIS_AUTO} into
          *     concrete values for RONs/FSI/CallStyle notifications.
@@ -7309,6 +7313,7 @@ public class Notification implements Parcelable
          *     <li>Limits the number of actions to 3.
          * </ul>
          */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         private @NonNull ActionButtons getEffectiveActions() {
             if (mActions == null || mActions.isEmpty()) {
                 return ActionButtons.EMPTY;
@@ -7318,6 +7323,8 @@ public class Notification implements Parcelable
             boolean isCallStyle = mN.isStyle(CallStyle.class);
             boolean isPseudoFsi = mN.fullScreenIntent != null
                     || (mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0;
+            boolean isMediaStyle = mN.isStyle(MediaStyle.class)
+                    || mN.isStyle(DecoratedMediaCustomViewStyle.class);
 
             List<ActionButton> candidates = new ArrayList<>();
             for (int i = 0; i < mActions.size(); i++) {
@@ -7328,6 +7335,9 @@ public class Notification implements Parcelable
                 if (action.isContextual()) {
                     continue;
                 }
+                if (!isMediaStyle && (action.title == null || action.title.toString().isBlank())) {
+                    continue;
+                }
                 candidates.add(new ActionButton(action, i));
                 if (candidates.size() >= MAX_ACTION_BUTTONS) {
                     break;
@@ -7335,37 +7345,32 @@ public class Notification implements Parcelable
             }
 
             // Resolve AUTO style/emphasis, or force specific style/emphasis for special cases.
-            if (Flags.apiNotificationActionCustom()) {
-                for (int i = 0; i < candidates.size(); i++) {
-                    ActionButton candidate = candidates.get(i);
-                    Action original = candidate.action;
-                    Action.Builder updated = new Action.Builder(original);
-                    if (isCallStyle) {
-                        updated.setStyleHint(Action.STYLE_ICON_AND_TEXT);
-                    } else if (!isPromotedOngoing || original.getStyleHint() == Action.STYLE_AUTO) {
-                        updated.setStyleHint(Action.STYLE_TEXT_ONLY);
-                    }
-                    if (isCallStyle) {
-                        updated.setEmphasisHint(Action.EMPHASIS_PRIMARY);
-                    } else if (!isPromotedOngoing
-                            || original.getEmphasisHint() == Action.EMPHASIS_AUTO
-                            || (isPromotedOngoing && candidates.size() == 1)) {
-                        // Promoted ongoing with 1 action is forced to SECONDARY regardless of
-                        // caller's choice.
-                        updated.setEmphasisHint(Action.EMPHASIS_SECONDARY);
-                    }
-                    candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
+            for (int i = 0; i < candidates.size(); i++) {
+                ActionButton candidate = candidates.get(i);
+                Action original = candidate.action;
+                Action.Builder updated = new Action.Builder(original);
+                if (isCallStyle) {
+                    updated.setStyleHint(Action.STYLE_ICON_AND_TEXT);
+                } else if (!isPromotedOngoing
+                        || original.getStyleHint() == Action.STYLE_AUTO
+                        || (original.getStyleHint() == Action.STYLE_ICON_ONLY
+                            && original.getIcon() == null)) {
+                    updated.setStyleHint(Action.STYLE_TEXT_ONLY);
                 }
+                if (isCallStyle) {
+                    updated.setEmphasisHint(Action.EMPHASIS_PRIMARY);
+                } else if (!isPromotedOngoing
+                        || original.getEmphasisHint() == Action.EMPHASIS_AUTO
+                        || (isPromotedOngoing && candidates.size() == 1)) {
+                    // Promoted ongoing with 1 action is forced to SECONDARY regardless of
+                    // caller's choice.
+                    updated.setEmphasisHint(Action.EMPHASIS_SECONDARY);
+                }
+                candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
             }
 
-            boolean edgeToEdge =
-                    (Flags.apiNotificationActionCustom() && (isPromotedOngoing || isPseudoFsi))
-                            || isCallStyle;
-            boolean emphasized =
-                    (Flags.apiNotificationActionCustom() && isPromotedOngoing)
-                            || isCallStyle || isPseudoFsi;
-
-            return new ActionButtons(candidates, edgeToEdge, emphasized);
+            boolean emphasizedEdgeToEdge = isPromotedOngoing || isPseudoFsi || isCallStyle;
+            return new ActionButtons(candidates, emphasizedEdgeToEdge, emphasizedEdgeToEdge);
         }
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
