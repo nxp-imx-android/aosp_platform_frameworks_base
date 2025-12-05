@@ -5386,6 +5386,9 @@ public class Notification implements Parcelable
          * <p>The counter can also be set to count down to <code>when</code> when using
          * {@link #setChronometerCountDown(boolean)}.
          *
+         * <p>If the notification is {@link #FLAG_PROMOTED_ONGOING promoted ongoing} then this
+         * stopwatch might also be displayed in its status bar chip.
+         *
          * @see android.widget.Chronometer
          * @see Notification#when
          * @see #setChronometerCountDown(boolean)
@@ -5657,6 +5660,25 @@ public class Notification implements Parcelable
          * Sets a very short string summarizing the most critical information contained in the
          * notification. Suggested max length is 7 characters, and there is no guarantee how much or
          * how little of this text will be shown.
+         *
+         * <p>This field is designed exclusively for the compact representation (hereafter "chip")
+         * shown when the notification is {@link #FLAG_PROMOTED_ONGOING promoted ongoing}.
+         * <ul>
+         *     <li>A chip's content may not be shown in certain states or if it cannot fit.
+         *     <li>Short critical text will always be the highest precedence content for a chip.
+         *     <li>Setting this to {@code ""} will ensure the chip has no content; {@code null}
+         *     (the default) will fall back to the other options.
+         *     {@if (flag(Flags.FLAG_API_METRIC_STYLE)) {<li>A {@link MetricStyle}'s critical metric
+         *     is the next option for the chip's content.}}
+         *     <li>A time (from {@link #when}) is the final source of content for the chip.
+         *     <ul>
+         *         <li>If {@link #setUsesChronometer(boolean)} is {@code true}, the chip content
+         *         will be a chronometer, if that is positive (based on
+         *         {@link #setChronometerCountDown(boolean)}).
+         *         <li>If {@link #setShowWhen(boolean)} is true, the chip content will be the time
+         *         remaining until {@link #when}, if positive.
+         *     </ul>
+         * </ul>
          */
         @NonNull
         public Builder setShortCriticalText(@Nullable String shortCriticalText) {
@@ -12373,6 +12395,9 @@ public class Notification implements Parcelable
      * <p>A MetricStyle must contain at least one {@link Metric} object to be valid; an invalid
      * style will be rejected when {@link Builder#build()} is called.
      *
+     * <p>If a notification with this style is {@link #FLAG_PROMOTED_ONGOING promoted ongoing},
+     * then one of its metrics might be displayed in the status bar chip.
+     *
      * <p>Note that this style doesn't display the large icon set via
      * {@link Builder#setLargeIcon(Icon)}.
      */
@@ -15647,7 +15672,7 @@ public class Notification implements Parcelable
      *
      * <p>NOTE: Even when the returned value contains a text with type
      * {@link Metric.TimeDifference}, the compact representation UI should not show negative
-     * chronometers or adaptive times that count up.
+     * chronometers or adaptive times.
      */
     @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
     @NonNull
