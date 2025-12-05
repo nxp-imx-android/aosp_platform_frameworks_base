@@ -237,6 +237,8 @@ class MenuViewLayer extends FrameLayout implements
         mMenuAnimationController.setSpringAnimationsEndAction(this::onSpringAnimationsEndAction);
         mDismissView = new DismissView(context);
         mDragToInteractView = new DragToInteractView(context, windowManager);
+        mDragToInteractView.addCircle(R.id.action_remove_menu);
+        mDragToInteractView.addCircle(R.id.action_edit);
         DismissViewUtils.setup(mDismissView);
         mDismissView.getCircle().setId(R.id.action_remove_menu);
         mNotificationFactory = new MenuNotificationFactory(context);
