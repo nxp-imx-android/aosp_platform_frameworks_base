@@ -26,7 +26,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.security.Flags;
 
 import androidx.test.filters.MediumTest;
 
@@ -40,6 +42,7 @@ import org.junit.runner.RunWith;
  * Build/Install/Run:
  * atest WmTests:AppLockControllerTests
  */
+@EnableFlags(Flags.FLAG_APP_LOCK_APIS)
 @MediumTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
