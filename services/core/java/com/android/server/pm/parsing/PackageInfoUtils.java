@@ -231,19 +231,22 @@ public class PackageInfoUtils {
                         Set<String> purposes = Set.of();
                         Set<String> generalPurposes = Set.of();
                         int purposeStringResource = usesPermission.getPurposeStringResource();
-                        if (android.permission.flags.Flags.ppdManifestEnabled()
-                                && !usesPermission.getPurposes().isEmpty()) {
+                        if (!usesPermission.getPurposes().isEmpty()) {
                             purposes = usesPermission.getPurposes();
                         }
                         if (!usesPermission.getGeneralPurposes().isEmpty()) {
                             generalPurposes = usesPermission.getGeneralPurposes();
                         }
-                        UsesPermissionPurposeInfo ppi =
-                                new UsesPermissionPurposeInfo(usesPermission.getName(),
-                                        purposes,
-                                        generalPurposes,
-                                        purposeStringResource);
-                        info.requestedPermissionsPurposes.put(usesPermission.getName(), ppi);
+                        // only add entry if any purpose info exists for this permission
+                        if (!generalPurposes.isEmpty() || !purposes.isEmpty()
+                                || purposeStringResource != 0) {
+                            UsesPermissionPurposeInfo ppi =
+                                    new UsesPermissionPurposeInfo(usesPermission.getName(),
+                                            purposes,
+                                            generalPurposes,
+                                            purposeStringResource);
+                            info.requestedPermissionsPurposes.put(usesPermission.getName(), ppi);
+                        }
                     }
                     index++;
                 }
