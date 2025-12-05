@@ -252,7 +252,7 @@ constructor(
                                 .width(190.dp)
                                 .height(107.dp)
                                 .clickable {
-                                    postRecordingViewModel.edit()
+                                    postRecordingViewModel.view()
                                     hide()
                                 },
                     )

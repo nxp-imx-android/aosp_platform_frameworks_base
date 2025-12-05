@@ -80,6 +80,10 @@ constructor(
         )
     }
 
+    fun view() {
+        startVideoActivity(action = Intent.ACTION_VIEW, label = null, shouldShowChooser = false)
+    }
+
     fun openInFolder() {
         parentUri?.let {
             startVideoActivity(
