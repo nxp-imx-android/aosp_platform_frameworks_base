@@ -444,9 +444,11 @@ public final class DocumentsContract {
         @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
         public static final String COLUMN_ORIGINAL_RELATIVE_PATH = "original_relative_path";
         /**
-         * Flag indicating that the document's contents are available locally.
+         * Flag indicating that the document's contents are available locally. When the device does
+         * not have internet connection, certain document operations may be disabled, see
+         * {@link Root#FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE} for more details.
          *
-         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         * @see Root#FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
         public static final int SYNC_STATE_FLAG_AVAILABLE_LOCALLY = 1 << 0;
@@ -731,6 +733,7 @@ public final class DocumentsContract {
          * @see #FLAG_SUPPORTS_CREATE
          * @see #FLAG_SUPPORTS_RECENTS
          * @see #FLAG_SUPPORTS_SEARCH
+         * @see #FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE
          */
         public static final String COLUMN_FLAGS = "flags";
 
@@ -943,6 +946,50 @@ public final class DocumentsContract {
          */
         @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
         public static final int FLAG_SUPPORTS_QUERY_TRASH = 1 << 20;
+
+        /**
+         * Flag indicating that this root has limited functionality when the device does not have an
+         * internet connection. This will affect how the system file picker and file manager
+         * presents files to the user when the device does not have internet connection.
+         *
+         * Operations such as open, copy and move, that require reading file contents, will be
+         * disabled on files that do not have content available locally. Specifically, the following
+         * conditions have to be met to disable these actions:
+         *    - the device does not have internet connection
+         *    - {@link Document#COLUMN_CONTENT_SYNC_STATE_FLAGS} is non-null and
+         *          {@link Document#SYNC_STATE_FLAG_AVAILABLE_LOCALLY} is not set
+         *    - {@link #FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE} is set
+         *    - {@link Document#FLAG_VIRTUAL_DOCUMENT} is not set
+         *    - {@link Document#COLUMN_MIME_TYPE} does not equal {@link Document#MIME_TYPE_DIR}
+         *
+         * Folder opens will be unaffected by the state of this flag to allow users to be able to
+         * still navigate around the file system. However, other operations that require reading
+         * file contents will be disabled on folders because they may contain files that don't have
+         * content available locally. Specifically, the following conditions have to be met to
+         * disable these actions:
+         *    - the device does not have internet connection
+         *    - {@link #FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE} is set
+         *    - {@link Document#COLUMN_MIME_TYPE} equals {@link Document#MIME_TYPE_DIR}
+         *
+         * Operations such as rename and delete, that don't require reading file contents, will be
+         * unaffected by the state of this flag.
+         *
+         * In addition, when this flag is set and the device if offline, the file picker and file
+         * manager will show a message to the user indicating that there is limited functionality
+         * when offline.
+         *
+         * Note that even if the device has an internet connection, the documents provider
+         * implementation may be limited or prevented from accessing it because of various system
+         * restrictions and battery saving features. There will be no UI change for this case.
+         *
+         * @see #COLUMN_FLAGS
+         * @see Document#COLUMN_CONTENT_SYNC_STATE_FLAGS
+         * @see Document#SYNC_STATE_FLAG_AVAILABLE_LOCALLY
+         * @see Document#FLAG_VIRTUAL_DOCUMENT
+         * @see Document#COLUMN_MIME_TYPE
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 1 << 20;
     }
 
     /**
