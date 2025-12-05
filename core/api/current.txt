@@ -13072,11 +13072,11 @@ package android.content.pm {
   public static final class ActivityInfo.WindowLayout {
     ctor public ActivityInfo.WindowLayout(int, float, int, float, int, int, int);
     field public final int gravity;
-    field public final int height;
+    field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int height;
     field public final float heightFraction;
-    field public final int minHeight;
-    field public final int minWidth;
-    field public final int width;
+    field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int minHeight;
+    field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int minWidth;
+    field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int width;
     field public final float widthFraction;
   }
 
