@@ -63,27 +63,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToSplitScreenWithAppHeaderMenuTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopWithDragToTopDragZoneTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-DragMoveWindowToNextDisplayTest",
       "keywords": [
         "device",
@@ -230,6 +209,24 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithDragTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopToSplitScreenWithAppHeaderMenuTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopWithDragToTopDragZoneTest",
       "keywords": [
         "desktop"
       ]

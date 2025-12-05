@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.exit
+package com.android.wm.shell.functional.fundamentals.exit
 
 import android.platform.test.annotations.Postsubmit
-import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.ExitDesktopToFullScreenWithAppHeaderMenu
 import org.junit.runner.RunWith
@@ -26,7 +25,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /* Functional test for [ExitDesktopToFullScreenWithAppHeaderMenu]. */
 
 @RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
 class ExitDesktopToFullScreenWithAppHeaderMenuTest : ExitDesktopToFullScreenWithAppHeaderMenu()

@@ -239,27 +239,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-exit-ExitDesktopToSplitScreenWithAppHeaderMenuTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.exit.ExitDesktopToSplitScreenWithAppHeaderMenuTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-exit-ExitDesktopWithDragToTopDragZoneTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.exit.ExitDesktopWithDragToTopDragZoneTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-externaldisplay-DragMoveWindowToNextDisplayTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -418,6 +397,27 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.enter.EnterSplitScreenWithDragTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopToSplitScreenWithAppHeaderMenuTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.exit.ExitDesktopToSplitScreenWithAppHeaderMenuTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopWithDragToTopDragZoneTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.exit.ExitDesktopWithDragToTopDragZoneTest"],
 }
 
 test_module_config {
