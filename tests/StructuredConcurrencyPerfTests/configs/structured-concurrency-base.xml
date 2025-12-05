@@ -59,12 +59,6 @@
         <option name="clean-up" value="false"/>
     </metrics_collector>
 
-    <!-- Pull test metric results summary file from device to host -->
-    <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
-        <option name="pull-pattern-keys" value="metricSummaryOutputFile"/>
-        <option name="clean-up" value="false" />
-    </metrics_collector>
-
     <metric_post_processor class="com.android.tradefed.postprocessor.MetricFilePostProcessor">
         <option name="strict-include-metric-filter" value="(perfetto_mt|time_nanos|allocation_count)_.*" />
     </metric_post_processor>

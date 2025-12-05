@@ -119,9 +119,9 @@ class FlowShallowEventBenchmark(
 ) : BaseFlowEventBenchmark(threadParam), ShallowEventBenchmark<FlowWritableEventBuilder, Flow<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
                 PRODUCER_LIST *
                 CONSUMER_LIST
@@ -139,9 +139,9 @@ class SimpleEventShallowEventBenchmark(
     ShallowEventBenchmark<SimpleWritableEventBuilder, SimpleEvent<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
@@ -158,9 +158,9 @@ class ExecutorSnapshotShallowEventBenchmark(
     ShallowEventBenchmark<SnapshotWritableEventExecutorBuilder, SnapshotState<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
@@ -177,9 +177,9 @@ class CoroutineSnapshotShallowEventBenchmark(
     ShallowEventBenchmark<SnapshotWritableEventCoroutineBuilder, SnapshotState<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
                 PRODUCER_LIST *
                 CONSUMER_LIST
@@ -197,9 +197,9 @@ class KairosShallowEventBenchmark(
     ShallowEventBenchmark<KairosWritableEventBuilder, KairosState<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
                 PRODUCER_LIST *
                 CONSUMER_LIST

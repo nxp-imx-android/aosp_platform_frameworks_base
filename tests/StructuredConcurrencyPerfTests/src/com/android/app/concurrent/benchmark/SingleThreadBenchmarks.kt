@@ -20,10 +20,9 @@ import androidx.benchmark.BlackHole
 import com.android.app.concurrent.benchmark.base.BaseConcurrentBenchmark
 import com.android.app.concurrent.benchmark.base.BaseLooperThreadBenchmark
 import com.android.app.concurrent.benchmark.base.CoroutineLooperThreadBenchmark
-import com.android.app.concurrent.benchmark.util.IntParam
-import com.android.app.concurrent.benchmark.util.allConsumeCpuParams
-import com.android.app.concurrent.benchmark.util.consumeCpu
+import com.android.app.concurrent.benchmark.util.allCpuWorkloads
 import com.android.app.concurrent.benchmark.util.dbg
+import com.android.app.concurrent.benchmark.util.stressCpu
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -46,59 +45,53 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
 /**
- * Calculate the runtime of [consumeCpu] when run on the main "BenchmarkRunner" thread.
+ * Calculate the runtime of [stressCpu] when run on the main "BenchmarkRunner" thread.
  *
  * Compare this to [LooperSingleThreadBenchmark.benchmark0_baseline], which should have the same
  * runtime.
  */
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class BenchmarkRunnerSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
-    BaseConcurrentBenchmark() {
+class BenchmarkRunnerSingleThreadBenchmark(val mainWorkload: Int) : BaseConcurrentBenchmark() {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = allConsumeCpuParams
-    }
-
-    fun consumeCpu(): Double {
-        return consumeCpu(consumeCpuIterations)
+        @Parameters(name = "mainWorkload={0}") @JvmStatic fun getParameters() = allCpuWorkloads
     }
 
     @Test
     fun benchmark() {
         var sum = 0.0
-        benchmarkRule.runBenchmark { onEachIteration { n -> sum += consumeCpu() } }
+        benchmarkRule.runBenchmark { onEachIteration { sum += stressCpu(mainWorkload) } }
         BlackHole.consume(sum)
     }
 }
 
 /**
- * Calculate the runtime of [consumeCpu] when run on a single background Looper thread.
+ * Calculate the runtime of [consumeCpu] when run on a single background `Looper` thread.
  *
- * A separate Looper thread is used because the main "BenchmarkRunner" cannot have a Looper
- * installed on it. Doing so would work for a single test run, but the Looper would need to call
- * [android.os.Looper.quit] in order for testing to continue, preventing its usage again.
+ * A separate `Looper` thread is used because the main "BenchmarkRunner" cannot have a `Looper`
+ * installed on it. Doing so would work for a single test run, but the `Looper` would need to call
+ * [quit][android.os.Looper.quit] in order for testing to continue, preventing its usage again.
  *
  * Compare [benchmark0_baseline] to [BenchmarkRunnerSingleThreadBenchmark], which should have the
  * same runtime.
  *
  * Contrast [benchmark0_baseline] and [benchmark1_deferred]:
- * - `benchmark_baseline` runs all the computation in a single message is posted to the Looper
+ * - `benchmark_baseline` runs all the computation in a single message is posted to the `Looper`
  *   thread, which runs continuously until the benchmark is completed
- * - `benchmark_deferred` posts a message to the Looper on each iteration to perform the same
+ * - `benchmark_deferred` posts a message to the `Looper` on each iteration to perform the same
  *   computations.
  */
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class LooperSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
-    BaseLooperThreadBenchmark() {
+class LooperSingleThreadBenchmark(val consumeCpuIterations: Int) : BaseLooperThreadBenchmark() {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = allConsumeCpuParams
+        @Parameters(name = "mainWorkload={0}") @JvmStatic fun getParameters() = allCpuWorkloads
     }
 
     fun consumeCpu(): Double {
-        return consumeCpu(consumeCpuIterations)
+        return stressCpu(consumeCpuIterations)
     }
 
     @Test
@@ -132,20 +125,19 @@ class LooperSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
 }
 
 /**
- * Calculate the runtime of [consumeCpu] when run on a single background Looper thread which is also
+ * Calculate the runtime of [stressCpu] when run on a single background Looper thread which is also
  * using coroutines.
  */
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class CoroutineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
-    CoroutineLooperThreadBenchmark() {
+class CoroutineSingleThreadBenchmark(val mainWorkload: Int) : CoroutineLooperThreadBenchmark() {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = allConsumeCpuParams
+        @Parameters(name = "mainWorkload={0}") @JvmStatic fun getParameters() = allCpuWorkloads
     }
 
-    fun consumeCpu(): Double {
-        return consumeCpu(consumeCpuIterations)
+    fun stressCpu(): Double {
+        return stressCpu(mainWorkload)
     }
 
     @Test
@@ -157,7 +149,7 @@ class CoroutineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
                 var n = 0
                 while (true) {
                     dbg { "values.send" }
-                    values.send(consumeCpu() + n++)
+                    values.send(stressCpu() + n++)
                 }
             }
             scope.launch {
@@ -179,14 +171,14 @@ class CoroutineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
             flow {
                     var n = 0
                     while (true) {
-                        val value = consumeCpu() + n++
+                        val value = stressCpu() + n++
                         dbg { "emit:$value" }
                         emit(value)
                     }
                 }
                 .operator { value ->
                     dbg { "operator:$value" }
-                    value + consumeCpu()
+                    value + stressCpu()
                 }
         measureCoroutine { scope ->
             scope.launch {
@@ -221,7 +213,7 @@ class CoroutineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
             val trigger = MutableStateFlow(0)
             val values =
                 trigger
-                    .onEach { n -> sum += consumeCpu() + n }
+                    .onEach { n -> sum += stressCpu() + n }
                     .stateIn(scope, started = SharingStarted.Lazily, 0)
             values.onEach { if (!state.keepRunning()) stopBenchmark() }.launchIn(scope)
             var n = 0
@@ -243,7 +235,7 @@ class CoroutineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
             val trigger = MutableStateFlow(0)
             val values =
                 trigger
-                    .onEach { n -> sum += consumeCpu() + n }
+                    .onEach { n -> sum += stressCpu() + n }
                     .shareIn(scope, started = SharingStarted.Lazily)
             values
                 .onEach {

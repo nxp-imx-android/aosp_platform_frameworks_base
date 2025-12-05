@@ -110,9 +110,9 @@ class SimpleUnconfinedEventBenchmark(
     UnconfinedEventBenchmark<SimpleWritableEventBuilder, SimpleEvent<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(NoThreadWithDirectImmediateExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
@@ -128,9 +128,9 @@ class FlowUnconfinedEventBenchmark(
     UnconfinedEventBenchmark<FlowWritableEventBuilder, Flow<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:producers={1}:consumers={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(
                 NoThreadWithUnconfinedDispatcherBuilder,
                 NoThreadWithDirectImmediateDispatcherBuilder,

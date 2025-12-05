@@ -17,6 +17,8 @@ package com.android.app.concurrent.benchmark.util
 
 import android.device.collectors.BaseCollectionListener
 import android.device.collectors.annotations.OptionClass
+import android.os.Looper
+import android.os.Trace
 import android.util.Log
 import com.android.helpers.ICollectorHelper
 
@@ -50,6 +52,9 @@ class PerfettoMeasurementTimelineMetricCollector : BaseCollectionListener<Double
 
     init {
         Log.i(TAG, "init")
+        if (DEBUG) {
+            Looper.myLooper()!!.setTraceTag(Trace.TRACE_TAG_APP)
+        }
         createHelperInstance(Helper)
     }
 }
