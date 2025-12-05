@@ -17,12 +17,14 @@
 package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -30,8 +32,10 @@ import kotlinx.coroutines.flow.map
 /** View model for the IME indicator chip in the status bar. */
 class ImeIndicatorChipViewModel
 @AssistedInject
-constructor(private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor) :
-    StatusBarPopupChipViewModel, HydratedActivatable() {
+constructor(
+    @Assisted private val displayId: Int,
+    private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
+) : StatusBarPopupChipViewModel, HydratedActivatable() {
 
     override val chip: QuickActionChipUiState by
         imeIndicatorChipInteractor.chipModel
@@ -54,12 +58,12 @@ constructor(private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor) 
             chipId = QuickActionChipId.ImeIndicator,
             icons = emptyList(),
             chipText = chipText,
-            showPopup = { imeIndicatorChipInteractor.showInputMethodPicker() },
+            showPopup = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
         )
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(): ImeIndicatorChipViewModel
+        fun create(@DisplayId displayId: Int): ImeIndicatorChipViewModel
     }
 }
