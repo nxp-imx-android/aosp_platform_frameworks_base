@@ -1058,7 +1058,12 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     view.onProvideContentCaptureStructure(structure, /* flags= */ 0);
 
                     if (Flags.newHeuristicsForImportanceEnabled()) {
-                        setContentDescriptionFromA11yIfNeeded(view, structure);
+                        try {
+                            setContentDescriptionFromA11yIfNeeded(view, structure);
+                        } catch (NullPointerException e) {
+                            // NPE can be thrown if some views do not support a11y properly.
+                            Log.w(TAG, "Failed to set content description");
+                        }
                     }
 
                     if (Flags.enableExportAssistVirtualNodeToCcapi()
