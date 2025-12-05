@@ -16,6 +16,8 @@
 
 package com.android.settingslib.display;
 
+import static com.android.settingslib.flags.Flags.FLAG_ADD_EXTRA_EXTERNAL_DISPLAY_DENSITY_STOPS;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -29,6 +31,9 @@ import android.content.res.Resources;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
@@ -41,6 +46,7 @@ import com.android.settingslib.R;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -48,6 +54,8 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
 public class DisplayDensityUtilsTest {
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final float MAX_SCALE_INTERNAL = 1.33f;
     private static final float MIN_SCALE_INTERNAL = 0.85f;
@@ -140,7 +148,8 @@ public class DisplayDensityUtilsTest {
     }
 
     @Test
-    public void createDisplayDensityUtil_forExternalDisplay() throws RemoteException {
+    @DisableFlags(FLAG_ADD_EXTRA_EXTERNAL_DISPLAY_DENSITY_STOPS)
+    public void createDisplayDensityUtil_forExternalDisplay_flagDisabled() throws RemoteException {
         // Configure resources
         when(mResources.getFraction(R.fraction.external_display_density_max_scale, 1, 1))
                 .thenReturn(MAX_SCALE_EXTERNAL);
@@ -190,9 +199,109 @@ public class DisplayDensityUtilsTest {
                         (info) -> info.displayId == externalDisplayInfo.displayId,
                         (i) -> false);
 
-        // Expected values (calculated from 85 dpi, 70% min, 150% max):
         assertThat(mDisplayDensityUtils.getValues())
                 .isEqualTo(new int[] {58, 68, 76, 85, 92, 102, 110, 118, 126});
+    }
+
+    @Test
+    @EnableFlags(FLAG_ADD_EXTRA_EXTERNAL_DISPLAY_DENSITY_STOPS)
+    public void createDisplayDensityUtil_forExternalDisplay_flagEnabled() throws RemoteException {
+        // Configure resources
+        when(mResources.getFraction(R.fraction.external_display_density_max_scale, 1, 1))
+                .thenReturn(MAX_SCALE_EXTERNAL); // 1.5f
+        when(mResources.getFraction(R.fraction.external_display_density_min_scale, 1, 1))
+                .thenReturn(MIN_SCALE_EXTERNAL); // 0.7f
+
+        // Default display
+        var defaultDisplayInfo =
+                createDisplayInfoForDisplay(
+                        Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, 2000, 2000, 390, false);
+        var defaultDisplay =
+                new Display(
+                        mDisplayManagerGlobal,
+                        defaultDisplayInfo.displayId,
+                        defaultDisplayInfo,
+                        (DisplayAdjustments) null);
+        doReturn(defaultDisplay).when(mDisplayManager).getDisplay(defaultDisplayInfo.displayId);
+
+        // Create external display
+        var externalDisplayInfo =
+                createDisplayInfoForDisplay(
+                        /* displayId= */ 2, Display.TYPE_EXTERNAL, 1920, 1080, 85, false);
+        var externalDisplay =
+                new Display(
+                        mDisplayManagerGlobal,
+                        externalDisplayInfo.displayId,
+                        externalDisplayInfo,
+                        (DisplayAdjustments) null);
+
+        doReturn(new Display[] {externalDisplay, defaultDisplay})
+                .when(mDisplayManager)
+                .getDisplays(any());
+        doReturn(externalDisplay).when(mDisplayManager).getDisplay(externalDisplayInfo.displayId);
+
+        mDisplayDensityUtils =
+                new DisplayDensityUtils(
+                        mContext,
+                        (info) -> info.displayId == externalDisplayInfo.displayId,
+                        (i) -> false);
+
+        // Add 170 (200%) and 255 (300%)
+        // 255 rounded-down to 254 (multiple of 2)
+        assertThat(mDisplayDensityUtils.getValues())
+                .isEqualTo(new int[] {58, 68, 76, 85, 92, 102, 110, 118, 126, 170, 254});
+    }
+
+    @Test
+    @EnableFlags(FLAG_ADD_EXTRA_EXTERNAL_DISPLAY_DENSITY_STOPS)
+    public void createDisplayDensityUtil_forExternalDisplay_flagEnabled_clips300Percent_lowRes()
+            throws RemoteException {
+        // Configure resources
+        when(mResources.getFraction(R.fraction.external_display_density_max_scale, 1, 1))
+                .thenReturn(MAX_SCALE_EXTERNAL);
+        when(mResources.getFraction(R.fraction.external_display_density_min_scale, 1, 1))
+                .thenReturn(MIN_SCALE_EXTERNAL);
+
+        // Default display
+        var defaultDisplayInfo =
+                createDisplayInfoForDisplay(
+                        Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, 2000, 2000, 390, false);
+        var defaultDisplay =
+                new Display(
+                        mDisplayManagerGlobal,
+                        defaultDisplayInfo.displayId,
+                        defaultDisplayInfo,
+                        (DisplayAdjustments) null);
+        doReturn(defaultDisplay).when(mDisplayManager).getDisplay(defaultDisplayInfo.displayId);
+
+        // External Display: 400x400, Density 85.
+        // Max Density Allowed = 160 * 400 / 320 = 200 dpi.
+        // 200% Scale = 85 * 2.0 = 170. (170 <= 200) -> Valid.
+        // 300% Scale = 85 * 3.0 = 255. (255 > 200) -> Invalid.
+        var externalDisplayInfo =
+                createDisplayInfoForDisplay(
+                        /* displayId= */ 2, Display.TYPE_EXTERNAL, 400, 400, 85, false);
+        var externalDisplay =
+                new Display(
+                        mDisplayManagerGlobal,
+                        externalDisplayInfo.displayId,
+                        externalDisplayInfo,
+                        (DisplayAdjustments) null);
+
+        doReturn(new Display[] {externalDisplay, defaultDisplay})
+                .when(mDisplayManager)
+                .getDisplays(any());
+        doReturn(externalDisplay).when(mDisplayManager).getDisplay(externalDisplayInfo.displayId);
+
+        mDisplayDensityUtils =
+                new DisplayDensityUtils(
+                        mContext,
+                        (info) -> info.displayId == externalDisplayInfo.displayId,
+                        (i) -> false);
+
+        // Should contain 170 but not 255
+        assertThat(mDisplayDensityUtils.getValues())
+                .isEqualTo(new int[] {58, 68, 76, 85, 92, 102, 110, 118, 126, 170});
     }
 
     @Test

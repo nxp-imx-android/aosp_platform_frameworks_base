@@ -287,3 +287,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "add_extra_external_display_density_stops"
+  namespace: "lse_desktop_experience"
+  description: "Add 200% and 300% display density adjustments for external display"
+  bug: "456530370"
+}
