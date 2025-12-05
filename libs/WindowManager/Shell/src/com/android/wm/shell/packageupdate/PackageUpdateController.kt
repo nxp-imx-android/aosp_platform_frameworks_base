@@ -19,6 +19,7 @@ package com.android.wm.shell.packageupdate
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.PendingIntent
+import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.UserHandle
@@ -66,9 +67,8 @@ class PackageUpdateController(
         ProtoLog.d(
             WM_SHELL_PACKAGE_UPDATE,
             "PackageUpdateController: onPackageUpdateRequested for task: [%s]",
-            updatingTasks.joinToString { "${it.taskId}" }
+            updatingTasks.joinToString { "${it.taskId}" },
         )
-
 
         mainImmediateScope.launch {
             val wct = WindowContainerTransaction()
@@ -77,7 +77,7 @@ class PackageUpdateController(
                     ProtoLog.d(
                         WM_SHELL_PACKAGE_UPDATE,
                         "PackageUpdateController: task %d is visible, launching placeholder. ",
-                        task.taskId
+                        task.taskId,
                     )
                     val icon = getIcon(task)
                     launchPlaceholderInTask(wct, task, icon)
@@ -85,20 +85,14 @@ class PackageUpdateController(
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
                     "PackageUpdateController: Setting continue package update for task %d.",
-                    task.taskId
+                    task.taskId,
                 )
                 wct.continuePackageUpdate(task.token)
             }
 
-            ProtoLog.d(
-                WM_SHELL_PACKAGE_UPDATE,
-                "PackageUpdateController: Starting transition",
-            )
+            ProtoLog.d(WM_SHELL_PACKAGE_UPDATE, "PackageUpdateController: Starting transition")
             transitions.startTransition(TRANSIT_OPEN, wct, null)
-            ProtoLog.d(
-                WM_SHELL_PACKAGE_UPDATE,
-                "PackageUpdateController: Started transition",
-            )
+            ProtoLog.d(WM_SHELL_PACKAGE_UPDATE, "PackageUpdateController: Started transition")
         }
     }
 
@@ -106,7 +100,7 @@ class PackageUpdateController(
         ProtoLog.d(
             WM_SHELL_PACKAGE_UPDATE,
             "PackageUpdateController: onPackageUpdateFinished for task: [%s]",
-            updatedTasks.joinToString { "${it.taskId}" }
+            updatedTasks.joinToString { "${it.taskId}" },
         )
 
         val wct = WindowContainerTransaction()
@@ -115,14 +109,14 @@ class PackageUpdateController(
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
                     "PackageUpdateController: task %d is visible, launching the base intent and removing placeholder. ",
-                    task.taskId
+                    task.taskId,
                 )
                 launchBaseIntent(wct, task)
             } else {
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
                     "PackageUpdateController: Task is not visible, removing task %d.",
-                    task.taskId
+                    task.taskId,
                 )
                 wct.removeTask(task.token, /* removeFromRecents= */ false)
             }
@@ -133,7 +127,7 @@ class PackageUpdateController(
     private fun launchPlaceholderInTask(
         wct: WindowContainerTransaction,
         task: ActivityManager.RunningTaskInfo,
-        icon: Bitmap?
+        icon: Bitmap?,
     ) {
         val userId = task.userId
         val userHandle = UserHandle.of(userId)
@@ -161,7 +155,7 @@ class PackageUpdateController(
 
     private fun launchBaseIntent(
         wct: WindowContainerTransaction,
-        task: ActivityManager.RunningTaskInfo
+        task: ActivityManager.RunningTaskInfo,
     ) {
         val userId = task.userId
         val userHandle = UserHandle.of(userId)
@@ -201,5 +195,35 @@ class PackageUpdateController(
         // Don't show any icon if there is no window decor
         // TODO(b/468276203) - Add icon when there is no window decor
         return null
+    }
+
+    fun onTaskAppeared(taskInfo: ActivityManager.RunningTaskInfo) {
+        ProtoLog.d(
+            WM_SHELL_PACKAGE_UPDATE,
+            "PackageUpdateController: Setting handlePackageUpdate for task: %d",
+            taskInfo.taskId,
+        )
+        // Do not handle home task
+        if (taskInfo.activityType == ACTIVITY_TYPE_HOME) return
+        val wct =
+            WindowContainerTransaction().apply {
+                setHandlePackageUpdateForRootContainer(taskInfo.token, true)
+            }
+        shellTaskOrganizer.applyTransaction(wct)
+    }
+
+    fun onTaskVanished(taskInfo: ActivityManager.RunningTaskInfo) {
+        ProtoLog.d(
+            WM_SHELL_PACKAGE_UPDATE,
+            "PackageUpdateController: Removing handlePackageUpdate for task: %d",
+            taskInfo.taskId,
+        )
+        // Do not handle home task
+        if (taskInfo.activityType == ACTIVITY_TYPE_HOME) return
+        val wct =
+            WindowContainerTransaction().apply {
+                setHandlePackageUpdateForRootContainer(taskInfo.token, false)
+            }
+        shellTaskOrganizer.applyTransaction(wct)
     }
 }

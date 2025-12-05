@@ -154,6 +154,26 @@ class PackageUpdateControllerTest : ShellTestCase() {
         wct.assertRemoveTask(task, removeFromRecents = false)
     }
 
+    @Test
+    fun onTaskAppeared_setsHandlePackageUpdate() {
+        val task = createTaskInfo(1)
+
+        packageUpdateController.onTaskAppeared(task)
+
+        val wct = getLatestWctThroughTransaction()
+        wct.assertHandlePackageUpdate(task, true)
+    }
+
+    @Test
+    fun onTaskVanished_unsetsHandlePackageUpdate() {
+        val task = createTaskInfo(1)
+
+        packageUpdateController.onTaskVanished(task)
+
+        val wct = getLatestWctThroughTransaction()
+        wct.assertHandlePackageUpdate(task, false)
+    }
+
     private fun createTaskInfo(
         id: Int,
         windowingMode: Int = WINDOWING_MODE_FULLSCREEN,
@@ -181,6 +201,27 @@ class PackageUpdateControllerTest : ShellTestCase() {
         return arg.value
     }
 
+    private fun getLatestWctThroughTransaction(): WindowContainerTransaction {
+        val arg = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        verify(shellTaskOrganizer).applyTransaction(arg.capture())
+        return arg.value
+    }
+
+    private fun WindowContainerTransaction.assertHandlePackageUpdate(
+        task: RunningTaskInfo,
+        shouldHandlePackageUpdate: Boolean
+    ) {
+        val change = changes[task.token.asBinder()]
+
+        assertWithMessage("Expected WCT to contain change for task ${task.taskId}")
+            .that(change)
+            .isNotNull()
+
+        assertWithMessage("Wrong handlePackageUpdate value for task ${task.taskId} expected " +
+                "$shouldHandlePackageUpdate but found ${change?.handlePackageUpdate}")
+            .that(change?.handlePackageUpdate)
+            .isEqualTo(shouldHandlePackageUpdate)
+    }
     private fun WindowContainerTransaction.assertPendingIntent(intent: Intent) {
         assertHop("Type=PENDING_INTENT with component=${intent.component}") { hop ->
             hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
