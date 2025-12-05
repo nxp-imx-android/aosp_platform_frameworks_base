@@ -93,24 +93,34 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mDependency.injectTestDependency(DeviceProvisionedController.class,
-                mDeviceProvisionedController);
+        mDependency.injectTestDependency(
+                DeviceProvisionedController.class, mDeviceProvisionedController);
         mDependency.injectTestDependency(ShadeController.class, mShadeController);
-        mDependency.injectTestDependency(NotificationLockscreenUserManager.class,
-                mNotificationLockscreenUserManager);
+        mDependency.injectTestDependency(
+                NotificationLockscreenUserManager.class, mNotificationLockscreenUserManager);
 
         if (SceneContainerFlag.isEnabled()) {
             when(mDeviceUnlockedInteractorLazy.get()).thenReturn(mDeviceUnlockedInteractor);
             when(mSceneInteractorLazy.get()).thenReturn(mSceneInteractor);
         }
 
-        mRemoteInputCallback = spy(new StatusBarRemoteInputCallback(mContext,
-                mGroupExpansionManager, mNotificationLockscreenUserManager,
-                mKeyguardStateController, mStatusBarStateController, mStatusBarKeyguardViewManager,
-                mActivityStarter, mShadeController,
-                new CommandQueue(mContext, new FakeDisplayTracker(mContext)),
-                mock(ActionClickLogger.class), mFakeExecutor, mDeviceUnlockedInteractorLazy,
-                mSceneInteractorLazy, mJavaAdapter));
+        mRemoteInputCallback =
+                spy(
+                        new StatusBarRemoteInputCallback(
+                                mContext,
+                                mGroupExpansionManager,
+                                mNotificationLockscreenUserManager,
+                                mKeyguardStateController,
+                                mStatusBarStateController,
+                                mStatusBarKeyguardViewManager,
+                                mActivityStarter,
+                                mShadeController,
+                                new CommandQueue(mContext, new FakeDisplayTracker(mContext)),
+                                mock(ActionClickLogger.class),
+                                mFakeExecutor,
+                                mDeviceUnlockedInteractorLazy,
+                                mSceneInteractorLazy,
+                                mJavaAdapter));
         mRemoteInputCallback.mChallengeReceiver = mRemoteInputCallback.new ChallengeReceiver();
     }
 
@@ -118,9 +128,10 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
     public void testActionDeviceLockedChangedWithDifferentUserIdCallsOnWorkChallengeChanged() {
         when(mNotificationLockscreenUserManager.getCurrentUserId()).thenReturn(mCurrentUserId);
         when(mNotificationLockscreenUserManager.isCurrentProfile(anyInt())).thenReturn(true);
-        Intent intent = new Intent()
-                .setAction(ACTION_DEVICE_LOCKED_CHANGED)
-                .putExtra(Intent.EXTRA_USER_HANDLE, mCurrentUserId + 1);
+        Intent intent =
+                new Intent()
+                        .setAction(ACTION_DEVICE_LOCKED_CHANGED)
+                        .putExtra(Intent.EXTRA_USER_HANDLE, mCurrentUserId + 1);
         mRemoteInputCallback.mChallengeReceiver.onReceive(mContext, intent);
         verify(mRemoteInputCallback, times(1)).onWorkChallengeChanged();
     }
@@ -130,9 +141,10 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         mRemoteInputCallback.onLockedRemoteInput(
                 mock(ExpandableNotificationRow.class), mock(View.class));
 
-        verify(mStatusBarKeyguardViewManager).showBouncer(true,
-                "StatusBarRemoteInputCallback#onLockedRemoteInput");
+        verify(mStatusBarKeyguardViewManager)
+                .showBouncer(true, "StatusBarRemoteInputCallback#onLockedRemoteInput");
     }
+
     @Test
     @DisableFlags(ExpandHeadsUpOnInlineReply.FLAG_NAME)
     public void onMakeExpandedVisibleForRemoteInput_collapsedGroup_expandGroupExpansion() {
@@ -193,7 +205,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         // THEN
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
         verify(enr).setUserExpanded(true);
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
     }
@@ -223,7 +236,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         // THEN
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
         verify(enr).setUserExpanded(true);
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
     }
@@ -289,7 +303,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         // THEN
         verify(privateLayout).setOnExpandedVisibleListener(any());
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(enrEntry);
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
         verify(enr, never()).setUserExpanded(anyBoolean());
     }
 
@@ -323,7 +338,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
         verify(enr, never()).setUserExpanded(anyBoolean());
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
     }
 
     @Test
@@ -356,7 +372,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
         verify(enr, never()).setUserExpanded(anyBoolean());
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
     }
 
     @Test
@@ -389,7 +406,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
         verify(enr, never()).setUserExpanded(anyBoolean());
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
     }
 
     @Test
@@ -422,6 +440,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         verify(privateLayout).setOnExpandedVisibleListener(onExpandedVisibleRunner);
         verify(enr, never()).setUserExpanded(anyBoolean());
         verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntry.class));
-        verify(mGroupExpansionManager, never()).toggleGroupExpansion(any(NotificationEntryAdapter.class));
+        verify(mGroupExpansionManager, never())
+                .toggleGroupExpansion(any(NotificationEntryAdapter.class));
     }
 }
