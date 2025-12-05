@@ -745,10 +745,6 @@ class Task extends TaskFragment {
         mShouldIgnoreInsets = shouldIgnoreInsets;
         mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
         EventLogTags.writeWmTaskCreated(mTaskId);
-
-        if (mWmService.mAppLockController != null) {
-            mWmService.mAppLockController.registerTask(this);
-        }
     }
 
     static Task fromWindowContainerToken(WindowContainerToken token) {

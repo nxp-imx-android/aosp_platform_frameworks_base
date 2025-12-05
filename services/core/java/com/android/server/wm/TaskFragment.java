@@ -1338,6 +1338,18 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
+        if (mWmService.mAppLockController != null
+                && mWmService.mAppLockController.isActivityLockedByAppLockLocked(next)) {
+            // The top activity is locked by App Lock. Instead of resuming it, intercept the resume
+            // and show the App Lock overlay. This is the "just-in-time" locking mechanism, refer to
+            // AppLockOverlayController.
+            ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: next activity %s is locked by App"
+                    + " Lock, launching overlay", next);
+
+            mWmService.mAppLockController.addLockedByAppLockActivityOverlayLocked(next);
+            return true;
+        }
+
         if (!skipPause && !mRootWindowContainer.allPausedActivitiesComplete()) {
             // If we aren't skipping pause, then we have to wait for currently pausing activities.
             ProtoLog.v(WM_DEBUG_STATES, "resumeTopActivity: Skip resume: some activity pausing.");

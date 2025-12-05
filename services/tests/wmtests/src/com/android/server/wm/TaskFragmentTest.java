@@ -63,6 +63,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -1116,6 +1117,53 @@ public class TaskFragmentTest extends WindowTestsBase {
         assertSame(adjTasks, task1.getAdjacentTaskFragments());
         assertSame(adjTasks, task2.getAdjacentTaskFragments());
         assertFalse(adjTasks.contains(task0));
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void resumeTopActivity_topActivityLockedByAppLock_addsOverlay() {
+        // GIVEN a task fragment with a locked activity on top
+        final TaskFragment taskFragment = new TaskFragmentBuilder(mAtm)
+                .setCreateParentTask()
+                .createActivityCount(1)
+                .build();
+        final ActivityRecord activity = taskFragment.getTopMostActivity();
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(true).when(appLockController).isActivityLockedByAppLockLocked(activity);
+
+        // WHEN we try to resume the top activity
+        final boolean result = taskFragment.resumeTopActivity(null /* prev */, null /* options */,
+                true /* skipPause */);
+
+        // THEN the resume is intercepted and an overlay is added
+        assertTrue(result);
+        verify(appLockController).addLockedByAppLockActivityOverlayLocked(activity);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void resumeTopActivity_topActivityNotLockedByAppLock_resumesNormally() {
+        // GIVEN a task fragment with an unlocked activity on top
+        final TaskFragment taskFragment = new TaskFragmentBuilder(mAtm)
+                .setCreateParentTask()
+                .createActivityCount(1)
+                .build();
+        final ActivityRecord activity = taskFragment.getTopMostActivity();
+        spyOn(activity);
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(false).when(appLockController).isActivityLockedByAppLockLocked(activity);
+
+        // WHEN we try to resume the top activity
+        taskFragment.resumeTopActivity(null /* prev */, null /* options */, true /* skipPause */);
+
+        // THEN the app lock controller is NOT invoked and resume proceeds normally
+        verify(appLockController, never()).addLockedByAppLockActivityOverlayLocked(any());
     }
 
     private WindowState createAppWindow(ActivityRecord app, String name) {

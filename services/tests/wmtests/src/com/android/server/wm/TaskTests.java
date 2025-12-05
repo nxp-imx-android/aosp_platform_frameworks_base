@@ -2617,18 +2617,6 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    public void testCreateTask_registersToAppLockController() {
-        final AppLockController appLockController = mWm.mAppLockController;
-        spyOn(appLockController);
-
-        final Task task = getTestTask();
-
-        verify(appLockController).registerTask(task);
-    }
-
-    @Test
     public void testBuilder_notCreatedByOrganizer_ignoreInsetsAndAppCompatRoundedCornersDefault() {
         final Task task = new Task.Builder(mAtm)
                 .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)

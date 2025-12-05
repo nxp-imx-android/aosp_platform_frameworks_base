@@ -166,7 +166,6 @@ import com.android.internal.R;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.wm.ActivityRecord.State;
-import com.android.server.wm.LockTaskController;
 import com.android.window.flags.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -826,6 +825,82 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.setState(STOPPED, "Testing");
 
         assertEquals(false, activity.shouldMakeActive(null /* activeActivity */));
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testShouldMakeActive_lockedByAppLock_returnsFalse() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.setState(STOPPED, "test");
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(true).when(appLockController).isActivityLockedByAppLockLocked(activity);
+
+        assertFalse(activity.shouldMakeActive(null /* activeActivity */));
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testShouldMakeActive_notLockedByAppLock_returnsTrue() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.setState(STOPPED, "test");
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(false).when(appLockController).isActivityLockedByAppLockLocked(activity);
+
+        assertTrue(activity.shouldMakeActive(null /* activeActivity */));
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testMakeActiveIfNeeded_lockedByAppLock_doesNotStart() {
+        // Create a task with a translucent top activity and a bottom activity.
+        // The bottom activity is not top, so shouldMakeActive returns false.
+        // This forces execution into shouldStartActivity().
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord bottomActivity = task.getTopMostActivity();
+        new ActivityBuilder(mAtm).setTask(task).setActivityTheme(android.R.style.Theme_Translucent)
+                .build();
+
+        bottomActivity.setState(STOPPED, "test");
+        bottomActivity.setVisibleRequested(true);
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(true).when(appLockController).isActivityLockedByAppLockLocked(bottomActivity);
+
+        bottomActivity.makeActiveIfNeeded(null /* activeActivity */);
+
+        assertEquals(STOPPED, bottomActivity.getState());
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testMakeActiveIfNeeded_notLockedByAppLock_starts() {
+        // Create a task with a translucent top activity and a bottom activity.
+        // The bottom activity is not top, so shouldMakeActive returns false.
+        // This forces execution into shouldStartActivity().
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord bottomActivity = task.getTopMostActivity();
+        new ActivityBuilder(mAtm).setTask(task).setActivityTheme(android.R.style.Theme_Translucent)
+                .build();
+
+        bottomActivity.setState(STOPPED, "test");
+        bottomActivity.setVisibleRequested(true);
+
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(false).when(appLockController).isActivityLockedByAppLockLocked(bottomActivity);
+
+        bottomActivity.makeActiveIfNeeded(null /* activeActivity */);
+
+        assertEquals(STARTED, bottomActivity.getState());
     }
 
     @Test

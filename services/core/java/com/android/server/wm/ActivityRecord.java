@@ -6106,6 +6106,12 @@ final class ActivityRecord extends WindowToken {
      * and {@link #shouldPauseActivity(ActivityRecord)}.
      */
     private boolean shouldStartActivity() {
+        if (mWmService.mAppLockController != null
+                && mWmService.mAppLockController.isActivityLockedByAppLockLocked(this)) {
+            // The activity is locked by App Lock, so it cannot be moved to STARTED state.
+            ProtoLog.d(WM_DEBUG_STATES, "shouldStartActivity: %s is locked by App Lock", this);
+            return false;
+        }
         return mVisibleRequested && (isState(STOPPED) || isState(STOPPING));
     }
 
@@ -6131,6 +6137,13 @@ final class ActivityRecord extends WindowToken {
         }
 
         if (this == activeActivity) {
+            return false;
+        }
+
+        if (mWmService.mAppLockController != null
+                && mWmService.mAppLockController.isActivityLockedByAppLockLocked(this)) {
+            // The activity is locked by App Lock, so it cannot be made active.
+            ProtoLog.d(WM_DEBUG_STATES, "shouldMakeActive: %s is locked by App Lock", this);
             return false;
         }
 

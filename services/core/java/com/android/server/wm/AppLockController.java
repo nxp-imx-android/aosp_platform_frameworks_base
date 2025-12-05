@@ -100,8 +100,8 @@ final class AppLockController {
                             }
                             lockedPackages.add(packageName);
 
-                            mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(
-                                    packageName, userId);
+                            mAppLockOverlayController.lockActivitiesTasksForAppLock(packageName,
+                                    userId);
                         } else {
                             if (lockedPackages == null) {
                                 // The package is not locked, so there is nothing to do.
@@ -216,10 +216,42 @@ final class AppLockController {
     }
 
     /**
-     * Registers the given task with the {@link AppLockOverlayController}. Refer to
-     * {@link AppLockOverlayController#registerTask(Task)} for documentation.
+     * Returns {@code true} if the given activity is currently in a locked state by App Lock.
+     *
+     * <p>This method checks if the activity's package is currently locked and verifies that
+     * there are no other visible, unlocked tasks for the same package (which would indicate
+     * an active, unlocked session).
+     *
+     * @param activity the activity to check for the App Lock locked state
+     * @return {@code true} if the activity is locked
      */
-    void registerTask(Task task) {
-        mAppLockOverlayController.registerTask(task);
+    @GuardedBy("mWmService.mGlobalLock")
+    boolean isActivityLockedByAppLockLocked(@NonNull ActivityRecord activity) {
+        Objects.requireNonNull(activity);
+
+        if (activity.finishing) {
+            return false;
+        }
+        // TODO(b/462423789): Remove hasVisibleTask check once AppLockLocalService listens to task
+        //  visibility changes.
+        final String packageName = activity.packageName;
+        final int userId = activity.mUserId;
+        return packageName != null
+                && isPackageLockedByAppLockLocked(packageName, userId)
+                && !mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(packageName,
+                userId);
+    }
+
+    /**
+     * Adds the activity-level overlay on top of the given {@code activity} with the
+     * {@link AppLockOverlayController}. Refer to
+     * {@link AppLockOverlayController#addLockedByAppLockActivityOverlay(ActivityRecord)} for
+     * documentation.
+     */
+    @GuardedBy("mWmService.mGlobalLock")
+    void addLockedByAppLockActivityOverlayLocked(@NonNull ActivityRecord activity) {
+        Objects.requireNonNull(activity);
+
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(activity);
     }
 }
