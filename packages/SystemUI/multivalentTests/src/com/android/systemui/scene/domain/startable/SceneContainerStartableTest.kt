@@ -340,6 +340,23 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isVisible).isTrue()
         }
 
+    // Edge case when resuming SetupWizard for a user that has already set an authentication
+    // factor.
+    @Test
+    fun hydrateVisibility_deviceNotProvisionedAndLocked() =
+        kosmos.runTest {
+            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Lockscreen,
+                isDeviceProvisioned = false,
+            )
+
+            underTest.start()
+            assertThat(isVisible).isTrue()
+        }
+
     @Test
     fun hydrateVisibility_basedOnOcclusion() =
         kosmos.runTest {

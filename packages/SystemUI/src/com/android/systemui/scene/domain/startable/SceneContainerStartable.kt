@@ -292,7 +292,13 @@ constructor(
     /** Updates the visibility of the scene container. */
     private fun hydrateVisibility() {
         applicationScope.launch {
-            deviceProvisioningInteractor.isDeviceProvisioned
+            combine(
+                    deviceProvisioningInteractor.isDeviceProvisioned,
+                    deviceUnlockedInteractor.deviceUnlockStatus,
+                ) { isProvisioned, unlockStatus ->
+                    isProvisioned || !unlockStatus.isUnlocked
+                }
+                .distinctUntilChanged()
                 .flatMapLatest { isAllowedToBeVisible ->
                     if (isAllowedToBeVisible) {
                         combine(
@@ -354,7 +360,7 @@ constructor(
                             }
                             .distinctUntilChanged()
                     } else {
-                        flowOf(false to "Device not provisioned or Factory Reset Protection active")
+                        flowOf(false to "Device not provisioned and unlocked")
                     }
                 }
                 .collect { (isVisible, loggingReason) ->
