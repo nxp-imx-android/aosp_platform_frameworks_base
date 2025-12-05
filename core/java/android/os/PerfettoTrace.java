@@ -127,6 +127,14 @@ public final class PerfettoTrace {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("cc");
     }
 
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            BIG_LOCKS_V3 = getBigLocksV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category getBigLocksV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("big_locks");
+    }
+
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -491,6 +499,7 @@ public final class PerfettoTrace {
             GFX_CATEGORY_V3.register();
             JOB_SCHEDULER_CATEGORY_V3.register();
             CC_CATEGORY_V3.register();
+            BIG_LOCKS_V3.register();
         } else {
             MQ_CATEGORY.register();
             GFX_CATEGORY.register();

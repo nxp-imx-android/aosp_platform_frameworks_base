@@ -83,6 +83,7 @@ import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_HIGH;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 import static android.os.IServiceManager.DUMP_FLAG_PROTO;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
+import static android.os.PerfettoTrace.BIG_LOCKS_V3;
 import static android.os.PowerExemptionManager.REASON_ACTIVITY_VISIBILITY_GRACE_PERIOD;
 import static android.os.PowerExemptionManager.REASON_BACKGROUND_ACTIVITY_PERMISSION;
 import static android.os.PowerExemptionManager.REASON_BOOT_COMPLETED;
@@ -447,6 +448,7 @@ import com.android.internal.app.SystemUserHomeActivity;
 import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.content.InstallLocationUtils;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.os.ApplicationSharedMemory;
@@ -869,17 +871,20 @@ public class ActivityManagerService extends IActivityManager.Stub
             THREAD_PRIORITY_FOREGROUND, LockGuard.INDEX_ACTIVITY);
 
     static void boostPriorityForLockedSection() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "ams_lock_acquire").emit();
         sThreadPriorityBooster.boost();
     }
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     private static ThreadPriorityBooster sProcThreadPriorityBooster = new ThreadPriorityBooster(
             THREAD_PRIORITY_FOREGROUND, LockGuard.INDEX_PROC);
 
     static void boostPriorityForProcLockedSection() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "proc_lock_acquire").emit();
         if (ENABLE_PROC_LOCK) {
             sProcThreadPriorityBooster.boost();
         } else {
@@ -893,6 +898,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         } else {
             sThreadPriorityBooster.reset();
         }
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     /**
