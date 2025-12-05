@@ -22,10 +22,14 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Process;
+import android.os.Trace;
 import android.util.Slog;
 
-import com.android.internal.annotations.Keep;
 import com.android.internal.os.BackgroundThread;
+import com.android.tools.r8.keepanno.annotations.UsedByNative;
+
+import java.util.Objects;
 
 /**
  * This class monitors the amount of memory used by application processes.  Debug data is
@@ -41,30 +45,43 @@ class MemoryLimiter {
     // The standard logcat tag for this module.
     private static final String TAG = "MemoryLimiter";
 
+    // The trace tag.
+    private static final long TRACE_TAG = Trace.TRACE_TAG_ACTIVITY_MANAGER;
+
+    // The trace track.  Keep this aligned with the track in the native layer.
+    // LINT.IfChange(traceTrack)
+    private static final String TRACE_TRACK = "MemoryLimiter";
+    // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:traceTrack)
+
+    // The limits that this feature monitors.
+    // LINT.IfChange(limitTypes)
+    // A limit has been breached but which limit is unknown.
+    static final int UNKNOWN_LIMIT_TYPE = 0;
+    // The memory.high limit has been breached.
+    static final int MEMORY_LIMIT_TYPE = 1;
+    // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitTypes)
+
     private static boolean enableMemoryLimiter() {
         return Flags.memoryLimiterEnable();
     }
 
-    // The static profile list.  Order is important: the list is passed to the native layer and
-    // profiles are later referenced by their index in this list.  The current (empty) list is
-    // just a placeholder.
-    private static final String[] sProfiles = new String[0];
+    /**
+     * Objects containing the app configuration parameters.  The only configuration parameter is
+     * memory.high, captured in a Long.
+     */
 
-    // The "no profile" profile.  This value is never a valid index into sProfiles.
-    private static final int NO_PROFILE = -1;
+    // Configure maximum memory.
+    private static final Long sMemoryMax = -1L;
 
-    // Return the task profile that should be assigned to an app in the give state.  The return
-    // value must be NO_PROFILE (there is no profile) or a valid index into sProfiles.
-    private static int processStateToProfile(@ProcessState int processState) {
-        switch (processState) {
+    // Return the memory limit that should be assigned to an app in the give state.
+    private static Long processStateToLimit(@ProcessState int processState) {
+        return switch (processState) {
             // Never try to configure a process that does not exist.
-            case ActivityManager.PROCESS_STATE_NONEXISTENT:
-                return NO_PROFILE;
+            case ActivityManager.PROCESS_STATE_NONEXISTENT -> null;
 
-            // This method is currently a stub, until actual profiles are defined.
-            default:
-                return NO_PROFILE;
-        }
+            // This method is currently a stub, until actual limits are defined.
+            default -> sMemoryMax;
+        };
     }
 
     /**
@@ -75,13 +92,10 @@ class MemoryLimiter {
      */
 
     // Start a process.
-    private static final int MESSAGE_START = -1;
+    private static final int MESSAGE_START = 0;
 
-    // The first profile.
-    private static final int MESSAGE_PROFILE_BEGIN = 0;
-
-    // The last profile, plus 1.
-    private static final int MESSAGE_PROFILE_END = sProfiles.length;
+    // Configure a process.
+    private static final int MESSAGE_CONFIG = 1;
 
     // The message queue that distributes calls into the native layer.
     private static Handler sQueue;
@@ -91,42 +105,54 @@ class MemoryLimiter {
      * therefore cannot be invoked before the native libraries are loaded.
      */
     static void init() {
+        if (!enableMemoryLimiter()) return;
+
+        // Initialize the native layer.
+        initLimiter();
+
         sQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
                 @Override
                 public void handleMessage(Message msg) {
                     final int pid = msg.arg1;
                     final int uid = msg.arg2;
                     final int op = msg.what;
-                    if (op == MESSAGE_START) {
-                        onProcessStarted(pid, uid);
-                    } else if (op >= MESSAGE_PROFILE_BEGIN && op < MESSAGE_PROFILE_END) {
-                        configureProfile(pid, uid, op);
-                    } else {
-                        Slog.e(TAG, "invalid message: op=" + op);
+                    switch (op) {
+                        case MESSAGE_START:
+                            onProcessStarted(pid, uid);
+                            break;
+                        case MESSAGE_CONFIG:
+                            if (msg.obj != null) {
+                                configureLimit(pid, uid, (Long) msg.obj);
+                            }
+                            break;
+                        default:
+                            Slog.e(TAG, "invalid message: op=" + op);
+                            break;
                     }
-
                 }
             };
-        initLimiter(sProfiles);
     }
 
     // The pid that this instance controls.
     private int mPid = 0;
     // The uid that this instance controls.
     private int mUid = 0;
-    // The last profile assigned to the process.
-    private int mProfile = NO_PROFILE;
+    // The last limit assigned to the process.
+    private Long mLimit = null;
 
     /**
      * Send a command.
      */
-    private void sendCommand(int command) {
-        sQueue.sendMessage(sQueue.obtainMessage(command, mPid, mUid));
+    private void sendCommand(int command, Object obj) {
+        sQueue.sendMessage(sQueue.obtainMessage(command, mPid, mUid, obj));
     }
 
     /**
      * Set the pid and uid of the instance.  The instance is created before the pid is known, so
      * both are set at this time, and the native layer is notified that the process has started.
+     *
+     * This method should be called while holding the AMS lock.  The actual work happens on a
+     * handler thread.
      */
     void setPidUid(int pid, int uid) {
         if (!enableMemoryLimiter()) return;
@@ -134,67 +160,68 @@ class MemoryLimiter {
         mPid = pid;
         mUid = uid;
 
-        if (mPid == 0 || mUid == 0) {
-            // A zero pid/zero uid is not valid for monitoring.  Do not try to configure the
-            // native layer.  The pid may change in the future, so reset the last-known profile.
+        if (mPid == 0 || mUid == 0 || mUid < Process.FIRST_APPLICATION_UID) {
+            // A zero pid/zero uid is not valid for monitoring.  Do not try to configure the native
+            // layer.  Also, the feature does not monitor system processes.  The pid may change in
+            // the future, so reset the last-known profile.
             mPid = 0;
             mUid = 0;
-            mProfile = NO_PROFILE;
+            mLimit = null;
             return;
         }
-        sendCommand(MESSAGE_START);
+        sendCommand(MESSAGE_START, null);
     }
 
     /**
-     * Record a new procstate.  If the new procstate requires a profile change, notify the native
-     * layer.
+     * React to a new procstate.  If the new procstate requires a profile change, notify the
+     * native layer.  A trace is started if there is a limit change.  The trace ends in the native
+     * layer after the new limit has been applied.
+     *
+     * This method should be called while holding the AMS lock.  The actual work happens on a
+     * handler thread.
      */
     void onProcStateUpdated(@ProcessState int newState) {
         if (!enableMemoryLimiter()) return;
 
-        // The process is not running, so we cannot assign profiles.
+        // The process is not running, so we cannot assign limits.
         if (mPid == 0) return;
 
-        final int newProfile = processStateToProfile(newState);
-        if (newProfile != NO_PROFILE && mProfile != newProfile) {
-            sendCommand(newProfile);
-            mProfile = newProfile;
+        final Long newLimit = processStateToLimit(newState);
+        if (newLimit != null && !Objects.equals(mLimit, newLimit)) {
+            Trace.asyncTraceForTrackBegin(TRACE_TAG, TRACE_TRACK, "newLimit", mPid);
+            sendCommand(MESSAGE_CONFIG, newLimit);
+            mLimit = newLimit;
         }
     }
 
     /**
      * The callback from the native layer.
      */
-    @Keep
+    @UsedByNative
     private static void onLimitExceeded(int pid, int uid, int limit) {
         Slog.w(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%d", pid, uid, limit));
     }
 
     /**
-     * Native method stubs.
+     * Native methods.
      */
 
     /**
-     * Initialize the native layer.  This configures the profiles that will be used and starts the
-     * native monitoring thread.
+     * Initialize the native layer.  This starts the native monitoring thread.  The method returns
+     * the total ram available for processes; this value can be used to create dynamic limits.
      */
-    private static void initLimiter(String[] profiles) {
-    }
+    private static native long initLimiter();
 
     /**
      * Inform the native layer that a process has started.  No profile is assigned to the process
      * but monitoring starts.  The function returns true on success.
      */
-    private static boolean onProcessStarted(int pid, int uid) {
-        return true;
-    }
+    private static native boolean onProcessStarted(int pid, int uid);
 
     /**
-     * Request that a process be configured to the n'th profile.  The function returns true on
-     * success.  If the process has not been started, or the process has exited since the last
-     * start, the function returns false.
+     * Request that a process's memory.high be configured to limit.  Negative values for the limit
+     * mean "maximum memory".  The function returns true on success.  If the process has not been
+     * started, or the process has exited since the last start, the function returns false.
      */
-    private static boolean configureProfile(int pid, int uid, int profile) {
-        return true;
-    }
+    private static native boolean configureLimit(int pid, int uid, long limit);
 }
