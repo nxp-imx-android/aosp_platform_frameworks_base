@@ -6541,6 +6541,8 @@ public class Notification implements Parcelable
             contentView.setViewVisibility(R.id.text, View.GONE);
             contentView.setTextViewText(R.id.text, null);
             if (richOngoingImprovements()) {
+                contentView.setViewVisibility(R.id.alt_title, View.GONE);
+                contentView.setTextViewText(R.id.alt_title, null);
                 contentView.setViewVisibility(R.id.alt_subtext, View.GONE);
                 contentView.setTextViewText(R.id.alt_subtext, null);
             }
