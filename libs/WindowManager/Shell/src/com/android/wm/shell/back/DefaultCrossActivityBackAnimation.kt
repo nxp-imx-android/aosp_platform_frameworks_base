@@ -65,7 +65,6 @@ constructor(
     }
 
     override fun preparePreCommitEnteringRectMovement() {
-        // the entering target starts 96dp to the left of the screen edge...
         startEnteringRect.set(startClosingRect)
         if (fixCrossActivityBackAnimationInBubbles()) {
             val nonRoundedHeight = startClosingRect.height() - 2 * cornerRadius
@@ -73,7 +72,9 @@ constructor(
                 min(INITIAL_ENTERING_SCALE, nonRoundedHeight / startEnteringRect.height())
             startEnteringRect.scaleCentered(startScale)
         }
-        startEnteringRect.offset(-enteringStartOffset, 0f)
+        // the entering target starts 96dp to the left of the screen edge...
+        val startOffset = max(startEnteringRect.width() * (1f - MAX_SCALE), enteringStartOffset)
+        startEnteringRect.offset(-startOffset, 0f)
         // ...and gets scaled in sync with the closing target
         targetEnteringRect.set(startEnteringRect)
         targetEnteringRect.scaleCentered(MAX_SCALE)

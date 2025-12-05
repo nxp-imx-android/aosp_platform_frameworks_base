@@ -642,7 +642,7 @@ abstract class CrossActivityBackAnimation(
 
     companion object {
         /** Max scale of the closing window. */
-        internal const val MAX_SCALE = 0.9f
+        internal const val MAX_SCALE = 0.85f
         /** Initial scale of the entering window. */
         internal const val INITIAL_ENTERING_SCALE = 0.95f
         private const val MAX_SCRIM_ALPHA_DARK = 0.8f
