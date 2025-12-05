@@ -20,19 +20,23 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMAT
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMATTER
-import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
+import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_DEBUG
+import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_RELEASE
 import com.google.common.truth.Truth.assertThat
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.junit.AfterClass
+import org.junit.BeforeClass
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleEventHistoryLogger]. */
 @SmallTest
@@ -42,7 +46,8 @@ class BubbleEventHistoryLoggerTest {
 
     @get:Rule val flagsRule = SetFlagsRule()
 
-    private val logger = BubbleEventHistoryLogger()
+    private val logger = BubbleEventHistoryLogger(isUserBuild = false)
+    private val releaseLogger = BubbleEventHistoryLogger(isUserBuild = true)
     private val logPattern = Regex("^\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3} .: .*$")
 
     @Test
@@ -67,15 +72,19 @@ class BubbleEventHistoryLoggerTest {
 
     @Test
     fun dump_respectsMAX_EVENTS() {
-        repeat(MAX_EVENTS + 10) { logger.d(message = "title") }
-        val linesCount = getTrimmedLogLines().size
+        repeat(MAX_EVENTS_DEBUG + 10) { logger.d(message = "title") }
+        repeat(MAX_EVENTS_RELEASE + 10) { releaseLogger.i(message = "title") }
 
-        assertThat(linesCount).isEqualTo(MAX_EVENTS)
+        val linesCount = getTrimmedLogLines().size
+        val releaseLinesCount = getTrimmedLogLines(releaseLogger).size
+
+        assertThat(linesCount).isEqualTo(MAX_EVENTS_DEBUG)
+        assertThat(releaseLinesCount).isEqualTo(MAX_EVENTS_RELEASE)
     }
 
     @Test
     fun dump_printsEventsInChronologicalOrderStartingFromTheOldestEvent() {
-        val repetitions = MAX_EVENTS * 2
+        val repetitions = MAX_EVENTS_DEBUG * 2
         repeat(repetitions) { repetition ->
             logger.logEvent(title = "", timestamp = repetition.toLong())
         }
@@ -107,9 +116,31 @@ class BubbleEventHistoryLoggerTest {
     }
 
     @Test
+    fun dump_release_logger_printsInfoAndUpEventsInExpectedFormat() {
+        try {
+            setAllLogsEnabled(false)
+            releaseLogger.record("test", eventData = "dump record")
+            releaseLogger.d("test %b", true, eventData = "eventData")
+            releaseLogger.v("test %d", 0, eventData = "eventData")
+            releaseLogger.i("test %s", "stringArgument", eventData = "eventData")
+            releaseLogger.w("test")
+            releaseLogger.e("test", eventData = "eventData")
+
+            val logLines = getTrimmedLogLines(releaseLogger)
+
+            assertLogFormat(logLines[0], "r: test | dump record")
+            assertLogFormat(logLines[1], "i: test stringArgument | eventData")
+            assertLogFormat(logLines[2], "w: test")
+            assertLogFormat(logLines[3], "e: test | eventData")
+        } finally {
+            setAllLogsEnabled(true)
+        }
+    }
+
+    @Test
     fun multiThreadLogging_dump_RespectsMAX_EVENTS() {
         val numberOfThreads = 50
-        val eventsPerThread = MAX_EVENTS // each thread will emmit MAX_EVENTS
+        val eventsPerThread = MAX_EVENTS_DEBUG // each thread will emmit MAX_EVENTS
         val startLatch = CountDownLatch(1) // Main thread signals worker threads to start
         val doneLatch = CountDownLatch(numberOfThreads) // Worker threads signal
         val executorService = Executors.newFixedThreadPool(numberOfThreads)
@@ -134,7 +165,7 @@ class BubbleEventHistoryLoggerTest {
 
         // Check that there are no more than MAX_EVENTS events in the log history
         val logLinesCount = getTrimmedLogLines().size
-        assertThat(logLinesCount).isEqualTo(MAX_EVENTS)
+        assertThat(logLinesCount).isEqualTo(MAX_EVENTS_DEBUG)
     }
 
     @Test
@@ -156,16 +187,40 @@ class BubbleEventHistoryLoggerTest {
         assertThat(trimmedDateTime).isEqualTo(expectedLogWithoutDate)
     }
 
-    private fun getTrimmedLogLines(): List<String> {
-        return getDumpOutput().split("\n").drop(1).dropLast(1).map { it.trim() }
+    private fun getTrimmedLogLines(logger: BubbleEventHistoryLogger = this.logger): List<String> {
+        return getDumpOutput(logger).split("\n").drop(1).dropLast(1).map { it.trim() }
     }
 
-    private fun getDumpOutput(): String {
+    private fun getDumpOutput(logger: BubbleEventHistoryLogger = this.logger): String {
         val stringWriter = StringWriter()
         val printWriter = PrintWriter(stringWriter)
 
         logger.dump(pw = printWriter)
         printWriter.flush() // Ensure all content is written to StringWriter
         return stringWriter.toString()
+    }
+
+    companion object {
+
+        private val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
+
+        @BeforeClass
+        @JvmStatic
+        fun setup() {
+            setAllLogsEnabled(true)
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun tearDown() {
+            setAllLogsEnabled(false)
+        }
+
+        private fun setAllLogsEnabled(enabled: Boolean) {
+            val commandArg = if (enabled) "VERBOSE" else "\"\""
+            uiAutomation.executeShellCommand("setprop log.tag.BubblesHistoryLogger $commandArg")
+            // give system a time to propagate the change
+            Thread.sleep(100)
+        }
     }
 }

@@ -77,7 +77,7 @@ class BubbleLogTest {
         assertThat(BubbleLog.loggers.size).isEqualTo(1)
         BubbleLog.addLogger(errorLogger)
 
-        BubbleLog.d("debug test message")
+        BubbleLog.i("info test message")
 
         assertThat(errorLogger.exceptionThrown).isTrue()
         assertThat(getTrimmedLogLines()).isNotEmpty()
@@ -86,8 +86,8 @@ class BubbleLogTest {
     @Test
     fun dump_logsHistoryEventLoggerOutput() {
         BubbleLog.record("history test message string = %s", "stringArgument")
-        BubbleLog.d("debug test message boolean = %b", false)
-        BubbleLog.v("verbose test message int = %d", 1)
+        BubbleLog.i("info test message boolean = %b", false)
+        BubbleLog.w("warning test message int = %d", 1)
 
         val loggerOutput = getDumpOutput { BubbleLog.dump(pw = it) }
         assertThat(loggerOutput).contains("Bubbles events history:")
