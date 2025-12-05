@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.location.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -68,6 +69,7 @@ public final class PackageTagsList implements Parcelable {
      * does not imply anything about whether any given attribution tag under the given package name
      * is present.
      */
+    @UnsupportedAppUsage
     public boolean containsPackage(@NonNull String packageName) {
         return mPackageTags.containsKey(packageName);
     }
@@ -92,6 +94,7 @@ public final class PackageTagsList implements Parcelable {
      *
      * @hide
      */
+    @UnsupportedAppUsage
     public boolean containsTag(@NonNull String attributionTag) {
         final int size = mPackageTags.size();
         for (int i = 0; i < size; i++) {
@@ -108,6 +111,7 @@ public final class PackageTagsList implements Parcelable {
      * Returns true if all attribution tags under the given package are contained within this
      * instance.
      */
+    @UnsupportedAppUsage
     public boolean containsPackageWithAllTags(@NonNull String packageName) {
         Set<String> tags = mPackageTags.get(packageName);
         return tags != null && tags.isEmpty();
@@ -142,6 +146,7 @@ public final class PackageTagsList implements Parcelable {
     }
 
     /** Returns true if the given PackageTagsList is a subset of this instance. */
+    @UnsupportedAppUsage
     public boolean containsAll(@NonNull PackageTagsList packageTagsList) {
         int otherSize = packageTagsList.mPackageTags.size();
         if (otherSize > mPackageTags.size()) {
@@ -172,6 +177,7 @@ public final class PackageTagsList implements Parcelable {
     }
 
     /** Returns all packages that possess at least one attribution tag. */
+    @UnsupportedAppUsage
     public @NonNull Set<String> getPackages() {
         return Set.copyOf(mPackageTags.keySet());
     }
@@ -339,6 +345,7 @@ public final class PackageTagsList implements Parcelable {
 
         /** Adds the specified {@link PackageTagsList} to the builder. */
         @SuppressLint("MissingGetterMatchingBuilder")
+        @UnsupportedAppUsage
         public @NonNull Builder addAll(@NonNull PackageTagsList packageTagsList) {
             return addAll(packageTagsList.mPackageTags);
         }
@@ -348,6 +355,7 @@ public final class PackageTagsList implements Parcelable {
          * attribution tags is interpreted to imply all attribution tags under that package.
          */
         @SuppressLint("MissingGetterMatchingBuilder")
+        @UnsupportedAppUsage
         public @NonNull Builder addAll(@NonNull Map<String, ? extends Set<String>> packageTagsMap) {
             mPackageTags.ensureCapacity(packageTagsMap.size());
             for (Map.Entry<String, ? extends Set<String>> entry : packageTagsMap.entrySet()) {
@@ -420,6 +428,7 @@ public final class PackageTagsList implements Parcelable {
          * @hide
          */
         @SuppressLint("MissingGetterMatchingBuilder")
+        @UnsupportedAppUsage
         public @NonNull Builder removeAll(@NonNull PackageTagsList packageTagsList) {
             return removeAll(packageTagsList.mPackageTags);
         }
@@ -433,6 +442,7 @@ public final class PackageTagsList implements Parcelable {
          * @hide
          */
         @SuppressLint("MissingGetterMatchingBuilder")
+        @UnsupportedAppUsage
         public @NonNull Builder removeAll(
                 @NonNull Map<String, ? extends Set<String>> packageTagsMap) {
             for (Map.Entry<String, ? extends Set<String>> entry : packageTagsMap.entrySet()) {
