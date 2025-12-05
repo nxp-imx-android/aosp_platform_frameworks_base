@@ -154,13 +154,11 @@ interface IAudioService {
             in String attributionTag);
 
     @UnsupportedAppUsage
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)")
     int getStreamVolume(int streamType);
 
     int getStreamMinVolume(int streamType);
 
     @UnsupportedAppUsage
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)")
     int getStreamMaxVolume(int streamType);
 
     @EnforcePermission(anyOf={"MODIFY_AUDIO_SETTINGS_PRIVILEGED", "MODIFY_AUDIO_ROUTING"})
