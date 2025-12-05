@@ -24,10 +24,12 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
@@ -102,6 +104,36 @@ class PackageUpdateControllerTest : ShellTestCase() {
         wct.assertContinuePackageUpdate(task)
     }
 
+    @Test
+    fun onPackageUpdateFinished_visibleTask_launchesBaseIntent() {
+        val task = createTaskInfo(1)
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
+            HIERARCHY_OP_TYPE_PENDING_INTENT,
+        )
+        wct.assertPendingIntent(task.baseIntent)
+    }
+
+    @Test
+    fun onPackageUpdateFinished_invisibleTask_removesTaskAndKeepsInRecents() {
+        val task = createTaskInfo(1, visible = true)
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+        task.isVisible = false
+        task.isVisibleRequested = false
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
+            HIERARCHY_OP_TYPE_REMOVE_TASK,
+        )
+        wct.assertRemoveTask(task, removeFromRecents = false)
+    }
+
     private fun createTaskInfo(
         id: Int,
         windowingMode: Int = WINDOWING_MODE_FULLSCREEN,
@@ -140,6 +172,17 @@ class PackageUpdateControllerTest : ShellTestCase() {
         assertHop("Type=CONTINUE_UPDATE for taskId=${task.taskId}") { hop ->
             hop.type == HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE &&
                     hop.container == task.token.asBinder()
+        }
+    }
+
+    private fun WindowContainerTransaction.assertRemoveTask(
+        task: RunningTaskInfo,
+        removeFromRecents: Boolean
+    ) {
+        assertHop("Type=REMOVE_TASK for taskId=${task.taskId}") { hop ->
+            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                    hop.container == task.token.asBinder() &&
+                    hop.removeFromRecents == removeFromRecents
         }
     }
 
