@@ -1469,16 +1469,6 @@ flag {
 }
 
 flag {
-  name: "remove_dream_overlay_hide_on_touch"
-  namespace: "systemui"
-  description: "Removes logic to hide the dream overlay on user interaction, as it conflicts with various transitions"
-  bug: "329091030"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "remove_nearby_share_tile_animation"
     namespace: "systemui"
     description: "Removing Activity Transition animation for nearby share tile as Activity's view is a bottomsheet"
