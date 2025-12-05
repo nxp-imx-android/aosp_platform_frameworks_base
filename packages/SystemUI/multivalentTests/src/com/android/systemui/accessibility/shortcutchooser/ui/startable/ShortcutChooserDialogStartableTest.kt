@@ -23,8 +23,13 @@ import android.provider.Settings
 import android.provider.Settings.Secure.USER_SETUP_COMPLETE
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.accessibility.Flags as AccessibilityFlags
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -39,6 +44,7 @@ import com.android.systemui.Flags as SystemUIFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
+import com.android.systemui.accessibility.data.repository.fakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.ui.viewmodel.ShortcutChooserDialogViewModel.DialogType
 import com.android.systemui.accessibility.shortcutchooser.ui.viewmodel.shortcutChooserDialogViewModelFactory
@@ -82,6 +88,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
     private val viewModel = kosmos.shortcutChooserDialogViewModelFactory.create()
+    private val fakeRepository = kosmos.fakeAccessibilityShortcutsRepository
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
@@ -513,7 +520,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
-    fun createDialog_quickAccess_clickTarget_performsShortcut() =
+    fun createDialog_quickAccess_clickToggleableTarget_performsShortcut() =
         kosmos.runTest {
             underTest.start()
 
@@ -521,18 +528,45 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertCurrentDialog(DialogType.QUICK_ACCESS)
 
-            composeTestRule.onNodeWithText("Screen Reader").performClick()
+            assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isFalse()
+            val targetNode = composeTestRule.onNodeWithText("Screen Reader")
+            targetNode.assert(isToggleable())
+            targetNode.assertIsOff()
+
+            targetNode.performClick()
             composeTestRule.waitForIdle()
 
-            assertThat(
-                    accessibilityShortcutsRepository
-                        .getAllAccessibilityTargetsInfo(UserShortcutType.QUICK_ACCESS)
-                        .filter { it.isToggleOn }
-                        .map { it.targetName }
-                        .toSet()
-                )
-                .isEqualTo(setOf(TALKBACK_TARGET_NAME))
+            assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isTrue()
+            targetNode.assertIsOn()
             assertCurrentDialog(DialogType.QUICK_ACCESS)
+
+            targetNode.performClick()
+            composeTestRule.waitForIdle()
+
+            assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isFalse()
+            targetNode.assertIsOff()
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+        }
+
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun createDialog_quickAccess_clickNotToggleableTarget_performsShortcutAndClosesDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+
+            assertThat(fakeRepository.isTargetEnabled(MAGNIFICATION_TARGET_NAME)).isFalse()
+            val targetNode = composeTestRule.onNodeWithText("Magnification")
+            targetNode.assert(isNotToggleable())
+
+            targetNode.performClick()
+            composeTestRule.waitForIdle()
+
+            assertThat(fakeRepository.isTargetEnabled(MAGNIFICATION_TARGET_NAME)).isTrue()
+            assertCurrentDialog(DialogType.NONE)
         }
 
     private fun Kosmos.sendIntentInMainThreadWaitForIdle(
@@ -669,4 +703,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             assertDoesNotExist()
         }
     }
+
+    private fun isNotToggleable() =
+        SemanticsMatcher("isNotToggleable") { node -> !isToggleable().matches(node) }
 }
