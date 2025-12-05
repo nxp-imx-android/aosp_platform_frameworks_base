@@ -11,4 +11,12 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "notification_chip_from_compact_content"
+    namespace: "notifications"
+    description: "Use resolveCompactContent() as the source of truth for promoted notification chips."
+    bug: "444195986"
+}
+
 # go/keep-sorted end

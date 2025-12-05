@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
-import android.app.Flags.FLAG_API_NOTIFICATION_CHIP
 import android.app.Notification
 import android.app.Notification.Metric.TimeDifference
 import android.app.PendingIntent
@@ -28,6 +27,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
+import com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
 import com.android.systemui.Flags.FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
@@ -61,7 +61,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
-import com.android.systemui.statusbar.notification.shared.NotificationChipApi
+import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
@@ -274,7 +274,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_notifWithSemanticStyle_chipTextHasSemanticColor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -787,7 +787,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_hasShortCriticalText_usesTextInsteadOfTimeOrMetric() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -824,7 +827,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_useMetricInsteadOfTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -948,7 +954,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.wasPromotedAutomatically = false
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -977,14 +983,17 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(
-                    if (NotificationChipApi.isEnabled)
+                    if (NotificationChipFromCompactContent.isEnabled)
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_basicTime_timeInFuture_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1022,7 +1031,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -1054,7 +1063,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].content)
                 .isInstanceOf(
-                    if (NotificationChipApi.isEnabled)
+                    if (NotificationChipFromCompactContent.isEnabled)
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
@@ -1066,7 +1075,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_basicTime_timeLessThanOneMinInFuture_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1151,7 +1163,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     // Not necessarily the behavior we *want* to have, but it's the currently implemented behavior.
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_basicTime_timeIsInFuture_thenTimeAdvances_stillShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1185,7 +1200,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_countUpTime_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1240,7 +1258,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -1296,7 +1314,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -1370,7 +1388,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_adaptiveTimerMetric_systemClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1412,7 +1433,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentAdaptiveTimer_systemClock_isCountdownTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1462,7 +1483,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_adaptiveTimerMetric_realtimeClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1505,7 +1529,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentAdaptiveTimer_realtimeClock_isCountdown() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1555,7 +1579,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_chronometerTimerMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1604,7 +1631,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerTimer_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1654,7 +1681,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_chronometerTimerMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1703,7 +1733,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerTimer_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1753,7 +1783,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_chronometerStopwatchMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1802,7 +1835,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerStopwatch_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1852,7 +1885,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+    )
     fun chips_chronometerStopwatchMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1901,7 +1937,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerStopwatch_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1960,7 +1996,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -1992,7 +2028,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // THEN the chip shows the time
             assertThat(latest!![0].content)
                 .isInstanceOf(
-                    if (NotificationChipApi.isEnabled)
+                    if (NotificationChipFromCompactContent.isEnabled)
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
@@ -2008,7 +2044,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -2047,7 +2083,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // the system. What we know here is that the chip shouldn't shrink to icon only.)
             assertThat(latest!![0].content)
                 .isInstanceOf(
-                    if (NotificationChipApi.isEnabled)
+                    if (NotificationChipFromCompactContent.isEnabled)
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
@@ -2063,7 +2099,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -2081,7 +2117,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 }
             val otherPromotedContentBuilder =
                 newPromotedNotificationContentBuilder("other notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -2126,7 +2162,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val chip = latest!![0]
             assertThat(latest!![0].content)
                 .isInstanceOf(
-                    if (NotificationChipApi.isEnabled)
+                    if (NotificationChipFromCompactContent.isEnabled)
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
@@ -2466,12 +2502,12 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         key: String
     ): PromotedNotificationContentBuilder {
         val builder = PromotedNotificationContentBuilder(key)
-        if (NotificationChipApi.isEnabled) {
+        if (NotificationChipFromCompactContent.isEnabled) {
             builder.applyToShared {
-                // If API_NOTIFICATION_CHIP is active, then PromotedNotificationContentModel must
-                // have SOME compactContent, otherwise toPrunedModel() will throw. We provide a
-                // default here. Tests that want to check chip icon/text should set an explicit
-                // one.
+                // If NOTIFICATION_CHIP_FROM_COMPACT_CONTENT is active, then
+                // PromotedNotificationContentModel must have SOME compactContent, otherwise
+                // toPrunedModel() will throw. We provide a default here. Tests that want to check
+                // chip icon/text should set an explicit one.
                 this.compactContent =
                     Notification.ResolvedBasicCompactContent(
                         COMPACT_ICON,
@@ -2488,7 +2524,10 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(FLAG_API_NOTIFICATION_CHIP)
+            return FlagsParameterization.progressionOf(
+                FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
+                android.app.Flags.FLAG_API_NOTIFICATION_CHIP,
+            )
         }
 
         private val COMPONENT = ComponentName("package", "class")

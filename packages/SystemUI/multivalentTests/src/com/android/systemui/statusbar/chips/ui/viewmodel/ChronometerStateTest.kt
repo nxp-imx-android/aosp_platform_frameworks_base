@@ -246,7 +246,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     fun initialText_adaptiveFormat() = runTest {
         val state =
             ChronometerState(
@@ -707,7 +706,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     fun textUpdates_adaptiveFormat() = runTest {
         // Countdown to 4min 40sec
         fakeTimeSource.setElapsedRealtime(0)
@@ -741,7 +739,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     fun text_pausedDurationPositive_isShown() = runTest {
         val state =
             ChronometerState(
@@ -754,7 +751,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     fun text_pausedDurationZero_isShown() = runTest {
         val state =
             ChronometerState(
@@ -767,7 +763,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     fun text_pausedDurationNegative_isNotShown() = runTest {
         val state =
             ChronometerState(

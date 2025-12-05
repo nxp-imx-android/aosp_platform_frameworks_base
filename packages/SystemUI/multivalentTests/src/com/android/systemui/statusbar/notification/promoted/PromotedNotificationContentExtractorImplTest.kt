@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags.FLAG_API_METRIC_STYLE
-import android.app.Flags.FLAG_API_NOTIFICATION_CHIP
 import android.app.Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE
 import android.app.Notification
 import android.app.Notification.BigTextStyle
@@ -34,6 +33,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
@@ -153,7 +153,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_API_NOTIFICATION_CHIP)
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun extractContent_chipFlagOff_shortCriticalTextExtracted() =
         kosmos.runTest {
             val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
@@ -166,7 +166,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        FLAG_API_NOTIFICATION_CHIP,
+        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
         FLAG_API_METRIC_STYLE,
         FLAG_API_NOTIFICATION_SEMANTIC_STYLE,
     )

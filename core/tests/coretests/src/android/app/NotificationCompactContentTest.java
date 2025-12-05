@@ -26,6 +26,7 @@ import android.app.Notification.Metric.MetricValue;
 import android.app.Notification.ResolvedBasicCompactContent;
 import android.app.Notification.ResolvedCompactContent;
 import android.content.Context;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -48,6 +49,45 @@ public class NotificationCompactContentTest {
             InstrumentationRegistry.getInstrumentation().getContext();
 
     @Test
+    @DisableFlags(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public void resolveCompactContent_withFlagOff_doesNotUseCompactContent() {
+
+        Notification n = new Notification.Builder(mContext, "channel")
+                .setShortCriticalText("should use this")
+                .setCompactContent(
+                        new BasicCompactContent(
+                                CompactIcon.auto(),
+                                CompactText.fromMetricValue(new FixedText("and not this"))))
+                .build();
+        ResolvedCompactContent resolved = n.resolveCompactContent(mContext);
+
+        assertThat(resolved).isInstanceOf(ResolvedBasicCompactContent.class);
+        MetricValue resolvedText = ((ResolvedBasicCompactContent) resolved).getText();
+        assertThat(resolvedText).isInstanceOf(FixedText.class);
+        assertThat(((FixedText) resolvedText).getValue().toString()).isEqualTo("should use this");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public void resolveCompactContent_withFlagOn_usesCompactContent() {
+
+        Notification n = new Notification.Builder(mContext, "channel")
+                .setCompactContent(
+                        new BasicCompactContent(
+                                CompactIcon.auto(),
+                                CompactText.fromMetricValue(new FixedText("should use this"))))
+                .setShortCriticalText("and not this")
+                .build();
+        ResolvedCompactContent resolved = n.resolveCompactContent(mContext);
+
+        assertThat(resolved).isInstanceOf(ResolvedBasicCompactContent.class);
+        MetricValue resolvedText = ((ResolvedBasicCompactContent) resolved).getText();
+        assertThat(resolvedText).isInstanceOf(FixedText.class);
+        assertThat(((FixedText) resolvedText).getValue().toString()).isEqualTo("should use this");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_CHIP)
     public void resolveCompactContent_trashInBasicCompactContent_noCrashAndEmptyChip()
             throws Exception {
         CompactIcon trashyIcon = CompactIcon.useSmallIcon();
