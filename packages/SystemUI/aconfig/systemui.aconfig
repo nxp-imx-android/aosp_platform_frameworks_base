@@ -881,6 +881,13 @@ flag {
 }
 
 flag {
+    name: "internet_dialog_delegate_legacy_deprecation"
+    namespace: "systemui"
+    description: "Replacing InternetDialogDelegateLegacy by InternetDetailsContentManager."
+    bug: "467481923"
+}
+
+flag {
     name: "keyboard_docking_indicator"
     namespace: "systemui"
     description: "Glow bar indicator reveals upon keyboard docking."

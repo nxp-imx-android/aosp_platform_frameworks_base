@@ -95,7 +95,13 @@ import java.util.concurrent.Executor;
 
 /**
  * Dialog for showing mobile network, connected Wi-Fi network and Wi-Fi networks.
+ *
+ * DEPRECATED: This class is deprecated and will be removed in the future.
+ * Do not make any changes to this file unless strictly necessary for legacy support.
+ *
+ * @deprecated Use {@link InternetDetailsContentManager} instead.
  */
+@Deprecated
 public class InternetDialogDelegateLegacy implements
         SystemUIDialog.Delegate,
         InternetDetailsContentController.InternetDialogCallback {
