@@ -49,5 +49,8 @@ test_module_config {
     test_suites: [
         "device-tests",
     ],
-    include_filters: ["android.service.personalcontext"],
+    include_filters: [
+        "android.service.personalcontext",
+        "com.android.server.personalcontext",
+    ],
 }
