@@ -38,7 +38,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.android.compose.modifiers.thenIf
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
@@ -50,11 +49,7 @@ import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCap
 /** Main component for the pre-capture UI. */
 @Composable
 fun PreCaptureUI(viewModel: PreCaptureViewModel) {
-    val isScreenshotSelected =
-        remember(viewModel.captureType) { viewModel.captureType == ScreenCaptureType.SCREENSHOT }
-
-    val cameraPointerIcon =
-        PointerIcon(ViewPointerIcon.load(LocalResources.current, R.xml.pointer_camera_icon))
+    val localResources = LocalResources.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -83,6 +78,19 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
 
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
+                val fullscreenPointerIcon =
+                    remember(viewModel.captureType) {
+                        if (viewModel.captureType == ScreenCaptureType.SCREENSHOT) {
+                            PointerIcon(
+                                ViewPointerIcon.load(localResources, R.xml.pointer_camera_icon)
+                            )
+                        } else {
+                            PointerIcon(
+                                ViewPointerIcon.load(localResources, R.xml.pointer_record_icon)
+                            )
+                        }
+                    }
+
                 // Dim the entire screen with a scrim before taking a fullscreen screenshot.
                 Box(
                     modifier =
@@ -90,9 +98,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                             .fillMaxSize()
                             .background(color = ScreenCaptureColors.scrimColor)
                             .pointerInput(Unit) { detectTapGestures { viewModel.beginCapture() } }
-                            .thenIf(isScreenshotSelected) {
-                                Modifier.pointerHoverIcon(cameraPointerIcon)
-                            }
+                            .pointerHoverIcon(fullscreenPointerIcon)
                 ) {
                     PrimaryButton(
                         modifier =
