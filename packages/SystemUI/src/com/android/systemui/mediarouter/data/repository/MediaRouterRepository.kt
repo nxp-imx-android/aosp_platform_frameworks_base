@@ -18,7 +18,7 @@ package com.android.systemui.mediarouter.data.repository
 
 import android.media.projection.StopReason
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.mediarouter.MediaRouterLog
@@ -48,7 +48,7 @@ interface MediaRouterRepository {
 class MediaRouterRepositoryImpl
 @Inject
 constructor(
-    @Application private val scope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     private val castController: CastController,
     @MediaRouterLog private val logger: LogBuffer,
 ) : MediaRouterRepository {
@@ -66,7 +66,7 @@ constructor(
                 logger.log(TAG, LogLevel.INFO, { str1 = logString }, { "All cast devices: $str1" })
             }
             .map { it.filter { device -> device.origin == CastDevice.CastOrigin.MediaRouter } }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
+            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), emptyList())
 
     override fun stopCasting(device: CastDevice, @StopReason stopReason: Int) {
         castController.stopCasting(device, stopReason)

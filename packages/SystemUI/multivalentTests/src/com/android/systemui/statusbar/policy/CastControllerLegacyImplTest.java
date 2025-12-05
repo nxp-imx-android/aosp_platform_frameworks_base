@@ -1,6 +1,21 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.systemui.statusbar.policy;
 
-
+import static com.android.systemui.Flags.FLAG_CAST_CONTROLLER_MEDIA_ROUTER_IN_BG;
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 
 import static org.junit.Assert.assertTrue;
@@ -15,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaRouter;
 import android.media.projection.MediaProjectionInfo;
 import android.media.projection.MediaProjectionManager;
+import android.platform.test.annotations.DisableFlags;
 import android.testing.TestableLooper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -38,7 +54,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
-public class CastControllerImplTest extends SysuiTestCase {
+@DisableFlags(FLAG_CAST_CONTROLLER_MEDIA_ROUTER_IN_BG)
+public class CastControllerLegacyImplTest extends SysuiTestCase {
 
     @Mock
     MediaRouter mMediaRouter;
@@ -47,7 +64,7 @@ public class CastControllerImplTest extends SysuiTestCase {
     @Mock
     MediaProjectionInfo mProjection;
 
-    private CastControllerImpl mController;
+    private CastControllerLegacyImpl mController;
 
     @Before
     public void setUp() {
@@ -57,7 +74,7 @@ public class CastControllerImplTest extends SysuiTestCase {
         when(mMediaProjectionManager.getActiveProjectionInfo()).thenReturn(mProjection);
         when(mProjection.getPackageName()).thenReturn("fake.package");
 
-        mController = new CastControllerImpl(
+        mController = new CastControllerLegacyImpl(
                 mContext,
                 mock(PackageManager.class),
                 mock(DumpManager.class),
