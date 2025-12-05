@@ -16,6 +16,7 @@
 package com.android.systemui.screencapture.ui
 
 import android.content.Context
+import android.view.Display
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import kotlin.coroutines.resume
@@ -37,9 +39,16 @@ suspend fun postRecordingConfirmDeletion(
     dialogFactory: SystemUIDialogFactory,
     context: Context,
     viewModel: DrawableLoaderViewModel,
+    display: Display? = null,
 ): Boolean = suspendCancellableCoroutine { continuation ->
+    val dialogContext: Context =
+        if (display != null) {
+            context.createWindowContext(display, DIALOG_WINDOW_TYPE, null)
+        } else {
+            context
+        }
     val dialog =
-        dialogFactory.create(context = context) { dialog ->
+        dialogFactory.create(context = dialogContext) { dialog ->
             LaunchedEffect(dialog) {
                 dialog.setOnDismissListener {
                     if (continuation.isActive) continuation.resume(false)
@@ -63,6 +72,7 @@ suspend fun postRecordingConfirmDeletion(
                 },
             )
         }
+    dialog.window?.setType(DIALOG_WINDOW_TYPE)
     dialog.show()
     continuation.invokeOnCancellation { dialog.dismiss() }
 }

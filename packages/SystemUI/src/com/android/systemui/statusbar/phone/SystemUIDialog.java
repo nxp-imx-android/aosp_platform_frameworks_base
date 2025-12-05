@@ -74,6 +74,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private static final String FLAG_TABLET_DIALOG_WIDTH =
             "persist.systemui.flag_tablet_dialog_width";
     public static final boolean DEFAULT_DISMISS_ON_DEVICE_LOCK = true;
+    public static final int DIALOG_WINDOW_TYPE = LayoutParams.TYPE_STATUS_BAR_SUB_PANEL;
 
     private final Context mContext;
     private final DialogTransitionAnimator mDialogTransitionAnimator;
@@ -516,7 +517,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
      */
     public static void setWindowOnTop(Dialog dialog, boolean isKeyguardShowing) {
         final Window window = dialog.getWindow();
-        window.setType(LayoutParams.TYPE_STATUS_BAR_SUB_PANEL);
+        window.setType(DIALOG_WINDOW_TYPE);
         if (isKeyguardShowing) {
             window.getAttributes().setFitInsetsTypes(
                     window.getAttributes().getFitInsetsTypes() & ~Type.statusBars());
@@ -529,7 +530,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
 
     public static AlertDialog applyFlags(AlertDialog dialog, boolean showWhenLocked) {
         final Window window = dialog.getWindow();
-        window.setType(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL);
+        window.setType(DIALOG_WINDOW_TYPE);
         window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         if (showWhenLocked) {
             window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);

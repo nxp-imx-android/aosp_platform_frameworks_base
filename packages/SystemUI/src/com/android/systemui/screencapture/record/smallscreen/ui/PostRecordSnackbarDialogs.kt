@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.smallscreen.ui
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.view.Display
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.foundation.layout.Box
@@ -50,6 +51,7 @@ import com.android.systemui.screencapture.record.smallscreen.ui.compose.PostReco
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SnackbarVisualsWithIcon
 import com.android.systemui.statusbar.phone.DialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import java.util.concurrent.atomic.AtomicBoolean
@@ -74,8 +76,9 @@ constructor(
         )
     }
 
-    fun showVideoDeleted(uri: Uri) {
+    fun showVideoDeleted(uri: Uri, display: Display? = null) {
         showSnackbar(
+            display = display,
             visuals =
                 SnackbarVisualsWithIcon(
                     iconRes = R.drawable.ic_screenshot_delete,
@@ -98,11 +101,20 @@ constructor(
         visuals: SnackbarVisualsWithIcon,
         onActionPerformed: (() -> Unit)? = null,
         onDismissed: (() -> Unit)? = null,
+        display: Display? = null,
     ) {
         val actionHandler =
             ActionHandler(onActionPerformed = onActionPerformed, onDismissed = onDismissed)
-        dialogFactory
-            .create(
+        val dialogContext: Context =
+            if (display != null) {
+                context.createWindowContext(display, DIALOG_WINDOW_TYPE, null)
+            } else {
+                context
+            }
+
+        val dialog =
+            dialogFactory.create(
+                context = dialogContext,
                 theme = R.style.ScreenCapture_PostRecord_SnackbarDialog,
                 dialogDelegate =
                     SnackbarDialogDelegate(screenCaptureRecordFeaturesInteractor) {
@@ -129,7 +141,8 @@ constructor(
                     }
                 }
             }
-            .show()
+        dialog.window?.setType(DIALOG_WINDOW_TYPE)
+        dialog.show()
     }
 }
 
