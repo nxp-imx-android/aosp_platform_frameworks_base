@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.systemui.brightness.domain.interactor
+package com.android.systemui.brightness.domain.interactor.impl
 
 import com.android.settingslib.display.BrightnessUtils
 import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.brightness.data.repository.ScreenBrightnessRepository
+import com.android.systemui.brightness.domain.interactor.ScreenBrightnessInteractor
+import com.android.systemui.brightness.domain.model.GammaBrightness
+import com.android.systemui.brightness.domain.model.impl.logDiffForTable
 import com.android.systemui.brightness.shared.BrightnessLog
-import com.android.systemui.brightness.shared.model.GammaBrightness
-import com.android.systemui.brightness.shared.model.logDiffForTable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.table.TableLogBuffer
@@ -29,6 +30,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
@@ -38,24 +40,26 @@ import kotlinx.coroutines.flow.stateIn
  * @see BrightnessUtils
  */
 @SysUISingleton
-class ScreenBrightnessInteractor
+public class ScreenBrightnessInteractorImpl
 @Inject
 constructor(
     private val screenBrightnessRepository: ScreenBrightnessRepository,
     @Application private val applicationScope: CoroutineScope,
     @BrightnessLog private val tableBuffer: TableLogBuffer,
-) {
+) : ScreenBrightnessInteractor {
     /** Maximum value in the Gamma space for brightness */
-    val maxGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MAX)
+    override val maxGammaBrightness: GammaBrightness =
+        GammaBrightness(BrightnessUtils.GAMMA_SPACE_MAX)
 
     /** Minimum value in the Gamma space for brightness */
-    val minGammaBrightness = GammaBrightness(BrightnessUtils.GAMMA_SPACE_MIN)
+    override val minGammaBrightness: GammaBrightness =
+        GammaBrightness(BrightnessUtils.GAMMA_SPACE_MIN)
 
     /**
      * Brightness in the Gamma space for the current display. It will always represent a value
      * between [minGammaBrightness] and [maxGammaBrightness]
      */
-    val gammaBrightness: Flow<GammaBrightness> =
+    override val gammaBrightness: Flow<GammaBrightness> =
         with(screenBrightnessRepository) {
             combine(linearBrightness, minLinearBrightness, maxLinearBrightness) {
                     brightness,
@@ -67,17 +71,18 @@ constructor(
                 .stateIn(applicationScope, SharingStarted.WhileSubscribed(), GammaBrightness(0))
         }
 
-    val brightnessOverriddenByWindow = screenBrightnessRepository.isBrightnessOverriddenByWindow
+    override val brightnessOverriddenByWindow: StateFlow<Boolean> =
+        screenBrightnessRepository.isBrightnessOverriddenByWindow
 
     /** Sets the brightness temporarily, while the user is changing it. */
-    suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness) {
+    override suspend fun setTemporaryBrightness(gammaBrightness: GammaBrightness) {
         screenBrightnessRepository.setTemporaryBrightness(
             gammaBrightness.clamp().toLinearBrightness()
         )
     }
 
     /** Sets the brightness definitely. */
-    suspend fun setBrightness(gammaBrightness: GammaBrightness) {
+    override suspend fun setBrightness(gammaBrightness: GammaBrightness) {
         screenBrightnessRepository.setBrightness(gammaBrightness.clamp().toLinearBrightness())
     }
 

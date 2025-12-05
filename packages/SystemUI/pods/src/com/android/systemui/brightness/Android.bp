@@ -22,6 +22,7 @@ java_library {
     static_libs: [
         "com.android.systemui.brightness.shared-api",
         "com.android.systemui.brightness.data-api",
+        "com.android.systemui.brightness.domain-api",
     ],
     defaults: [
         "SystemUI_pod_defaults_api",
@@ -37,6 +38,7 @@ java_library {
         "com.android.systemui.brightness-api",
         "com.android.systemui.brightness.shared-impl",
         "com.android.systemui.brightness.data-impl",
+        "com.android.systemui.brightness.domain-impl",
     ],
     defaults: [
         "SystemUI_pod_defaults_impl",

@@ -16,11 +16,17 @@
 
 package com.android.systemui.brightness.domain.interactor
 
-import com.android.systemui.brightness.data.repository.brightnessPolicyRepository
+import com.android.systemui.brightness.data.repository.screenBrightnessRepository
+import com.android.systemui.brightness.domain.interactor.impl.ScreenBrightnessInteractorImpl
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.plugins.activityStarter
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.log.table.logcatTableLogBuffer
 
-val Kosmos.brightnessPolicyEnforcementInteractor by
+val Kosmos.screenBrightnessInteractor by
     Kosmos.Fixture {
-        BrightnessPolicyEnforcementInteractor(brightnessPolicyRepository, activityStarter)
+        ScreenBrightnessInteractorImpl(
+            screenBrightnessRepository,
+            applicationCoroutineScope,
+            logcatTableLogBuffer(this, "screenBrightness"),
+        )
     }

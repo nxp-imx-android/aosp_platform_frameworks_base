@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.brightness.shared.model
+package com.android.systemui.brightness.domain.model.impl
 
-import androidx.annotation.IntRange
-import com.android.settingslib.display.BrightnessUtils
+import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.util.kotlin.pairwiseBy
 import kotlinx.coroutines.flow.Flow
-
-@JvmInline
-value class GammaBrightness(
-    @IntRange(
-        from = BrightnessUtils.GAMMA_SPACE_MIN.toLong(),
-        to = BrightnessUtils.GAMMA_SPACE_MAX.toLong()
-    )
-    val value: Int
-)
 
 internal fun Flow<GammaBrightness>.logDiffForTable(
     tableLogBuffer: TableLogBuffer,

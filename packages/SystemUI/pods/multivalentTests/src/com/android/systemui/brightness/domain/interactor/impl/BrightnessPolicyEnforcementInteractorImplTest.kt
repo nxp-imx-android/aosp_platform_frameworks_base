@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.brightness.domain.interactor
+package com.android.systemui.brightness.domain.interactor.impl
 
 import android.content.ComponentName
 import android.content.Intent
@@ -43,7 +43,7 @@ import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class BrightnessPolicyEnforcementInteractorTest : SysuiTestCase() {
+class BrightnessPolicyEnforcementInteractorImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
 
@@ -51,7 +51,7 @@ class BrightnessPolicyEnforcementInteractorTest : SysuiTestCase() {
 
     private val underTest =
         with(kosmos) {
-            BrightnessPolicyEnforcementInteractor(brightnessPolicyRepository, activityStarter)
+            BrightnessPolicyEnforcementInteractorImpl(brightnessPolicyRepository, activityStarter)
         }
 
     @Test
