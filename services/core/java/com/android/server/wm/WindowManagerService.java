@@ -2619,8 +2619,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
                         + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
             }
-            if (!WindowManager.useClientSurface()
-                    && (attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
+            if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
             if ((attrChanges & WindowManager.LayoutParams.TITLE_CHANGED) != 0) {

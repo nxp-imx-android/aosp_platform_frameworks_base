@@ -3272,8 +3272,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // requested to be visible in a short time (e.g. before activity stopped).
         if (!clientVisible && mActivityRecord != null && mWinAnimator.mDrawState == HAS_DRAWN) {
             mWinAnimator.resetDrawState();
-            // Make sure the app can report drawn if it becomes visible again.
-            forceReportingResized();
+            if (!WindowManager.useClientSurface()) {
+                // Make sure the app can report drawn if it becomes visible again.
+                forceReportingResized();
+            }
         }
     }
 
@@ -3302,6 +3304,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mWinAnimator.resetDrawState();
         setHasSurface(true);
         mInputWindowHandle.forceChange();
+        // Avoid unnecessary resize for snapshot starting window because it always uses async
+        // relayout, and it won't redraw for resize.
+        if (mStartingData instanceof SnapshotStartingData) {
+            mLastConfigReportedToClient = true;
+        }
     }
 
     boolean destroySurface(boolean cleanupOnResume, boolean appStopped) {
