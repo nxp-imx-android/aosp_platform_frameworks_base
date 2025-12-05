@@ -1345,10 +1345,6 @@ final class BroadcastRecord extends Binder {
      * to {@param receiver} object.
      */
     public void updateBroadcastProcessedEventRecord(@NonNull Object receiver, long timeMillis) {
-        if (!Flags.logBroadcastProcessedEvent()) {
-            return;
-        }
-
         final String receiverProcessName = getReceiverProcessName(receiver);
         BroadcastProcessedEventRecord broadcastProcessedEventRecord =
                 mBroadcastProcessedRecords.get(receiverProcessName);
@@ -1367,10 +1363,6 @@ final class BroadcastRecord extends Binder {
     }
 
     public void logBroadcastProcessedEventRecord() {
-        if (!Flags.logBroadcastProcessedEvent()) {
-            return;
-        }
-
         int size = mBroadcastProcessedRecords.size();
         for (int i = 0; i < size; i++) {
             mBroadcastProcessedRecords.valueAt(i).logToStatsD();
