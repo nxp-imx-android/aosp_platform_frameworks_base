@@ -24,6 +24,8 @@ import com.android.settingslib.datastore.Permissions
 import com.android.settingslib.datastore.and
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.apifirst.preconditions.Allowed
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.apifirst.preconditions.Disallowed
@@ -70,6 +72,13 @@ class SetConfig<V : Any>(
  * partner teams to write and the methods which Catalyst expects.
  */
 abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
+    companion object {
+        private const val VALUE_TYPE_MISMATCH_ERROR = "Value type mismatch. Expected %s, got %s"
+
+        private fun buildValueTypeMismatchError(expected: Class<*>, actual: Class<*>) =
+            String.format(VALUE_TYPE_MISMATCH_ERROR, expected.name, actual.name)
+    }
+
     /**
      * Builds the final [Permissions] object by combining screen-level, common, and
      * operation-specific permissions.
@@ -144,8 +153,13 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 }
 
                 // If value type is not of the preference valueType (V), throw an exception
-                if (!this@ApiFirstPreference.valueType.isInstance(value)) {
-                    throw IllegalArgumentException("Value type mismatch")
+                if (value != null && !this@ApiFirstPreference.valueType.isInstance(value)) {
+                    throw IllegalArgumentException(
+                        buildValueTypeMismatchError(
+                            this@ApiFirstPreference.valueType,
+                            value.javaClass
+                        )
+                    )
                 }
 
                 // This cast is safe because we already checked the `value` is of type `V`
@@ -154,7 +168,7 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                     set?.valuePreconditions?.check?.invoke(context, valueV) ?: Allowed
                 when (valuePreconditionsCheck) {
                     Allowed -> set?.execute(context, valueV)
-                    is Disallowed -> throw IllegalStateException(valuePreconditionsCheck.reason)
+                    is Disallowed -> error(valuePreconditionsCheck.reason)
                 }
             }
         }
@@ -223,20 +237,36 @@ class GetConfigBuilder<V : Any> {
 
     /** Sets permissions for the get. */
     fun permissions(permissionsList: List<String>) {
+        if (permissionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("permissions"))
+        }
+
+        if (preconditionsConfig != null || executeBlock != null) {
+            error(getExceptionMessageWrongOrder("permissions"))
+        }
+
         permissionsConfig = PermissionsConfig(permissionsList)
     }
 
     /** Defines a precondition check that must pass for the get to be executed. */
     fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+        if (preconditionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("preconditions"))
+        }
+
+        if (executeBlock != null) {
+            error(getExceptionMessageWrongOrder("preconditions"))
+        }
+
         preconditionsConfig = PreconditionsConfig(description, lambda)
     }
 
-    /*
-     * TODO: When we add other blocks, error if they're done out-of-order. Make sure they are
-     *       called only once.
-     */
     /** Declare the execute block of the get. */
     fun execute(lambda: (Context) -> V) {
+        if (executeBlock != null) {
+            error(getExceptionMessageMultipleDefines("execute"))
+        }
+
         executeBlock = lambda
     }
 
@@ -244,8 +274,7 @@ class GetConfigBuilder<V : Any> {
         return GetConfig(
             permissions = permissionsConfig,
             preconditions = preconditionsConfig,
-            execute = executeBlock
-                ?: throw IllegalStateException("get 'execute' block is required")
+            execute = executeBlock ?: error("get 'execute' block is required")
         )
     }
 }
@@ -271,25 +300,49 @@ class SetConfigBuilder<V : Any> {
 
     /** Sets permissions for the set. */
     fun permissions(permissionsList: List<String>) {
+        if (permissionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("permissions"))
+        }
+
+        if (preconditionsConfig != null || valuePreconditionsConfig != null || executeBlock != null) {
+            error(getExceptionMessageWrongOrder("permissions"))
+        }
+
         permissionsConfig = PermissionsConfig(permissionsList)
     }
 
     /** Defines a precondition check that must pass for the set to be executed. */
     fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+        if (preconditionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("preconditions"))
+        }
+
+        if (valuePreconditionsConfig != null || executeBlock != null) {
+            error(getExceptionMessageWrongOrder("preconditions"))
+        }
+
         preconditionsConfig = PreconditionsConfig(description, lambda)
     }
 
     /** Defines a value precondition check that must pass for the set to be executed. */
     fun valuePreconditions(description: String, lambda: (Context, V) -> ApiFirstPreconditions) {
-        valuePreconditionsConfig = ValuePreconditionsConfig<V>(description, lambda)
+        if (valuePreconditionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("valuePreconditions"))
+        }
+
+        if (executeBlock != null) {
+            error(getExceptionMessageWrongOrder("valuePreconditions"))
+        }
+
+        valuePreconditionsConfig = ValuePreconditionsConfig(description, lambda)
     }
 
-    /*
-     * TODO: When we add other blocks, error if they're done out-of-order. Make sure they are
-     *       called only once.
-     */
     /** Declare the execute block of the set. */
     fun execute(lambda: (Context, V) -> Unit) {
+        if (executeBlock != null) {
+            error(getExceptionMessageMultipleDefines("execute"))
+        }
+
         executeBlock = lambda
     }
 
@@ -298,8 +351,7 @@ class SetConfigBuilder<V : Any> {
             permissions = permissionsConfig,
             preconditions = preconditionsConfig,
             valuePreconditions = valuePreconditionsConfig,
-            execute = executeBlock
-                ?: throw IllegalStateException("Set 'execute' block is required")
+            execute = executeBlock ?: error("Set 'execute' block is required")
         )
     }
 }
@@ -322,22 +374,44 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
      * Build the [PermissionsConfig] from the given [PermissionsConfigBuilder] block.
      */
     fun permissions(permissionsList: List<String>) {
-        val builder = PermissionsConfigBuilder(permissionsList)
-        permissionsConfig = builder.build()
+        if (permissionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("permissions"))
+        }
+
+        if (preconditionsConfig != null || getConfig != null || setConfig != null) {
+            error(getExceptionMessageWrongOrder("permissions"))
+        }
+
+        permissionsConfig = PermissionsConfigBuilder(permissionsList).build()
     }
 
     /**
      * Build the [PreconditionsConfig] from the given [PreconditionsConfigBuilder] block.
      */
     fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
-        val builder = PreconditionsConfigBuilder(description, lambda)
-        preconditionsConfig = builder.build()
+        if (preconditionsConfig != null) {
+            error(getExceptionMessageMultipleDefines("preconditions"))
+        }
+
+        if (getConfig != null || setConfig != null) {
+            error(getExceptionMessageWrongOrder("preconditions"))
+        }
+
+        preconditionsConfig = PreconditionsConfigBuilder(description, lambda).build()
     }
 
     /**
      * Build the [GetConfig] from the given [GetConfigBuilder] block.
      */
     fun get(lambda: GetConfigBuilder<V>.() -> Unit) {
+        if (getConfig != null) {
+            error(getExceptionMessageMultipleDefines("get"))
+        }
+
+        if (setConfig != null) {
+            error(getExceptionMessageWrongOrder("get"))
+        }
+
         val builder = GetConfigBuilder<V>()
         builder.lambda()
         getConfig = builder.build()
@@ -347,6 +421,10 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
      * Build the [SetConfig] from the given [SetConfigBuilder] block.
      */
     fun set(lambda: SetConfigBuilder<V>.() -> Unit) {
+        if (setConfig != null) {
+            error(getExceptionMessageMultipleDefines("set"))
+        }
+
         val builder = SetConfigBuilder<V>()
         builder.lambda()
         setConfig = builder.build()
@@ -358,8 +436,7 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
         override val screenPreconditions = this@ApiFirstPreferenceConfigBuilder.screenPreconditions
         override val permissions: PermissionsConfig? = permissionsConfig
         override val preconditions: PreconditionsConfig? = preconditionsConfig
-        override val get: GetConfig<V> =
-            getConfig ?: throw IllegalStateException("'get' block is required")
+        override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
         override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
         override val key: String = this@ApiFirstPreferenceConfigBuilder.key

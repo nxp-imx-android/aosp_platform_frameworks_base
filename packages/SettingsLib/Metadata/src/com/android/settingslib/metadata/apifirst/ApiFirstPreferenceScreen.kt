@@ -21,6 +21,8 @@ import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.apifirst.category.Category
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.apifirst.types.ApiFirstType
@@ -137,10 +139,26 @@ abstract class ApiFirstPreferenceScreen(
     }
 
     protected fun parameters(lambda: KeyParametersSchema.Builder.() -> Unit) {
+        if (parametersSchema != null) {
+            error(getExceptionMessageMultipleDefines("parameters"))
+        }
+
+        if (preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null) {
+            error(getExceptionMessageWrongOrder("parameters"))
+        }
+
         parametersSchema = KeyParametersSchema(lambda)
     }
 
     protected fun permissions(permissions: List<String>) {
+        if (screenPermissions != null) {
+            error(getExceptionMessageMultipleDefines("permissions"))
+        }
+
+        if (preferences.isNotEmpty() || screenPreconditions != null) {
+            error(getExceptionMessageWrongOrder("permissions"))
+        }
+
         screenPermissions = PermissionsConfig(permissions)
     }
 
@@ -148,6 +166,14 @@ abstract class ApiFirstPreferenceScreen(
         description: String,
         lambda: (Context) -> ApiFirstPreconditions
     ) {
+        if (screenPreconditions != null) {
+            error(getExceptionMessageMultipleDefines("preconditions"))
+        }
+
+        if (preferences.isNotEmpty()) {
+            error(getExceptionMessageWrongOrder("preconditions"))
+        }
+
         screenPreconditions = PreconditionsConfig(description, lambda)
     }
 }
