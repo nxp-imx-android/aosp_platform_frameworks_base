@@ -183,16 +183,22 @@ class TransitionController {
         final BLASTSyncEngine.SyncGroup mLegacySync;
         boolean mShouldNoopUponDequeue;
 
-        QueuedTransition(Transition transition, OnStartCollect onStartCollect) {
+        /** {@code true} if this transition was initiated externally (eg. from Shell). */
+        final boolean mExternal;
+
+        QueuedTransition(Transition transition, OnStartCollect onStartCollect, boolean external) {
             mTransition = transition;
             mOnStartCollect = onStartCollect;
             mLegacySync = null;
+            mExternal = external;
         }
 
-        QueuedTransition(BLASTSyncEngine.SyncGroup legacySync, OnStartCollect onStartCollect) {
+        QueuedTransition(BLASTSyncEngine.SyncGroup legacySync, OnStartCollect onStartCollect,
+                boolean external) {
             mTransition = null;
             mOnStartCollect = onStartCollect;
             mLegacySync = legacySync;
+            mExternal = external;
         }
 
         boolean isAborted(BLASTSyncEngine syncEngine) {
@@ -291,39 +297,71 @@ class TransitionController {
         return mTransitionPlayers.isEmpty();
     }
 
+    private static void tryAbort(Transition transit, String stage) {
+        // Need to be very defensive here. This often happens during "broken" periods of time
+        // already (eg. sysui crashing) so there is chance that unrelated state is bad.
+        try {
+            transit.abort();
+        } catch (Exception e) {
+            Slog.wtf(TAG, "Exception during flush: cleanup " + stage + " transition #"
+                    + transit.getSyncId(), e);
+        }
+    }
+
     void flushRunningTransitions() {
         // Temporarily clear so that nothing gets started/queued while flushing
         final ArrayList<TransitionPlayerRecord> temp = new ArrayList<>(mTransitionPlayers);
         mTransitionPlayers.clear();
-        // Clean-up/finish any playing transitions. Backwards since they can remove themselves.
-        for (int i = mPlayingTransitions.size() - 1; i >= 0; --i) {
-            mPlayingTransitions.get(i).cleanUpOnFailure();
-        }
+        final ArrayList<Transition> playing = new ArrayList<>(mPlayingTransitions);
         mPlayingTransitions.clear();
-        // Clean up waiting transitions first since they technically started first.
-        // Backwards since they can remove themselves.
-        for (int i = mWaitingTransitions.size() - 1; i >= 0; --i) {
-            mWaitingTransitions.get(i).abort();
-        }
+        final ArrayList<Transition> waiting = new ArrayList<>(mWaitingTransitions);
         mWaitingTransitions.clear();
-        if (mCollectingTransition != null) {
-            mCollectingTransition.abort();
-        }
-        mRemotePlayer.clear();
-        final ArrayList<QueuedTransition> queuedTransits = new ArrayList<>(mQueuedTransitions);
+        final ArrayList<QueuedTransition> queued = new ArrayList<>(mQueuedTransitions);
         mQueuedTransitions.clear();
-        for (int i = 0; i < queuedTransits.size(); ++i) {
-            final QueuedTransition queued = queuedTransits.get(i);
-            if (queued.mTransition != null) {
-                queued.mTransition.abort();
-            } else {
-                // legacy sync
-                mSyncEngine.abort(queued.mLegacySync.mSyncId);
+
+        // Clean-up/finish any playing transitions. Backwards since they can remove themselves.
+        for (int i = playing.size() - 1; i >= 0; --i) {
+            try {
+                playing.get(i).cleanUpOnFailure();
+            } catch (Exception e) {
+                Slog.wtf(TAG, "Exception during flush: cleanup playing transition #"
+                        + playing.get(i).getSyncId(), e);
             }
         }
-        mRunningLock.doNotifyLocked();
-        // Restore the rest of the player stack
-        mTransitionPlayers.addAll(temp);
+        // Clean up waiting transitions first since they technically started first.
+        for (int i = waiting.size() - 1; i >= 0; --i) {
+            tryAbort(waiting.get(i), "waiting");
+        }
+        if (mCollectingTransition != null) {
+            tryAbort(mCollectingTransition, "collecting");
+        }
+        mCollectingTransition = null;
+        mRemotePlayer.clear();
+        for (int i = queued.size() - 1; i >= 0; --i) {
+            final QueuedTransition queuedTransit = queued.get(i);
+            if (queuedTransit.mExternal) {
+                if (queuedTransit.mTransition != null) {
+                    tryAbort(queuedTransit.mTransition, "queued");
+                } else {
+                    final int syncId = queuedTransit.mLegacySync.mSyncId;
+                    try {
+                        mSyncEngine.abort(syncId);
+                    } catch (Exception e) {
+                        Slog.wtf(TAG, "Exception during flush: cleanup queued legasync #"
+                                + syncId, e);
+                    }
+                }
+            } else {
+                mQueuedTransitions.addFirst(queuedTransit);
+            }
+        }
+
+        try {
+            mRunningLock.doNotifyLocked();
+        } finally {
+            // Restore the rest of the player stack
+            mTransitionPlayers.addAll(temp);
+        }
     }
 
     /** @see #createTransition(int, int) */
@@ -385,6 +423,7 @@ class TransitionController {
                     + "player %s ", player.asBinder());
         }
         mTransitionPlayers.add(new TransitionPlayerRecord(player, playerProc));
+        tryStartCollectFromQueue();
     }
 
     @VisibleForTesting
@@ -415,6 +454,7 @@ class TransitionController {
             return;
         }
         flushRunningTransitions();
+        tryStartCollectFromQueue();
     }
 
     @Nullable ITransitionPlayer getTransitionPlayer() {
@@ -1527,6 +1567,7 @@ class TransitionController {
 
     /** Called when a transition is aborted. This should only be called by {@link Transition} */
     void onAbort(Transition transition) {
+        if (isFlushing()) return;
         if (transition != mCollectingTransition) {
             int waitingIdx = mWaitingTransitions.indexOf(transition);
             if (waitingIdx < 0) {
@@ -1645,8 +1686,9 @@ class TransitionController {
     }
 
     private void queueTransition(Transition transit, OnStartCollect onStartCollect,
-            boolean noopIfDuringDisplayChange) {
-        final QueuedTransition queuedTransition = new QueuedTransition(transit, onStartCollect);
+            boolean external, boolean noopIfDuringDisplayChange) {
+        final QueuedTransition queuedTransition = new QueuedTransition(
+                transit, onStartCollect, external);
 
         // If we queue a non-display transition while a collecting transition
         // is still not formally started, then check if collecting transition is changing a display.
@@ -1666,26 +1708,39 @@ class TransitionController {
                 "Queueing transition: %s", transit);
     }
 
-    /** @see #startCollectOrQueue(Transition, OnStartCollect, boolean) */
+    /** @see #startCollectOrQueue(Transition, OnStartCollect, boolean, boolean) */
     boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect) {
-        return startCollectOrQueue(transit, onStartCollect, false /* isDirectFromShell */);
+        return startCollectOrQueue(transit, onStartCollect, false /* external */,
+                false /* isDirectFromShell */);
+    }
+
+    /**
+     * Start collecting (or queue) an externally-initiated transition.
+     *
+     * @see #startCollectOrQueue(Transition, OnStartCollect, boolean, boolean)
+     */
+    boolean startCollectOrQueueExternal(Transition transit, OnStartCollect onStartCollect,
+            boolean noopIfDuringDisplayChange) {
+        return startCollectOrQueue(transit, onStartCollect, true /* external */,
+                noopIfDuringDisplayChange);
     }
 
     /**
      * Returns {@code true} if it started collecting, {@code false} if it was queued.
      *
+     * @param external {@code true} if the transition is initiated externally (eg. by Shell).
      * @param noopIfDuringDisplayChange true we should no-op this transition when a display
      *                                  changing transition is collecting but not formally started.
      */
-    boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect,
-            boolean noopIfDuringDisplayChange) {
+    private boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect,
+            boolean external, boolean noopIfDuringDisplayChange) {
         if (isFlushing()) {
             transit.abort();
             return true;
         }
         if (!mQueuedTransitions.isEmpty()) {
             // Just add to queue since we already have a queue.
-            queueTransition(transit, onStartCollect, noopIfDuringDisplayChange);
+            queueTransition(transit, onStartCollect, external, noopIfDuringDisplayChange);
             return false;
         }
         if (mSyncEngine.hasActiveSync()) {
@@ -1704,7 +1759,7 @@ class TransitionController {
             } else {
                 Slog.w(TAG, "Ongoing Sync outside of transition.");
             }
-            queueTransition(transit, onStartCollect, noopIfDuringDisplayChange);
+            queueTransition(transit, onStartCollect, external, noopIfDuringDisplayChange);
             return false;
         }
         moveToCollecting(transit);
@@ -1758,7 +1813,7 @@ class TransitionController {
         if (!mQueuedTransitions.isEmpty() || mSyncEngine.hasActiveSync()) {
             // Just add to queue since we already have a queue.
             mQueuedTransitions.add(new QueuedTransition(syncGroup,
-                    (deferred) -> applySync.accept(true /* deferred */)));
+                    (deferred) -> applySync.accept(true /* deferred */), true /* external */));
             ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                     "Queueing legacy sync-set: %s", syncGroup.mSyncId);
             return;
