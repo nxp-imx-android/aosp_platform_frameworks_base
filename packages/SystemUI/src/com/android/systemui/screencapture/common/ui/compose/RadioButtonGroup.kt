@@ -127,8 +127,8 @@ private fun ToggleRadioButton(
         checked = item.isSelected,
         onCheckedChange = { item.onClick() },
         modifier =
-            modifier.semantics {
-                this.contentDescription = item.contentDescription ?: item.label ?: ""
+            modifier.semantics(mergeDescendants = true) {
+                this.contentDescription = item.contentDescription ?: ""
             },
     ) {
         if (item.icon != null && item.label != null) {
