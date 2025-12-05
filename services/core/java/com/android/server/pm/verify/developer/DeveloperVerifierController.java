@@ -44,7 +44,6 @@ import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
-import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -108,46 +107,11 @@ public class DeveloperVerifierController {
             TimeUnit.SECONDS.toMillis(10);
 
     /**
-     * Configurable countdown time in milliseconds for auto-disconnection, if the tracker list
-     * becomes empty after after a verification request is finished and removed from the tracker
-     * list and the pre-warmed session list is also empty.
+     * After the connection to the verifier is established, if the tracker is empty or becomes empty
+     * after all the pending verification requests are resolved, automatically disconnect from the
+     * verifier after this amount of time.
      */
-    private static final String PROPERTY_VERIFIER_AUTO_DISCONNECT_AFTER_IDLE_MILLIS =
-            "verifier_auto_disconnect_after_idle_millis";
-    // The default value for the property above.
-    private static final long DEFAULT_VERIFIER_AUTO_DISCONNECT_AFTER_IDLE_MILLIS =
-            TimeUnit.SECONDS.toMillis(30);
-
-    /**
-     * Configurable countdown time in milliseconds for auto-disconnection after the connection
-     * to the verifier has been established. This countdown is created to save resources for
-     * cases where the verifier is bound when an installation session is created but not committed
-     * within the expected time.
-     */
-    private static final String PROPERTY_VERIFIER_AUTO_DISCONNECT_AFTER_CONNECTION_MILLIS =
-            "verifier_auto_disconnect_after_connection_millis";
-    // The default value for the property above.
-    private static final long DEFAULT_VERIFIER_AUTO_DISCONNECT_AFTER_CONNECTION_MILLIS =
-            TimeUnit.MINUTES.toMillis(3);
-
-    /**
-     * Configurable countdown time in milliseconds for which the system will keep track of a session
-     * after the verifier has been notified of a potentially upcoming verification request via
-     * {@link #notifyPackageNameAvailable(int, String, int)} so that the verifier is "pre-warmed"
-     * for quickly returning the result when the upcoming verification request arrives.
-     * <p>
-     * This countdown is created to save resources for cases where the verifier is notified when an
-     * installation is created with package name but not committed within the expected time. Prior
-     * to the timeout or the "expiration" of the pre-warmed session, the system will not disconnect
-     * from the verifier. Afterwards, if there are no more pre-wamred sessions and there are no more
-     * active sessions that are undergoing verification, the system will schedule an auto-disconnect
-     * to unbind the verifier.
-     */
-    private static final String PROPERTY_PRE_WARMED_SESSION_TIMEOUT_MILLIS =
-            "session_pre_warm_timeout_millis";
-    // The default value for the property above.
-    private static final long DEFAULT_PRE_WARMED_SESSION_TIMEOUT_MILLIS =
-            TimeUnit.MINUTES.toMillis(3);
+    private static final long DISCONNECT_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(30);
 
     private static DeveloperVerifierController sInstance;
 
@@ -176,19 +140,6 @@ public class DeveloperVerifierController {
     @GuardedBy("mVerificationStatusTrackers")
     // Counter of active verification sessions per user; must be synced with the trackers map.
     private final SparseIntArray mSessionsCountPerUser = new SparseIntArray();
-
-    /**
-     * Set of session IDs that the system has notified the verifier about. The IDs in the set will
-     * expire and be removed after a certain amount of time. This set is used to track the pending
-     * sessions that the system has already notified the verifier about but has not requested
-     * verification on them. If these IDs are recent, don't auto-disconnect from the verifier
-     * because there might be verification requests sent to the verifier soon.
-     * <p>
-     * Note that it must be used while holding the {@link #mVerificationStatusTrackers} lock to
-     * avoid race condition.
-     */
-    @GuardedBy("mVerificationStatusTrackers")
-    private final SparseArray<ArraySet<Integer>> mPreWarmedSessionsPerUser = new SparseArray<>();
 
     private final DeveloperVerifierExperimentProvider mExperimentProvider;
 
@@ -322,9 +273,7 @@ public class DeveloperVerifierController {
                         // and the connection will establish again when the verification request is
                         // actually sent out during startVerificationSession.
                         startAutoDisconnectCountdown(
-                                remoteServiceWrapper.getAutoDisconnectCallback(),
-                                mInjector.getVerifierAutoDisconnectionAfterConnectionMillis(),
-                                "verifier is connected");
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
 
                     @Override
@@ -335,8 +284,7 @@ public class DeveloperVerifierController {
                         destroy(userId);
                         // Cancel auto-disconnect because the verifier is already disconnected
                         stopAutoDisconnectCountdown(
-                                remoteServiceWrapper.getAutoDisconnectCallback(),
-                                "onDisconnected");
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
 
                     @Override
@@ -346,7 +294,7 @@ public class DeveloperVerifierController {
                         destroy(userId);
                         // Cancel auto-disconnect because the binder has already died
                         stopAutoDisconnectCountdown(
-                                remoteServiceWrapper.getAutoDisconnectCallback(), "onBinderDied");
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
                 });
         synchronized (mRemoteServices) {
@@ -372,58 +320,30 @@ public class DeveloperVerifierController {
         }
     }
 
-    private void startAutoDisconnectCountdown(Runnable autoDisconnectCallback,
-            long timeoutMillis, String reason) {
+    private void startAutoDisconnectCountdown(Runnable autoDisconnectCallback) {
         // If there is already a task to disconnect, remove it and restart the countdown
-        stopAutoDisconnectCountdown(autoDisconnectCallback,
-                "reschedule auto-disconnect because " + reason);
-        mHandler.postDelayed(autoDisconnectCallback, timeoutMillis);
+        stopAutoDisconnectCountdown(autoDisconnectCallback);
+        mHandler.postDelayed(autoDisconnectCallback, DISCONNECT_TIMEOUT_MILLIS);
         if (DEBUG) {
-            Slog.i(TAG, "Auto-disconnect will take place in " + timeoutMillis
-                    + "ms if no more verification request is sent out before then. Reason: "
-                    + reason);
+            Slog.i(TAG, "Auto-disconnect will take place in " + DISCONNECT_TIMEOUT_MILLIS
+                    + "ms if no more verification request is sent out before then.");
         }
     }
 
-    private void stopAutoDisconnectCountdown(Runnable autoDisconnectCallback, String reason) {
+    private void stopAutoDisconnectCountdown(Runnable autoDisconnectCallback) {
         if (DEBUG) {
             if (mInjector.hasCallbacks(mHandler, autoDisconnectCallback)) {
-                Slog.i(TAG, "A previously scheduled auto-disconnect is canceled. Reason: "
-                        + reason);
+                Slog.i(TAG, "Auto-disconnect is disabled for now.");
             }
         }
         mInjector.removeCallbacks(mHandler, autoDisconnectCallback);
     }
 
-    // Schedule auto-disconnect if there's no more active session and no more pre-warmed session.
-    private void maybeScheduleAutoDisconnectForIdle(Runnable autoDisconnectCallback, int userId) {
-        synchronized (mVerificationStatusTrackers) {
-            if (mSessionsCountPerUser.get(userId) != 0) {
-                // There are still active verification sessions that are waiting for responses from
-                // the verifier for this user. Do not auto-disconnect the verifier on this user.
-                return;
-            }
-            if (mPreWarmedSessionsPerUser.get(userId) != null
-                    && !mPreWarmedSessionsPerUser.get(userId).isEmpty()) {
-                // There are still pre-warmed verification sessions that we recently notified the
-                // verifier about for this user. Do not auto-disconnect the verifier on this user.
-                return;
-            }
-            // Schedule the auto-disconnection action. If another verification request or pre-warm
-            // session comes in, the auto-disconnect will be canceled.
-            startAutoDisconnectCountdown(autoDisconnectCallback,
-                    mInjector.getVerifierAutoDisconnectionAfterIdleMillis(),
-                    "verifier is idle");
-        }
-    }
-
     /**
      * Called to notify the bound verifier agent that a package name is available and will soon be
-     * requested for verification. This can be used to pre-warm the verifier cache for faster a
-     * verification turnaround time.
+     * requested for verification.
      */
-    public void notifyPackageNameAvailable(int installationSessionId, @NonNull String packageName,
-            int userId) {
+    public void notifyPackageNameAvailable(@NonNull String packageName, int userId) {
         synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
@@ -438,30 +358,6 @@ public class DeveloperVerifierController {
                     Slog.i(TAG, "Notifying package name available for " + packageName);
                 }
                 service.onPackageNameAvailable(packageName);
-                // Add the session to the pre-warmed session list so we don't auto-disconnect
-                // before it expires or is taken care of.
-                synchronized (mVerificationStatusTrackers) {
-                    if (mPreWarmedSessionsPerUser.get(userId) == null) {
-                        mPreWarmedSessionsPerUser.put(userId, new ArraySet<>());
-                    }
-                    mPreWarmedSessionsPerUser.get(userId).add(installationSessionId);
-                    // We've just notified the verifier about a potentially incoming verification,
-                    // so stop auto-disconnection countdown.
-                    stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback(),
-                            "notifyPackageNameAvailable");
-                }
-                // Remove the session from the pre-warmed session list after it "expires".
-                mHandler.postDelayed(() -> {
-                    synchronized (mVerificationStatusTrackers) {
-                        if (mPreWarmedSessionsPerUser.get(userId) != null) {
-                            mPreWarmedSessionsPerUser.get(userId).remove(installationSessionId);
-                        }
-                        // If there is nothing else going on, schedule auto-disconnection.
-                        maybeScheduleAutoDisconnectForIdle(
-                                remoteService.getAutoDisconnectCallback(), userId);
-                    }}, /* token= */ (Integer) installationSessionId,
-                        mInjector.getPreWarmedSessionExpirationDurationMillis()
-                );
             });
         }
     }
@@ -471,8 +367,7 @@ public class DeveloperVerifierController {
      * {@link DeveloperVerifierService#onPackageNameAvailable(String)}
      * will no longer be requested for verification, possibly because the installation is canceled.
      */
-    public void notifyVerificationCancelled(int installationSessionId, @NonNull String packageName,
-            int userId) {
+    public void notifyVerificationCancelled(@NonNull String packageName, int userId) {
         synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
@@ -487,16 +382,6 @@ public class DeveloperVerifierController {
                     Slog.i(TAG, "Notifying verification cancelled for " + packageName);
                 }
                 service.onVerificationCancelled(packageName);
-                synchronized (mVerificationStatusTrackers) {
-                    if (mPreWarmedSessionsPerUser.get(userId) != null) {
-                        mPreWarmedSessionsPerUser.get(userId).remove(installationSessionId);
-                    }
-                    mInjector.stopTimeoutCountdown(mHandler,
-                            /* token= */ (Integer) installationSessionId);
-                    // If there is nothing else going on, schedule auto-disconnection.
-                    maybeScheduleAutoDisconnectForIdle(
-                            remoteService.getAutoDisconnectCallback(), userId);
-                }
             });
         }
     }
@@ -558,35 +443,8 @@ public class DeveloperVerifierController {
                     }
                     service.onVerificationRetry(session);
                 }
-                // Update internal status tracking only after the verification request has been
-                // sent to the verifier.
-                synchronized (mVerificationStatusTrackers) {
-                    // Remove session from the pre-warmed session list as it has been taken care of.
-                    if (mPreWarmedSessionsPerUser.get(userId) != null) {
-                        mPreWarmedSessionsPerUser.get(userId).remove(installationSessionId);
-                    }
-                    mInjector.stopTimeoutCountdown(mHandler,
-                            /* token= */ (Integer) installationSessionId);
-                    // We've sent out a new verification request, stop auto-disconnection countdown.
-                    stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback(),
-                            "startVerificationSession");
-                    // Keep track of the session status with the ID. Start counting down the session
-                    // timeout.
-                    final long defaultTimeoutMillis =
-                            mInjector.getVerificationRequestTimeoutMillis();
-                    final long maxExtendedTimeoutMillis =
-                            mInjector.getMaxVerificationExtendedTimeoutMillis();
-                    final DeveloperVerificationRequestStatusTracker tracker =
-                            new DeveloperVerificationRequestStatusTracker(defaultTimeoutMillis,
-                                    maxExtendedTimeoutMillis, mInjector, userId);
-                    mVerificationStatusTrackers.put(verificationId, tracker);
-                    if (mSessionsCountPerUser.indexOfKey(userId) < 0) {
-                        mSessionsCountPerUser.put(userId, 0);
-                    }
-                    final int sessionsCount = mSessionsCountPerUser.get(userId);
-                    mSessionsCountPerUser.put(userId, sessionsCount + 1);
-                    startTimeoutCountdown(verificationId, tracker, callback, defaultTimeoutMillis);
-                }
+                // We've sent out a new verification request, so stop auto-disconnection countdown
+                stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback());
             }).orTimeout(mInjector.getVerifierConnectionTimeoutMillis(), TimeUnit.MILLISECONDS)
                     .whenComplete((res, err) -> {
                         if (err != null) {
@@ -596,10 +454,25 @@ public class DeveloperVerifierController {
                             // failure.
                             callback.onConnectionFailed();
                             // Remove status tracking and stop the timeout countdown
-                            removeStatusTracker(verificationId, userId);
+                            removeStatusTracker(verificationId);
                         }
                     });
         }
+        // Keep track of the session status with the ID. Start counting down the session timeout.
+        final long defaultTimeoutMillis = mInjector.getVerificationRequestTimeoutMillis();
+        final long maxExtendedTimeoutMillis = mInjector.getMaxVerificationExtendedTimeoutMillis();
+        final DeveloperVerificationRequestStatusTracker
+                tracker = new DeveloperVerificationRequestStatusTracker(
+                defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector, userId);
+        synchronized (mVerificationStatusTrackers) {
+            mVerificationStatusTrackers.put(verificationId, tracker);
+            if (mSessionsCountPerUser.indexOfKey(userId) < 0) {
+                mSessionsCountPerUser.put(userId, 0);
+            }
+            final int sessionsCount = mSessionsCountPerUser.get(userId);
+            mSessionsCountPerUser.put(userId, sessionsCount + 1);
+        }
+        startTimeoutCountdown(verificationId, tracker, callback, defaultTimeoutMillis);
         return true;
     }
 
@@ -624,7 +497,7 @@ public class DeveloperVerifierController {
                 // The request has timed out. Notify the installation session.
                 callback.onTimeout();
                 // Remove status tracking and stop the timeout countdown
-                removeStatusTracker(verificationId, tracker.getUserId());
+                removeStatusTracker(verificationId);
             }
         }, /* token= */ tracker, delayMillis);
     }
@@ -660,34 +533,40 @@ public class DeveloperVerifierController {
     /**
      * Remove a status tracker after it's no longer needed.
      */
-    private void removeStatusTracker(int verificationId, int userId) {
+    private void removeStatusTracker(int verificationId) {
         if (DEBUG) {
             Slog.i(TAG, "Removing status tracking for verification " + verificationId);
         }
         synchronized (mVerificationStatusTrackers) {
-            DeveloperVerificationRequestStatusTracker trackerRemoved =
+            final DeveloperVerificationRequestStatusTracker trackerRemoved =
                     mVerificationStatusTrackers.removeReturnOld(verificationId);
             if (trackerRemoved != null) {
                 // Stop the request timeout countdown
                 mInjector.stopTimeoutCountdown(mHandler, /* token= */ trackerRemoved);
+                final int userId = trackerRemoved.getUserId();
                 final int sessionCountForUser = mSessionsCountPerUser.get(userId);
                 if (sessionCountForUser >= 1) {
                     // Decrement the sessions count but don't go beyond zero
                     mSessionsCountPerUser.put(userId, sessionCountForUser - 1);
                 }
+                // Schedule auto-disconnect if there's no more active session on the user
+                if (mSessionsCountPerUser.get(userId) == 0) {
+                    maybeScheduleAutoDisconnect(userId);
+                }
             }
         }
-        // If there is nothing else going on, unbind from the verifier.
-        final Runnable autoDisconnectCallback;
+    }
+
+    private void maybeScheduleAutoDisconnect(int userId) {
         synchronized (mRemoteServices) {
             final ServiceConnectorWrapper service = mRemoteServices.get(userId);
             if (service == null) {
                 // Already unbound on this user
                 return;
             }
-            autoDisconnectCallback = service.getAutoDisconnectCallback();
+            // Schedule a job to disconnect from the verifier on this user
+            startAutoDisconnectCountdown(service.getAutoDisconnectCallback());
         }
-        maybeScheduleAutoDisconnectForIdle(autoDisconnectCallback, userId);
     }
 
     /**
@@ -781,7 +660,7 @@ public class DeveloperVerifierController {
             }
             mCallback.onVerificationIncompleteReceived(reason);
             // Remove status tracking and stop the timeout countdown
-            removeStatusTracker(id, tracker.getUserId());
+            removeStatusTracker(id);
         }
 
         @Override
@@ -799,7 +678,7 @@ public class DeveloperVerifierController {
             }
             mCallback.onVerificationCompleteReceived(verificationStatus, extensionResponse);
             // Remove status tracking and stop the timeout countdown
-            removeStatusTracker(id, tracker.getUserId());
+            removeStatusTracker(id);
         }
 
         @Override
@@ -819,7 +698,7 @@ public class DeveloperVerifierController {
             }
             mCallback.onVerificationBypassedReceived(bypassReason);
             // Remove status tracking and stop the timeout countdown
-            removeStatusTracker(id, tracker.getUserId());
+            removeStatusTracker(id);
         }
     }
 
@@ -977,29 +856,6 @@ public class DeveloperVerifierController {
             return getVerifierConnectionTimeoutMillisFromDeviceConfig();
         }
 
-        /* This is added so that we can mock the auto-disconnect timeout duration without
-         * calling into DeviceConfig.
-         */
-        public long getVerifierAutoDisconnectionAfterIdleMillis() {
-            return getVerifierAutoDisconnectionAfterIdleMillisFromDeviceConfig();
-        }
-
-        /**
-         * This is added so that we can mock the auto-disconnect after connection timeout duration
-         * without calling into DeviceConfig.
-         */
-        public long getVerifierAutoDisconnectionAfterConnectionMillis() {
-            return getVerifierAutoDisconnectionAfterConnectionMillisFromDeviceConfig();
-        }
-
-        /**
-         * This is added so that we can mock the expiration of pre-warmed sessions
-         * without calling into DeviceConfig.
-         */
-        public long getPreWarmedSessionExpirationDurationMillis() {
-            return getPreWarmedSessionTimeoutMillisFromDeviceConfig();
-        }
-
         private static long getVerificationRequestTimeoutMillisFromDeviceConfig() {
             return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
                     PROPERTY_VERIFICATION_REQUEST_TIMEOUT_MILLIS,
@@ -1016,24 +872,6 @@ public class DeveloperVerifierController {
             return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
                     PROPERTY_VERIFIER_CONNECTION_TIMEOUT_MILLIS,
                     DEFAULT_VERIFIER_CONNECTION_TIMEOUT_MILLIS);
-        }
-
-        private static long getVerifierAutoDisconnectionAfterIdleMillisFromDeviceConfig() {
-            return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
-                    PROPERTY_VERIFIER_AUTO_DISCONNECT_AFTER_IDLE_MILLIS,
-                    DEFAULT_VERIFIER_AUTO_DISCONNECT_AFTER_IDLE_MILLIS);
-        }
-
-        private static long getVerifierAutoDisconnectionAfterConnectionMillisFromDeviceConfig() {
-            return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
-                    PROPERTY_VERIFIER_AUTO_DISCONNECT_AFTER_CONNECTION_MILLIS,
-                    DEFAULT_VERIFIER_AUTO_DISCONNECT_AFTER_CONNECTION_MILLIS);
-        }
-
-        private static long getPreWarmedSessionTimeoutMillisFromDeviceConfig() {
-            return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
-                    PROPERTY_PRE_WARMED_SESSION_TIMEOUT_MILLIS,
-                    DEFAULT_PRE_WARMED_SESSION_TIMEOUT_MILLIS);
         }
     }
 }
