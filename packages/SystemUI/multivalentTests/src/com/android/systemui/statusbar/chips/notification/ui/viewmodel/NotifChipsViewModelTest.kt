@@ -256,7 +256,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -291,7 +291,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -325,7 +325,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -357,7 +357,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
