@@ -23,6 +23,7 @@ import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
+import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
@@ -40,7 +41,7 @@ import com.android.internal.annotations.GuardedBy;
  */
 final class DynamicAppFunctionRegistry {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = Build.TYPE.equals("eng");
     private static final String TAG = "DynamicAppFuncRegistry";
 
     private final Object mLock = new Object();

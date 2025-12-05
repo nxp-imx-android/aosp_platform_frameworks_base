@@ -33,6 +33,9 @@ import android.app.appsearch.GenericDocument;
 import android.app.appsearch.JoinSpec;
 import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchSpec;
+import android.app.appsearch.observer.DocumentChangeInfo;
+import android.content.Context;
+import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Slog;
 
@@ -57,6 +60,50 @@ public final class AppFunctionMetadataReader {
             new JoinSpec.Builder(PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID)
                     .setNestedSearch("", RUNTIME_SEARCH_SPEC)
                     .build();
+
+    private final AppFunctionsMetadataCache mCache;
+
+    public AppFunctionMetadataReader(@NonNull Context context) {
+        mCache = new AppFunctionsMetadataCache(context);
+    }
+
+    /** Called when observation of the user AppSearch app functions data has started. */
+    public void onMetadataObserveStartedForUser(@NonNull UserHandle user) {
+        mCache.populateDataForUser(user);
+    }
+
+    /** Called when schema is changed for user. */
+    public void onMetadataSchemaChangedForUser(@NonNull UserHandle user) {
+        // To optimise further, consider extract specific package from the schema name instead
+        // of the full re-indexation
+        mCache.populateDataForUser(user);
+    }
+
+    /** Called when observation of the user AppSearch app functions data has finished. */
+    public void onMetadataObserveFinishedForUser(@NonNull UserHandle user) {
+        mCache.removeDataForUser(user);
+    }
+
+    /** Called when there are changes in the static metadata DB. */
+    public void onStaticMetadataDocumentsChanged(UserHandle user, DocumentChangeInfo changeInfo) {
+        mCache.updateDynamicFunctions(user, changeInfo.getChangedDocumentIds());
+    }
+
+    /**
+     * Returns whether the function is dynamic. Dynamic app-functions are declared on the app level
+     * and executed directly via AIDL.
+     *
+     * @param packageName The package name of the application containing the function.
+     * @param functionIdentifier The unique identifier for the function within the package.
+     * @return {boolean} Whether app function is dynamic.
+     */
+    public boolean isDynamicFunction(
+            String packageName,
+            String functionIdentifier,
+            UserHandle user
+    ) {
+        return mCache.isDynamicFunction(packageName, functionIdentifier, user);
+    }
 
     /**
      * Performs a one-time search for AppFunctionMetadata with the given searchSpec and returns the

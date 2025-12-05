@@ -46,7 +46,7 @@ import org.mockito.kotlin.whenever
 class AppFunctionMetadataReaderTest {
     @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
-    val appFunctionMetadataReader = AppFunctionMetadataReader()
+    val appFunctionMetadataReader = AppFunctionMetadataReader(mock())
 
     @Test
     fun searchAppFunctions_emptyList_succeeds() {

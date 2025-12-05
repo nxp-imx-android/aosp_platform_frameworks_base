@@ -19,7 +19,6 @@ import android.app.AppInteractionAttribution
 import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionException
-import android.app.appfunctions.AppFunctionMetadata
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
@@ -65,12 +64,14 @@ class AppFunctionsLoggingTest {
         ExtendedMockitoRule.Builder(this)
             .mockStatic(AppFunctionsStatsLog::class.java)
             .mockStatic(LocalServices::class.java)
-            .mockStatic(AppFunctionMetadata::class.java)
             .build()
     private val mContext: Context
         get() = ApplicationProvider.getApplicationContext()
 
     private val mMockPackageManager = mock<PackageManager>()
+
+    private val mMetadataReader = mock<AppFunctionMetadataReader>()
+
     private val mAppFunctionsLoggerWrapper =
         AppFunctionsLoggerWrapper(
             mMockPackageManager,
@@ -92,6 +93,7 @@ class AppFunctionsLoggingTest {
             mock<MultiUserDynamicAppFunctionRegistry>(),
             mock<AppInteractionService>(),
             MoreExecutors.directExecutor(),
+            mMetadataReader
         )
 
     @Before
@@ -370,8 +372,8 @@ class AppFunctionsLoggingTest {
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
                 System.currentTimeMillis(),
             )
-        whenever(AppFunctionMetadata.getAppFunctionType(any()))
-            .thenReturn(AppFunctionMetadata.FUNCTION_TYPE_STATIC)
+        whenever(mMetadataReader.isDynamicFunction(eq(TEST_TARGET_PACKAGE), eq(TEST_FUNCTION_ID), any()))
+            .thenReturn(false)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
                 aidlRequest,
@@ -412,8 +414,8 @@ class AppFunctionsLoggingTest {
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
                 System.currentTimeMillis(),
             )
-        whenever(AppFunctionMetadata.getAppFunctionType(any()))
-            .thenReturn(AppFunctionMetadata.FUNCTION_TYPE_DYNAMIC)
+        whenever(mMetadataReader.isDynamicFunction(eq(TEST_TARGET_PACKAGE), eq(TEST_FUNCTION_ID), any()))
+            .thenReturn(true)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
                 aidlRequest,

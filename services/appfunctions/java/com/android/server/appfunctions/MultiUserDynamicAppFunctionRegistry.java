@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
+import android.os.Build;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.util.Log;
@@ -35,7 +36,7 @@ import com.android.server.SystemService;
  */
 public final class MultiUserDynamicAppFunctionRegistry {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = Build.TYPE.equals("eng");
 
     private static final String TAG = "DynamicAppFuncRegistry";
 
