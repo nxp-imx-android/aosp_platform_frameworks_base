@@ -16,6 +16,7 @@
 
 package android.service.personalcontext.embedded;
 
+import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceVisualizerCallback;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.SurfaceControlViewHost;
@@ -23,7 +24,9 @@ import android.view.SurfaceControlViewHost;
 /** @hide */
 interface IEmbeddedInsightSurfaceVisualizer {
     oneway void createVisualizationForClient(
-        in List<ContextInsightWrapper> insights, in InsightSurfaceClientInfo clientInfo);
+        in List<ContextInsightWrapper> insights,
+        in InsightSurfaceClientInfo clientInfo,
+        in IEmbeddedInsightSurfaceVisualizerCallback callback);
     oneway void onClientConnected(in InsightSurfaceClientInfo clientInfo);
     oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
 }
