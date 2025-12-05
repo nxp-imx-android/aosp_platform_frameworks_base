@@ -41,6 +41,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.withoutEventHandling
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -86,8 +88,6 @@ import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
-import com.android.compose.lifecycle.DisposableEffectWithLifecycle
-import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.onUnplaced
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.OnStopScope
@@ -212,12 +212,12 @@ fun ContentScope.ScrollingNotificationPanel(
     overscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect(),
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    if (isActivated) {
+    if (isActivated && isAlwaysComposedContentVisible()) {
         val composeViewRoot = LocalView.current
         // whether the stack is moving due to a swipe or fling
         val isScrollInProgress = scrollState.isScrollInProgress || overscrollEffect.isInProgress
 
-        LaunchedEffectWithLifecycle(isScrollInProgress) {
+        LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
                 jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
                 debugLog(viewModel) { "STACK scroll begins" }
@@ -238,7 +238,7 @@ fun ContentScope.ScrollingNotificationPanel(
                     )
                 }
             }
-        LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
     }
 
     NestedScrollingNotificationPanel(
@@ -295,11 +295,16 @@ fun ContentScope.NestedScrollingNotificationPanel(
     // The top y bound of the IME.
     val imeTop = remember { mutableFloatStateOf(0f) }
 
-    if (isActivated) {
+    // Some scenes or overlays that use this Composable may be using alwaysCompose=true which will
+    // cause them to compose everything but not be visible. Because these side effects push UI state
+    // upstream to observers which are shared between callers of this composable, invisible
+    // components could pollute the shared state with incorrect values. The cleanest way to prevent
+    // this is to remove these side effects when the content is not visible.
+    if (isActivated && isAlwaysComposedContentVisible()) {
         val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
 
         // set the bounds to null when the scrim disappears
-        DisposableEffectWithLifecycle(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
+        DisposableEffect(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
 
         val isRemoteInputActive by viewModel.isRemoteInputActive.collectAsStateWithLifecycle(false)
 
@@ -309,7 +314,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
         // if remote input state changes, compare the row and IME's overlap and offset the scrim and
         // placeholder accordingly.
-        LaunchedEffectWithLifecycle(isRemoteInputActive, remoteInputRowBottom, imeTop) {
+        LaunchedEffect(isRemoteInputActive, remoteInputRowBottom, imeTop) {
             imeTop.floatValue = 0f
             snapshotFlow { imeTop.floatValue }
                 .collect { imeTopValue ->
@@ -333,7 +338,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
         // TalkBack sends a scroll event, when it wants to navigate to an item that is not displayed
         // in
         // the current viewport.
-        LaunchedEffectWithLifecycle(viewModel) {
+        LaunchedEffect(viewModel) {
             viewModel.setAccessibilityScrollEventConsumer { event ->
                 // scroll up, or down by the height of the visible portion of the notification stack
                 val direction =

@@ -24,6 +24,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -123,33 +124,40 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                 else OffsetOverscrollEffect.ShortMaxDistance
         )
 
-    // whether the stack is moving due to a swipe or fling
-    val isScrollInProgress =
-        scrollState.isScrollInProgress ||
-            scrimOverscrollEffect.isInProgress ||
-            scrimOffset.isRunning
-    LaunchedEffectWithLifecycle(isScrollInProgress) {
-        if (isScrollInProgress) {
-            jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
-            debugLog(viewModel) { "STACK scroll begins" }
-        } else {
-            debugLog(viewModel) { "STACK scroll ends" }
-            jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
-        }
-    }
-    val shadeScrollState by
-        shadeSession.rememberSession(key = "SingleShadeScrollState") {
-            derivedStateOf {
-                ShadeScrollState(
-                    // we are not scrolled to the top unless the scroll position is zero,
-                    // and the scrim is at its maximum offset
-                    isScrolledToTop = scrimOffset.value >= 0f && scrollState.value == 0,
-                    scrollPosition = scrollState.value,
-                    maxScrollPosition = scrollState.maxValue,
-                )
+    // Some scenes or overlays that use this Composable may be using alwaysCompose=true which will
+    // cause them to compose everything but not be visible. Because these side effects push UI state
+    // upstream to observers which are shared between callers of this composable, invisible
+    // components could pollute the shared state with incorrect values. The cleanest way to prevent
+    // this is to remove these side effects when the content is not visible.
+    if (isAlwaysComposedContentVisible()) {
+        // whether the stack is moving due to a swipe or fling
+        val isScrollInProgress =
+            scrollState.isScrollInProgress ||
+                scrimOverscrollEffect.isInProgress ||
+                scrimOffset.isRunning
+        LaunchedEffect(isScrollInProgress) {
+            if (isScrollInProgress) {
+                jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+                debugLog(viewModel) { "STACK scroll begins" }
+            } else {
+                debugLog(viewModel) { "STACK scroll ends" }
+                jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
             }
         }
-    LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+        val shadeScrollState by
+            shadeSession.rememberSession(key = "SingleShadeScrollState") {
+                derivedStateOf {
+                    ShadeScrollState(
+                        // we are not scrolled to the top unless the scroll position is zero,
+                        // and the scrim is at its maximum offset
+                        isScrolledToTop = scrimOffset.value >= 0f && scrollState.value == 0,
+                        scrollPosition = scrollState.value,
+                        maxScrollPosition = scrollState.maxValue,
+                    )
+                }
+            }
+        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+    }
 
     val isContentOverscrolledOnTop by
         remember(scrollState) {
