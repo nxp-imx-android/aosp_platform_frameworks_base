@@ -1212,7 +1212,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return true;
             }
             // Pending user switch for a different user, cancel it.
-            ProtoLog.i(IMMS_WITH_LOGCAT, "Removing scheduled user switch to userId=%d", newUserId);
+            ProtoLog.i(IMMS_WITH_LOGCAT, "Removing scheduled user switch to userId=%d",
+                    mUserSwitchHandlerTask.mNewUserId);
             mIoHandler.removeCallbacks(mUserSwitchHandlerTask);
             mUserSwitchHandlerTask = null;
         }
@@ -3755,16 +3756,20 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     }
 
                     if (!mConcurrentMultiUserModeEnabled) {
+                        // The target user is that of the pending user switch if there is any,
+                        // otherwise it is the current user
+                        final int targetUserId = mUserSwitchHandlerTask != null
+                                ? mUserSwitchHandlerTask.mNewUserId : mCurrentImeUserId;
                         // Allow this user (potentially requiring a switch) if:
-                        //  * it is the current user OR
-                        //  * there is a pending user switch for it OR
-                        //  * it is a profile of the current user
-                        final boolean isAllowed = userId == mCurrentImeUserId
-                                || (mUserSwitchHandlerTask != null
-                                    && userId == mUserSwitchHandlerTask.mNewUserId)
-                                || ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId);
+                        //  * it is the target user OR
+                        //  * it is a profile of the target user.
+                        // If there is a pending user switch to a different full user, and this user
+                        // is a profile of the current full user, then deny it.
+                        final boolean isAllowed = userId == targetUserId
+                                || ArrayUtils.contains(getProfileIds(targetUserId), userId);
                         if (!isAllowed) {
-                            Slog.w(TAG, "A background user is requesting window. Hiding IME.");
+                            Slog.w(TAG, "A background user " + userId + " is requesting window."
+                                    + " Hiding IME.");
                             Slog.w(TAG, "If you need to impersonate a foreground user/profile from"
                                     + " a background user, use EditorInfo.targetInputMethodUser"
                                     + " with INTERACT_ACROSS_USERS_FULL permission.");
