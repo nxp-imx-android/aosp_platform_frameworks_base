@@ -188,9 +188,9 @@ public abstract class CameraMetadata<TKey> {
 
         Field[] fields = type.getDeclaredFields();
         for (Field field : fields) {
-            // Filter for Keys that are public
-            if (field.getType().isAssignableFrom(keyClass) &&
-                    (field.getModifiers() & Modifier.PUBLIC) != 0) {
+            // Filter for Keys that are public and can be assigned to keyClass.
+            if (keyClass.isAssignableFrom(field.getType())
+                    && (field.getModifiers() & Modifier.PUBLIC) != 0) {
 
                 TKey key;
                 try {
