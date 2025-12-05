@@ -1070,7 +1070,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         }
 
         if (((c.getChangeMask() & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) && tr.isRootTask()) {
-            tr.mHandlePackageUpdate = c.gethandlePackageUpdate();
+            tr.mHandlePackageUpdate = c.getHandlePackageUpdate();
         }
 
         return effects;
