@@ -10200,7 +10200,7 @@
         <!-- Activity that allows the user to enable or disable App Lock for an app. -->
         <activity android:name="com.android.internal.app.AppLockActivity"
                   android:permission="android.permission.LOCK_APPS"
-                  android:theme="@style/Theme.Dialog.Confirmation"
+                  android:theme="@style/Theme.DeviceDefault.AppLockActivity"
                   android:excludeFromRecents="true"
                   android:exported="false"
                   android:process=":ui"
