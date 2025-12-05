@@ -344,12 +344,12 @@
                 android:id="@+id/see_all_layout"
                 style="@style/InternetDialog.Network"
                 android:layout_marginTop="@dimen/tile_details_entry_gap"
-                android:layout_height="64dp"
+                android:layout_height="@dimen/tile_details_entry_height"
                 android:paddingStart="20dp">
 
                 <FrameLayout
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="@dimen/tile_details_entry_icon_size"
+                    android:layout_height="@dimen/tile_details_entry_icon_size"
                     android:layout_gravity="center_vertical|start"
                     android:clickable="false">
 
