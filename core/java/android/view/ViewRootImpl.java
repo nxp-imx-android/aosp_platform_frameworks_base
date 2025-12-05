@@ -209,6 +209,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.DropBoxManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -372,7 +373,6 @@ public final class ViewRootImpl implements ViewParent,
     /**
      * When enabled, {@link #checkThreadCompat} will throw an exception if called from the wrong
      * thread.
-     *
      * <p>When disabled, an exception will be logged instead.
      *
      * @hide
@@ -11827,11 +11827,16 @@ public final class ViewRootImpl implements ViewParent,
         // important so long as we eventually stop logging.
         if (++sCalledFromWrongThreadCount <= 10) {
             final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
-            Log.wtf(
+            Log.e(
                     TAG,
                     "Attempt to call method from wrong thread. "
                             + "This will throw an exception in a future version.",
                     e);
+            // TODO(b/464275874): remove the dropbox logging once we've fixed the SysUI bug
+            final DropBoxManager db = mContext.getSystemService(DropBoxManager.class);
+            if (db != null) {
+                db.addText("view_wrong_thread", Log.getStackTraceString(e));
+            }
         }
 
         if (CompatChanges.isChangeEnabled(ALLOW_INLINE_CALL_ON_FAILED_THREAD_CHECK)) {
