@@ -72,8 +72,6 @@ test_module_config {
     exclude_filters: [
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
-        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
-        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
@@ -86,6 +84,8 @@ test_module_config {
         "com.android.wm.shell.functional.exit.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.externaldisplay.DragMoveWindowToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
+        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
+        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
@@ -106,8 +106,8 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.enter.EnterSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.enter.EnterSplitScreenWithDragTest",
         "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromAllAppsTest",
-        "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest",
+        "com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.open.OpenAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.open.OpenAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.open.OpenAppInBrowserTest",
@@ -126,6 +126,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchOutDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.CloseFullscreenTaskViaKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.CloseSplitScreenTaskViaKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.CloseTaskViaKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
@@ -273,17 +274,17 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest"],
 }
 
 test_module_config {
@@ -427,17 +428,17 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarOverflowTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.FocusAppFromTaskbarTest"],
 }
 
 test_module_config {
@@ -564,6 +565,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.CloseFullscreenTaskViaKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-CloseSplitScreenTaskViaKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.CloseSplitScreenTaskViaKeyboardShortcutTest"],
 }
 
 test_module_config {
