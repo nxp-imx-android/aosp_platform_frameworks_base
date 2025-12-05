@@ -251,6 +251,7 @@ public class SnapshotDrawerUtils {
         layoutParams.packageName = attrs.packageName;
         layoutParams.windowAnimations = attrs.windowAnimations;
         layoutParams.dimAmount = attrs.dimAmount;
+        layoutParams.dimColor = attrs.dimColor;
         layoutParams.type = windowType;
         layoutParams.format = pixelFormat;
         layoutParams.flags = (windowFlags & ~FLAG_INHERIT_EXCLUDES)

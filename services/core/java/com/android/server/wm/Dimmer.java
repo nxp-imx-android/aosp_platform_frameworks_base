@@ -20,10 +20,13 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_DIMMER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceControl;
+
+import androidx.annotation.ColorLong;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -90,8 +93,8 @@ class Dimmer {
         /**
          * Set the parameters to prepare the dim to change its appearance
          */
-        void prepareLookChange(float alpha, int blurRadius) {
-            mAnimationHelper.setRequestedAppearance(alpha, blurRadius);
+        void prepareLookChange(float alpha, int blurRadius, @ColorLong long color) {
+            mAnimationHelper.setRequestedAppearance(alpha, blurRadius, color);
         }
 
         /**
@@ -207,6 +210,11 @@ class Dimmer {
      */
     protected void adjustAppearance(@NonNull WindowState dimmingContainer,
             float alpha, int blurRadius) {
+        adjustAppearance(dimmingContainer, alpha, blurRadius, Color.pack(Color.BLACK));
+    }
+
+    protected void adjustAppearance(@NonNull WindowState dimmingContainer,
+            float alpha, int blurRadius, @ColorLong long color) {
         if (!mHost.isVisible()) {
             // If the host is already going away, there is no point in keeping dimming
             return;
@@ -214,7 +222,7 @@ class Dimmer {
 
         if (mDimState != null || (alpha != 0 || blurRadius != 0)) {
             final DimState d = obtainDimState(dimmingContainer);
-            d.prepareLookChange(alpha, blurRadius);
+            d.prepareLookChange(alpha, blurRadius, toOpaque(color));
         }
     }
 
@@ -299,5 +307,11 @@ class Dimmer {
         if (mDimState != null) {
             mDimState.mAnimateExit = false;
         }
+    }
+
+    @ColorLong
+    private static long toOpaque(@ColorLong long color) {
+        return Color.pack(Color.red(color), Color.green(color), Color.blue(color),
+                1.0f, Color.colorSpace(color));
     }
 }

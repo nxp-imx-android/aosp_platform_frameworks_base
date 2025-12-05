@@ -26,13 +26,19 @@ import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_DIMMER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
+import android.animation.ArgbEvaluator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.Size;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.SurfaceControl;
 
+import androidx.annotation.ColorLong;
+
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.protolog.ProtoLog;
 
 import java.io.PrintWriter;
@@ -45,11 +51,19 @@ public class DimmerAnimationHelper {
     private static final int DEFAULT_DIM_ANIM_DURATION_MS = 200;
 
     /**
+     * A statically-allocated array to avoid temporary allocations.
+     */
+    @GuardedBy("WindowManagerService.mGlobalLock")
+    private static final float[] sTmpFloatColor = new float[3];
+
+    /**
      * Contains the requested changes
      */
     static class Change {
         private float mAlpha = -1f;
         private int mBlurRadius = -1;
+        @ColorLong
+        private long mColor = Color.pack(Color.BLACK);
         @Nullable
         private WindowState mDimmingContainer = null;
         @Nullable
@@ -65,13 +79,15 @@ public class DimmerAnimationHelper {
         void copyFrom(@NonNull Change other) {
             mAlpha = other.mAlpha;
             mBlurRadius = other.mBlurRadius;
+            mColor = other.mColor;
             mDimmingContainer = other.mDimmingContainer;
             mGeometryParent = other.mGeometryParent;
         }
 
         // Same alpha and blur
         boolean hasSameVisualProperties(@NonNull Change other) {
-            return Math.abs(mAlpha - other.mAlpha) < EPSILON && mBlurRadius == other.mBlurRadius;
+            return Math.abs(mAlpha - other.mAlpha) < EPSILON && mBlurRadius == other.mBlurRadius
+                    && mColor == other.mColor;
         }
 
         boolean hasSameDimmingContainer(@NonNull Change other) {
@@ -82,13 +98,15 @@ public class DimmerAnimationHelper {
             if (anim != null) {
                 mAlpha = anim.mCurrentAlpha;
                 mBlurRadius = anim.mCurrentBlur;
+                mColor = anim.mCurrentColor;
             }
         }
 
         @Override
         public String toString() {
-            return "Dim state: alpha=" + mAlpha + ", blur=" + mBlurRadius + ", container="
-                    + mDimmingContainer + ", geometryParent " + mGeometryParent;
+            return "Dim state: alpha=" + mAlpha + ", blur=" + mBlurRadius
+                    + ", color=" + Long.toHexString(mColor) + ", container=" + mDimmingContainer
+                    + ", geometryParent " + mGeometryParent;
         }
     }
 
@@ -110,7 +128,7 @@ public class DimmerAnimationHelper {
 
     void setExitParameters() {
         setRequestedRelativeParent(mRequestedProperties.mDimmingContainer);
-        setRequestedAppearance(0f /* alpha */, 0 /* blur */);
+        setRequestedAppearance(0f /* alpha */, 0 /* blur */, Color.pack(Color.BLACK) /* color */);
     }
 
     // Sets a requested change without applying it immediately
@@ -126,9 +144,10 @@ public class DimmerAnimationHelper {
     }
 
     // Sets a requested change without applying it immediately
-    void setRequestedAppearance(float alpha, int blurRadius) {
+    void setRequestedAppearance(float alpha, int blurRadius, @ColorLong long color) {
         mRequestedProperties.mAlpha = alpha;
         mRequestedProperties.mBlurRadius = blurRadius;
+        mRequestedProperties.mColor = color;
     }
 
     /**
@@ -136,7 +155,7 @@ public class DimmerAnimationHelper {
      * {@link Change#setExitParameters()},
      * {@link Change#setRequestedRelativeParent(WindowState)}, or
      * {@link Change#setRequestedGeometryParent(WindowContainer)}, or
-     * {@link Change#setRequestedAppearance(float, int)}
+     * {@link Change#setRequestedAppearance(float, int, long)}
      */
     void applyChanges(@NonNull SurfaceControl.Transaction t, @NonNull Dimmer.DimState dim) {
         final Change startProperties = new Change(mCurrentProperties);
@@ -177,10 +196,10 @@ public class DimmerAnimationHelper {
                     || (startProperties.hasSameDimmingContainer(mRequestedProperties)
                     && dim.isDimming())) {
                 ProtoLog.d(WM_DEBUG_DIMMER,
-                        "%s skipping animation and directly setting alpha=%f, blur=%d",
-                        dim, startProperties.mAlpha,
-                        mRequestedProperties.mBlurRadius);
-                setCurrentAlphaBlur(dim, t);
+                        "%s skipping animation and directly setting alpha=%f, blur=%d, color=%x",
+                        dim, mRequestedProperties.mAlpha,
+                        mRequestedProperties.mBlurRadius, mRequestedProperties.mColor);
+                setCurrentState(dim, t);
                 dim.mSkipAnimation = false;
             } else {
                 startAnimation(t, dim, startProperties, mRequestedProperties);
@@ -201,6 +220,7 @@ public class DimmerAnimationHelper {
                 mSurfaceAnimationRunner);
 
         float targetAlpha = to.mAlpha;
+        long targetColor = to.mColor;
         EventLogTags.writeWmDimAnimate(dim.mDimSurface.getLayerId(), targetAlpha, to.mBlurRadius);
 
         mLocalAnimationAdapter.startAnimation(dim.mDimSurface, t,
@@ -209,7 +229,8 @@ public class DimmerAnimationHelper {
                         EventLogTags.writeWmDimFinishAnim(dim.mDimSurface.getLayerId());
                         SurfaceControl.Transaction finishTransaction =
                                 dim.mHostContainer.getSyncTransaction();
-                        setCurrentAlphaBlur(dim, finishTransaction);
+                        mCurrentProperties.mColor = targetColor;
+                        setCurrentState(dim, finishTransaction);
                         if (targetAlpha == 0f && !dim.isDimming()) {
                             dim.remove(finishTransaction);
                             // Ensure the finishTransaction is applied if pending
@@ -240,6 +261,7 @@ public class DimmerAnimationHelper {
         final AnimationSpec spec =  new AnimationSpec(
                 new AnimationSpec.AnimationExtremes<>(startAlpha, to.mAlpha),
                 new AnimationSpec.AnimationExtremes<>(startBlur, to.mBlurRadius),
+                new AnimationSpec.AnimationExtremes<>(from.mColor, to.mColor),
                 duration
         );
         ProtoLog.v(WM_DEBUG_DIMMER, "Dim animation requested: %s", spec);
@@ -315,14 +337,31 @@ public class DimmerAnimationHelper {
         t.setPosition(dim.mDimSurface, relativeBounds.left, relativeBounds.top);
     }
 
-    void setCurrentAlphaBlur(@NonNull Dimmer.DimState dim, @NonNull SurfaceControl.Transaction t) {
+    void setCurrentState(@NonNull Dimmer.DimState dim, @NonNull SurfaceControl.Transaction t) {
         final SurfaceControl sc = dim.mDimSurface;
         try {
             t.setAlpha(sc, mCurrentProperties.mAlpha);
             t.setBackgroundBlurRadius(sc, mCurrentProperties.mBlurRadius);
+            if (com.android.window.flags.Flags.supportCustomDimColor()) {
+                extractFloatColor(mCurrentProperties.mColor, sTmpFloatColor);
+                t.setColor(sc, sTmpFloatColor);
+            }
         } catch (NullPointerException e) {
             Log.w(TAG , "Tried to change look of dim " + sc + " after remove",  e);
         }
+    }
+
+    /**
+     * Converts an integer color into its float RGB components.
+     *
+     * @param color The source ColorLong.
+     * @param outFloatColor The output float array (must be at of size 3) to be populated.
+     * @throws IllegalArgumentException if outFloatColor has a length not equal to 3.
+     */
+    private static void extractFloatColor(@ColorLong long color, @Size(3) float[] outFloatColor) {
+        outFloatColor[0] = android.graphics.Color.red(color);
+        outFloatColor[1] = android.graphics.Color.green(color);
+        outFloatColor[2] = android.graphics.Color.blue(color);
     }
 
     private static long getDimDuration(@NonNull WindowContainer<?> container) {
@@ -363,15 +402,21 @@ public class DimmerAnimationHelper {
         private final AnimationSpec.AnimationExtremes<Float> mAlpha;
         @NonNull
         private final AnimationSpec.AnimationExtremes<Integer> mBlur;
+        @NonNull
+        private final AnimationSpec.AnimationExtremes<Long> mColor;
 
         float mCurrentAlpha = 0;
         int mCurrentBlur = 0;
+        @ColorLong
+        long mCurrentColor = Color.pack(Color.BLACK);
         boolean mStarted = false;
 
         AnimationSpec(@NonNull AnimationSpec.AnimationExtremes<Float> alpha,
-                @NonNull AnimationSpec.AnimationExtremes<Integer> blur, long duration) {
+                @NonNull AnimationSpec.AnimationExtremes<Integer> blur,
+                @NonNull AnimationExtremes<Long> color, long duration) {
             mAlpha = alpha;
             mBlur = blur;
+            mColor = color;
             mDuration = duration;
         }
 
@@ -394,10 +439,16 @@ public class DimmerAnimationHelper {
             mCurrentAlpha =
                     fraction * (mAlpha.mFinishValue - mAlpha.mStartValue) + mAlpha.mStartValue;
             mCurrentBlur =
-                    (int) fraction * (mBlur.mFinishValue - mBlur.mStartValue) + mBlur.mStartValue;
+                    (int) (fraction * (mBlur.mFinishValue - mBlur.mStartValue) + mBlur.mStartValue);
+            mCurrentColor = ArgbEvaluator.evaluateColorLong(fraction, mColor.mStartValue,
+                    mColor.mFinishValue);
             if (sc.isValid()) {
                 t.setAlpha(sc, mCurrentAlpha);
                 t.setBackgroundBlurRadius(sc, mCurrentBlur);
+                if (com.android.window.flags.Flags.supportCustomDimColor()) {
+                    extractFloatColor(mCurrentColor, sTmpFloatColor);
+                    t.setColor(sc, sTmpFloatColor);
+                }
             } else {
                 Log.w(TAG, "Dimmer#AnimationSpec tried to access " + sc + " after release");
             }
@@ -405,7 +456,7 @@ public class DimmerAnimationHelper {
 
         @Override
         public String toString() {
-            return "Animation spec: alpha=" + mAlpha + ", blur=" + mBlur;
+            return "Animation spec: alpha=" + mAlpha + ", blur=" + mBlur + ", color=" + mColor;
         }
 
         @Override
@@ -414,6 +465,9 @@ public class DimmerAnimationHelper {
             pw.print(" to_alpha="); pw.print(mAlpha.mFinishValue);
             pw.print(prefix); pw.print("from_blur="); pw.print(mBlur.mStartValue);
             pw.print(" to_blur="); pw.print(mBlur.mFinishValue);
+            pw.print(prefix); pw.print("from_color=");
+            pw.print(Long.toHexString(mColor.mStartValue));
+            pw.print(" to_color="); pw.print(Long.toHexString(mColor.mFinishValue));
             pw.print(" duration="); pw.println(mDuration);
         }
 

@@ -2756,6 +2756,13 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                 params.dimAmount = a.getFloat(
                         android.R.styleable.Window_backgroundDimAmount, 0.5f);
             }
+            if (com.android.window.flags.Flags.supportCustomDimColor()) {
+                if (!hasDimColor() && a.hasValue(R.styleable.Window_backgroundDimColor)) {
+                    params.dimColor = Color.pack(
+                            a.getColor(R.styleable.Window_backgroundDimColor, Color.BLACK)
+                    );
+                }
+            }
         }
 
         if (a.getBoolean(R.styleable.Window_windowBlurBehindEnabled, false)) {

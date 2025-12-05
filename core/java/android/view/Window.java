@@ -23,6 +23,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import android.annotation.ColorInt;
+import android.annotation.ColorLong;
 import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
@@ -324,6 +325,7 @@ public abstract class Window {
 
     private boolean mHaveWindowFormat = false;
     private boolean mHaveDimAmount = false;
+    private boolean mHasDimColor = false;
     private int mDefaultWindowFormat = PixelFormat.OPAQUE;
 
     private boolean mHasSoftInputMode = false;
@@ -1602,6 +1604,22 @@ public abstract class Window {
     }
 
     /**
+     * Set the color of the dim behind the window when using
+     * {@link WindowManager.LayoutParams#FLAG_DIM_BEHIND}.  This overrides
+     * the default dim color that is selected by the Window based on
+     * its theme.
+     *
+     * @param color The new dim color.
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    public void setDimColor(@ColorLong long color) {
+        final WindowManager.LayoutParams attrs = getAttributes();
+        attrs.dimColor = color;
+        mHasDimColor = true;
+        dispatchWindowAttributesChanged(attrs);
+    }
+
+    /**
      * Sets whether the decor view should fit root-level content views for {@link WindowInsets}.
      * <p>
      * If set to {@code true}, the framework will inspect the now deprecated
@@ -2264,6 +2282,12 @@ public abstract class Window {
     /** @hide */
     protected boolean haveDimAmount() {
         return mHaveDimAmount;
+    }
+
+    /** @hide */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    protected boolean hasDimColor() {
+        return mHasDimColor;
     }
 
     public abstract void setChildDrawable(int featureId, Drawable drawable);

@@ -569,6 +569,7 @@ package android {
     field public static final int backdropColor = 16844402; // 0x1010672
     field public static final int background = 16842964; // 0x10100d4
     field public static final int backgroundDimAmount = 16842802; // 0x1010032
+    field @FlaggedApi("com.android.window.flags.support_custom_dim_color") public static final int backgroundDimColor;
     field public static final int backgroundDimEnabled = 16843295; // 0x101021f
     field public static final int backgroundSplit = 16843659; // 0x101038b
     field public static final int backgroundStacked = 16843658; // 0x101038a
@@ -56849,6 +56850,7 @@ package android.view {
     method protected void setDefaultWindowFormat(int);
     method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setDimAmount(float);
+    method @FlaggedApi("com.android.window.flags.support_custom_dim_color") public void setDimColor(@ColorLong long);
     method public void setElevation(float);
     method public void setEnterTransition(android.transition.Transition);
     method public void setExitTransition(android.transition.Transition);
@@ -57358,6 +57360,7 @@ package android.view {
     field public float alpha;
     field public float buttonBrightness;
     field public float dimAmount;
+    field @FlaggedApi("com.android.window.flags.support_custom_dim_color") public long dimColor;
     field public int flags;
     field public int format;
     field public int gravity;
