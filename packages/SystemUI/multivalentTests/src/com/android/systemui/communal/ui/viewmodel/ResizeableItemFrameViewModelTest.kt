@@ -551,6 +551,32 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
         }
 
+    @Test
+    fun toggleAccessibilityResizeHandle_togglesState() {
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
+
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.TOP)
+
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
+
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM)
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.BOTTOM)
+
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.TOP)
+    }
+
+    @Test
+    fun clearAccessibilityResizeHandle_clearsState() {
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.TOP)
+
+        underTest.clearAccessibilityResizeHandle()
+        assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
+    }
+
     private fun TestScope.updateGridLayout(gridLayout: GridLayout) {
         underTest.setGridLayoutInfo(
             verticalItemSpacingPx = gridLayout.verticalItemSpacingPx,

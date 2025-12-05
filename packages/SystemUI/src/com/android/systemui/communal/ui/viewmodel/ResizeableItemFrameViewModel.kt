@@ -18,6 +18,8 @@ package com.android.systemui.communal.ui.viewmodel
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.snapTo
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.coroutineScopeTraced as coroutineScope
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -54,6 +56,26 @@ data class ResizeInfo(
 }
 
 class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivations = true) {
+
+    private val _visibleAccessibilityResizeHandle = mutableStateOf<ResizeHandle?>(null)
+    val visibleAccessibilityResizeHandle: State<ResizeHandle?> = _visibleAccessibilityResizeHandle
+
+    /**
+     * Toggles the visibility of the accessibility resize handle. If the given handle is already
+     * visible, it will be hidden.
+     */
+    fun toggleAccessibilityResizeHandle(handle: ResizeHandle) {
+        if (_visibleAccessibilityResizeHandle.value == handle) {
+            _visibleAccessibilityResizeHandle.value = null
+        } else {
+            _visibleAccessibilityResizeHandle.value = handle
+        }
+    }
+
+    /** Hides the accessibility resize handle. */
+    fun clearAccessibilityResizeHandle() {
+        _visibleAccessibilityResizeHandle.value = null
+    }
 
     data class GridLayoutInfo(
         val currentRow: Int,
