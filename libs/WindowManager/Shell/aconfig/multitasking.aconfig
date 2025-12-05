@@ -307,3 +307,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_open_app_bubble_from_lockscreen"
+    namespace: "multitasking"
+    description: "Fix opening app bubble from notification on lock screen"
+    bug: "416389130"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
