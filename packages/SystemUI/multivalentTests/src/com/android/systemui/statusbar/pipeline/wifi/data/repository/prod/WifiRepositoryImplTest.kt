@@ -1406,6 +1406,25 @@ class WifiRepositoryImplTest : SysuiTestCase() {
             assertThat(toggleState).isEqualTo(WifiToggleState.Scanning)
         }
 
+    @Test
+    fun isWifiEnabled_disabledResetsToggleState() =
+        testScope.runTest {
+            val toggleState by collectLastValue(underTest.wifiToggleState)
+            collectLastValue(underTest.isWifiEnabled)
+
+            // Start with wifi enabled.
+            whenever(wifiPickerTracker.wifiState).thenReturn(WifiManager.WIFI_STATE_ENABLED)
+            getCallback().onWifiStateChanged()
+
+            underTest.scanForWifi()
+            assertThat(toggleState).isEqualTo(WifiToggleState.Scanning)
+
+            whenever(wifiPickerTracker.wifiState).thenReturn(WifiManager.WIFI_STATE_DISABLED)
+            getCallback().onWifiStateChanged()
+
+            assertThat(toggleState).isEqualTo(WifiToggleState.Normal)
+        }
+
     private fun getCallback(): WifiPickerTracker.WifiPickerTrackerCallback {
         return callbackCaptor.firstValue
     }
