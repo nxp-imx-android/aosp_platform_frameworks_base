@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.app.Notification.EXTRA_METRICS;
+import static android.app.Notification.EXTRA_METRICS_CRITICAL_INDEX;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.Notification.SEMANTIC_STYLE_CAUTION;
 
@@ -145,16 +146,17 @@ public class NotificationMetricStyleTest {
                 .addMetric(new Metric(new FixedInt(5, "rings"), "5"))
                 .addMetric(new Metric(new FixedInt(6, "geese"), "6"))
                 .addMetric(new Metric(new FixedInt(7, "swans"), "7"))
-                .addMetric(new Metric(new FixedInt(8, "maids"), "8"));
+                .addMetric(new Metric(new FixedInt(8, "maids"), "8"))
+                .setCriticalMetric(2);
 
         Bundle bundle = new Bundle();
         style.addExtras(bundle);
 
         ArrayList<Bundle> storedBundles = bundle.getParcelableArrayList(EXTRA_METRICS,
                 Bundle.class);
-
         assertThat(storedBundles).isNotNull();
         assertThat(storedBundles).hasSize(5);
+        assertThat(bundle.getInt(EXTRA_METRICS_CRITICAL_INDEX)).isEqualTo(2);
     }
 
     @Test
@@ -194,7 +196,8 @@ public class NotificationMetricStyleTest {
                 .addMetric(new Metric(
                         new FixedText("A LOT", "things"), "With unit"))
                 .addMetric(new Metric(
-                        new FixedText("This is the last"), "Last"));
+                        new FixedText("This is the last"), "Last"))
+                .setCriticalMetric(5);
 
         original.addExtras(bundle);
         MetricStyle recovered = new MetricStyle();

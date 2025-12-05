@@ -7220,8 +7220,11 @@ package android.app {
   @FlaggedApi("android.app.api_metric_style") public static final class Notification.MetricStyle extends android.app.Notification.Style {
     ctor public Notification.MetricStyle();
     method @NonNull public android.app.Notification.MetricStyle addMetric(@NonNull android.app.Notification.Metric);
+    method @Nullable public android.app.Notification.Metric getCriticalMetric();
     method @NonNull public java.util.List<android.app.Notification.Metric> getMetrics();
+    method @NonNull public android.app.Notification.MetricStyle setCriticalMetric(int);
     method @NonNull public android.app.Notification.MetricStyle setMetrics(@NonNull java.util.List<android.app.Notification.Metric>);
+    field public static final int METRIC_INDEX_NONE = -1; // 0xffffffff
   }
 
   public static class Notification.ProgressStyle extends android.app.Notification.Style {
