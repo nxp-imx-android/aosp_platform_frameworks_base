@@ -3673,9 +3673,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     }
 
     private Handler getHandlerForBindingWallpaperLocked() {
-        if (!Flags.bindWallpaperServiceOnItsOwnThreadDuringAUserSwitch()) {
-            return mContext.getMainThreadHandler();
-        }
         if (mInitialUserSwitch) {
             return mContext.getMainThreadHandler();
         }
