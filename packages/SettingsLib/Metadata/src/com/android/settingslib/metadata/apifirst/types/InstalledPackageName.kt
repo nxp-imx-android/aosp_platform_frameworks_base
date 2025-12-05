@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.types
 
 /** Any package installed on the device. */
-object InstalledPackageName: ApiFirstType
+object InstalledPackageName: ApiFirstType<String>

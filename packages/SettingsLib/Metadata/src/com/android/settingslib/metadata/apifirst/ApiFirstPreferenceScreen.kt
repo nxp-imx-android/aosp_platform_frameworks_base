@@ -22,6 +22,7 @@ import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
+import com.android.settingslib.metadata.apifirst.types.ApiFirstType
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
 import kotlin.collections.mutableListOf
@@ -46,6 +47,10 @@ abstract class ApiFirstPreferenceScreen(
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
             for (preference in preferencesList) {
+                preference.apply {
+                    screenPermissions = preferencesPermissions
+                    screenPreconditions = preferencesPreconditionsFun
+                }
                 +preference
             }
         }
@@ -66,9 +71,11 @@ abstract class ApiFirstPreferenceScreen(
      * This is a convenient way to instantiate a preference without creating a new concrete class.
      *
      * ```
-     * createPreference {
-     *     key = "PREFERENCE_KEY"
-     *
+     * preference(
+     *     key = "PREFERENCE_KEY",
+     *     purpose = R.string.my_preference_purpose,
+     *     type = AnyString
+     * ) {
      *     get {
      *         execute { context ->
      *             // Get the value
@@ -86,9 +93,12 @@ abstract class ApiFirstPreferenceScreen(
      * ```
      */
     protected inline fun <reified V : Any> preference(
+        key: String,
+        purpose: Int,
+        type: ApiFirstType<V>,
         lambda: ApiFirstPreferenceConfigBuilder<V>.() -> Unit
     ) {
-        val builder = ApiFirstPreferenceConfigBuilder(V::class.java)
+        val builder = ApiFirstPreferenceConfigBuilder(key, purpose, type, V::class.java)
         builder.lambda()
         preferencesList.add(builder.build())
     }

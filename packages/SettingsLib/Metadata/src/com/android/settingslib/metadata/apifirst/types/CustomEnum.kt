@@ -16,5 +16,7 @@
 
 package com.android.settingslib.metadata.apifirst.types
 
+import kotlin.reflect.KClass
+
 /** An entry from the enum. */
-class CustomEnum<T : Enum<T>>(val enumValue: T): ApiFirstType
+class CustomEnum<T : Enum<T>>(val enumValue: T): ApiFirstType<T>

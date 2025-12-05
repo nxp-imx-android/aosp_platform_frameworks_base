@@ -20,4 +20,4 @@ package com.android.settingslib.metadata.apifirst.types
  * The Ssid of a network which is either currently connected, able to be connected to, or saved to
  * the device.
  */
-class WifiSsid : ApiFirstType
+class WifiSsid : ApiFirstType<String>

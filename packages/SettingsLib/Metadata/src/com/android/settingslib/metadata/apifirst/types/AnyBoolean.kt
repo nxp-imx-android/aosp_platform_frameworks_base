@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.types
 
 /** A boolean value. */
-object AnyBoolean : ApiFirstType
+object AnyBoolean : ApiFirstType<Boolean>
