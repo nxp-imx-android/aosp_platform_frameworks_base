@@ -646,8 +646,7 @@ const SkPath* RenderNode::getClippedOutline(const SkRect& clipRect) const {
         mClippedOutlineCache.clipRect = clipRect;
 
         // update the cache value by recomputing a new path
-        SkPath clipPath;
-        clipPath.addRect(clipRect);
+        const SkPath clipPath = SkPath::Rect(clipRect);
         Op(*outlinePath, clipPath, kIntersect_SkPathOp, &mClippedOutlineCache.clippedOutline);
     }
     return &mClippedOutlineCache.clippedOutline;
