@@ -33,5 +33,4 @@ import android.os.PersistableBundle;
 parcelable MultiUserManagedUserProvisioningParamsTransport {
     ComponentName profileAdminComponentName;
     boolean leaveAllSystemAppsEnabled;
-    @nullable PersistableBundle adminExtras;
 }
