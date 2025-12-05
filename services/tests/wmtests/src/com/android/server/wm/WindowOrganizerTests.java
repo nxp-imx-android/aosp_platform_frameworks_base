@@ -1310,6 +1310,42 @@ public class WindowOrganizerTests extends WindowTestsBase {
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
     }
 
+    @Test
+    public void testRemoveTaskHierarchyOp_removeFromRecentNotSet_removesFromRecents() {
+        Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, null);
+        Task leafTask = createTaskInRootTask(rootTask, rootTask.mUserId);
+        spyOn(mWm.mAtmService.mTaskSupervisor);
+        mWm.mAtmService.getRecentTasks().add(leafTask);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(leafTask.mRemoteToken.toWindowContainerToken());
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+        verify(mWm.mAtmService.mTaskSupervisor).removeTask(leafTask, true, /* removeFromRecents= */
+                true,
+                "remove-task-through-hierarchyOp");
+        assertThat(mWm.mAtmService.getRecentTasks().getRawTasks()).isEmpty();
+    }
+
+    @Test
+    public void testRemoveTaskHierarchyOp_removeFromRecentIsFalse_doesNotRemoveFromRecents() {
+        Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, null);
+        Task leafTask = createTaskInRootTask(rootTask, rootTask.mUserId);
+        spyOn(mWm.mAtmService.mTaskSupervisor);
+        mWm.mAtmService.getRecentTasks().add(leafTask);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(leafTask.mRemoteToken.toWindowContainerToken(), false);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+        verify(mWm.mAtmService.mTaskSupervisor).removeTask(leafTask, true, /* removeFromRecents= */
+                false,
+                "remove-task-through-hierarchyOp");
+        assertThat(mWm.mAtmService.getRecentTasks().getRawTasks().get(0).mTaskId).isEqualTo(
+                leafTask.mTaskId);
+    }
     private List<Task> getTasksCreatedByOrganizer(DisplayContent dc) {
         final ArrayList<Task> out = new ArrayList<>();
         dc.forAllRootTasks(task -> {

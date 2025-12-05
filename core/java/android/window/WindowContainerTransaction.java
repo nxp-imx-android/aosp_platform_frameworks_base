@@ -853,7 +853,24 @@ public final class WindowContainerTransaction implements Parcelable {
      */
     @NonNull
     public WindowContainerTransaction removeTask(@NonNull WindowContainerToken containerToken) {
-        mHierarchyOps.add(HierarchyOp.createForRemoveTask(containerToken.asBinder()));
+        return removeTask(containerToken, /* removeFromRecents */ true);
+    }
+
+    /**
+     * Finds and removes a task and its children using its container token.
+     *
+     * <p>If the task is a root task, its leaves are removed but the root task is not. Use
+     * {@link #removeRootTask(WindowContainerToken)} to remove the root task.
+     *
+     * @param containerToken    ContainerToken of Task to be removed
+     * @param removeFromRecents When {@code true}, the task is removed from recents.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction removeTask(@NonNull WindowContainerToken containerToken,
+            boolean removeFromRecents) {
+        mHierarchyOps.add(
+                HierarchyOp.createForRemoveTask(containerToken.asBinder(), removeFromRecents));
         return this;
     }
 
@@ -2288,6 +2305,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private boolean mClearWindowingMode;
 
+        private boolean mRemoveFromRecents;
+
         /** Creates a hierarchy operation for reparenting a container within the hierarchy. */
         @NonNull
         public static HierarchyOp createForReparent(
@@ -2392,9 +2411,11 @@ public final class WindowContainerTransaction implements Parcelable {
 
         /** Creates a hierarchy op for deleting a task **/
         @NonNull
-        public static HierarchyOp createForRemoveTask(@NonNull IBinder container) {
+        public static HierarchyOp createForRemoveTask(@NonNull IBinder container,
+                boolean removeFromRecents) {
             return new HierarchyOp.Builder(HIERARCHY_OP_TYPE_REMOVE_TASK)
                     .setContainer(container)
+                    .setRemoveFromRecents(removeFromRecents)
                     .build();
         }
 
@@ -2491,6 +2512,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mDisallowOverrideWindowingModeForChildren =
                     copy.mDisallowOverrideWindowingModeForChildren;
             mClearWindowingMode = copy.mClearWindowingMode;
+            mRemoveFromRecents = copy.mRemoveFromRecents;
         }
 
         private HierarchyOp(@NonNull Parcel in) {
@@ -2524,6 +2546,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mDisallowOverrideBoundsForChildren = in.readBoolean();
             mDisallowOverrideWindowingModeForChildren = in.readBoolean();
             mClearWindowingMode = in.readBoolean();
+            mRemoveFromRecents = in.readBoolean();
         }
 
         @HierarchyOpType
@@ -2670,6 +2693,10 @@ public final class WindowContainerTransaction implements Parcelable {
             return mClearWindowingMode;
         }
 
+        public boolean getRemoveFromRecents() {
+            return mRemoveFromRecents;
+        }
+
         /** Gets a string representation of a hierarchy-op type. */
         public static String hopToString(@HierarchyOpType int type) {
             switch (type) {
@@ -2777,7 +2804,8 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" alwaysOnTop=").append(mAlwaysOnTop);
                     break;
                 case HIERARCHY_OP_TYPE_REMOVE_TASK:
-                    sb.append("task=").append(mContainer);
+                    sb.append("task=").append(mContainer)
+                            .append(" removeFromRecents=").append(mRemoveFromRecents);
                     break;
                 case HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK:
                     sb.append("rootTask=").append(mContainer);
@@ -2886,6 +2914,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mDisallowOverrideBoundsForChildren);
             dest.writeBoolean(mDisallowOverrideWindowingModeForChildren);
             dest.writeBoolean(mClearWindowingMode);
+            dest.writeBoolean(mRemoveFromRecents);
         }
 
         @Override
@@ -2981,6 +3010,8 @@ public final class WindowContainerTransaction implements Parcelable {
             private boolean mDisallowOverrideWindowingModeForChildren;
 
             private boolean mClearWindowingMode;
+
+            private boolean mRemoveFromRecents;
 
             Builder(@HierarchyOpType int type) {
                 mType = type;
@@ -3135,6 +3166,11 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setRemoveFromRecents(boolean removeFromRecents) {
+                mRemoveFromRecents = removeFromRecents;
+                return this;
+            }
+
             @NonNull
             HierarchyOp build() {
                 final HierarchyOp hierarchyOp = new HierarchyOp(mType);
@@ -3173,6 +3209,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mClearWindowingMode = mClearWindowingMode;
                 hierarchyOp.mDisallowOverrideWindowingModeForChildren =
                         mDisallowOverrideWindowingModeForChildren;
+                hierarchyOp.mRemoveFromRecents = mRemoveFromRecents;
                 return hierarchyOp;
             }
         }
