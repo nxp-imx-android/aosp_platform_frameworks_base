@@ -151,6 +151,21 @@ public final class DeveloperVerificationSession implements Parcelable {
             @NonNull List<SharedLibraryInfo> declaredLibraries,
             @Nullable PersistableBundle extensionParams,
             @PackageInstaller.DeveloperVerificationPolicy int defaultPolicy,
+            @NonNull IDeveloperVerificationSessionInterface session) {
+        this(id, installSessionId, packageName, stagedPackageUri,
+                signingInfo, declaredLibraries, extensionParams, defaultPolicy, session,
+                /* verificationFlags= */ 0);
+    }
+
+    /**
+     * Constructor used by the system to describe the details of a developer verification session.
+     * @hide
+     */
+    public DeveloperVerificationSession(int id, int installSessionId, @NonNull String packageName,
+            @NonNull Uri stagedPackageUri, @NonNull SigningInfo signingInfo,
+            @NonNull List<SharedLibraryInfo> declaredLibraries,
+            @Nullable PersistableBundle extensionParams,
+            @PackageInstaller.DeveloperVerificationPolicy int defaultPolicy,
             @NonNull IDeveloperVerificationSessionInterface session, int verificationFlags) {
         mId = id;
         mInstallSessionId = installSessionId;
