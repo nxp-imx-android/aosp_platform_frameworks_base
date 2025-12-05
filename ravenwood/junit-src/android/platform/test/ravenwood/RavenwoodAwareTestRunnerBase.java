@@ -20,13 +20,13 @@ import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERB
 import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
+import androidx.test.internal.runner.junit3.AndroidJUnit3Builder;
+import androidx.test.internal.runner.junit4.AndroidJUnit4Builder;
+
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 
-import org.junit.internal.builders.IgnoredBuilder;
-import org.junit.internal.builders.JUnit3Builder;
-import org.junit.internal.builders.JUnit4Builder;
-import org.junit.internal.builders.SuiteMethodBuilder;
+import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
@@ -46,31 +46,12 @@ import java.util.List;
 abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable, Orderable {
     public static final String TAG = RavenwoodInternalUtils.TAG;
 
-    private final RunnerBuilder mBuilder = new RavenwoodRunnerBuilder();
+    private final List<RunnerBuilder> mRunnerBuilders = Arrays.asList(
+            new RavenwoodAnnotatedBuilder(),
+            junit3Builder(),
+            new AndroidJUnit4Builder(0));
+
     boolean mRealRunnerTakesRunnerBuilder = false;
-
-    /**
-     * Inspired from {@link org.junit.internal.builders.AllDefaultPossibilitiesBuilder}
-     */
-    class RavenwoodRunnerBuilder extends RunnerBuilder {
-        private final List<RunnerBuilder> mRunnerBuilders = Arrays.asList(
-                ignoredBuilder(),
-                annotatedBuilder(),
-                suiteMethodBuilder(),
-                junit3Builder(),
-                junit4Builder());
-
-        @Override
-        public Runner runnerForClass(Class<?> testClass) throws Throwable {
-            for (RunnerBuilder each : mRunnerBuilders) {
-                Runner runner = each.runnerForClass(testClass);
-                if (runner != null) {
-                    return runner;
-                }
-            }
-            return null;
-        }
-    }
 
     class RavenwoodAnnotatedBuilder extends RunnerBuilder {
         @Override
@@ -87,7 +68,8 @@ abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable
                     } catch (NoSuchMethodException ignored) {
                         var constructor = clazz.getConstructor(Class.class, RunnerBuilder.class);
                         mRealRunnerTakesRunnerBuilder = true;
-                        return constructor.newInstance(testClass, mBuilder);
+                        return constructor.newInstance(testClass,
+                                new AllDefaultPossibilitiesBuilder());
                     }
                 } catch (Exception e) {
                     throw logAndFail("Failed to instantiate " + clazz, e);
@@ -97,24 +79,8 @@ abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable
         }
     }
 
-    RunnerBuilder junit4Builder() {
-        return new JUnit4Builder();
-    }
-
     RunnerBuilder junit3Builder() {
-        return new JUnit3Builder();
-    }
-
-    RunnerBuilder annotatedBuilder() {
-        return new RavenwoodAnnotatedBuilder();
-    }
-
-    RunnerBuilder ignoredBuilder() {
-        return new IgnoredBuilder();
-    }
-
-    RunnerBuilder suiteMethodBuilder() {
-        return new SuiteMethodBuilder();
+        return new AndroidJUnit3Builder(0);
     }
 
     static Error logAndFail(String message, Throwable exception) {
@@ -124,7 +90,13 @@ abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable
 
     final Runner instantiateRealRunner(TestClass testClass) {
         try {
-            return mBuilder.runnerForClass(testClass.getJavaClass());
+            for (RunnerBuilder each : mRunnerBuilders) {
+                Runner runner = each.runnerForClass(testClass.getJavaClass());
+                if (runner != null) {
+                    return runner;
+                }
+            }
+            return null;
         } catch (Throwable e) {
             SneakyThrow.sneakyThrow(e);
             throw new RuntimeException();

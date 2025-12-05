@@ -15,6 +15,9 @@
  */
 package android.platform.test.ravenwood;
 
+import static androidx.test.internal.util.AndroidRunnerBuilderUtil.hasJUnit3TestMethod;
+import static androidx.test.internal.util.AndroidRunnerBuilderUtil.isJUnit3Test;
+
 import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.ensureIsPublicVoidMethod;
 
@@ -24,7 +27,8 @@ import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
 import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
-import junit.framework.TestCase;
+import androidx.test.internal.runner.EmptyTestRunner;
+import androidx.test.internal.runner.junit3.JUnit38ClassRunner;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -154,13 +158,19 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         return mRealRunner;
     }
 
+    /**
+     * Modified from {@link androidx.test.internal.runner.junit3.AndroidJUnit3Builder}
+     */
     @Override
     RunnerBuilder junit3Builder() {
         return new RunnerBuilder() {
             @Override
             public Runner runnerForClass(Class<?> testClass) {
-                if (TestCase.class.isAssignableFrom(testClass)) {
-                    return new RavenwoodAwareJUnit3Runner(testClass);
+                if (isJUnit3Test(testClass)) {
+                    if (!hasJUnit3TestMethod(testClass)) {
+                        return new EmptyTestRunner(testClass);
+                    }
+                    return new JUnit38ClassRunner(new RavenwoodAwareJUnit3TestSuite(testClass));
                 }
                 return null;
             }

@@ -36,6 +36,9 @@ import java.util.Stack;
  *   individual tests in the class reported it. This is for b/364395552.
  *
  * - Logging.
+ *
+ * - AssumptionViolatedException passed in as failures will be treated as assumption failures
+ *   to support @DisabledOnRavenwood on JUnit3 tests.
  */
 class RavenwoodRunNotifier extends RunNotifier {
     private final RunNotifier mRealNotifier;
@@ -150,6 +153,18 @@ class RavenwoodRunNotifier extends RunNotifier {
 
     @Override
     public void fireTestFailure(Failure failure) {
+        // Assumptions are a new feature introduced in JUnit4, and is implemented internally
+        // with an unhandled AssumptionViolatedException. JUnit3 does not have the infrastructure
+        // to handle assumption failures, and will treat AssumptionViolatedException as a normal
+        // error. However, we rely on throwing AssumptionViolatedExceptions to support skipping
+        // tests annotated with @DisabledOnRavenwood. To handle this situation, we inspect the
+        // failure being sent here, and redirect the failure event to an assumption failure event
+        // if it is actually an assumption failure.
+        if (failure.getException() instanceof AssumptionViolatedException) {
+            fireTestAssumptionFailed(failure);
+            return;
+        }
+
         Log.i(RavenwoodAwareTestRunner.TAG, "testFailure: " + failure);
 
         if (!isInTest()) {
