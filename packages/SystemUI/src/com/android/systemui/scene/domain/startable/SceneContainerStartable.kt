@@ -50,6 +50,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
@@ -167,6 +168,7 @@ constructor(
     private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
+    private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -742,18 +744,15 @@ constructor(
                         instantlySnapScenes = keyguardInteractor.isAodAvailable.value,
                     )
                 } else {
-                    val canSwipeToEnter = deviceEntryInteractor.canSwipeToEnter.value
-                    val isUnlocked = deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
-                    if (isUnlocked && canSwipeToEnter == false) {
+                    if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
                         val isTransitioningToLockscreen =
                             sceneInteractor.transitioningTo.value == Scenes.Lockscreen
                         if (!isTransitioningToLockscreen) {
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
                                 loggingReason =
-                                    "device is waking up while unlocked without the ability to" +
-                                        " swipe up on lockscreen to enter and not on or" +
-                                        " transitioning to, the lockscreen scene.",
+                                    "device is waking up while we can wake directly to gone, and " +
+                                        "is not already en route to lockscreen",
                             )
                         }
                     } else if (
