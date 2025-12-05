@@ -53,7 +53,6 @@ import android.graphics.Rect;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableLooper;
-import android.testing.UiThreadTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -64,7 +63,6 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
-import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -91,7 +89,7 @@ import org.mockito.MockitoAnnotations;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@TestableLooper.RunWithLooper
+@TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
     private static final int MAGNIFICATION_SIZE_SMALL = 1;
@@ -467,7 +465,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @UiThreadTest
     public void onWindowBoundsChanged_updateDraggableWindowBounds() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -485,9 +482,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         mWindowManager.setWindowBounds(testWindowBounds);
         mWindowManager.setWindowInsets(testWindowInsets);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            mWindowMagnificationSettings.onConfigurationChanged(ActivityInfo.CONFIG_SCREEN_SIZE);
-        });
+        mWindowMagnificationSettings.onConfigurationChanged(ActivityInfo.CONFIG_SCREEN_SIZE);
 
         // the draggable window bounds left/top should be only related to the insets,
         // and the bounds right/bottom should consider the panel frame size
@@ -504,7 +499,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @UiThreadTest
     public void onScreenSizeChanged_resetPositionToRightBottomCorner() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -524,9 +518,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
                 testWindowBounds.right + 200, testWindowBounds.bottom + 50);
         mWindowManager.setWindowBounds(testWindowBounds);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            mWindowMagnificationSettings.onConfigurationChanged(ActivityInfo.CONFIG_SCREEN_SIZE);
-        });
+        mWindowMagnificationSettings.onConfigurationChanged(ActivityInfo.CONFIG_SCREEN_SIZE);
 
         // the panel position should be reset to the bottom-right corner
         assertEquals(
