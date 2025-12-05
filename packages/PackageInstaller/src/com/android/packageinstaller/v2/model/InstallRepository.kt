@@ -1175,8 +1175,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
     }
 
     fun abortStaging() {
-        sessionStager!!.cancel()
-        stagingJob.cancel()
+        sessionStager?.cancel()
+        if (this::stagingJob.isInitialized) {
+            stagingJob.cancel()
+        }
         cleanupStagingSession()
     }
 
