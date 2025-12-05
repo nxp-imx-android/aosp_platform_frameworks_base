@@ -402,6 +402,33 @@ public final class ProcessList extends ProcessListInternal
     @CompositeRWLock({"mService", "mProcLock"})
     ActiveUids mActiveUids;
 
+    private UidTransitionPolicy mUidTransitionPolicy;
+    // Only attempt to initialize the policy once. If init fails,
+    // behavior will fallback to the existing per-app range behavior.
+    private boolean mAttemptedUidPolicyInit = false;
+
+    @GuardedBy("mService")
+    public UidTransitionPolicy getUidTransitionPolicy() {
+        if (!Flags.useSafesetidUidPolicy()) {
+            return null;
+        }
+
+        if (!mAttemptedUidPolicyInit && mUidTransitionPolicy == null) {
+            mAttemptedUidPolicyInit = true;
+            mUidTransitionPolicy = new UidTransitionPolicy();
+
+            try {
+                mUidTransitionPolicy.clear();
+            } catch (UidTransitionPolicy.UidTransitionPolicyUpdateException e) {
+                Slog.wtf(TAG, "Failed to clear UID policy.");
+                mUidTransitionPolicy = null;
+                return null;
+            }
+        }
+
+        return mUidTransitionPolicy;
+    }
+
     /**
      * The currently running isolated processes.
      */
@@ -678,12 +705,23 @@ public final class ProcessList extends ProcessListInternal
 
     /**
      * An allocator for isolated UID ranges for apps that use an application zygote.
+     *
+     * Only used when safesetid is not used to manage UID transitions.
+     * TODO(b/414893665) Remove this range once safesetid is the default behavior.
      */
     @VisibleForTesting
     @GuardedBy("mService")
     IsolatedUidRangeAllocator mAppIsolatedUidRangeAllocator =
             new IsolatedUidRangeAllocator(Process.FIRST_APP_ZYGOTE_ISOLATED_UID,
                     Process.LAST_APP_ZYGOTE_ISOLATED_UID, Process.NUM_UIDS_PER_APP_ZYGOTE);
+
+    /**
+     * The available isolated UIDs for processes that are spawned from an
+     * application zygote when managed by SafeSetID.
+     */
+    @VisibleForTesting
+    @GuardedBy("mService")
+    IsolatedUidRange mGlobalAppIsolatedUids;
 
     /**
      * Processes that are being forcibly torn down.
@@ -806,6 +844,11 @@ public final class ProcessList extends ProcessListInternal
                 ANDROID_VOLD_APP_DATA_ISOLATION_ENABLED_PROPERTY, false);
         mAppDataIsolationAllowlistedApps = new ArrayList<>(
                 SystemConfig.getInstance().getAppDataIsolationWhitelistedApps());
+
+        if (Flags.useSafesetidUidPolicy()) {
+            mGlobalAppIsolatedUids = new IsolatedUidRange(Process.FIRST_APP_ZYGOTE_ISOLATED_UID,
+                    Process.LAST_APP_ZYGOTE_ISOLATED_UID);
+        }
 
         if (sKillHandler == null) {
             sKillThread = new ServiceThread(TAG + ":kill",
@@ -2216,6 +2259,27 @@ public final class ProcessList extends ProcessListInternal
     @GuardedBy("mService")
     private void removeProcessFromAppZygoteLocked(final ProcessRecord app) {
         // Free the isolated uid for this process
+        if (Flags.useSafesetidUidPolicy()
+                && UidTransitionPolicy.isEnabled()
+                && getUidTransitionPolicy() != null) {
+            // TODO(b/467504571) Create tests for this interaction between
+            // ProcessList and UidTransitionPolicy
+            mGlobalAppIsolatedUids.freeIsolatedUidLocked(app.uid);
+
+            // In the case that the isolated process failed to fully start,
+            // we might not have cleaned up the transition rule for this UID.
+            // If the rule for this UID was removed earlier (after successful start),
+            // this call will have no effect.
+            //
+            // In the case of this call failing to apply the policy, allow the exception to go
+            // uncaught.
+            // If the rule is not removed from the policy, it could result in a potential
+            // vulnerability.
+            //
+            // TODO(b/468898907) Monitor system server crashes due to failures at this call site.
+            getUidTransitionPolicy().purgeFromPolicy(app.uid);
+        }
+
         final IsolatedUidRange appUidRange =
                 mAppIsolatedUidRangeAllocator.getIsolatedUidRangeLocked(app.info.processName,
                         app.getHostingRecord().getDefiningUid());
@@ -2254,14 +2318,42 @@ public final class ProcessList extends ProcessListInternal
                 if (DEBUG_PROCESSES) {
                     Slog.d(TAG_PROCESSES, "Creating new app zygote.");
                 }
-                final IsolatedUidRange uidRange =
+
+                final int firstUid;
+                final int lastUid;
+
+                final int userId = UserHandle.getUserId(uid);
+
+                if (Flags.useSafesetidUidPolicy()
+                        && UidTransitionPolicy.isEnabled()
+                        && getUidTransitionPolicy() != null) {
+                    // TODO(b/467504571) Create tests for this interaction between
+                    // ProcessList and UidTransitionPolicy
+
+                    // When safesetid is active, the allowed UID range for an app zygote is the
+                    // entire isolated app UID space (instead of an app specific range allocated
+                    // from the global range).
+                    // Select the first and last value of the global range.
+                    firstUid = UserHandle.getUid(userId, mGlobalAppIsolatedUids.mFirstUid);
+                    lastUid = UserHandle.getUid(userId, mGlobalAppIsolatedUids.mLastUid);
+
+                    // Since the safesetid policy allows all UID transitions by default, explicitly
+                    // block all UID transitions from the app zygote UID since the app zygote will
+                    // soon be executing untrusted code.
+                    //
+                    // TODO(b/468898907) Monitor system server crashes due to failures at this call
+                    // site.
+                    getUidTransitionPolicy().disallowAllUidTransitionsFrom(uid);
+                } else {
+                    final IsolatedUidRange uidRange =
                         mAppIsolatedUidRangeAllocator.getIsolatedUidRangeLocked(
                                 app.info.processName, app.getHostingRecord().getDefiningUid());
-                final int userId = UserHandle.getUserId(uid);
-                // Create the app-zygote and provide it with the UID-range it's allowed
-                // to setresuid/setresgid to.
-                final int firstUid = UserHandle.getUid(userId, uidRange.mFirstUid);
-                final int lastUid = UserHandle.getUid(userId, uidRange.mLastUid);
+                    // Create the app-zygote and provide it with the UID-range it's allowed
+                    // to setresuid/setresgid to.
+                    firstUid = UserHandle.getUid(userId, uidRange.mFirstUid);
+                    lastUid = UserHandle.getUid(userId, uidRange.mLastUid);
+                }
+
                 ApplicationInfo appInfo = new ApplicationInfo(app.info);
                 // If this was an external service, the package name and uid in the passed in
                 // ApplicationInfo have been changed to match those of the calling package;
@@ -2482,6 +2574,17 @@ public final class ProcessList extends ProcessListInternal
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
             } else if (hostingRecord.usesAppZygote()) {
                 final AppZygote appZygote = createAppZygoteForProcessIfNeeded(app);
+
+                if (Flags.useSafesetidUidPolicy()
+                        && UidTransitionPolicy.isEnabled()
+                        && getUidTransitionPolicy() != null) {
+                    // TODO(b/467504571) Create tests for this interaction between
+                    // ProcessList and UidTransitionPolicy
+                    //
+                    // TODO(b/468898907) Monitor system server crashes due to failures at this call
+                    // site.
+                    getUidTransitionPolicy().allowUidTransition(appZygote.getZygoteUid(), uid);
+                }
 
                 // We can't isolate app data and storage data as parent zygote already did that.
                 startResult = appZygote.startProcess(entryPoint,
@@ -3251,6 +3354,8 @@ public final class ProcessList extends ProcessListInternal
         if (hostingRecord == null || !hostingRecord.usesAppZygote()) {
             // Allocate an isolated UID from the global range
             return mGlobalIsolatedUids;
+        } else if (Flags.useSafesetidUidPolicy() && UidTransitionPolicy.isEnabled()) {
+            return mGlobalAppIsolatedUids;
         } else {
             return mAppIsolatedUidRangeAllocator.getOrCreateIsolatedUidRangeLocked(
                     info.processName, hostingRecord.getDefiningUid());
