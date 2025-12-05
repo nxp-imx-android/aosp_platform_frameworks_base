@@ -65,6 +65,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.SplitShadeStateController
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.util.animation.UniqueObjectHostView
+import com.android.systemui.util.kotlin.mapDirect
 import com.android.systemui.util.settings.SecureSettings
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -72,7 +73,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapLatest
 
 private val TAG: String = MediaHierarchyManager::class.java.simpleName
 
@@ -678,7 +678,7 @@ constructor(
                     // in
                     // QS
                     shadeInteractor.shadeExpansion
-                        .mapLatest { it < EXPANSION_THRESHOLD }
+                        .mapDirect { it < EXPANSION_THRESHOLD }
                         .distinctUntilChanged(),
                     ::Triple,
                 )

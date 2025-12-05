@@ -1292,6 +1292,16 @@ flag {
 }
 
 flag {
+    name: "optimize_flow_map_operators"
+    namespace: "systemui"
+    description: "Use map instead of mapLatest for non-suspend flow transformations"
+    bug: "466952109"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "override_suppress_overlay_condition"
    namespace: "systemui"
    description: "Allow override the conditions to suppress the clipboard overlay"
