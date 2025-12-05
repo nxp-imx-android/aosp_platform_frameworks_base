@@ -30,7 +30,6 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API;
 
-import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.USER_SHORTCUT_TYPES;
@@ -111,7 +110,6 @@ import android.os.UserManager;
 import android.os.test.FakePermissionEnforcer;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.security.advancedprotection.AdvancedProtectionManager;
@@ -682,7 +680,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({FLAG_KEYBOARD_REPEAT_KEYS})
     public void testRepeatKeysSettingsChanges_propagateToMagnificationController() {
         final AccessibilityUserState userState = mA11yms.mUserStates.get(
                 mA11yms.getCurrentUserIdLocked());

@@ -35,7 +35,6 @@ import static android.accessibilityservice.AccessibilityTrace.FLAGS_PACKAGE_BROA
 import static android.accessibilityservice.AccessibilityTrace.FLAGS_USER_BROADCAST_RECEIVER;
 import static android.accessibilityservice.AccessibilityTrace.FLAGS_WINDOW_MANAGER_INTERNAL;
 import static android.content.Context.DEVICE_ID_DEFAULT;
-import static android.hardware.input.InputSettings.isRepeatKeysFeatureFlagEnabled;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_GESTURE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
@@ -6249,12 +6248,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     mNavigationModeUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mUserSetupCompleteUri, false, this, UserHandle.USER_ALL);
-            if (isRepeatKeysFeatureFlagEnabled()) {
-                contentResolver.registerContentObserver(
-                        mRepeatKeysEnabledUri, false, this, UserHandle.USER_ALL);
-                contentResolver.registerContentObserver(
-                        mRepeatKeysTimeoutMsUri, false, this, UserHandle.USER_ALL);
-            }
+            contentResolver.registerContentObserver(
+                    mRepeatKeysEnabledUri, false, this, UserHandle.USER_ALL);
+            contentResolver.registerContentObserver(
+                    mRepeatKeysTimeoutMsUri, false, this, UserHandle.USER_ALL);
         }
 
         public void unregister(ContentResolver contentResolver) {
@@ -6563,9 +6560,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     boolean readRepeatKeysSettingsLocked(AccessibilityUserState userState) {
-        if (!isRepeatKeysFeatureFlagEnabled()) {
-            return false;
-        }
         final boolean isRepeatKeysEnabled = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.KEY_REPEAT_ENABLED,
