@@ -428,6 +428,9 @@ public class StackScrollAlgorithm {
     public boolean isCyclingOut(ExpandableNotificationRow row, AmbientState ambientState) {
         if (!NotificationHeadsUpCycling.isEnabled()) return false;
         String cyclingOutKey = ambientState.getAvalanchePreviousHunKey();
+        if (cyclingOutKey == null || row.getKey() == null) {
+            return false;
+        }
         return row.getKey().equals(cyclingOutKey);
     }
 
@@ -437,6 +440,9 @@ public class StackScrollAlgorithm {
     public boolean isCyclingIn(ExpandableNotificationRow row, AmbientState ambientState) {
         if (!NotificationHeadsUpCycling.isEnabled()) return false;
         String cyclingInKey = ambientState.getAvalancheShowingHunKey();
+        if (cyclingInKey == null || row.getKey() == null) {
+            return false;
+        }
         return row.getKey().equals(cyclingInKey);
     }
 
