@@ -130,7 +130,9 @@ constructor(
                                         shortcutType,
                                         it.targetName,
                                     )
-                                    viewModel.dismissDialog()
+                                    if (!it.isToggleable) {
+                                        viewModel.dismissDialog()
+                                    }
                                 },
                             )
                         }
