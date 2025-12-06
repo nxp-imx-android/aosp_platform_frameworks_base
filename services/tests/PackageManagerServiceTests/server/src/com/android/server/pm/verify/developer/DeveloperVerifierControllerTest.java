@@ -30,7 +30,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -101,9 +100,9 @@ public class DeveloperVerifierControllerTest {
     private static final long TEST_REQUEST_START_TIME = 0L;
     private static final long TEST_TIMEOUT_DURATION_MILLIS = TimeUnit.MINUTES.toMillis(1);
     private static final long TEST_MAX_TIMEOUT_DURATION_MILLIS =
-            TimeUnit.MINUTES.toMillis(100);
+            TimeUnit.MINUTES.toMillis(10);
     private static final long TEST_VERIFIER_CONNECTION_TIMEOUT_DURATION_MILLIS =
-            TimeUnit.SECONDS.toMillis(100);
+            TimeUnit.SECONDS.toMillis(10);
     private static final int TEST_POLICY = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
     private final ArrayList<SharedLibraryInfo> mTestDeclaredLibraries = new ArrayList<>();
@@ -222,10 +221,8 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
                 mUserId, mOnConnectionEstablished)).isFalse();
         // Test that nothing crashes if the verifier is available even though there's no bound
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        mDeveloperVerifierController.notifyVerificationCancelled(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationTimeout(-1, mUserId);
         // Since there was no bound, no call is made to the verifier
         verifyNoMoreInteractions(mMockService);
@@ -252,10 +249,8 @@ public class DeveloperVerifierControllerTest {
         // 2 invocations, one for onBinderDied and one for onDisconnected.
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler), any(Runnable.class));
         // Test that nothing crashes if the service connection is lost
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        mDeveloperVerifierController.notifyVerificationCancelled(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationTimeout(TEST_ID, mUserId);
         verifyNoMoreInteractions(mMockService);
         assertThat(mDeveloperVerifierController.startVerificationSession(
@@ -279,8 +274,7 @@ public class DeveloperVerifierControllerTest {
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
                 mSessionCallback, mOnConnectionEstablished, /* retry= */ false,
                 mTestVerificationFlags)).isTrue();
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
         verify(mMockService).onPackageNameAvailable(eq(TEST_PACKAGE_NAME));
     }
 
@@ -291,8 +285,7 @@ public class DeveloperVerifierControllerTest {
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
                 mSessionCallback, mOnConnectionEstablished, /* retry= */ false,
                 mTestVerificationFlags)).isTrue();
-        mDeveloperVerifierController.notifyVerificationCancelled(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
         verify(mMockService).onVerificationCancelled(eq(TEST_PACKAGE_NAME));
     }
 
@@ -388,7 +381,7 @@ public class DeveloperVerifierControllerTest {
                 argThat(argument -> argument.obj != null), anyLong());
         verify(mSessionCallback, times(1)).onTimeout();
         verify(mInjector, times(2)).getCurrentTimeMillis();
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Test that the countdown to auto-disconnect has started
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -416,7 +409,7 @@ public class DeveloperVerifierControllerTest {
                 argThat(argument -> argument.obj != null), anyLong());
         verify(mSessionCallback, times(1)).onTimeout();
         verify(mInjector, times(2)).getCurrentTimeMillis();
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Then retry
         ArgumentCaptor<DeveloperVerificationSession> captor =
                 ArgumentCaptor.forClass(DeveloperVerificationSession.class);
@@ -432,7 +425,7 @@ public class DeveloperVerifierControllerTest {
         session.reportVerificationComplete(status);
         verify(mSessionCallback, times(1)).onVerificationCompleteReceived(
                 eq(status), eq(null));
-        verify(mInjector, times(4)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
     }
 
     @Test
@@ -443,7 +436,7 @@ public class DeveloperVerifierControllerTest {
                 DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN);
         verify(mSessionCallback, times(1)).onVerificationIncompleteReceived(
                 eq(DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN));
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Test that the countdown to auto-disconnect has started
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -462,7 +455,7 @@ public class DeveloperVerifierControllerTest {
         session.reportVerificationComplete(status, bundle);
         verify(mSessionCallback, times(1)).onVerificationCompleteReceived(
                 eq(status), eq(bundle));
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Test that the countdown to auto-disconnect has started
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -482,7 +475,7 @@ public class DeveloperVerifierControllerTest {
         session.reportVerificationComplete(status);
         verify(mSessionCallback, times(1)).onVerificationCompleteReceived(
                 eq(status), eq(null));
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Test that the countdown to auto-disconnect has started
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -539,7 +532,7 @@ public class DeveloperVerifierControllerTest {
         session.reportVerificationBypassed(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
         verify(mSessionCallback, times(1)).onVerificationBypassedReceived(
                 eq(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
         // Test that the countdown to auto-disconnect has started
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -810,10 +803,7 @@ public class DeveloperVerifierControllerTest {
         session.reportVerificationComplete(statusSuccess, new PersistableBundle());
         verify(mSessionCallback, times(1)).onVerificationCompleteReceived(
                 eq(statusSuccess), any(PersistableBundle.class));
-        // 3 times of removing timeout countdown: 1. remove pre-warm session expiration timeout for
-        // user one; 2. remove pre-warm session expiration timeout for user two; 3. remove session
-        // timeout countdown for user one.
-        verify(mInjector, times(3)).stopTimeoutCountdown(eq(mHandler),
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler),
                 tokenCaptor.capture());
         // Test that the countdown to auto-disconnect has started for the current user
         verify(mInjector, times(3)).removeCallbacks(eq(mHandler),
@@ -831,27 +821,15 @@ public class DeveloperVerifierControllerTest {
         sessionSecondaryUser.reportVerificationComplete(statusFailure, new PersistableBundle());
         verify(mSessionCallbackSecondaryUser, times(1))
                 .onVerificationCompleteReceived(eq(statusFailure), any(PersistableBundle.class));
-        // 1 more time of removing timeout countdown for second user when the session is complete
-        verify(mInjector, times(4)).stopTimeoutCountdown(eq(mHandler),
+        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler),
                 tokenCaptor.capture());
         List<Object> allTokens = tokenCaptor.getAllValues();
-        List<Integer> sessionIdTokens = new ArrayList<Integer>(2);
-        List<DeveloperVerificationRequestStatusTracker> trackerTokens = new ArrayList<>(2);
-        for (Object obj : allTokens) {
-            if (obj instanceof Integer) {
-                sessionIdTokens.add((Integer) obj);
-            } else if (obj instanceof DeveloperVerificationRequestStatusTracker) {
-                trackerTokens.add((DeveloperVerificationRequestStatusTracker) obj);
-            }
-        }
         DeveloperVerificationRequestStatusTracker
-                tracker1 = (DeveloperVerificationRequestStatusTracker) trackerTokens.getFirst();
+                tracker1 = (DeveloperVerificationRequestStatusTracker) allTokens.getFirst();
         DeveloperVerificationRequestStatusTracker
-                tracker2 = (DeveloperVerificationRequestStatusTracker) trackerTokens.getLast();
+                tracker2 = (DeveloperVerificationRequestStatusTracker) allTokens.getLast();
         assertThat(tracker1.getUserId()).isEqualTo(mUserId);
         assertThat(tracker2.getUserId()).isEqualTo(mSecondUserId);
-        assertThat(sessionIdTokens.getFirst()).isEqualTo(TEST_ID);
-        assertThat(sessionIdTokens.getLast()).isEqualTo(TEST_ID2);
         // Test that the countdown to auto-disconnect has started for the second user
         verify(mInjector, times(4)).removeCallbacks(eq(mHandler),
                 runnableCaptorSecondaryUser.capture());
@@ -859,196 +837,5 @@ public class DeveloperVerifierControllerTest {
         verify(mHandler, times(1)).sendMessageAtTime(
                 argThat(argument -> argument.getCallback() == autoDisconnectRunnableSecondaryUser),
                 anyLong());
-    }
-
-    @Test
-    public void testAutoDisconnectCancelledAfterNotifyPackageNameAvailable() throws Exception {
-        ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> serviceCaptor =
-                ArgumentCaptor.forClass(ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
-                mUserId, mOnConnectionEstablished)).isTrue();
-        verify(mMockServiceConnector).setServiceLifecycleCallbacks(serviceCaptor.capture());
-        ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> serviceCallbacks =
-                serviceCaptor.getValue();
-        serviceCallbacks.onConnected(mMockService);
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        // First auto-disconnection is scheduled right after binding
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-        reset(mInjector);
-        reset(mHandler);
-        // Then notify the verifier with a package name
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        // The auto-disconnection task should have been removed
-        assertThat(runnableCaptor.getValue()).isEqualTo(autoDisconnectRunnable);
-    }
-
-    @Test
-    public void testAutoDisconnectScheduledAfterNotifyVerificationCancelled() throws Exception {
-        ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> serviceCaptor =
-                ArgumentCaptor.forClass(ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
-                mUserId, mOnConnectionEstablished)).isTrue();
-        verify(mMockServiceConnector).setServiceLifecycleCallbacks(serviceCaptor.capture());
-        ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> serviceCallbacks =
-                serviceCaptor.getValue();
-        serviceCallbacks.onConnected(mMockService);
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        // First auto-disconnection is scheduled right after binding
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        reset(mInjector);
-        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                eq(autoDisconnectRunnable));
-        reset(mInjector);
-        reset(mHandler);
-        // Now notify the verifier that the pre-warmed session has been cancelled
-        mDeveloperVerifierController.notifyVerificationCancelled(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        // The auto-disconnection task should have been scheduled again
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-        // The pre-warm expiration action should have been cancelled
-        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), eq(TEST_ID));
-    }
-
-    @Test
-    public void testPreWarmedSessionExpirationActionRemovedAfterVerificationRequested()
-            throws Exception {
-        ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> serviceCaptor =
-                ArgumentCaptor.forClass(ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
-                mUserId, mOnConnectionEstablished)).isTrue();
-        verify(mMockServiceConnector).setServiceLifecycleCallbacks(serviceCaptor.capture());
-        ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> serviceCallbacks =
-                serviceCaptor.getValue();
-        serviceCallbacks.onConnected(mMockService);
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        // First auto-disconnection is scheduled right after binding
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-        reset(mInjector);
-        // Now do another pre-warm and let it be taken care of by sending the verification request
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        ArgumentCaptor<DeveloperVerificationSession> sessionCaptor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, mOnConnectionEstablished, /* retry= */ false,
-                mTestVerificationFlags)).isTrue();
-        verify(mMockService).onVerificationRequired(sessionCaptor.capture());
-        DeveloperVerificationSession session = sessionCaptor.getValue();
-        // Test the auto-disconnect job is canceled both when pre-warm took place and when the
-        // request is sent out
-        verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
-                eq(autoDisconnectRunnable));
-        // The pre-warm expiration action should have been cancelled
-        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), eq(TEST_ID));
-    }
-
-    @Test
-    public void testPreWarmedSessionPreventsAutoDisconnection() throws Exception {
-        // Start a verification, but before it finishes, trigger a pre-warm. When the
-        // verification is finished, there should be no auto-disconnect task scheduled, because
-        // the pre-warm is still active.
-        ArgumentCaptor<DeveloperVerificationSession> sessionCaptor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, mUserId, TEST_ID2, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, mOnConnectionEstablished, /* retry= */ false,
-                mTestVerificationFlags)).isTrue();
-        verify(mMockService).onVerificationRequired(sessionCaptor.capture());
-        // The auto-disconnection task should have been removed
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID2, TEST_PACKAGE_NAME, mUserId);
-        verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
-                any(Runnable.class));
-        reset(mInjector);
-        reset(mHandler);
-        DeveloperVerificationSession session = sessionCaptor.getValue();
-        DeveloperVerificationStatus status =
-                new DeveloperVerificationStatus.Builder().setVerified(true).build();
-        session.reportVerificationComplete(status);
-        // Should not schedule auto-disconnect.
-        verify(mHandler, times(0)).sendMessageAtTime(any(Message.class),
-                anyLong());
-        // Now notify the verifier that the pre-warmed session has been cancelled
-        mDeveloperVerifierController.notifyVerificationCancelled(
-                TEST_ID2, TEST_PACKAGE_NAME, mUserId);
-        // The auto-disconnection task should have been scheduled again
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-    }
-
-    @Test
-    public void testAutoDisconnectionScheduledAfterPreWarmedSessionExpires() throws Exception {
-        ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> serviceCaptor =
-                ArgumentCaptor.forClass(ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
-                mUserId, mOnConnectionEstablished)).isTrue();
-        verify(mMockServiceConnector).setServiceLifecycleCallbacks(serviceCaptor.capture());
-        ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> serviceCallbacks =
-                serviceCaptor.getValue();
-        serviceCallbacks.onConnected(mMockService);
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        // First auto-disconnection is scheduled right after binding
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
-                runnableCaptor.capture());
-        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.getCallback() == autoDisconnectRunnable),
-                anyLong());
-        reset(mInjector);
-        reset(mHandler);
-        // Now do another pre-warm and this time, let it expire.
-        // Mock message handling for expiring the pre-warm session.
-        when(mHandler.sendMessageAtTime(argThat(
-                argument -> argument.obj != null && argument.obj.equals(TEST_ID)),
-                anyLong()))
-                .thenAnswer(
-                        i -> {
-                            ((Message) i.getArguments()[0]).getCallback().run();
-                            return true;
-                        });
-        mDeveloperVerifierController.notifyPackageNameAvailable(
-                TEST_ID, TEST_PACKAGE_NAME, mUserId);
-        verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
-                eq(autoDisconnectRunnable));
-        // After the removal of the session from the pre-warmed session list, the auto-disconnect
-        // task should have been scheduled again. By this time there should have been two messages
-        // scheduled to the handler, the first one is to expire the session and the second one is to
-        // auto-disconnect.
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-        verify(mHandler, times(2)).sendMessageAtTime(
-                messageCaptor.capture(),
-                anyLong());
-        List<Message> allMessages = messageCaptor.getAllValues();
-        assertThat(allMessages.getLast().getCallback()).isEqualTo(autoDisconnectRunnable);
     }
 }
