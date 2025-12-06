@@ -222,12 +222,8 @@ constructor(
                     val actions =
                         targets
                             .filter { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }
-                            .flatMap { target ->
-                                target.actionChips.map { chip ->
-                                    Pair(chip, target.associatedSmartspaceTargetId)
-                                }
-                            }
-                            .map { (chip, associatedTargetId) ->
+                            .flatMap { target -> target.actionChips }
+                            .map { chip ->
                                 val title = chip.title.toString()
                                 val activityId =
                                     chip.extras?.getParcelable<ActivityId>(EXTRA_ACTIVITY_ID)
@@ -240,6 +236,8 @@ constructor(
                                     )
                                 val isEnabledWithImeVisible =
                                     chip.extras?.getBoolean(EXTRA_ENABLED_WITH_IME_VISIBLE)
+                                val dismissalGroupId =
+                                    chip.extras?.getString(EXTRA_DISMISSAL_GROUP_ID)
                                 ActionModel(
                                     icon =
                                         IconModel(
@@ -316,7 +314,7 @@ constructor(
                                     oneTapEnabled = oneTapEnabled == true,
                                     oneTapDelayMs = oneTapDelayMs ?: DEFAULT_ONE_TAP_DELAY_MS,
                                     isEnabledWithImeVisible = isEnabledWithImeVisible == true,
-                                    dismissalGroupId = associatedTargetId,
+                                    dismissalGroupId = dismissalGroupId,
                                 )
                             }
                             .let { actions -> cuebarPlugin?.filterActions(actions) ?: actions }
@@ -517,6 +515,7 @@ constructor(
         private const val EXTRA_ONE_TAP_ENABLED = "oneTapEnabled"
         private const val EXTRA_ONE_TAP_DELAY_MS = "oneTapDelayMs"
         private const val EXTRA_ENABLED_WITH_IME_VISIBLE = "enabledWithImeVisible"
+        private const val EXTRA_DISMISSAL_GROUP_ID = "dismissalGroupId"
         private const val DEFAULT_ONE_TAP_DELAY_MS = 200L
 
         // Timeout to hide cuebar if it wasn't interacted with
