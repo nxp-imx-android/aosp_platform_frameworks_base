@@ -3148,7 +3148,7 @@ package android.app.supervision {
   }
 
   @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder extends android.app.supervision.Policy.Builder<android.app.supervision.PackageUsagePolicy,android.app.supervision.PackageUsagePolicy.Builder> {
-    ctor public PackageUsagePolicy.Builder();
+    ctor public PackageUsagePolicy.Builder(@NonNull String, int);
     ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);

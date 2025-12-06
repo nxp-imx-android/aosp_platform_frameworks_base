@@ -162,8 +162,7 @@ public abstract class Policy implements Parcelable {
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     public abstract static class Builder<P extends Policy, B extends Builder<P, B>> {
-        long mVersion;
-        private boolean mVersionSet = false;
+        long mVersion = 0;
 
         /** Constructs a new builder. */
         Builder() {}
@@ -186,7 +185,6 @@ public abstract class Policy implements Parcelable {
         @NonNull
         public B setVersion(long version) {
             mVersion = version;
-            mVersionSet = true;
             return (B) this;
         }
 
@@ -198,9 +196,6 @@ public abstract class Policy implements Parcelable {
          */
         @NonNull
         public P build() {
-            if (!mVersionSet) {
-                throw new IllegalStateException("Version must be set");
-            }
             return performBuild();
         }
 
