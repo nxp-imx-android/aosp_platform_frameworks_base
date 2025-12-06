@@ -263,7 +263,9 @@ class DesktopRepository(
         // TODO: b/457129297 - Remove log once bug is fixed
         logD("calculateDesktopExclusionRegion: desktopExclusionRegions=%s", desktopExclusionRegions)
         val desktopExclusionRegion = Region()
-        desktopExclusionRegions.valueIterator().forEach { taskExclusionRegion ->
+        // TODO: b/466443921 - Investigate why a non-Region object is in desktopExclusionRegions
+        desktopExclusionRegions.valueIterator().asSequence().filterIsInstance<Region>().forEach {
+            taskExclusionRegion ->
             desktopExclusionRegion.op(taskExclusionRegion, Region.Op.UNION)
         }
         return desktopExclusionRegion
