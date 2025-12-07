@@ -93,6 +93,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     public static List<FlagsParameterization> getParams() {
         List<FlagsParameterization> aconfigCombinations = allCombinationsOf(
                 Flags.FLAG_QS_WIFI_CONFIG,
+                Flags.FLAG_QS_WIFI_MULTIUSER,
                 Flags.FLAG_QS_TILE_DETAILED_VIEW
         );
 
@@ -355,7 +356,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER})
     public void viewHolderUpdateEndIcon_qsWifiConfigFlagDisabled_hideSharedIcon() {
         when(mInternetWifiEntry.isSharedWithOtherUsers()).thenReturn(true);
         when(mInternetWifiEntry.getConnectedState()).thenReturn(
@@ -393,7 +394,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({Flags.FLAG_QS_WIFI_MULTIUSER, Flags.FLAG_QS_TILE_DETAILED_VIEW})
     public void viewHolderUpdateEndIcon_wifiShared_singleUser_hideSharedIcon() {
         when(mInternetWifiEntry.isSharedWithOtherUsers()).thenReturn(true);
         when(mInternetWifiEntry.getConnectedState()).thenReturn(
@@ -412,7 +413,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({Flags.FLAG_QS_WIFI_MULTIUSER, Flags.FLAG_QS_TILE_DETAILED_VIEW})
     public void viewHolderUpdateEndIcon_wifiConnectedAndShared_hideSharedIcon() {
         when(mInternetWifiEntry.isSharedWithOtherUsers()).thenReturn(true);
         when(mInternetWifiEntry.getConnectedState()).thenReturn(
@@ -431,7 +432,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({Flags.FLAG_QS_WIFI_MULTIUSER, Flags.FLAG_QS_TILE_DETAILED_VIEW})
     public void viewHolderUpdateEndIcon_wifiDisconnectedAndShared_showSharedIcon() {
         when(mInternetWifiEntry.isSharedWithOtherUsers()).thenReturn(true);
         when(mInternetWifiEntry.getConnectedState()).thenReturn(
@@ -450,7 +451,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({Flags.FLAG_QS_WIFI_MULTIUSER, Flags.FLAG_QS_TILE_DETAILED_VIEW})
     public void viewHolderUpdateEndIcon_wifiSharedAndSecurityPsk_showSharedAndLockIcon() {
         when(mInternetWifiEntry.isSharedWithOtherUsers()).thenReturn(true);
         when(mInternetWifiEntry.getConnectedState()).thenReturn(
@@ -469,7 +470,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER})
     public void setShowAllWifi_qsWifiConfigFlagDisabled_returnWifiEntriesCount() {
         int wifiEntryCount = MAX_WIFI_ENTRY_COUNT * 2;
         when(mWifiEntries.size()).thenReturn(wifiEntryCount);
@@ -489,7 +490,7 @@ public class InternetAdapterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({Flags.FLAG_QS_WIFI_MULTIUSER, Flags.FLAG_QS_TILE_DETAILED_VIEW})
     public void setShowAllWifi_returnWifiEntriesCount() {
         int wifiEntryCount = MAX_WIFI_ENTRY_COUNT * 2;
         when(mWifiEntries.size()).thenReturn(wifiEntryCount);
