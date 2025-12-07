@@ -19,21 +19,26 @@ package com.android.server.am.psc;
 import static com.android.server.am.psc.BinderSession.MAX_UNIQUE_TAGS;
 import static com.android.server.am.psc.BinderSession.OVERFLOW_TAG;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.platform.test.annotations.Presubmit;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoRule;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -42,117 +47,120 @@ import java.util.function.BiConsumer;
 
 /**
  * Test class for {@link BinderSession}.
- *
+ * <p>
  * Build/Install/Run:
  *  atest FrameworksServicesTests:BinderSessionTests
  * Or
  *  atest FrameworksServicesTestsRavenwood_ProcessStateController:BinderSessionTests
  */
 @Presubmit
+@RunWith(MockitoJUnitRunner.class)
 public class BinderSessionTests {
+    @Rule
+    public final MockitoRule mocks = MockitoJUnit.rule();
+    private static final String TAG_0 = "test0";
+    private static final String TAG_1 = "test1";
+    private static final String TAG_2 = "test2";
+    private static final String TAG_3 = "test3";
+    private static final String TAG_4 = "test4";
+    private static final String TAG_5 = "test5";
+    private static final String OTHER_TAG = "otherTag";
+    private static final String TEST_TAG = "test";
+
     private final Object mAnyObject = new Object();
-    private final BiConsumer<Object, Boolean> mMockConsumer = mock(BiConsumer.class);
+    @Mock
+    private BiConsumer<Object, Boolean> mMockConsumer;
 
-    private BinderSession<?> getNewBinderSessionForTest() {
-        return new TestBinderSession(mMockConsumer, mAnyObject);
-    }
+    private BinderSession<?> mSession;
 
-    private static void assertSessionReset(BinderSession session) {
-        assertEquals(0, session.mTotal);
-        assertEquals(0, session.mKeyByTag.size());
-        assertEquals(0, session.mCountByKey.size());
+    @Before
+    public void setUp() {
+        mSession = new TestBinderSession(mMockConsumer, mAnyObject);
     }
 
     @Test
     public void startingState() {
-        final BinderSession session = getNewBinderSessionForTest();
-        assertSessionReset(session);
+        assertSessionReset(mSession);
     }
 
     @Test
     public void resetOnUndercount() {
-        final BinderSession<?> session = getNewBinderSessionForTest();
-        final String[] testTags = {"test0", "test1"};
+        final String[] testTags = {TAG_0, TAG_1};
 
-        session.binderTransactionStarting(testTags[0]);
-        session.binderTransactionStarting(testTags[0]);
-        session.binderTransactionStarting(testTags[0]);
-        session.binderTransactionStarting(testTags[0]);
+        mSession.binderTransactionStarting(testTags[0]);
+        mSession.binderTransactionStarting(testTags[0]);
+        mSession.binderTransactionStarting(testTags[0]);
+        mSession.binderTransactionStarting(testTags[0]);
 
-        final long token1 = session.binderTransactionStarting(testTags[1]);
+        final long token1 = mSession.binderTransactionStarting(testTags[1]);
 
-        final int key0 = session.mKeyByTag.get(testTags[0]);
-        final int key1 = session.mKeyByTag.get(testTags[1]);
-        assertEquals(0, key0);
-        assertEquals(1, key1);
+        final int key0 = mSession.mKeyByTag.get(testTags[0]);
+        final int key1 = mSession.mKeyByTag.get(testTags[1]);
+        assertThat(key0).isEqualTo(0);
+        assertThat(key1).isEqualTo(1);
 
-        assertEquals(4, session.mCountByKey.get(key0));
-        assertEquals(1, session.mCountByKey.get(key1));
-        assertEquals(5, session.mTotal);
+        assertThat(mSession.mCountByKey.get(key0)).isEqualTo(4);
+        assertThat(mSession.mCountByKey.get(key1)).isEqualTo(1);
+        assertThat(mSession.mTotal).isEqualTo(5);
 
-        session.binderTransactionCompleted(token1);
+        mSession.binderTransactionCompleted(token1);
 
-        assertEquals(4, session.mCountByKey.get(key0));
-        assertEquals(0, session.mCountByKey.get(key1));
-        assertEquals(4, session.mTotal);
+        assertThat(mSession.mCountByKey.get(key0)).isEqualTo(4);
+        assertThat(mSession.mCountByKey.get(key1)).isEqualTo(0);
+        assertThat(mSession.mTotal).isEqualTo(4);
 
-        session.binderTransactionCompleted(token1);
-        assertSessionReset(session);
+        mSession.binderTransactionCompleted(token1);
+        assertSessionReset(mSession);
     }
 
     @Test
     public void resetOnInvalidToken() {
-        final BinderSession<?> session = getNewBinderSessionForTest();
-        final String testTag = "test";
+        final String testTag = TEST_TAG;
 
-        final long validToken = session.binderTransactionStarting(testTag);
-        session.binderTransactionStarting(testTag);
-        session.binderTransactionStarting(testTag);
+        final long validToken = mSession.binderTransactionStarting(testTag);
+        mSession.binderTransactionStarting(testTag);
+        mSession.binderTransactionStarting(testTag);
 
-        int key = session.mKeyByTag.get(testTag);
-        assertEquals(0, key);
-        assertEquals(3, session.mTotal);
-        assertEquals(3, session.mCountByKey.get(key));
+        int key = mSession.mKeyByTag.get(testTag);
+        assertThat(key).isEqualTo(0);
+        assertThat(mSession.mTotal).isEqualTo(3);
+        assertThat(mSession.mCountByKey.get(key)).isEqualTo(3);
 
-        session.binderTransactionCompleted(validToken + 1);
-        assertSessionReset(session);
+        mSession.binderTransactionCompleted(validToken + 1);
+        assertSessionReset(mSession);
 
-        session.binderTransactionStarting(testTag);
-        session.binderTransactionStarting(testTag);
+        mSession.binderTransactionStarting(testTag);
+        mSession.binderTransactionStarting(testTag);
 
-        key = session.mKeyByTag.get(testTag);
-        assertEquals(0, key);
-        assertEquals(2, session.mTotal);
-        assertEquals(2, session.mCountByKey.get(key));
+        key = mSession.mKeyByTag.get(testTag);
+        assertThat(key).isEqualTo(0);
+        assertThat(mSession.mTotal).isEqualTo(2);
+        assertThat(mSession.mCountByKey.get(key)).isEqualTo(2);
 
-        session.binderTransactionCompleted(-1);
-        assertSessionReset(session);
+        mSession.binderTransactionCompleted(-1);
+        assertSessionReset(mSession);
     }
 
     @Test
     public void tokenConsistency() {
-        final BinderSession session = getNewBinderSessionForTest();
+        final String[] testTags = {TAG_5, TAG_1, TAG_2};
 
-        final String[] testTags = {"test5", "test1", "test2"};
+        final long token0 = mSession.binderTransactionStarting(testTags[0]);
+        final long token1 = mSession.binderTransactionStarting(testTags[1]);
+        final long token2 = mSession.binderTransactionStarting(testTags[2]);
 
-        final long token0 = session.binderTransactionStarting(testTags[0]);
-        final long token1 = session.binderTransactionStarting(testTags[1]);
-        final long token2 = session.binderTransactionStarting(testTags[2]);
-
-        assertEquals(token0, session.binderTransactionStarting(testTags[0]));
-        assertEquals(token1, session.binderTransactionStarting(testTags[1]));
-        assertEquals(token2, session.binderTransactionStarting(testTags[2]));
+        assertThat(mSession.binderTransactionStarting(testTags[0])).isEqualTo(token0);
+        assertThat(mSession.binderTransactionStarting(testTags[1])).isEqualTo(token1);
+        assertThat(mSession.binderTransactionStarting(testTags[2])).isEqualTo(token2);
     }
 
     @Test
     public void tokenDistinctness() {
-        final BinderSession session = getNewBinderSessionForTest();
-
-        final String[] tags = {"test3", "test1", "otherTag", "test2"};
+        final String[] tags = {TAG_3, TAG_1, OTHER_TAG, TAG_2};
         final List<Long> tokens = new ArrayList<>();
 
         for (String tag: tags) {
-            final long token = session.binderTransactionStarting(tag);
+            final long token = mSession.binderTransactionStarting(tag);
             final int index = tokens.indexOf(token);
             if (index >= 0) {
                 fail("Duplicate token " + token + " found for tag " + tag
@@ -164,85 +172,79 @@ public class BinderSessionTests {
 
     @Test
     public void callsConsumerOnChangeFromZero() {
-        final BinderSession session = getNewBinderSessionForTest();
-        assertEquals(0, session.mTotal);
+        assertThat(mSession.mTotal).isEqualTo(0);
 
-        session.binderTransactionStarting("test");
-        assertEquals(1, session.mTotal);
+        mSession.binderTransactionStarting(TEST_TAG);
+        assertThat(mSession.mTotal).isEqualTo(1);
         verify(mMockConsumer).accept(mAnyObject, true);
 
-        session.binderTransactionStarting("test");
-        session.binderTransactionStarting("test");
-        session.binderTransactionStarting("test");
+        mSession.binderTransactionStarting(TEST_TAG);
+        mSession.binderTransactionStarting(TEST_TAG);
+        mSession.binderTransactionStarting(TEST_TAG);
 
-        assertEquals(4, session.mTotal);
+        assertThat(mSession.mTotal).isEqualTo(4);
         verifyNoMoreInteractions(mMockConsumer);
     }
 
     @Test
     public void callsConsumerOnChangeFromOneToZero() {
-        final BinderSession session = getNewBinderSessionForTest();
-        final long token = session.binderTransactionStarting("test");
-        assertEquals(1, session.mTotal);
+        final long token = mSession.binderTransactionStarting(TEST_TAG);
+        assertThat(mSession.mTotal).isEqualTo(1);
         clearInvocations(mMockConsumer);
 
-        session.binderTransactionStarting("test");
-        session.binderTransactionStarting("test");
-        assertEquals(3, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
+        mSession.binderTransactionStarting(TEST_TAG);
+        mSession.binderTransactionStarting(TEST_TAG);
+        assertThat(mSession.mTotal).isEqualTo(3);
+        verify(mMockConsumer, never()).accept(any(Object.class), anyBoolean());
 
-        session.binderTransactionCompleted(token);
-        session.binderTransactionCompleted(token);
-        assertEquals(1, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
+        mSession.binderTransactionCompleted(token);
+        mSession.binderTransactionCompleted(token);
+        assertThat(mSession.mTotal).isEqualTo(1);
+        verify(mMockConsumer, never()).accept(any(Object.class), anyBoolean());
 
-        session.binderTransactionCompleted(token);
-        assertEquals(0, session.mTotal);
+        mSession.binderTransactionCompleted(token);
+        assertThat(mSession.mTotal).isEqualTo(0);
         verify(mMockConsumer).accept(mAnyObject, false);
     }
 
     @Test
     public void callsConsumerOnChangeFromManyToZero() {
-        final BinderSession session = getNewBinderSessionForTest();
-        session.binderTransactionStarting("test");
+        mSession.binderTransactionStarting(TEST_TAG);
         clearInvocations(mMockConsumer);
 
-        session.binderTransactionStarting("test");
-        session.binderTransactionStarting("test");
-        assertEquals(3, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
+        mSession.binderTransactionStarting(TEST_TAG);
+        mSession.binderTransactionStarting(TEST_TAG);
+        assertThat(mSession.mTotal).isEqualTo(3);
+        verify(mMockConsumer, never()).accept(any(Object.class), anyBoolean());
 
-        session.binderTransactionCompleted(-1);
-        assertEquals(0, session.mTotal);
+        mSession.binderTransactionCompleted(-1);
+        assertThat(mSession.mTotal).isEqualTo(0);
         verify(mMockConsumer).accept(mAnyObject, false);
     }
 
     @Test
     public void noCallToConsumerOnChangeFromZeroToZero() {
-        final BinderSession session = getNewBinderSessionForTest();
-        final long token = session.binderTransactionStarting("test");
-        session.binderTransactionCompleted(token);
+        final long token = mSession.binderTransactionStarting(TEST_TAG);
+        mSession.binderTransactionCompleted(token);
 
-        assertEquals(0, session.mTotal);
+        assertThat(mSession.mTotal).isEqualTo(0);
         clearInvocations(mMockConsumer);
 
-        session.binderTransactionCompleted(-1);
-        assertEquals(0, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
+        mSession.binderTransactionCompleted(-1);
+        assertThat(mSession.mTotal).isEqualTo(0);
+        verify(mMockConsumer, never()).accept(any(Object.class), anyBoolean());
     }
 
     @Test
     public void keyKeeping() {
-        final BinderSession<?> session = getNewBinderSessionForTest();
-
-        final String[] tags = {"test3", "test1", "otherTag", "test2"};
+        final String[] tags = {TAG_3, TAG_1, OTHER_TAG, TAG_2};
         final List<Integer> keys = new ArrayList<>();
 
         for (String tag: tags) {
-            assertFalse(session.mKeyByTag.containsKey(tag));
-            session.binderTransactionStarting(tag);
+            assertThat(mSession.mKeyByTag).doesNotContainKey(tag);
+            mSession.binderTransactionStarting(tag);
 
-            final int key = session.mKeyByTag.get(tag);
+            final int key = mSession.mKeyByTag.get(tag);
             final int index = keys.indexOf(key);
             if (index >= 0) {
                 fail("Duplicate key " + key + " found for tag " + tag
@@ -253,114 +255,123 @@ public class BinderSessionTests {
 
         // Ensure that keys don't change once assigned.
         for (int i = 0; i < tags.length; i++) {
-            assertEquals(keys.get(i), session.mKeyByTag.get(tags[i]));
-            session.binderTransactionStarting(tags[i]);
-            assertEquals(keys.get(i), session.mKeyByTag.get(tags[i]));
+            assertThat(mSession.mKeyByTag.get(tags[i])).isEqualTo(keys.get(i));
+            mSession.binderTransactionStarting(tags[i]);
+            assertThat(mSession.mKeyByTag.get(tags[i])).isEqualTo(keys.get(i));
         }
     }
 
     @Test
     public void countKeeping() {
-        final BinderSession<?> session = getNewBinderSessionForTest();
-
-        final String[] tags = {"test3", "otherTag", "test0"};
+        final String[] tags = {TAG_3, OTHER_TAG, TAG_0};
         final List<Long> tokens = new ArrayList<>();
         final List<Integer> keys = new ArrayList<>();
 
         for (String tag: tags) {
-            tokens.add(session.binderTransactionStarting(tag));
-            keys.add(session.mKeyByTag.get(tag));
+            tokens.add(mSession.binderTransactionStarting(tag));
+            keys.add(mSession.mKeyByTag.get(tag));
         }
 
-        session.binderTransactionStarting(tags[1]);
-        session.binderTransactionStarting(tags[2]);
-        session.binderTransactionStarting(tags[2]);
+        mSession.binderTransactionStarting(tags[1]);
+        mSession.binderTransactionStarting(tags[2]);
+        mSession.binderTransactionStarting(tags[2]);
 
-        assertEquals(1, session.mCountByKey.get(keys.get(0)));
-        assertEquals(2, session.mCountByKey.get(keys.get(1)));
-        assertEquals(3, session.mCountByKey.get(keys.get(2)));
-        assertEquals(6, session.mTotal);
+        assertSessionCounts(keys, 1, 2, 3);
+        assertThat(mSession.mTotal).isEqualTo(6);
 
-        session.binderTransactionCompleted(tokens.get(0));
-        session.binderTransactionCompleted(tokens.get(1));
-        session.binderTransactionCompleted(tokens.get(2));
+        mSession.binderTransactionCompleted(tokens.get(0));
+        mSession.binderTransactionCompleted(tokens.get(1));
+        mSession.binderTransactionCompleted(tokens.get(2));
 
-        assertEquals(0, session.mCountByKey.get(keys.get(0)));
-        assertEquals(1, session.mCountByKey.get(keys.get(1)));
-        assertEquals(2, session.mCountByKey.get(keys.get(2)));
-        assertEquals(3, session.mTotal);
+        assertSessionCounts(keys, 0, 1, 2);
+        assertThat(mSession.mTotal).isEqualTo(3);
 
-        session.binderTransactionCompleted(tokens.get(1));
-        session.binderTransactionCompleted(tokens.get(2));
+        mSession.binderTransactionCompleted(tokens.get(1));
+        mSession.binderTransactionCompleted(tokens.get(2));
 
-        assertEquals(0, session.mCountByKey.get(keys.get(0)));
-        assertEquals(0, session.mCountByKey.get(keys.get(1)));
-        assertEquals(1, session.mCountByKey.get(keys.get(2)));
-        assertEquals(1, session.mTotal);
+        assertSessionCounts(keys, 0, 0, 1);
+        assertThat(mSession.mTotal).isEqualTo(1);
 
-        session.binderTransactionStarting(tags[0]);
-        session.binderTransactionStarting(tags[1]);
+        mSession.binderTransactionStarting(tags[0]);
+        mSession.binderTransactionStarting(tags[1]);
 
-        assertEquals(1, session.mCountByKey.get(keys.get(0)));
-        assertEquals(1, session.mCountByKey.get(keys.get(1)));
-        assertEquals(1, session.mCountByKey.get(keys.get(2)));
-        assertEquals(3, session.mTotal);
+        assertSessionCounts(keys, 1, 1, 1);
+        assertThat(mSession.mTotal).isEqualTo(3);
 
-        session.binderTransactionCompleted(tokens.get(0));
-        session.binderTransactionCompleted(tokens.get(1));
-        session.binderTransactionCompleted(tokens.get(2));
+        mSession.binderTransactionCompleted(tokens.get(0));
+        mSession.binderTransactionCompleted(tokens.get(1));
+        mSession.binderTransactionCompleted(tokens.get(2));
 
-        assertEquals(0, session.mCountByKey.get(keys.get(0)));
-        assertEquals(0, session.mCountByKey.get(keys.get(1)));
-        assertEquals(0, session.mCountByKey.get(keys.get(2)));
-        assertEquals(0, session.mTotal);
+        assertSessionCounts(keys, 0, 0, 0);
+        assertThat(mSession.mTotal).isEqualTo(0);
     }
 
     @Test
     public void overflowTags() {
-        final BinderSession session = getNewBinderSessionForTest();
-
         final List<String> uniqueTags = new ArrayList<>(MAX_UNIQUE_TAGS);
         for (int i = 0; i < MAX_UNIQUE_TAGS; i++) {
             final String tag = "unique_tag" + i;
             uniqueTags.add(tag);
-            session.binderTransactionStarting(tag);
-            assertEquals(i, session.mKeyByTag.get(tag));
-            assertEquals(1, session.mCountByKey.get(i));
+            mSession.binderTransactionStarting(tag);
+            assertThat(mSession.mKeyByTag.get(tag).intValue()).isEqualTo(i);
+            assertThat(mSession.mCountByKey.get(i)).isEqualTo(1);
         }
-        assertEquals(MAX_UNIQUE_TAGS, session.mCountByKey.size());
-        assertEquals(MAX_UNIQUE_TAGS, session.mKeyByTag.size());
-        assertFalse(session.mKeyByTag.containsKey(OVERFLOW_TAG));
+        assertThat(mSession.mCountByKey.size()).isEqualTo(MAX_UNIQUE_TAGS);
+        assertThat(mSession.mKeyByTag).hasSize(MAX_UNIQUE_TAGS);
+        assertThat(mSession.mKeyByTag).doesNotContainKey(OVERFLOW_TAG);
 
-        final String[] overflowTags = {"test3", "4overflow", "test0"};
+        final String[] overflowTags = {TAG_3, TAG_4, TAG_0};
 
-        final long overflowToken0 = session.binderTransactionStarting(overflowTags[0]);
-        session.binderTransactionStarting(overflowTags[0]);
-        final long overflowToken1 = session.binderTransactionStarting(overflowTags[1]);
-        final long overflowToken2 = session.binderTransactionStarting(overflowTags[2]);
-        session.binderTransactionStarting(overflowTags[2]);
+        final long overflowToken0 = mSession.binderTransactionStarting(overflowTags[0]);
+        mSession.binderTransactionStarting(overflowTags[0]);
+        final long overflowToken1 = mSession.binderTransactionStarting(overflowTags[1]);
+        final long overflowToken2 = mSession.binderTransactionStarting(overflowTags[2]);
+        mSession.binderTransactionStarting(overflowTags[2]);
 
-        assertTrue(session.mKeyByTag.containsKey(OVERFLOW_TAG));
-        assertEquals(MAX_UNIQUE_TAGS + 1, session.mCountByKey.size());
-        assertEquals(MAX_UNIQUE_TAGS + 1, session.mKeyByTag.size());
-        assertEquals(5, session.mCountByKey.get(MAX_UNIQUE_TAGS));
+        assertThat(mSession.mKeyByTag).containsKey(OVERFLOW_TAG);
+        assertThat(mSession.mCountByKey.size()).isEqualTo(MAX_UNIQUE_TAGS + 1);
+        assertThat(mSession.mKeyByTag).hasSize(MAX_UNIQUE_TAGS + 1);
+        assertThat(mSession.mCountByKey.get(MAX_UNIQUE_TAGS)).isEqualTo(5);
         for (final String overflowTag : overflowTags) {
-            assertFalse(session.mKeyByTag.containsKey(overflowTag));
+            assertThat(mSession.mKeyByTag).doesNotContainKey(overflowTag);
         }
 
         for (int i = 0; i < MAX_UNIQUE_TAGS; i++) {
             final String tag = uniqueTags.get(i);
-            session.binderTransactionStarting(tag);
-            assertEquals(2, session.mCountByKey.get(i));
-            assertEquals(5, session.mCountByKey.get(MAX_UNIQUE_TAGS));
+            mSession.binderTransactionStarting(tag);
+            assertThat(mSession.mCountByKey.get(i)).isEqualTo(2);
+            assertThat(mSession.mCountByKey.get(MAX_UNIQUE_TAGS)).isEqualTo(5);
         }
 
-        session.binderTransactionCompleted(overflowToken0);
-        session.binderTransactionCompleted(overflowToken1);
-        session.binderTransactionCompleted(overflowToken2);
-        assertEquals(2, session.mCountByKey.get(MAX_UNIQUE_TAGS));
+        mSession.binderTransactionCompleted(overflowToken0);
+        mSession.binderTransactionCompleted(overflowToken1);
+        mSession.binderTransactionCompleted(overflowToken2);
+        assertThat(mSession.mCountByKey.get(MAX_UNIQUE_TAGS)).isEqualTo(2);
         for (int i = 0; i < MAX_UNIQUE_TAGS; i++) {
-            assertEquals(2, session.mCountByKey.get(i));
+            assertThat(mSession.mCountByKey.get(i)).isEqualTo(2);
+        }
+    }
+
+    /**
+     * Asserts that the internal state of the session is reset.
+     */
+    private static void assertSessionReset(BinderSession<?> session) {
+        assertThat(session.mTotal).isEqualTo(0);
+        assertThat(session.mKeyByTag).isEmpty();
+        assertThat(session.mCountByKey.size()).isEqualTo(0);
+    }
+
+    /**
+     * Asserts that the internal counts of the session are as expected.
+     *
+     * @param keys                      A list of keys to check the counts for.
+     * @param expectedCountsForEachKey  The expected counts for each key in {@code keys}.
+     */
+    private void assertSessionCounts(List<Integer> keys, int... expectedCountsForEachKey) {
+        assertThat(expectedCountsForEachKey.length).isEqualTo(keys.size());
+        for (int i = 0; i < expectedCountsForEachKey.length; i++) {
+            assertThat(mSession.mCountByKey.get(keys.get(i))).isEqualTo(
+                    expectedCountsForEachKey[i]);
         }
     }
 
