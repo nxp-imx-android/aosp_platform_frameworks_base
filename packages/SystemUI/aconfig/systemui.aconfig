@@ -1388,6 +1388,13 @@ flag {
 flag {
     name: "qs_wifi_config"
     namespace: "systemui"
+    description: "Obsolete, use qs_wifi_multiuser instead"
+    bug: "402214828"
+}
+
+flag {
+    name: "qs_wifi_multiuser"
+    namespace: "systemui"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "402214828"
 }
