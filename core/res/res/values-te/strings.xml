@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"లూప్‌బ్యాక్ ఇంటర్‌ఫేస్‌ను ఉపయోగించండి"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ఈ యాప్, లూప్‌బ్యాక్ ఇంటర్‌ఫేస్ ద్వారా ఇతర యాప్‌లతో ఇంటరాక్ట్ అవ్వడానికి అనుమతిస్తుంది"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"లూప్‌బ్యాక్ ఇంటర్‌ఫేస్‌ను బలవంతంగా ఉపయోగించండి"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"ఇతర యాప్‌నకు లూప్‌బ్యాక్ అనుమతులు అవసరం లేకుండానే, లూప్‌బ్యాక్ ఇంటర్‌ఫేస్ ద్వారా ఇతర యాప్‌లతో ఇంటరాక్ట్ అవ్వడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"సమీపంలో పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించండి"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"సమీపంలోని పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ప్రాధాన్యత ఇవ్వబడిన NFC చెల్లింపు సేవల సమాచారం"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ఫోన్‌ను కిందికి జరపండి"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ఫోన్‌ను మీ ఎడమ వైపునకు జరపండి"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ఫోన్‌ను మీ కుడి వైపునకు జరపండి"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"దయచేసి మీ పరికరం వైపు మరింత నేరుగా చూడండి."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"మీ ముఖం కనిపించడం లేదు. మీ ఫోన్‌ను కళ్లకు ఎదురుగా పట్టుకోండి."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"బాగా కదుపుతున్నారు. ఫోన్‌ను స్థిరంగా పట్టుకోండి"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"దయచేసి మీ ముఖాన్ని మళ్లీ నమోదు చేయండి."</string>
@@ -1454,6 +1453,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"దీన్ని సెటప్ చేయడానికి నొక్కండి"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"మీ టైమ్ జోన్ మారింది"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"మీరు ఇప్పుడు <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g>‌లో (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) ఉన్నారు"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"గడియారం మార్పు"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"గడియారాలలోని సమయం <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> ముందుకు తిప్పబడ్డాయి. మీరు ఇప్పుడు <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>‌లో (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) ఉన్నారు."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"గడియారాలలోని సమయం <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> వెనక్కి తిప్పబడ్డాయి. మీరు ఇప్పుడు <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>‌లో (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) ఉన్నారు."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"సమయాన్ని సెట్ చేయండి"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"తేదీని సెట్ చేయండి"</string>
     <string name="date_time_set" msgid="4603445265164486816">"సెట్ చేయి"</string>

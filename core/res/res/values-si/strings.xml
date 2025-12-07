@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"යෙදුමට දේශීය ජාල උපාංග වෙත ප්‍රවේශ වීමට ඉඩ දෙයි"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ලූප්බැක් අතුරු මුහුණත භාවිතා කරන්න"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"යෙදුමට ලූප්බැක් අතුරු මුහුණත හරහා වෙනත් යෙදුම් සමග අන්තර් ක්‍රියා කිරීමට ඉඩ දෙයි"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"ලූප්බැක් අතුරු මුහුණත භාවිතා කිරීමට බල කරන්න"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"වෙනත් යෙදුමට ලූප්බැක් අවසර ලබා ගැනීමට අවශ්‍ය නොවී ලූප්බැක් අතුරු මුහුණත හරහා වෙනත් යෙදුම් සමග අන්තර් ක්‍රියා කිරීමට යෙදුමට ඉඩ දෙයි"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කරන්න"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කිරීමට යෙදුමට ඉඩ දෙන්න"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"කැමති NFC ගෙවීම් සේවා තොරතුරු"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"දුරකථනය තවත් පහළට ගෙන යන්න"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"දුරකථනය ඔබගේ වම් පසට ගෙන යන්න"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"දුරකථනය ඔබගේ දකුණු පසට ගෙන යන්න"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"ඔබේ උපාංගය වෙත තවත් ඍජුව බලන්න."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ඔබගේ මුහුණ දැකිය නොහැකිය. ඔබගේ දුරකථනය ඇස් මට්ටමින් අල්ලා ගන්න."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"චලනය ඉතා වැඩියි. දුරකථනය ස්ථිරව අල්ලා සිටින්න."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ඔබේ මුහුණ යළි ලියාපදිංචි කරන්න."</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"එය පිහිටුවීමට තට්ටු කරන්න"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"ඔබේ වේලා කලාපය වෙනස් විය"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"ඔබ දැන් <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) හි වේ"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"වේලාව සකසන්න"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"දිනය සැකසීම"</string>
     <string name="date_time_set" msgid="4603445265164486816">"සකසන්න"</string>

@@ -647,10 +647,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дозволяє додатку отримувати доступ до пристроїв у локальній мережі"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"використовувати інтерфейс Loopback"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Дозволяє додатку взаємодіяти з іншими додатками через інтерфейс Loopback"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"примусово використовувати інтерфейс Loopback"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Дозволяє додатку взаємодіяти з іншими додатками через інтерфейс Loopback без надання їм відповідних дозволів"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"визначати відстань між пристроями поблизу"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Із цим дозволом додаток може визначати відстань між розташованими поблизу пристроями"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Використання інформації з платіжного NFC-сервісу"</string>
@@ -776,7 +774,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Опустіть телефон нижче"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Посуньте телефон лівіше"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Посуньте телефон правіше"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Дивіться просто на пристрій."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Обличчя не видно. Утримуйте телефон на рівні очей."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Забагато рухів. Тримайте телефон нерухомо."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Повторно проскануйте обличчя."</string>
@@ -1456,6 +1455,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Торкніться, щоб налаштувати"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Часовий пояс змінено"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Ви зараз у часовому поясі \"<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g>\" (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Установити час"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Установити дату"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Застосувати"</string>

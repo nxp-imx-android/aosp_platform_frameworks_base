@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Mengizinkan aplikasi mengakses perangkat jaringan lokal"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"gunakan antarmuka loopback"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Memungkinkan aplikasi berinteraksi dengan aplikasi lain melalui antarmuka loopback"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"paksa penggunaan antarmuka loopback"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Memungkinkan aplikasi berinteraksi dengan aplikasi lain melalui antarmuka loopback tanpa mewajibkan aplikasi lain memiliki izin loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"menentukan posisi relatif antar-perangkat di sekitar"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Izinkan aplikasi menentukan posisi relatif antar-perangkat di sekitar"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informasi Layanan Pembayaran NFC Pilihan"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Geser ponsel ke bawah"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Geser ponsel ke kiri"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Geser ponsel ke kanan"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Lihat langsung ke perangkat."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Wajah tidak terlihat. Pegang ponsel sejajar mata."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Terlalu banyak gerakan. Stabilkan ponsel."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Daftarkan ulang wajah Anda."</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Ketuk untuk menyiapkan"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Zona waktu Anda diubah"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Anda sekarang berada di <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Setel waktu"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Setel tanggal"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Setel"</string>

@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"允许此应用访问本地网络设备"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"使用环回接口"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"允许该应用通过环回接口与其他应用交互"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"强制使用环回接口"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"允许该应用通过环回接口与其他应用交互，而无需其他应用拥有环回权限"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"确定附近的设备之间的相对位置"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"允许应用确定附近的设备之间的相对位置"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"首选 NFC 支付服务信息"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"请将手机拿低一点"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"请将手机向左移动"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"请将手机向右移动"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"请直视您的设备。"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"看不到您的脸，请将手机举到与眼睛齐平的位置。"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"摄像头过于晃动。请将手机拿稳。"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"请重新注册您的面孔。"</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"点按即可进行设置"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"您的时区已更改"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"您当前所处的时区是<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"设置时间"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"设置日期"</string>
     <string name="date_time_set" msgid="4603445265164486816">"设置"</string>

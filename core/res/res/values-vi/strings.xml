@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Cho phép ứng dụng truy cập vào các thiết bị trên mạng cục bộ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"dùng giao diện vòng lặp"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Cho phép ứng dụng này tương tác với các ứng dụng khác qua giao diện vòng lặp"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"buộc sử dụng giao diện loopback"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Cho phép ứng dụng này tương tác với các ứng dụng khác qua giao diện loopback mà không yêu cầu ứng dụng khác có quyền đối với loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"xác định vị trí tương đối giữa các thiết bị ở gần"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Cho phép ứng dụng xác định vị trí tương đối giữa các thiết bị ở gần"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Thông tin về dịch vụ thanh toán qua công nghệ giao tiếp tầm gần (NFC) được ưu tiên"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Hạ thấp điện thoại xuống"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Đưa điện thoại sang bên trái"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Đưa điện thoại sang bên phải"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Vui lòng nhìn thẳng vào thiết bị."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Không thấy khuôn mặt. Hãy cầm điện thoại ngang tầm mắt."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Thiết bị di chuyển quá nhiều. Giữ yên thiết bị."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Vui lòng đăng ký lại khuôn mặt của bạn."</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Nhấn để thiết lập"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Múi giờ của bạn đã thay đổi"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Bạn đang ở múi giờ <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Đặt giờ"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Đặt ngày"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Đặt"</string>

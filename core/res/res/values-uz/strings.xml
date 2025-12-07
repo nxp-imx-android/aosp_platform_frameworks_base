@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Ilovaga lokal tarmoq qurilmalariga kirish uchun ruxsat beradi"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"takroriy tekshiruv interfeysidan foydalanish"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Ilovaga boshqa ilovalar bilan takroriy tekshiruv interfeysi orqali oʻzaro ishlashga ruxsat beradi"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"takroriy tekshiruv interfeysidan majburan foydalanish"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Ilovaga boshqa ilovalar bilan takroriy tekshiruv interfeysi orqali oʻzaro ishlashga ruxsat beradi, bunda boshqa ilovadan takroriy tekshiruv ruxsatlarini talab qilmaydi"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"atrofdagi qurilmalarning nisbiy joylashuvini aniqlash"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Ilova atrofdagi qurilmalarning nisbiy joylashuvini aniqlashi mumkin"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Asosiy NFC toʻlov xizmati haqidagi axborot"</string>
@@ -774,7 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Telefonni pastroq tuting"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Telefonni chaproq tuting"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Telefonni oʻngroq tuting"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Qurilmaga tik qarang."</string>
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Kameraga tik qarang"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Yuz koʻrinmayapti. Telefonni koʻz darajasida tuting."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Ortiqcha harakatlanmoqda. Qimirlatmasdan ushlang."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Yuzingizni qaytadan qayd qildiring."</string>
@@ -1454,6 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Sozlash uchun bosing"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Vaqt mintaqangiz oʻzgardi"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Endi bu yerdasiz: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Soat oʻzgarishi"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Soatlar <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> oldinga surildi. Endi bu yerdasiz: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Soatlar <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> orqaga surildi. Endi bu yerdasiz: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Vaqtni o‘rnatish"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Sanani kiritish"</string>
     <string name="date_time_set" msgid="4603445265164486816">"O‘rnatish"</string>

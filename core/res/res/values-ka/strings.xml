@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"აპს საშუალებას აძლევს, წვდომა იქონიოს ადგილობრივ ქსელურ მოწყობილობებზე"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"უკუკავშირის ინტერფეისის გამოყენება"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"აპს საშუალებას აძლევს, დაუკავშირდეს სხვა აპებს უკუკავშირის ინტერფეისის მეშვეობით"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"უკუკავშირის ინტერფეისის იძულებით გამოყენება"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"აპს სხვა აპებთან დაკავშირების საშუალებას აძლევს უკუკავშირის ინტერფეისით, სხვა აპისგან უკ. ნებართვების მოთხოვნის გარეშე"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ახლომახლო მოწყობილობებთან მიმართ. პოზიციის დადგენა"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"აპისთვის ახლომახლო მოწყობილობებთან მიმართებაში პოზიციის დადგენის ნების დართვა"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"უპირატესი NFC გადახდის სერვისის ინფორმაცია"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ჩაწიეთ ტელეფონი ქვემოთ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"გაწიეთ ტელეფონი თქვენგან მარცხნივ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"გაწიეთ ტელეფონი თქვენგან მარჯვნივ"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"გთხოვთ, უფრო პირდაპირ შეხედოთ თქვენს მოწყობილობას."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"სახე არ ჩანს. დაიჭირეთ ტელ. თვალის დონეზე."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"მეტისმეტად მოძრაობთ. მყარად დაიჭირეთ ტელეფონი."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"გთხოვთ, ხელახლა დაარეგისტრიროთ თქვენი სახე."</string>
@@ -1454,6 +1453,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"შეეხეთ პარამეტრების დასაყენებლად"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"თქვენი სასაათო სარტყელი შეიცვალა"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"თქვენ ახლა იმყოფებით შემდეგ სასაათო სარტყელში: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"საათის შეცვლა"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"საათმა <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>-ით წინ გადაიწია. თქვენ ახლა იმყოფებით შემდეგ სასაათო სარტყელში: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"საათმა <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>-ით უკან გადაიწია. თქვენ ახლა იმყოფებით შემდეგ სასაათო სარტყელში: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"დროის დაყენება"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"თარიღის დაყენება"</string>
     <string name="date_time_set" msgid="4603445265164486816">"დაყენება"</string>

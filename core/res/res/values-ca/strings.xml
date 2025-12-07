@@ -646,10 +646,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permet que l\'aplicació accedeixi als dispositius de la xarxa local"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"utilitza la interfície de bucle invertit"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permet que l\'aplicació interaccioni amb altres aplicacions a través de la interfície de bucle invertit"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"forçar l\'ús de la interfície de bucle invertit"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Permet que l\'aplicació interaccioni amb altres aplicacions a través de la interfície de bucle invertit sense requerir que l\'altra aplicació tingui permisos de bucle invertit"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"determin. posició relativa entre dispositius propers"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permet que l\'aplicació determini la posició relativa entre els dispositius propers"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informació preferent sobre el servei de pagament per NFC"</string>
@@ -775,7 +773,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Abaixa el telèfon"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Mou el telèfon cap a l\'esquerra"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Mou el telèfon cap a la dreta"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Mira més directament cap al dispositiu."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"No se\'t veu la cara. Mantén el telèfon a l\'altura dels ulls."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Massa moviment. Subjecta bé el telèfon."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Torna a registrar la teva cara."</string>
@@ -1455,6 +1454,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Toca per configurar-la"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"La zona horària ha canviat"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Ara ets a <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Defineix l\'hora"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Establiment de data"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Defineix"</string>
