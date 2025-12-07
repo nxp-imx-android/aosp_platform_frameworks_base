@@ -757,13 +757,19 @@ public class BubbleBarLayerView extends FrameLayout
     }
 
 
-    private void startMonitoringSwipeUpGesture() {
+    /**
+     * Starts the monitoring of gestures on the nav bar.
+     */
+    public void startMonitoringSwipeUpGesture() {
         if (ContextUtils.isGestureNavigationMode(mContext)) {
             mBubbleBarGestureNavSwipeController.startMonitoring();
         }
     }
 
-    private void stopMonitoringSwipeUpGesture() {
+    /**
+     * Stops the monitoring of gestures on the nav bar.
+     */
+    public void stopMonitoringSwipeUpGesture() {
         if (ContextUtils.isGestureNavigationMode(mContext)) {
             mBubbleBarGestureNavSwipeController.stopMonitoring();
         }
