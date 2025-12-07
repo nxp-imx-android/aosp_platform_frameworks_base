@@ -6515,10 +6515,6 @@ public final class ActiveServices {
                                             + r);
                         }
                         scheduleServiceForegroundTransitionTimeoutLocked(r);
-                        if (Flags.fgsVisibilityFix()) {
-                            mAm.mProcessStateController.setIsForegroundService(r, true);
-                            signalForegroundServiceObserversLocked(r);
-                        }
                     } else {
                         if (DEBUG_BACKGROUND_CHECK) {
                             Slog.i(TAG, "Service already foreground; no new timeout: " + r);
