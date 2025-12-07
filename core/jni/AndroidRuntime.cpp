@@ -84,6 +84,7 @@ extern int register_android_hardware_camera2_impl_CameraExtensionJpegProcessor(J
 extern int register_android_hardware_camera2_utils_SurfaceUtils(JNIEnv* env);
 extern int register_android_hardware_display_DisplayManagerGlobal(JNIEnv* env);
 extern int register_android_hardware_HardwareBuffer(JNIEnv *env);
+extern int register_android_hardware_HubEndpoint(JNIEnv* env);
 extern int register_android_hardware_OverlayProperties(JNIEnv* env);
 extern int register_android_hardware_SensorManager(JNIEnv *env);
 extern int register_android_hardware_SerialPort(JNIEnv *env);
@@ -1661,6 +1662,7 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_android_hardware_camera2_utils_SurfaceUtils),
         REG_JNI(register_android_hardware_display_DisplayManagerGlobal),
         REG_JNI(register_android_hardware_HardwareBuffer),
+        REG_JNI(register_android_hardware_HubEndpoint),
         REG_JNI(register_android_hardware_OverlayProperties),
         REG_JNI(register_android_hardware_SensorManager),
         REG_JNI(register_android_hardware_SerialPort),

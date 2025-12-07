@@ -72,7 +72,7 @@ public class DataFlowDataConfig {
     public static DataFlowDataConfig createFixedSize(
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementSize,
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementAlignment) {
-        if (elementAlignment % 2 != 0) {
+        if (elementAlignment != 1 && elementAlignment % 2 != 0) {
             throw new IllegalArgumentException("Element alignment must be a power of 2.");
         }
         return new DataFlowDataConfig(FORMAT_FIXED_SIZE, elementSize, elementAlignment);

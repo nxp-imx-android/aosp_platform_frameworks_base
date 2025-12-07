@@ -30,11 +30,15 @@ import android.os.OutcomeReceiver;
 import android.system.SystemCleaner;
 import android.util.CloseGuard;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a sink on a data flow whose source is an offload endpoint. New instances of this class
@@ -63,8 +67,23 @@ public class DataFlowSink implements AutoCloseable {
     /** The configuration of data read from this data flow. */
     private final DataFlowDataConfig mConfig;
 
+    private final DataFlowConsumerHandle mHandle;
+    private final HubEndpoint mEndpoint;
+
+    @Nullable private CompletableFuture<Void> mNotificationFuture;
+    private final Object mNotificationLock = new Object();
+
     /** Close guard to warn when the user hasn't explicitly {@link #close()}d this instance. */
     private final CloseGuard mCloseGuard = new CloseGuard();
+
+    private AtomicBoolean mIsBusy = new AtomicBoolean(false);
+
+    private final class ApiGuard implements AutoCloseable {
+        @Override
+        public void close() {
+            mIsBusy.set(false);
+        }
+    }
 
     /** Returns the configuration of elements read from this data flow. */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
@@ -76,7 +95,7 @@ public class DataFlowSink implements AutoCloseable {
     /**
      * Disables this sink and alerts the source.
      *
-     * The user should call this when finished reading from the data flow to release underlying
+     * <p>The user should call this when finished reading from the data flow to release underlying
      * resources as soon as possible.
      *
      * <p>Resources associated with this sink will be released asynchronously. The user will no
@@ -84,7 +103,7 @@ public class DataFlowSink implements AutoCloseable {
      *
      * <p>NOTE: Any events currently in flight when this method is called may trigger the callback.
      *
-     * It is safe to call this method at any time. The user does not need to explicitly call this
+     * <p>It is safe to call this method at any time. The user does not need to explicitly call this
      * method if they receive a {@link DataFlowCallback#onDataFlowSinkEvent(DataFlowSink, int,
      * SinkEventData)} event of type {@link DataFlowCallback#SINK_EVENT_STOPPED} for this instance.
      */
@@ -92,7 +111,7 @@ public class DataFlowSink implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void close() {
         mCloseGuard.close();
-        // Implemented in ag/36998982 in this topic.
+        mEndpoint.removeSink(mHandle);
     }
 
     /**
@@ -111,8 +130,9 @@ public class DataFlowSink implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @Nullable
     public DataFlowData requestData(@Size(min = 1) int elementCount, boolean allOrNothing) {
-        // Implemented in ag/36998982 in this topic.
-        return null;
+        try (ApiGuard guard = acquireApiGuard()) {
+            return requestDataInternal(elementCount, allOrNothing);
+        }
     }
 
     /**
@@ -137,8 +157,48 @@ public class DataFlowSink implements AutoCloseable {
     public DataFlowData awaitData(
             @Size(min = 1) int elementCount, @Nullable @DurationMillisLong Duration timeout)
             throws TimeoutException {
-        // Implemented in ag/36998982 in this topic.
-        throw new UnsupportedOperationException("Not implemented yet.");
+        DataFlowData data = null;
+        try (ApiGuard guard = acquireApiGuard()) {
+            synchronized (mNotificationLock) {
+                mNotificationFuture = new CompletableFuture<>();
+            }
+            long now = System.currentTimeMillis();
+            long endTime = (timeout == null) ? Long.MAX_VALUE : now + timeout.toMillis();
+
+            while (now < endTime) {
+                data = requestDataInternal(elementCount, /* allOrNothing= */ true);
+                if (data != null) {
+                    return data;
+                }
+
+                // If no data, wait for notification or timeout
+                long remainingTime = endTime - now;
+                if (remainingTime <= 0) {
+                    break; // Timeout reached
+                }
+
+                if (timeout == null) {
+                    mNotificationFuture.join();
+                } else {
+                    mNotificationFuture.get(
+                            remainingTime, java.util.concurrent.TimeUnit.MILLISECONDS);
+                }
+                // Reset future after completion to allow re-waiting
+                synchronized (mNotificationLock) {
+                    mNotificationFuture = new CompletableFuture<>();
+                }
+                now = System.currentTimeMillis();
+            }
+
+            throw new TimeoutException("Timed out waiting for data.");
+        } catch (ExecutionException | InterruptedException e) {
+            throw new IllegalStateException("Failed to await data: " + e.getMessage());
+        } finally {
+            // No longer awaiting, clear the future
+            synchronized (mNotificationLock) {
+                mNotificationFuture = null;
+            }
+        }
     }
 
     /**
@@ -211,7 +271,7 @@ public class DataFlowSink implements AutoCloseable {
                     "syncToSource() offset must be less than or equal to the current size of the"
                             + " data flow.");
         }
-        // Implemented in ag/36998982 in this topic.
+        mEndpoint.sinkSyncToSource(mHandle, offset);
     }
 
     /**
@@ -224,8 +284,7 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean sourceCanOverwriteReadPosition() {
-        // Implemented in ag/36998982 in this topic.
-        return false;
+        return mEndpoint.sinkSourceCanOverwriteReadPosition(mHandle);
     }
 
     /**
@@ -237,8 +296,7 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean isEmpty() {
-        // Implemented in ag/36998982 in this topic.
-        return false;
+        return size() == 0;
     }
 
     /**
@@ -251,12 +309,16 @@ public class DataFlowSink implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @IntRange(from = 0)
     public int size() {
-        // Implemented in ag/36998982 in this topic.
-        return 0;
+        return mEndpoint.sinkSize(mHandle);
     }
 
-    /* package */ DataFlowSink(@NonNull DataFlowDataConfig config) {
+    /* package */ DataFlowSink(
+            @NonNull DataFlowDataConfig config,
+            @NonNull DataFlowConsumerHandle handle,
+            @NonNull HubEndpoint endpoint) {
         mConfig = config;
+        mHandle = handle;
+        mEndpoint = endpoint;
         SystemCleaner.cleaner()
                 .register(
                         this,
@@ -264,5 +326,33 @@ public class DataFlowSink implements AutoCloseable {
                             mCloseGuard.warnIfOpen();
                             close();
                         });
+    }
+
+    /**
+     * @param event The event to notify for this sink.
+     * @return true if the event was handled, false otherwise.
+     */
+    /** @hide */
+    boolean onNotificationCallback(int event) {
+        synchronized (mNotificationLock) {
+            if (event == DataFlowCallback.SINK_EVENT_READABLE && mNotificationFuture != null) {
+                mNotificationFuture.complete(null);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private DataFlowData requestDataInternal(int elementCount, boolean allOrNothing) {
+        byte[] buffer = mEndpoint.sinkRequestData(mHandle, elementCount, allOrNothing);
+        return buffer == null ? null : new DataFlowData(ByteBuffer.wrap(buffer), mConfig);
+    }
+
+    private ApiGuard acquireApiGuard() {
+        if (!mIsBusy.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+            throw new ConcurrentModificationException(
+                    "Another sink operation is currently in progress.");
+        }
+        return new ApiGuard();
     }
 }

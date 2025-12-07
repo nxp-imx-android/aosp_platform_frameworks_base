@@ -31,10 +31,14 @@ import android.system.SystemCleaner;
 import android.util.CloseGuard;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeoutException;
 
@@ -80,6 +84,13 @@ import java.util.concurrent.TimeoutException;
 public class DataFlowSource implements AutoCloseable {
     /** The configuration of data sent over this data flow. */
     private final DataFlowDataConfig mConfig;
+
+    private final HubEndpoint mEndpoint;
+    private final SharedDataRegion mRegion;
+    private final DataFlowInfo mDataFlowInfo;
+    private final DataFlowId mDataFlowId;
+
+    private final Set<HubEndpointInfo> mSinks = new HashSet<>();
 
     /** Close guard to warn when the user hasn't explicitly {@link #close()}d this instance. */
     private final CloseGuard mCloseGuard = new CloseGuard();
@@ -136,7 +147,16 @@ public class DataFlowSource implements AutoCloseable {
             boolean canOverwrite) {
         Objects.requireNonNull(sinkInfo);
         Objects.requireNonNull(newDataAlertPolicy);
-        // Implemented in ag/36998982 in this topic.
+        mEndpoint.shareDataFlow(
+                mRegion,
+                mDataFlowInfo,
+                mDataFlowId,
+                sinkInfo,
+                newDataAlertPolicy,
+                canOverwrite,
+                /* session= */ null,
+                /* msg= */ null);
+        mSinks.add(sinkInfo);
     }
 
     /**
@@ -184,8 +204,18 @@ public class DataFlowSource implements AutoCloseable {
                     "Message must be a response required message to be used with an async"
                             + " callback.");
         }
-        // Implemented in ag/36998982 in this topic.
-        throw new UnsupportedOperationException("Not implemented yet.");
+        ContextHubTransaction<Void> transaction =
+                mEndpoint.shareDataFlow(
+                        mRegion,
+                        mDataFlowInfo,
+                        mDataFlowId,
+                        sinkInfo,
+                        newDataAlertPolicy,
+                        canOverwrite,
+                        session,
+                        msg);
+        mSinks.add(sinkInfo);
+        return transaction;
     }
 
     /**
@@ -207,7 +237,7 @@ public class DataFlowSource implements AutoCloseable {
             boolean canOverwrite) {
         Objects.requireNonNull(sinkInfo);
         Objects.requireNonNull(newDataAlertPolicy);
-        // Implemented in ag/36998982 in this topic.
+        mEndpoint.updateSinkPolicy(mRegion, sinkInfo, newDataAlertPolicy, canOverwrite);
     }
 
     /**
@@ -220,14 +250,13 @@ public class DataFlowSource implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @NonNull
     public List<HubEndpointInfo> getCurrentSinks() {
-        // Implemented in ag/36998982 in this topic.
-        return List.of();
+        return new ArrayList<>(mSinks);
     }
 
     /**
      * Disables this source and notifies all sinks.
      *
-     * The user should call this when finished pushing to the data flow to release underlying
+     * <p>The user should call this when finished pushing to the data flow to release underlying
      * resources as soon as possible.
      *
      * <p>Resources associated with this data flow will be released asynchronously. The user will no
@@ -235,13 +264,13 @@ public class DataFlowSource implements AutoCloseable {
      *
      * <p>NOTE: Any events currently in flight when this method is called may trigger a callback.
      *
-     * It is safe to call this method at any time.
+     * <p>It is safe to call this method at any time.
      */
     @Override
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void close() {
         mCloseGuard.close();
-        // Implemented in ag/36998982 in this topic.
+        mEndpoint.removeHostDataFlow(Optional.of(mDataFlowId.id), Optional.of(mRegion.id));
     }
 
     /**
@@ -267,8 +296,7 @@ public class DataFlowSource implements AutoCloseable {
     @IntRange(from = 0)
     public int push(@NonNull DataFlowData data, boolean allOrNothing) {
         Objects.requireNonNull(data);
-        // Implemented in ag/36998982 in this topic.
-        return 0;
+        return mEndpoint.sourcePush(mRegion, data, allOrNothing);
     }
 
     /**
@@ -342,8 +370,7 @@ public class DataFlowSource implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean isFull() {
-        // Implemented in ag/36998982 in this topic.
-        return false;
+        return mEndpoint.sourceFull(mRegion);
     }
 
     /**
@@ -357,12 +384,20 @@ public class DataFlowSource implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @IntRange(from = 0)
     public int size() {
-        // Implemented in ag/36998982 in this topic.
-        return 0;
+        return mEndpoint.sourceSize(mRegion);
     }
 
-    /* package */ DataFlowSource(@NonNull DataFlowDataConfig config) {
+    /* package */ DataFlowSource(
+            @NonNull DataFlowDataConfig config,
+            @NonNull HubEndpoint endpoint,
+            @NonNull SharedDataRegion region,
+            @NonNull DataFlowInfo dataFlowInfo,
+            @NonNull DataFlowId dataFlowId) {
         mConfig = config;
+        mEndpoint = endpoint;
+        mRegion = region;
+        mDataFlowInfo = dataFlowInfo;
+        mDataFlowId = dataFlowId;
         SystemCleaner.cleaner()
                 .register(
                         this,
@@ -370,5 +405,16 @@ public class DataFlowSource implements AutoCloseable {
                             mCloseGuard.warnIfOpen();
                             close();
                         });
+    }
+
+    /* package */
+    int getRegionId() {
+        return mRegion.id;
+    }
+
+    /* package */
+    void removeSink(@NonNull HubEndpointInfo sinkInfo) {
+        mSinks.remove(sinkInfo);
+        mEndpoint.removeOffloadSink(mRegion, sinkInfo);
     }
 }
