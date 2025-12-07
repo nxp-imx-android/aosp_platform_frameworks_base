@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"‏%1$s. برای تنظیم روی لرزش، تک‌ضرب بزنید."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"‏%1$s. برای صامت کردن تک‌ضرب بزنید."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"کنترل نوفه زمینه"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"حذف نوفه زمینه میکروفون"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"صدای فضایی"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"خاموش"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"ثابت"</string>
@@ -915,7 +914,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"روشن کردن"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"روشن - براساس چهره"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"بی‌صدا و بسته‌ای"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"استفاده کردن از سازمان‌دهنده اعلان"</string>
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"استفاده کردن از سازمان‌دهنده اعلان‌ها"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"برای <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"حراج‌ها، ویژگی‌های جدید، و…"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"برترین داستان‌ها، سرمقاله‌ها، و…"</string>
@@ -923,7 +922,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"خبرنامه‌ها، رسانه‌های توصیه‌شده، و…"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"روشن کردن در «تنظیمات»"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"اکنون می‌توان مکالمه‌های طولانی‌تر را خلاصه کرد تا خلاصه‌ای سریع به شما ارائه شود"</string>
-    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"«سازمان‌دهنده اعلان» می‌تواند اعلان‌های دارای اولویت کمتر را بسته‌بندی و بی‌صدا کند. دسته‌های بیشتر در «تنظیمات» اضافه کنید."</string>
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"«سازمان‌دهنده اعلان‌ها» می‌تواند اعلان‌های دارای اولویت کمتر را بسته‌بندی و بی‌صدا کند. دسته‌های بیشتر در «تنظیمات» اضافه کنید."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{‫# اعلان}one{‫# اعلان}other{‫# اعلان}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"‫<xliff:g id="NAME">%1$s</xliff:g>،‏ <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"تمام"</string>
@@ -967,7 +966,7 @@
     <string name="notification_delegate_header" msgid="1264510071031479920">"اعلان‌های دارای پراکسی"</string>
     <string name="notification_summarization_header" msgid="511445254923268688">"خلاصه‌شده توسط «<xliff:g id="APP_NAME">%1$s</xliff:g>»"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"تمام اعلان‌های <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="see_more_title" msgid="7409317011708185729">"مشاهده موارد بیشتر"</string>
+    <string name="see_more_title" msgid="7409317011708185729">"بیشتر دیدن"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"‏سیستم این اعلان را به‌طور خودکار &lt;b&gt;به «پیش‌فرض» ارتقا داد&lt;/b&gt;."</string>
     <string name="feedback_silenced" msgid="9116540317466126457">"‏سیستم این اعلان را به‌طور خودکار &lt;b&gt;به «بی‌صدا» تنزل داد&lt;/b&gt;."</string>
     <string name="feedback_promoted" msgid="2125562787759780807">"‏این اعلان به‌طور خودکار در کشوی اعلانات &lt;b&gt;در رده‌بندی بالاتری قرار گرفت&lt;/b&gt;."</string>
@@ -1176,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"میان‌بر صفحه‌کلید <xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"روشن نشود"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"میان‌بر روشن شود"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> میان‌بر صفحه‌کلید فعال شد"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_4">^4</xliff:g> است که یک ویژگی دسترس‌پذیری است. به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود. پس‌از روشن شدن درشت‌نمایی، "<annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_5">^1</xliff:g>» و <xliff:g id="ID_6">^2</xliff:g> و «+» یا «-» را برای میزان کردن بزرگ‌نمایی فشار دهید."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"خاموش کردن میان‌بر"</string>
@@ -1189,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"این عملکرد می‌تواند با برنامه یا حسگری سخت‌افزاری تعاملاتتان را ردگیری کند و ازطرف شما با برنامه‌ها تعامل داشته باشد."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"فشار دادن "<annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> باعث روشن شدن «<xliff:g id="ID_4">^4</xliff:g>» که یک ویژگی دسترس‌پذیری است می‌شود. این ویژگی به شما امکان می‌دهد دستگاهتان را به‌صورت دست‌آزاد کنترل کنید."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"دسترس‌پذیری"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"تمام"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"دیدن اقدامات محافظتی"</string>
@@ -1586,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"برای سفارشی‌سازی صفحه قفل، قفل را باز کنید"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"‏Wi-Fi دردسترس نیست"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"مکان فعال است"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"دوربین مسدود شده است"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"دوربین و میکروفون مسدود شده‌اند"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"میکروفون مسدود شده است"</string>

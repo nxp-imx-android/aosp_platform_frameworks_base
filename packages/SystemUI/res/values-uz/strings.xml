@@ -1175,6 +1175,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> tezkor tugmasi yoqilsinmi?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Yoqilmasin"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Tezkor tugmalarni yoqish"</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"belgisi"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ranglarni akslantirish uchun tezkor tugmadir. Ranglarni akslantirish yorqin ranglarni qora ranglarga almashtiradi. Shuningdek, qora ekranni yorqinlashtiradi."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> tezkor tugmasi yoqildi"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"belgisi"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> – qulaylik funksiyasi boʻlgan <xliff:g id="ID_4">^4</xliff:g> ishlatish uchun tezkor tugmadir. Bu kontentni kattalashtirish uchun ekranda tezkor yaqinlashtirish imkonini beradi. Kattalashtirish yoniqligida zumni sozlash uchun <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"belgisi"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> va “+” or “-” tugmalarini bosing."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Tezkor tugmani faolsizlantirish"</string>
@@ -1188,7 +1189,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Ilova yoki qurilma sensori bilan munosabatlaringizni kuzatishi hamda sizning nomingizdan ilovalar bilan ishlashi mumkin."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"belgisi"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tugmalari bosilganda, qulayliklar funksiyasi – <xliff:g id="ID_4">^4</xliff:g> yoqiladi. Buning yordamida qurilmani ovoz bilan boshqarish mumkin."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Qulayliklar"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Tayyor"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekran qulfi"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Oʻchirilmoqda…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Batafsil axborot"</string>
@@ -1585,6 +1585,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Ekran qulfini sozlash uchun qulfni oching"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi mavjud emas"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Joylashuv faol"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"Kamera faol"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"Mikrofon faol"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera bloklangan"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera va mikrofon bloklangan"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofon bloklangan"</string>

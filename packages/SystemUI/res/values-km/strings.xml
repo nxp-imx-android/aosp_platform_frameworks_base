@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s ។ ចុច​ដើម្បី​កំណត់​ឲ្យ​ញ័រ។"</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s ។ ចុច​ដើម្បី​បិទ​សំឡេង។"</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"ការគ្រប់គ្រង​សំឡេងរំខាន"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"ការកាត់បន្ថយសំឡេងរំខានមីក្រូហ្វូន"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"សំឡេងលំហ"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"បិទ"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"ថេរ"</string>
@@ -1176,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"បើកផ្លូវកាត់​ក្ដារ​ចុច <xliff:g id="ID_1">%1$s</xliff:g> ឬ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"កុំបើក"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"បើកផ្លូវ​កាត់"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"ផ្លូវកាត់​ក្ដារ​ចុចនៃ<xliff:g id="ID_1">%1$s</xliff:g>ត្រូវបានបើក"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ <xliff:g id="ID_4">^4</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ វាអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីធ្វើឱ្យខ្លឹមសារកាន់តែធំ។ នៅពេលការ​ពង្រីកត្រូវបានបើក សូមចុច<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> និង \"+\" ឬ \"-\" ដើម្បីកែតម្រូវការពង្រីកបង្រួម។"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"បិទ​ផ្លូវកាត់"</string>
@@ -1189,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"វា​អាចតាមដានអន្តរកម្មរបស់អ្នកជាមួយកម្មវិធី ឬសេនស័រហាតវែរ និងធ្វើអន្តរកម្ម​ជាមួយកម្មវិធីនានា​ជំនួសឱ្យអ្នក។"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"ការចុច <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> នឹងបើក <xliff:g id="ID_4">^4</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ ការធ្វើបែបនេះអនុញ្ញាតឱ្យអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នកដោយមិន​ប្រើ​ដៃ។"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ភាពងាយស្រួល"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"រួចរាល់"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"អេក្រង់​ចាក់សោ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"កំពុង​បិទ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"មើលជំហាន​ថែទាំ"</string>
@@ -1586,6 +1586,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"ដោះសោ ដើម្បីប្ដូរអេក្រង់ចាក់សោតាមបំណង"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"មិនមាន Wi-Fi ទេ"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"ទីតាំងដែលសកម្ម"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"កាមេរ៉ាសកម្ម"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"មីក្រូហ្វូន​សកម្ម"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"បាន​ទប់ស្កាត់​កាមេរ៉ា"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"បានទប់ស្កាត់​កាមេរ៉ា និង​មីក្រូហ្វូន"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"បាន​ទប់ស្កាត់​មីក្រូហ្វូន"</string>

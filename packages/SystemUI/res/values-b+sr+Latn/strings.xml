@@ -1175,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Želite da uključite tastersku prečicu za <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne uključuj"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Uključi prečicu"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Tasterska prečica za <xliff:g id="ID_1">%1$s</xliff:g> je uključena"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"icon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> je tasterska prečica za korišćenje funkcije pristupačnosti za <xliff:g id="ID_4">^4</xliff:g>. To vam omogućava da brzo zumirate ekran da bi sadržaj bio veći. Kada je uvećanje uključeno, pritisnite "<annotation id="action_key_icon">"icon"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> i „+“ ili „–“ da biste prilagodili zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečicu"</string>
@@ -1188,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Može da prati interakcije sa aplikacijom ili senzorom hardvera i da koristi aplikacije umesto vas."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Kada pritisnete "<annotation id="action_key_icon">"ikonu"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, uključuje se funkcija pristupačnosti – <xliff:g id="ID_4">^4</xliff:g>. To vam omogućava da kontrolišete uređaj hendsfri."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Pristupačnost"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Gotovo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključan ekran"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključuje se…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Pogledajte upozorenja"</string>
@@ -1585,6 +1586,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Otključajte da biste prilagodili zaključani ekran"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"WiFi nije dostupan"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Lokacija je aktivna"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"Kamera je aktivna"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"Mikrofon je aktivan"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera je blokirana"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera i mikrofon su blokirani"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofon je blokiran"</string>

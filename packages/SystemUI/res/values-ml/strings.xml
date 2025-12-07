@@ -1175,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കണോ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ഓണാക്കരുത്"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"കുറുക്കുവഴി ഓണാക്കുക"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കി"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_4">^4</xliff:g> ഉപയോഗിക്കാനുള്ള കീബോർഡ് കുറുക്കുവഴികൾ <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ആണ്. ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു. മാഗ്നിഫിക്കേഷൻ ഓണാക്കി കഴിഞ്ഞാൽ, സൂം ക്രമീകരിക്കാൻ <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ഒപ്പം \"+\" അല്ലെങ്കിൽ \"-\" അമർത്തുക."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"കുറുക്കുവഴി ഓഫാക്കുക"</string>
@@ -1188,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ഇതിന് ഒരു ആപ്പുമായോ ഹാർഡ്‌വെയർ സെൻസറുമായോ ഉള്ള നിങ്ങളുടെ ആശയവിനിമയങ്ങൾ ട്രാക്ക് ചെയ്യാനും നിങ്ങളുടെ പേരിൽ ആശയവിനിമയം നടത്താനും കഴിയും."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> അമർത്തുന്നത്, ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_4">^4</xliff:g> ഓണാക്കുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ഉപയോഗസഹായി"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"പൂർത്തിയായി"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"പരിപാലന നിർദ്ദേശങ്ങൾ കാണുക"</string>
@@ -1585,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"ലോക്ക് സ്ക്രീൻ ഇഷ്ടാനുസൃതമാക്കാൻ അൺലോക്ക് ചെയ്യുക"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"വൈഫൈ ലഭ്യമല്ല"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"ലൊക്കേഷൻ സജീവമാണ്"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"ക്യാമറ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"ക്യാമറയും മൈക്രോഫോണും ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"മൈക്രോഫോൺ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
