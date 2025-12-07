@@ -19,13 +19,17 @@ package android.hardware.contexthub;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
+import android.annotation.Size;
 import android.annotation.SystemApi;
 import android.chre.flags.Flags;
 import android.content.Context;
 import android.hardware.location.IContextHubService;
 import android.hardware.location.IContextHubTransactionCallback;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.util.SparseArray;
@@ -38,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -101,8 +108,11 @@ public class HubEndpoint {
     private final HubEndpointInfo mPendingHubEndpointInfo;
     @Nullable private final HubEndpointLifecycleCallback mLifecycleCallback;
     @Nullable private final HubEndpointMessageCallback mMessageCallback;
+    @Nullable private final DataFlowCallback mDataFlowCallback;
     @NonNull private final Executor mLifecycleCallbackExecutor;
     @NonNull private final Executor mMessageCallbackExecutor;
+    @NonNull private final Executor mDataFlowCallbackExecutor;
+    @NonNull private final Looper mLooper;
 
     @GuardedBy("mLock")
     private final SparseArray<HubEndpointSession> mActiveSessions = new SparseArray<>();
@@ -224,15 +234,27 @@ public class HubEndpoint {
                         HubMessage msg,
                         int sessionId)
                         throws RemoteException {
-                    // TODO(b/457452333): Implement
-                    throw new UnsupportedOperationException("Not implemented yet.");
+                    if (mDataFlowCallback == null) {
+                        Log.w(
+                                TAG,
+                                "onDataFlowHostConsumerRegistered: no data flow callback attached");
+                        return;
+                    }
+
+                    // Implemented in ag/37282024 in this topic.
+                    DataFlowSink sink = null;
+
+                    mDataFlowCallbackExecutor.execute(
+                            () -> {
+                                mDataFlowCallback.onReceivedDataFlowSink(
+                                        sink, producer, getActiveSession(sessionId), msg);
+                            });
                 }
 
                 @Override
                 public void onDataFlowOffloadEndpointUnregistered(
                         DataFlowId dataFlowId, HubEndpointInfo endpoint) throws RemoteException {
-                    // TODO(b/457452333): Implement
-                    throw new UnsupportedOperationException("Not implemented yet.");
+                    // Implemented in ag/37282024 in this topic.
                 }
 
                 private HubEndpointSession getActiveSession(int sessionId) {
@@ -357,12 +379,18 @@ public class HubEndpoint {
             @Nullable HubEndpointLifecycleCallback endpointLifecycleCallback,
             @NonNull Executor lifecycleCallbackExecutor,
             @Nullable HubEndpointMessageCallback endpointMessageCallback,
-            @NonNull Executor messageCallbackExecutor) {
+            @NonNull Executor messageCallbackExecutor,
+            @Nullable DataFlowCallback endpointDataFlowCallback,
+            @NonNull Executor dataFlowCallbackExecutor,
+            @NonNull Looper looper) {
         mPendingHubEndpointInfo = pendingEndpointInfo;
         mLifecycleCallback = endpointLifecycleCallback;
         mLifecycleCallbackExecutor = lifecycleCallbackExecutor;
         mMessageCallback = endpointMessageCallback;
         mMessageCallbackExecutor = messageCallbackExecutor;
+        mDataFlowCallback = endpointDataFlowCallback;
+        mDataFlowCallbackExecutor = dataFlowCallbackExecutor;
+        mLooper = looper;
     }
 
     /** @hide */
@@ -455,6 +483,81 @@ public class HubEndpoint {
         }
     }
 
+    /**
+     * Creates a data flow for efficient transfer of raw data between this endpoint and endpoints on
+     * offload message hubs.
+     *
+     * <p>A data flow is a single-producer multi-consumer queue implemented over shared memory,
+     * enabling lower latency and higher throughput transfer of data over session-based messaging. A
+     * data flow may either be produced by a host endpoint and viewed by one or more offload
+     * endpoints or produced by an offload endpoint and consumed by one or more host endpoints. The
+     * producer of a data flow is known as its source (see {@link DataFlowSource}) and the consumers
+     * are known as its sinks (see {@link DataFlowSink}).
+     *
+     * <p>Sources and sinks independently update their respective positions in metadata in shared
+     * memory using atomic operations. The source and sinks can calculate availability of storage
+     * and new data respectively without explicit synchronization and thus push and pop data with
+     * very low latency. Data flows also support an out-of-band notification mechanism that enables
+     * a source or sink to wait efficiently for available space or new data. This underlies new data
+     * alert policies (see {@link DataFlowNewDataAlertPolicy}), where the source notifies each sink
+     * only when it is important to do so (e.g. some necessary threshold of available data is
+     * reached).
+     *
+     * <p>This call specifically creates a data flow that whose source is this endpoint. It handles
+     * the communication with the service and shared memory setup necessary for the user to
+     * immediately begin writing to shared memory and adding offload endpoints as consumers via the
+     * returned {@link DataFlowSource} object. Only offload endpoints on hubs in {@code
+     * targetHubIds} will be able to access the data flow.
+     *
+     * <p>The data transferred over the data flow is a stream of arbitrary raw data elements of
+     * fixed or variable size with possible alignment constraints. The format of the data is
+     * specified by the provided {@link DataFlowDataConfig}. The source and sinks are responsible
+     * for negotiating the data configuration out-of-band, possibly by the source exposing a
+     * well-known {@link HubServiceInfo}.
+     *
+     * <p>The data flow is guaranteed to have a minimum capacity ({@code minCapacity}) and is
+     * permitted to grow up to a maximum capacity ({@code maxCapacity}) as needed. The capacity may
+     * change dynamically within the range [minCapacity, maxCapacity].
+     *
+     * @param targetHubIds The set of offload message hub IDs which should be able to access this
+     *     data flow
+     * @param dataConfig The configuration of elements sent over this data flow
+     * @param minCapacity The minimum capacity in bytes of the data flow
+     * @param maxCapacity The maximum capacity in bytes of data flow
+     * @return A {@link DataFlowSource} for pushing data into the data flow and managing the offload
+     *     sinks that can access the data flow
+     * @throws IllegalArgumentException if {@code minCapacity} is greater than {@code maxCapacity}
+     *     or either capacity is invalid given the {@code dataConfig}, e.g. if {@code dataConfig}
+     *     specifies a fixed-size format but the capacities are not multiples of the element size
+     * @throws IllegalStateException if this endpoint has not been registered
+     * @throws NoSuchElementException if any of the target hub IDs cannot be resolved
+     * @throws UnsupportedOperationException if a data flow cannot be created from this endpoint to
+     *     the given target hubs. This may indicate that a suitable shared memory region does not
+     *     exist, that the desired capacity is not available, or that data flows are not supported
+     *     on this platform
+     */
+    @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
+    @FlaggedApi(Flags.FLAG_FMCQ_API)
+    @NonNull
+    public DataFlowSource createDataFlowSource(
+            @NonNull @Size(min = 1) Set<Long> targetHubIds,
+            @NonNull DataFlowDataConfig dataConfig,
+            @IntRange(from = 1) int minCapacity,
+            @IntRange(from = 1) int maxCapacity) {
+        Objects.requireNonNull(targetHubIds);
+        Objects.requireNonNull(dataConfig);
+        if (minCapacity > maxCapacity) {
+            throw new IllegalArgumentException(
+                    "Min capacity must be less than or equal to max capacity.");
+        } else if (dataConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE
+                && (minCapacity % dataConfig.getElementSize() != 0
+                        || maxCapacity % dataConfig.getElementSize() != 0)) {
+            throw new IllegalArgumentException("Capacity must be a multiple of the element size.");
+        }
+        // Implemented in ag/37282024 in this topic.
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
     public int getVersion() {
         return mPendingHubEndpointInfo.getVersion();
     }
@@ -488,6 +591,11 @@ public class HubEndpoint {
 
         @Nullable private HubEndpointMessageCallback mMessageCallback;
         @Nullable private Executor mMessageCallbackExecutor;
+
+        @Nullable private DataFlowCallback mDataFlowCallback;
+        @Nullable private Executor mDataFlowCallbackExecutor;
+
+        @Nullable private Looper mLooper;
 
         @NonNull private final Executor mMainExecutor;
 
@@ -576,6 +684,25 @@ public class HubEndpoint {
         }
 
         /**
+         * Attach a callback interface for data flow events for this Endpoint with a specified
+         * executor.
+         *
+         * @param executor The executor to post data flow events to
+         * @param dataFlowCallback The callback interface for handling data flow events
+         * @hide
+         */
+        @NonNull
+        public Builder setDataFlowCallback(
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull DataFlowCallback dataFlowCallback) {
+            Objects.requireNonNull(executor);
+            Objects.requireNonNull(dataFlowCallback);
+            mDataFlowCallbackExecutor = executor;
+            mDataFlowCallback = dataFlowCallback;
+            return this;
+        }
+
+        /**
          * Add a service to the available services from this endpoint. The {@link HubServiceInfo}
          * object can be built with {@link HubServiceInfo.Builder}.
          */
@@ -587,6 +714,20 @@ public class HubEndpoint {
             return this;
         }
 
+        /**
+         * Provide an optional {@code Looper} for to handle epoll on the notification eventfds
+         * associated with data flows this endpoint is the source or sink of. If not provided, the
+         * {@link android.os.Looper#getMainLooper()} will be used.
+         *
+         * @param looper The {@link android.os.Looper} to use for epoll
+         * @hide
+         */
+        @NonNull
+        public Builder setLooper(@NonNull Looper looper) {
+            mLooper = looper;
+            return this;
+        }
+
         /** Build the {@link HubEndpoint} object. */
         @NonNull
         public HubEndpoint build() {
@@ -595,7 +736,12 @@ public class HubEndpoint {
                     mLifecycleCallback,
                     mLifecycleCallbackExecutor != null ? mLifecycleCallbackExecutor : mMainExecutor,
                     mMessageCallback,
-                    mMessageCallbackExecutor != null ? mMessageCallbackExecutor : mMainExecutor);
+                    mMessageCallbackExecutor != null ? mMessageCallbackExecutor : mMainExecutor,
+                    mDataFlowCallback,
+                    mDataFlowCallbackExecutor != null
+                            ? mDataFlowCallbackExecutor
+                            : mMessageCallbackExecutor,
+                    mLooper != null ? mLooper : Looper.getMainLooper());
         }
     }
 }
