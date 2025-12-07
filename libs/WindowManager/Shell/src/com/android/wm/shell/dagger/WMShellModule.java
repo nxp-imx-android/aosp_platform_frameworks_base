@@ -37,7 +37,6 @@ import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 import android.window.TaskSnapshotManager;
 
 import androidx.annotation.OptIn;
@@ -182,6 +181,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarterInitializer;
 import com.android.wm.shell.freeform.TaskChangeListener;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
+import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
@@ -2115,6 +2115,26 @@ public abstract class WMShellModule {
             Transitions transitions) {
         if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
             return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+        }
+        return Optional.empty();
+    }
+
+    //
+    // Package Update
+    //
+
+    @WMSingleton
+    @Provides
+    static Optional<PackageUpdateController> providePackageUpdateController(
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer,
+            ShellInit shellInit,
+            UserProfileContexts userProfileContexts
+    ) {
+        if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+            return Optional.of(
+                    new PackageUpdateController(transitions, shellTaskOrganizer,
+                            shellInit, userProfileContexts));
         }
         return Optional.empty();
     }

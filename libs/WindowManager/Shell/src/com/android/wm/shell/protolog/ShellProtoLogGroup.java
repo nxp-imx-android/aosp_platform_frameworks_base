@@ -55,6 +55,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_APP_COMPAT),
     WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_APP_HANDLES),
     WM_SHELL_WINDOWING_LAYER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_WINDOWING_LAYER),
+    WM_SHELL_PACKAGE_UPDATE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_PACKAGE_UPDATE),
     TEST_GROUP(true, false, "WindowManagerShellProtoLogTest");
 
     private final boolean mEnabled;
@@ -109,6 +110,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_BUBBLES = "Bubbles";
         private static final String TAG_WM_APP_HANDLES = "AppHandles";
         private static final String TAG_WM_WINDOWING_LAYER = "WindowingLayer";
+        private static final String TAG_WM_PACKAGE_UPDATE = "PackageUpdate";
 
         private static final boolean ENABLE_DEBUG = true;
         private static final boolean ENABLE_LOG_TO_PROTO_DEBUG = true;
