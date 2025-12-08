@@ -298,6 +298,10 @@ public class PowerManagerServiceTest {
         addLocalServiceMock(WindowManagerInternal.class, mWindowManagerInternalMock);
 
         mContextSpy = spy(new ContextWrapper(ApplicationProvider.getApplicationContext()));
+        doReturn(null).when(mContextSpy).registerReceiver(any(), any());
+        doReturn(null).when(mContextSpy).registerReceiver(any(), any(), any(), any());
+        doReturn(null).when(mContextSpy).registerReceiver(any(), any(), any(), any(), anyInt());
+
         mResourcesSpy = spy(mContextSpy.getResources());
         when(mContextSpy.getResources()).thenReturn(mResourcesSpy);
         when(mContextSpy.getSystemService(DisplayManager.class)).thenReturn(mDisplayManagerMock);
