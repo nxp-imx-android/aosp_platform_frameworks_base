@@ -56,7 +56,6 @@ import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricStateListener;
 import android.hardware.biometrics.ComponentInfoInternal;
-import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricContextListener;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
@@ -74,7 +73,6 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
@@ -649,38 +647,6 @@ public class AuthControllerTest extends SysuiTestCase {
         mAuthController.onBiometricError(BiometricAuthenticator.TYPE_FACE, error, vendorCode);
         verify(mDialog1, never()).onError(anyInt(), anyString());
         verify(mDialog1).animateToCredentialUI(eq(true));
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testErrorLockout_whenCredentialNotAllowed_sendsOnError() {
-        showDialog(new int[] {1} /* sensorIds */, false /* credentialAllowed */);
-        final int modality = BiometricAuthenticator.TYPE_FACE;
-        final int error = BiometricConstants.BIOMETRIC_ERROR_LOCKOUT;
-        final int vendorCode = 0;
-
-        when(mDialog1.isAllowDeviceCredentials()).thenReturn(false);
-
-        mAuthController.onBiometricError(modality, error, vendorCode);
-        verify(mDialog1)
-                .onError(eq(modality), eq(FaceManager.getErrorString(mContext, error, vendorCode)));
-        verify(mDialog1, never()).animateToCredentialUI(eq(true));
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testErrorLockoutPermanent_whenCredentialNotAllowed_sendsOnError() {
-        showDialog(new int[] {1} /* sensorIds */, false /* credentialAllowed */);
-        final int modality = BiometricAuthenticator.TYPE_FACE;
-        final int error = BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT;
-        final int vendorCode = 0;
-
-        when(mDialog1.isAllowDeviceCredentials()).thenReturn(false);
-
-        mAuthController.onBiometricError(modality, error, vendorCode);
-        verify(mDialog1)
-                .onError(eq(modality), eq(FaceManager.getErrorString(mContext, error, vendorCode)));
-        verify(mDialog1, never()).animateToCredentialUI(eq(true));
     }
 
     @Test

@@ -29,8 +29,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.hardware.biometrics.BiometricFingerprintConstants
 import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.FallbackOption
-import android.hardware.biometrics.Flags.FLAG_BP_FALLBACK_OPTIONS
-import android.hardware.biometrics.Flags.bpFallbackOptions
 import android.hardware.biometrics.PromptContentItemBulletedText
 import android.hardware.biometrics.PromptContentView
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
@@ -392,11 +390,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
             assertThat(authenticating).isTrue()
             assertThat(authenticated?.isNotAuthenticated).isTrue()
             assertThat(size).isEqualTo(expectedPromptSize)
-            if (bpFallbackOptions()) {
-                assertButtonsVisible(cancel = expectedPromptSize != PromptSize.SMALL)
-            } else {
-                assertButtonsVisible(negative = expectedPromptSize != PromptSize.SMALL)
-            }
+            assertButtonsVisible(cancel = expectedPromptSize != PromptSize.SMALL)
         }
 
     @Test
@@ -959,11 +953,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         assertThat(authenticating).isTrue()
         assertThat(authenticated?.isNotAuthenticated).isTrue()
         assertThat(size).isEqualTo(if (authWithSmallPrompt) PromptSize.SMALL else PromptSize.MEDIUM)
-        if (bpFallbackOptions()) {
-            assertButtonsVisible(cancel = !authWithSmallPrompt)
-        } else {
-            assertButtonsVisible(negative = !authWithSmallPrompt)
-        }
+        assertButtonsVisible(cancel = !authWithSmallPrompt)
 
         kosmos.promptViewModel.showAuthenticated(authenticatedModality, DELAY)
 
@@ -984,13 +974,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
 
     @Test
     fun shows_temporary_errors() = runGenericTest {
-        val checkAtEnd = suspend {
-            if (bpFallbackOptions()) {
-                assertButtonsVisible(cancel = true)
-            } else {
-                assertButtonsVisible(negative = true)
-            }
-        }
+        val checkAtEnd = suspend { assertButtonsVisible(cancel = true) }
 
         showTemporaryErrors(restart = false) { checkAtEnd() }
         showTemporaryErrors(restart = false, helpAfterError = "foo") { checkAtEnd() }
@@ -1487,11 +1471,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         assertThat(message).isEqualTo(PromptMessage.Error(errorMessage))
         assertThat(messageVisible).isTrue()
         assertThat(canTryAgain).isEqualTo(testCase.authenticatedByFace)
-        if (bpFallbackOptions()) {
-            assertButtonsVisible(cancel = true, tryAgain = expectTryAgainButton)
-        } else {
-            assertButtonsVisible(negative = true, tryAgain = expectTryAgainButton)
-        }
+        assertButtonsVisible(cancel = true, tryAgain = expectTryAgainButton)
 
         errorJob.join()
 
@@ -1500,11 +1480,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         assertThat(message).isEqualTo(PromptMessage.Help(helpMessage))
         assertThat(messageVisible).isTrue()
         assertThat(canTryAgain).isEqualTo(testCase.authenticatedByFace)
-        if (bpFallbackOptions()) {
-            assertButtonsVisible(cancel = true, tryAgain = expectTryAgainButton)
-        } else {
-            assertButtonsVisible(negative = true, tryAgain = expectTryAgainButton)
-        }
+        assertButtonsVisible(cancel = true, tryAgain = expectTryAgainButton)
 
         val helpMessage2 = "foo"
         kosmos.promptViewModel.showAuthenticating(helpMessage2, isRetry = true)
@@ -1512,11 +1488,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         assertThat(authenticated?.isAuthenticated).isFalse()
         assertThat(message).isEqualTo(PromptMessage.Help(helpMessage2))
         assertThat(messageVisible).isTrue()
-        if (bpFallbackOptions()) {
-            assertButtonsVisible(cancel = true)
-        } else {
-            assertButtonsVisible(negative = true)
-        }
+        assertButtonsVisible(cancel = true)
     }
 
     @Test
@@ -1776,7 +1748,6 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     }
 
     @Test
-    @EnableFlags(FLAG_BP_FALLBACK_OPTIONS)
     fun show_single_fallback_button() =
         runGenericTest(fallbackOptions = listOf(FallbackOption("Fallback", 0))) {
             if (!testCase.shouldStartAsImplicitFlow) {
@@ -1787,7 +1758,6 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(FLAG_BP_FALLBACK_OPTIONS)
     fun show_fallback_options_button() =
         runGenericTest(
             fallbackOptions = listOf(FallbackOption("Fallback1", 0), FallbackOption("Fallback2", 0))
@@ -1810,36 +1780,27 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         fallbackOptions: Boolean = false,
     ) {
         runCurrent()
-        if (bpFallbackOptions()) {
-            val expectedPositiveState =
-                when {
-                    tryAgain -> PositiveButtonState.TryAgain::class
-                    confirm -> PositiveButtonState.Confirm::class
-                    else -> PositiveButtonState.Gone::class
-                }
+        val expectedPositiveState =
+            when {
+                tryAgain -> PositiveButtonState.TryAgain::class
+                confirm -> PositiveButtonState.Confirm::class
+                else -> PositiveButtonState.Gone::class
+            }
 
-            val expectedNegativeState =
-                when {
-                    cancel -> NegativeButtonState.Cancel::class
-                    negative -> NegativeButtonState.SetNegative::class
-                    credential -> NegativeButtonState.UseCredential::class
-                    fallbackOptions -> NegativeButtonState.FallbackOptions::class
-                    singleFallback -> NegativeButtonState.SingleFallback::class
-                    else -> NegativeButtonState.Gone::class
-                }
+        val expectedNegativeState =
+            when {
+                cancel -> NegativeButtonState.Cancel::class
+                negative -> NegativeButtonState.SetNegative::class
+                credential -> NegativeButtonState.UseCredential::class
+                fallbackOptions -> NegativeButtonState.FallbackOptions::class
+                singleFallback -> NegativeButtonState.SingleFallback::class
+                else -> NegativeButtonState.Gone::class
+            }
 
-            assertThat(kosmos.promptViewModel.positiveButtonState.first())
-                .isInstanceOf(expectedPositiveState.java)
-            assertThat(kosmos.promptViewModel.negativeButtonState.first())
-                .isInstanceOf(expectedNegativeState.java)
-        } else {
-            assertThat(kosmos.promptViewModel.isTryAgainButtonVisible.first()).isEqualTo(tryAgain)
-            assertThat(kosmos.promptViewModel.isConfirmButtonVisible.first()).isEqualTo(confirm)
-            assertThat(kosmos.promptViewModel.isCancelButtonVisible.first()).isEqualTo(cancel)
-            assertThat(kosmos.promptViewModel.isNegativeButtonVisible.first()).isEqualTo(negative)
-            assertThat(kosmos.promptViewModel.isCredentialButtonVisible.first())
-                .isEqualTo(credential)
-        }
+        assertThat(kosmos.promptViewModel.positiveButtonState.first())
+            .isInstanceOf(expectedPositiveState.java)
+        assertThat(kosmos.promptViewModel.negativeButtonState.first())
+            .isInstanceOf(expectedNegativeState.java)
     }
 
     private fun runGenericTest(

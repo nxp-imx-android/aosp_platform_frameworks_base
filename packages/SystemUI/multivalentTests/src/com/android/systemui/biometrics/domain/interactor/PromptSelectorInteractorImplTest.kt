@@ -19,7 +19,6 @@ package com.android.systemui.biometrics.domain.interactor
 import android.content.ComponentName
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricManager.Authenticators
-import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -225,11 +224,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             assertThat(credentialKind).isSameInstanceAs(PromptKind.Password)
             assertThat(isCredentialAllowed).isTrue()
         } else {
-            if (Flags.bpFallbackOptions()) {
-                assertThat(credentialKind).isEqualTo(PromptKind.Password)
-            } else {
-                assertThat(credentialKind).isEqualTo(PromptKind.None)
-            }
+            assertThat(credentialKind).isEqualTo(PromptKind.Password)
             assertThat(isCredentialAllowed).isFalse()
         }
         assertThat(isConfirmationRequired).isEqualTo(confirmationRequired)
@@ -595,16 +590,12 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             isLandscape = false,
         )
 
-        if (Flags.bpFallbackOptions()) {
-            if (kind == PromptKind.Password) {
-                assertThat(credentialKind).isEqualTo(PromptKind.Password)
-            } else if (kind == PromptKind.Pin) {
-                assertThat(credentialKind).isEqualTo(PromptKind.Pin)
-            } else {
-                assertThat(credentialKind).isEqualTo(PromptKind.Pattern)
-            }
+        if (kind == PromptKind.Password) {
+            assertThat(credentialKind).isEqualTo(PromptKind.Password)
+        } else if (kind == PromptKind.Pin) {
+            assertThat(credentialKind).isEqualTo(PromptKind.Pin)
         } else {
-            assertThat(credentialKind).isEqualTo(PromptKind.None)
+            assertThat(credentialKind).isEqualTo(PromptKind.Pattern)
         }
 
         interactor.resetPrompt(REQUEST_ID)

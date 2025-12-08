@@ -960,7 +960,6 @@ public class AuthSessionTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testPause_ignoresCancellationErrorAndDoesNotTerminate() throws Exception {
         setupFace(0 /* id */, false, mock(IBiometricAuthenticator.class));
         final AuthSession session = createAuthSession(mSensors,

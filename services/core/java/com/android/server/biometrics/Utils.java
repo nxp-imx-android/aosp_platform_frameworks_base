@@ -157,7 +157,7 @@ public class Utils {
      */
     static boolean shouldApplyIdentityCheck(@Authenticators.Types int authenticators) {
         final boolean isIdentityCheckAllSurfacesEnabled =
-                Flags.identityCheckAllSurfaces() && Flags.bpFallbackOptions();
+                Flags.identityCheckAllSurfaces();
         final boolean isMandatoryOrBiometricRequested =
                 isMandatoryBiometricsRequested(authenticators)
                         || isBiometricRequested(authenticators);
@@ -327,14 +327,16 @@ public class Utils {
         final int biometricManagerCode;
 
         switch (biometricConstantsCode) {
-            case BiometricConstants.BIOMETRIC_SUCCESS:
+            case BiometricConstants.BIOMETRIC_SUCCESS, BiometricConstants.BIOMETRIC_ERROR_LOCKOUT,
+                 BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT:
                 biometricManagerCode = BiometricManager.BIOMETRIC_SUCCESS;
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_NO_BIOMETRICS:
             case BiometricConstants.BIOMETRIC_ERROR_NO_DEVICE_CREDENTIAL:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
                 break;
-            case BiometricConstants.BIOMETRIC_ERROR_HW_UNAVAILABLE:
+            case BiometricConstants.BIOMETRIC_ERROR_HW_UNAVAILABLE,
+                 BiometricConstants.BIOMETRIC_ERROR_SENSOR_PRIVACY_ENABLED:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_HW_NOT_PRESENT:
@@ -342,15 +344,6 @@ public class Utils {
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED;
-                break;
-            case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT:
-            case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT:
-                biometricManagerCode = Flags.bpFallbackOptions()
-                        ? BiometricManager.BIOMETRIC_SUCCESS
-                        : BiometricManager.BIOMETRIC_ERROR_LOCKOUT;
-                break;
-            case BiometricConstants.BIOMETRIC_ERROR_SENSOR_PRIVACY_ENABLED:
-                biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE;
