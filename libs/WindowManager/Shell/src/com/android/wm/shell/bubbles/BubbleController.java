@@ -2639,6 +2639,9 @@ public class BubbleController implements ConfigurationChangeListener,
                     if (bubbleTransit != null) {
                         bubbleTransit.continueCollapse();
                     }
+                    BubbleLog.d("BubbleController.BubbleViewCallback.removeBubble() - from bar - "
+                                    + "animationEndAction hasBubbles=%b stackExpanded=%b",
+                            mBubbleData.hasBubbles(), isStackExpanded());
                     if (!mBubbleData.hasBubbles() && !isStackExpanded()) {
                         if (mLayerView != null) {
                             mLayerView.setVisibility(INVISIBLE);
