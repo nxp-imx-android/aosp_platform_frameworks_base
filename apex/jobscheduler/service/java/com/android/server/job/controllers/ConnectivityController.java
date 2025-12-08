@@ -27,7 +27,6 @@ import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 
 import static com.android.server.job.JobSchedulerService.RESTRICTED_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
-import static com.android.server.job.Flags.FLAG_RELAX_PREFETCH_CONNECTIVITY_CONSTRAINT_ONLY_ON_CHARGER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1025,12 +1024,10 @@ public final class ConnectivityController extends RestrictingController implemen
             // Need to at least know the estimated download bytes for a prefetch job.
             return false;
         }
-        if (Flags.relaxPrefetchConnectivityConstraintOnlyOnCharger()) {
-            // Since the constraint relaxation isn't required by the job, only do it when the
-            // device is charging and the battery level is above the "low battery" threshold.
-            if (!mService.isBatteryCharging() || !mService.isBatteryNotLow()) {
-                return false;
-            }
+        // Since the constraint relaxation isn't required by the job, only do it when the
+        // device is charging and the battery level is above the "low battery" threshold.
+        if (!mService.isBatteryCharging() || !mService.isBatteryNotLow()) {
+            return false;
         }
 
         // See if we match after relaxing any unmetered request
@@ -2280,13 +2277,6 @@ public final class ConnectivityController extends RestrictingController implemen
     public void dumpControllerStateLocked(IndentingPrintWriter pw,
             Predicate<JobStatus> predicate) {
         final long nowElapsed = sElapsedRealtimeClock.millis();
-
-        pw.println("Aconfig flags:");
-        pw.increaseIndent();
-        pw.print(FLAG_RELAX_PREFETCH_CONNECTIVITY_CONSTRAINT_ONLY_ON_CHARGER,
-                Flags.relaxPrefetchConnectivityConstraintOnlyOnCharger());
-        pw.println();
-        pw.decreaseIndent();
         pw.println();
 
         if (mRequestedWhitelistJobs.size() > 0) {
