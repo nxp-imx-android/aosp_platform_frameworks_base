@@ -557,42 +557,9 @@ public class Cuj {
      */
     public static final int CUJ_DESKTOP_MODE_DESK_SWITCH = 153;
 
-    /**
-     * Tracks the Wear Bouncer exit animation.
-     *
-     * <p>Tracking starts when the bouncer starts to exit and ends when the bouncer is fully
-     * dismissed.
-     */
-    public static final int CUJ_WEAR_BOUNCER_EXIT_ANIMATION = 154;
-
-    /**
-     * Tracks the Wear Bouncer pin pad entry animation.
-     * This accounts for only the view with pin entry buttons + back and enter buttons.
-     *
-     * <p>Tracking starts per digit entry when the user taps the digit, and ands after the animation
-     * completes.
-     */
-    public static final int CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY = 155;
-
-    /**
-     * Tracks the Wear Bouncer pin dot added animation. This accounts for only the pin dots at the top of bouncer.
-     *
-     * <p>Tracking starts per digit entry when the user taps the digit, and ands after the animation
-     * completes.
-     */
-    public static final int CUJ_WEAR_BOUNCER_PIN_DOT_ADDED = 156;
-
-    /**
-     * Tracks the Wear Bouncer pattern entry animation.
-     *
-     * <p>Tracking starts when the pattern entry begins and ends when the whole pattern is fully
-     * entered.
-     */
-    public static final int CUJ_WEAR_BOUNCER_PATTERN_ENTRY = 157;
-
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
     @VisibleForTesting static final int LAST_CUJ =
-            CUJ_WEAR_BOUNCER_PATTERN_ENTRY;
+            CUJ_DESKTOP_MODE_DESK_SWITCH;
 
     /** @hide */
     @IntDef({
@@ -737,11 +704,7 @@ public class Cuj {
             CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR,
             CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP,
             CUJ_HUN_TO_DUAL_SHADE_NOTIF_OVERLAY,
-            CUJ_DESKTOP_MODE_DESK_SWITCH,
-            CUJ_WEAR_BOUNCER_EXIT_ANIMATION,
-            CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY,
-            CUJ_WEAR_BOUNCER_PIN_DOT_ADDED,
-            CUJ_WEAR_BOUNCER_PATTERN_ENTRY
+            CUJ_DESKTOP_MODE_DESK_SWITCH
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -897,10 +860,6 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_HUN_TO_DUAL_SHADE_NOTIF_OVERLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__HUN_TO_DUAL_SHADE_NOTIF_OVERLAY;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_DESK_SWITCH] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_DESK_SWITCH;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_EXIT_ANIMATION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_EXIT_ANIMATION;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PIN_PAD_ENTRY;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PIN_DOT_ADDED] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PIN_DOT_ADDED;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PATTERN_ENTRY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PATTERN_ENTRY;
     }
 
     private Cuj() {
@@ -1203,14 +1162,6 @@ public class Cuj {
                 return "HUN_TO_DUAL_SHADE_NOTIF_OVERLAY";
             case CUJ_DESKTOP_MODE_DESK_SWITCH:
                 return "DESKTOP_MODE_DESK_SWITCH";
-            case CUJ_WEAR_BOUNCER_EXIT_ANIMATION:
-                return "WEAR_BOUNCER_EXIT_ANIMATION";
-            case CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY:
-                return "WEAR_BOUNCER_PIN_ENTRY";
-            case CUJ_WEAR_BOUNCER_PIN_DOT_ADDED:
-                return "WEAR_BOUNCER_PIN_DOT_ADDED";
-            case CUJ_WEAR_BOUNCER_PATTERN_ENTRY:
-                return "WEAR_BOUNCER_PATTERN_ENTRY";
         }
         return "UNKNOWN";
     }
