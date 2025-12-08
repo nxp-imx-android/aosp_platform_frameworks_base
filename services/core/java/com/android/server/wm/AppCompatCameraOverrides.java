@@ -248,8 +248,15 @@ class AppCompatCameraOverrides {
     }
 
     boolean shouldApplyCameraCompatSimReqOrientationTreatmentForLandscapeCamera() {
-        return Flags.cameraCompatLandscapeCameraSupport()
-                && shouldApplyCameraCompatSimReqOrientationTreatment()
+        if (!Flags.cameraCompatLandscapeCameraSupport()) {
+            return false;
+        }
+
+        if (shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment()) {
+            return true;
+        }
+
+        return shouldApplyCameraCompatSimReqOrientationTreatment()
                 && mCameraCompatAllowLandscapeToPortraitTreatmentOptProp
                 .shouldEnableWithOptInOverrideAndOptOutProperty(isChangeEnabled(mActivityRecord,
                         CameraManager.OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT));
