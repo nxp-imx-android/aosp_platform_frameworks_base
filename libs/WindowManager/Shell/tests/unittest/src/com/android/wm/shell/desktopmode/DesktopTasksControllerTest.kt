@@ -3455,7 +3455,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun moveTaskToFront_bringsTasksOverLimit_separateTaskLimitTransition_minimizeSeparately() {
         val deskId = 0
         setUpHomeTask()
@@ -3642,7 +3641,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun moveTaskToFront_backgroundTaskBringsTasksOverLimit_multiDesksDisabled_separateMinimize() {
         val deskId = 0
         val freeformTasks =
@@ -4035,10 +4033,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDisplay_toDesktopInOtherDisplay_appliesTaskLimitSeparate() {
         val transition = Binder()
         val sourceDeskId = 0
@@ -5495,7 +5490,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_multiDesksDisabled_separateMinimize() {
         val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
         freeformTasks.forEach { markTaskVisible(it) }
@@ -5511,7 +5505,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_fullscreenTaskToDesk_bringsTasksOverLimit_separateMinimizeFlagEnabled_minimizeSeparately() {
         val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
         freeformTasks.forEach { markTaskVisible(it) }
@@ -5526,7 +5519,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_fullscreenTaskWithTaskOnHome_beyondLimit_separateMinFlagEnabled_minimizeSeparately() {
         val minimizedTask = setUpFreeformTask()
         taskRepository.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = minimizedTask.taskId)
@@ -5803,7 +5795,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION)
     fun handleRequest_freeform_aboveTaskLimit_separateMinimizeFlagEnabled_minimizeSeparately() {
         val deskId = 0
         val freeformTasks =
@@ -6364,9 +6355,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DesktopMixedTransitionHandler.PendingMixedTransition.Launch(
                     transition,
                     task.taskId,
-                    null,
                     topTransparentTask.taskId,
-                    null,
+                    exitingImmersiveTask = null,
                 )
             )
     }
@@ -9121,10 +9111,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun openInstance_fromFreeform_minimizesSeparately() {
         setUpLandscapeDisplay()
         val deskId = 0
@@ -11935,7 +11922,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     if (transitionType != null) eq(transitionType) else anyInt(),
                     if (wctArgCaptor != null) wctArgCaptor.capture() else any(),
                     if (taskId != null) eq(taskId) else anyOrNull(),
-                    minimizingTaskId = anyOrNull(),
                     closingTopTransparentTaskId = anyOrNull(),
                     exitingImmersiveTask = anyOrNull(),
                     if (dragEvent != null) eq(dragEvent) else anyOrNull(),
@@ -11956,7 +11942,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 if (transitionType != null) eq(transitionType) else anyInt(),
                 if (wctArgCaptor != null) wctArgCaptor.capture() else any(),
                 if (taskId != null) eq(taskId) else anyOrNull(),
-                minimizingTaskId = anyOrNull(),
                 if (closingTopTransparentTaskId != null) eq(closingTopTransparentTaskId)
                 else anyOrNull(),
                 exitingImmersiveTask = anyOrNull(),
