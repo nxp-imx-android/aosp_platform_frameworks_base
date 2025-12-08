@@ -46,6 +46,9 @@ public class DataFlowDataConfig {
     /** Format for data flows with elements of variable size with alignment requirements. */
     public static final int FORMAT_VARIABLE_SIZE_ALIGNED = 2;
 
+    /** Element size indicating variable size element. */
+    private static final int ELEMENT_SIZE_VARIABLE = -1;
+
     /**
      * Format of data sent over a data flow.
      *
@@ -72,7 +75,10 @@ public class DataFlowDataConfig {
     public static DataFlowDataConfig createFixedSize(
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementSize,
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementAlignment) {
-        if (elementAlignment != 1 && elementAlignment % 2 != 0) {
+        if (elementSize < 1) {
+            throw new IllegalArgumentException("Element size must be greater than 0.");
+        }
+        if (elementAlignment < 1 || (elementAlignment & (elementAlignment - 1)) != 0) {
             throw new IllegalArgumentException("Element alignment must be a power of 2.");
         }
         return new DataFlowDataConfig(FORMAT_FIXED_SIZE, elementSize, elementAlignment);
@@ -81,7 +87,8 @@ public class DataFlowDataConfig {
     /** Creates a configuration for an unaligned variable-size element data flow. */
     @NonNull
     public static DataFlowDataConfig createVariableSize() {
-        return new DataFlowDataConfig(FORMAT_VARIABLE_SIZE, -1, 1);
+        return new DataFlowDataConfig(
+                FORMAT_VARIABLE_SIZE, ELEMENT_SIZE_VARIABLE, /* elementAlignment= */ 1);
     }
 
     /**
@@ -93,10 +100,11 @@ public class DataFlowDataConfig {
     @NonNull
     public static DataFlowDataConfig createVariableSizeAligned(
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementAlignment) {
-        if (elementAlignment % 2 != 0) {
-            throw new IllegalArgumentException("Alignment must be a power of 2.");
+        if (elementAlignment < 0 || (elementAlignment & (elementAlignment - 1)) != 0) {
+            throw new IllegalArgumentException("Element alignment must be a power of 2.");
         }
-        return new DataFlowDataConfig(FORMAT_VARIABLE_SIZE_ALIGNED, -1, elementAlignment);
+        return new DataFlowDataConfig(
+                FORMAT_VARIABLE_SIZE_ALIGNED, ELEMENT_SIZE_VARIABLE, elementAlignment);
     }
 
     /**

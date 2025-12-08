@@ -27,9 +27,11 @@ import android.chre.flags.Flags;
 import android.hardware.location.ContextHubTransaction;
 import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
+import android.os.SystemClock;
 import android.system.SystemCleaner;
 import android.util.CloseGuard;
 
+import android.util.Log;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -39,8 +41,12 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents the source of a data flow from a host endpoint to offload endpoints. New instances of
@@ -82,6 +88,8 @@ import java.util.concurrent.TimeoutException;
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
 public class DataFlowSource implements AutoCloseable {
+    private static final String TAG = "DataFlowSource";
+
     /** The configuration of data sent over this data flow. */
     private final DataFlowDataConfig mConfig;
 
@@ -94,6 +102,40 @@ public class DataFlowSource implements AutoCloseable {
 
     /** Close guard to warn when the user hasn't explicitly {@link #close()}d this instance. */
     private final CloseGuard mCloseGuard = new CloseGuard();
+
+    @Nullable private CompletableFuture<Void> mNotificationFuture;
+    private final Object mNotificationLock = new Object();
+
+    private AtomicBoolean mIsBusy = new AtomicBoolean(false);
+
+    private final class ApiGuard implements AutoCloseable {
+        @Override
+        public void close() {
+            mIsBusy.set(false);
+        }
+    }
+
+    /** The state associated with an ongoing asynchronous operation. */
+    private static final class AsyncState {
+        final DataFlowData mData;
+        final ApiGuard mGuard;
+        final OutcomeReceiver<Void, Throwable> mReceiver;
+        final Executor mExecutor;
+
+        AsyncState(
+                @NonNull DataFlowData data,
+                @NonNull ApiGuard guard,
+                @NonNull OutcomeReceiver<Void, Throwable> receiver,
+                @Nullable Executor executor) {
+            mData = data;
+            mGuard = guard;
+            mReceiver = receiver;
+            mExecutor = executor;
+        }
+    }
+
+    /** Used to check whether an async operation is stale. Guarded by mNotificationLock. */
+    @Nullable private AsyncState mAsyncState = null;
 
     /**
      * Returns the configuration of elements sent over this data flow. This configuration is the
@@ -147,16 +189,18 @@ public class DataFlowSource implements AutoCloseable {
             boolean canOverwrite) {
         Objects.requireNonNull(sinkInfo);
         Objects.requireNonNull(newDataAlertPolicy);
-        mEndpoint.shareDataFlow(
-                mRegion,
-                mDataFlowInfo,
-                mDataFlowId,
-                sinkInfo,
-                newDataAlertPolicy,
-                canOverwrite,
-                /* session= */ null,
-                /* msg= */ null);
-        mSinks.add(sinkInfo);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            mEndpoint.shareDataFlow(
+                    mRegion,
+                    mDataFlowInfo,
+                    mDataFlowId,
+                    sinkInfo,
+                    newDataAlertPolicy,
+                    canOverwrite,
+                    /* session= */ null,
+                    /* msg= */ null);
+            mSinks.add(sinkInfo);
+        }
     }
 
     /**
@@ -204,18 +248,20 @@ public class DataFlowSource implements AutoCloseable {
                     "Message must be a response required message to be used with an async"
                             + " callback.");
         }
-        ContextHubTransaction<Void> transaction =
-                mEndpoint.shareDataFlow(
-                        mRegion,
-                        mDataFlowInfo,
-                        mDataFlowId,
-                        sinkInfo,
-                        newDataAlertPolicy,
-                        canOverwrite,
-                        session,
-                        msg);
-        mSinks.add(sinkInfo);
-        return transaction;
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            ContextHubTransaction<Void> transaction =
+                    mEndpoint.shareDataFlow(
+                            mRegion,
+                            mDataFlowInfo,
+                            mDataFlowId,
+                            sinkInfo,
+                            newDataAlertPolicy,
+                            canOverwrite,
+                            session,
+                            msg);
+            mSinks.add(sinkInfo);
+            return transaction;
+        }
     }
 
     /**
@@ -237,7 +283,9 @@ public class DataFlowSource implements AutoCloseable {
             boolean canOverwrite) {
         Objects.requireNonNull(sinkInfo);
         Objects.requireNonNull(newDataAlertPolicy);
-        mEndpoint.updateSinkPolicy(mRegion, sinkInfo, newDataAlertPolicy, canOverwrite);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            mEndpoint.updateSinkPolicy(mRegion, sinkInfo, newDataAlertPolicy, canOverwrite);
+        }
     }
 
     /**
@@ -250,7 +298,9 @@ public class DataFlowSource implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @NonNull
     public List<HubEndpointInfo> getCurrentSinks() {
-        return new ArrayList<>(mSinks);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            return new ArrayList<>(mSinks);
+        }
     }
 
     /**
@@ -270,6 +320,21 @@ public class DataFlowSource implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void close() {
         mCloseGuard.close();
+        AsyncState cancelOp = null;
+        synchronized (mNotificationLock) {
+            mNotificationFuture = null;
+            cancelOp = mAsyncState;
+            mAsyncState = null;
+        }
+        if (cancelOp != null) {
+            try {
+                cancelOp.mReceiver.onError(new CancellationException("User closed sink."));
+            } catch (Throwable t) {
+                // Ignore.
+            } finally {
+                cancelOp.mGuard.close();
+            }
+        }
         mEndpoint.removeHostDataFlow(Optional.of(mDataFlowId.id), Optional.of(mRegion.id));
     }
 
@@ -296,7 +361,9 @@ public class DataFlowSource implements AutoCloseable {
     @IntRange(from = 0)
     public int push(@NonNull DataFlowData data, boolean allOrNothing) {
         Objects.requireNonNull(data);
-        return mEndpoint.sourcePush(mRegion, data, allOrNothing);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            return mEndpoint.sourcePush(mRegion, data, allOrNothing);
+        }
     }
 
     /**
@@ -320,7 +387,36 @@ public class DataFlowSource implements AutoCloseable {
             @NonNull DataFlowData data, @Nullable @DurationMillisLong Duration timeout)
             throws TimeoutException {
         Objects.requireNonNull(data);
-        // Implemented in ag/37282024 in this topic.
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            long now = SystemClock.elapsedRealtime();
+            final long endTime = (timeout == null) ? Long.MAX_VALUE : now + timeout.toMillis();
+            do {
+                // Create a future to capture any alerts from this point.
+                synchronized (mNotificationLock) {
+                    mNotificationFuture = new CompletableFuture<>();
+                }
+                if (mEndpoint.sourcePush(mRegion, data, /* allOrNothing= */ true) > 0) {
+                    return;
+                }
+                // Wait for a notification if the data couldn't be pushed.
+                if (timeout == null) {
+                    mNotificationFuture.join();
+                } else {
+                    try {
+                        mNotificationFuture.get(
+                                endTime - now, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException | ExecutionException e) {
+                        // Ignore.
+                    }
+                }
+                now = SystemClock.elapsedRealtime();
+            } while (now < endTime);
+            throw new TimeoutException("Timed out waiting to push data.");
+        } finally {
+            synchronized (mNotificationLock) {
+                mNotificationFuture = null;
+            }
+        }
     }
 
     /**
@@ -357,7 +453,47 @@ public class DataFlowSource implements AutoCloseable {
             @NonNull OutcomeReceiver<Void, Throwable> receiver) {
         Objects.requireNonNull(data);
         Objects.requireNonNull(receiver);
-        // Implemented in ag/37282024 in this topic.
+        ApiGuard guard = acquireApiGuard();
+        try {
+            executor = executor != null ? executor : mEndpoint.getDataFlowCallbackExecutor();
+            AsyncState state = new AsyncState(data, guard, receiver, executor);
+            synchronized (mNotificationLock) {
+                mAsyncState = state;
+            }
+            if (cancellationSignal != null) {
+                // Set up the cancellation signal to prevent future operations and propagate an
+                // error back to the user.
+                cancellationSignal.setOnCancelListener(
+                        () -> {
+                            // Check that this operation is still active and prevent future actions.
+                            synchronized (mNotificationLock) {
+                                if (mAsyncState != state) {
+                                    return;
+                                }
+                                mAsyncState = null;
+                            }
+                            try {
+                                state.mReceiver.onError(
+                                        new CancellationException("User requested cancellation."));
+                            } finally {
+                                state.mGuard.close();
+                            }
+                        });
+            }
+            state.mExecutor.execute(() -> pushDataAsyncRunnable(state));
+        } catch (Throwable t) {
+            synchronized (mNotificationLock) {
+                if (mAsyncState == null) {
+                    // Another thread somehow got in here, just return since it will have closed the
+                    // guard already.
+                    return;
+                }
+                mAsyncState = null;
+                mNotificationFuture = null;
+            }
+            guard.close();
+            throw t;
+        }
     }
 
     /**
@@ -370,7 +506,9 @@ public class DataFlowSource implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean isFull() {
-        return mEndpoint.sourceFull(mRegion);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            return mEndpoint.sourceFull(mRegion);
+        }
     }
 
     /**
@@ -384,7 +522,9 @@ public class DataFlowSource implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @IntRange(from = 0)
     public int size() {
-        return mEndpoint.sourceSize(mRegion);
+        try (ApiGuard apiGuard = acquireApiGuard()) {
+            return mEndpoint.sourceSize(mRegion);
+        }
     }
 
     /* package */ DataFlowSource(
@@ -416,5 +556,83 @@ public class DataFlowSource implements AutoCloseable {
     void removeSink(@NonNull HubEndpointInfo sinkInfo) {
         mSinks.remove(sinkInfo);
         mEndpoint.removeOffloadSink(mRegion, sinkInfo);
+    }
+
+    /**
+     * @param event The event to notify for this source.
+     * @return true if the event was handled, false otherwise.
+     */
+    /** @hide */
+    boolean onNotificationCallback(int event) {
+        synchronized (mNotificationLock) {
+            if (event == DataFlowCallback.SOURCE_EVENT_WRITABLE && mNotificationFuture != null) {
+                mNotificationFuture.complete(null);
+                mNotificationFuture = null;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Runnable dispatched to push data asynchronously. */
+    private void pushDataAsyncRunnable(@NonNull AsyncState state) {
+        boolean success = false;
+        Throwable error = null;
+        synchronized (mNotificationLock) {
+            if (state != mAsyncState) {
+                // The operation has been cancelled. The ApiGuard will have already been closed.
+                return;
+            }
+            try {
+                success = mEndpoint.sourcePush(mRegion, state.mData, /* allOrNothing= */ true) > 0;
+                if (success) {
+                    // Prevent a concurrent cancellation from triggering.
+                    mAsyncState = null;
+                }
+            } catch (Throwable t) {
+                error = t;
+                // Prevent a concurrent cancellation from triggering.
+                mAsyncState = null;
+            }
+        }
+        // Try to propagate any error back to the user.
+        if (error != null) {
+            try {
+                state.mReceiver.onError(error);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to propagate pushDataAsync() error to user: " + e);
+            } finally {
+                state.mGuard.close();
+            }
+            return;
+        }
+        // Try to propagate the data back to the user.
+        if (success) {
+            try {
+                state.mReceiver.onResult(null);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to propagate pushDataAsync() result to user: " + e);
+            } finally {
+                state.mGuard.close();
+            }
+            return;
+        }
+        // Set up a new async wait for the data.
+        synchronized (mNotificationLock) {
+            mNotificationFuture = new CompletableFuture<>();
+            var unused =
+                    mNotificationFuture.thenRunAsync(
+                            () -> pushDataAsyncRunnable(state), state.mExecutor);
+        }
+    }
+
+    private ApiGuard acquireApiGuard() {
+        // Allocate first so that we don't leave mIsBusy set if we OOM.
+        ApiGuard guard = new ApiGuard();
+        if (!mIsBusy.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+            throw new ConcurrentModificationException(
+                    "Another source operation is currently in progress.");
+        }
+        return guard;
     }
 }

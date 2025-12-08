@@ -27,13 +27,16 @@ import android.annotation.SystemApi;
 import android.chre.flags.Flags;
 import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
+import android.os.SystemClock;
 import android.system.SystemCleaner;
 import android.util.CloseGuard;
 
+import android.util.Log;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -64,6 +67,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
 public class DataFlowSink implements AutoCloseable {
+    private static final String TAG = "DataFlowSink";
+
     /** The configuration of data read from this data flow. */
     private final DataFlowDataConfig mConfig;
 
@@ -84,6 +89,28 @@ public class DataFlowSink implements AutoCloseable {
             mIsBusy.set(false);
         }
     }
+
+    /** The state associated with an ongoing asynchronous operation. */
+    private static final class AsyncState {
+        final int mElementCount;
+        final ApiGuard mGuard;
+        final OutcomeReceiver<DataFlowData, Throwable> mReceiver;
+        final Executor mExecutor;
+
+        AsyncState(
+                @Size(min = 1) int elementCount,
+                @NonNull ApiGuard guard,
+                @NonNull OutcomeReceiver<DataFlowData, Throwable> receiver,
+                @Nullable Executor executor) {
+            mElementCount = elementCount;
+            mGuard = guard;
+            mReceiver = receiver;
+            mExecutor = executor;
+        }
+    }
+
+    /** Used to check whether an async operation is stale. Guarded by mNotificationLock. */
+    @Nullable private AsyncState mAsyncState = null;
 
     /** Returns the configuration of elements read from this data flow. */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
@@ -110,8 +137,7 @@ public class DataFlowSink implements AutoCloseable {
     @Override
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void close() {
-        mCloseGuard.close();
-        mEndpoint.removeSink(mHandle);
+        closeInternal();
     }
 
     /**
@@ -162,7 +188,7 @@ public class DataFlowSink implements AutoCloseable {
             synchronized (mNotificationLock) {
                 mNotificationFuture = new CompletableFuture<>();
             }
-            long now = System.currentTimeMillis();
+            long now = SystemClock.elapsedRealtime();
             long endTime = (timeout == null) ? Long.MAX_VALUE : now + timeout.toMillis();
 
             while (now < endTime) {
@@ -180,19 +206,21 @@ public class DataFlowSink implements AutoCloseable {
                 if (timeout == null) {
                     mNotificationFuture.join();
                 } else {
-                    mNotificationFuture.get(
-                            remainingTime, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    try {
+                        mNotificationFuture.get(
+                                remainingTime, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException | ExecutionException e) {
+                        // Ignore.
+                    }
                 }
                 // Reset future after completion to allow re-waiting
                 synchronized (mNotificationLock) {
                     mNotificationFuture = new CompletableFuture<>();
                 }
-                now = System.currentTimeMillis();
+                now = SystemClock.elapsedRealtime();
             }
 
             throw new TimeoutException("Timed out waiting for data.");
-        } catch (ExecutionException | InterruptedException e) {
-            throw new IllegalStateException("Failed to await data: " + e.getMessage());
         } finally {
             // No longer awaiting, clear the future
             synchronized (mNotificationLock) {
@@ -236,7 +264,47 @@ public class DataFlowSink implements AutoCloseable {
             @Nullable Executor executor,
             @NonNull OutcomeReceiver<DataFlowData, Throwable> receiver) {
         Objects.requireNonNull(receiver);
-        // Implemented in ag/37282024 in this topic.
+        ApiGuard guard = acquireApiGuard();
+        try {
+            executor = executor != null ? executor : mEndpoint.getDataFlowCallbackExecutor();
+            AsyncState state = new AsyncState(elementCount, guard, receiver, executor);
+            synchronized (mNotificationLock) {
+                mAsyncState = state;
+            }
+            if (cancellationSignal != null) {
+                // Set up the cancellation signal to prevent future operations and propagate an
+                // error back to the user.
+                cancellationSignal.setOnCancelListener(
+                        () -> {
+                            // Check that this operation is still active and prevent future actions.
+                            synchronized (mNotificationLock) {
+                                if (mAsyncState != state) {
+                                    return;
+                                }
+                                mAsyncState = null;
+                            }
+                            try {
+                                state.mReceiver.onError(
+                                        new CancellationException("User requested cancellation."));
+                            } finally {
+                                state.mGuard.close();
+                            }
+                        });
+            }
+            state.mExecutor.execute(() -> awaitDataAsyncRunnable(state));
+        } catch (Throwable t) {
+            synchronized (mNotificationLock) {
+                if (mAsyncState == null) {
+                    // Another thread somehow got in here, just return since it will have closed the
+                    // guard already.
+                    return;
+                }
+                mAsyncState = null;
+                mNotificationFuture = null;
+            }
+            guard.close();
+            throw t;
+        }
     }
 
     /**
@@ -261,17 +329,19 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void syncToSource(@IntRange(from = 0) int offset) {
-        if (mConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE
-                && offset % mConfig.getElementSize() != 0) {
-            throw new IllegalStateException(
-                    "syncToSource() offset must be a multiple of the element size for fixed-size"
-                            + " element data flows.");
-        } else if (offset > size()) {
-            throw new IllegalStateException(
-                    "syncToSource() offset must be less than or equal to the current size of the"
-                            + " data flow.");
+        try (ApiGuard guard = acquireApiGuard()) {
+            if (mConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE
+                    && offset % mConfig.getElementSize() != 0) {
+                throw new IllegalStateException(
+                        "syncToSource() offset must be a multiple of the element size for"
+                                + " fixed-size element data flows.");
+            } else if (offset > size()) {
+                throw new IllegalStateException(
+                        "syncToSource() offset must be less than or equal to the current size of"
+                                + " the data flow.");
+            }
+            mEndpoint.sinkSyncToSource(mHandle, offset);
         }
-        mEndpoint.sinkSyncToSource(mHandle, offset);
     }
 
     /**
@@ -284,7 +354,9 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean sourceCanOverwriteReadPosition() {
-        return mEndpoint.sinkSourceCanOverwriteReadPosition(mHandle);
+        try (ApiGuard guard = acquireApiGuard()) {
+            return mEndpoint.sinkSourceCanOverwriteReadPosition(mHandle);
+        }
     }
 
     /**
@@ -296,7 +368,9 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean isEmpty() {
-        return size() == 0;
+        try (ApiGuard guard = acquireApiGuard()) {
+            return size() == 0;
+        }
     }
 
     /**
@@ -309,7 +383,9 @@ public class DataFlowSink implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @IntRange(from = 0)
     public int size() {
-        return mEndpoint.sinkSize(mHandle);
+        try (ApiGuard guard = acquireApiGuard()) {
+            return mEndpoint.sinkSize(mHandle);
+        }
     }
 
     /* package */ DataFlowSink(
@@ -337,10 +413,88 @@ public class DataFlowSink implements AutoCloseable {
         synchronized (mNotificationLock) {
             if (event == DataFlowCallback.SINK_EVENT_READABLE && mNotificationFuture != null) {
                 mNotificationFuture.complete(null);
+                mNotificationFuture = null;
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Package-private implementation of {@link #close()}.
+     *
+     * @hide
+     */
+    /* package */ void closeInternal() {
+        mCloseGuard.close();
+        AsyncState cancelOp = null;
+        synchronized (mNotificationLock) {
+            mNotificationFuture = null;
+            cancelOp = mAsyncState;
+            mAsyncState = null;
+        }
+        if (cancelOp != null) {
+            try {
+                cancelOp.mReceiver.onError(new CancellationException("User closed sink."));
+            } catch (Throwable t) {
+                // Ignore.
+            } finally {
+                cancelOp.mGuard.close();
+            }
+        }
+        mEndpoint.removeSink(mHandle);
+    }
+
+    /** Runnable dispatched to await data asynchronously. */
+    private void awaitDataAsyncRunnable(@NonNull AsyncState state) {
+        DataFlowData data = null;
+        Throwable error = null;
+        synchronized (mNotificationLock) {
+            if (state != mAsyncState) {
+                // The operation has been cancelled. The ApiGuard will have already been closed.
+                return;
+            }
+            try {
+                data = requestDataInternal(state.mElementCount, /* allOrNothing= */ true);
+                if (data != null) {
+                    // Prevent a concurrent cancellation from triggering.
+                    mAsyncState = null;
+                }
+            } catch (Throwable t) {
+                error = t;
+                // Prevent a concurrent cancellation from triggering.
+                mAsyncState = null;
+            }
+        }
+        // Try to propagate any error back to the user.
+        if (error != null) {
+            try {
+                state.mReceiver.onError(error);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to propagate awaitDataAsync() error to user: " + e);
+            } finally {
+                state.mGuard.close();
+            }
+            return;
+        }
+        // Try to propagate the data back to the user.
+        if (data != null) {
+            try {
+                state.mReceiver.onResult(data);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to propagate awaitDataAsync() result to user: " + e);
+            } finally {
+                state.mGuard.close();
+            }
+            return;
+        }
+        // Set up a new async wait for the data.
+        synchronized (mNotificationLock) {
+            mNotificationFuture = new CompletableFuture<>();
+            var unused =
+                    mNotificationFuture.thenRunAsync(
+                            () -> awaitDataAsyncRunnable(state), state.mExecutor);
+        }
     }
 
     private DataFlowData requestDataInternal(int elementCount, boolean allOrNothing) {

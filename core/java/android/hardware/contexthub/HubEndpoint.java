@@ -366,13 +366,16 @@ public class HubEndpoint {
                     if (hubId == mAssignedHubEndpointInfo.getIdentifier().getHub()) {
                         DataFlowSource source = mSources.get(dataFlowId);
                         if (source != null) {
-                            mDataFlowCallbackExecutor.execute(
-                                    () -> {
-                                        mDataFlowCallback.onDataFlowSourceEvent(
-                                                source,
-                                                DataFlowCallback.SOURCE_EVENT_WRITABLE,
-                                                /* eventData= */ null);
-                                    });
+                            if (!source.onNotificationCallback(
+                                    DataFlowCallback.SOURCE_EVENT_WRITABLE)) {
+                                mDataFlowCallbackExecutor.execute(
+                                        () -> {
+                                            mDataFlowCallback.onDataFlowSourceEvent(
+                                                    source,
+                                                    DataFlowCallback.SOURCE_EVENT_WRITABLE,
+                                                    /* data= */ null);
+                                        });
+                            }
                         } else {
                             Log.e(TAG, "onNotificationCallback: source not found");
                         }
@@ -386,7 +389,7 @@ public class HubEndpoint {
                                             mDataFlowCallback.onDataFlowSinkEvent(
                                                     sink,
                                                     DataFlowCallback.SINK_EVENT_READABLE,
-                                                    /* eventData= */ null);
+                                                    /* data= */ null);
                                         });
                             }
                         } else {
@@ -400,6 +403,7 @@ public class HubEndpoint {
     private final Map<Integer, DataFlowSource> mSources = new HashMap<>();
 
     /** The sinks associated with this endpoint. */
+    // TODO(b/457452333): This should map the whole DataFlowId.
     private final Map<Integer, DataFlowSink> mSinks = new HashMap<>();
 
     private final IContextHubEndpointCallback mServiceCallback =
@@ -540,27 +544,53 @@ public class HubEndpoint {
                 @Override
                 public void onDataFlowOffloadEndpointUnregistered(
                         DataFlowId dataFlowId, HubEndpointInfo endpoint) throws RemoteException {
-                    DataFlowSource source = mSources.get(dataFlowId.id);
-                    if (source != null) {
-                        Log.e(
-                                TAG,
-                                "onDataFlowOffloadEndpointUnregistered: source not found for id="
-                                        + dataFlowId.id);
-                    } else if (mDataFlowCallback == null) {
-                        Log.w(
-                                TAG,
-                                "onDataFlowOffloadEndpointUnregistered: no data flow callback"
-                                        + " attached");
+                    if (mAssignedHubEndpointInfo.getIdentifier().getHub() == dataFlowId.hubId) {
+                        DataFlowSource source = mSources.get(dataFlowId.id);
+                        if (source == null) {
+                            Log.w(
+                                    TAG,
+                                    "onDataFlowOffloadEndpointUnregistered: source not found for"
+                                            + " id="
+                                            + dataFlowId.id);
+                        } else if (mDataFlowCallback == null) {
+                            Log.w(
+                                    TAG,
+                                    "onDataFlowOffloadEndpointUnregistered: no data flow callback"
+                                            + " attached");
+                        } else {
+                            source.removeSink(endpoint);
+                            mDataFlowCallbackExecutor.execute(
+                                    () -> {
+                                        mDataFlowCallback.onDataFlowSourceEvent(
+                                                source,
+                                                DataFlowCallback.SOURCE_EVENT_SINK_GONE,
+                                                /* data= */ new DataFlowCallback.SourceEventData(
+                                                        endpoint));
+                                    });
+                        }
                     } else {
-                        source.removeSink(endpoint);
-                        mDataFlowCallbackExecutor.execute(
-                                () -> {
-                                    mDataFlowCallback.onDataFlowSourceEvent(
-                                            source,
-                                            DataFlowCallback.SINK_EVENT_STOPPED,
-                                            /* eventData= */ new DataFlowCallback.SourceEventData(
-                                                    endpoint));
-                                });
+                        DataFlowSink sink = mSinks.get(dataFlowId.id);
+                        if (sink == null) {
+                            Log.w(
+                                    TAG,
+                                    "onDataFlowOffloadEndpointUnregistered: sink not found for"
+                                            + " id="
+                                            + dataFlowId.id);
+                        } else if (mDataFlowCallback == null) {
+                            Log.w(
+                                    TAG,
+                                    "onDataFlowOffloadEndpointUnregistered: no data flow callback"
+                                            + " attached");
+                        } else {
+                            sink.closeInternal();
+                            mDataFlowCallbackExecutor.execute(
+                                    () -> {
+                                        mDataFlowCallback.onDataFlowSinkEvent(
+                                                sink,
+                                                DataFlowCallback.SINK_EVENT_STOPPED,
+                                                /* data= */ null);
+                                    });
+                        }
                     }
                 }
 
@@ -1372,5 +1402,10 @@ public class HubEndpoint {
     private DataFlowSink createDataFlowSink(
             DataFlowDataConfig config, DataFlowConsumerHandle handle) {
         return new DataFlowSink(config, handle, this);
+    }
+
+    /** package */
+    Executor getDataFlowCallbackExecutor() {
+        return mDataFlowCallbackExecutor;
     }
 }
