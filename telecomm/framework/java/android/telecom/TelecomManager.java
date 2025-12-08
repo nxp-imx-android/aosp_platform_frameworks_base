@@ -247,7 +247,7 @@ public class TelecomManager {
     private static final String ACTION_MANAGE_BLOCKED_NUMBERS =
             "android.telecom.action.MANAGE_BLOCKED_NUMBERS";
 
-    private static final String TELECOM_UI_PACKAGE = "com.android.server.telecomui";
+    private static final String TELECOM_PACKAGE = "com.android.server.telecom";
 
     /**
      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
@@ -2827,7 +2827,7 @@ public class TelecomManager {
      */
     public Intent createManageBlockedNumbersIntent() {
         Intent result = new Intent(ACTION_MANAGE_BLOCKED_NUMBERS);
-        result.setPackage(TELECOM_UI_PACKAGE);
+        result.setPackage(TELECOM_PACKAGE);
         return result;
     }
 
