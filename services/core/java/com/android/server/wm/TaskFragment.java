@@ -200,7 +200,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     private final TaskFragmentOrganizerController mTaskFragmentOrganizerController;
     private final LockTaskController mLockTaskController;
 
-    // TODO(b/233177466): Move mMinWidth and mMinHeight to Task and remove usages in TaskFragment
     /**
      * Minimal width of this task fragment when it's resizeable. {@link #INVALID_MIN_SIZE} means it
      * should use the default minimal width.
