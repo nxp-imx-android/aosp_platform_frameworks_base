@@ -57,6 +57,8 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     // Topology updates we expect to receive before timeout
     private final LinkedBlockingQueue<DisplayTopology> mExpectations = new LinkedBlockingQueue<>();
 
+    private DisplayTopology mOldTopology;
+
     /**
      * Add the received topology update from the test activity to the queue
      *
@@ -128,11 +130,13 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     @Before
     public void setUp() {
         super.setUp();
+        mOldTopology = mDisplayManager.getDisplayTopology();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        mDisplayManager.setDisplayTopology(mOldTopology);
     }
 
     @Override
