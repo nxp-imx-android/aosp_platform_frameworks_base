@@ -833,6 +833,11 @@ class TestPhoneWindowManager {
         verify(mStatusBarManagerInternal).moveFocusedTaskToFullscreen(anyInt());
     }
 
+    void assertMoveFocusedTaskToStageSplit(boolean leftOrTop) {
+        mTestLooper.dispatchAll();
+        verify(mStatusBarManagerInternal).moveFocusedTaskToStageSplit(anyInt(), eq(leftOrTop));
+    }
+
     void assertStatusBarStartAssist() {
         mTestLooper.dispatchAll();
         verify(mStatusBarManagerInternal).startAssist(any());

@@ -52,7 +52,6 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserManager;
@@ -85,7 +84,6 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
@@ -133,8 +131,6 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Mock private IActivityTaskManager activityTaskManager;
     @Mock MSDLPlayer mMSDLPlayer;
-    @Mock FocusTransitionObserver mFocusTransitionObserver;
-    @Mock InputManager mInputManager;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
@@ -157,7 +153,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 Optional.empty(),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
                 mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager, mMSDLPlayer,
-                Optional.empty(), mFocusTransitionObserver, mInputManager));
+                Optional.empty()));
     }
 
     @Test

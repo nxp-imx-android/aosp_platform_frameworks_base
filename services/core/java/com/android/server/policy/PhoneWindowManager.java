@@ -3480,6 +3480,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE,
+                KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
@@ -3605,6 +3607,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         statusbar.moveFocusedTaskToDesktop(
                                 getTargetDisplayIdForKeyGestureEvent(event));
                     }
+                }
+                break;
+            case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT:
+                if (complete) {
+                    moveFocusedTaskToStageSplit(getTargetDisplayIdForKeyGestureEvent(event),
+                            true /* leftOrTop */);
+                }
+                break;
+            case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT:
+                if (complete) {
+                    moveFocusedTaskToStageSplit(getTargetDisplayIdForKeyGestureEvent(event),
+                            false /* leftOrTop */);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER:
@@ -4194,6 +4208,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         StatusBarManagerInternal statusbar = getStatusBarManagerInternal();
         if (statusbar != null) {
             statusbar.hideRecentApps(triggeredFromAltTab, triggeredFromHome);
+        }
+    }
+
+    private void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
+        StatusBarManagerInternal statusbar = getStatusBarManagerInternal();
+        if (statusbar != null) {
+            statusbar.moveFocusedTaskToStageSplit(displayId, leftOrTop);
         }
     }
 

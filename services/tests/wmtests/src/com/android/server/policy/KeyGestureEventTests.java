@@ -302,6 +302,15 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
+    public void testKeyGestureSplitscreenNavigation() {
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT);
+        mPhoneWindowManager.assertMoveFocusedTaskToStageSplit(true);
+
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT);
+        mPhoneWindowManager.assertMoveFocusedTaskToStageSplit(false);
+    }
+
+    @Test
     public void testKeyGestureShortcutHelper() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER);
         mPhoneWindowManager.assertToggleShortcutsMenu();
