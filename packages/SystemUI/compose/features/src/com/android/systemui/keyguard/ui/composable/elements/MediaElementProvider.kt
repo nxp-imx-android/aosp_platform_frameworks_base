@@ -76,17 +76,13 @@ constructor(
                 enter = expandVertically(expandFrom = Alignment.Top),
                 exit = fadeOut(),
             ) {
-                Element(
-                    key = LockscreenElementKeys.MediaCarouselContainer,
+                Media(
+                    viewModelFactory = viewModel.mediaViewModelFactory,
+                    presentationStyle = MediaPresentationStyle.Default,
+                    behavior = viewModel.mediaUiBehavior,
+                    onDismissed = viewModel::onSwipeToDismiss,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
-                ) {
-                    Media(
-                        viewModelFactory = viewModel.mediaViewModelFactory,
-                        presentationStyle = MediaPresentationStyle.Default,
-                        behavior = viewModel.mediaUiBehavior,
-                        onDismissed = viewModel::onSwipeToDismiss,
-                    )
-                }
+                )
             }
         }
     }
