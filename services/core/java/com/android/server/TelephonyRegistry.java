@@ -65,6 +65,7 @@ import android.telephony.CellSignalStrengthNr;
 import android.telephony.CellSignalStrengthTdscdma;
 import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.CellularIdentifierDisclosure;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.DisconnectCause;
 import android.telephony.LinkCapacityEstimate;
 import android.telephony.LocationAccessPolicy;
@@ -467,6 +468,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
     /** Per-phoneId of CarrierService (PackageName, UID) pair. */
     @NonNull private List<Pair<String, Integer>> mCarrierServiceStates;
 
+    private List<List<NetworkSecurityEvent>> mNetworkSecurityEvents;
+
     /**
      * Support backward compatibility for {@link android.telephony.TelephonyDisplayInfo}.
      */
@@ -598,7 +601,9 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 || events.contains(TelephonyCallback
                         .EVENT_SIMULTANEOUS_CELLULAR_CALLING_SUBSCRIPTIONS_CHANGED)
                 || events.contains(TelephonyCallback.EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED)
-                || events.contains(TelephonyCallback.EVENT_SECURITY_ALGORITHMS_CHANGED);
+                || events.contains(TelephonyCallback.EVENT_SECURITY_ALGORITHMS_CHANGED)
+                || events.contains(TelephonyCallback.EVENT_NETWORK_SECURITY_EVENTS);
+
     }
 
     private boolean isBasicPhoneStatePermissionRequired(Set<Integer> events) {
@@ -781,6 +786,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 cutListToSize(mCallStateLists, mNumPhones);
                 cutListToSize(mMediaQualityStatus, mNumPhones);
                 cutListToSize(mCarrierRoamingNtnAvailableServices, mNumPhones);
+                cutListToSize(mNetworkSecurityEvents, mNumPhones);
                 return;
             }
 
@@ -834,6 +840,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                         NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
                 mDomainSelectionCallEmergencyMode[i] = false;
                 mDomainSelectionSmsEmergencyMode[i] = false;
+                mNetworkSecurityEvents.add(i, new ArrayList<>());
             }
         }
     }
@@ -911,6 +918,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         mCarrierRoamingNtnEligible = new boolean[numPhones];
         mCarrierRoamingNtnAvailableServices = new ArrayList<>();
         mCarrierRoamingNtnSignalStrength = new NtnSignalStrength[numPhones];
+        mNetworkSecurityEvents = new ArrayList<>();
         mIsSatelliteEnabled = new AtomicBoolean();
         mWasSatelliteEnabledNotified = new AtomicBoolean();
         mDomainSelectionCallEmergencyMode = new boolean[numPhones];
@@ -965,6 +973,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                     NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
             mDomainSelectionCallEmergencyMode[i] = false;
             mDomainSelectionSmsEmergencyMode[i] = false;
+            mNetworkSecurityEvents.add(i, new ArrayList<>());
         }
 
         mAppOps = mContext.getSystemService(AppOpsManager.class);
@@ -1639,6 +1648,17 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                                     TelephonyManager.DOMAIN_SELECTION_EMERGENCY_TYPE_SMS,
                                     r.phoneId, r.subId);
                         }
+                    } catch (RemoteException ex) {
+                        remove(r.binder);
+                    }
+                }
+                if (events.contains(TelephonyCallback.EVENT_NETWORK_SECURITY_EVENTS)) {
+                    try {
+                        if (VDBG) {
+                            log("listen: call onNetworkSecurityEvents="
+                                    + mNetworkSecurityEvents.get(r.phoneId));
+                        }
+                        r.callback.onNetworkSecurityEvents(mNetworkSecurityEvents.get(r.phoneId));
                     } catch (RemoteException ex) {
                         remove(r.binder);
                     }
@@ -4104,6 +4124,60 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         }
     }
 
+    /**
+     * Notify of network security events.
+     *
+     * @param phoneId the phone id.
+     * @param subId the subId.
+     * @param events the network security events.
+     */
+    public void notifyNetworkSecurityEvents(int phoneId, int subId,
+            @NonNull List<NetworkSecurityEvent> events) {
+
+        if (!Flags.networkSecurityEventIndications()) {
+            log("Not available due to networkSecurityEventIndications() flag");
+            return;
+        }
+
+        if (!checkNotifyPermission("notifyNetworkSecurityEvents()")) {
+            return;
+        }
+
+        synchronized (mRecords) {
+            if (validatePhoneId(phoneId)) {
+                if (events.isEmpty()) {
+                    loge(
+                            "NetworkSecurityEvent is empty, subId=" + subId
+                            + ", phoneId=" + phoneId);
+                    // Listeners shouldn't be updated for empty events.
+                    return;
+                }
+                if (Objects.equals(mNetworkSecurityEvents.get(phoneId), events)) {
+                    if (VDBG) log("Ignoring duplicate network security events notification.");
+                    return;
+                }
+                mNetworkSecurityEvents.set(phoneId, events);
+
+                for (Record r : mRecords) {
+                    if (r.matchTelephonyCallbackEvent(
+                            TelephonyCallback.EVENT_NETWORK_SECURITY_EVENTS)
+                            && idMatch(r, subId, phoneId)) {
+                        try {
+                            if (VDBG) {
+                                log("notifyNetworkSecurityEvents: events= "
+                                        + events);
+                            }
+                            r.callback.onNetworkSecurityEvents(events);
+                        } catch (RemoteException ex) {
+                            mRemoveList.add(r.binder);
+                        }
+                    }
+                }
+            }
+            handleRemoveListLocked();
+        }
+    }
+
     @NeverCompile // Avoid size overhead of debugging code.
     @Override
     public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
@@ -4165,6 +4239,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                         + mDomainSelectionCallEmergencyMode[i]);
                 pw.println("mDomainSelectionSmsEmergencyMode="
                         + mDomainSelectionSmsEmergencyMode[i]);
+                pw.println("mNetworkSecurityEvents=" + mNetworkSecurityEvents.get(i));
 
                 // We need to obfuscate package names, and primitive arrays' native toString is ugly
                 Pair<List<String>, int[]> carrierPrivilegeState = mCarrierPrivilegeStates.get(i);
@@ -4867,6 +4942,17 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 if (mTelephonyDisplayInfos[phoneId] != null) {
                     r.callback.onDisplayInfoChanged(mTelephonyDisplayInfos[phoneId]);
                 }
+            } catch (RemoteException ex) {
+                mRemoveList.add(r.binder);
+            }
+        }
+        if (events.contains(TelephonyCallback.EVENT_NETWORK_SECURITY_EVENTS)) {
+            try {
+                if (VDBG) {
+                    log("checkPossibleMissNotify: onNetworkSecurityEvents phoneId="
+                            + phoneId + " events=" + mNetworkSecurityEvents.get(phoneId));
+                }
+                r.callback.onNetworkSecurityEvents(mNetworkSecurityEvents.get(phoneId));
             } catch (RemoteException ex) {
                 mRemoveList.add(r.binder);
             }
