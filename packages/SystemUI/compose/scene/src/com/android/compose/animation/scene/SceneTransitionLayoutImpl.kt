@@ -46,6 +46,9 @@ import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -572,6 +575,14 @@ internal class SceneTransitionLayoutImpl(
             return
         }
 
+        val hasModalOverlay = overlaysOrderedByZIndex.fastAny { it.overlay.isModal }
+        val closeOverlayActionLabel =
+            if (hasModalOverlay) stringResource(R.string.accessibility_close_overlay_action) else ""
+        val closeOverlayBoundingBoxDescription =
+            if (hasModalOverlay)
+                stringResource(R.string.accessibility_close_overlay_box_description)
+            else ""
+
         overlaysOrderedByZIndex.fastForEach { (overlay, isInvisible) ->
             val key = overlay.key
             key(key) {
@@ -582,15 +593,25 @@ internal class SceneTransitionLayoutImpl(
                     if (overlay.isModal) {
                         // Add a fullscreen clickable to prevent swipes from reaching the scenes and
                         // other overlays behind this overlay. Clicking will close the overlay.
+                        //
+                        // The clikable is given a label that announces that interacting with it
+                        // will "go back". Alternatively, we could remove it from accessibility by
+                        // using clickableWithoutFocus, but that is blocked on b/463616873 to
+                        // prevent TalkBack from announcing elements from behind the overlay then.
                         Box(
-                            Modifier.fillMaxSize().clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) {
-                                if (state.canHideOverlay(key)) {
-                                    state.hideOverlay(key, animationScope = animationScope)
+                            Modifier.fillMaxSize()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClickLabel = closeOverlayActionLabel,
+                                ) {
+                                    if (state.canHideOverlay(key)) {
+                                        state.hideOverlay(key, animationScope = animationScope)
+                                    }
                                 }
-                            }
+                                .semantics {
+                                    contentDescription = closeOverlayBoundingBoxDescription
+                                }
                         )
                     }
 

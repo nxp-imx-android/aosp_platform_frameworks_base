@@ -30,6 +30,9 @@ android_library {
         "src/**/*.kt",
     ],
 
+    resource_dirs: [
+        "res",
+    ],
     static_libs: [
         // Private APIs
         "PlatformComposeCore",
