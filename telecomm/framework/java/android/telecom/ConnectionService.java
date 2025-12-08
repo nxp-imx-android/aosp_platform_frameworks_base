@@ -2299,10 +2299,13 @@ public abstract class ConnectionService extends Service {
     }
 
     /**
-     * Used for testing to let the test suite know when the connection service has been bound.
+     * Called when a client binds to the {@link ConnectionService}.
+     *
+     * @param intent The intent that was used to bind to the service.
      * @hide
      */
-    @TestApi
+    @SystemApi
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
     public void onBindClient(@Nullable Intent intent) {
     }
 
