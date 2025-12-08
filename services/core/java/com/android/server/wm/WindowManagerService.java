@@ -1191,12 +1191,31 @@ public class WindowManagerService extends IWindowManager.Stub
     private final SurfaceControl.Transaction mTransaction;
 
     static void boostPriorityForLockedSection() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_acquire").emit();
         sThreadPriorityBooster.boost();
     }
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
+    }
+
+    /**
+     * Emits a trace event indicating the start of an attempt to acquire the main WMS lock.
+     */
+    public static void traceBeforeWmsLock() {
+        PerfettoTrace.instant(BIG_LOCKS_V3, "wms_lock_acquire").emit();
+    }
+
+    /**
+     * Emits a trace event indicating that the main WMS lock has been acquired and is now held.
+     */
+    public static void traceAfterWmsLock() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_held").emit();
+    }
+
+    /**
+     * Emits a trace event indicating the end of the critical section protected by the WMS lock.
+     */
+    public static void traceAfterWmsUnlock() {
         PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 

@@ -26,20 +26,39 @@ public class Utils {
      * Reads a comma separated configuration similar to the Jack definition.
      */
     public static List<LockTarget> getTargetsFromLegacyJackConfig(String classList,
-            String requestList, String resetList) {
+            String requestList, String resetList, String traceBeforeAcquireList,
+            String traceAfterAcquireList, String traceBeforeReleaseList,
+            String traceAfterReleaseList) {
 
         String[] classes = classList.split(",");
         String[] requests = requestList.split(",");
         String[] resets = resetList.split(",");
+        String[] traceBeforeAcquires = traceBeforeAcquireList != null
+                ? traceBeforeAcquireList.split(",") : null;
+        String[] traceAfterAcquires = traceAfterAcquireList != null
+                ? traceAfterAcquireList.split(",") : null;
+        String[] traceBeforeReleases = traceBeforeReleaseList != null
+                ? traceBeforeReleaseList.split(",") : null;
+        String[] traceAfterReleases = traceAfterReleaseList != null
+                ? traceAfterReleaseList.split(",") : null;
 
         int total = classes.length;
         assert requests.length == total;
         assert resets.length == total;
+        assert traceBeforeAcquires == null || traceBeforeAcquires.length == total;
+        assert traceAfterAcquires == null || traceAfterAcquires.length == total;
+        assert traceBeforeReleases == null || traceBeforeReleases.length == total;
+        assert traceAfterReleases == null || traceAfterReleases.length == total;
 
         List<LockTarget> config = new ArrayList<LockTarget>();
 
         for (int i = 0; i < total; i++) {
-            config.add(new LockTarget(classes[i], requests[i], resets[i]));
+            config.add(new LockTarget(classes[i], requests[i], resets[i],
+                    traceBeforeAcquires != null ? traceBeforeAcquires[i] : null,
+                    traceAfterAcquires != null ? traceAfterAcquires[i] : null,
+                    traceBeforeReleases != null ? traceBeforeReleases[i] : null,
+                    traceAfterReleases != null ? traceAfterReleases[i] : null,
+                    false));
         }
 
         return config;
