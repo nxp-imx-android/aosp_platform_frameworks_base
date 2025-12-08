@@ -59,6 +59,7 @@ import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.Overlay
 import com.android.compose.animation.scene.content.Scene
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.util.lerp
 import kotlinx.coroutines.CoroutineScope
@@ -196,12 +197,12 @@ internal class SceneTransitionLayoutImpl(
 
     internal val elementStateScope = ElementStateScopeImpl(this)
     internal val propertyTransformationScope = PropertyTransformationScopeImpl(this)
-    private var _userActionDistanceScope: UserActionDistanceScope? = null
-    internal val userActionDistanceScope: UserActionDistanceScope
+    private var _userActionGestureScope: UserActionGestureScope? = null
+    internal val userActionGestureScope: UserActionGestureScope
         get() =
-            _userActionDistanceScope
-                ?: UserActionDistanceScopeImpl(layoutImpl = this).also {
-                    _userActionDistanceScope = it
+            _userActionGestureScope
+                ?: UserActionGestureScopeImpl(layoutImpl = this).also {
+                    _userActionGestureScope = it
                 }
 
     internal var lastSize: IntSize = IntSize.Zero

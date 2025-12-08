@@ -21,7 +21,10 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.animation.scene.transformation.PropertyTransformationScope
+import com.android.mechanics.spec.builder.ComposeMotionBuilderContext
+import com.android.mechanics.spec.builder.MotionBuilderContext
 
 internal class ElementStateScopeImpl(private val layoutImpl: SceneTransitionLayoutImpl) :
     ElementStateScope {
@@ -42,14 +45,14 @@ internal class ElementStateScopeImpl(private val layoutImpl: SceneTransitionLayo
     }
 }
 
-internal class UserActionDistanceScopeImpl(private val layoutImpl: SceneTransitionLayoutImpl) :
-    UserActionDistanceScope, ElementStateScope by layoutImpl.elementStateScope {
-    override val density: Float
-        get() = layoutImpl.density.density
-
-    override val fontScale: Float
-        get() = layoutImpl.density.fontScale
-}
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+internal class UserActionGestureScopeImpl(private val layoutImpl: SceneTransitionLayoutImpl) :
+    UserActionGestureScope,
+    ElementStateScope by layoutImpl.elementStateScope,
+    MotionBuilderContext by ComposeMotionBuilderContext(
+        layoutImpl.state.motionScheme,
+        layoutImpl.density,
+    )
 
 internal class PropertyTransformationScopeImpl(private val layoutImpl: SceneTransitionLayoutImpl) :
     PropertyTransformationScope, ElementStateScope by layoutImpl.elementStateScope {

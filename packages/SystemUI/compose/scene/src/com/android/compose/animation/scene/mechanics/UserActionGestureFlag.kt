@@ -19,6 +19,9 @@ package com.android.compose.animation.scene.mechanics
 import com.android.systemui.Flags as SysuiFlags
 
 internal object UserActionGestureFlag {
+    /** The aconfig flag name */
+    const val FLAG_NAME = SysuiFlags.FLAG_STL_USER_ACTION_GESTURE
+
     /**
      * Enables support for the experimental [UserActionGesture] interface.
      *
@@ -27,4 +30,20 @@ internal object UserActionGestureFlag {
      */
     val isEnabled: Boolean
         get() = SysuiFlags.stlUserActionGesture()
+
+    /**
+     * Called to ensure code is only run when the flag is disabled. This will throw an exception if
+     * the flag is enabled to ensure that the refactor author catches issues in testing.
+     */
+    fun assertInNewMode() {
+        check(isEnabled) { "New code path not supported when $FLAG_NAME is disabled." }
+    }
+
+    /**
+     * Called to ensure code is only run when the flag is disabled. This will throw an exception if
+     * the flag is enabled to ensure that the refactor author catches issues in testing.
+     */
+    fun assertInLegacyMode() {
+        check(!isEnabled) { "Legacy code path not supported when $FLAG_NAME is enabled." }
+    }
 }
