@@ -34,6 +34,7 @@ import android.os.Parcelable;
 import android.os.ParcelableException;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -355,51 +356,57 @@ public final class PccSandboxManagerInternal {
     public boolean validateAssociationAllowed(
             int callerUid, String callerPackage, int targetUid, String targetPackage,
             @ActivityManagerService.AssociationType int associationType, @Nullable Bundle extras) {
-        // Self-association is allowed.
-        if (callerUid == targetUid) {
-            return true;
-        }
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                "PccSandboxManagerInternal#validateAssociationAllowed");
+        try {
+            // Self-association is allowed.
+            if (callerUid == targetUid) {
+                return true;
+            }
 
-        final boolean callerIsPcc = Process.isPrivateComputeCoreUid(callerUid);
-        final boolean targetIsPcc = Process.isPrivateComputeCoreUid(targetUid);
-        // PCC to PCC association is allowed.
-        if (callerIsPcc && targetIsPcc) {
-            return true;
-        }
+            final boolean callerIsPcc = Process.isPrivateComputeCoreUid(callerUid);
+            final boolean targetIsPcc = Process.isPrivateComputeCoreUid(targetUid);
+            // PCC to PCC association is allowed.
+            if (callerIsPcc && targetIsPcc) {
+                return true;
+            }
 
-        // Allow some non-PCC to PCC association, with one-way data flow enforced.
-        if (!callerIsPcc && targetIsPcc) {
-            switch (associationType) {
-                case ActivityManagerService.ASSOCIATION_TYPE_PROVIDER -> {
-                    // ContentProvider association from regular to pcc components is disallowed
-                    // because it can be used to egress sensitive data.
-                    return isPccTrustedApp(callerUid, callerPackage);
-                }
-                case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER,
-                     ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
-                    try {
-                        PccBundleSanitizationUtil.sanitizeBundle(extras);
-                        return true;
-                    } catch (IllegalArgumentException e) {
-                        Slog.e(TAG, "Intent extras have disallowed data types", e);
+            // Allow some non-PCC to PCC association, with one-way data flow enforced.
+            if (!callerIsPcc && targetIsPcc) {
+                switch (associationType) {
+                    case ActivityManagerService.ASSOCIATION_TYPE_PROVIDER -> {
+                        // ContentProvider association from regular to pcc components is disallowed
+                        // because it can be used to egress sensitive data.
+                        return isPccTrustedApp(callerUid, callerPackage);
+                    }
+                    case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER,
+                         ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
+                        try {
+                            PccBundleSanitizationUtil.sanitizeBundle(extras);
+                            return true;
+                        } catch (IllegalArgumentException e) {
+                            Slog.e(TAG, "Intent extras have disallowed data types", e);
+                            return false;
+                        }
+                    }
+                    default -> {
+                        // Should not be reached.
                         return false;
                     }
                 }
-                default -> {
-                    // Should not be reached.
-                    return false;
-                }
             }
-        }
 
-        // Since this method is only called if either caller or target is PCC,
-        // if we're here, the caller is a PCC UID and the target is not.
-        // Allow PCC to trusted component association.
-        if (isPccTrustedApp(targetUid, targetPackage)) {
-            return true;
-        }
+            // Since this method is only called if either caller or target is PCC,
+            // if we're here, the caller is a PCC UID and the target is not.
+            // Allow PCC to trusted component association.
+            if (isPccTrustedApp(targetUid, targetPackage)) {
+                return true;
+            }
 
-        return false;
+            return false;
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+        }
     }
 
 
@@ -414,6 +421,8 @@ public final class PccSandboxManagerInternal {
         @RequiresNoPermission
         @Override
         public void sendData(Bundle data, String packageName, IResultCallback callback) {
+            Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "PccSandboxManagerInternal.PccServiceProxy#sendData()");
             try {
                 if (mRealBinder == null) {
                     callback.onFailure(new ParcelableException(
@@ -428,8 +437,21 @@ public final class PccSandboxManagerInternal {
                 if (mPackageManagerInternal.isSameApp(packageName, callingUid,
                         UserHandle.getUserId(callingUid))) {
                     try {
-                        PccBundleSanitizationUtil.sanitizeBundle(data);
-                        realService.sendData(data, packageName, null);
+                        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                                "PccBundleSanitizationUtil#sanitizeBundle()");
+                        try {
+                            PccBundleSanitizationUtil.sanitizeBundle(data);
+                        } finally {
+                            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+                        }
+
+                        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                                "PccSandboxManagerInternal.realService#sendData()");
+                        try {
+                            realService.sendData(data, packageName, null);
+                        } finally {
+                            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+                        }
                     } catch (RemoteException | IllegalArgumentException e) {
                         callback.onFailure(new ParcelableException(e));
                         return;
@@ -447,6 +469,8 @@ public final class PccSandboxManagerInternal {
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to invoke " + IResultCallback.class.getSimpleName()
                         + " for client: " + packageName, e);
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
             }
         }
 
