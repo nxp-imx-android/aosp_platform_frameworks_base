@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.logging.MetricsLogger;
@@ -66,7 +65,6 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger;
-import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.policy.SmartReplyConstants;
 import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent;
@@ -348,8 +346,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
             // but since this field is used in the guts, it must be accurate.
             // Therefore we will only show the application label, or, failing that, the
             // package name. No substitutions.
-            PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
-                    context, statusBarNotification.getUser().getIdentifier());
+            PackageManager pmUser = statusBarNotification.getPackageManagerForUser(context);
             final String pkg = statusBarNotification.getPackageName();
             try {
                 final ApplicationInfo info = pmUser.getApplicationInfo(pkg,

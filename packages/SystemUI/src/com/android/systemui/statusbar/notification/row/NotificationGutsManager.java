@@ -77,7 +77,6 @@ import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
-import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.wmshell.BubblesManager;
@@ -409,9 +408,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             NotificationInfo notificationInfoView) throws Exception {
         NotificationGuts guts = row.getGuts();
         String packageName = sbn.getPackageName();
-        UserHandle userHandle = sbn.getUser();
-        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
-                mContext, userHandle.getIdentifier());
+        PackageManager pmUser = sbn.getPackageManagerForUser(mContext);
 
         NotificationInfo.OnSettingsClickListener onSettingsClick =
                 (View v, NotificationChannel channel, int appUid) -> {
@@ -478,9 +475,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationInfo.OnSettingsClickListener onSettingsClick = null;
-        UserHandle userHandle = sbn.getUser();
-        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
-                mContext, userHandle.getIdentifier());
+        PackageManager pmUser = sbn.getPackageManagerForUser(mContext);
         final NotificationInfo.OnAppSettingsClickListener onAppSettingsClick =
                 (View v, Intent intent) -> {
                     mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_APP_NOTE_SETTINGS);
@@ -489,7 +484,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                             row);
                 };
 
-        if (!userHandle.equals(UserHandle.ALL)
+        if (!sbn.getUser().equals(UserHandle.ALL)
                 || mLockscreenUserManager.getCurrentUserId() == UserHandle.USER_SYSTEM) {
             onSettingsClick = (View v, NotificationChannel channel, int appUid) -> {
                 mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_NOTE_INFO);
@@ -548,11 +543,9 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationInfo.OnSettingsClickListener onSettingsClick = null;
-        UserHandle userHandle = sbn.getUser();
-        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
-                mContext, userHandle.getIdentifier());
+        PackageManager pmUser = sbn.getPackageManagerForUser(mContext);
 
-        if (!userHandle.equals(UserHandle.ALL)
+        if (!sbn.getUser().equals(UserHandle.ALL)
                 || mLockscreenUserManager.getCurrentUserId() == UserHandle.USER_SYSTEM) {
             onSettingsClick = (View v, NotificationChannel channel, int appUid) -> {
                 mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_NOTE_INFO);
@@ -597,15 +590,13 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationConversationInfo.OnSettingsClickListener onSettingsClick = null;
-        UserHandle userHandle = sbn.getUser();
-        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
-                mContext, userHandle.getIdentifier());
+        PackageManager pmUser = sbn.getPackageManagerForUser(mContext);
 
         final NotificationConversationInfo.OnConversationSettingsClickListener
                 onConversationSettingsListener =
                 () -> startConversationSettingsActivity(sbn.getUid(), row);
 
-        if (!userHandle.equals(UserHandle.ALL)
+        if (!sbn.getUser().equals(UserHandle.ALL)
                 || mLockscreenUserManager.getCurrentUserId() == UserHandle.USER_SYSTEM) {
             onSettingsClick = (View v, NotificationChannel channel, int appUid) -> {
                 mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_NOTE_INFO);

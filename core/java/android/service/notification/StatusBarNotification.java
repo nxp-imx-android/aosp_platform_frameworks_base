@@ -472,6 +472,30 @@ public class StatusBarNotification implements Parcelable {
     }
 
     /**
+     * @return a PackageManager for the user associated with this notification, or if userId is < 0
+     *         (USER_ALL etc) then return PackageManager for context
+     * @hide
+     */
+    public PackageManager getPackageManagerForUser(Context context) {
+        Context contextForUser = context;
+        int userId = user.getIdentifier();
+        // UserHandle defines special userId as negative values, e.g. USER_ALL
+        if (userId >= 0) {
+            try {
+                // Create a context for the correct user so if a package isn't installed
+                // for user 0 we can still load information about the package.
+                contextForUser =
+                        context.createPackageContextAsUser(context.getPackageName(),
+                                Context.CONTEXT_RESTRICTED,
+                                new UserHandle(userId));
+            } catch (PackageManager.NameNotFoundException e) {
+                // Shouldn't fail to find the package name for system ui.
+            }
+        }
+        return contextForUser.getPackageManager();
+    }
+
+    /**
      * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
