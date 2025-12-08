@@ -20,4 +20,4 @@ package com.android.settingslib.metadata.apifirst.preconditions
  * The getter is unavailable due to some enterprise restriction. The reason should explain which
  * restriction.
  */
-class EnterpriseRestriction(override val reason: String) : Disallowed
+class EnterpriseRestriction(override val reason: Int) : Disallowed

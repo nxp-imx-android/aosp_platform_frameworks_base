@@ -39,7 +39,7 @@ class PermissionsConfig(incomingPermissions: List<String>) {
 
 /** Configuration of the [ApiFirstPreference] preconditions. */
 class PreconditionsConfig(
-    val description: String,
+    @StringRes val description: Int,
     val check: (Context) -> ApiFirstPreconditions,
 )
 
@@ -52,7 +52,7 @@ class GetConfig<V : Any>(
 
 /** Configuration of the [ApiFirstPreference] value preconditions. */
 class ValuePreconditionsConfig<V : Any>(
-    val description: String,
+    @StringRes val description: Int,
     val check: ((Context, V) -> ApiFirstPreconditions),
 )
 
@@ -168,7 +168,11 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                     set?.valuePreconditions?.check?.invoke(context, valueV) ?: Allowed
                 when (valuePreconditionsCheck) {
                     Allowed -> set?.execute(context, valueV)
-                    is Disallowed -> error(valuePreconditionsCheck.reason)
+                    is Disallowed -> error(
+                        context.getString(
+                            valuePreconditionsCheck.reason
+                        )
+                    )
                 }
             }
         }
@@ -206,7 +210,7 @@ class PermissionsConfigBuilder(val permissions: List<String>) {
 
 @ApiFirstPreferenceDsl
 class PreconditionsConfigBuilder(
-    val description: String,
+    @StringRes val description: Int,
     val lambda: (Context) -> ApiFirstPreconditions
 ) {
     internal fun build(): PreconditionsConfig {
@@ -249,7 +253,7 @@ class GetConfigBuilder<V : Any> {
     }
 
     /** Defines a precondition check that must pass for the get to be executed. */
-    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -312,7 +316,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Defines a precondition check that must pass for the set to be executed. */
-    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -325,7 +329,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Defines a value precondition check that must pass for the set to be executed. */
-    fun valuePreconditions(description: String, lambda: (Context, V) -> ApiFirstPreconditions) {
+    fun valuePreconditions(@StringRes description: Int, lambda: (Context, V) -> ApiFirstPreconditions) {
         if (valuePreconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("valuePreconditions"))
         }
@@ -388,7 +392,7 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
     /**
      * Build the [PreconditionsConfig] from the given [PreconditionsConfigBuilder] block.
      */
-    fun preconditions(description: String, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }

@@ -20,6 +20,7 @@ import android.Manifest
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.apifirst.category.Category
@@ -48,11 +49,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey1, purpose = 0, type = AnyBoolean
+                        key = preferenceKey1,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {}
                 }
             }
@@ -70,11 +73,11 @@ class ApiFirstPreferenceScreenTest {
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
-            purpose = 0
+            purpose = R.string.preference_screen_purpose
         ) {
             init {
                 preference(
-                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
                 ) {
                     get {
                         execute {
@@ -84,7 +87,7 @@ class ApiFirstPreferenceScreenTest {
                 }
 
                 preference(
-                    key = preferenceKey2, purpose = 0, type = AnyInt
+                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
                 ) {
                     get {
                         execute {
@@ -117,11 +120,11 @@ class ApiFirstPreferenceScreenTest {
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
-            purpose = 0
+            purpose = R.string.preference_screen_purpose
         ) {
             init {
                 preference(
-                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
                 ) {
                     get {
                         execute {
@@ -131,7 +134,7 @@ class ApiFirstPreferenceScreenTest {
                 }
 
                 preference(
-                    key = preferenceKey2, purpose = 0, type = AnyInt
+                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
                 ) {
                     get {
                         execute {
@@ -171,11 +174,11 @@ class ApiFirstPreferenceScreenTest {
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
-            purpose = 0
+            purpose = R.string.preference_screen_purpose
         ) {
             init {
                 preference(
-                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
                 ) {
                     get {
                         execute {
@@ -185,7 +188,7 @@ class ApiFirstPreferenceScreenTest {
                 }
 
                 preference(
-                    key = preferenceKey2, purpose = 0, type = AnyInt
+                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
                 ) {
                     get {
                         execute {
@@ -235,11 +238,11 @@ class ApiFirstPreferenceScreenTest {
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
-            purpose = 0
+            purpose = R.string.preference_screen_purpose
         ) {
             init {
                 preference(
-                    key = preferenceKey, purpose = 0, type = AnyInt
+                    key = preferenceKey, purpose = R.string.preference_purpose1, type = AnyInt
                 ) {
                     get {
                         execute {
@@ -248,7 +251,8 @@ class ApiFirstPreferenceScreenTest {
                     }
 
                     set {
-                        valuePreconditions("Value's digits must add up to even number") { _, value ->
+                        valuePreconditions(R.string.value_preconditions_even_number_description) { _, value ->
+                            // Value's digits must add up to even number
                             var sum = 0
                             for (digit in value.toString()) {
                                 sum += digit.digitToInt()
@@ -256,7 +260,7 @@ class ApiFirstPreferenceScreenTest {
                             if (sum % 2 == 0) {
                                 Allowed
                             } else {
-                                Custom("Wrong value")
+                                Custom(R.string.value_preconditions_disallow_custom_reason)
                             }
                         }
 
@@ -278,7 +282,7 @@ class ApiFirstPreferenceScreenTest {
             preference.storage(context)
                 .setValue(preferenceKey, Int::class.java, newPreferenceWrongValue)
         }
-        assertThat(exception.message).isEqualTo("Wrong value")
+        assertThat(exception.message).isEqualTo(context.getString(R.string.value_preconditions_disallow_custom_reason))
         assertThat(
             preference.storage(context).getValue(preferenceKey, Int::class.java)
         ).isEqualTo(initialPreferenceValue)
@@ -301,11 +305,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -334,21 +340,23 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     parameters {
                         parameter("package", "description")
                     }
 
-                    preconditions("preconditions description") {
-                        HardwareUnsupported("plug in the device")
+                    preconditions(R.string.preconditions_description1) {
+                        HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                     }
 
                     permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
 
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -373,7 +381,7 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     parameters {
@@ -385,7 +393,9 @@ class ApiFirstPreferenceScreenTest {
                     }
 
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -410,14 +420,16 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
                     permissions(listOf(Manifest.permission.WRITE_SETTINGS))
 
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -442,18 +454,20 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
-                    preconditions("preconditions description 1") {
-                        HardwareUnsupported("plug in the device")
+                    preconditions(R.string.preconditions_description1) {
+                        HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                     }
-                    preconditions("preconditions description 2") {
-                        EnterpriseRestriction("blocked by admin")
+                    preconditions(R.string.preconditions_description2) {
+                        EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
                     }
 
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -478,11 +492,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
                         permissions(listOf(Manifest.permission.WRITE_SETTINGS))
@@ -510,17 +526,19 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
-                        preconditions("preconditions description 1") {
-                            HardwareUnsupported("plug in the device")
+                        preconditions(R.string.preconditions_description1) {
+                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                         }
-                        preconditions("preconditions description 2") {
-                            EnterpriseRestriction("blocked by admin")
+                        preconditions(R.string.preconditions_description1) {
+                            EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
                         }
 
                         get {
@@ -546,11 +564,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -581,11 +601,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -622,11 +644,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
                             execute { _, value ->
@@ -657,11 +681,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -670,8 +696,8 @@ class ApiFirstPreferenceScreenTest {
                         }
 
                         permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                        preconditions("preconditions description") {
-                            HardwareUnsupported("plug in the device")
+                        preconditions(R.string.preconditions_description1) {
+                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                         }
 
                         set {
@@ -697,11 +723,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
@@ -710,8 +738,8 @@ class ApiFirstPreferenceScreenTest {
                                 preferenceValue
                             }
 
-                            preconditions("preconditions description") {
-                                HardwareUnsupported("plug in the device")
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                             }
                         }
                     }
@@ -732,11 +760,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
@@ -764,18 +794,20 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
-                            preconditions("preconditions description 1") {
-                                HardwareUnsupported("plug in the device")
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                             }
-                            preconditions("preconditions description 2") {
-                                EnterpriseRestriction("blocked by admin")
+                            preconditions(R.string.preconditions_description2) {
+                                EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
                             }
 
                             execute {
@@ -800,11 +832,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         get {
                             execute {
@@ -822,7 +856,6 @@ class ApiFirstPreferenceScreenTest {
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("execute"))
     }
-    // -- ///
 
     @Test
     fun createApiFirstPreferenceScreenPreferenceWithSetter_wrongOrderExecuteBeforeValuePreconditions_fails() {
@@ -834,24 +867,26 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
                             permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
 
-                            preconditions("preconditions description") {
-                                HardwareUnsupported("plug in the device")
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                             }
 
                             execute { _, value ->
                                 preferenceValue = value
                             }
 
-                            valuePreconditions("Value preconditions description") { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description1) { _, value ->
                                 Allowed
                             }
                         }
@@ -873,11 +908,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
                             permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
@@ -905,18 +942,20 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
-                            preconditions("preconditions description 1") {
-                                HardwareUnsupported("plug in the device")
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                             }
-                            preconditions("preconditions description 2") {
-                                EnterpriseRestriction("blocked by admin")
+                            preconditions(R.string.preconditions_description2) {
+                                EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
                             }
 
                             execute { _, value ->
@@ -941,17 +980,19 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
-                            valuePreconditions("Value preconditions description 1") { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description1) { _, value ->
                                 Allowed
                             }
-                            valuePreconditions("Value preconditions description 2") { _, value ->
+                            valuePreconditions(R.string.value_preconditions_description2) { _, value ->
                                 Allowed
                             }
 
@@ -977,11 +1018,13 @@ class ApiFirstPreferenceScreenTest {
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
-                purpose = 0
+                purpose = R.string.preference_screen_purpose
             ) {
                 init {
                     preference(
-                        key = preferenceKey, purpose = 0, type = AnyBoolean
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
                     ) {
                         set {
                             execute { _, value ->

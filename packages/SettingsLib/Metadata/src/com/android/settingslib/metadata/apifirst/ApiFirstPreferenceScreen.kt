@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.apifirst
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
@@ -163,7 +164,7 @@ abstract class ApiFirstPreferenceScreen(
     }
 
     protected fun preconditions(
-        description: String,
+        @StringRes description: Int,
         lambda: (Context) -> ApiFirstPreconditions
     ) {
         if (screenPreconditions != null) {
