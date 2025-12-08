@@ -296,6 +296,16 @@ public class ThemeManagerInternal {
     }
 
     /**
+     * Forces a reload of the theme settings for the specified user from persistent storage.
+     * This invalidates any cached settings.
+     *
+     * @param userId The ID of the user to reload settings for.
+     */
+    public void forceReloadSettings(@UserIdInt int userId) {
+        mThemeSettingsManager.invalidateCache(userId);
+    }
+
+    /**
      * Retrieves the theme settings for the specified user.
      *
      * <p>This method allows clients to retrieve the current theme settings for a given user.
