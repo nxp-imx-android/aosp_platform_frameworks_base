@@ -701,6 +701,30 @@ class BubblePositionerTest {
         assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
     }
 
+    @Test
+    fun update_showingAsBubbleBar_switchToFloating_shouldNotBePendingBubbleBarTopOnScreen() {
+        positioner.isShowingInBubbleBar = true
+        positioner.update(defaultDeviceConfig)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isTrue()
+
+        positioner.isShowingInBubbleBar = false
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
+    }
+
+    @Test
+    fun updateInBubbleBar_thenUpdateInFloating_shouldNotBePendingBubbleBarTopOnScreen() {
+        positioner.isShowingInBubbleBar = true
+        positioner.update(defaultDeviceConfig)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isTrue()
+
+        positioner.isShowingInBubbleBar = false
+        positioner.update(defaultDeviceConfig)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
+    }
+
     private fun verifyGetBubbleBarExpandedViewBounds(onLeft: Boolean, isOverflow: Boolean) {
         positioner.isShowingInBubbleBar = true
         positioner.bubbleBarLocation =
