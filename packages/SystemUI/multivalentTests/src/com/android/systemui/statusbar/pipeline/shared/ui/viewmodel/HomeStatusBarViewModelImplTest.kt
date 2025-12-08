@@ -1797,42 +1797,82 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @EnableSceneContainer
     @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
-    fun signOutButton_isVisible_whenUserManagerLogoutIsEnabled() {
+    fun signOutButton_isVisible_whenUserManagerLogoutIsEnabled_andDeviceIsProvisioned_andSceneIsLockscreen() {
         kosmos.runTest {
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
             fakeUserRepository.setUserManagerLogoutEnabled(true)
             fakeUserRepository.setPolicyManagerLogoutEnabled(false)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
 
             assertThat(underTest.isSignOutButtonVisible).isTrue()
         }
     }
 
     @Test
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
+    fun signOutButton_isNotVisible_whenSceneIsNotLockscreen() {
+        kosmos.runTest {
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
+            fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
+            fakeUserRepository.setUserManagerLogoutEnabled(true)
+            fakeUserRepository.setPolicyManagerLogoutEnabled(false)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
+
+            assertThat(underTest.isSignOutButtonVisible).isFalse()
+        }
+    }
+
+    @Test
+    @EnableSceneContainer
     @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
     fun signOutButton_isNotVisible_whenUserManagerLogoutIsDisabled() {
         kosmos.runTest {
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
             fakeUserRepository.setUserManagerLogoutEnabled(false)
             fakeUserRepository.setPolicyManagerLogoutEnabled(true)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
 
             assertThat(underTest.isSignOutButtonVisible).isFalse()
         }
     }
 
     @Test
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
+    fun signOutButton_isNotVisible_whenDeviceIsNotProvisioned() {
+        kosmos.runTest {
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
+            fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
+            fakeUserRepository.setUserManagerLogoutEnabled(true)
+            fakeUserRepository.setPolicyManagerLogoutEnabled(true)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
+
+            assertThat(underTest.isSignOutButtonVisible).isFalse()
+        }
+    }
+
+    @Test
+    @EnableSceneContainer
     @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
     fun signOutButton_isNotVisible_whenDisabledInConfig() {
         kosmos.runTest {
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(false)
             fakeUserRepository.setUserManagerLogoutEnabled(true)
             fakeUserRepository.setPolicyManagerLogoutEnabled(false)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
 
             assertThat(underTest.isSignOutButtonVisible).isFalse()
         }
     }
 
     @Test
+    @EnableSceneContainer
     @EnableFlags(Flags.FLAG_SIGN_OUT_BUTTON_ON_KEYGUARD_STATUS_BAR)
     fun onSignOut_logsOutWithUserManager_whenUserManagerLogoutIsEnabled() {
         kosmos.runTest {
