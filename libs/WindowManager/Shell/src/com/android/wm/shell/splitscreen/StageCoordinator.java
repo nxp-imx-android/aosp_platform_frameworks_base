@@ -2097,7 +2097,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         setDividerVisibility(true, finishT);
         // Ensure divider surface are re-parented back into the hierarchy at the end of the
         // transition. See Transition#buildFinishTransaction for more detail.
-        finishT.reparent(mSplitLayout.getDividerLeash(), mRootTaskLeash);
+        SurfaceControl dividerLeash = mSplitLayout.getDividerLeash();
+        if (dividerLeash != null && dividerLeash.isValid()) {
+            finishT.reparent(dividerLeash, mRootTaskLeash);
+        }
         if (enableFlexibleSplit()) {
             mStageOrderOperator.getActiveStages().forEach(stage -> {
                 finishT.reparent(stage.mDimLayer, stage.mRootLeash);
