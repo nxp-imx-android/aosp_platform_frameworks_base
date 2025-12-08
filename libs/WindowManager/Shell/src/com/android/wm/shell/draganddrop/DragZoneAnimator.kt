@@ -22,6 +22,7 @@ import java.util.function.BiConsumer
 interface DragZoneAnimator {
     /**
      * Each consumer will be called for the corresponding DropZoneView.
+     *
      * This must match the number of targets in [.mTargets] otherwise will
      * throw an [IllegalStateException]
      */

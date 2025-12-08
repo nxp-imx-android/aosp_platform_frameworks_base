@@ -21,6 +21,7 @@ import com.android.wm.shell.draganddrop.SplitDragPolicy
 
 /**
  * Contains the animation props to represent a single state of drop targets.
+ *
  * When the user is dragging, we'd be going between different HoverAnimProps
  */
 data class HoverAnimProps(
@@ -44,11 +45,11 @@ data class HoverAnimProps(
 ) {
 
     override fun toString(): String {
-        return ("targetId: " + target
-                + " translationX: " + transX
-                + " translationY: " + transY
-                + " scaleX: " + scaleX
-                + " scaleY: " + scaleY
-                + " hoverRect: " + hoverRect)
+        return ("targetId: " + target +
+                " translationX: " + transX +
+                " translationY: " + transY +
+                " scaleX: " + scaleX +
+                " scaleY: " + scaleY +
+                " hoverRect: " + hoverRect)
     }
 }

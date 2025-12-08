@@ -30,11 +30,12 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_3
 /**
  * Represents Drop Zone targets and animations for when the system is currently in a 2 app 50/50
  * split.
+ *
  * SnapPosition = 2_50_50
  *
  * NOTE: Naming convention for many variables is done as "hXtYZ"
  * This means that variable is a transformation on the Z property for target index Y while the user
- * is hovering over target index X
+ * is hovering over target index X.
  * Ex: h1t2scaleX=2 => User is hovering over target index 1, target index 2 should scaleX by 2
  *
  * TODO(b/349828130): Everything in this class is temporary, none of this is up to spec.

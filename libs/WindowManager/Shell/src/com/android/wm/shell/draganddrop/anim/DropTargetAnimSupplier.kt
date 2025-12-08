@@ -27,24 +27,29 @@ import com.android.wm.shell.draganddrop.SplitDragPolicy
  * targets around the screen. The rules are provided through this interface.
  *
  * Each possible screen layout should have an implementation of this interface.
- * E.g.
+ * E.g. the following would be three implementations of this interface:
  * - 50:50 two-app split
  * - 10:45:45 three-app split
  * - single app, no split
- *     = three implementations of this interface.
  */
 interface DropTargetAnimSupplier {
     /**
      * Returns a Pair of lists.
-     * First list (length n): Where to draw the n colored drop zones.
-     * Second list (length n): How to animate the drop zones as user hovers around.
+     * - First list (length n): Where to draw the n colored drop zones.
+     * - Second list (length n): How to animate the drop zones as user hovers around.
      *
-     * Ex: First list => [A, B, C] // 3 views will be created representing these 3 targets
-     * Second list => [
+     * Ex: First list =>
+     * ```
+     * [A, B, C] // 3 views will be created representing these 3 targets
+     * ```
+     * Second list =>
+     * ```
+     * [
      *      [A (scaleX=4), B (translateX=20), C (translateX=20)], // hovering over A
      *      [A (translateX=20), B (scaleX=4), C (translateX=20)], // hovering over B
      *      [A (translateX=20), B (translateX=20), C (scaleX=4)], // hovering over C
-     *  ]
+     * ]
+     * ````
      *
      *  All indexes assume 0 to N => left to right when [isLeftRightSplit] is true and top to bottom
      *  when [isLeftRightSplit] is false. Indexing is left to right even in RtL mode.

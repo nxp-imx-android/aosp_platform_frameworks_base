@@ -33,6 +33,7 @@ import kotlin.random.Random
 
 /**
  * Manages the listener and callbacks for unhandled global drags.
+ *
  * This is only used by DragAndDropController and should not be used directly by other classes.
  */
 class GlobalDragListener(
