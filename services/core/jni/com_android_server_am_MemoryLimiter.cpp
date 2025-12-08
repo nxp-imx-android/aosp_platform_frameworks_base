@@ -22,6 +22,7 @@
 // LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:traceTrack)
 
 #include <android-base/file.h>
+#include <android-base/unique_fd.h>
 #include <core_jni_helpers.h>
 #include <cutils/misc.h>
 #include <errno.h>
@@ -59,47 +60,8 @@ enum class MonitoredLimit {
     // LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:limitTypes)
 };
 
-// The JVM information that supports callback notifications.
-class Callback {
-    JavaVM* mVm;
-    jclass mClass;
-    jmethodID mFunc;
-
-public:
-    bool init(JNIEnv* env, char const* class_name) {
-        if (env->GetJavaVM(&mVm) != 0) {
-            ALOGE("GetJavaVM failed");
-            return false;
-        }
-        jclass service = env->FindClass(class_name);
-        if (service == nullptr) {
-            ALOGE("Failed to find class %s", class_name);
-            return false;
-        }
-        mClass = static_cast<jclass>(env->NewGlobalRef(service));
-        if (mClass == nullptr) {
-            ALOGE("Failed to create class reference");
-            return false;
-        }
-        mFunc = env->GetStaticMethodID(mClass, "onLimitExceeded", "(III)V");
-        if (mFunc == nullptr) {
-            ALOGE("Failed to find static method onLimitExceeded");
-            return false;
-        }
-        return true;
-    }
-
-    void operator()(int pid, int uid, MonitoredLimit type) {
-        JNIEnv* env;
-        if (mVm->AttachCurrentThread(&env, 0) == JNI_OK) {
-            env->CallStaticVoidMethod(mClass, mFunc, pid, uid, type);
-            mVm->DetachCurrentThread();
-        } else {
-            ALOGE("failed to attach thread to JavaVM");
-        }
-    }
-};
-Callback sOnLimitExceeded;
+// A convenience type declaration.
+using wdmap_t = std::unordered_map<int, pid_t>;
 
 /**
  * A monitored process.
@@ -110,80 +72,74 @@ public:
     const pid_t mPid;
     const uid_t mUid;
 
-    Process(pid_t pid, uid_t uid, int inotify_fd) : mPid(pid), mUid(uid), mInotifyFd(inotify_fd) {}
+    Process(pid_t pid, uid_t uid) : mPid(pid), mUid(uid) {}
 
     // There is no copy constructor.
     Process(Process const&) = delete;
 
-    // The move constructor takes possession of the file descriptors for this process.  The
-    // inotify file descriptor is not owned by this object so it is copied into the destination
-    // but not modified in the source.
+    // The move constructor takes ownership of the pid fd for this process.  The watch
+    // descriptor is not owned by the Process, but it is copied over and then reset on the
+    // right-hand side.
     Process(Process&& r) noexcept
-          : mPid(r.mPid),
-            mUid(r.mUid),
-            mInotifyFd(r.mInotifyFd),
-            mPidFd(r.mPidFd),
-            mMemoryWd(r.mMemoryWd) {
-        r.mPidFd = UNSET;
+          : mPid(r.mPid), mUid(r.mUid), mPidFd(std::move(r.mPidFd)), mMemoryWd(r.mMemoryWd) {
         r.mMemoryWd = UNSET;
     }
 
-    // File descriptors are closed in the destructor if they are open.  Note that mInotifyFd is
-    // not owned by this object and is therefore not touched.
-    ~Process() {
-        if (mPidFd >= 0) {
-            ::close(mPidFd);
-        }
-        if (mMemoryWd >= 0) {
-            inotify_rm_watch(mInotifyFd, mMemoryWd);
-            sDescriptorMap.erase(mMemoryWd);
-        }
-    }
+    // File descriptors are closed in the destructor if they are open.
+    ~Process() {}
 
     // Connect the pidfd file descriptor.  Return false on failure.  This does not create the
     // watch descriptors because there seems to be a delay between process creation and cgroup
     // file creation.
     bool init() {
-        mPidFd = syscall(SYS_pidfd_open, mPid, 0);
-        if (mPidFd < 0) {
+        int pfd = syscall(SYS_pidfd_open, mPid, 0);
+        if (pfd < 0) {
             ALOGE("pidfd_open(%d) failed: %s", mPid, strerror(errno));
             return false;
         }
+        mPidFd.reset(pfd);
         return true;
     }
 
     // Watch the events files.  This cannot be called immediately after a process starts because
     // the threads that move the process into its cgroup may take tens of microseconds to
     // complete.
-    bool watch() {
+    bool watch(int inotify_fd, wdmap_t& wdmap) {
+        // If the process has been initialized, do nothing.
+        if (mInitialized) return true;
+
         constexpr char const* fmt = "/sys/fs/cgroup/%s/uid_%d/pid_%d/%s";
         char const* category = (mUid >= FIRST_APPLICATION_UID) ? "apps" : "system";
 
         char path[PATH_MAX];
         struct stat sbuff;
-        if (mMemoryWd < 0) {
-            snprintf(path, sizeof(path), fmt, category, mUid, mPid, "memory.events");
-            if (stat(path, &sbuff) != 0) {
-                ALOGE("path %s not found: %s", path, strerror(errno));
-                return false;
-            }
-            mMemoryWd = inotify_add_watch(mInotifyFd, path, IN_MODIFY);
-            if (mMemoryWd < 0) {
-                ALOGE("add_watch(%s) failed: %s", path, strerror(errno));
-                return false;
-            }
-            sDescriptorMap[mMemoryWd] = mPid;
-            // Note: it is not necessary to clean up the descriptor map if a subsequent call
-            // fails.  The map is properly cleaned up in the Process destructor.
+        snprintf(path, sizeof(path), fmt, category, mUid, mPid, "memory.events");
+        if (stat(path, &sbuff) != 0) {
+            ALOGE("path %s not found: %s", path, strerror(errno));
+            return false;
         }
+        mMemoryWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
+        if (mMemoryWd < 0) {
+            ALOGE("add_watch(%s) failed: %s", path, strerror(errno));
+            return false;
+        }
+        wdmap[mMemoryWd] = mPid;
 
-        // This method is called whenever the limits are changed.  Clear the violation flag,
-        // inasmuch as it applies to the old limits.
-        mViolation = false;
+        mInitialized = true;
         return true;
     }
 
-    int getPidFd() const {
+    // Stop watching.  This does not change the initialized flag but it does remove the watch
+    // descriptors from the inotify.  To resume watching, clear the initialized flag.
+    void unwatch(int inotify_fd, wdmap_t& wdmap) {
+        if (mMemoryWd >= 0) {
+            inotify_rm_watch(inotify_fd, mMemoryWd);
+            wdmap.erase(mMemoryWd);
+        }
+        mMemoryWd = UNSET;
+    }
+
+    base::borrowed_fd getPidFd() const {
         return mPidFd;
     }
 
@@ -196,50 +152,74 @@ public:
         }
     }
 
-    // Get the violation flag.
-    bool getViolation() const {
-        return mViolation;
-    }
-
-    // Set the violation flag.
-    void setViolation(bool flag) {
-        mViolation = flag;
-    }
-
-    // Return the pid associated with the descriptor.  A zero pid means "not found".
-    static pid_t lookup(int descriptor) {
-        if (sDescriptorMap.contains(descriptor)) {
-            return sDescriptorMap[descriptor];
-        } else {
-            return 0;
-        }
-    }
-
 private:
     // A constant that identifies a file descriptor or watch descriptor that is unset.  Posix
     // never creates a negative descriptor.
     static const int UNSET = -1;
 
-    // The inotify fd that holds the watch descriptors.  This is not owned by the Process.  It
-    // is only ever used to add and remove watched paths.
-    const int mInotifyFd;
+    // True if this process has been configured.  This is used to short-circuit subsequent
+    // attempts to configure the process.
+    bool mInitialized = false;
 
     // The pidfd used to detect process exits.
-    int mPidFd = UNSET;
+    base::unique_fd mPidFd;
 
-    // The memory event watch descriptor.
+    // The memory event watch descriptor.  This is remembered by Process but is not managed
+    // autonmously by the Process.  It is created inside the watch() method and is destroyed
+    // inside the unwatch() method.
     int mMemoryWd = UNSET;
-
-    // True if the process has reported a limit violation.  This flag can toggle throughout the
-    // lifetime of the object.
-    bool mViolation = false;
-
-    // Map watch descriptors to a pid.  The descriptor (which libc types as 'int') is used to
-    // find the associated pid.
-    static std::unordered_map<int, pid_t> sDescriptorMap;
 };
 
-std::unordered_map<int, pid_t> Process::sDescriptorMap;
+// The JVM information that supports callback notifications.
+class Callback {
+    JavaVM* mVm;
+    jmethodID mFunc;
+    jweak mLimiter;
+
+public:
+    // No special constructor or destructor is needed.  The copy constructor is not allowed.
+    Callback() {}
+    Callback(Callback const&) = delete;
+    ~Callback() {}
+
+    bool init(JNIEnv* env, jobject jlimiter) {
+        if (env->GetJavaVM(&mVm) != 0) {
+            ALOGE("GetJavaVM failed");
+            return false;
+        }
+        char const* class_name = "com/android/server/am/MemoryLimiter$Controller";
+        jclass service = env->FindClass(class_name);
+        if (service == nullptr) {
+            ALOGE("Failed to find class %s", class_name);
+            return false;
+        }
+        mFunc = env->GetMethodID(service, "onLimitExceeded", "(III)V");
+        if (mFunc == nullptr) {
+            ALOGE("Failed to find static method onLimitExceeded");
+            return false;
+        }
+        mLimiter = env->NewWeakGlobalRef(jlimiter);
+        if (mLimiter == nullptr) {
+            ALOGE("Failed to create weak reference");
+            return false;
+        }
+        return true;
+    }
+
+    void operator()(int pid, int uid, MonitoredLimit type) {
+        JNIEnv* env;
+        if (mVm->AttachCurrentThread(&env, 0) == JNI_OK) {
+            jobject limiter = env->NewGlobalRef(mLimiter);
+            if (limiter != nullptr) {
+                env->CallVoidMethod(limiter, mFunc, pid, uid, type);
+                env->DeleteGlobalRef(limiter);
+            }
+            mVm->DetachCurrentThread();
+        } else {
+            ALOGE("failed to attach thread to JavaVM");
+        }
+    }
+};
 
 class Monitor {
     static const int UNSET = -1;
@@ -248,22 +228,33 @@ class Monitor {
     bool mInitialized = false;
 
     // The inotify object that watches cgroup event files.
-    int mInotifyFd = UNSET;
+    base::unique_fd mInotifyFd;
 
     // The inter-thread communication pipe.
-    int mEventFd = UNSET;
+    base::unique_fd mEventFd;
 
     // The epoll object.
-    int mEpollFd = UNSET;
+    base::unique_fd mEpollFd;
 
     // The polling thread.
     pthread_t mPoller;
+
+    // The callback
+    Callback mCallback;
 
     // A mutex to guard access to targets.
     mutable Mutex mLock;
 
     // The list of monitored processes, indexed by pid.
     std::unordered_map<pid_t, Process> mTargets;
+
+    // The map from watch descriptors to pids.
+    wdmap_t mWdMap;
+
+    // Event FD commands.
+    enum class Cmd {
+        Stop = 1,
+    };
 
 public:
     Monitor() : mLock(0) {}
@@ -272,32 +263,39 @@ public:
      * Initialize the file descriptors in the monitor.  Calling this more than once is harmless.
      * That would be unusual in production code but is common in test code.
      */
-    bool init() {
+    bool init(JNIEnv* env, jobject jlimiter) {
         AutoMutex _l(mLock);
 
         if (mInitialized) {
             return true;
         }
 
-        mInotifyFd = inotify_init();
-        if (mInotifyFd < 0) {
+        if (!mCallback.init(env, jlimiter)) {
+            return false;
+        }
+
+        int ifd = inotify_init();
+        if (ifd < 0) {
             ALOGE("inotify_init() failed: %s", strerror(errno));
             return false;
         }
+        mInotifyFd.reset(ifd);
 
-        mEventFd = eventfd(0, EFD_CLOEXEC | EFD_SEMAPHORE);
-        if (mEventFd < 0) {
+        int efd = eventfd(0, EFD_CLOEXEC | EFD_SEMAPHORE);
+        if (efd < 0) {
             ALOGE("eventfd() failed: %s", strerror(errno));
             return false;
         }
+        mEventFd.reset(efd);
 
         // See the man page for epoll_create(): the size argument is ignored except that it must
         // be non-zero.
-        mEpollFd = epoll_create(1);
-        if (mEpollFd < 0) {
+        int pfd = epoll_create(1);
+        if (pfd < 0) {
             ALOGE("epoll_create() failed: %s", strerror(errno));
             return false;
         }
+        mEpollFd.reset(pfd);
 
         // Add the two, permanent descriptors to epoll.
         struct epoll_event e_event = {.events = EPOLLIN, .data.u64 = 0};
@@ -322,6 +320,29 @@ public:
         return true;
     }
 
+    // No copy constructors or move constructors.
+    Monitor(Monitor const&) = delete;
+
+    ~Monitor() {
+        if (!mInitialized) return;
+
+        // Stop the monitor thread by sending it a STOP command.
+        if (sendCommand(Cmd::Stop)) {
+            pthread_join(mPoller, nullptr);
+        } else {
+            ALOGE("failed to send stop command: %s", strerror(errno));
+        }
+    }
+
+    // Return the pid associated with the descriptor.  A zero pid means "not found".
+    pid_t lookup(int descriptor) {
+        if (mWdMap.contains(descriptor)) {
+            return mWdMap[descriptor];
+        } else {
+            return 0;
+        }
+    }
+
     // Add a process to the list of monitored processes.  The process and its file descriptors
     // is owned by the monitor.
     bool start(int pid, int uid) {
@@ -329,14 +350,14 @@ public:
             ALOGE("monitor not started in start()");
             return false;
         }
-        Process p(pid, uid, mInotifyFd);
+        Process p(pid, uid);
         if (!p.init()) return false;
-        int efd = p.getPidFd();
+        base::borrowed_fd pfd = p.getPidFd();
 
         AutoMutex _l(mLock);
         mTargets.emplace(pid, std::move(p));
         struct epoll_event p_event = {.events = EPOLLIN, .data.u64 = static_cast<uint64_t>(pid)};
-        if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, efd, &p_event) != 0) {
+        if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, pfd.get(), &p_event) != 0) {
             ALOGE("epoll add(pid) failed pid=%d uid=%d: %s", pid, uid, strerror(errno));
         }
         return true;
@@ -352,7 +373,7 @@ public:
         AutoMutex _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
-            return i->second.watch();
+            return i->second.watch(mInotifyFd, mWdMap);
         }
         return false;
     }
@@ -362,10 +383,11 @@ public:
         AutoMutex _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
-            int pfd = i->second.getPidFd();
-            if (epoll_ctl(mEpollFd, EPOLL_CTL_DEL, pfd, nullptr) < 0) {
+            base::borrowed_fd pfd = i->second.getPidFd();
+            if (epoll_ctl(mEpollFd, EPOLL_CTL_DEL, pfd.get(), nullptr) < 0) {
                 ALOGE("epoll del(pid) failed: %s", strerror(errno));
             }
+            i->second.unwatch(mInotifyFd, mWdMap);
             mTargets.erase(i);
         }
     }
@@ -375,48 +397,80 @@ private:
         return reinterpret_cast<Monitor*>(arg)->run();
     }
 
+    // The main monitoring loop.
     void* run() {
         ALOGI("begin monitoring");
         static const int event_size = 32;
         struct epoll_event events[event_size];
         memset(events, 0, sizeof(events));
 
-        // 2, just for testing.
-        static const int timeout = 2 * 1000;
+        // For testing, set this to a positive value.  Setting it to -1 means "wait forever".
+        static const int timeout = -1;
 
         int ready;
         while ((ready = epoll_wait(mEpollFd, events, event_size, timeout)) >= 0) {
-            // ALOGI("poll ready %d", ready);
-            for (int i = 0; i < ready; i++) {
-                uint64_t datum = events[i].data.u64;
-                switch (datum) {
-                    case 0:
-                        handle_event();
-                        break;
-                    case 1:
-                        handle_inotify();
-                        break;
-                    default:
-                        handle_pidfd(static_cast<pid_t>(datum));
-                        break;
-                }
+            if (!handle_poll(events, ready)) {
+                break;
             }
         }
         ALOGI("end monitoring");
         return nullptr;
     }
 
-    // Handle an event that is sent to the loop from the upper layers.
-    void handle_event() {
-        union {
-            char data[8];
-            uint64_t u64;
-        } data;
-        if (read(mEventFd, data.data, 8) == 8) {
+    // Handle a single poll event.  Return true if the enclosing loop should continue and false
+    // if it should exit.
+    bool handle_poll(struct epoll_event const* events, int size) {
+        for (int i = 0; i < size; i++) {
+            uint64_t datum = events[i].data.u64;
+            switch (datum) {
+                case 0:
+                    if (!handle_event()) {
+                        // The event has requested that the poller stop.
+                        return false;
+                    }
+                    break;
+                case 1:
+                    handle_inotify();
+                    break;
+                default:
+                    handle_pidfd(static_cast<pid_t>(datum));
+                    break;
+            }
+        }
+        return true;
+    }
+
+    // This class defines the data sent and received through the event fd.  Event fd takes 8
+    // bytes (uint64_t).  Thus, the size of EventData must be 8.  The u64 field is just for
+    // logging.
+    union EventData {
+        char raw[8];
+        uint64_t u64;
+        struct {
+            Cmd cmd;
+        };
+    };
+    static_assert(sizeof(EventData) == 8, "EventData must be 8 bytes");
+
+    // Send a command the thread via eventfd.
+    bool sendCommand(Cmd cmd) {
+        EventData data = {.cmd = cmd};
+        return ::write(mEventFd, &data, sizeof(data)) == sizeof(data);
+    }
+
+    // Handle an event that is sent to the loop from the upper layers.  The function returns
+    // false if the thread should terminate.
+    bool handle_event() {
+        EventData data;
+        if (read(mEventFd, &data, sizeof(data)) == 8) {
+            if (data.cmd == Cmd::Stop) {
+                return false;
+            }
             ALOGI("read(event) returns 0x%" PRIx64, data.u64);
         } else {
             ALOGE("read(event) failed: %s", strerror(errno));
         }
+        return true;
     }
 
     // Handle an inotify event.  This should be a memory limit event.
@@ -429,14 +483,22 @@ private:
             // inotify events often arrive when a process is deleted and its cgroup files go
             // away.  In that case, lookup() will return null, and the event should be ignored.
             int wd = data.event.wd;
-            AutoMutex _l(mLock);
-            auto i = mTargets.find(Process::lookup(wd));
-            if (i != mTargets.end()) {
-                Process* p = &i->second;
-                if (!p->getViolation()) {
-                    p->setViolation(true);
-                    sOnLimitExceeded(p->mPid, p->mUid, p->getLimitType(wd));
+            pid_t pid = 0;
+            uid_t uid = 0;
+            MonitoredLimit limit = MonitoredLimit::kUnknown;
+            {
+                AutoMutex _l(mLock);
+                pid = lookup(wd);
+                auto i = mTargets.find(pid);
+                if (i != mTargets.end()) {
+                    Process* p = &i->second;
+                    p->unwatch(mInotifyFd, mWdMap);
+                    uid = p->mUid;
+                    limit = p->getLimitType(wd);
                 }
+            }
+            if (pid != 0) {
+                mCallback(pid, uid, limit);
             }
         } else {
             ALOGE("read(inotify) failed: %s", strerror(errno));
@@ -450,29 +512,33 @@ private:
     }
 };
 
-// The singleton monitor.  It is configured in the registration function of this module.
-Monitor sMonitor;
+// Convert a long from the java layer into a Monitor*.
+Monitor* getMonitor(jlong service) {
+    return reinterpret_cast<Monitor*>(service);
+}
 
-// Initialize the MemoryLimiter thread and return the total memory available to processes.  This
-// total excludes kernel carve-outs.
-jlong init(JNIEnv* env, jclass) {
-    if (!sMonitor.init()) {
+// Create a new Monitor object and returns its address.
+jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter) {
+    Monitor* m = new Monitor();
+    if (!m->init(env, jlimiter)) {
+        delete m;
         jniThrowRuntimeException(env, "monitor initialization failed");
         return 0;
     }
-    struct sysinfo si;
-    if (sysinfo(&si) == 0) {
-        return si.totalram;
-    } else {
-        ALOGE("sysinfo fails: %s", strerror(errno));
-        return 0;
-    }
+    return reinterpret_cast<jlong>(m);
+}
+
+// Close and release a limiter.
+void closeLimiter(JNIEnv* env, jclass, jlong service) {
+    Monitor* m = getMonitor(service);
+    delete m;
 }
 
 // A process has started.
-jboolean startProcess(JNIEnv*, jclass, jint pid, jint uid) {
+jboolean startProcess(JNIEnv*, jclass, jlong service, jint pid, jint uid) {
+    Monitor* m = getMonitor(service);
     ATRACE_CALL();
-    return sMonitor.start(pid, uid);
+    return m->start(pid, uid);
 }
 
 // A small wrapper to make lines shorter.  The compiler will inline this.
@@ -481,8 +547,10 @@ bool writeString(std::string text, std::string& path) {
 }
 
 // A process is being configured with a memory.high limit.  A negative limit means "max".
-jboolean configureLimit(JNIEnv*, jclass, jint pid, jint uid, jlong limit) {
-    if (!sMonitor.watch(pid, uid)) return false;
+jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
+    Monitor* m = getMonitor(service);
+
+    if (!m->watch(pid, uid)) return false;
     std::string name = "MemHigh";
     std::string path;
     if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {
@@ -497,9 +565,10 @@ jboolean configureLimit(JNIEnv*, jclass, jint pid, jint uid, jlong limit) {
 }
 
 const JNINativeMethod sMethods[] = {
-        {"initLimiter", "()J", (void*)init},
-        {"onProcessStarted", "(II)Z", (void*)startProcess},
-        {"configureLimit", "(IIJ)Z", (void*)configureLimit},
+        {"closeLimiter", "(J)V", (void*)closeLimiter},
+        {"onProcessStarted", "(JII)Z", (void*)startProcess},
+        {"configureLimit", "(JIIJ)Z", (void*)configureLimit},
+        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;)J", (void*)initLimiter},
 };
 
 } // namespace
@@ -509,9 +578,6 @@ const JNINativeMethod sMethods[] = {
 // wrong.
 int register_android_server_am_MemoryLimiter(JNIEnv* env) {
     static const char* class_name = "com/android/server/am/MemoryLimiter";
-    if (!sOnLimitExceeded.init(env, class_name)) {
-        LOG_ALWAYS_FATAL("Failed to initialize callback");
-    }
     return jniRegisterNativeMethods(env, class_name, sMethods, NELEM(sMethods));
 }
 
