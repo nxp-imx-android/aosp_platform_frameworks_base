@@ -64,6 +64,7 @@ public final class UserHelperTest {
     @Rule
     public final Expect expect = Expect.create();
 
+    // TODO(b/456300837): switch back to MockitoRule once UserHelper caches the current user
     @Rule
     public final ExtendedMockitoRule extendedMockito =
             new ExtendedMockitoRule.Builder(this)
@@ -90,25 +91,10 @@ public final class UserHelperTest {
         // Currently, it only checks for if the current user is the HSU, so we're setting a
         // different userId in the request to make sure it's ignored
         setUserIdOnRequest(USER_ID);
-        mockGetCurrentUser(USER_SYSTEM);
 
         // Mock as not allowlisted by default so it's simpler to test corner-case scenarios (like
         // null info)
         mockHsuActivityAllowlisted(false);
-    }
-
-    @Test
-    public void testToString() {
-        var userHelperHsum = createUserHelper(/* hsum= */ true);
-        userHelperHsum.setCurrentUserId(42);
-        expect.withMessage("toString() when HSUM").that(userHelperHsum.toString())
-                .isEqualTo("UserHelper[activityLaunchIntegrationStatus=ENABLED, currentUserId=42]");
-
-        var userHelperNotHsum = createUserHelper(/* hsum= */ false);
-        userHelperNotHsum.setCurrentUserId(108);
-        expect.withMessage("toString() when hot HSUM").that(userHelperNotHsum.toString())
-                .isEqualTo("UserHelper[activityLaunchIntegrationStatus=DISABLED_NOT_HSUM, "
-                        + "currentUserId=108]");
     }
 
     @Test
@@ -166,7 +152,7 @@ public final class UserHelperTest {
 
     @Test
     public void testCheckRequest_notAllowlisted_successWhenCurrentUserIsNotHsu() {
-        mUserHelper.setCurrentUserId(USER_ID);
+        setCurrentUserId(USER_ID);
 
         expect.withMessage("checkRequest()")
                 .that(mUserHelper.checkRequest(mRequest))
@@ -247,7 +233,6 @@ public final class UserHelperTest {
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
                       ...  mActivityLaunchIntegrationStatus=1 (ENABLED)
-                      ...  mCurrentUserId=0
                       """);
     }
 
@@ -263,40 +248,10 @@ public final class UserHelperTest {
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=false
                       ...  mActivityLaunchIntegrationStatus=-1 (DISABLED_NOT_HSUM)
-                      ...  mCurrentUserId=0
                       """);
     }
 
-    @Test
-    public void testDump_currentUserChanged() throws Exception {
-        mUserHelper.setCurrentUserId(42);
-        String dump = dump(mUserHelper, "...");
-
-        expect.withMessage("dump()").that(dump)
-                .isEqualTo("""
-                      ...UserHelper:
-                      ...  TAG=ActivityTaskManager
-                      ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=1 (ENABLED)
-                      ...  mCurrentUserId=42
-                      """);
-    }
-
-    // TODO(b/455582152): test dump with other statuses
-
-    @Test
-    public void testGetCurrentUserId() {
-        mockGetCurrentUser(USER_ID);
-        var userHelper = createUserHelper(/* hsum= */ true);
-        expect.withMessage("getCurrentUserId() initially")
-                .that(userHelper.getCurrentUserId())
-                .isEqualTo(USER_ID);
-
-        userHelper.setCurrentUserId(USER_SYSTEM);
-        expect.withMessage("getCurrentUserId() after setCurrentUserId()")
-                .that(userHelper.getCurrentUserId())
-                .isEqualTo(USER_SYSTEM);
-    }
+    // TODO(b/455582152): test dump with other statuses (and current user id)
 
     private void setUserIdOnRequest(@UserIdInt int userId) {
         setUserId(mRequest.activityInfo.applicationInfo, userId);
@@ -321,8 +276,7 @@ public final class UserHelperTest {
         when(mMockUmi.getActivitiesAllowlist(USER_SYSTEM)).thenReturn(mockAllowlist);
     }
 
-
-    private void mockGetCurrentUser(@UserIdInt int userId) {
+    private void setCurrentUserId(@UserIdInt int userId) {
         doReturn(userId).when(ActivityManager::getCurrentUser);
     }
 
