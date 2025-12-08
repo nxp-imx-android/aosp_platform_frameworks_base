@@ -45,6 +45,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
+import com.android.compose.animation.scene.TestScenes.SceneD
 import com.android.compose.test.setContentAndCreateMainScope
 import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
@@ -122,6 +123,50 @@ class ContentTest {
         consumeScrolls = false
         rule.onRoot().performTouchInput { moveBy(Offset(0f, 10f)) }
         assertThat(state.currentTransition).isNull()
+    }
+
+    @Test
+    fun disableSwipesWhenScrolling_outerDragDisabled_nestedStl() {
+        val state = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
+        val nestedState = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneC) }
+        var consumeScrolls = true
+        var touchSlop = 0f
+
+        rule.setContent {
+            touchSlop = LocalViewConfiguration.current.touchSlop
+            SceneTransitionLayout(state) {
+                scene(SceneA, mapOf(Swipe.Down to SceneB)) {
+                    NestedSceneTransitionLayout(nestedState, Modifier, debugName = "NestedStl") {
+                        scene(SceneC, mapOf(Swipe.Down to SceneD)) {
+                            Box(
+                                Modifier.fillMaxSize()
+                                    .disableSwipesWhenScrolling()
+                                    .scrollable(
+                                        rememberScrollableState { if (consumeScrolls) it else 0f },
+                                        Orientation.Vertical,
+                                    )
+                            )
+                        }
+                        scene(SceneD) { Box(Modifier.fillMaxSize()) }
+                    }
+                }
+                scene(SceneB) { Box(Modifier.fillMaxSize()) }
+            }
+        }
+
+        // Draw down. The whole drag is consumed by the scrollable and the STL should still be idle.
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy(Offset(0f, touchSlop + 10f))
+        }
+        assertThat(state.currentTransition).isNull()
+
+        // Continue dragging down but don't consume the scrolls. The STL should still be idle given
+        // that we use disableSwipesWhenScrolling().
+        consumeScrolls = false
+        rule.onRoot().performTouchInput { moveBy(Offset(0f, 10f)) }
+        assertThat(state.currentTransition).isNull()
+        assertThat(nestedState.currentTransition).isNull()
     }
 
     @Test
@@ -242,7 +287,7 @@ class ContentTest {
                     scene(outerSceneA, alwaysCompose = true) {
                         Visibility { outerSceneAVisible = it }
 
-                        NestedSceneTransitionLayout(innerState, Modifier) {
+                        NestedSceneTransitionLayout(innerState, Modifier, "NestedStl") {
                             scene(innerSceneA, alwaysCompose = true) {
                                 Visibility { innerSceneAVisible = it }
                             }
@@ -349,10 +394,10 @@ class ContentTest {
             SceneTransitionLayout(outerState) {
                 scene(SceneA) {
                     OnLayoutState { outerStateFromScope = it }
-                    NestedSceneTransitionLayout(middleState, Modifier) {
+                    NestedSceneTransitionLayout(middleState, Modifier, "NestedStl") {
                         scene(SceneB) {
                             OnLayoutState { middleStateFromScope = it }
-                            NestedSceneTransitionLayout(innerState, Modifier) {
+                            NestedSceneTransitionLayout(innerState, Modifier, "NestedStl") {
                                 scene(SceneC) {
                                     OnLayoutState { innerStateFromScope = it }
                                     Box(Modifier.fillMaxSize())

@@ -70,10 +70,10 @@ public class ComponentParseUtils {
         final boolean shouldParseAllValidPurposes =
                 Flags.ppdManifestEnabled()
                         && isParsedPermissionComponent;
-        // TODO(b/443057927): rename to shouldParseValidSpecificPurposes
+        // TODO(b/443057927): rename to shouldParseValidPurposes
         final boolean shouldParseValidPurposes =
-                shouldParseAllValidPurposes || (Flags.ppdInstallTimeEnabled()
-                        && isParsedPermissionComponent);
+                (Flags.ppdPurposeEnabled() || Flags.ppdInstallTimeEnabled())
+                        && isParsedPermissionComponent;
         final List<ParsedValidPurpose> validPurposes = new ArrayList<>();
         final List<ParsedValidGeneralPurpose> validGeneralPurposes = new ArrayList<>();
         final int depth = parser.getDepth();
@@ -117,7 +117,8 @@ public class ComponentParseUtils {
 
         if (shouldParseValidPurposes) {
             final ParsedPermissionImpl permission = (ParsedPermissionImpl) component;
-            if (permission.isPurposeRequired() && validPurposes.isEmpty()) {
+            if (permission.getRequiresPurposeTargetSdkVersion() != NO_TARGET_SDK_VERSION
+                    && validPurposes.isEmpty()) {
                 return input.error(
                         "<permission> requires purpose but no valid purpose defined!");
             } else {

@@ -373,6 +373,14 @@ interface IActivityTaskManager {
     void setRunningRemoteTransitionDelegate(in IBinder transition);
 
     /**
+     * Simulate inject touch event to trigger potential focus change in the server.
+     * Called when navigation bar is about to trigger back event but won't inject back key to input
+     * manager.
+     * @param displayId Id of the display the user just touched.
+     */
+    void simulateTouchDisplay(int displayId);
+
+    /**
      * Prepare the back navigation in the server. This setups the leashed for sysui to animate
      * the back gesture and returns the data needed for the animation.
      * @param navigationObserver a remote callback to nofify shell when the focused window is gone,
@@ -447,4 +455,16 @@ interface IActivityTaskManager {
      * @hide
      */
     void reportHandoffActivityData(in IBinder requestToken, in List<HandoffActivityData> data);
+
+    /**
+     * Retrieves the destination activity's package name associated
+     * with an original launching activity.
+     * This is used for Activity Trampolines, where an initial activity redirects to a final
+     * destination activity.
+     *
+     * @param originalPackageName The package name of the first activity in the launch chain.
+     * @return The package name of the final destination activity, or the provided
+     * {@code originalPackageName} if no redirection is found.
+     */
+    String getDestinationPackage(in String originalPackageName);
 }

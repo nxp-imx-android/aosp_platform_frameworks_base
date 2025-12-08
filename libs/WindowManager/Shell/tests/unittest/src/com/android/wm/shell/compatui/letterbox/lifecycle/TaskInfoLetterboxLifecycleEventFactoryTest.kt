@@ -541,6 +541,34 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     /** Runs a test scenario providing a Robot. */
+    @Test
+    fun `mainWindowHasRoundedCorners comes from AppCompatTaskInfo`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                val inputToken = mock<WindowContainerToken>()
+                val inputLeash = mock<SurfaceControl>()
+                val inputConfiguration = Configuration()
+                inputChange {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.token = inputToken
+                        ti.appCompatTaskInfo.setIsLeafTask(true)
+                        ti.configuration.setTo(inputConfiguration)
+                        ti.appCompatTaskInfo.setHasMainWindowRoundedCorners(true)
+                    }
+                    leash { inputLeash }
+                    endAbsBounds = Rect(0, 0, 500, 1000)
+                    endRelOffset = Point(100, 200)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertTrue(event.mainWindowHasRoundedCorners)
+                }
+            }
+        }
+    }
+
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<TaskInfoLetterboxLifecycleEventFactoryRobotTest>) {
         val robot = TaskInfoLetterboxLifecycleEventFactoryRobotTest()
         consumer.accept(robot)

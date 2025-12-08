@@ -80,7 +80,7 @@ public class ZygoteProcess implements IZygoteProcess {
      * Use a relatively short delay, because for app zygote, this is in the critical path of
      * service launch.
      */
-    private static final int ZYGOTE_CONNECT_RETRY_DELAY_MS = 50;
+    private static final int ZYGOTE_CONNECT_RETRY_DELAY_MS = 5;
 
     private static final String LOG_TAG = "ZygoteProcess";
 

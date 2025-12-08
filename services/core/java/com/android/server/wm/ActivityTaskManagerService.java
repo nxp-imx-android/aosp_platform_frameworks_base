@@ -1250,6 +1250,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
+        public void onUserStopping(@NonNull TargetUser user) {
+            final PersisterQueue persisterQueue;
+            synchronized (mService.getGlobalLock()) {
+                persisterQueue = mService.mTaskSupervisor.mPersisterQueue;
+            }
+            persisterQueue.flush();
+        }
+
+        @Override
         public void onUserStopped(@NonNull TargetUser user) {
             synchronized (mService.getGlobalLock()) {
                 mService.mTaskSupervisor.mLaunchParamsPersister
@@ -1926,6 +1935,29 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     .setActivityOptions(safeOptions)
                     .setRealCallingUid(Binder.getCallingUid())
                     .execute();
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    @Override
+    public void simulateTouchDisplay(int displayId) {
+        // Reference PhoneWindowManager#interceptKeyBeforeQueueing.
+        // Shell use this method to trigger potential focus change because Shell won't inject key
+        // event to input manager when touch back key on navigation bar.
+        mAmInternal.enforceCallingPermission(START_TASKS_FROM_RECENTS, "simulateTouchDisplay()");
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            mWindowManager.mInternal.moveFocusToAdjacentEmbeddedActivityIfNeeded();
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRootWindowContainer.getTopFocusedDisplayContent();
+                if (dc == null || dc.mDisplayId == displayId) {
+                    return;
+                }
+            }
+            // Do not wait for animation as the call is from ShellMainThread, the transition
+            // cannot start if core does not finish this synchronize call.
+            mWindowManager.moveDisplayToTopIfAllowed(displayId, false /* waitForAnimations */);
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
@@ -6665,6 +6697,25 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      */
     private SafeActivityOptions createSafeActivityOptionsWithBalAllowed(@Nullable Bundle bOptions) {
         return createSafeActivityOptionsWithBalAllowed(ActivityOptions.fromBundle(bOptions));
+    }
+
+    /**
+     * Retrieves the destination activity's package name associated
+     * with an original launching activity.
+     * This is used for Activity Trampolines, where an initial activity redirects to a final
+     * destination activity.
+     *
+     * @param originalPackageName The package name of the first activity in the launch chain.
+     * @return The package name of the final destination activity, or the provided
+     * {@code originalPackageName} if no redirection is found.
+     */
+    @Override
+    public String getDestinationPackage(String originalPackageName) {
+        enforceTaskPermission("getDestinationPackage()");
+        synchronized (mGlobalLock) {
+            return mTaskSupervisor.getActivityMetricsLogger().getDestinationPackage(
+                    originalPackageName);
+        }
     }
 
     final class H extends Handler {

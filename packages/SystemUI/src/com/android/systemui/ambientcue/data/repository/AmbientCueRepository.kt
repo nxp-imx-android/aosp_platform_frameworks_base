@@ -58,6 +58,7 @@ import com.android.systemui.shared.system.TaskStackChangeListener
 import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.io.PrintWriter
+import java.time.Instant
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -107,6 +108,12 @@ interface AmbientCueRepository {
 
     /* The timeout for Ambient Cue to disappear. */
     val ambientCueTimeoutMs: StateFlow<Int>
+
+    /* Groups dismissed by the user, storing the expiration [Instant]. */
+    val dismissedGroups: StateFlow<Map<String, Instant>>
+
+    /* Adds dismissed groups, storing the expiration [Instant].*/
+    fun addDismissedGroups(dismissalGroupIds: Set<String>, expiry: Instant)
 }
 
 @SysUISingleton
@@ -145,6 +152,24 @@ constructor(
     }
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    private val _dismissedGroups: MutableStateFlow<Map<String, Instant>> =
+        MutableStateFlow(emptyMap())
+    override val dismissedGroups: StateFlow<Map<String, Instant>> = _dismissedGroups.asStateFlow()
+
+    override fun addDismissedGroups(dismissalGroupIds: Set<String>, expiry: Instant) =
+        _dismissedGroups.update { current ->
+            val newMap = current.toMutableMap()
+
+            dismissalGroupIds.forEach { id -> newMap[id] = expiry }
+
+            if (newMap.size > MAX_DISMISSED_GROUPS_SIZE) {
+                val sortedEntries = newMap.entries.sortedBy { it.value }
+                val removeCount = newMap.size - MAX_DISMISSED_GROUPS_SIZE
+                sortedEntries.take(removeCount).forEach { newMap.remove(it.key) }
+            }
+            newMap
+        }
 
     /** Private flow containing all actions received. */
     private val unfilteredActions: StateFlow<List<ActionModel>> =
@@ -211,6 +236,8 @@ constructor(
                                     )
                                 val isEnabledWithImeVisible =
                                     chip.extras?.getBoolean(EXTRA_ENABLED_WITH_IME_VISIBLE)
+                                val dismissalGroupId =
+                                    chip.extras?.getString(EXTRA_DISMISSAL_GROUP_ID)
                                 ActionModel(
                                     icon =
                                         IconModel(
@@ -287,6 +314,7 @@ constructor(
                                     oneTapEnabled = oneTapEnabled == true,
                                     oneTapDelayMs = oneTapDelayMs ?: DEFAULT_ONE_TAP_DELAY_MS,
                                     isEnabledWithImeVisible = isEnabledWithImeVisible == true,
+                                    dismissalGroupId = dismissalGroupId,
                                 )
                             }
                             .let { actions -> cuebarPlugin?.filterActions(actions) ?: actions }
@@ -305,12 +333,6 @@ constructor(
                     Log.i(TAG, "SmartSpace session closed")
                 }
             }
-            .onEach { actions ->
-                if (actions.isNotEmpty()) {
-                    isDeactivated.update { false }
-                    targetTaskId.update { actions[0].taskId }
-                }
-            }
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
@@ -321,6 +343,12 @@ constructor(
     override val actions: StateFlow<List<ActionModel>> =
         combine(unfilteredActions, isImeVisible) { currentActions, imeVisible ->
                 currentActions.filter { action -> !imeVisible || action.isEnabledWithImeVisible }
+            }
+            .onEach { actions ->
+                if (actions.isNotEmpty()) {
+                    isDeactivated.update { false }
+                    targetTaskId.update { actions[0].taskId }
+                }
             }
             .stateIn(
                 scope = backgroundScope,
@@ -487,6 +515,7 @@ constructor(
         private const val EXTRA_ONE_TAP_ENABLED = "oneTapEnabled"
         private const val EXTRA_ONE_TAP_DELAY_MS = "oneTapDelayMs"
         private const val EXTRA_ENABLED_WITH_IME_VISIBLE = "enabledWithImeVisible"
+        private const val EXTRA_DISMISSAL_GROUP_ID = "dismissalGroupId"
         private const val DEFAULT_ONE_TAP_DELAY_MS = 200L
 
         // Timeout to hide cuebar if it wasn't interacted with
@@ -501,5 +530,6 @@ constructor(
         private const val AMBIENT_CUE_DEFAULT_TIMEOUT_MS = 30_000
         @VisibleForTesting const val MA_ACTION_TYPE_NAME = "ma"
         @VisibleForTesting const val MR_ACTION_TYPE_NAME = "mr"
+        @VisibleForTesting const val MAX_DISMISSED_GROUPS_SIZE = 20
     }
 }

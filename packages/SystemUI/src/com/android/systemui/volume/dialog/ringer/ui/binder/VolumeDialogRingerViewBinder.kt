@@ -22,9 +22,10 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.LayerDrawable
-import android.os.Trace
-import android.os.Trace.TRACE_TAG_APP
+import android.gui.EarlyWakeupInfo
+import android.os.Binder
 import android.view.LayoutInflater
+import android.view.SurfaceControl
 import android.view.View
 import android.widget.ImageButton
 import androidx.annotation.LayoutRes
@@ -37,9 +38,8 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.graphics.drawable.BackgroundBlurDrawable
-import com.android.internal.R as internalR
 import com.android.systemui.Flags.blurOnMoreSurfaces
-import com.android.systemui.common.shared.colors.SurfaceEffectColors
+import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.ringer.ui.util.VolumeDialogRingerDrawerTransitionListener
@@ -55,14 +55,14 @@ import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.utils.suspendAnimate
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
-import javax.inject.Inject
-import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.properties.Delegates
+import com.android.internal.R as internalR
 
 private const val CLOSE_DRAWER_DELAY = 300L
 // Ensure roundness and color of button is updated when progress is changed by a minimum fraction.
@@ -88,6 +88,26 @@ constructor(
             dampingRatio = 1F
         }
     private val rgbEvaluator = ArgbEvaluator()
+    private val transaction = SurfaceControl.Transaction()
+    private var isInEarlyWakeUp = false
+    private val earlyWakeupInfo = EarlyWakeupInfo().apply {
+        token = Binder()
+        trace = TAG
+    }
+
+    private val onAttachStateChangeListener = object : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(view: View) {
+            if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+                startEarlyWakeup()
+            }
+        }
+
+        override fun onViewDetachedFromWindow(view: View) {
+            if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+                endEarlyWakeup()
+            }
+        }
+    }
 
     override fun CoroutineScope.bind(view: View) {
         val volumeDialogBackgroundView = view.requireViewById<View>(R.id.volume_dialog_background)
@@ -136,16 +156,22 @@ constructor(
         }
 
         if (blurOnMoreSurfaces()) {
-            launch {
+            launchTraced("VDRVB#isBlurCurrentlySupported") {
                 windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
-                    if (supported) {
-                        Trace.instantForTrack(TRACE_TAG_APP, TAG, "notifyRendererForGpuLoadUp")
-                        view.viewRootImpl.notifyRendererForGpuLoadUp("open volume dialog")
+                    if (view.isAttachedToWindow) {
+                        if (supported) {
+                            startEarlyWakeup()
+                        } else {
+                            endEarlyWakeup()
+                        }
                     }
+
                     volumeDialogBackgroundView.setIsBlurSupported(supported)
                     ringerBackgroundView.setIsBlurSupported(supported)
                 }
             }
+
+            view.addOnAttachStateChangeListener(onAttachStateChangeListener)
         }
 
         viewModel.ringerViewModel
@@ -300,6 +326,22 @@ constructor(
                     else R.color.volume_dialog_view_background_blur_fallback
                 )
             )
+        }
+    }
+
+    private fun startEarlyWakeup() {
+        if (!isInEarlyWakeUp) {
+            transaction.setEarlyWakeupStart(earlyWakeupInfo)
+            transaction.apply()
+            isInEarlyWakeUp = true
+        }
+    }
+
+    private fun endEarlyWakeup() {
+        if (isInEarlyWakeUp) {
+            transaction.setEarlyWakeupEnd(earlyWakeupInfo)
+            transaction.apply()
+            isInEarlyWakeUp = false
         }
     }
 

@@ -18,8 +18,8 @@ package com.android.server.am;
 
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVICE;
 
+import android.annotation.NonNull;
 import android.app.ActivityManager;
-import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -28,6 +28,7 @@ import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
+import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -46,11 +47,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      * App is allowed to manage allowlists such as temporary Power Save mode allowlist.
      */
     boolean mAllowlistManager;
-
-    /**
-     * Services that are currently executing code (need to remain foreground).
-     */
-    private final ArraySet<ServiceRecord> mExecutingServices = new ArraySet<>();
 
     /**
      * A set of UIDs of all bound clients.
@@ -105,30 +101,15 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return count;
     }
 
-    void updateHasAboveClientLocked() {
-        setHasAboveClient(false);
-        for (int i = numberOfConnections() - 1; i >= 0; i--) {
-            final ConnectionRecord cr = getConnectionAt(i);
-            final boolean isSameProcess = cr.binding.service.app != null
-                    && cr.binding.service.app.mServices == this;
-            if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
-                setHasAboveClient(true);
-                break;
-            }
-        }
-    }
-
     /**
      * Records a service as running in the process. Note that this method does not actually start
      * the service, but records the service as started for bookkeeping.
      *
      * @return true if the service was added, false otherwise.
      */
-    boolean startService(ServiceRecord record) {
-        if (record == null) {
-            return false;
-        }
-        boolean added = addRunningService(record);
+    @RequiresEnclosingBatchSession
+    boolean startService(@NonNull ServiceRecord record) {
+        boolean added = mService.mProcessStateController.addRunningService(this, record);
         if (added && record.serviceInfo != null) {
             mApp.getWindowProcessController().onServiceStarted(record.serviceInfo);
             updateHostingComonentTypeForBindingsLocked();
@@ -150,8 +131,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      *
      * @return true if the service was removed, false otherwise.
      */
-    boolean stopService(ServiceRecord record) {
-        final boolean removed = removeRunningService(record);
+    boolean stopService(@NonNull ServiceRecord record) {
+        final boolean removed = mService.mProcessStateController.removeRunningService(this, record);
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
             updateHasTopStartedAlmostPerceptibleServices();
         }
@@ -161,41 +142,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return removed;
     }
 
-    /**
-     * The same as calling {@link #stopService(ServiceRecord)} on all current running services.
-     */
-    void stopAllServices() {
-        clearRunningServices();
-        updateHasTopStartedAlmostPerceptibleServices();
-    }
-
     ServiceRecord getRunningServiceAt(int index) {
         return (ServiceRecord) getRunningServiceInternalAt(index);
     }
 
-    void startExecutingService(ServiceRecord service) {
-        mExecutingServices.add(service);
-    }
-
-    void stopExecutingService(ServiceRecord service) {
-        mExecutingServices.remove(service);
-    }
-
-    void stopAllExecutingServices() {
-        mExecutingServices.clear();
-    }
-
     ServiceRecord getExecutingServiceAt(int index) {
-        return mExecutingServices.valueAt(index);
-    }
-
-    int numberOfExecutingServices() {
-        return mExecutingServices.size();
-    }
-
-    @Override
-    public boolean hasExecutingServices() {
-        return !mExecutingServices.isEmpty();
+        return (ServiceRecord) getExecutingServiceInternalAt(index);
     }
 
     ConnectionRecord getConnectionAt(int index) {
@@ -303,13 +255,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     }
 
     @GuardedBy("mService")
-    void onCleanupApplicationRecordLocked() {
-        setTreatLikeActivity(false);
-        setHasAboveClient(false);
-        setHasClientActivities(false);
-    }
-
-    @GuardedBy("mService")
     void noteScheduleServiceTimeoutPending(boolean pending) {
         mScheduleServiceTimeoutPending = pending;
     }
@@ -333,12 +278,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
 
     @GuardedBy("mService")
     private void scheduleServiceTimeoutIfNeededLocked() {
-        if (mScheduleServiceTimeoutPending && mExecutingServices.size() > 0) {
+        if (mScheduleServiceTimeoutPending && hasExecutingServices()) {
             mService.mServices.scheduleServiceTimeoutLocked(mApp);
             // We'll need to reset the executingStart since the app was frozen.
             final long now = SystemClock.uptimeMillis();
-            for (int i = 0, size = mExecutingServices.size(); i < size; i++) {
-                mExecutingServices.valueAt(i).executingStart = now;
+            for (int i = 0, size = numberOfExecutingServices(); i < size; i++) {
+                getExecutingServiceAt(i).executingStart = now;
             }
         }
     }
@@ -374,11 +319,11 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
                 pw.print(prefix); pw.print("  - "); pw.println(getRunningServiceAt(i));
             }
         }
-        if (mExecutingServices.size() > 0) {
+        if (hasExecutingServices()) {
             pw.print(prefix); pw.print("Executing Services (fg=");
             pw.print(isExecServicesFg()); pw.println(")");
-            for (int i = 0, size = mExecutingServices.size(); i < size; i++) {
-                pw.print(prefix); pw.print("  - "); pw.println(mExecutingServices.valueAt(i));
+            for (int i = 0, size = numberOfExecutingServices(); i < size; i++) {
+                pw.print(prefix); pw.print("  - "); pw.println(getExecutingServiceAt(i));
             }
         }
         if (numberOfConnections() > 0) {

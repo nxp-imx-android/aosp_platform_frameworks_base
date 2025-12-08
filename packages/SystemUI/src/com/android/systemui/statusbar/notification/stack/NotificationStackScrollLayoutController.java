@@ -315,6 +315,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private float mMaxAlphaForUnhide = 1.0f;
     private float mMaxAlphaForRebind = 1.0f;
     private float mMaxAlphaFromView = 1.0f;
+    private float mMaxAlphaFromPlaceholder = 1.0f;
 
     /**
      * Maximum alpha when to and from or sitting idle on the glanceable hub. Will be 1.0f when the
@@ -1468,6 +1469,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     }
 
     /**
+     * Sets the alpha required by the NotificationStackPlaceholder STL element. This is a way to
+     * connect a fade STL transition to the NSSL.
+     */
+    public void setMaxAlphaFromPlaceholder(float alpha) {
+        mMaxAlphaFromPlaceholder = alpha;
+        updateAlpha();
+    }
+
+    /**
      * Max alpha for rebind.
      *
      * Used to hide notifications while rebiding is in progress (e.g. after a density change).
@@ -1499,9 +1509,12 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
     private void updateAlpha() {
         if (mView != null) {
-            float newAlpha = Math.min(mMaxAlphaForRebind,
-                    Math.min(Math.min(mMaxAlphaFromView, mMaxAlphaForKeyguard),
-                            Math.min(mMaxAlphaForUnhide, mMaxAlphaForGlanceableHub)));
+            float newAlpha = mMaxAlphaFromView;
+            newAlpha = Math.min(newAlpha, mMaxAlphaFromPlaceholder);
+            newAlpha = Math.min(newAlpha, mMaxAlphaForUnhide);
+            newAlpha = Math.min(newAlpha, mMaxAlphaForRebind);
+            newAlpha = Math.min(newAlpha, mMaxAlphaForGlanceableHub);
+            newAlpha = Math.min(newAlpha, mMaxAlphaForKeyguard);
             mView.setAlpha(newAlpha);
         }
     }
@@ -1964,6 +1977,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     @Override
     public void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
         pw.println("mMaxAlphaFromView=" + mMaxAlphaFromView);
+        pw.println("mMaxAlphaFromPlaceholder=" + mMaxAlphaFromPlaceholder);
         pw.println("mMaxAlphaForUnhide=" + mMaxAlphaForUnhide);
         pw.println("mMaxAlphaForRebind=" + mMaxAlphaForRebind);
         pw.println("mMaxAlphaForGlanceableHub=" + mMaxAlphaForGlanceableHub);
@@ -2175,7 +2189,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             boolean swipeWantsIt = false;
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !mView.isExpandingNotification()
-                    && !mView.getExpandedInThisMotion()
+                    && !mView.getExpandedNotificationInThisMotion()
                     && !lockscreenExpandWantsIt
                     && !mView.getOnlyScrollingInThisMotion()
                     && !mView.getDisallowDismissInThisMotion()
@@ -2229,8 +2243,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 boolean wasExpandingBefore = expandingNotification;
                 expandWantsIt = expandHelper.onTouchEvent(ev);
                 expandingNotification = mView.isExpandingNotification();
-                if (mView.getExpandedInThisMotion() && !expandingNotification && wasExpandingBefore
-                        && !mView.getDisallowScrollingInThisMotion()) {
+                if (mView.getExpandedNotificationInThisMotion() && !expandingNotification
+                        && wasExpandingBefore && !mView.getDisallowScrollingInThisMotion()) {
                     // Finish expansion here, as this gesture will be marked to be sent to
                     // scene container
                     if (SceneContainerFlag.isEnabled() && !isCancelOrUp) {
@@ -2255,7 +2269,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !expandingNotification
                     && !lockscreenExpandWantsIt
-                    && !mView.getExpandedInThisMotion()
+                    && !mView.getExpandedNotificationInThisMotion()
                     && !onlyScrollingInThisMotion
                     && !mView.getDisallowDismissInThisMotion()) {
                 horizontalSwipeWantsIt = mSwipeHelper.onTouchEvent(ev);

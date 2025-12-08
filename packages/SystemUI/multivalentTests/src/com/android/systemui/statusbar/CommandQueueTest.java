@@ -222,7 +222,7 @@ public class CommandQueueTest extends SysuiTestCase {
     }
 
     @Test
-    public void testShowImeButton() {
+    public void testSetImeWindowStatus() {
         mCommandQueue.setImeWindowStatus(DEFAULT_DISPLAY, IME_ACTIVE,
                 BACK_DISPOSITION_ADJUST_NOTHING, true);
         waitForIdleSync();
@@ -231,9 +231,9 @@ public class CommandQueueTest extends SysuiTestCase {
     }
 
     @Test
-    public void testShowImeButtonForSecondaryDisplay() {
+    public void testSetImeWindowStatusForSecondaryDisplay() {
         // First show in default display to update the "last updated ime display"
-        testShowImeButton();
+        testSetImeWindowStatus();
 
         mCommandQueue.setImeWindowStatus(SECONDARY_DISPLAY, IME_ACTIVE,
                 BACK_DISPOSITION_ADJUST_NOTHING, true);

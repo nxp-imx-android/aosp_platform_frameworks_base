@@ -131,6 +131,12 @@ public final class ActionableInsight extends ContextInsight {
         return INSIGHT_TYPE_ACTIONABLE;
     }
 
+    /** @hide */
+    @Override
+    public void accept(@NonNull InsightVisitor visitor) {
+        visitor.visit(this);
+    }
+
     /** Builder for {@link ActionableInsight}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {

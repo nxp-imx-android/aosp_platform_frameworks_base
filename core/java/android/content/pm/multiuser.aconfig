@@ -17,13 +17,6 @@ flag {
 }
 
 flag {
-    name: "bind_wallpaper_service_on_its_own_thread_during_a_user_switch"
-    namespace: "multiuser"
-    description: "Bind wallpaper service on its own thread instead of system_server's main handler during a user switch."
-    bug: "302100344"
-}
-
-flag {
     name: "support_communal_profile"
     is_exported: true
     namespace: "multiuser"
@@ -318,16 +311,6 @@ flag {
 }
 
 flag {
-  name: "use_private_space_icon_in_biometric_prompt"
-  namespace: "profile_experiences"
-  description: "Update the biometric prompt from generic Settings icon to private space icon"
-  bug: "333528540"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "unicorn_mode_refactoring_for_hsum_read_only"
   namespace: "multiuser"
   description: "Refactorings related to unicorn mode to work on HSUM mode (Read only flag)"
@@ -455,16 +438,6 @@ flag {
     namespace: "multiuser"
     description: "Adds an allowlist mechanism to device which notifications can be shown when the current user is the headless system user"
     bug: "412176703"
-}
-
-flag {
-    name: "private_space_file_limit_check_timeout"
-    namespace: "profile_experiences"
-    description: "Add a timeout for file limit checks during file transfer to private space"
-    bug: "421920538"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

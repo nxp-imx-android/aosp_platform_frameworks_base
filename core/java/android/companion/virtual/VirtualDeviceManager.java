@@ -657,6 +657,14 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Returns true if virtual cameras can be added to virtual devices on this device.
+     */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_SUPPORT_API)
+    public static boolean isVirtualCameraSupported() {
+        return VirtualCamera.isSupported();
+    }
+
+    /**
      * Requests sound effect to be played on virtual device.
      *
      * @see AudioManager#playSoundEffect(int)
@@ -1258,6 +1266,12 @@ public final class VirtualDeviceManager {
          */
         @NonNull
         public VirtualCamera createVirtualCamera(@NonNull VirtualCameraConfig config) {
+            if (Flags.virtualCameraSupportApi()) {
+                if (!isVirtualCameraSupported()) {
+                    throw new UnsupportedOperationException(
+                            "Virtual camera not supported on this device");
+                }
+            }
             return mVirtualDeviceInternal.createVirtualCamera(Objects.requireNonNull(config));
         }
 

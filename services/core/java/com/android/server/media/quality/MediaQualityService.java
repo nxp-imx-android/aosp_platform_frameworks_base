@@ -1187,7 +1187,7 @@ public class MediaQualityService extends SystemService {
             }
             boolean isPackageOwner = fromDb.getPackageName().equals(getPackageOfUid(uid));
             boolean isSystemAppWithPermission = hasGlobalSoundQualityServicePermission(uid, pid)
-                    && fromDb.getProfileType() == PictureProfile.TYPE_SYSTEM;
+                    && fromDb.getProfileType() == SoundProfile.TYPE_SYSTEM;
             return fromDb.getProfileType() == toUpdate.getProfileType()
                     && fromDb.getName().equals(toUpdate.getName())
                     && fromDb.getPackageName().equals(toUpdate.getPackageName())
@@ -1668,11 +1668,13 @@ public class MediaQualityService extends SystemService {
                     if (pcHal != null) {
                         String name = MediaQualityUtils.getParameterName(pcHal.name);
                         boolean isSupported = pcHal.isSupported;
+                        boolean isMutable = isSupported && pcHal.commonParamCapability.isMutable;
                         int type = pcHal.defaultValue == null ? 0 : pcHal.defaultValue.getTag() + 1;
                         Bundle bundle = MediaQualityUtils.convertToCaps(type, pcHal.range);
                         putParamCapDefaultValueIntoBundle(bundle, pcHal.defaultValue);
 
-                        pcList.add(new ParameterCapability(name, isSupported, type, bundle));
+                        pcList.add(new ParameterCapability(
+                                name, isSupported, isMutable, type, bundle));
                     }
                 }
             }
@@ -1682,6 +1684,7 @@ public class MediaQualityService extends SystemService {
                     if (vpcHal != null) {
                         String name = MediaQualityUtils.getVendorParameterName(vpcHal);
                         boolean isSupported = vpcHal.isSupported;
+                        boolean isMutable = isSupported && vpcHal.commonParamCapability.isMutable;
                         // The default value for VendorParamCapability in HAL is IntValue = 0,
                         // LongValue = 1, DoubleValue = 2, StringValue = 3. The default value for
                         // ParameterCapability in the framework is None = 0, IntValue = 1,
@@ -1694,7 +1697,7 @@ public class MediaQualityService extends SystemService {
                         putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
                         MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
                         pcList.add(new ParameterCapability(
-                                name, isSupported, type, paramRangeBundle));
+                                name, isSupported, isMutable, type, paramRangeBundle));
                     }
                 }
             }
@@ -2314,11 +2317,13 @@ public class MediaQualityService extends SystemService {
             for (ParamCapability cap: caps) {
                 String name = MediaQualityUtils.getParameterName(cap.name);
                 boolean isSupported = cap.isSupported;
+                boolean isMutable = isSupported && cap.commonParamCapability.isMutable;
                 int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                 Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
                 putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
 
-                paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
+                paramCaps.add(new ParameterCapability(
+                        name, isSupported, isMutable, type, bundle));
             }
             notifySoundProfileHelper(ProfileModes.PARAMETER_CAPABILITY_CHANGED, uuid,
                     null, null, paramCaps , uid, pid);
@@ -2538,12 +2543,14 @@ public class MediaQualityService extends SystemService {
                 for (ParamCapability cap: caps) {
                     String name = MediaQualityUtils.getParameterName(cap.name);
                     boolean isSupported = cap.isSupported;
+                    boolean isMutable = isSupported && cap.commonParamCapability.isMutable;
                     //Reason for +1: please see getParameterCapabilityList()
                     int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                     Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
                     putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
 
-                    paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
+                    paramCaps.add(new ParameterCapability(
+                            name, isSupported, isMutable, type, bundle));
                 }
                 mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
                         pictureProfileId, paramCaps,
@@ -2559,6 +2566,7 @@ public class MediaQualityService extends SystemService {
                 for (VendorParamCapability vpcHal: caps) {
                     String name = MediaQualityUtils.getVendorParameterName(vpcHal);
                     boolean isSupported = vpcHal.isSupported;
+                    boolean isMutable = isSupported && vpcHal.commonParamCapability.isMutable;
                     //Reason for +1: please see getParameterCapabilityList()
                     int type = vpcHal.defaultValue
                             == null ? 0 : vpcHal.defaultValue.getTag() + 1;
@@ -2567,7 +2575,7 @@ public class MediaQualityService extends SystemService {
                     putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
                     MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
                     vendorParamCaps.add(new ParameterCapability(
-                            name, isSupported, type, paramRangeBundle));
+                            name, isSupported, isMutable, type, paramRangeBundle));
                 }
                 mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
                         pictureProfileId,

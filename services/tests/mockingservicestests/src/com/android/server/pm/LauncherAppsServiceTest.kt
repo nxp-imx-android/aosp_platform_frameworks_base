@@ -112,14 +112,17 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     @Throws(Exception::class)
-    fun getApplicationInfo_queriesAppLockInfo() {
+    fun getApplicationInfo_queriesAppLockInfoIfHasPermission(
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
         val requestedPackage = TEST_PACKAGE_2
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
 
         launcherAppsService.getApplicationInfo(
             TEST_PACKAGE_1, requestedPackage, /* flags= */ 0, TEST_USER_HANDLE
         )
 
-        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+        verifyCapturedFlagsHaveGetAppLockInfoFlag(isLockAppsPermissionGranted) {
             verify(mockPmInternal).getApplicationInfo(
                 eq(requestedPackage), capture(), anyInt(), eq(TEST_USER_ID)
             )
@@ -129,8 +132,11 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     @Test
     @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     @Throws(Exception::class)
-    fun getApplicationInfo_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+    fun getApplicationInfo_withAppLockApisDisabled_doesNotQueryAppLockInfo(
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
         val requestedPackage = TEST_PACKAGE_2
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
 
         launcherAppsService.getApplicationInfo(
             TEST_PACKAGE_1, requestedPackage, /* flags= */ 0, TEST_USER_HANDLE
@@ -146,14 +152,17 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     @Throws(Exception::class)
-    fun resolveLauncherActivityInternal_queriesAppLockInfo() {
+    fun resolveLauncherActivityInternal_queriesAppLockInfoIfHasPermission(
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
         val testComponent = ComponentName(context, LauncherAppsServiceTest::class.java)
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
 
         launcherAppsService.resolveLauncherActivityInternal(
             TEST_PACKAGE_1, testComponent, TEST_USER_HANDLE
         )
 
-        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+        verifyCapturedFlagsHaveGetAppLockInfoFlag(isLockAppsPermissionGranted) {
             verify(mockPmInternal).getActivityInfo(
                 eq(testComponent), capture(), anyInt(), eq(TEST_USER_ID)
             )
@@ -179,10 +188,14 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
-    fun getApplicationInfoListForAllArchivedApps_queriesAppLockInfo() {
+    fun getApplicationInfoListForAllArchivedApps_queriesAppLockInfoIfHasPermission(
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
+
         launcherAppsService.getApplicationInfoListForAllArchivedApps(TEST_USER_HANDLE)
 
-        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+        verifyCapturedFlagsHaveGetAppLockInfoFlag(isLockAppsPermissionGranted) {
             verify(mockPmInternal).getInstalledApplicationsCrossUser(
                 capture(), eq(TEST_USER_ID), anyInt()
             )
@@ -203,10 +216,14 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
-    fun getApplicationInfoForArchivedApp_queriesAppLockInfo() {
+    fun getApplicationInfoForArchivedApp_queriesAppLockInfoIfHasPermission(
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
+
         launcherAppsService.getApplicationInfoForArchivedApp(TEST_PACKAGE_1, TEST_USER_HANDLE)
 
-        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+        verifyCapturedFlagsHaveGetAppLockInfoFlag(isLockAppsPermissionGranted) {
             verify(mockPmInternal).getApplicationInfo(
                 eq(TEST_PACKAGE_1), capture(), anyInt(), eq(TEST_USER_ID)
             )
@@ -227,14 +244,18 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
-    fun queryIntentLauncherActivities_queriesAppLockInfo() {
+    fun queryIntentLauncherActivities_queriesAppLockInfoIfHasPermission(
+        @TestParameter
+        isLockAppsPermissionGranted: Boolean
+    ) {
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
         val testIntent = Intent()
 
         launcherAppsService.queryIntentLauncherActivities(
             testIntent, TEST_CALLING_UID, TEST_USER_HANDLE
         )
 
-        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+        verifyCapturedFlagsHaveGetAppLockInfoFlag(isLockAppsPermissionGranted) {
             verify(mockPmInternal).queryIntentActivities(
                 eq(testIntent), any(), capture(), eq(TEST_CALLING_UID), eq(TEST_USER_ID)
             )
@@ -261,10 +282,12 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     @Throws(Exception::class)
-    fun getLauncherActivities_queriesAppLockInfo(@TestParameter specificPackageProvided: Boolean) {
-        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
-            appLockApisEnabled = true,
-            specificPackageProvided
+    fun getLauncherActivities_queriesAppLockInfoIfHasPermission(
+        @TestParameter specificPackageProvided: Boolean,
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+    ) {
+        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabledAndPermissionGranted(
+            appLockApisEnabled = true, isLockAppsPermissionGranted, specificPackageProvided
         )
     }
 
@@ -272,32 +295,40 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     @Throws(Exception::class)
     fun getLauncherActivities_withAppLockApisDisabled_doesNotQueryAppLockInfo(
-        @TestParameter specificPackageProvided: Boolean
+        @TestParameter specificPackageProvided: Boolean,
+        @TestParameter isLockAppsPermissionGranted: Boolean,
     ) {
-        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
-            appLockApisEnabled = false,
-            specificPackageProvided
+        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabledAndPermissionGranted(
+            appLockApisEnabled = false, isLockAppsPermissionGranted, specificPackageProvided
         )
     }
 
-    private fun testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
+    private fun testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabledAndPermissionGranted(
         appLockApisEnabled: Boolean,
-        specificPackageProvided: Boolean
+        @TestParameter isLockAppsPermissionGranted: Boolean,
+        specificPackageProvided: Boolean,
     ) {
         if (specificPackageProvided) {
-            verifyGetLauncherActivitiesForSpecificPackage(appLockApisEnabled)
+            verifyGetLauncherActivitiesForSpecificPackage(
+                appLockApisEnabled,
+                isLockAppsPermissionGranted
+            )
         } else {
-            verifyGetLauncherActivitiesForAllPackages(appLockApisEnabled)
+            verifyGetLauncherActivitiesForAllPackages(
+                appLockApisEnabled,
+                isLockAppsPermissionGranted
+            )
         }
     }
 
-    private fun verifyGetLauncherActivitiesForSpecificPackage(appLockApisEnabled: Boolean) {
+    private fun verifyGetLauncherActivitiesForSpecificPackage(
+        appLockApisEnabled: Boolean,
+        isLockAppsPermissionGranted: Boolean,
+    ) {
         val requestedPackage = TEST_PACKAGE_2
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
         mockPackageVisibilityAndProfileAccess(
-            TEST_USER_ID,
-            requestedPackage,
-            isProfileAccessible = true,
-            isPackageFiltered = false
+            TEST_USER_ID, requestedPackage, isProfileAccessible = true, isPackageFiltered = false
         )
 
         launcherAppsService.getLauncherActivities(
@@ -305,26 +336,30 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         )
 
         // The service first queries for launcher activities.
-        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled, isLockAppsPermissionGranted) {
             verify(mockPmInternal).queryIntentActivities(
                 any(), any(), capture(), anyInt(), eq(TEST_USER_ID)
             )
         }
 
         // It also queries ApplicationInfo for hidden app logic.
-        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled, isLockAppsPermissionGranted) {
             verify(mockPmInternal, times(2)).getApplicationInfo(
                 eq(requestedPackage), capture(), anyInt(), eq(TEST_USER_ID)
             )
         }
     }
 
-    private fun verifyGetLauncherActivitiesForAllPackages(appLockApisEnabled: Boolean) {
+    private fun verifyGetLauncherActivitiesForAllPackages(
+        appLockApisEnabled: Boolean,
+        isLockAppsPermissionGranted: Boolean,
+    ) {
+        launcherAppsService.isLockAppsPermissionGranted = isLockAppsPermissionGranted
         launcherAppsService.getLauncherActivities(
             TEST_PACKAGE_1, /* packageName= */ null, TEST_USER_HANDLE
         )
 
-        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled, isLockAppsPermissionGranted) {
             verify(mockPmInternal).getInstalledApplications(
                 capture(), eq(TEST_USER_ID), anyInt()
             )
@@ -340,10 +375,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         @TestParameter appLockEnabled: Boolean
     ) {
         testOnPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
-            appLockApisEnabled = true,
-            isProfileAccessible,
-            isPackageFiltered,
-            appLockEnabled
+            appLockApisEnabled = true, isProfileAccessible, isPackageFiltered, appLockEnabled
         )
     }
 
@@ -356,10 +388,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         @TestParameter appLockEnabled: Boolean
     ) {
         testOnPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
-            appLockApisEnabled = false,
-            isProfileAccessible,
-            isPackageFiltered,
-            appLockEnabled
+            appLockApisEnabled = false, isProfileAccessible, isPackageFiltered, appLockEnabled
         )
     }
 
@@ -375,7 +404,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         val onPackageChangedLatch = CountDownLatch(1)
         val listener = TestOnAppsChangedListener(onPackageChangedLatch)
         val spyPackageMonitor = spy(launcherAppsService.mPackageMonitor)
-        whenever(spyPackageMonitor.getChangingUserId()).thenReturn(changedUserId)
+        whenever(spyPackageMonitor.changingUserId).thenReturn(changedUserId)
         mockPackageVisibilityAndProfileAccess(
             changedUserId, changedPackage, isProfileAccessible, isPackageFiltered
         )
@@ -403,25 +432,35 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     }
 
     private fun verifyCapturedFlagsHaveGetAppLockInfoFlag(
-        verification: ArgumentCaptor<Long>.() -> Unit
+        appLocksPermissionGranted: Boolean,
+        verification: ArgumentCaptor<Long>.() -> Unit,
     ) {
-        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled = true, verification)
+        verifyCapturedFlagsForAppLockInfoFlag(
+            appLockApisEnabled = true,
+            appLocksPermissionGranted,
+            verification
+        )
     }
 
     private fun verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag(
         verification: ArgumentCaptor<Long>.() -> Unit
     ) {
-        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled = false, verification)
+        verifyCapturedFlagsForAppLockInfoFlag(
+            appLockApisEnabled = false,
+            appLocksPermissionGranted = true,
+            verification
+        )
     }
 
     private fun verifyCapturedFlagsForAppLockInfoFlag(
         appLockApisEnabled: Boolean,
-        verification: ArgumentCaptor<Long>.() -> Unit
+        appLocksPermissionGranted: Boolean,
+        verification: ArgumentCaptor<Long>.() -> Unit,
     ) {
         val flagsArgCaptor = ArgumentCaptor.forClass(Long::class.java)
         verification(flagsArgCaptor)
         for (capturedFlags in flagsArgCaptor.allValues) {
-            if (appLockApisEnabled) {
+            if (appLockApisEnabled && appLocksPermissionGranted) {
                 assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isNotEqualTo(0L)
             } else {
                 assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isEqualTo(0L)
@@ -457,8 +496,14 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
                 anyInt(), eq(userId), anyString(), anyBoolean()
             )
         ).thenReturn(isProfileAccessible)
-        whenever(mockPmInternal.filterAppAccess(eq(packageName), anyInt(), eq(userId), eq(false)))
-            .thenReturn(isPackageFiltered)
+        whenever(
+            mockPmInternal.filterAppAccess(
+                eq(packageName),
+                anyInt(),
+                eq(userId),
+                eq(false)
+            )
+        ).thenReturn(isPackageFiltered)
     }
 
     private class TestOnAppsChangedListener(val onPackageChangedLatch: CountDownLatch) :
@@ -528,8 +573,14 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     private class TestLauncherAppsImpl(context: Context) : LauncherAppsService.LauncherAppsImpl(
         context
     ) {
+        var isLockAppsPermissionGranted = false
+
         override fun verifyCallingPackage(callingPackage: String?, callerUid: Int) {
             // Skip package verification for tests.
+        }
+
+        override fun hasLockAppsPermission(callingPid: Int, callingUid: Int): Boolean {
+            return isLockAppsPermissionGranted
         }
     }
 

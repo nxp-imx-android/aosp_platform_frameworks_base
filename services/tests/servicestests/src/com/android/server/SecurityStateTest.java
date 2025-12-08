@@ -17,12 +17,12 @@
 package com.android.server;
 
 import static android.os.SecurityStateManager.KEY_KERNEL_VERSION;
-import static android.os.SecurityStateManager.KEY_SUPPLEMENTAL_PATCHES;
 import static android.os.SecurityStateManager.KEY_SYSTEM_SPL;
+import static android.os.SecurityStateManager.KEY_SYSTEM_SUPPLEMENTAL_PATCHES;
 import static android.os.SecurityStateManager.KEY_VENDOR_SPL;
+import static android.os.SecurityStateManager.KEY_VENDOR_SUPPLEMENTAL_PATCHES;
 
 import static com.android.server.SecurityStateManagerService.KERNEL_RELEASE_PATTERN;
-import static com.android.server.SecurityStateManagerService.SUPPLEMENTAL_PATCH_CONFIG_FILE;
 import static com.android.server.SecurityStateManagerService.VENDOR_SECURITY_PATCH_PROPERTY_KEY;
 
 import static junit.framework.Assert.assertEquals;
@@ -58,8 +58,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 
@@ -88,10 +86,15 @@ public class SecurityStateTest {
 
     private static final String[] SECURITY_STATE_PACKAGES =
             new String[]{DEFAULT_SECURITY_STATE_PACKAGE};
-    private static final String[] EXPECTED_CVES = new String[]{"CVE-2023-12345", "CVE-2024-54321"};
+    private static final String[] EXPECTED_SYSTEM_CVES =
+            new String[]{"CVE-2023-12345", "CVE-2024-54321"};
+    private static final String[] EXPECTED_VENDOR_CVES =
+            new String[]{"CVE-2022-00000", "CVE-2023-11111"};
 
-    private static final String TEST_CONFIG_FILE_PATH =
+    private static final String TEST_SYSTEM_FILE_PATH =
             "/data/local/tmp/test_supplemental_security_patches.xml";
+    private static final String TEST_VENDOR_FILE_PATH =
+            "/data/local/tmp/test_vendor_supplemental_security_patches.xml";
 
     @Before
     public void setUp() throws Exception {
@@ -117,15 +120,23 @@ public class SecurityStateTest {
     @EnableFlags(Flags.FLAG_SUPPLEMENTAL_SECURITY_PATCHES)
     public void testGetGlobalSecurityState_returnsBundle() {
         SecurityStateManagerService securityState =
-                new SecurityStateManagerService(mMockContext, TEST_CONFIG_FILE_PATH);
+                new SecurityStateManagerService(
+                        mMockContext,
+                        TEST_SYSTEM_FILE_PATH,
+                        TEST_VENDOR_FILE_PATH);
 
         Bundle bundle = securityState.getGlobalSecurityState();
 
-        String[] actualCves = bundle.getStringArray(KEY_SUPPLEMENTAL_PATCHES);
-        Arrays.sort(EXPECTED_CVES);
-        Arrays.sort(actualCves);
+        String[] actualSystemCves = bundle.getStringArray(KEY_SYSTEM_SUPPLEMENTAL_PATCHES);
+        Arrays.sort(EXPECTED_SYSTEM_CVES);
+        Arrays.sort(actualSystemCves);
+        assertArrayEquals(EXPECTED_SYSTEM_CVES, actualSystemCves);
 
-        assertArrayEquals(EXPECTED_CVES, actualCves);
+        String[] actualVendorCves = bundle.getStringArray(KEY_VENDOR_SUPPLEMENTAL_PATCHES);
+        Arrays.sort(EXPECTED_VENDOR_CVES);
+        Arrays.sort(actualVendorCves);
+        assertArrayEquals(EXPECTED_VENDOR_CVES, actualVendorCves);
+
         assertEquals(bundle.getString(KEY_SYSTEM_SPL), Build.VERSION.SECURITY_PATCH);
         assertEquals(
                 bundle.getString(KEY_VENDOR_SPL),

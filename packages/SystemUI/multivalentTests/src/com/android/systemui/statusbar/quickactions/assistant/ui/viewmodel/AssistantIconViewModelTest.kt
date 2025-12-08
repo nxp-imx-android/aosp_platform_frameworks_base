@@ -30,9 +30,9 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.fakeAssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ChipIcon
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -103,19 +103,19 @@ class AssistantIconViewModelTest : SysuiTestCase() {
     }
 }
 
-private fun PopupChipModel.assertIsHidden(): PopupChipModel.Hidden {
-    assertThat(this.chipId).isEqualTo(PopupChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(PopupChipModel.Hidden::class.java)
-    return this as PopupChipModel.Hidden
+private fun QuickActionChipUiState.assertIsHidden(): QuickActionChipUiState.Hidden {
+    assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
+    assertThat(this).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
+    return this as QuickActionChipUiState.Hidden
 }
 
-private fun PopupChipModel.assertIsShown(): PopupChipModel.Shown {
-    assertThat(this.chipId).isEqualTo(PopupChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(PopupChipModel.Shown::class.java)
-    return this as PopupChipModel.Shown
+private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.PopupChip {
+    assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
+    assertThat(this).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+    return this as QuickActionChipUiState.PopupChip
 }
 
-private fun PopupChipModel.Shown.verifyIcon(res: Int) {
+private fun QuickActionChipUiState.PopupChip.verifyIcon(res: Int) {
     assertThat(this.icons.size).isEqualTo(1)
     assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
 }

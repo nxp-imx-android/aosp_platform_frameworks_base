@@ -22,6 +22,7 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.os.Environment;
+import android.os.UserHandle;
 import android.util.AtomicFile;
 import android.util.Slog;
 
@@ -59,7 +60,8 @@ public final class DataStoreUtils {
     }
 
     /**
-     * Creates {@link AtomicFile} object that represents the back-up for the given user.
+     * Creates {@link AtomicFile} object that represents the back-up for the given user. If user is
+     * {@link UserHandle#USER_ALL}, then the system-wide storage file is returned.
      *
      * IMPORTANT: the method will ALWAYS return the same {@link AtomicFile} object, which makes it
      * possible to synchronize reads and writes to the file using the returned object.
@@ -75,7 +77,10 @@ public final class DataStoreUtils {
 
     @NonNull
     private static File getBaseStorageFileForUser(@UserIdInt int userId, String fileName) {
-        return new File(Environment.getDataSystemDeDirectory(userId), fileName);
+        File dataSystemDirectory = userId == UserHandle.USER_ALL
+                ? Environment.getDataSystemDirectory()
+                : Environment.getDataSystemDeDirectory(userId);
+        return new File(dataSystemDirectory, fileName);
     }
 
     /**

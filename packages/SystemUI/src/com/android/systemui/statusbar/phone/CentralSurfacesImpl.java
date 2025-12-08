@@ -212,7 +212,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
-import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
+import com.android.systemui.surfaceeffects.core.ripple.RippleShader.RippleShape;
 import com.android.systemui.topui.TopUiController;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
@@ -908,7 +908,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     mDisplayId,
                     result.mImeWindowVis,
                     result.mImeBackDisposition,
-                    result.mShowImeSwitcher);
+                    result.mShowImeSwitcherButton);
 
             // Set up the initial icon state
             int numIcons = result.mIcons.size();

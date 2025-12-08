@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.ui
 import android.content.Context
 import android.graphics.drawable.Icon
 import android.net.Uri
+import android.view.Display
 import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
@@ -85,6 +86,7 @@ constructor(
     @Assisted private val uri: Uri,
     @Assisted private val thumbnail: Icon?,
     @Application private val context: Context,
+    @Assisted private val display: Display,
     private val dialogFactory: SystemUIDialogFactory,
     private val viewModelFactory: PostRecordingViewModel.Factory,
     private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
@@ -93,6 +95,7 @@ constructor(
     private val dialog: SystemUIDialog =
         dialogFactory
             .create(
+                context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
                 theme = R.style.Theme_SystemUI_Dialog,
                 dialogDelegate = EdgeToEdgeDialogDelegate(),
             ) {
@@ -116,6 +119,7 @@ constructor(
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+            setType(DIALOG_WINDOW_TYPE)
             setWindowAnimations(-1)
         }
     }
@@ -141,64 +145,81 @@ constructor(
         val coroutineScope = rememberCoroutineScope()
         val postRecordingViewModel =
             rememberViewModel("PostRecordingShelf#viewModel") { viewModelFactory.create(uri) }
+        val parentUri = postRecordingViewModel.parentUri
+        val shareIcon =
+            loadIcon(
+                    viewModel = postRecordingViewModel,
+                    resId = R.drawable.ic_screenshot_share,
+                    contentDescription = null,
+                )
+                .value
+        val folderIcon =
+            loadIcon(
+                    viewModel = postRecordingViewModel,
+                    resId = R.drawable.ic_screen_capture_folder,
+                    contentDescription = null,
+                )
+                .value
+        val deleteIcon =
+            loadIcon(
+                    viewModel = postRecordingViewModel,
+                    resId = R.drawable.ic_screenshot_delete,
+                    contentDescription = null,
+                )
+                .value
         val actionButtonItems =
-            listOf(
-                ActionButtonGroupItem(
-                    icon =
-                        loadIcon(
-                                viewModel = postRecordingViewModel,
-                                resId = R.drawable.ic_screenshot_share,
-                                contentDescription = null,
-                            )
-                            .value,
-                    onClick = {
-                        postRecordingViewModel.share()
-                        hide()
-                    },
-                ),
-                ActionButtonGroupItem(
-                    icon =
-                        loadIcon(
-                                viewModel = postRecordingViewModel,
-                                resId = R.drawable.ic_screen_capture_folder,
-                                contentDescription = null,
-                            )
-                            .value,
-                    onClick = {
-                        coroutineScope.launch {
-                            postRecordingViewModel.openInFolder()
-                            hide()
-                        }
-                    },
-                ),
-                ActionButtonGroupItem(
-                    icon =
-                        loadIcon(
-                                viewModel = postRecordingViewModel,
-                                resId = R.drawable.ic_screenshot_delete,
-                                contentDescription = null,
-                            )
-                            .value,
-                    onClick = {
-                        coroutineScope.launch {
-                            isConfirmDeletionDialogShowing = true
-                            if (
-                                postRecordingConfirmDeletion(
-                                    dialogFactory,
-                                    context,
-                                    postRecordingViewModel,
-                                )
-                            ) {
+            remember(parentUri) {
+                buildList {
+                    add(
+                        ActionButtonGroupItem(
+                            icon = shareIcon,
+                            onClick = {
+                                postRecordingViewModel.share()
                                 hide()
-                                postRecordSnackbarDialogs.showVideoDeleted(
-                                    postRecordingViewModel.videoUri
-                                )
-                            }
-                            isConfirmDeletionDialogShowing = false
-                        }
-                    },
-                ),
-            )
+                            },
+                        )
+                    )
+
+                    if (parentUri != null) {
+                        add(
+                            ActionButtonGroupItem(
+                                icon = folderIcon,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        postRecordingViewModel.openInFolder()
+                                        hide()
+                                    }
+                                },
+                            )
+                        )
+                    }
+
+                    add(
+                        ActionButtonGroupItem(
+                            icon = deleteIcon,
+                            onClick = {
+                                coroutineScope.launch {
+                                    isConfirmDeletionDialogShowing = true
+                                    if (
+                                        postRecordingConfirmDeletion(
+                                            dialogFactory,
+                                            context,
+                                            postRecordingViewModel,
+                                        )
+                                    ) {
+                                        hide()
+                                        postRecordSnackbarDialogs.showVideoDeleted(
+                                            postRecordingViewModel.videoUri
+                                        )
+                                    }
+                                    isConfirmDeletionDialogShowing = false
+                                }
+                            },
+                        )
+                    )
+                }
+            }
+
         Box(
             modifier =
                 Modifier.fillMaxSize()
@@ -231,7 +252,7 @@ constructor(
                                 .width(190.dp)
                                 .height(107.dp)
                                 .clickable {
-                                    postRecordingViewModel.edit()
+                                    postRecordingViewModel.view()
                                     hide()
                                 },
                     )
@@ -290,10 +311,11 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(uri: Uri, thumbnail: Icon?): PostRecordingShelf
+        fun create(uri: Uri, thumbnail: Icon?, display: Display): PostRecordingShelf
     }
 
     companion object {
         private val DEFAULT_TIMEOUT = 6.seconds
+        private val DIALOG_WINDOW_TYPE = WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
     }
 }

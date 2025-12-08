@@ -44,10 +44,12 @@ public class TimeZoneConfigurationTest {
                 .setAutoDetectionEnabled(true)
                 .setGeoDetectionEnabled(true)
                 .setNotificationsEnabled(true)
+                .setTimeZoneOffsetChangeNotificationsEnabled(true)
                 .build();
         assertTrue(completeConfig.isComplete());
         assertTrue(completeConfig.hasIsGeoDetectionEnabled());
         assertTrue(completeConfig.hasIsNotificationsEnabled());
+        assertTrue(completeConfig.hasIsTimeZoneOffsetChangeNotificationsEnabled());
     }
 
     @Test

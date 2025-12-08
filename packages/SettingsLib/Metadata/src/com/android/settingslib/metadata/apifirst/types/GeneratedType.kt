@@ -18,4 +18,4 @@ package com.android.settingslib.metadata.apifirst.types
 
 import android.content.Context
 
-class GeneratedType(description: String, lambda: (Context) -> Boolean) : ApiFirstType
+class GeneratedType<V: Any>(description: String, lambda: (Context) -> V) : ApiFirstType<V>

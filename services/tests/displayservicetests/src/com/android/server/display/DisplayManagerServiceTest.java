@@ -5447,7 +5447,8 @@ public class DisplayManagerServiceTest {
                 zeroRect, new Rect(0, 0, 10, 10), zeroRect, zeroRect);
         displayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
         if (displayType == Display.TYPE_EXTERNAL) {
-            displayDeviceInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP;
+            displayDeviceInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP
+                    | DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
         }
         displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);

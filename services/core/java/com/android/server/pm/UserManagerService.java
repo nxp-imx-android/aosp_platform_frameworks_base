@@ -2473,7 +2473,7 @@ public class UserManagerService extends IUserManager.Stub {
         unlockIntent.putExtra(Intent.EXTRA_INTENT, pendingIntent.getIntentSender());
         unlockIntent.setFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
-        if (Flags.enablePrivateSpaceFeatures() && Flags.usePrivateSpaceIconInBiometricPrompt()
+        if (Flags.enablePrivateSpaceFeatures()
                 && getUserInfo(userId).isPrivateProfile()) {
             unlockIntent.putExtra(CUSTOM_BIOMETRIC_PROMPT_LOGO_RES_ID_KEY,
                     com.android.internal.R.drawable.stat_sys_private_profile_status);
@@ -3399,15 +3399,15 @@ public class UserManagerService extends IUserManager.Stub {
         // The feature is enabled. But is it worth showing?
         return showEvenIfNotActionable
                 || !hasUserRestriction(UserManager.DISALLOW_ADD_USER, userId) // Can add new user
-                || areThereMultipleSwitchableUsers(); // There are switchable users
+                || areThereMultipleUiSwitchableUsers(); // There are switchable users
     }
 
-    /** Returns true if there is more than one user that can be switched to. */
-    private boolean areThereMultipleSwitchableUsers() {
+    /** Returns true if there is more than one human user that can be switched to via the UI. */
+    private boolean areThereMultipleUiSwitchableUsers() {
         List<UserInfo> aliveUsers = getUsers(/* excludeDying= */ true);
         boolean isAnyAliveUser = false;
         for (UserInfo userInfo : aliveUsers) {
-            if (userInfo.supportsSwitchToByUser()) {
+            if (userInfo.isUiSwitchableHumanUser()) {
                 if (isAnyAliveUser) {
                     return true;
                 }
@@ -5254,8 +5254,10 @@ public class UserManagerService extends IUserManager.Stub {
                         allowlistedActivities.length, userType);
 
             }
+
+            int allowlistMode = resources.getInteger(R.integer.config_hsuActivitiesAllowlistMode);
             userActivitiesAllowlist.put(userType,
-                    new UserActivitiesAllowlist(allowlistedActivities));
+                    new UserActivitiesAllowlist(allowlistMode, allowlistedActivities));
         }
         return userActivitiesAllowlist;
     }

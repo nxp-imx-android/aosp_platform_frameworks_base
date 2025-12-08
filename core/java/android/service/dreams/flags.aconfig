@@ -102,6 +102,13 @@ flag {
 }
 
 flag {
+    name: "dreams_switcher"
+    namespace: "systemui"
+    description: "Enables the dream switcher improvements"
+    bug: "448814507"
+}
+
+flag {
     name: "nap_when_dream_enabled"
     namespace: "systemui"
     description: "Allows napping only when dream settings is enabled"
@@ -122,17 +129,6 @@ flag {
 }
 
 flag {
-    name: "wake_on_stopping_doze"
-    namespace: "systemui"
-    description: "Sends a wakeUp when explicitly stopping the doze dream"
-    bug: "298073718"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-
-flag {
     name: "dream_overlay_started_fix"
     namespace: "systemui"
     description: "Guards fix for the lifetime of when the dream is considered started"
@@ -147,6 +143,16 @@ flag {
     namespace: "systemui"
     description: "Controls whether a dream can be selected by the user"
     bug: "450294768"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "system_dream_death_recipient"
+    namespace: "systemui"
+    description: "Controls whether to use the death recipient for the system dream component"
+    bug: "452716180"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

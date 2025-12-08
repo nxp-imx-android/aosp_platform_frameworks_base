@@ -256,7 +256,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -274,6 +274,46 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_API_NOTIFICATION_CHIP)
+    fun chips_notifWithSemanticStyle_chipTextHasSemanticColor() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            Notification.Metric.FixedText("Safe!"),
+                            Notification.SEMANTIC_STYLE_SAFE,
+                        )
+                    // Notification colors should be IGNORED -> used in notification, not in chip.
+                    this.colors =
+                        PromotedNotificationContentModel.Colors(
+                            backgroundColor = 56,
+                            textColor = 89,
+                        )
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].colors.background(context).defaultColor)
+                .isEqualTo(ColorsModel.SystemThemed.background(context).defaultColor)
+            assertThat((latest!![0].colors as ColorsModel.SystemThemedWithOverride).textRes)
+                .isEqualTo(Notification.semanticStyleToColorRes(Notification.SEMANTIC_STYLE_SAFE))
+            assertThat(latest!![0].colors.outline(context))
+                .isEqualTo(ColorsModel.SystemThemed.outline(context))
+        }
+
+    @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     fun chips_onePromotedNotif_returnAnimFlagEnabled_hasTransitionManager() =
@@ -285,7 +325,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -317,7 +357,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
-                            primaryTextColor = 89,
+                            textColor = 89,
                         )
                 }
             setNotifs(
@@ -2448,9 +2488,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                android.app.Flags.FLAG_API_NOTIFICATION_CHIP
-            )
+            return FlagsParameterization.allCombinationsOf(FLAG_API_NOTIFICATION_CHIP)
         }
 
         private val COMPONENT = ComponentName("package", "class")

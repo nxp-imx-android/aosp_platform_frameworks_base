@@ -23,7 +23,6 @@ import android.view.View
 import android.widget.RemoteViews
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.KeyguardUpdateMonitor
-import com.android.systemui.Flags.communalWidgetTrampolineFix
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.WidgetTrampolineInteractor
@@ -87,13 +86,10 @@ constructor(
                         activityOptions: ActivityOptions
                     ): Boolean {
                         cancelTrampolineMonitoring()
-                        if (communalWidgetTrampolineFix()) {
-                            job =
-                                applicationScope.launch("$TAG#monitorForActivityStart") {
-                                    widgetTrampolineInteractor
-                                        .waitForActivityStartAndDismissKeyguard()
-                                }
-                        }
+                        job =
+                            applicationScope.launch("$TAG#monitorForActivityStart") {
+                                widgetTrampolineInteractor.waitForActivityStartAndDismissKeyguard()
+                            }
                         return super.startPendingIntent(
                             view,
                             pendingIntent,

@@ -184,7 +184,8 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         Slog.i(TAG, "libPath: " + params.libPath);
 
         mNativeThread.scheduleCreateService(
-                r, params.libPath, params.permittedLibsDir, libName, funcName, processState);
+                r, params.zipPath, params.libPath, params.permittedLibsDir, params.targetSdkVersion,
+                params.isShared, params.nativeSharedLibs, libName, funcName, processState);
     }
 
     @Override
@@ -203,7 +204,6 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         mNativeThread.scheduleBindService(
                 token,
                 bindToken,
-                intent.hashCode(),
                 intent.getAction(),
                 data,
                 rebind,
@@ -214,7 +214,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
     @Override
     public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent)
             throws RemoteException {
-        mNativeThread.scheduleUnbindService(token, bindToken, intent.hashCode());
+        mNativeThread.scheduleUnbindService(token, bindToken);
     }
 
     @Override

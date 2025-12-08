@@ -19,8 +19,10 @@ package com.android.server.wm;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import android.content.Intent;
@@ -46,6 +49,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.window.ITaskOrganizer;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransaction.HierarchyOp;
@@ -202,7 +206,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertEquals(WINDOWING_MODE_FREEFORM, task.getWindowingMode());
         assertEquals(desktopOrganizer.getDefaultDesktopTaskBounds(), task.getBounds());
     }
-
 
     @Test
     public void testDesktopMode_moveTaskToFullscreen() {
@@ -467,6 +470,26 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetReparentLeafTaskIfRelaunchFromHome() {
+        final Task rootTask =
+                createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        rootTask.mCreatedByOrganizer = true;
+        rootTask.mTaskOrganizer = mock(ITaskOrganizer.class);
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, true);
+        applyTransaction(wct);
+
+        assertTrue(rootTask.mReparentLeafTaskIfRelaunchFromHome);
+
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, false);
+        applyTransaction(wct);
+
+        assertFalse(rootTask.mReparentLeafTaskIfRelaunchFromHome);
+    }
+
+    @Test
     public void testSetDisablePip() {
         final Task task = createTask(mDisplayContent);
         assertFalse(task.isDisablePip());
@@ -574,6 +597,32 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetDisallowOverrideWindowingModeForChildren() {
+        final Task parentTask = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        final Task childTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(parentTask.getTaskDisplayArea())
+                .setParentTask(parentTask)
+                .build();
+        parentTask.mCreatedByOrganizer = true;
+
+        // Verifies the override windowing mode once set.
+        childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        assertEquals(WINDOWING_MODE_MULTI_WINDOW, childTask.getRequestedOverrideWindowingMode());
+
+        // Verifies the override windowing mode are cleared if the ancestor disallowed.
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setDisallowOverrideWindowingModeForChildren(parentTask.getTaskInfo().token, true);
+        applyTransaction(wct);
+        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+
+        // Verifies the override windowing mode cannot be set if the ancestor disallowed.
+        childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+    }
+
+    @Test
     public void testReparentTasks_clearWindowingMode() {
         final Task parentTask1 = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)
@@ -660,6 +709,35 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         // Note that since `onTop` is `true`, children 2 and 1 should preserve their order
         // in `parentTask2`. So `parentTask2` has now children 2, 1 and 3, from top to bottom.
         assertSame(childTask2, parentTask2.getTopChild());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void setHandlePackageUpdateForRootContainer_withRootTaskLeafTask_onlyUpdatesRootTask() {
+        final Task rootTask = createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        final Task leafTask = new TaskBuilder(mSupervisor)
+                .setParentTask(rootTask)
+                .build();
+        leafTask.setParent(rootTask);
+
+        // The default state is false.
+        assertFalse("Leaf task should initially not handle package updates",
+                leafTask.mHandlePackageUpdate);
+        assertFalse("Root task should initially not handle package updates",
+                rootTask.mHandlePackageUpdate);
+
+        // Set handlePackageUpdate to true.
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = rootTask.getTaskInfo().token;
+        wct.setHandlePackageUpdateForRootContainer(token, true /* handlePackageUpdate */);
+        wct.setHandlePackageUpdateForRootContainer(leafTask.getTaskInfo().token,
+                true /* handlePackageUpdate */);
+        applyTransaction(wct);
+
+        assertTrue("Root task should be updated to handle package updates",
+                rootTask.mHandlePackageUpdate);
+        assertFalse("Leaf task should not handle package updates", leafTask.mHandlePackageUpdate);
     }
 
     private Task createTask(int taskId) {

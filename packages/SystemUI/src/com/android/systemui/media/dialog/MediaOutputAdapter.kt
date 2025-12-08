@@ -665,27 +665,29 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         val contentAlpha: Float = DEVICE_ACTIVE_ALPHA,
     ) {
         private val colorScheme: MediaOutputColorScheme = mController.colorScheme
+        private val isExpandedAudioTileDetailsFeatureEnabled: Boolean =
+            mController.isExpandedAudioTileDetailsFeatureEnabled
 
         val titleColor =
-            if (isConnectedWithFixedVolume) {
+            if (!isExpandedAudioTileDetailsFeatureEnabled && isConnectedWithFixedVolume) {
                 colorScheme.getOnPrimary()
             } else {
                 colorScheme.getOnSurface()
             }
         val subtitleColor =
-            if (isConnectedWithFixedVolume) {
+            if (!isExpandedAudioTileDetailsFeatureEnabled && isConnectedWithFixedVolume) {
                 colorScheme.getOnPrimary()
             } else {
                 colorScheme.getOnSurfaceVariant()
             }
         val iconColor =
-            if (isConnectedWithFixedVolume) {
+            if (!isExpandedAudioTileDetailsFeatureEnabled && isConnectedWithFixedVolume) {
                 colorScheme.getOnPrimary()
             } else {
                 colorScheme.getOnSurface()
             }
         val statusIconColor =
-            if (isConnectedWithFixedVolume) {
+            if (!isExpandedAudioTileDetailsFeatureEnabled && isConnectedWithFixedVolume) {
                 colorScheme.getOnPrimary()
             } else {
                 colorScheme.getOnSurfaceVariant()

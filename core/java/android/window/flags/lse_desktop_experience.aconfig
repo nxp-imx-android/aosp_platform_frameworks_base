@@ -361,16 +361,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_app_launch_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
-    bug: "353651446"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_launch_transitions"
     namespace: "lse_desktop_experience"
     description: "Enables custom transitions for app launches in Desktop Mode."
@@ -797,16 +787,6 @@ flag {
 }
 
 flag {
-    name: "enable_filter_removing_display_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Filter out removing display when reporting top display."
-    bug: "441826525"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_focus_transition_observer_cleanup"
     namespace: "lse_desktop_experience"
     description: "Enable migration from TaskInfo#isFocused to FocusTransitionObserver on per display focus use case"
@@ -939,16 +919,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Add new keyboard shortcut of moving a task into next display"
     bug: "364154795"
-}
-
-flag {
-    name: "enable_multi_display_home_focus_bug_fix"
-    namespace: "lse_desktop_experience"
-    description: "Fix home focus behavior in multi display environment"
-    bug: "371096166"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1113,6 +1083,13 @@ flag {
 }
 
 flag {
+    name: "enable_require_movable_task_api"
+    namespace: "lse_desktop_experience"
+    description: "Enables the API for apps to request movable tasks for new activities via ActivityOptions."
+    bug: "400407139"
+}
+
+flag {
     name: "enable_resizing_metrics"
     namespace: "lse_desktop_experience"
     description: "Whether to enable log collection for task resizing in desktop windowing mode"
@@ -1156,6 +1133,16 @@ flag {
 }
 
 flag {
+    name: "enable_shell_thread_lint_check"
+    namespace: "lse_desktop_experience"
+    description: "Enables annotation to check invoking thread in Shell."
+    bug: "463999903"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."
@@ -1178,6 +1165,16 @@ flag {
     description: "Enables the API to listen to changes of task movability state on displays."
     bug: "400407139"
     is_exported: true
+}
+
+flag {
+    name: "enable_task_positioner_refactor"
+    namespace: "lse_desktop_experience"
+    description: "Enables refactoring the TaskPositioner to separate task move and resize."
+    bug: "465979009"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1223,6 +1220,13 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables drawing a divider bar upon tiling tasks left and right in desktop mode for simultaneous resizing"
     bug: "351769839"
+}
+
+flag {
+    name: "enable_transient_gesture_in_system_ui"
+    namespace: "lse_desktop_experience"
+    description: "Enable transient gesture handling in system UI"
+    bug: "277290737"
 }
 
 flag {
@@ -1321,6 +1325,16 @@ flag {
 }
 
 flag {
+    name: "fullscreen_key_ignores_bubble_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "The fullscreen key does not apply the fullscreen state toggle if a a bubble is the focused task."
+    bug: "457296491"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "grant_manage_key_gestures_to_recents"
     namespace: "lse_desktop_experience"
     description: "Grant MANAGE_KEY_GESTURES permission to the recents holder."
@@ -1336,6 +1350,17 @@ flag {
                  "events like moves smaller than the slop threshold in an integrated way with \n"
                  "touchscreen events."
     bug: "435051530"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+   name: "home_package_windowing_exemptions_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
+                 "check."
+    bug: "447111827"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1476,6 +1501,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "runtime_density_resolution_for_window_layout"
+    namespace: "lse_desktop_experience"
+    description: "Enable runtime density resolution for ActivityInfo.WindowLayout"
+    bug: "438420596"
 }
 
 flag {

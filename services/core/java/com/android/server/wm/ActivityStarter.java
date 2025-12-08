@@ -31,7 +31,6 @@ import static android.app.ActivityManager.isStartResultSuccessful;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
@@ -94,6 +93,7 @@ import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 import static com.android.window.flags.Flags.balReportAbortedActivityStarts;
+import static com.android.window.flags.Flags.trackLaunchOriginator;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -361,12 +361,8 @@ class ActivityStarter {
                 if (mService.mRootWindowContainer == null) {
                     throw new IllegalStateException("Too early to start activity.");
                 }
-                UserHelper userHelper = android.multiuser.Flags.hsuAllowlistActivities()
-                        ? new UserHelper(mService.getUserManagerInternal())
-                        : null;
-
                 starter = new ActivityStarter(mController, mService, mSupervisor, mInterceptor,
-                        userHelper);
+                        mService.mRootWindowContainer.getUserHelper());
             }
 
             return starter;
@@ -453,6 +449,15 @@ class ActivityStarter {
         boolean allowPendingRemoteAnimationRegistryLookup;
 
         /**
+         * Indicates whether the launch request originated from the home activity (Launcher).
+         *
+         * <p>This value is determined at the beginning of {@link ActivityStarter#execute} based on
+         * the source record. It is subsequently used by {@link TaskLaunchParamsModifier#calculate}
+         * to adjust launch parameters for transitions originating from home.
+         */
+        boolean mLaunchOriginatedFromHome;
+
+        /**
          * Ensure constructed request matches reset instance.
          */
         Request() {
@@ -502,6 +507,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = false;
             freezeScreen = false;
             errorCallbackToken = null;
+            mLaunchOriginatedFromHome = false;
         }
 
         /**
@@ -546,6 +552,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = request.allowBalExemptionForSystemProcess;
             freezeScreen = request.freezeScreen;
             errorCallbackToken = request.errorCallbackToken;
+            mLaunchOriginatedFromHome = request.mLaunchOriginatedFromHome;
         }
 
         /**
@@ -812,6 +819,7 @@ class ActivityStarter {
             }
 
             final LaunchingState launchingState;
+            final ActivityRecord originator;
             synchronized (mService.mGlobalLock) {
                 final ActivityRecord caller = ActivityRecord.forTokenLocked(mRequest.resultTo);
                 final int callingUid = mRequest.realCallingUid == Request.DEFAULT_REAL_CALLING_UID
@@ -819,6 +827,12 @@ class ActivityStarter {
                 launchingState = mSupervisor.getActivityMetricsLogger().notifyActivityLaunching(
                         mRequest.intent, caller, callingUid);
                 callerActivityName = caller != null ? caller.info.name : null;
+                originator = trackLaunchOriginator() && caller != null
+                        ? launchingState.tracksOriginator(caller) : null;
+            }
+
+            if (trackLaunchOriginator() && originator != null) {
+                mRequest.mLaunchOriginatedFromHome = originator.isActivityTypeHome();
             }
 
             if (mRequest.intent != null) {
@@ -1138,14 +1152,24 @@ class ActivityStarter {
                 // in the flow, and asking to forward its result back to the previous.  In this
                 // case the activity is serving as a trampoline between the two, so we also want
                 // to update its launchedFromPackage to be the same as the previous activity.
-                // Note that this is safe, since we know these two packages come from the same
-                // uid; the caller could just as well have supplied that same package name itself
-                // . This specifially deals with the case of an intent picker/chooser being
+                // This specifically deals with the case of an intent picker/chooser being
                 // launched in the app flow to redirect to an activity picked by the user, where
                 // we want the final activity to consider it to have been launched by the
                 // previous app activity.
-                callingPackage = sourceRecord.launchedFromPackage;
-                callingFeatureId = sourceRecord.launchedFromFeatureId;
+                final String launchedFromPackage = sourceRecord.launchedFromPackage;
+                if (launchedFromPackage != null) {
+                    final PackageManagerInternal pmInternal =
+                            mService.getPackageManagerInternalLocked();
+                    final int packageUid = pmInternal.getPackageUid(
+                            launchedFromPackage, 0 /* flags */,
+                            UserHandle.getUserId(callingUid));
+                    // Only override callingPackage and callingFeatureId based on package UID check.
+                    // This is to prevent spoofing. See b/457742426.
+                    if (UserHandle.isSameApp(packageUid, callingUid)) {
+                        callingPackage = launchedFromPackage;
+                        callingFeatureId = sourceRecord.launchedFromFeatureId;
+                    }
+                }
             }
         }
 
@@ -3159,9 +3183,7 @@ class ActivityStarter {
                         mStartActivity.appTimeTracker, DEFER_RESUME,
                         "bringingFoundTaskToFront");
                 mMovedToFront = !wasTopOfVisibleRootTask;
-            } else if (intentActivity.getWindowingMode() != WINDOWING_MODE_PINNED) {
-                // Leaves reparenting pinned task operations to task organizer to make sure it
-                // dismisses pinned task properly.
+            } else {
                 // TODO(b/199997762): Consider leaving all reparent operation of organized tasks
                 //  to task organizer.
                 intentTask.reparent(mTargetRootTask, ON_TOP, REPARENT_MOVE_ROOT_TASK_TO_FRONT,

@@ -331,7 +331,7 @@ private class DragControllerImpl(
 
     private fun <T : ContentKey> drag(delta: Float, animation: SwipeAnimation<T>): Float {
         val distance = animation.distance()
-        val previousOffset = animation.dragOffset
+        val previousOffset = animation.gestureContext.dragOffset
         val desiredOffset = previousOffset + delta
 
         // Note: the distance could be negative if fromContent is above or to the left of toContent.
@@ -347,7 +347,7 @@ private class DragControllerImpl(
                 else -> desiredOffset.fastCoerceIn(distance, 0f)
             }
 
-        animation.dragOffset = newOffset
+        animation.gestureContext.dragOffset = newOffset
         return newOffset - previousOffset
     }
 
@@ -377,7 +377,7 @@ private class DragControllerImpl(
         val toContent = swipeAnimation.toContent
 
         // Compute the destination content (and therefore offset) to settle in.
-        val offset = swipeAnimation.dragOffset
+        val offset = swipeAnimation.effectiveDragOffset
         val distance = swipeAnimation.distance()
         val targetContent =
             if (

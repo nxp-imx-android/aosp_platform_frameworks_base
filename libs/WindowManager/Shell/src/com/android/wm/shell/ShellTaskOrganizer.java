@@ -124,9 +124,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          * @param isFromMoveActivityTaskToBack {@code true} if this is from an app calling
          *                                     Activity#moveTaskToBack(), {@code false} if this is
          *                                     from back button press.
+         * @param isOptInOnBackInvoked {@code true} if the app opts in enableOnBackInvokedCallback.
          */
         default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-                boolean isFromMoveActivityTaskToBack) {}
+                boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
             // All TaskListeners should support compat UI except PIP and StageCoordinator.
@@ -223,6 +224,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Callbacks for events on tasks that are going through package update.
+     */
+    public interface PackageUpdateListener {
+        /**
+         * Notifies when a package update is requested for a list of tasks.
+         */
+        void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks);
+    }
+    /**
      * Keys map from either a task id or {@link TaskListenerType}.
      * @see #addListenerForTaskId
      * @see #addListenerForType
@@ -260,6 +270,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     // Listeners that should be notified when a task is updated
     private final CopyOnWriteArrayList<TaskInfoChangedListener> mTaskInfoChangedListeners =
+            new CopyOnWriteArrayList<>();
+
+    // Listeners that should be notified when a task is updated
+    private final CopyOnWriteArrayList<PackageUpdateListener> mPackageUpdateListeners =
             new CopyOnWriteArrayList<>();
 
     private final Object mLock = new Object();
@@ -719,6 +733,24 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Adds a listener to be notified about package updates in tasks.
+     */
+    public void addPackageUpdateListener(PackageUpdateListener listener) {
+        synchronized (mLock) {
+            mPackageUpdateListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a package-update listener.
+     */
+    public void removePackageUpdateListener(PackageUpdateListener listener) {
+        synchronized (mLock) {
+            mPackageUpdateListeners.remove(listener);
+        }
+    }
+
+    /**
      * Returns a surface which can be used to attach overview overlays above home root task
      */
     @Nullable
@@ -919,12 +951,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     @Override
     public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack) {
+            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked) {
         synchronized (mLock) {
-            ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d", taskInfo.taskId);
+            ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d "
+                    + "isFromMoveActivityTaskToBack=%b isOptInOnBackInvoked=%b",
+                    taskInfo.taskId, isFromMoveActivityTaskToBack, isOptInOnBackInvoked);
             final TaskListener listener = getTaskListener(taskInfo);
             if (listener != null) {
-                listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack);
+                listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack,
+                        isOptInOnBackInvoked);
             }
         }
     }
@@ -1317,8 +1352,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     @Override
-    public void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks) {
-        super.onPackageUpdateRequested(updatingTasks);
+    public void onPackageUpdateRequested(@NonNull List<RunningTaskInfo> updatingTasks) {
+        synchronized (mLock) {
+            for (PackageUpdateListener listener : mPackageUpdateListeners) {
+                listener.onPackageUpdateRequested(updatingTasks);
+            }
+        }
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {

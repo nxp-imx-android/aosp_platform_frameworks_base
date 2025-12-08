@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 
 /**
@@ -1843,10 +1845,77 @@ public final class MediaCodecInfo {
                 createDiscreteSampleRates();
             }
 
+            private static int[] MergeSortedArraysAndRemoveDuplicates(int[] a1, int[] a2) {
+                if (a1 == null) {
+                    return a2;
+                } else if (a2 == null) {
+                    return a1;
+                }
+                Integer[] v1 = Arrays.stream(a1).boxed().toArray(Integer[]::new);
+                Integer[] v2 = Arrays.stream(a2).boxed().toArray(Integer[]::new);
+                SortedSet<Integer> set = new TreeSet<>();
+                set.addAll(Arrays.asList(v1));
+                set.addAll(Arrays.asList(v2));
+                return Arrays.stream(set.toArray(new Integer[set.size()]))
+                                  .mapToInt(Integer::intValue).toArray();
+            }
+
+            private static Range<Integer>[] ConvertDiscreteSampleRatesToRanges(int[] rates) {
+                if (rates == null) {
+                    return null;
+                }
+                ArrayList<Range<Integer>> ranges = new ArrayList<Range<Integer>>();
+                for (int rate: rates) {
+                    ranges.add(Range.create(rate, rate));
+                }
+                return ranges.toArray(new Range[ranges.size()]);
+            }
+
+            private static <T extends Comparable<? super T>> Range<T>[] UnionSortedDistinctRanges(
+                    Range<T>[] a, Range<T>[] b) {
+                if (a == null) {
+                    return b;
+                } else if (b == null) {
+                    return a;
+                }
+                ArrayList<Range<T>> res = new ArrayList<>();
+                Range<T> last = null;
+                int ixA = 0;
+                int ixB = 0;
+                while (ixA < a.length || ixB < b.length) {
+                    Range<T> temp = null;
+                    // In each iteration, we pick the range with smaller lower value.
+                    if (ixB == b.length || (ixA < a.length
+                            && a[ixA].getLower().compareTo(b[ixB].getLower()) <= 0)) {
+                        temp = a[ixA];
+                        ixA++;
+                    } else {
+                        temp = b[ixB];
+                        ixB++;
+                    }
+                    if (last == null) {  // first element
+                        last = temp;
+                        continue;
+                    }
+                    // Compare the last range with current temp range
+                    if (last.getUpper().compareTo(temp.getLower()) < 0) { // no overlap
+                        res.add(last);
+                        last = temp;
+                    } else { // last and temp overlap. Merge them
+                        last = last.extend(temp);
+                    }
+                }
+                if (last != null) {
+                    res.add(last);
+                }
+                return res.toArray(new Range[res.size()]);
+            }
+
             private void applyLevelLimits() {
                 int[] sampleRates = null;
-                Range<Integer> sampleRateRange = null, bitRates = null;
-                int maxChannels = MAX_INPUT_CHANNEL_COUNT;
+                Range<Integer>[] sampleRateRanges = null;
+                Range<Integer> bitRates = null;
+                int maxChannels = 1;
                 CodecProfileLevel[] profileLevels = mParent.getProfileLevels();
                 String mime = mParent.getMimeType();
 
@@ -1876,18 +1945,18 @@ public final class MediaCodecInfo {
                     maxChannels = 48;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_VORBIS)) {
                     bitRates = Range.create(32000, 500000);
-                    sampleRateRange = Range.create(8000, 192000);
+                    sampleRateRanges = new Range[] { Range.create(8000, 192000) };
                     maxChannels = 255;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_OPUS)) {
                     bitRates = Range.create(6000, 510000);
                     sampleRates = new int[] { 8000, 12000, 16000, 24000, 48000 };
                     maxChannels = 255;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_RAW)) {
-                    sampleRateRange = Range.create(1, 192000);
+                    sampleRateRanges = new Range[] { Range.create(1, 192000) };
                     bitRates = Range.create(1, 10000000);
                     maxChannels = AudioSystem.OUT_CHANNEL_COUNT_MAX;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_FLAC)) {
-                    sampleRateRange = Range.create(1, 655350);
+                    sampleRateRanges = new Range[] { Range.create(1, 655350) };
                     // lossless codec, so bitrate is ignored
                     maxChannels = 255;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_G711_ALAW)
@@ -1895,6 +1964,7 @@ public final class MediaCodecInfo {
                     sampleRates = new int[] { 8000 };
                     bitRates = Range.create(64000, 64000);
                     // platform allows multiple channels for this format
+                    maxChannels = MAX_INPUT_CHANNEL_COUNT;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_MSGSM)) {
                     sampleRates = new int[] { 8000 };
                     bitRates = Range.create(13000, 13000);
@@ -1917,54 +1987,64 @@ public final class MediaCodecInfo {
                     maxChannels = 6;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_HD)) {
                     for (CodecProfileLevel profileLevel: profileLevels) {
+                        int[] SR = null;
+                        Range<Integer> BR = null;
                         switch (profileLevel.profile) {
                             case CodecProfileLevel.DTS_HDProfileLBR:
-                                sampleRates = new int[]{ 22050, 24000, 44100, 48000 };
-                                bitRates = Range.create(32000, 768000);
+                                SR = new int[]{ 22050, 24000, 44100, 48000 };
+                                BR = Range.create(32000, 768000);
                                 break;
                             case CodecProfileLevel.DTS_HDProfileHRA:
                             case CodecProfileLevel.DTS_HDProfileMA:
-                                sampleRates =
-                                        new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
-                                bitRates = Range.create(96000, 24500000);
+                                SR = new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
+                                BR = Range.create(96000, 24500000);
                                 break;
                             default:
                                 Log.w(TAG, "Unrecognized profile "
                                         + profileLevel.profile + " for " + mime);
                                 mParent.mError |= ERROR_UNRECOGNIZED;
-                                sampleRates =
-                                        new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
-                                bitRates = Range.create(96000, 24500000);
+                                SR = new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
+                                BR = Range.create(96000, 24500000);
                         }
+                        sampleRates = MergeSortedArraysAndRemoveDuplicates(sampleRates, SR);
+                        bitRates = bitRates == null ? BR : bitRates.extend(BR);
                     }
                     maxChannels = 8;
                 } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_UHD)) {
                     for (CodecProfileLevel profileLevel: profileLevels) {
+                        int[] SR = null;
+                        Range<Integer> BR = null;
+                        int MC = 0;
                         switch (profileLevel.profile) {
                             case CodecProfileLevel.DTS_UHDProfileP2:
-                                sampleRates = new int[]{ 48000 };
-                                bitRates = Range.create(96000, 768000);
-                                maxChannels = 10;
+                                SR = new int[]{ 48000 };
+                                BR = Range.create(96000, 768000);
+                                MC = 10;
                                 break;
                             case CodecProfileLevel.DTS_UHDProfileP1:
-                                sampleRates =
-                                        new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
-                                bitRates = Range.create(96000, 24500000);
-                                maxChannels = 32;
+                                SR = new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
+                                BR = Range.create(96000, 24500000);
+                                MC = 32;
                                 break;
                             default:
                                 Log.w(TAG, "Unrecognized profile "
                                         + profileLevel.profile + " for " + mime);
                                 mParent.mError |= ERROR_UNRECOGNIZED;
-                                sampleRates =
-                                        new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
-                                bitRates = Range.create(96000, 24500000);
-                                maxChannels = 32;
+                                SR = new int[]{ 44100, 48000, 88200, 96000, 176400, 192000 };
+                                BR = Range.create(96000, 24500000);
+                                MC = 32;
                         }
+                        sampleRates = MergeSortedArraysAndRemoveDuplicates(sampleRates, SR);
+                        bitRates = bitRates == null ? BR : bitRates.extend(BR);
+                        maxChannels = Math.max(MC, maxChannels);
                     }
                 } else if (GetFlag(() -> android.media.audio.Flags.iamfDefinitionsApi())
                         && mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_IAMF)) {
                     for (CodecProfileLevel profileLevel : profileLevels) {
+                        int[] SR = null;
+                        Range<Integer>[] SRR = null;
+                        Range<Integer> BR = null;
+                        int MC = 0;
                         int iamfEncoding = profileLevel.profile & 0xff;
                         int iamfProfile = profileLevel.profile & (0xff << 16);
                         switch (iamfProfile) {
@@ -1972,19 +2052,19 @@ public final class MediaCodecInfo {
                                 // Per the IAMF spec, the Simple profile can have only one Audio
                                 // Element and 16
                                 // input channels.
-                                maxChannels = 16;
+                                MC = 16;
                                 break;
                             case CodecProfileLevel.IAMF_PROFILE_BASE:
                                 // The Base profile can have up to 18 input channels.
-                                maxChannels = 18;
+                                MC = 18;
                                 break;
                             case CodecProfileLevel.IAMF_PROFILE_BASE_ENHANCED:
                                 // The Base Enhanced profile can have up to 28 input channels.
-                                maxChannels = 28;
+                                MC = 28;
                                 break;
                             default:
                                 // Set maxChannels to the max known for unknown profiles.
-                                maxChannels = 28;
+                                MC = 28;
                                 Log.w(TAG, "Unrecognized IAMF profile "
                                         + iamfProfile + " for "+ mime);
                                 mParent.mError |= ERROR_UNRECOGNIZED;
@@ -1994,43 +2074,53 @@ public final class MediaCodecInfo {
                         // FLAC, and Opus these numbers match their numbers above.
                         switch (iamfEncoding) {
                             case CodecProfileLevel.IAMF_CODEC_OPUS:
-                                sampleRates = new int[] {48000};
-                                bitRates = Range.create(6000, 128000 * maxChannels);
+                                SR = new int[] {48000};
+                                SRR = ConvertDiscreteSampleRatesToRanges(SR);
+                                BR = Range.create(6000, 128000 * MC);
                                 break;
                             case CodecProfileLevel.IAMF_CODEC_AAC:
-                                sampleRates =
-                                        new int[] {
+                                SR = new int[] {
                                             7350, 8000, 11025, 12000, 16000, 22050, 24000, 32000,
                                             44100, 48000, 64000, 88200, 96000
                                         };
-                                bitRates = Range.create(6000, 128000 * maxChannels);
+                                SRR = ConvertDiscreteSampleRatesToRanges(SR);
+                                BR = Range.create(6000, 128000 * MC);
                                 break;
                             case CodecProfileLevel.IAMF_CODEC_FLAC:
-                                sampleRateRange = Range.create(1, 655350);
+                                SRR = new Range[] { Range.create(1, 655350) };
                                 // Lossless, bitrate range ignored.  It's possible to be as wide as
                                 // Range.create(1, 21000000).
+                                BR = Range.create(1, 21000000);
                                 break;
                             case CodecProfileLevel.IAMF_CODEC_PCM:
                                 // PCM is limited by the IAMF spec to the following.
-                                sampleRates = new int[] {16000, 32000, 44100, 48000, 96000};
+                                SR = new int[] {16000, 32000, 44100, 48000, 96000};
+                                SRR = ConvertDiscreteSampleRatesToRanges(SR);
                                 // Lossless, no bitrate range.
+                                BR = Range.create(1, 21000000);
                                 break;
                             default:
                                 Log.w(TAG, "Unrecognized encoding "
                                         + iamfEncoding + " for " + mime);
                                 mParent.mError |= ERROR_UNRECOGNIZED;
                         }
+                        sampleRateRanges = UnionSortedDistinctRanges(sampleRateRanges, SRR);
+                        bitRates = BR == null ? bitRates
+                                              : bitRates == null ? BR
+                                                                 : bitRates.extend(BR);
+                        maxChannels = Math.max(MC, maxChannels);
                     }
                 } else {
                     Log.w(TAG, "Unsupported mime " + mime);
+                    maxChannels = MAX_INPUT_CHANNEL_COUNT;
                     mParent.mError |= ERROR_UNSUPPORTED;
                 }
 
                 // restrict ranges
                 if (sampleRates != null) {
                     limitSampleRates(sampleRates);
-                } else if (sampleRateRange != null) {
-                    limitSampleRates(new Range[] { sampleRateRange });
+                } else if (sampleRateRanges != null) {
+                    limitSampleRates(sampleRateRanges);
                 }
 
                 Range<Integer> channelRange = Range.create(1, maxChannels);
@@ -3562,8 +3652,8 @@ public final class MediaCodecInfo {
                         mBlockCountRange.getLower() * (long)mFrameRateRange.getLower(),
                         mBlockCountRange.getUpper() * (long)mFrameRateRange.getUpper());
                 mFrameRateRange = mFrameRateRange.intersect(
-                        (int)(mBlocksPerSecondRange.getLower()
-                                / mBlockCountRange.getUpper()),
+                        (int)Math.ceil(mBlocksPerSecondRange.getLower()
+                                / (double)mBlockCountRange.getUpper()),
                         (int)(mBlocksPerSecondRange.getUpper()
                                 / (double)mBlockCountRange.getLower()));
             }

@@ -44,7 +44,7 @@ import java.util.concurrent.Executor;
  * that enable inputs and outputs for computer control features.
  */
 public class ComputerControlExtensions {
-    @VisibleForTesting static final int EXTENSIONS_VERSION = 1;
+    @VisibleForTesting static final int EXTENSIONS_VERSION = 2;
 
     private final ArrayMap<AutomatedPackageListener,
             android.companion.virtual.computercontrol.AutomatedPackageListener> mListeners =

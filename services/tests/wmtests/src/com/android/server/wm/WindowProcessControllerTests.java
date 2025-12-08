@@ -17,8 +17,10 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION;
 import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
@@ -304,6 +306,24 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         assertTrue(mWpc.registeredForActivityConfigChanges());
         assertEquals("Config seq of process should not be affected by activity",
                 mWpc.getConfiguration().seq, globalSeq);
+    }
+
+    @Test
+    public void testResolveOverrideConfiguration_clearsActivityTypeInRequestedConfig() {
+        // Set a requested override configuration with a specific activity type.
+        Configuration requestedOverride = new Configuration();
+        requestedOverride.windowConfiguration.setActivityType(ACTIVITY_TYPE_HOME);
+        mWpc.onRequestedOverrideConfigurationChanged(requestedOverride);
+
+        // After a configuration change, the requested override should have its activity type
+        // cleared. This is because resolveOverrideConfiguration modifies the requested config
+        // directly.
+        assertEquals(ACTIVITY_TYPE_UNDEFINED,
+                mWpc.getRequestedOverrideConfiguration().windowConfiguration.getActivityType());
+
+        // And the resolved config should also have it cleared.
+        assertEquals(ACTIVITY_TYPE_UNDEFINED,
+                mWpc.getResolvedOverrideConfiguration().windowConfiguration.getActivityType());
     }
 
     @Test
@@ -732,6 +752,38 @@ public class WindowProcessControllerTests extends WindowTestsBase {
 
         verify(activity, never()).stopIfPossible();
         verify(mAtm).onProcessReadyToBeKilled(activity.packageName, mWpc);
+    }
+
+    @Test
+    public void testStopAndKillProcess_handlePackageUpdateOnRoot_marksLeafUpdating() {
+        class PackageUpdateOrganizer extends StubOrganizer {
+            List<ActivityManager.RunningTaskInfo> mUpdatingTaskInfos = new ArrayList<>();
+
+            @Override
+            public void onPackageUpdateRequested(
+                    List<ActivityManager.RunningTaskInfo> updatingTaskInfos) {
+                mUpdatingTaskInfos = updatingTaskInfos;
+            }
+        }
+        final PackageUpdateOrganizer o = new PackageUpdateOrganizer();
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(o);
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = createActivityRecord(mWpc);
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity.setState(RESUMED, "test");
+
+        // Set up root task
+        final Task rootTask = createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        activity.getTask().setParent(rootTask);
+        activity.getTask().mTaskOrganizer = o;
+        rootTask.mHandlePackageUpdate = true;
+        spyOn(activity);
+
+        mWpc.stopAndKillProcessForUpdate(activity.packageName);
+
+        verify(activity, never()).stopIfPossible();
+        assertEquals(o.mUpdatingTaskInfos.get(0).taskId, activity.getTask().mTaskId);
     }
 
     @Test

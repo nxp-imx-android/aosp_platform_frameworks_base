@@ -56,6 +56,7 @@ import android.hardware.biometrics.IIdentityCheckStateListener;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
+import android.hardware.biometrics.IdentityCheckInfo;
 import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorPropertiesInternal;
@@ -587,7 +588,8 @@ public class BiometricService extends SystemService {
             }
         }
 
-        public boolean getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(int userId) {
+        public boolean getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                PromptInfo promptInfo, int userId) {
             if (!mMandatoryBiometricsEnabled.containsKey(userId)) {
                 updateMandatoryBiometricsForAllProfiles(userId);
             }
@@ -595,11 +597,25 @@ public class BiometricService extends SystemService {
                 updateMandatoryBiometricsRequirementsForAllProfiles(userId);
             }
 
-            return mMandatoryBiometricsEnabled.getOrDefault(userId,
-                    DEFAULT_MANDATORY_BIOMETRICS_STATUS)
-                    && mMandatoryBiometricsRequirementsSatisfied.getOrDefault(userId,
-                    DEFAULT_MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED_STATUS)
-                    && getBiometricStatusForIdentityCheck(userId);
+            final boolean toggleEnabled = mMandatoryBiometricsEnabled.getOrDefault(userId,
+                    DEFAULT_MANDATORY_BIOMETRICS_STATUS);
+            final boolean requirementsSatisfied =
+                    mMandatoryBiometricsRequirementsSatisfied.getOrDefault(userId,
+                            DEFAULT_MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED_STATUS);
+            final boolean strongBiometricsEnrolled = getBiometricStatusForIdentityCheck(userId);
+
+            if (!toggleEnabled) {
+                promptInfo.setIdentityCheckInactiveReason(
+                        IdentityCheckInfo.IDENTITY_CHECK_TOGGLE_DISABLED);
+            } else if (!requirementsSatisfied) {
+                promptInfo.setIdentityCheckInactiveReason(
+                        IdentityCheckInfo.IDENTITY_CHECK_REQUIREMENTS_NOT_SATISFIED);
+            } else if (!strongBiometricsEnrolled) {
+                promptInfo.setIdentityCheckInactiveReason(
+                        IdentityCheckInfo.IDENTITY_CHECK_STRONG_BIOMETRICS_NOT_ENROLLED);
+            }
+
+            return toggleEnabled && requirementsSatisfied && strongBiometricsEnrolled;
         }
 
         private boolean getBiometricStatusForIdentityCheck(int userId) {
@@ -628,16 +644,22 @@ public class BiometricService extends SystemService {
         /**
          * Returns if Identity Check is active or not for the given @param userId.
          */
-        public boolean isIdentityCheckActive(int userId) {
+        public boolean isIdentityCheckActive(PromptInfo promptInfo, int userId) {
             if (mIdentityCheckStatus != null
                     && mIdentityCheckStatus.isIdentityCheckValueForTestAvailable()) {
                 return mIdentityCheckStatus.isIdentityCheckActive();
             }
 
-            if (getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(userId)) {
+            if (getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(promptInfo, userId)) {
                 if (mTrustManager != null) {
                     try {
-                        return !mTrustManager.isInSignificantPlace();
+                        final boolean isDeviceOutsideSignificantPlace =
+                                !mTrustManager.isInSignificantPlace();
+                        if (!isDeviceOutsideSignificantPlace) {
+                            promptInfo.setIdentityCheckInactiveReason(
+                                    IdentityCheckInfo.IDENTITY_CHECK_DEVICE_IN_TRUSTED_LOCATION);
+                        }
+                        return isDeviceOutsideSignificantPlace;
                     } catch (RemoteException e) {
                         Slog.e(TAG, "Remote exception while trying to check "
                                 + "if user is in a trusted location.");

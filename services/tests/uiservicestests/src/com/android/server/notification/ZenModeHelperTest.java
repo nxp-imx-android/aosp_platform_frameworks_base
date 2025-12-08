@@ -7413,18 +7413,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void readXml_manualZenRuleHasNoId_setId() throws Exception {
-        mZenModeHelper.mConfig.manualRule.id = null;
-        ByteArrayOutputStream xmlBytes = writeXmlAndPurge(ZenModeConfig.XML_VERSION_MODES_UI);
-        TypedXmlPullParser parser = getParserForByteStream(xmlBytes);
-
-        mZenModeHelper.readXml(parser, false, UserHandle.USER_ALL, null);
-
-        assertThat(mZenModeHelper.mConfig.manualRule.id).isEqualTo(ZenModeConfig.MANUAL_RULE_ID);
-    }
-
-    @Test
     public void updateHasPriorityChannels_keepsChannelSettings() {
         setupZenConfig();
 

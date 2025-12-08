@@ -3021,6 +3021,9 @@
     <!-- Positive button text for dialog when the keyboard shortcut has not yet enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text">Turn on shortcut</string>
 
+    <!-- Dialog content for the color inversion shortcut confirmation. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_color_inversion_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="I">^3</xliff:g> is the keyboard shortcut to use color inversion. Color inversion turns light screens dark. It also turns dark screens light.</string>
+
     <!-- Text for the Magnification dialog title when the keyboard shortcut is enabled and Magnification has been toggled on. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_title"><xliff:g name="feature_name" example="Magnification">%1$s</xliff:g> keyboard shortcut turned on</string>
     <!-- Text for showing inside the Magnification dialog. [CHAR LIMIT=NONE] -->
@@ -3072,8 +3075,6 @@
 
     <!-- Title text for the accessibility quick access dialog that allows users to quickly toggle on accessibility features. [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_access_dialog_title">Accessibility</string>
-    <!-- Text for the primary button at the bottom of the accessibility quick access dialog that closes the dialog after the user is done toggling accessibility features. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_quick_access_dialog_done_button_text">Done</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
@@ -4146,6 +4147,12 @@
 
     <!-- Content description for location in use icon on dream [CHAR LIMIT=NONE] -->
     <string name="location_active_dream_overlay_content_description">Location active</string>
+
+    <!-- Content description for camera active icon on dream [CHAR LIMIT=NONE] -->
+    <string name="camera_privacy_dream_overlay_content_description">Camera active</string>
+
+    <!-- Content description for microphone active icon on dream [CHAR LIMIT=NONE] -->
+    <string name="mic_privacy_dream_overlay_content_description">Microphone active</string>
 
     <!-- Content description for camera blocked icon on dream [CHAR LIMIT=NONE] -->
     <string name="camera_blocked_dream_overlay_content_description">Camera blocked</string>

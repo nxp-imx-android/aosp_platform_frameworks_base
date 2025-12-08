@@ -136,14 +136,14 @@ public final class RendererWorkflow {
                     if (renderer == null) throw new IllegalStateException("Renderer not found");
 
                     mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                    renderer.render(mInsight, true);
+                    renderer.render(mInsight);
                 } else {
                     // If we don't have a RenderToken, then send the insight to all renderers...
                     for (Renderer renderer : mProvider.getRenderers()) {
                         // ... but only if the renderer actually wants it.
                         if (renderer.isInterestedInInsight(mInsight)) {
                             mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                            renderer.render(mInsight, true);
+                            renderer.render(mInsight);
                         }
                     }
                 }

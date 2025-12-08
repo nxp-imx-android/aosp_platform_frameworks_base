@@ -30,16 +30,23 @@ import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
+
+import com.android.server.supervision.SupervisionLog;
+
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import org.xmlpull.v1.XmlPullParserException;
+import java.util.function.BiConsumer;
 
 /**
  * Provides storage and retrieval of device supervision recovery information and user data.
@@ -48,11 +55,16 @@ import org.xmlpull.v1.XmlPullParserException;
  * data and recovery info.
  */
 public class SupervisionSettings {
+    public static final int VERSION = 1;
 
     private static SupervisionSettings sInstance;
     private static final Object sLock = new Object();
 
     private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
+
+    private int mVersion = 0;
+    private int mPreviousVersion = 0;
+    private boolean mUpgraded = false;
     private SupervisionRecoveryInfo mRecoveryInfo = null;
 
     private static final String PREF_RECOVERY = "supervision_recovery_info";
@@ -60,6 +72,10 @@ public class SupervisionSettings {
     private static final String KEY_ACCOUNT_NAME = "account_name";
     private static final String KEY_ACCOUNT_DATA = "account_data";
     private static final String KEY_STATE = "state";
+
+    private static final String KEY_VERSION = "version";
+    private static final String KEY_PREVIOUS_VERSION = "previous_version";
+    private static final String KEY_UPGRADED = "upgraded";
 
     private static final String PREF_DATA = "supervision_data";
     private static final String PREF_USER_DATA = "supervision_user_data";
@@ -91,6 +107,7 @@ public class SupervisionSettings {
 
     private SupervisionSettings() {
         loadUserData();
+        maybePerformDataMigration();
 
         if (Flags.supervisionRecoveryImprovements()) {
             loadRecoveryInfo();
@@ -103,6 +120,21 @@ public class SupervisionSettings {
                 sInstance = new SupervisionSettings();
             }
             return sInstance;
+        }
+    }
+
+    /**
+     * Performs the given action for each user data entry in the settings.
+     *
+     * <p>This method iterates over all stored {@link SupervisionUserData} entries
+     * and applies the provided {@link BiConsumer} action, passing the user ID and
+     * the corresponding user data.
+     *
+     * @param action The action to be performed for each user data entry.
+     */
+    public void forEachUserData(BiConsumer<Integer, SupervisionUserData> action) {
+        for (int i = 0; i < mUserData.size(); i++) {
+            action.accept(mUserData.keyAt(i), mUserData.valueAt(i));
         }
     }
 
@@ -152,36 +184,15 @@ public class SupervisionSettings {
         try (FileInputStream stream = userDataFile.openRead()) {
             final TypedXmlPullParser parser = Xml.resolvePullParser(stream);
             XmlUtils.beginDocument(parser, PREF_DATA);
+            if (Flags.enableSupervisionManagerPolicyApis()) {
+                mVersion = parser.getAttributeInt(null, KEY_VERSION, 0);
+                mPreviousVersion = parser.getAttributeInt(null, KEY_PREVIOUS_VERSION, 0);
+                mUpgraded = parser.getAttributeBoolean(null, KEY_UPGRADED, false);
+            }
             final int outerDepth = parser.getDepth();
             while (XmlUtils.nextElementWithin(parser, outerDepth)) {
-                if (parser.getName().equals(PREF_USER_DATA)) {
-                    int userId = parser.getAttributeInt(null, KEY_USER_ID);
-                    SupervisionUserData data = getUserData(userId);
-                    data.supervisionRoleHolders = new ArraySet<>();
-                    data.supervisionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
-                    data.supervisionAppPackage = parser.getAttributeValue(null, KEY_APP_PACKAGE);
-                    if (data.supervisionAppPackage.isEmpty()) {
-                        data.supervisionAppPackage = null;
-                    }
-                    data.supervisionLockScreenEnabled =
-                            parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
-                    while (XmlUtils.nextElementWithin(parser, outerDepth + 1)) {
-                        if (parser.getName().equals(KEY_LOCK_SCREEN_OPTIONS)) {
-                            data.supervisionLockScreenOptions =
-                                    PersistableBundle.restoreFromXml(parser);
-                        } else if (parser.getName().equals(KEY_ROLE_HOLDERS_LIST)) {
-                            final int roleHoldersDepth = parser.getDepth();
-                            while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
-                                if (parser.getName().equals(KEY_ROLE_HOLDER)) {
-                                    String roleHolder = parser.getAttributeValue(null, "package");
-                                    data.supervisionRoleHolders.add(roleHolder);
-                                }
-                            }
-                        } else if (Flags.enableSupervisionManagerPolicyApis()
-                                && parser.getName().equals(KEY_POLICIES_LIST)) {
-                            parsePolicies(parser, data);
-                        }
-                    }
+                if (PREF_USER_DATA.equals(parser.getName())) {
+                    parseUserData(parser);
                 }
             }
         } catch (IOException | XmlPullParserException e) {
@@ -199,6 +210,11 @@ public class SupervisionSettings {
             xml.startDocument(null, true);
             xml.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
             xml.startTag(null, PREF_DATA);
+            if (Flags.enableSupervisionManagerPolicyApis()) {
+                xml.attributeInt(null, KEY_VERSION, mVersion);
+                xml.attributeInt(null, KEY_PREVIOUS_VERSION, mPreviousVersion);
+                xml.attributeBoolean(null, KEY_UPGRADED, mUpgraded);
+            }
             for (int i = 0; i < mUserData.size(); i++) {
                 SupervisionUserData data = mUserData.valueAt(i);
                 xml.startTag(null, PREF_USER_DATA);
@@ -328,6 +344,56 @@ public class SupervisionSettings {
         }
     }
 
+    private void parseUserData(TypedXmlPullParser parser)
+            throws IOException, XmlPullParserException {
+        final int userId = parser.getAttributeInt(null, KEY_USER_ID);
+        final SupervisionUserData data = getUserData(userId);
+
+        data.supervisionRoleHolders = new ArraySet<>();
+        data.supervisionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
+        final String appPackage = parser.getAttributeValue(null, KEY_APP_PACKAGE);
+        data.supervisionAppPackage = "".equals(appPackage) ? null : appPackage;
+        data.supervisionLockScreenEnabled =
+                parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
+
+        final int depth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, depth)) {
+            final String tagName = parser.getName();
+            if (tagName == null) {
+                continue;
+            }
+            switch (tagName) {
+                case KEY_LOCK_SCREEN_OPTIONS -> data.supervisionLockScreenOptions =
+                        PersistableBundle.restoreFromXml(parser);
+                case KEY_ROLE_HOLDERS_LIST -> parseRoleHolders(parser, data);
+                case KEY_POLICIES_LIST -> {
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        parsePolicies(parser, data);
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseRoleHolders(TypedXmlPullParser parser, SupervisionUserData data)
+            throws IOException, XmlPullParserException {
+        final int roleHoldersDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
+            if (KEY_ROLE_HOLDER.equals(parser.getName())) {
+                final String roleHolder = parser.getAttributeValue(null, "package");
+                if (roleHolder != null) {
+                    data.supervisionRoleHolders.add(roleHolder);
+                }
+            }
+        }
+    }
+
+    private void maybePerformDataMigration() {
+        if (mVersion < VERSION) {
+            mPreviousVersion = mVersion;
+        }
+    }
+
     private void addPoliciesToXml(TypedXmlSerializer xml, List<Policy> policies)
             throws XmlPullParserException, IOException {
 
@@ -393,5 +459,24 @@ public class SupervisionSettings {
                 return null;
             }
         }
+    }
+
+    public int getVersion() {
+        return mVersion;
+    }
+
+    public void setVersion(int version) {
+        mPreviousVersion = mVersion;
+        mVersion = version;
+        mUpgraded = true;
+    }
+
+    void dump(IndentingPrintWriter pw) {
+        pw.println("SupervisionSettings state:");
+        pw.increaseIndent();
+        pw.println("version: " + mVersion);
+        pw.println("previousVersion: " + mPreviousVersion);
+        pw.println("upgraded: " + mUpgraded);
+        pw.decreaseIndent();
     }
 }

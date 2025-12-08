@@ -17,7 +17,6 @@
 package android.telecom;
 
 import android.Manifest;
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -124,88 +123,31 @@ public abstract class CallScreeningService extends Service {
     @SdkConstant(SdkConstant.SdkConstantType.SERVICE_ACTION)
     public static final String SERVICE_INTERFACE = "android.telecom.CallScreeningService";
 
-    /**
-     * A metadata key for a {@link CallScreeningService} that enables screening of outgoing calls.
-     *
-     * <p><b>Purpose:</b> This metadata provides a mechanism for an OEM-designated
-     * CallScreeningService to intercept and screen outgoing calls. It acts as a feature flag that
-     * the service have to enable to receive notifications for outgoing calls.
-     *
-     * <p><b>Usage:</b> To screen outgoing calls, the OEM-designated {@link CallScreeningService}
-     * have to include this metadata in its manifest declaration and set the value to {@code true}.
-     * The application must also be a system app and be configured in the system's resources
-     * ({@code R.string.oem_call_screening_service_component}) as the designated service.
-     *
-     * <pre>
-     * &lt;service android:name=".OEMCallScreeningService"
-     *          android:permission="android.permission.BIND_SCREENING_SERVICE"&gt;
-     *     &lt;intent-filter&gt;
-     *         &lt;action android:name="android.telecom.CallScreeningService" /&gt;
-     *     &lt;/intent-filter&gt;
-     *     &lt;meta-data android:name="android.telecom.METADATA_SCREEN_OUTGOING_CALLS"
-     *                   android:value="true" /&gt;
-     * &lt;/service&gt;
-     * </pre>
-     *
-     * If set to {@code true}, Telecom will bind to the service and invoke
-     * {@link #onScreenOutgoingCall(Call.Details)}. If {@code false} or not declared, this service
-     * will not be notified of outgoing calls.
-     * @hide
-     */
-    @SystemApi
-    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_OEM_OUTGOING_CALL_SCREENING)
-    public static final String METADATA_SCREEN_OUTGOING_CALLS =
-            "android.telecom.METADATA_SCREEN_OUTGOING_CALLS";
-
     private static final int MSG_SCREEN_CALL = 1;
-    private static final int MSG_SCREEN_OUTGOING_CALL = 2;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            SomeArgs args = null;
-            try {
-                args = (SomeArgs) msg.obj;
-                final ICallScreeningAdapter adapter = (ICallScreeningAdapter) args.arg1;
-                final Call.Details callDetails = Call.Details
-                        .createFromParcelableCall((ParcelableCall) args.arg2);
-                mCallScreeningAdapter = adapter;
-
-                switch (msg.what) {
-                    case MSG_SCREEN_CALL -> {
-                        try {
-                            onScreenCall(callDetails);
-                            if (callDetails.getCallDirection() == Call.Details.DIRECTION_OUTGOING) {
-                                adapter.onScreeningResponse(
-                                        callDetails.getTelecomCallId(),
-                                        new ComponentName(getPackageName(), getClass().getName()),
-                                        null);
-                            }
-                        } catch (RemoteException e) {
-                            Log.w(this, "Exception when screening call: " + e);
+            switch (msg.what) {
+                case MSG_SCREEN_CALL:
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    try {
+                        mCallScreeningAdapter = (ICallScreeningAdapter) args.arg1;
+                        Call.Details callDetails = Call.Details
+                                .createFromParcelableCall((ParcelableCall) args.arg2);
+                        onScreenCall(callDetails);
+                        if (callDetails.getCallDirection() == Call.Details.DIRECTION_OUTGOING) {
+                            mCallScreeningAdapter.onScreeningResponse(
+                                    callDetails.getTelecomCallId(),
+                                    new ComponentName(getPackageName(), getClass().getName()),
+                                    null);
                         }
+                    } catch (RemoteException e) {
+                        Log.w(this, "Exception when screening call: " + e);
+                    } finally {
+                        args.recycle();
                     }
-                    case MSG_SCREEN_OUTGOING_CALL -> {
-                        try {
-                            if (android.telecom.flags.Flags.enableOemOutgoingCallScreening()) {
-                                onScreenOutgoingCall(callDetails);
-                            } else {
-                                adapter.onScreeningResponse(
-                                        callDetails.getTelecomCallId(),
-                                        new ComponentName(getPackageName(), getClass().getName()),
-                                        null);
-                            }
-                        } catch (RemoteException e) {
-                            Log.w(this, "Exception when screening outgoing call: " + e);
-                        }
-                    }
-                }
-            } catch (ClassCastException | NullPointerException e) {
-                Log.w(this, "Exception parsing message arguments", e);
-            } finally {
-                if (args != null) {
-                    args.recycle();
-                }
+                    break;
             }
         }
     };
@@ -218,14 +160,6 @@ public abstract class CallScreeningService extends Service {
             args.arg1 = adapter;
             args.arg2 = call;
             mHandler.obtainMessage(MSG_SCREEN_CALL, args).sendToTarget();
-        }
-
-        @Override
-        public void screenOutgoingCall(ICallScreeningAdapter adapter, ParcelableCall call) {
-            SomeArgs args = SomeArgs.obtain();
-            args.arg1 = adapter;
-            args.arg2 = call;
-            mHandler.obtainMessage(MSG_SCREEN_OUTGOING_CALL, args).sendToTarget();
         }
     }
 
@@ -596,31 +530,6 @@ public abstract class CallScreeningService extends Service {
      * @param callDetails Information about a new call, see {@link Call.Details}.
      */
     public abstract void onScreenCall(@NonNull Call.Details callDetails);
-
-    /**
-     * The system calls this method for a new outgoing call when this service is designated
-     * as the OEM call screening service.
-     * <p>
-     * An implementation can override this method to allow or block outgoing calls. The default
-     * implementation allows all outgoing calls by calling
-     * {@link #respondToCall(Call.Details, CallResponse)} with an empty response.
-     * <p>
-     * To block the call, the service must call
-     * {@link #respondToCall(Call.Details, CallResponse)} with a {@link CallResponse} that is built
-     * with {@link CallResponse.Builder#setDisallowCall(boolean)} or
-     * {@link CallResponse.Builder#setRejectCall(boolean)}.
-     * <p>
-     * To receive outgoing calls to screen, the service must declare the metadata key
-     * {@link #METADATA_SCREEN_OUTGOING_CALLS} with a value of {@code true} in its manifest.
-     *
-     * @param callDetails Details about the new outgoing call. See {@link Call.Details}.
-     * @hide
-     */
-    @SystemApi
-    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_OEM_OUTGOING_CALL_SCREENING)
-    public void onScreenOutgoingCall(@NonNull Call.Details callDetails) {
-        respondToCall(callDetails, new CallResponse.Builder().build());
-    }
 
     /**
      * Responds to the given incoming call, either allowing it, silencing it or disallowing it.

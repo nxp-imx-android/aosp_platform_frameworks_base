@@ -62,10 +62,10 @@ public interface StatusBarManagerInternal {
      * @param displayId The id of the display to which the IME is bound.
      * @param vis The IME window visibility.
      * @param backDisposition The IME back disposition mode.
-     * @param showImeSwitcher Whether the IME Switcher button should be shown.
+     * @param showImeSwitcherButton Whether the IME Switcher button should be shown.
      */
     void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-            @BackDispositionMode int backDisposition, boolean showImeSwitcher);
+            @BackDispositionMode int backDisposition, boolean showImeSwitcherButton);
 
     /**
      * See {@link android.app.StatusBarManager#setIcon(String, int, int, String)}.
@@ -243,13 +243,6 @@ public interface StatusBarManagerInternal {
      * @param displayId of the current display.
      */
     void moveFocusedTaskToFullscreen(int displayId);
-
-    /**
-     * Enters stage split from a current running app.
-     *
-     * @see com.android.internal.statusbar.IStatusBar#moveFocusedTaskToStageSplit
-     */
-    void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop);
 
     /**
      * Change the split screen focus to the left / top app or the right / bottom app based on

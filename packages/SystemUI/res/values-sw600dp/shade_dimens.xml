@@ -66,4 +66,26 @@
     <dimen
         name="overlay_qs_layout_brightness_vertical_padding"
         android:featureFlag="com.android.systemui.desktop_sizing">0dp</dimen>
+
+    <!-- QS shade overlay tool bar -->
+    <dimen
+        name="overlay_qs_layout_toolbar_height"
+        android:featureFlag="com.android.systemui.desktop_sizing">36dp</dimen>
+    <dimen
+        name="toolbar_bottom_padding"
+        android:featureFlag="com.android.systemui.desktop_sizing">6dp</dimen>
+    <dimen
+        name="toolbar_button_colored_background_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">36dp</dimen>
+    <dimen
+        name="toolbar_button_icon_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">20dp</dimen>
+    <dimen
+        name="toolbar_button_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">36dp</dimen>
+
+    <!-- QS shade overlay volume bar -->
+    <dimen
+        name="overlay_qs_layout_volume_extra_padding"
+        android:featureFlag="com.android.systemui.desktop_sizing">0dp</dimen>
 </resources>

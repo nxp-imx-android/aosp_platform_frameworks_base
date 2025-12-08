@@ -5,14 +5,6 @@
 package: "com.android.wm.shell"
 container: "system"
 
-
-flag {
-    name: "enable_taskbar_navbar_unification"
-    namespace: "multitasking"
-    description: "Enables taskbar / navbar unification"
-    bug: "309671494"
-}
-
 flag {
     name: "enable_pip2"
     namespace: "multitasking"
@@ -301,6 +293,26 @@ flag {
     namespace: "multitasking"
     description: "Allows you to swipe up to dismiss a bubble in bubble bar"
     bug: "399910368"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "resolve_trampoline_destination_packages"
+    namespace: "multitasking"
+    description: "Fixes a bug where resolving package name for task trampoline."
+    bug: "370653710"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_open_app_bubble_from_lockscreen"
+    namespace: "multitasking"
+    description: "Fix opening app bubble from notification on lock screen"
+    bug: "416389130"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

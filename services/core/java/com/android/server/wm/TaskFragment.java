@@ -1613,10 +1613,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
-        // The activity may be waiting for stop, but that is no longer
-        // appropriate for it.
-        mTaskSupervisor.mStoppingActivities.remove(next);
-
         if (DEBUG_SWITCH) Slog.v(TAG_SWITCH, "Resuming " + next);
 
         mTaskSupervisor.setLaunchSource(next.getUid());
@@ -1770,6 +1766,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             mAtmService.updateCpuStats();
 
             ProtoLog.v(WM_DEBUG_STATES, "Moving to RESUMED: %s (in existing)", next);
+
+            // The activity may be waiting for stop, but that is no longer
+            // appropriate for it.
+            mTaskSupervisor.mStoppingActivities.remove(next);
 
             next.setState(RESUMED, "resumeTopActivity");
 
@@ -2147,8 +2147,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 } else if (!prev.isVisibleRequested() || shouldSleepOrShutDownActivities()) {
                     // If we were visible then resumeTopActivities will release resources before
                     // stopping.
-                    prev.addToStopping(true /* scheduleIdle */, false /* idleDelayed */,
-                            "completePauseLocked");
+                    prev.addToStopping(true /* scheduleIdle */, "completePauseLocked");
                 }
             } else {
                 ProtoLog.v(WM_DEBUG_STATES, "App died during pause, not stopping: %s", prev);
@@ -2381,6 +2380,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 && !thisTask.isOverrideBoundsAllowed()) {
             // clear the bounds if it is not allowed from its ancestors.
             resolvedConfig.windowConfiguration.setBounds(new Rect());
+        }
+        if (resolvedConfig.windowConfiguration.getWindowingMode() != WINDOWING_MODE_UNDEFINED
+                && thisTask != null && !thisTask.isOverrideWindowingModeAllowed()) {
+            // clear the windowingMode if it is not allowed from its ancestors.
+            resolvedConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
         }
 
         if (mRelativeEmbeddedBounds != null && !mRelativeEmbeddedBounds.isEmpty()) {

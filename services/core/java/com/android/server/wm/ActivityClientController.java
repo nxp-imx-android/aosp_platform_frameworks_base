@@ -1432,10 +1432,19 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     private void executeFullscreenRequestTransition(int fullscreenRequest, IRemoteCallback callback,
             ActivityRecord r, Transition transition) {
-        if (!Flags.delegateRequestFullscreenHandlingToShell()) {
-            final Task targetTask = getMultiwindowFullscreenTargetTask();
-            final @RequestResult int validateResult = validateMultiwindowFullscreenRequestLocked(
-                    targetTask, fullscreenRequest, r);
+        final Task targetTask = getMultiwindowFullscreenTargetTask();
+        final @RequestResult int validateResult = validateMultiwindowFullscreenRequestLocked(
+                targetTask, fullscreenRequest, r);
+        if (Flags.delegateRequestFullscreenHandlingToShell()) {
+            // Only report to the client if the request failed, otherwise approved just means it
+            // passed early validation, but WMShell still needs to reject or approve it.
+            if (validateResult != RESULT_APPROVED) {
+                reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
+                transition.abort();
+                return;
+            }
+        } else {
+            // Final result, report it to the client.
             reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
             if (validateResult != RESULT_APPROVED) {
                 transition.abort();

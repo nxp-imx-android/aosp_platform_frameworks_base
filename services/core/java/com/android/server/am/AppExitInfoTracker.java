@@ -293,8 +293,12 @@ public final class AppExitInfoTracker {
                 obtainRawRecord(app, System.currentTimeMillis())).sendToTarget();
     }
 
-    void scheduleNoteAppKill(final ProcessRecord app, final @Reason int reason,
-            final @SubReason int subReason, final String msg) {
+    void scheduleNoteAppKill(
+            final ProcessRecord app,
+            final @Reason int reason,
+            final @SubReason int subReason,
+            final String msg,
+            @Nullable ApplicationExitInfo.AnrInfo anrInfo) {
         if (!mAppExitInfoLoaded.get()) {
             return;
         }
@@ -306,6 +310,9 @@ public final class AppExitInfoTracker {
         raw.setReason(reason);
         raw.setSubReason(subReason);
         raw.setDescription(msg);
+        if (anrInfo != null) {
+            raw.setAnrInfo(anrInfo);
+        }
         mKillHandler.obtainMessage(KillHandler.MSG_APP_KILL, raw).sendToTarget();
     }
 
@@ -334,7 +341,7 @@ public final class AppExitInfoTracker {
                         + "(uid=" + uid + ") since its process record is not found");
             }
         } else {
-            scheduleNoteAppKill(app, reason, subReason, msg);
+            scheduleNoteAppKill(app, reason, subReason, msg, /* anrInfo= */ null);
         }
     }
 

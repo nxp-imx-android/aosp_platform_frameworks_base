@@ -76,7 +76,6 @@ class DisplayDisconnectTransitionHandler(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        logV("handleRequest: transition=$transition, request=$request")
         val displayChange = request.displayChange
         if (
             !(DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
@@ -88,7 +87,7 @@ class DisplayDisconnectTransitionHandler(
 
         var reparentDisplay = displayChange.disconnectReparentDisplay
         if (reparentDisplay == INVALID_DISPLAY) {
-            logV("handleRequest: no reparent display; returning")
+            ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: handleRequest: no reparent display; returning")
             return null
         }
 
@@ -132,10 +131,6 @@ class DisplayDisconnectTransitionHandler(
 
         // Return null since another handler may want to make specific task changes.
         return null
-    }
-
-    private fun logV(msg: String, vararg arguments: Any?) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {

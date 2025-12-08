@@ -26,7 +26,7 @@ import static android.service.dreams.Flags.allowDreamWithChargeLimit;
 import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
-import static android.service.dreams.Flags.wakeOnStoppingDoze;
+import static android.service.dreams.Flags.systemDreamDeathRecipient;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
@@ -183,7 +183,14 @@ public final class DreamManagerService extends SystemService {
 
     // A temporary dream component that, when present, takes precedence over user configured dream
     // component.
+    @GuardedBy("mLock")
     private ComponentName mSystemDreamComponent;
+
+    @GuardedBy("mLock")
+    private IBinder mSystemDreamComponentToken;
+
+    @GuardedBy("mLock")
+    private IBinder.DeathRecipient mSystemDreamComponentDeathRecipient;
 
     private ComponentName mDreamOverlayServiceName;
 
@@ -318,6 +325,7 @@ public final class DreamManagerService extends SystemService {
                 com.android.internal.R.bool.config_supportDreamWirelessChargingRestriction);
 
         mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
+        mSystemDreamComponentDeathRecipient = new SystemDreamComponentDeathRecipient();
     }
 
     @Override
@@ -897,19 +905,75 @@ public final class DreamManagerService extends SystemService {
                 userId);
     }
 
-    private void setSystemDreamComponentInternal(ComponentName componentName) {
+    @VisibleForTesting
+    void setSystemDreamComponentInternal(ComponentName component, IBinder token) {
+        if (systemDreamDeathRecipient() && component != null && token == null) {
+            throw new IllegalArgumentException("System dream component requires a non-null token.");
+        }
+
         synchronized (mLock) {
-            if (Objects.equals(mSystemDreamComponent, componentName)) {
+            if (Objects.equals(mSystemDreamComponent, component)
+                    && Objects.equals(mSystemDreamComponentToken, token)) {
                 return;
             }
 
-            mSystemDreamComponent = componentName;
-            reportKeepDreamingWhenUnpluggingChanged(shouldKeepDreamingWhenUnplugging());
-            // Switch dream if currently dreaming and not dozing.
-            if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
-                startDreamInternal(false /*doze*/, (mSystemDreamComponent == null ? "clear" : "set")
-                        + " system dream component" /*reason*/);
+            if (systemDreamDeathRecipient()) {
+                releaseSystemDreamTokenLocked();
+                if (token != null && !attachSystemDreamDeathRecipientLocked(token)) {
+                    Slog.w(TAG, "System dream component client died before linkToDeath. Clearing.");
+                    component = null;
+                    token = null;
+                }
             }
+
+            final ComponentName previousComponent = mSystemDreamComponent;
+            mSystemDreamComponent = component;
+            mSystemDreamComponentToken = token;
+
+            if (!Objects.equals(previousComponent, mSystemDreamComponent)) {
+                handleSystemDreamChangedLocked();
+            }
+        }
+    }
+
+    /**
+     * Helper to release the lifecycle token for the system dream component. This must be called
+     * while holding mLock.
+     */
+    @GuardedBy("mLock")
+    private void releaseSystemDreamTokenLocked() {
+        if (mSystemDreamComponentToken != null) {
+            mSystemDreamComponentToken.unlinkToDeath(mSystemDreamComponentDeathRecipient, 0);
+            mSystemDreamComponentToken = null;
+        }
+    }
+
+    /**
+     * Attempts to link the death recipient. Returns false if the binder is already dead.
+     */
+    @GuardedBy("mLock")
+    private boolean attachSystemDreamDeathRecipientLocked(IBinder token) {
+        try {
+            token.linkToDeath(mSystemDreamComponentDeathRecipient, 0);
+            return true;
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Handles side effects of the system dream component changing. This must be called while
+     * holding mLock.
+     */
+    @GuardedBy("mLock")
+    private void handleSystemDreamChangedLocked() {
+        reportKeepDreamingWhenUnpluggingChanged(shouldKeepDreamingWhenUnplugging());
+
+        // Switch dream if currently dreaming and not dozing.
+        if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
+            startDreamInternal(false /*doze*/,
+                    (mSystemDreamComponent == null ? "clear" : "set")
+                            + " system dream component");
         }
     }
 
@@ -1025,12 +1089,10 @@ public final class DreamManagerService extends SystemService {
                     mCurrentDream.name.flattenToString());
         }
         if (mCurrentDream.isDozing) {
-            if (wakeOnStoppingDoze()) {
-                mPowerManager.wakeUp(
-                        SystemClock.uptimeMillis(),
-                        PowerManager.WAKE_REASON_DOZE_STOPPED,
-                        "android.server.dreams:requestAwaken");
-            }
+            mPowerManager.wakeUp(
+                    SystemClock.uptimeMillis(),
+                    PowerManager.WAKE_REASON_DOZE_STOPPED,
+                    "android.server.dreams:requestAwaken");
             mDozeWakeLock.release();
         }
         mCurrentDream = null;
@@ -1233,12 +1295,12 @@ public final class DreamManagerService extends SystemService {
         }
 
         @Override // Binder call
-        public void setSystemDreamComponent(ComponentName componentName) {
+        public void setSystemDreamComponent(ComponentName componentName, IBinder token) {
             checkPermission(android.Manifest.permission.WRITE_DREAM_STATE);
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                DreamManagerService.this.setSystemDreamComponentInternal(componentName);
+                DreamManagerService.this.setSystemDreamComponentInternal(componentName, token);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
@@ -1644,4 +1706,12 @@ public final class DreamManagerService extends SystemService {
             }
         }
     };
+
+    private final class SystemDreamComponentDeathRecipient implements IBinder.DeathRecipient {
+        @Override
+        public void binderDied() {
+            Slog.w(TAG, "System dream component client died. Clearing system dream.");
+            setSystemDreamComponentInternal(null, null);
+        }
+    }
 }

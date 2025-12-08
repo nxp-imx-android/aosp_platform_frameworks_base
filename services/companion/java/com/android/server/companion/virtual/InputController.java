@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.hardware.input.IVirtualInputDevice;
@@ -44,7 +45,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /** Controls virtual input devices, including device lifecycle and event dispatch. */
-class InputController {
+final class InputController {
 
     private final Object mLock = new Object();
 
@@ -191,6 +192,7 @@ class InputController {
     }
 
     @GuardedBy("mLock")
+    @Nullable
     private IBinder getTokenForInputDeviceIdLocked(int inputDeviceId) {
         try {
             for (int i = 0; i < mInputDevices.size(); ++i) {

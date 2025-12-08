@@ -42,6 +42,8 @@ import com.android.systemui.telephony.domain.telephonyListenerManager
 import com.android.systemui.util.kotlin.JavaAdapter
 import com.android.systemui.util.kotlin.javaAdapter
 import java.util.concurrent.Executor
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 val Kosmos.carrierTextInteractor by Fixture {
     CarrierTextInteractorImpl(
@@ -63,6 +65,8 @@ val Kosmos.carrierTextInteractor by Fixture {
         scope = applicationCoroutineScope,
     )
 }
+
+val Kosmos.fakeCarrierTextInteractor by Fixture { FakeCarrierTextInteractorImpl() }
 
 private class FakeCarrierTextManagerBuilder(
     context: Context?,
@@ -111,4 +115,9 @@ private class FakeCarrierTextManagerBuilder(
         this.debugLocationString = debugLocationString
         return this
     }
+}
+
+class FakeCarrierTextInteractorImpl : CarrierTextInteractor {
+    override val initialValue: CharSequence? = "No service"
+    override val carrierText: StateFlow<CharSequence?> = MutableStateFlow(initialValue)
 }

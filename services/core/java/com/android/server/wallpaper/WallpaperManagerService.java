@@ -1298,7 +1298,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                         if (lockWp != null && mOriginalSystem.connection != null) {
                             // Successful rename, set old system+lock to the pending lock wp
                             if (DEBUG) {
-                                Slog.v(TAG, "static system+lock to system success");
+                                Slog.v(TAG, "migrate static system+lock to lock success");
                             }
                             lockWp.setDescription(mOriginalSystem.getDescription());
                             lockWp.connection = mOriginalSystem.connection;
@@ -1308,7 +1308,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                         } else {
                             // Failed rename, use current system wp for both
                             if (DEBUG) {
-                                Slog.v(TAG, "static system+lock to system failure");
+                                Slog.v(TAG, "migrate static system+lock to lock failure");
                             }
                             WallpaperData currentSystem = mWallpaperMap.get(mNewWallpaper.userId);
                             // In the constructor, we copied the system+lock wallpaper to
@@ -1318,8 +1318,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                             // changes to currentSystem.mWhich alone won't update the corresponding
                             // flag in currentSystem.connection.mWallpaper.mWhich. Let's point
                             // currentSystem.connection.mWallpaper back to currentSystem.
-                            if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)
-                                    && currentSystem.connection != null) {
+                            if (currentSystem.connection != null) {
                                 currentSystem.connection.mWallpaper = currentSystem;
                             }
                             currentSystem.mWhich = FLAG_SYSTEM | FLAG_LOCK;
@@ -1329,7 +1328,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     } else {
                         // Live wp: just update old system+lock to lock only
                         if (DEBUG) {
-                            Slog.v(TAG, "live system+lock to system success");
+                            Slog.v(TAG, "migrate live system+lock to lock success");
                         }
                         mOriginalSystem.mWhich = FLAG_LOCK;
                         updateEngineFlags(mOriginalSystem);
@@ -1339,13 +1338,12 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 } else if (mNewWallpaper.mWhich == FLAG_LOCK) {
                     // New wp is lock only, so old system+lock is now system only
                     if (DEBUG) {
-                        Slog.v(TAG, "system+lock to lock");
+                        Slog.v(TAG, "migrate system+lock to system");
                     }
                     WallpaperData currentSystem = mWallpaperMap.get(mNewWallpaper.userId);
                     if (currentSystem.wallpaperId == mOriginalSystem.wallpaperId) {
                         // Fixing the reference, see above for more details.
-                        if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)
-                                && currentSystem.connection != null) {
+                        if (currentSystem.connection != null) {
                             currentSystem.connection.mWallpaper = currentSystem;
                         }
                         currentSystem.mWhich = FLAG_SYSTEM;
@@ -3675,9 +3673,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     }
 
     private Handler getHandlerForBindingWallpaperLocked() {
-        if (!Flags.bindWallpaperServiceOnItsOwnThreadDuringAUserSwitch()) {
-            return mContext.getMainThreadHandler();
-        }
         if (mInitialUserSwitch) {
             return mContext.getMainThreadHandler();
         }

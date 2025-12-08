@@ -108,7 +108,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         mMainExecutor = spy(new TestShellExecutor());
         mController = new StartingWindowController(mContext, mShellInit, mShellController,
                 mTaskOrganizer, mSplashScreenExecutor, mTypeAlgorithm, mIconProvider,
-                mTransactionPool, mMainExecutor, mTransitions);
+                mTransactionPool, mMainExecutor, mTransitions, mMainExecutor);
         mShellInit.init();
     }
 

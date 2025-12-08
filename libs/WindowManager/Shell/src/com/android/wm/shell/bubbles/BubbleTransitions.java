@@ -32,6 +32,7 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -612,7 +613,7 @@ public class BubbleTransitions {
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
             // TODO(b/456051408): this should not be needed after we support switch in root task
             if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
-                    && mBubble.getTaskView().isInitialized()) {
+                    && mBubble.getTaskView().isSurfaceCreated()) {
                 surfaceCreated();
             }
         }
@@ -1185,8 +1186,8 @@ public class BubbleTransitions {
                     opts.setTaskAlwaysOnTop(true);
                     opts.setLaunchNextToBubble(true);
                     opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
-                    opts.setLaunchBounds(launchBounds);
                 }
+                opts.setLaunchBounds(launchBounds);
                 // TODO(b/437451940): start the pending intent or shortcut via WCT
                 if (mBubble.isShortcut()) {
                     final LauncherApps launcherApps = mContext.getSystemService(
@@ -1259,6 +1260,14 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction finishT,
                 @NonNull IBinder mergeTarget,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            if (!com.android.window.flags.Flags.enableForceOpaque()) {
+                return;
+            }
+            if (info.getType() != TRANSIT_SPLIT_DISMISS) {
+                return;
+            }
+            startT.apply();
+            finishCallback.onTransitionFinished(null /* wct */);
         }
 
         @Override
@@ -1456,7 +1465,7 @@ public class BubbleTransitions {
         private void cleanup() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvertToBubble.cleanup(): removeCookie=%s",
                     mLaunchCookie.binder);
-            if (!mHasPlayed && com.android.window.flags.Flags.fixBubbleTrampolineLaunchTwice()) {
+            if (!mHasPlayed) {
                 // Cleanup the new Bubble which is never used.
                 // This would happen when the animation is aborted.
                 mBubbleData.dismissBubbleWithKey(mBubble.getKey(),

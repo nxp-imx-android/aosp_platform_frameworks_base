@@ -1636,7 +1636,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             return false;
         }
         boolean isInStatusBar = event.getY(event.getActionIndex()) < mStatusBarMinHeight;
-        if (ShadeExpandsOnStatusBarLongPress.isEnabled() && isInStatusBar) {
+        if (isInStatusBar) {
             mStatusBarLongPressGestureDetector.get().handleTouch(event);
         }
         final int action = event.getActionMasked();

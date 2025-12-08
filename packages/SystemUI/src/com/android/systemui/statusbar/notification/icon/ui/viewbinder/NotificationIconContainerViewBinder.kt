@@ -63,12 +63,14 @@ object NotificationIconContainerViewBinder {
         failureTracker: StatusBarIconViewBindingFailureTracker,
         viewStore: IconViewStore,
     ): Unit = coroutineScope {
+        val logTag = "statusbar[$displayId]"
+        view.setLogTag(logTag)
         launch {
             val contrastColorUtil = ContrastColorUtil.getInstance(view.context)
             val iconColors: StateFlow<NotificationIconColors> =
                 viewModel.iconColors(displayId).stateIn(this)
             viewModel.icons.bindIcons(
-                logTag = "statusbar",
+                logTag = logTag,
                 view = view,
                 configuration = configuration,
                 systemBarUtilsState = systemBarUtilsState,
@@ -105,6 +107,8 @@ object NotificationIconContainerViewBinder {
         failureTracker: StatusBarIconViewBindingFailureTracker,
         viewStore: IconViewStore,
     ): Unit = coroutineScope {
+        val logTag = "aod"
+        view.setLogTag(logTag)
         view.setUseIncreasedIconScale(true)
         launch {
             // Collect state shared across all icon views, so that we are not duplicating collects
@@ -116,7 +120,7 @@ object NotificationIconContainerViewBinder {
             val tintAlpha = viewModel.tintAlpha.stateIn(this)
             val animsEnabled = viewModel.areIconAnimationsEnabled.stateIn(this)
             viewModel.icons.bindIcons(
-                logTag = "aod",
+                logTag = logTag,
                 view = view,
                 configuration = configuration,
                 systemBarUtilsState = systemBarUtilsState,
@@ -286,6 +290,17 @@ object NotificationIconContainerViewBinder {
                             }
                             if (actual === expected) {
                                 continue
+                            }
+                            if (expected.parent !== view) {
+                                // TODO(b/465733688): Somehow the icon has been externally attached
+                                //  to a different IconContainer.
+                                val oldParent = expected.parent as? ViewGroup
+                                error(
+                                    "re-sort[$logTag]: View parent mismatch!\n" +
+                                        "actual parent = $oldParent, " +
+                                        "expected parent = $view, " +
+                                        "child = $expected"
+                                )
                             }
                             view.removeView(expected)
                             view.addView(expected, i)

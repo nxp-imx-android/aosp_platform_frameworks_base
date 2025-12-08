@@ -1245,7 +1245,7 @@ public final class Call {
          * @return The user
          *
          */
-        @FlaggedApi(Flags.FLAG_CALL_DETAILS_GET_ASSOCIATED_USER_API)
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_DETAILS_GET_ASSOCIATED_USER_API2)
         public @NonNull UserHandle getAssociatedUser() {
             return mAssociatedUser;
         }

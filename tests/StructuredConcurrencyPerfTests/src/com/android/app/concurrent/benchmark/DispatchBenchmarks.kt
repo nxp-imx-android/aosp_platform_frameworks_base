@@ -28,14 +28,13 @@ import com.android.app.concurrent.benchmark.event.WritableEventFactory
 import com.android.app.concurrent.benchmark.util.CyclicCountDownBarrier
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorBuilder
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
-import com.android.app.concurrent.benchmark.util.IntParam
 import com.android.app.concurrent.benchmark.util.LooperThreadWithExecutorBuilder
 import com.android.app.concurrent.benchmark.util.LooperThreadWithHandlerDispatcherBuilder
 import com.android.app.concurrent.benchmark.util.LooperThreadWithImmediateHandlerDispatcherBuilder
 import com.android.app.concurrent.benchmark.util.ThreadBuilder
-import com.android.app.concurrent.benchmark.util.allConsumeCpuParams
-import com.android.app.concurrent.benchmark.util.consumeCpu
+import com.android.app.concurrent.benchmark.util.allCpuWorkloads
 import com.android.app.concurrent.benchmark.util.dbg
+import com.android.app.concurrent.benchmark.util.stressCpu
 import com.android.app.concurrent.benchmark.util.times
 import java.util.concurrent.Executor
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -57,38 +56,38 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
 interface ConsumeCpuBenchmark {
-    val mainCpu: IntParam
-    val bgCpu: IntParam
+    val mainWorkload: Int
+    val bgWorkload: Int
 
-    fun consumeMainCpu(): Double {
-        return consumeCpu(mainCpu)
+    fun runMainWorkload(): Double {
+        return stressCpu(mainWorkload)
     }
 
-    fun consumeBgCpu(): Double {
-        return consumeCpu(bgCpu)
+    fun runBgWorkload(): Double {
+        return stressCpu(bgWorkload)
     }
 }
 
 /**
- * Calculate the runtime of [consumeCpu] when dispatched to the background thread.
+ * Calculate the runtime of [stressCpu] when dispatched to the background thread.
  *
- * @param mainCpu arg to pass to [consumeCpu] when called on the main "BenchmarkRunner" thread
- * @param bgCpu arg to pass to [consumeCpu] when called on the bg thread
+ * @param mainCpu arg to pass to [stressCpu] when called on the main "BenchmarkRunner" thread
+ * @param bgCpu arg to pass to [stressCpu] when called on the bg thread
  */
 @RunWith(Parameterized::class)
 class BaselineDispatchBenchmark(
     param: ThreadBuilder<Executor>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) : BaseSchedulerBenchmark<Executor>(param), ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkLoad={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder, LooperThreadWithExecutorBuilder) *
-                allConsumeCpuParams *
-                allConsumeCpuParams
+                allCpuWorkloads *
+                allCpuWorkloads
     }
 
     @Test
@@ -99,16 +98,16 @@ class BaselineDispatchBenchmark(
         benchmarkRule.runBenchmark {
             withBarrier(count = 1) {
                 beforeFirstIteration { barrier -> scheduler.execute { barrier.countDown() } }
-                onEachIteration { n, barrier ->
+                onEachIteration { _, barrier ->
                     dbg { "main:0" }
                     scheduler.execute {
                         dbg { "bg:A" }
-                        bgSum += consumeBgCpu()
+                        bgSum += runBgWorkload()
                         dbg { "bg:B" }
                         barrier.countDown()
                     }
                     dbg { "main:1" }
-                    mainSum += consumeMainCpu()
+                    mainSum += runMainWorkload()
                     dbg { "main:2" }
                 }
             }
@@ -137,17 +136,17 @@ private class SimpleExecutorDispatcher(val executor: Executor) :
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class StartCoroutineDispatchBenchmark(
     param: ThreadBuilder<Executor>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) : BaseSchedulerBenchmark<Executor>(param), ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkload={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder, LooperThreadWithExecutorBuilder) *
-                allConsumeCpuParams *
-                allConsumeCpuParams
+                allCpuWorkloads *
+                allCpuWorkloads
     }
 
     @Test
@@ -159,11 +158,11 @@ class StartCoroutineDispatchBenchmark(
         benchmarkRule.runBenchmark {
             withBarrier(count = 1) {
                 beforeFirstIteration { barrier -> scheduler.execute { barrier.countDown() } }
-                onEachIteration { n, barrier ->
+                onEachIteration { _, barrier ->
                     dbg { "main:0" }
                     suspend {
                             dbg { "bg:A" }
-                            bgSum += consumeBgCpu()
+                            bgSum += runBgWorkload()
                             dbg { "bg:B" }
                             barrier.countDown()
                         }
@@ -173,7 +172,7 @@ class StartCoroutineDispatchBenchmark(
                         .intercepted()
                         .resume(Unit)
                     dbg { "main:1" }
-                    mainSum += consumeMainCpu()
+                    mainSum += runMainWorkload()
                     dbg { "main:2" }
                 }
             }
@@ -187,17 +186,17 @@ class StartCoroutineDispatchBenchmark(
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ResumeCoroutineDispatchBenchmark(
     param: ThreadBuilder<Executor>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) : BaseSchedulerBenchmark<Executor>(param), ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkLoad={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder, LooperThreadWithExecutorBuilder) *
-                allConsumeCpuParams *
-                allConsumeCpuParams
+                allCpuWorkloads *
+                allCpuWorkloads
     }
 
     @Test
@@ -220,7 +219,7 @@ class ResumeCoroutineDispatchBenchmark(
                     suspend {
                             while (true) {
                                 dbg { "bg:A" }
-                                bgSum += consumeBgCpu()
+                                bgSum += runBgWorkload()
                                 dbg { "bg:B" }
                                 barrier.waitForNextIteration()
                             }
@@ -233,9 +232,9 @@ class ResumeCoroutineDispatchBenchmark(
                 }
             }
             disableNumPartiesCheck()
-            onEachIteration { n ->
+            onEachIteration {
                 dbg { "main:0" }
-                mainSum += consumeMainCpu()
+                mainSum += runMainWorkload()
                 dbg { "main:1" }
             }
         }
@@ -248,19 +247,19 @@ class ResumeCoroutineDispatchBenchmark(
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LaunchCoroutineDispatchBenchmark(
     param: ThreadBuilder<CoroutineScope>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) : BaseSchedulerBenchmark<CoroutineScope>(param), ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkLoad={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(
                 ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder,
                 LooperThreadWithHandlerDispatcherBuilder,
                 LooperThreadWithImmediateHandlerDispatcherBuilder,
-            ) * allConsumeCpuParams * allConsumeCpuParams
+            ) * allCpuWorkloads * allCpuWorkloads
     }
 
     @Test
@@ -270,16 +269,16 @@ class LaunchCoroutineDispatchBenchmark(
         benchmarkRule.runBenchmark {
             withBarrier(count = 1) {
                 beforeFirstIteration { barrier -> scheduler.launch { barrier.countDown() } }
-                onEachIteration { n, barrier ->
+                onEachIteration { _, barrier ->
                     dbg { "main:0" }
                     scheduler.launch {
                         dbg { "bg:A" }
-                        bgSum += consumeBgCpu()
+                        bgSum += runBgWorkload()
                         dbg { "bg:B" }
                         barrier.countDown()
                     }
                     dbg { "main:1" }
-                    mainSum += consumeMainCpu()
+                    mainSum += runMainWorkload()
                     dbg { "main:2" }
                 }
             }
@@ -305,7 +304,7 @@ private sealed interface BaseEventDispatchBenchmark<T, E : Any> : ConsumeCpuBenc
                     context.read {
                         trigger.observe {
                             dbg { "bg:A" }
-                            bgSum += consumeBgCpu()
+                            bgSum += runBgWorkload()
                             dbg { "bg:B" }
                             barrier.countDown()
                         }
@@ -318,7 +317,7 @@ private sealed interface BaseEventDispatchBenchmark<T, E : Any> : ConsumeCpuBenc
                     trigger.update(n)
                     dbg { "main:1" }
                 }
-                mainSum += consumeMainCpu()
+                mainSum += runMainWorkload()
                 dbg { "main:2" }
             }
         }
@@ -330,8 +329,8 @@ private sealed interface BaseEventDispatchBenchmark<T, E : Any> : ConsumeCpuBenc
 @RunWith(Parameterized::class)
 class SimpleObservableEventDispatchBenchmark(
     param: ThreadBuilder<Executor>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) :
     BaseEventBenchmark<Executor, SimpleWritableEventBuilder>(
         param,
@@ -341,20 +340,20 @@ class SimpleObservableEventDispatchBenchmark(
     ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkLoad={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder, LooperThreadWithExecutorBuilder) *
-                allConsumeCpuParams *
-                allConsumeCpuParams
+                allCpuWorkloads *
+                allCpuWorkloads
     }
 }
 
 @RunWith(Parameterized::class)
 class MutableStateFlowEventDispatchBenchmark(
     param: ThreadBuilder<CoroutineScope>,
-    override val mainCpu: IntParam,
-    override val bgCpu: IntParam,
+    override val mainWorkload: Int,
+    override val bgWorkload: Int,
 ) :
     BaseEventBenchmark<CoroutineScope, FlowWritableEventBuilder>(
         param,
@@ -364,13 +363,13 @@ class MutableStateFlowEventDispatchBenchmark(
     ConsumeCpuBenchmark {
 
     companion object {
-        @Parameters(name = "{0},{1},{2}")
+        @Parameters(name = "{0}:mainWorkload={1}:bgWorkLoad={2}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(
                 ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder,
                 LooperThreadWithHandlerDispatcherBuilder,
                 LooperThreadWithImmediateHandlerDispatcherBuilder,
-            ) * allConsumeCpuParams * allConsumeCpuParams
+            ) * allCpuWorkloads * allCpuWorkloads
     }
 }

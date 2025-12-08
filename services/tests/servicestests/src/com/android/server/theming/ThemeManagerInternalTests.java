@@ -20,9 +20,12 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
@@ -94,6 +97,8 @@ public class ThemeManagerInternalTests {
     private WallpaperManagerInternal mWallpaperManagerInternal;
     @Mock
     private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
+    private ThemeOverlayHelper mOverlayHelper;
 
     private FakeScheduledExecutorService mSchedulerExecutor;
     private ThemeStateManager mStateManager;
@@ -125,11 +130,13 @@ public class ThemeManagerInternalTests {
             return new int[]{requestedUserId};
         });
 
-        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
+                mWallpaperManagerInternal);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor);
         mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mHardwareColorRule.sysPropReader, mStateManager);
+                mHardwareColorRule.sysPropReader, mStateManager, mOverlayHelper);
         mStateManager.onServicesReady();
     }
 
@@ -193,7 +200,7 @@ public class ThemeManagerInternalTests {
 
         assertThat(didRegister).isTrue();
         // When no theme is set, oldSettings should be null.
-        mUnderTest.notifySettingsChange(mUserId, newPayload);
+        mUnderTest.notifySettingsChange(mUserId, null, newPayload);
         assertThat(returnedOldSettings[0]).isNull();
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
     }
@@ -232,7 +239,7 @@ public class ThemeManagerInternalTests {
         assertThat(didRegister).isTrue();
 
         // Notify with the new settings.
-        mUnderTest.notifySettingsChange(mUserId, newPayload);
+        mUnderTest.notifySettingsChange(mUserId, oldPayload, newPayload);
 
         // The callback should receive the new settings correctly.
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
@@ -362,6 +369,13 @@ public class ThemeManagerInternalTests {
                 .setContrast(0.8f)
                 .build();
 
+        // Mock the overlay helper to return a dummy overlay
+        FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
+        android.content.om.FabricatedOverlay mockFabricatedOverlay =
+                mock(android.content.om.FabricatedOverlay.class);
+        when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
+
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
 
@@ -372,6 +386,13 @@ public class ThemeManagerInternalTests {
     public void generateDynamicColorOverlay_withNullOptions_isNotNull() {
         startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
         ThemeInfo options = new ThemeInfo.Builder().build();
+
+        // Mock the overlay helper to return a dummy overlay
+        FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
+        android.content.om.FabricatedOverlay mockFabricatedOverlay =
+                mock(android.content.om.FabricatedOverlay.class);
+        when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
@@ -386,6 +407,13 @@ public class ThemeManagerInternalTests {
                 .setSeedColor(Color.valueOf(Color.GREEN))
                 .setContrast(0.8f)
                 .build();
+
+        // Mock the overlay helper to return a dummy overlay
+        FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
+        android.content.om.FabricatedOverlay mockFabricatedOverlay =
+                mock(android.content.om.FabricatedOverlay.class);
+        when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);

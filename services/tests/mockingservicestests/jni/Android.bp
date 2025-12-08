@@ -25,6 +25,7 @@ cc_library_shared {
         ":lib_oomConnection_native",
         ":lib_lazilyRegisteredServices_native",
         ":lib_phantomProcessList_native",
+        ":lib_memoryLimiter_native",
         "onload.cpp",
     ],
 

@@ -425,7 +425,7 @@ public final class WMShell implements
 
             @Override
             public void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
-                    @BackDispositionMode int backDisposition, boolean showImeSwitcher) {
+                    @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) {
                 if (displayId == mDisplayTracker.getDefaultDisplayId()
                         && (vis & InputMethodService.IME_VISIBLE) != 0) {
                     oneHanded.stopOneHanded(
@@ -512,6 +512,9 @@ public final class WMShell implements
             public void onCanCreateDesksChanged(boolean canCreateDesks) {
 
             }
+
+            @Override
+            public void onTaskAppearingInDesk(int displayId, int deskId, int taskId) {}
         }, mSysUiMainExecutor);
         mCommandQueue.addCallback(new CommandQueue.Callbacks() {
             @Override
@@ -523,10 +526,6 @@ public final class WMShell implements
             public void moveFocusedTaskToFullscreen(int displayId) {
                 desktopMode.moveFocusedTaskToFullscreen(displayId,
                         DesktopModeTransitionSource.KEYBOARD_SHORTCUT);
-            }
-            @Override
-            public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
-                desktopMode.moveFocusedTaskToStageSplit(displayId, leftOrTop);
             }
         });
     }

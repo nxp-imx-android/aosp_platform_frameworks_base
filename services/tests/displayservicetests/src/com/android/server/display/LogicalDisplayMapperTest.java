@@ -21,6 +21,7 @@ import static android.hardware.devicestate.feature.flags.Flags.FLAG_DEVICE_STATE
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD;
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_DISPLAY_GROUP_REMOVED;
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH;
+import static android.os.PowerManager.GO_TO_SLEEP_REASON_UNKNOWN;
 import static android.os.PowerManager.WAKE_REASON_LID;
 import static android.os.PowerManager.WAKE_REASON_UNFOLD_DEVICE;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -38,6 +39,7 @@ import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_CHA
 import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_REMOVED;
 import static com.android.server.display.DisplayDeviceInfo.DIFF_EVERYTHING;
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
+import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
@@ -941,6 +943,24 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testStateChange_TriggersSleepWithUnknownReason() {
+        DeviceState triggerSleepState = createDeviceState(0,
+                "Trigger sleep", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP),
+                Collections.emptySet());
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
+        initLogicalDisplayMapper();
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                triggerSleepState);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_UNKNOWN),
+                eq(0));
+    }
+
+    @Test
     @EnableFlags(FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     public void testDeviceShouldNotBeWokenWhenExitingEmulatedState() {
         initLogicalDisplayMapper();
@@ -1306,7 +1326,7 @@ public class LogicalDisplayMapperTest {
         DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
                 FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
         DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
-                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY | FLAG_ALLOWS_CONTENT_MODE_SWITCH);
 
         LogicalDisplay display1 = add(device1);
         display1.setCanHostTasksLocked(true);

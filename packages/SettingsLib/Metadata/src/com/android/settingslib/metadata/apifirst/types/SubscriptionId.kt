@@ -16,4 +16,4 @@
 
 package com.android.settingslib.metadata.apifirst.types
 
-class SubscriptionId : ApiFirstType
+class SubscriptionId : ApiFirstType<Int>

@@ -125,7 +125,7 @@ class SimpleActivateEventBenchmark(param: ThreadBuilder<Executor>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorBuilder)
     }
 }
 
@@ -141,6 +141,6 @@ class FlowActivateEventBenchmark(param: ThreadBuilder<CoroutineScope>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
     }
 }

@@ -149,26 +149,6 @@ flag {
 }
 
 flag {
-  name: "reduce_unnecessary_schedule_idle_msg"
-  namespace: "windowing_frontend"
-  description: "Reduce lock contention on display thread"
-  bug: "445613287"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "opt_out_override_orientation_to_user"
-  namespace: "windowing_frontend"
-  description: "If apps opt out universal resizable, the override-to-user should not take effect"
-  bug: "443951799"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "default_animator_single_transaction2"
   namespace: "windowing_frontend"
   description: "Reduce binder transaction to SF if there are multiple default animations"
@@ -214,6 +194,16 @@ flag {
   is_fixed_read_only: true
   metadata {
       purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "commit_keyguard_occlusion_before_waking_up"
+  namespace: "windowing_frontend"
+  description: "Report latest keyguard state before notifying KeyguardService to wake up"
+  bug: "427961601"
+  metadata {
+    purpose: PURPOSE_BUGFIX
   }
 }
 
@@ -539,5 +529,25 @@ flag {
     bug: "390288449"
     metadata {
         purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_cross_activity_back_animation_in_bubbles"
+    namespace: "windowing_frontend"
+    description: "Enables the predictive cross-activity back animation in bubbles"
+    bug: "449125591"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "simulate_touch_display_from_navigation_back"
+    namespace: "windowing_frontend"
+    description: "Trigger potential display focus change for non-gesture input because SystemUI won't inject input event."
+    bug: "461642122"
+    metadata {
+      purpose: PURPOSE_BUGFIX
     }
 }

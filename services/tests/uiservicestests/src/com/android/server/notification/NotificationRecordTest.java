@@ -906,6 +906,23 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
+    public void testKeyNotConversation() {
+        StatusBarNotification sbn = getMessagingStyleNotification();
+        NotificationRecord record = new NotificationRecord(mMockContext, sbn, channel);
+        record.setShortcutInfo(mock(ShortcutInfo.class));
+
+        assertTrue(record.isConversation());
+
+        Bundle signals = new Bundle();
+        signals.putBoolean(Adjustment.KEY_NOT_CONVERSATION, true);
+        record.addAdjustment(new Adjustment(mPkg, record.getKey(), signals, null, sbn.getUserId()));
+
+        record.applyAdjustments();
+
+        assertFalse(record.isConversation());
+    }
+
+    @Test
     public void testUserSentiment() {
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,
                 true /* defaultSound */, false /* buzzy */, false /* defaultBuzz */,
@@ -1700,7 +1717,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS)
     public void testClearsAdjustmentsWhenApplied() {
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,
                 true /* defaultSound */, false /* buzzy */, false /* defaultBuzz */,
@@ -1728,7 +1744,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS)
     public void testSkipsExcludedAdjustmentKeys() {
         String summarization = "summarized!";
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,

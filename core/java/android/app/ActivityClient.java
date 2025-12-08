@@ -37,6 +37,7 @@ import android.util.Singleton;
 import android.view.RemoteAnimationDefinition;
 import android.window.SizeConfigurationBuckets;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.IKeyguardDismissCallback;
 
 /**
@@ -455,7 +456,9 @@ public class ActivityClient {
         }
     }
 
-    void requestMultiwindowFullscreen(IBinder token, int request, IRemoteCallback callback) {
+    /** Handles the fullscreen mode request. */
+    @VisibleForTesting
+    public void requestMultiwindowFullscreen(IBinder token, int request, IRemoteCallback callback) {
         try {
             getActivityClientController().requestMultiwindowFullscreen(token, request, callback);
         } catch (RemoteException e) {

@@ -1988,8 +1988,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mAtmService.getTaskChangeNotificationController()
                         .notifyTaskRequestedOrientationChanged(task.mTaskId, orientation);
             }
-            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND.
-            final ActivityRecord topCandidate = !r.isVisibleRequested() ? topRunningActivity() : r;
+            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND,
+            // or it is a translucent SCREEN_ORIENTATION_UNSPECIFIED activity.
+            final ActivityRecord topCandidate = !r.isOnTop() ? topRunningActivity() : r;
             if (topCandidate != null && handleTopActivityLaunchingInDifferentOrientation(
                     topCandidate, r, true /* checkOpening */)) {
                 // Display orientation should be deferred until the top fixed rotation is finished.
@@ -2054,9 +2055,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 orientation = nextCandidate.getRequestedOrientation();
             }
         }
-        if (orientation == topOrientation) {
-            if (mFixedRotationLaunchingApp != null
-                    && orientation == mFixedRotationLaunchingApp.getRequestedOrientation()) {
+        if (orientation == topOrientation || orientation == SCREEN_ORIENTATION_UNSPECIFIED) {
+            if (mFixedRotationLaunchingApp != null) {
                 // Reuse the transform if the non-top-visible activity has the same orientation as
                 // the rotated launching top.
                 ar.linkFixedRotationTransform(mFixedRotationLaunchingApp);
@@ -7325,12 +7325,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 @Nullable ImeTracker.Token statsToken) {
             try {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS);
+                        ImeTracker.PHASE_SERVER_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS);
                 mRemoteInsetsController.showInsets(types, statsToken);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed to deliver showInsets", e);
                 ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS);
+                        ImeTracker.PHASE_SERVER_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS);
             }
         }
 
@@ -7338,12 +7338,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             try {
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_HIDE_INSETS);
+                        ImeTracker.PHASE_SHELL_REMOTE_INSETS_CONTROL_TARGET_HIDE_INSETS);
                 mRemoteInsetsController.hideInsets(types, statsToken);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed to deliver hideInsets", e);
                 ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_HIDE_INSETS);
+                        ImeTracker.PHASE_SHELL_REMOTE_INSETS_CONTROL_TARGET_HIDE_INSETS);
             }
         }
 

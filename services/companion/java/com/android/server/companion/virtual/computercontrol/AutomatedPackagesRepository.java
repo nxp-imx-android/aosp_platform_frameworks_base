@@ -47,7 +47,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /** Keeps track of all packages running on computer control sessions and notifies listeners. */
-public class AutomatedPackagesRepository {
+public final class AutomatedPackagesRepository {
 
     private static final String TAG = AutomatedPackagesRepository.class.getSimpleName();
 

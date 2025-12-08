@@ -117,6 +117,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.UserProfileContexts
+import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler.PendingMixedTransition
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -278,6 +279,7 @@ class DesktopTasksController(
     private val pipTransitionState: Optional<PipTransitionState>,
     private val lockTaskChangeListener: LockTaskChangeListener,
     private val launcherApps: LauncherApps,
+    private val transitionStateHolder: TransitionStateHolder,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -428,6 +430,9 @@ class DesktopTasksController(
         dragAndDropController.addListener(this)
         desksOrganizer.addOnDesktopTaskInfoChangedListener { taskInfo ->
             onTaskInfoChanged(taskInfo)
+        }
+        desksOrganizer.setBackPressOnDeskListener { task ->
+            minimizeTask(task, MinimizeReason.KEY_GESTURE)
         }
     }
 
@@ -608,6 +613,19 @@ class DesktopTasksController(
             val isHome = taskInfo.activityType == ACTIVITY_TYPE_HOME
             return@filter focused && isNotDesktop && !isHome
         }
+    }
+
+    /**
+     * Returns a list of tasks that should be excluded from display restoration on a projected
+     * display device. This ultimately ends up being focused non-desktop tasks and pipped task.
+     */
+    fun getExcludedFromProjectedRestoreTasks(displayId: Int, userId: Int): List<RunningTaskInfo> {
+        val list = mutableListOf<RunningTaskInfo>()
+        list.addAll(getFocusedNonDesktopTasks(displayId, userId))
+        pipTransitionState.get().pipTaskInfo?.let { pipTaskInfo ->
+            if (pipTaskInfo is RunningTaskInfo) list.add(pipTaskInfo)
+        }
+        return list
     }
 
     /** Moves a desktop task into fullscreen mode. */
@@ -1197,8 +1215,15 @@ class DesktopTasksController(
         var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
+        // Exclude tasks from restore on projected devices.
         val excludedTasks =
-            getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
+            if (desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
+                listOf()
+            } else {
+                getExcludedFromProjectedRestoreTasks(DEFAULT_DISPLAY, userId).map { task ->
+                    task.taskId
+                }
+            }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
         val globallyFocusedTask =
             shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
@@ -1226,8 +1251,15 @@ class DesktopTasksController(
                     )
                 }
 
+                val pipTask = pipTransitionState.getOrNull()?.pipTaskInfo
                 preservedTaskIds.asReversed().forEach { taskId ->
                     if (!excludedTasks.contains(taskId)) {
+                        if (taskId == pipTask?.taskId) {
+                            mPipScheduler.scheduleExitPipViaExpand(
+                                /* wasVisible= */ true,
+                                displayId,
+                            )
+                        }
                         addRestoreTaskToDeskChanges(
                                 wct = wct,
                                 deskId = newDeskId,
@@ -2496,7 +2528,6 @@ class DesktopTasksController(
         userId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
         dragEvent: DragEvent? = null,
-        bounds: Rect? = null,
     ): IBinder {
         logger.v(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
@@ -2574,20 +2605,7 @@ class DesktopTasksController(
                         op.pendingIntent?.intent?.component == pipTaskComponent
                 ) {
                     logger.v("Scheduling exit PiP via expand on app launch for $pipTaskComponent")
-                    mPipScheduler.scheduleExitPipViaExpand(
-                        /* wasVisible= */ true,
-                        displayId,
-                        bounds,
-                        WINDOWING_MODE_FREEFORM,
-                    )
-                    shellTaskOrganizer.getRunningTaskInfo(pipTaskInfo.taskId)?.let {
-                        moveToDisplay(
-                            it,
-                            displayId,
-                            bounds = bounds,
-                            enterReason = EnterReason.EXIT_PIP,
-                        )
-                    }
+                    mPipScheduler.scheduleExitPipViaExpand(/* wasVisible= */ true, displayId)
                     return Binder()
                 }
             }
@@ -2831,7 +2849,6 @@ class DesktopTasksController(
             deskId = deskId,
             displayId = displayId,
             userId = userId,
-            bounds = bounds,
         )
     }
 
@@ -2844,7 +2861,7 @@ class DesktopTasksController(
      *
      * TODO: b/399411604 - split this up into smaller functions.
      */
-    private fun moveToDisplay(
+    fun moveToDisplay(
         task: RunningTaskInfo,
         displayId: Int,
         bounds: Rect? = null,
@@ -3791,7 +3808,6 @@ class DesktopTasksController(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        logger.v("handleRequest request=%s", request)
         val userChange = request.userChange
         if (userChange != null) {
             return handleUserChangeTransitionRequest(transition, request)
@@ -4527,6 +4543,16 @@ class DesktopTasksController(
                 )
             runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
+        } else {
+            // The task is being placed in the desk that is already active. No need to activate,
+            // but cancel any scheduled deactivations on overview hide for the case where overview
+            // is active in screenshot mode (and hence a deactivation was scheduled), but we know
+            // that launching a new task inside the desk means we want the desk to stay active.
+            deskDeactivationFromOverviewScheduler.cancel(
+                deskId = targetDeskId,
+                displayId = targetDisplayId,
+                userId = userId,
+            )
         }
 
         if (desktopConfig.useDesktopOverrideDensity) {
@@ -6285,7 +6311,8 @@ class DesktopTasksController(
     private fun getDefaultDensityDpi(): Int = context.resources.displayMetrics.densityDpi
 
     /** Creates a new instance of the external interface to pass to another process. */
-    private fun createExternalInterface(): ExternalInterfaceBinder = IDesktopModeImpl(this)
+    private fun createExternalInterface(): ExternalInterfaceBinder =
+        IDesktopModeImpl(shellController, transitionStateHolder, this)
 
     /** Get connection interface between sysui and shell */
     fun asDesktopMode(): DesktopMode {
@@ -6999,13 +7026,6 @@ class DesktopTasksController(
             }
         }
 
-        override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
-            logger.v("moveFocusedTaskToStageSplit")
-            mainExecutor.execute {
-                this@DesktopTasksController.enterSplit(displayId = displayId, leftOrTop = leftOrTop)
-            }
-        }
-
         override fun toggleFocusedTaskFullscreenState(
             displayId: Int,
             transitionSource: DesktopModeTransitionSource,
@@ -7071,8 +7091,11 @@ class DesktopTasksController(
 
     /** The interface for calls from outside the host process. */
     @BinderThread
-    private class IDesktopModeImpl(private var controller: DesktopTasksController?) :
-        IDesktopMode.Stub(), ExternalInterfaceBinder {
+    private class IDesktopModeImpl(
+        private var shellController: ShellController?,
+        private var transitionStateHolder: TransitionStateHolder?,
+        private var controller: DesktopTasksController?,
+    ) : IDesktopMode.Stub(), ExternalInterfaceBinder {
 
         private lateinit var remoteListener:
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
@@ -7123,6 +7146,21 @@ class DesktopTasksController(
                         canCreateDesks,
                     )
                     remoteListener.call { l -> l.onCanCreateDesksChanged(canCreateDesks) }
+                }
+
+                override fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int) {
+                    if (shellController?.isOverviewVisible(displayId) != true) return
+                    if (transitionStateHolder?.isRecentsTransitionRunning() != false) return
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onTaskAppearingInDesk taskId=%d displayId=%d deskId=%d",
+                        taskId,
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l ->
+                        l.onTaskAppearingInDeskWithOverviewShowing(taskId, displayId, deskId)
+                    }
                 }
             }
 
@@ -7208,6 +7246,8 @@ class DesktopTasksController(
         override fun invalidate() {
             remoteListener.unregister()
             controller = null
+            shellController = null
+            transitionStateHolder = null
         }
 
         override fun createDesk(displayId: Int) {
@@ -7464,6 +7504,7 @@ class DesktopTasksController(
                     object : OverviewVisibilityChangeListener {
                         override fun onOverviewHidden(displayId: Int) {
                             displayIdToScheduledDeactivations[displayId]?.forEach { request ->
+                                logger.v("onOverviewHidden: deactivating desk request=%s", request)
                                 controller.deactivateDesk(
                                     deskId = request.deskId,
                                     userId = request.userId,

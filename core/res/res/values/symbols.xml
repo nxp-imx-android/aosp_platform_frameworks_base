@@ -330,6 +330,7 @@
   <java-symbol type="bool" name="config_enableBurnInProtection" />
   <java-symbol type="bool" name="config_hotswapCapable" />
   <java-symbol type="integer" name="config_hsumBootStrategy" />
+  <java-symbol type="integer" name="config_hsuActivitiesAllowlistMode" />
   <java-symbol type="array" name="hsu_allowlist_activities" />
   <java-symbol type="bool" name="config_mms_content_disposition_support" />
   <java-symbol type="bool" name="config_networkSamplingWakesDevice" />
@@ -384,7 +385,7 @@
   <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
   <java-symbol type="bool" name="config_createInitialAdminUserOnHsum"/>
-  <java-symbol type="bool" name="config_designateMainUser"/>
+  <java-symbol type="bool" name="config_experimental_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
@@ -1898,6 +1899,7 @@
   <java-symbol type="bool" name="config_supportDreamWirelessChargingRestriction" />
   <java-symbol type="bool" name="config_allowRotationResolver" />
   <java-symbol type="bool" name="config_dockedStackDividerFreeSnapMode" />
+  <java-symbol type="bool" name="config_enableAppLaunchBlur" />
   <java-symbol type="dimen" name="docked_stack_divider_thickness" />
   <java-symbol type="dimen" name="docked_stack_divider_insets" />
   <java-symbol type="dimen" name="docked_stack_minimize_thickness" />
@@ -2473,6 +2475,7 @@
   <java-symbol type="bool" name="config_enableTimeZoneNotificationsSupported" />
   <java-symbol type="bool" name="config_enableTimeZoneNotificationsTrackingSupported" />
   <java-symbol type="bool" name="config_enableTimeZoneManualChangeTrackingSupported" />
+  <java-symbol type="bool" name="config_enableTimeZoneOffsetChangeNotificationsSupported" />
   <java-symbol type="bool" name="config_autoResetAirplaneMode" />
   <java-symbol type="string" name="config_notificationAccessConfirmationActivity" />
   <java-symbol type="bool" name="config_preventImeStartupUnlessTextEditor" />
@@ -4209,6 +4212,9 @@
   <java-symbol type="string" name="notification_channel_display" />
   <java-symbol type="string" name="time_zone_change_notification_title" />
   <java-symbol type="string" name="time_zone_change_notification_body" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_title" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_body_forward" />
+  <java-symbol type="string" name="time_zone_offset_change_notification_body_backward" />
   <java-symbol type="string" name="config_defaultAutofillService" />
   <java-symbol type="string" name="config_defaultFieldClassificationService" />
   <java-symbol type="string" name="config_defaultOnDeviceSpeechRecognitionService" />
@@ -6488,6 +6494,9 @@
   <!-- Whether to force color fade. -->
   <java-symbol type="bool" name="config_forceColorFade" />
 
+  <!-- The locale countries that force camera shutter sound -->
+  <java-symbol type="array" name="config_cameraSoundForcedCountry" />
+
   <!-- The location button render service component name -->
   <java-symbol type="string" name="config_locationButtonRenderService" />
 
@@ -6507,4 +6516,11 @@
   <java-symbol type="bool" name="config_supportContextualModeSync"/>
     <!-- If supported, should contextual mode sync be enabled by default. -->
   <java-symbol type="bool" name="config_enableContextualModeSyncByDefault"/>
+
+  <!-- TV Watchdog configuration -->
+  <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
+  <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />
+  <java-symbol type="integer" name="config_tvWatchdogUserPackageSettingsResetDays" />
+  <java-symbol type="integer" name="config_tvWatchdogRecurringOverusePeriodInDays" />
+  <java-symbol type="integer" name="config_tvWatchdogRecurringOveruseTimes" />
 </resources>

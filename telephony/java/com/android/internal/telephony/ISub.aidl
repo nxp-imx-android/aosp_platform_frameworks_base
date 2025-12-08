@@ -19,6 +19,7 @@ package com.android.internal.telephony;
 import android.telephony.SubscriptionInfo;
 import android.os.ParcelUuid;
 import android.os.UserHandle;
+import android.telephony.SubscriptionPlan;
 import com.android.internal.telephony.ISetOpportunisticDataCallback;
 
 interface ISub {
@@ -414,4 +415,36 @@ interface ISub {
      */
     @EnforcePermission("WRITE_EMBEDDED_SUBSCRIPTIONS")
     void setTransferStatus(int subId, int status);
+
+    /**
+     * Set the enrollable subscription plans for a specific subscription.
+     *
+     * @param subId the subscription ID of the subscription.
+     * @param plans the array of SubscriptionPlans.
+     * @param expirationDurationMillis the duration after which the subscription plans
+     *        will be automatically cleared, or {@code 0} to leave the plans until
+     *        explicitly cleared, or the next reboot, whichever happens first
+     * @param callingPackage the package name that called this function
+     */
+    void setEnrollableSubscriptionPlans(int subId, in SubscriptionPlan[] plans,
+            long expirationDurationMillis, String callingPackage);
+
+    /**
+     * Get the enrollable subscription plans for the given subscription id.
+     *
+     * @param subId the subscription ID of the subscription.
+     * @param callingPackage the package name that called this function
+     * @return the enrollable {@link SubscriptionPlan}s for the given subscription id, or
+     *         {@code null} if not found.
+     */
+    SubscriptionPlan[] getEnrollableSubscriptionPlans(int subId, String callingPackage);
+
+    /**
+     * Get the package name that owns the enrollable subscription plans.
+     * Only callable by the system.
+     *
+     * @param subId the subscriber to get the owner for.
+     * @return the package name, or null if not found.
+     */
+    String getEnrollableSubscriptionPlansOwner(int subId);
 }

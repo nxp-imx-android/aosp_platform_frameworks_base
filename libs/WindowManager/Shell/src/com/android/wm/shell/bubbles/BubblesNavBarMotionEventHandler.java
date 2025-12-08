@@ -32,7 +32,7 @@ import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 /**
  * Handles {@link MotionEvent}s for bubbles that begin in the nav bar area
  */
-class BubblesNavBarMotionEventHandler {
+public class BubblesNavBarMotionEventHandler {
     private static final String TAG =
             TAG_WITH_CLASS_NAME ? "BubblesNavBarMotionEventHandler" : TAG_BUBBLES;
     private static final int VELOCITY_UNITS = 1000;
@@ -140,7 +140,7 @@ class BubblesNavBarMotionEventHandler {
     /**
      * Callback for receiving {@link MotionEvent} updates
      */
-    interface MotionEventListener {
+    public interface MotionEventListener {
         /**
          * Touch down action.
          *

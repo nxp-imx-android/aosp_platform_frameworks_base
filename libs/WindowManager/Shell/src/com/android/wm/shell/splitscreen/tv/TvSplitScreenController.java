@@ -20,6 +20,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 
 import android.app.IActivityTaskManager;
 import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Handler;
 
 import com.android.launcher3.icons.IconProvider;
@@ -43,6 +44,7 @@ import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
 import com.google.android.msdl.domain.MSDLPlayer;
@@ -98,7 +100,9 @@ public class TvSplitScreenController extends SplitScreenController {
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
-            MSDLPlayer msdlPlayer) {
+            MSDLPlayer msdlPlayer,
+            FocusTransitionObserver focusTransitionObserver,
+            InputManager inputManager) {
         super(context, shellInit, shellCommandHandler, shellController, shellTaskOrganizer,
                 syncQueue, rootTDAOrganizer, displayController, displayImeController,
                 displayInsetsController, null, transitions, transactionPool,
@@ -106,7 +110,8 @@ public class TvSplitScreenController extends SplitScreenController {
                 Optional.empty(), Optional.empty(), null /* stageCoordinator */,
                 multiInstanceHelper, splitState,
                 mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState,
-                activityTaskManager, msdlPlayer, Optional.empty());
+                activityTaskManager, msdlPlayer, Optional.empty(),
+                focusTransitionObserver, inputManager);
 
         mTaskOrganizer = shellTaskOrganizer;
         mSyncQueue = syncQueue;

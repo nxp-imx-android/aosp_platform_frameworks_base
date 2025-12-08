@@ -88,9 +88,10 @@ run_test() {
 
 # Run the target commands.
 run_all_commands() {
-    unset RAVENWOOD_TEST_ENABLEMENT_POLICY
-    unset RAVENWOOD_RUN_DISABLED_TESTS
-    unset RAVENWOOD_FORCE_FILTER_REGEX
+    run unset RAVENWOOD_TEST_ENABLEMENT_POLICY
+    run unset RAVENWOOD_RUN_DISABLED_TESTS
+    run unset RAVENWOOD_FORCE_FILTER_REGEX
+    run unset RAVENWOOD_HIDE_DISABLED_TESTS
 
     run_test "Run with no arguments" run-ravenwood-tests-wrapper
 
@@ -120,6 +121,12 @@ run_all_commands() {
     RAVENWOOD_RUN_DISABLED_TESTS=xxx RAVENWOOD_FORCE_FILTER_REGEX=yyy run_test "Make sure env vars are printed" run-ravenwood-tests-wrapper
 
     run_test "Run only disabled tests" run-ravenwood-tests-wrapper -X
+
+    run_test "Clean output" run-ravenwood-tests-wrapper -c
+
+    run_test "Live logcat" run-ravenwood-tests-wrapper -t
+
+    RAVENWOOD_LOG_OUT=- run_test "No live logcat" run-ravenwood-tests-wrapper -T
 
     echo "== All commands finished =="
 }

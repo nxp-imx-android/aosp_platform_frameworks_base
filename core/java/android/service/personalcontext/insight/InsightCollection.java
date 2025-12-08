@@ -136,6 +136,19 @@ public final class InsightCollection extends ContextInsight implements Iterable<
         return INSIGHT_TYPE_COLLECTION;
     }
 
+    /** @hide */
+    @Override
+    public void accept(@NonNull InsightVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /** @hide */
+    @NonNull
+    @Override
+    public Collection<ContextInsight> getChildren() {
+        return Collections.unmodifiableList(mInsights);
+    }
+
     /** Builder for {@link InsightCollection}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {

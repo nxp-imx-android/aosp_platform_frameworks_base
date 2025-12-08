@@ -22,12 +22,13 @@ import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,21 +51,38 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagDisabled_isHidden() =
         kosmos.runTest {
-            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Hidden::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagEnabled_isShown() =
-        kosmos.runTest { assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java) }
+        kosmos.runTest {
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
+    fun chip_subtypeSelected_showsSubtypeId() =
+        kosmos.runTest {
+            val subtype = InputMethodModel.Subtype(subtypeId = 123, isAuxiliary = false)
+            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
+            fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
+
+            val chip = underTest.chip as QuickActionChipUiState.PopupChip
+
+            // TODO(b/458557858): This should use the IME icon or subtype short label instead if
+            // those are available.
+            assertThat(chip.chipText).isEqualTo(subtype.subtypeId.toString())
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_showPopup_callsShowInputMethodPicker() =
         kosmos.runTest {
             val chip = underTest.chip
-            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
-            val shownChip = chip as PopupChipModel.Shown
+            assertThat(chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+            val shownChip = chip as QuickActionChipUiState.PopupChip
 
             shownChip.showPopup()
             testScope.runCurrent()

@@ -15,6 +15,7 @@
  */
 package com.android.ravenwoodtest.bivalenttest.ravenizer;
 
+import android.os.SystemProperties;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
 import android.platform.test.ravenwood.RavenwoodRule;
@@ -23,10 +24,17 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import junit.framework.TestCase;
 
-public class RavenwoodJUnit3Test extends TestCase {
+public class RavenwoodJUnit3Test extends TestCase implements RavenwoodRule.Provider {
     public static final String TAG = "RavenwoodJunit3Test";
 
     private static final CallTracker sCallTracker = new CallTracker();
+
+    @Override
+    public RavenwoodRule getRavenwoodRule() {
+        return new RavenwoodRule.Builder()
+                .setSystemPropertyImmutable("a.b.c", "foo")
+                .build();
+    }
 
     private static int getExpectedRavenwoodRunnerInitializingNumCalls() {
         return RavenwoodRule.isOnRavenwood() ? 1 : 0;
@@ -50,7 +58,6 @@ public class RavenwoodJUnit3Test extends TestCase {
                 "ravenwoodRunnerInitializing",
                 getExpectedRavenwoodRunnerInitializingNumCalls()
         );
-        sCallTracker.incrementMethodCallCount();
     }
 
     @DisabledOnRavenwood
@@ -60,6 +67,15 @@ public class RavenwoodJUnit3Test extends TestCase {
                 "ravenwoodRunnerInitializing",
                 getExpectedRavenwoodRunnerInitializingNumCalls()
         );
-        sCallTracker.incrementMethodCallCount();
+    }
+
+    public void testRavenwoodRule() {
+        sCallTracker.assertCalls(
+                "ravenwoodRunnerInitializing",
+                getExpectedRavenwoodRunnerInitializingNumCalls()
+        );
+        if (RavenwoodRule.isOnRavenwood()) {
+            assertEquals("foo", SystemProperties.get("a.b.c"));
+        }
     }
 }

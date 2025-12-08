@@ -217,11 +217,11 @@ class WallpaperData {
         this.allowBackup = source.allowBackup;
         this.primaryColors = source.primaryColors;
         this.mWallpaperDimAmount = source.mWallpaperDimAmount;
+        // NB: this is a shallow copy of the connection. The caller is responsible for updating
+        // fields in the connection as needed, particularly its mWallpaper field. This is preferable
+        // to updating mWallpaper here, which has side effects (see b/447140523).
         this.connection = source.connection;
         this.setDescription(source.getDescription());
-        if (this.connection != null) {
-            this.connection.mWallpaper = this;
-        }
     }
 
     File getWallpaperFile() {

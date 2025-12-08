@@ -21,8 +21,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -47,7 +46,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.TestContentScope
-import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
+import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
@@ -217,17 +216,14 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
         rule.setContent {
             TestContentScope {
                 TestLayout(
-                    modifier =
-                        Modifier.testTag(TAG_LAYOUT)
-                            .width(LayoutSize)
-                            .heightIn(min = 0.dp, max = LayoutSize),
+                    modifier = Modifier.testTag(TAG_LAYOUT).size(LayoutSize),
                     statusBarHeader = {
                         Box(Modifier.testTag(TAG_SB).fillMaxWidth().height(StatusBarHeight))
                     },
                     mediaAndQqsHeader = {
                         Box(Modifier.testTag(TAG_HEADER).fillMaxWidth().height(HeaderHeight))
                     },
-                    scrollableScrim = { onHeightChanged ->
+                    scrollableScrim = { onHeightChanged, rememberOffsetOverscrollEffect ->
                         // This box must be scrollable, for the parent's NestedScrollConnection
                         Box(
                             Modifier.testTag(TAG_SCRIM)
@@ -254,14 +250,17 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
         cutoutInsets: WindowInsets? = null,
         statusBarHeader: @Composable () -> Unit,
         mediaAndQqsHeader: @Composable () -> Unit,
-        scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
+        scrollableScrim:
+            @Composable
+            (
+                onContentHeightChanged: (Int) -> Unit, scrimOverScrollEffect: OffsetOverscrollEffect,
+            ) -> Unit,
     ) {
         SingleShadeNestedScrollLayout(
             modifier = modifier,
             shadeSession = rememberShadeSession(),
             viewModel = kosmos.notificationsPlaceholderViewModel,
             scrollState = rememberScrollState(),
-            scrimOverScrollEffect = rememberOffsetOverscrollEffect(),
             jankMonitor = kosmos.interactionJankMonitor,
             statusBarHeader = statusBarHeader,
             mediaAndQqsHeader = mediaAndQqsHeader,

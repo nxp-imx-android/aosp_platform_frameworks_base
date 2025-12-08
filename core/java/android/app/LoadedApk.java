@@ -457,17 +457,10 @@ public final class LoadedApk {
         return true;
     }
 
-    void setSdkSandboxStorage(@Nullable String sdkSandboxClientAppVolumeUuid,
-            String sdkSandboxClientAppPackage) {
-        int userId = UserHandle.myUserId();
-        mDeviceProtectedDataDirFile = Environment
-                .getDataMiscDeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
-                        sdkSandboxClientAppPackage)
-                .getAbsoluteFile();
-        mCredentialProtectedDataDirFile = Environment
-                .getDataMiscCeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
-                        sdkSandboxClientAppPackage)
-                .getAbsoluteFile();
+    private void setInternalDataDirFiles(File deviceProtectedDataDirFile,
+            File credentialProtectedDataDirFile) {
+        mDeviceProtectedDataDirFile = deviceProtectedDataDirFile;
+        mCredentialProtectedDataDirFile = credentialProtectedDataDirFile;
 
         if ((mApplicationInfo.privateFlags
                 & ApplicationInfo.PRIVATE_FLAG_DEFAULT_TO_DEVICE_PROTECTED_STORAGE) != 0
@@ -479,11 +472,48 @@ public final class LoadedApk {
         mDataDir = mDataDirFile.getAbsolutePath();
     }
 
+    void setSdkSandboxStorage(@Nullable String sdkSandboxClientAppVolumeUuid,
+            String sdkSandboxClientAppPackage) {
+        int userId = UserHandle.myUserId();
+        File deviceProtectedDataDirFile = Environment
+                .getDataMiscDeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
+                        sdkSandboxClientAppPackage)
+                .getAbsoluteFile();
+        File credentialProtectedDataDirFile = Environment
+                .getDataMiscCeSharedSdkSandboxDirectory(sdkSandboxClientAppVolumeUuid, userId,
+                        sdkSandboxClientAppPackage)
+                .getAbsoluteFile();
+
+        setInternalDataDirFiles(deviceProtectedDataDirFile, credentialProtectedDataDirFile);
+    }
+
+    /**
+     * Sets data directories tracking variables to point to the corresponding PCC directories.
+     */
+    void setPccStorageDirPaths() {
+
+        final String volumeUuid = mApplicationInfo.volumeUuid;
+        final int userId = UserHandle.myUserId();
+        final String packageName = mApplicationInfo.packageName;
+
+        File deviceProtectedDataDirFile =
+                Environment.getPccDataUserDePackageDirectory(volumeUuid, userId, packageName);
+        File credentialProtectedDataDirFile =
+                Environment.getPccDataUserCePackageDirectory(volumeUuid, userId, packageName);
+
+        setInternalDataDirFiles(deviceProtectedDataDirFile, credentialProtectedDataDirFile);
+        mApplicationInfo.dataDir = mDataDirFile.getAbsolutePath();
+    }
+
     /**
      * Holds necessary parameters for creating a linker namespace. Instances of this class are
      * created by the {@code createLinkerNamespaceParams()} method below.
      */
     public static final class LinkerNamespaceParams {
+        /**
+         * ':'-joined APK paths of the application.
+         */
+        public final String zipPath;
         /**
          * Value to be passed to {@code android_create_namespace} as {@code ld_library_path},
          * corresponding to the library search path.
@@ -496,9 +526,29 @@ public final class LoadedApk {
          */
         public final String permittedLibsDir;
 
-        LinkerNamespaceParams(String libPath, String permittedLibsDir) {
+        /**
+         * The target SDK version of the app.
+         */
+        public final int targetSdkVersion;
+
+        /**
+         * Whether or not the created namespace is shared.
+         */
+        public final boolean isShared;
+
+        /**
+         * ':'-joined library names specified in the application's uses-library tag.
+         */
+        public final String nativeSharedLibs;
+
+        LinkerNamespaceParams(String zipPath, String libPath, String permittedLibsDir,
+                int targetSdkVersion, boolean isShared, String nativeSharedLibs) {
+            this.zipPath = zipPath;
             this.libPath = libPath;
             this.permittedLibsDir = permittedLibsDir;
+            this.targetSdkVersion = targetSdkVersion;
+            this.isShared = isShared;
+            this.nativeSharedLibs = nativeSharedLibs;
         }
     }
 
@@ -512,8 +562,29 @@ public final class LoadedApk {
     public static LinkerNamespaceParams createLinkerNamespaceParams(ApplicationInfo aInfo) {
         List<String> outZipPaths = new ArrayList();
         List<String> outLibPaths = new ArrayList();
-        makePaths(null, false, aInfo, outZipPaths, outLibPaths);
-        return new LinkerNamespaceParams(String.join(":", outLibPaths), aInfo.dataDir);
+        boolean isBundledApp = aInfo.isBundledApp();
+
+        makePaths(null, isBundledApp, aInfo, outZipPaths, outLibPaths);
+
+        final String zip = (outZipPaths.size() == 1) ? outZipPaths.get(0) :
+                TextUtils.join(File.pathSeparator, outZipPaths);
+
+        List<String> nativeSharedLibraries = new ArrayList<>();
+        if (aInfo.sharedLibraryInfos != null) {
+            for (SharedLibraryInfo info : aInfo.sharedLibraryInfos) {
+                if (info.isNative()) {
+                    nativeSharedLibraries.add(info.getName());
+                }
+            }
+        }
+
+        return new LinkerNamespaceParams(
+                zip,
+                String.join(":", outLibPaths),
+                aInfo.dataDir,
+                aInfo.targetSdkVersion,
+                isBundledApp,
+                String.join(":", nativeSharedLibraries));
     }
 
     public static void makePaths(ActivityThread activityThread,
@@ -965,30 +1036,7 @@ public final class LoadedApk {
         final List<String> zipPaths = new ArrayList<>(10);
         final List<String> libPaths = new ArrayList<>(10);
 
-        boolean isBundledApp = mApplicationInfo.isSystemApp()
-                && !mApplicationInfo.isUpdatedSystemApp();
-
-        // Vendor apks are treated as bundled only when /vendor/lib is in the default search
-        // paths. If not, they are treated as unbundled; access to system libs is limited.
-        // Having /vendor/lib in the default search paths means that all system processes
-        // are allowed to use any vendor library, which in turn means that system is dependent
-        // on vendor partition. In the contrary, not having /vendor/lib in the default search
-        // paths mean that the two partitions are separated and thus we can treat vendor apks
-        // as unbundled.
-        final String defaultSearchPaths = System.getProperty("java.library.path");
-        final boolean treatVendorApkAsUnbundled = !defaultSearchPaths.contains("/vendor/lib");
-        if (mApplicationInfo.getCodePath() != null
-                && mApplicationInfo.isVendor() && treatVendorApkAsUnbundled) {
-            isBundledApp = false;
-        }
-
-        // Similar to vendor apks, we should add /product/lib for apks from product partition
-        // when product apps are marked as unbundled. Product is separated as long as the
-        // partition exists, so it can be handled with same approach from the vendor partition.
-        if (mApplicationInfo.getCodePath() != null
-                && mApplicationInfo.isProduct()) {
-            isBundledApp = false;
-        }
+        boolean isBundledApp = mApplicationInfo.isBundledApp();
 
         makePaths(mActivityThread, isBundledApp, mApplicationInfo, zipPaths, libPaths);
 
@@ -1008,6 +1056,7 @@ public final class LoadedApk {
 
             // This is necessary to grant bundled apps access to
             // libraries located in subdirectories of /system/lib
+            final String defaultSearchPaths = System.getProperty("java.library.path");
             libraryPermittedPath += File.pathSeparator + defaultSearchPaths;
         }
 

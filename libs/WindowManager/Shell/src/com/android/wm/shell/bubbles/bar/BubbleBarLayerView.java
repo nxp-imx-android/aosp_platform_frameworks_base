@@ -53,10 +53,12 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.DismissViewUtils;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedViewDragController.DragListener;
+import com.android.wm.shell.bubbles.gesture.BubbleBarGestureNavSwipeController;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.util.ReferenceCounter;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.DragZone;
@@ -119,6 +121,8 @@ public class BubbleBarLayerView extends FrameLayout
     private final ReferenceCounter<BubbleViewProvider> mAnimatingBubbleTracker =
             new ReferenceCounter();
 
+    private final BubbleBarGestureNavSwipeController mBubbleBarGestureNavSwipeController;
+
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
             BubbleLogger bubbleLogger, ShellExecutor mainExecutor) {
         super(context);
@@ -149,6 +153,8 @@ public class BubbleBarLayerView extends FrameLayout
             BubbleLog.d("BubbleBarLayerView.onClick() CLICK outside of bubbles");
             hideModalOrCollapse();
         });
+        mBubbleBarGestureNavSwipeController = new BubbleBarGestureNavSwipeController(mContext,
+                mBubbleData, mPositioner);
     }
 
     private void setupDropTargetManager() {
@@ -484,6 +490,9 @@ public class BubbleBarLayerView extends FrameLayout
         } else {
             mAnimationHelper.animateExpansion(expandedBubble, endRunnable);
         }
+        if (com.android.wm.shell.Flags.fixBubbleSwipeUpDismissBubbleBar()) {
+            startMonitoringSwipeUpGesture();
+        }
     }
 
     /**
@@ -533,8 +542,7 @@ public class BubbleBarLayerView extends FrameLayout
 
     public void removeBubble(@NonNull Bubble bubble, @NonNull Runnable endAction) {
         final boolean inTransition = bubble.getCurrentTransition() != null;
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                "BBLayerView.removeBubble(): bubble=%s hasBubbles=%b inTransition=%b",
+        BubbleLog.d("BubbleBarLayerView.removeBubble(): bubble=%s hasBubbles=%b inTransition=%b",
                 bubble, !mBubbleData.getBubbles().isEmpty(), inTransition);
         Runnable cleanUp = () -> {
             // The transition is already managing the task/wm state.
@@ -566,6 +574,9 @@ public class BubbleBarLayerView extends FrameLayout
      * @param endAction an action to run and the end of the collapse animation.
      */
     public void collapse(@Nullable Runnable endAction) {
+        if (com.android.wm.shell.Flags.fixBubbleSwipeUpDismissBubbleBar()) {
+            stopMonitoringSwipeUpGesture();
+        }
         if (!mIsExpanded) {
             if (endAction != null) {
                 endAction.run();
@@ -743,5 +754,24 @@ public class BubbleBarLayerView extends FrameLayout
     @VisibleForTesting
     boolean isAnimatingBubbleTracked(@NonNull BubbleViewProvider bubble) {
         return mAnimatingBubbleTracker.isTracked(bubble);
+    }
+
+
+    /**
+     * Starts the monitoring of gestures on the nav bar.
+     */
+    public void startMonitoringSwipeUpGesture() {
+        if (ContextUtils.isGestureNavigationMode(mContext)) {
+            mBubbleBarGestureNavSwipeController.startMonitoring();
+        }
+    }
+
+    /**
+     * Stops the monitoring of gestures on the nav bar.
+     */
+    public void stopMonitoringSwipeUpGesture() {
+        if (ContextUtils.isGestureNavigationMode(mContext)) {
+            mBubbleBarGestureNavSwipeController.stopMonitoring();
+        }
     }
 }

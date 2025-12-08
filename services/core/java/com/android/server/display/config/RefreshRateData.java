@@ -18,6 +18,7 @@ package com.android.server.display.config;
 
 import android.annotation.Nullable;
 import android.content.res.Resources;
+import android.view.SurfaceControl.WorkDuration;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -147,21 +148,21 @@ public class RefreshRateData {
      */
     public final int defaultRefreshRateInHbmSunlight;
 
-    public final WorkDurationsData defaultWorkDurations;
+    public final WorkDuration defaultWorkDurations;
 
     public final List<SupportedModeData> lowPowerSupportedModes;
 
     public final List<SupportedModeData> lowLightBlockingZoneSupportedModes;
 
-    public final WorkDurationsData lowPowerWorkDurations;
+    public final WorkDuration lowPowerWorkDurations;
 
     @VisibleForTesting
     public RefreshRateData(int defaultRefreshRate, int defaultPeakRefreshRate,
-            int defaultRefreshRateInHbmHdr, int defaultRefreshRateInHbmSunlight,
-            WorkDurationsData defaultWorkDurations,
-            List<SupportedModeData> lowPowerSupportedModes,
-            List<SupportedModeData> lowLightBlockingZoneSupportedModes,
-                           WorkDurationsData lowPowerWorkDurations) {
+                           int defaultRefreshRateInHbmHdr, int defaultRefreshRateInHbmSunlight,
+                           WorkDuration defaultWorkDurations,
+                           List<SupportedModeData> lowPowerSupportedModes,
+                           List<SupportedModeData> lowLightBlockingZoneSupportedModes,
+                           WorkDuration lowPowerWorkDurations) {
         this.defaultRefreshRate = defaultRefreshRate;
         this.defaultPeakRefreshRate = defaultPeakRefreshRate;
         this.defaultRefreshRateInHbmHdr = defaultRefreshRateInHbmHdr;
@@ -199,8 +200,8 @@ public class RefreshRateData {
         int defaultRefreshRateInHbmHdr = loadDefaultRefreshRateInHbm(refreshRateConfigs, resources);
         int defaultRefreshRateInHbmSunlight = loadDefaultRefreshRateInHbmSunlight(
                 refreshRateConfigs, resources);
-        WorkDurationsData defaultWorkDurations = refreshRateConfigs == null ? null
-                : WorkDurationsData.loadDefaultWorkDurations(refreshRateConfigs);
+        WorkDuration defaultWorkDurations = refreshRateConfigs == null ? null
+                : WorkDurationsConfigLoader.loadDefaultWorkDurations(refreshRateConfigs);
         NonNegativeFloatToFloatMap lowPowerModes =
                 refreshRateConfigs == null ? null : refreshRateConfigs.getLowPowerSupportedModes();
         List<SupportedModeData> lowPowerSupportedModes = SupportedModeData.load(lowPowerModes);
@@ -210,8 +211,8 @@ public class RefreshRateData {
         NonNegativeFloatToFloatMap lowerZoneModes =
                 lowerZoneConfig == null ? null : lowerZoneConfig.getSupportedModes();
         List<SupportedModeData> lowLightSupportedModes = SupportedModeData.load(lowerZoneModes);
-        WorkDurationsData lowPowerWorkDurations = refreshRateConfigs == null ? null
-                : WorkDurationsData.loadLowPowerWorkDurations(refreshRateConfigs);
+        WorkDuration lowPowerWorkDurations = refreshRateConfigs == null ? null
+                : WorkDurationsConfigLoader.loadLowPowerWorkDurations(refreshRateConfigs);
         return new RefreshRateData(defaultRefreshRate, defaultPeakRefreshRate,
                 defaultRefreshRateInHbmHdr, defaultRefreshRateInHbmSunlight, defaultWorkDurations,
                 lowPowerSupportedModes, lowLightSupportedModes, lowPowerWorkDurations);

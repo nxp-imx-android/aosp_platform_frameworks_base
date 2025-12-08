@@ -41,10 +41,6 @@ interface SimpleEvent<out T> {
     fun listen(listener: EventListener<T>): AutoCloseable
 }
 
-interface SimplePublisher<in T> {
-    fun publish(value: T)
-}
-
 open class SimpleEventImpl<T> : SimpleEvent<T> {
 
     private val listeners = mutableListOf<EventListener<T>>()
@@ -72,14 +68,6 @@ open class SimpleEventImpl<T> : SimpleEvent<T> {
     }
 }
 
-class SimplePublisherImpl<T> : SimpleEventImpl<T>(), SimplePublisher<T> {
-    @Synchronized
-    override fun publish(value: T) {
-        dbg { "publish($value)" }
-        notifyAll(value)
-    }
-}
-
 class SimpleState<T>(initialValue: T) : SimpleEventImpl<T>() {
     var value: T = initialValue
         @Synchronized
@@ -104,7 +92,7 @@ class Symbol(@JvmField val symbol: String) {
     override fun toString(): String = "<$symbol>"
 }
 
-val UNINITIALIZED: Any? = Symbol("UNINITIALIZED")
+val UNINITIALIZED: Any = Symbol("UNINITIALIZED")
 
 fun <T1, T2, R> combineSimpleEvents(
     a: SimpleEvent<T1>,
@@ -198,9 +186,9 @@ fun <T> SimpleEvent<T>.distinctUntilChanged(): SimpleEvent<T> {
     return object : SimpleEvent<T> {
         override fun listen(listener: EventListener<T>): AutoCloseable {
             // Store previous value here so that the cache does not leak to other listeners
-            var previousValue = UNINITIALIZED
+            var previousValue: Any? = UNINITIALIZED
             return upstream.listen { value ->
-                if (previousValue === UNINITIALIZED || previousValue != value) {
+                if (previousValue != value) {
                     previousValue = value
                     dbg { "listener.notify(${listener.instanceName()}) -> $value" }
                     listener.notify(value)

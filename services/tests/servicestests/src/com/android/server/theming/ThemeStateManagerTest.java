@@ -77,6 +77,8 @@ public class ThemeStateManagerTest {
     private OverlayManagerInternal mOverlayManager;
     @Mock
     private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
+    private ThemeOverlayHelper mThemeOverlayHelper;
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
 
@@ -136,6 +138,7 @@ public class ThemeStateManagerTest {
 
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor);
+        mThemeStateManager.setThemeOverlayHelper(mThemeOverlayHelper);
         mThemeStateManager.onServicesReady();
     }
 
@@ -210,7 +213,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -241,7 +244,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -265,7 +268,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -297,7 +300,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -323,7 +326,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -358,7 +361,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -378,7 +381,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -398,7 +401,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getCurrentState().childProfiles()).contains(profileId);
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -430,7 +433,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test
@@ -478,7 +481,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
-        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
     }
 
     @Test

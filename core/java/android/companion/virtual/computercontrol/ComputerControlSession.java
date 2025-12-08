@@ -52,6 +52,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -456,18 +457,24 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      * Sets a {@link StabilityListener} to be notified when the computer control session is
      * potentially stable.
      *
+     * @param duration {@link Duration} after which the session would be considered stable, upon any
+     *                                 action or any framework event
+     * @param executor {@link Executor} on which this listener would be invoked
+     * @param listener {@link StabilityListener} which would be invoked
+     *
      * @throws IllegalStateException if a listener was previously set.
      */
-    public void setStabilityListener(@NonNull @CallbackExecutor Executor executor,
-            @NonNull StabilityListener listener) {
+    public void setStabilityListener(@NonNull Duration duration,
+            @NonNull @CallbackExecutor Executor executor, @NonNull StabilityListener listener) {
+        Objects.requireNonNull(duration);
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
-        mAccessibilityProxy.setStabilityListener(executor, listener);
+        mAccessibilityProxy.setStabilityListener(duration.toMillis(), executor, listener);
     }
 
     /**
      * Clears any {@link StabilityListener} that was previously set using
-     * {@link #setStabilityListener(Executor, StabilityListener)}.
+     * {@link #setStabilityListener(Duration, Executor, StabilityListener)}.
      *
      * @throws IllegalStateException if a listener was not previously set.
      */

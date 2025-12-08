@@ -54,3 +54,6 @@ per-file DesktopMode* = toshikikikuchi@google.com
 # For user-related changes
 per-file *User*.java = file:/MULTIUSER_OWNERS
 per-file *User*.java = file:/MULTIUSER_DESKTOP_OWNERS
+
+# Files related to App Lock
+per-file *AppLock*.java = file:/core/java/android/content/pm/APP_LOCK_OWNERS

@@ -21,14 +21,6 @@ flag {
 }
 
 flag {
-  name: "notifications_redesign_fonts"
-  namespace: "systemui"
-  description: "Notifications Redesign: Update text styles in notification templates"
-  bug: "409496809"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "headline_prototypes"
   namespace: "notifications"
   description: "This flag adds static control for enabling prototypes for the headline project"

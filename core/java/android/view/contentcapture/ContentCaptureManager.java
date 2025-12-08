@@ -48,6 +48,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.Trace;
 import android.util.ArraySet;
 import android.util.Dumpable;
 import android.util.Log;
@@ -851,6 +852,9 @@ public final class ContentCaptureManager {
         }
         if (mainSession != null) {
             mainSession.setDisabled(!enabled);
+        }
+        if (!enabled) {
+            Trace.instant(Trace.TRACE_TAG_VIEW, "ContentCaptureManager.contentCaptureDisabled");
         }
     }
 

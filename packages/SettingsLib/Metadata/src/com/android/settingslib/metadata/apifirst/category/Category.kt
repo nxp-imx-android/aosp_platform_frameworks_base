@@ -16,26 +16,32 @@
 
 package com.android.settingslib.metadata.apifirst.category
 
-class Category {
-    companion object {
-        const val NETWORK_AND_INTERNET = "NETWORK_AND_INTERNET"
-        const val CONNECTED_DEVICES = "CONNECTED_DEVICES"
-        const val APPS = "APPS"
-        const val NOTIFICATIONS = "NOTIFICATIONS"
-        const val SOUND_AND_VIBRATION = "SOUND_AND_VIBRATION"
-        const val MODES = "MODES"
-        const val DISPLAY_AND_TOUCH = "DISPLAY_AND_TOUCH"
-        const val WALLPAPER_AND_STYLE = "WALLPAPER_AND_STYLE"
-        const val STORAGE = "STORAGE"
-        const val BATTERY = "BATTERY"
-        const val SYSTEM = "SYSTEM"
-        const val ABOUT_PHONE = "ABOUT_PHONE"
-        const val SECURITY_AND_PRIVACY = "SECURITY_AND_PRIVACY"
-        const val LOCATION = "LOCATION"
-        const val PASSWORDS_PASSKEYS_ACCOUNTS = "PASSWORDS_PASSKEYS_ACCOUNTS"
-        const val PARENTAL_CONTROLS = "PARENTAL_CONTROLS"
-        const val SAFETY_AND_EMERGENCY = "SAFETY_AND_EMERGENCY"
-        const val ACCESSIBILITY = "ACCESSIBILITY"
-        const val DEVICE_HEALTH_AND_SUPPORT = "DEVICE_HEALTH_AND_SUPPORT"
-    }
+/**
+ * The category describing which option in the settings home page must be chosen to reach the
+ * desired screen.
+ */
+enum class Category(val value: String) {
+    NETWORK("top_level_network"),
+    COMMUNAL("top_level_communal"),
+    CONNECTED_DEVICES("top_level_connected_devices"),
+    DEVICE("top_level_device"),
+    APPS("top_level_apps"),
+    NOTIFICATIONS("top_level_notifications"),
+    BATTERY("top_level_battery"),
+    STORAGE("top_level_storage"),
+    SOUND("top_level_sound"),
+    PRIORITY_MODES("top_level_priority_modes"),
+    DISPLAY("top_level_display"),
+    WALLPAPER("top_level_wallpaper"),
+    ACCESSIBILITY("top_level_accessibility"),
+    SAFETY_CENTER("top_level_safety_center"),
+    SECURITY("top_level_security"),
+    PRIVACY("top_level_privacy"),
+    LOCATION("top_level_location"),
+    EMERGENCY("top_level_emergency"),
+    ACCOUNTS("top_level_accounts"),
+    SYSTEM("top_level_system"),
+    ABOUT_DEVICE("top_level_about_device"),
+    SUPPORT("top_level_support"),
+    SUPERVISION("top_level_supervision")
 }

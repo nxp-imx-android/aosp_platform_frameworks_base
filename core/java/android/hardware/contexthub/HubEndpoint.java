@@ -124,9 +124,7 @@ public class HubEndpoint {
                         throws RemoteException {
                     boolean sessionExists = getActiveSession(sessionId) != null;
                     if (sessionExists) {
-                        Log.w(
-                                TAG,
-                                "onSessionOpenRequest: session already exists, id=" + sessionId);
+                        Log.w(TAG, "onSessionOpenRequest: session already exists, id=" + sessionId);
                     }
 
                     if (mLifecycleCallback == null) {
@@ -217,6 +215,24 @@ public class HubEndpoint {
                                     sendMessageDeliveryStatus(sessionId, message, ErrorCode.OK);
                                 });
                     }
+                }
+
+                @Override
+                public void onDataFlowHostConsumerRegistered(
+                        DataFlowConsumerHandle handle,
+                        HubEndpointInfo producer,
+                        HubMessage msg,
+                        int sessionId)
+                        throws RemoteException {
+                    // TODO(b/457452333): Implement
+                    throw new UnsupportedOperationException("Not implemented yet.");
+                }
+
+                @Override
+                public void onDataFlowOffloadEndpointUnregistered(
+                        DataFlowId dataFlowId, HubEndpointInfo endpoint) throws RemoteException {
+                    // TODO(b/457452333): Implement
+                    throw new UnsupportedOperationException("Not implemented yet.");
                 }
 
                 private HubEndpointSession getActiveSession(int sessionId) {

@@ -2390,6 +2390,7 @@ java_aconfig_library {
     name: "android.app.privatecompute.flags-aconfig-java",
     aconfig_declarations: "android.app.privatecompute.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    host_supported: true,
 }
 
 // AiSeal

@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.apifirst
 
 import android.content.Context
+import androidx.annotation.StringRes
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
@@ -53,8 +54,6 @@ data class SetConfig<V : Any>(
 )
 
 /**
- * TODO: Remove the typing from the preference and infer it based on the passed type
- *
  * A preference abstraction to describe the ability of getting and (optionally) setting a value
  * specific to that preference, without relying on binding to an actual UI widget. This class is
  * produced when an Engineer in a partner team migrates their preference to Catalyst using the 2026
@@ -63,17 +62,13 @@ data class SetConfig<V : Any>(
  */
 abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     // TODO: Maybe refactor, use common function for both get/setPermissions
-    private fun getPermissions(): Permissions? {
+    private fun getPermissions(): Permissions {
         val permissionsList = mutableListOf<String>()
+        screenPermissions?.let { permissionsList.addAll(it) }
         commonPermissions?.let { permissionsList.addAll(it.permissions) }
-
-        if (get.permissions == null && permissionsList.isEmpty()) {
-            return null
-        }
-
         get.permissions?.let { permissionsList.addAll(it) }
-        var perms = Permissions.EMPTY
 
+        var perms = Permissions.EMPTY
         for (perm in permissionsList) {
             perms = perms and perm
         }
@@ -81,17 +76,13 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
         return perms
     }
 
-    private fun setPermissions(): Permissions? {
+    private fun setPermissions(): Permissions {
         val permissionsList = mutableListOf<String>()
+        screenPermissions?.let { permissionsList.addAll(it) }
         commonPermissions?.let { permissionsList.addAll(it.permissions) }
-
-        if (set?.permissions == null && permissionsList.isEmpty()) {
-            return null
-        }
-
         set?.permissions?.let { permissionsList.addAll(it) }
-        var perms = Permissions.EMPTY
 
+        var perms = Permissions.EMPTY
         for (perm in permissionsList) {
             perms = perms and perm
         }
@@ -100,32 +91,36 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     }
 
     // TODO: Maybe refactor, use common function for both get/setPreconditions
-    private fun getPreconditions(context: Context): ApiFirstPreconditions? {
-        val commonPreconditionsCheck = commonPreconditions?.preconditions(context)
-
-        if (commonPreconditionsCheck != null && commonPreconditionsCheck != Allowed) {
-            return commonPreconditionsCheck
+    private fun getPreconditions(context: Context): ApiFirstPreconditions {
+        screenPreconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
         }
 
-        get.preconditions?.let {
-            return it(context)
+        commonPreconditions?.preconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
         }
 
-        return null
+        get.preconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
+        }
+
+        return Allowed
     }
 
-    private fun setPreconditions(context: Context): ApiFirstPreconditions? {
-        val commonPreconditionsCheck = commonPreconditions?.preconditions(context)
-
-        if (commonPreconditionsCheck != null && commonPreconditionsCheck != Allowed) {
-            return commonPreconditionsCheck
+    private fun setPreconditions(context: Context): ApiFirstPreconditions {
+        screenPreconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
         }
 
-        set?.preconditions?.let {
-            return it(context)
+        commonPreconditions?.preconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
         }
 
-        return null
+        set?.preconditions?.invoke(context)?.let {
+            if (it != Allowed) return it
+        }
+
+        return Allowed
     }
 
     override fun getReadPermissions(context: Context) = getPermissions()
@@ -134,14 +129,12 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     override fun getReadPermit(context: Context, callingPid: Int, callingUid: Int) =
         when (getPreconditions(context)) {
             Allowed -> ReadWritePermit.ALLOW
-            null -> super.getReadPermit(context, callingPid, callingUid)
             else -> ReadWritePermit.DISALLOW
         }
 
     override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
         when (setPreconditions(context)) {
             Allowed -> ReadWritePermit.ALLOW
-            null -> super.getWritePermit(context, callingPid, callingUid)
             else -> ReadWritePermit.DISALLOW
         }
 
@@ -165,6 +158,10 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 }
             }
         }
+
+    var screenPermissions: List<String>? = null
+    // TODO: Also consider the preconditions description
+    var screenPreconditions: ((Context) -> ApiFirstPreconditions)? = null
 
     /** Permissions of the preference's value. */
     abstract val commonPermissions: PermissionsConfig?
@@ -246,6 +243,7 @@ class GetConfigBuilder<V : Any> {
 
     internal fun build(): GetConfig<V> {
         return GetConfig(
+            permissions = permissionsRequired,
             preconditions = preconditionsFun,
             execute = executeFun
                 ?: throw IllegalStateException("get 'execute' block is required")
@@ -302,6 +300,9 @@ class SetConfigBuilder<V : Any> {
 
     internal fun build(): SetConfig<V> {
         return SetConfig(
+            permissions = permissionsRequired,
+            preconditions = preconditionsFun,
+            valuePreconditions = valuePreconditionsFun,
             execute = executeFun
                 ?: throw IllegalStateException("Set 'execute' block is required")
         )
@@ -310,10 +311,10 @@ class SetConfigBuilder<V : Any> {
 
 /** Configuration builder for an [ApiFirstPreference]. */
 @ApiFirstPreferenceDsl
-class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>) {
-    lateinit var key: String
-    lateinit var type: ApiFirstType
-    var purpose: Int = 0
+class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
+                                               @StringRes val purpose: Int,
+                                               val type: ApiFirstType<V>,
+                                               val valueType: Class<V>) {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var getConfig: GetConfig<V>? = null
@@ -355,25 +356,15 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val preferenceValueType: Class<V>
 
     /** Create an instance of [ApiFirstPreference] from its configuration. */
     fun build(): ApiFirstPreference<V> {
-        if (!this::key.isInitialized) {
-            throw IllegalStateException("'key' is required")
-        }
-
-        if (!this::type.isInitialized) {
-            throw IllegalStateException("'type' is required")
-        }
-
-        // keep a copy of the preference key
-        val preferenceKey = key
-
         return object : ApiFirstPreference<V>() {
             override val commonPermissions: PermissionsConfig? = permissionsConfig
             override val commonPreconditions: PreconditionsConfig? = preconditionsConfig
             override val get: GetConfig<V> =
                 getConfig ?: throw IllegalStateException("'get' block is required")
             override val set: SetConfig<V>? = setConfig
-            override val valueType: Class<V> = preferenceValueType // TODO: Use the passed `type`
-            override val key: String = preferenceKey
+            override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
+            override val key: String = this@ApiFirstPreferenceConfigBuilder.key
+            override val purpose: Int = this@ApiFirstPreferenceConfigBuilder.purpose
         }
     }
 }

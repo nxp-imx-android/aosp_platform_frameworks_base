@@ -75,7 +75,8 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
 
     protected final void mockConfigDesignateMainUser(boolean value) {
         Log.v(mTag, "mockConfigDesignateMainUser(" + value + ")");
-        when(mMockResources.getBoolean(R.bool.config_designateMainUser)).thenReturn(value);
+        when(mMockResources.getBoolean(R.bool.config_experimental_designateMainUser))
+            .thenReturn(value);
     }
 
     protected final void mockConfigIsMainUserPermanentAdmin(boolean value) {

@@ -862,6 +862,9 @@
     <!-- Added in 26Q2 -->
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
 
+    <!-- Added in 26Q4 -->
+    <protected-broadcast android:name="android.app.action.DYNAMIC_BUNDLE_MODIFIED" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
@@ -8610,7 +8613,8 @@
     <permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS"
         android:label="@string/permlab_postPromotedNotifications"
         android:description="@string/permdesc_postPromotedNotifications"
-        android:protectionLevel="normal|appop"/>
+        android:protectionLevel="normal|appop"
+        android:featureFlag="android.app.api_rich_ongoing_permission" />
 
     <!-- @SystemApi Required for the privileged assistant apps targeting
          {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM}
@@ -9254,14 +9258,14 @@
 
 
     <!-- @SystemApi Allows an app to bind the on-device intelligence service.
-             <p>Protection level: signature|privileged
+             <p>Protection level: signature
              @hide
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_INTELLIGENCE_SERVICE"
-        android:protectionLevel="signature|privileged" />
+        android:protectionLevel="signature" />
 
     <!-- @SystemApi Allows an app to bind the on-device sandboxed service.
-             <p>Protection level: signature|privileged
+             <p>Protection level: signature
              @hide
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_SANDBOXED_INFERENCE_SERVICE"
@@ -9795,7 +9799,6 @@
     <permission android:name="android.permission.QUERY_AUDIO_VOLUME"
             android:protectionLevel="normal"
             android:featureFlag="android.media.audio.guard_stream_volume_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>
@@ -9816,7 +9819,6 @@
     <permission android:name="android.permission.QUERY_INPUT_METHOD"
             android:protectionLevel="normal"
             android:featureFlag="android.view.inputmethod.guard_input_method_list_apis"
-            android:requiresPurpose="true"
             android:requiresPurposeTargetSdkVersion="37">
             <valid-purpose android:name="notForIdentification" />
     </permission>
@@ -9862,32 +9864,6 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="com.android.npumanager.npumanager_enabled" />
 
-
-    <!-- @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-        Purpose guarded permission to query subscriber ID API.
-        {@link android.telephony.TelephonyManager}
-        <p>Protection level: normal
-    -->
-    <permission android:name="android.permission.QUERY_NETWORK_IDENTIFIERS"
-            android:protectionLevel="normal"
-            android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurpose="true"
-            android:requiresPurposeTargetSdkVersion="37">
-            <valid-purpose android:name="notForIdentification" />
-    </permission>
-
-    <!-- @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
-            Purpose guarded permission to query network country ISO API.
-            {@link android.telephony.TelephonyManager}
-            <p>Protection level: normal
-    -->
-    <permission android:name="android.permission.QUERY_NETWORK_COUNTRY"
-            android:protectionLevel="normal"
-            android:featureFlag="com.android.internal.telephony.flags.guard_identifier_and_network_country_apis"
-            android:requiresPurpose="true"
-            android:requiresPurposeTargetSdkVersion="37">
-            <valid-purpose android:name="notForIdentification" />
-    </permission>
 
     <!--
     Permission needed to request to show the Power Menu.

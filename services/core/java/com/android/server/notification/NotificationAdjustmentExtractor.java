@@ -57,8 +57,7 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
         final boolean hasAdjustedClassification = record.hasAdjustment(KEY_TYPE);
         final boolean removedClassification = record.hasAdjustment(KEY_UNCLASSIFY);
 
-        if (Flags.showNoisyBundledNotifications()
-                && hasAdjustedClassification && record.getLastAudiblyAlertedMs() > 0) {
+        if (hasAdjustedClassification && record.getLastAudiblyAlertedMs() > 0) {
             record.applyAdjustments(new ArraySet<>(new String[] {KEY_TYPE}));
 
             return getClassificationReconsideration(record);

@@ -350,7 +350,7 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
 
         final var clientRecord = mClientRecords.get(client.asBinder());
         if (clientRecord == null) {
-            Log.wtf(LOG_TAG, "Trying to add groups to unregistered client: " + client);
+            Log.wtfStack(LOG_TAG, "Trying to add groups to unregistered client: " + client);
             return;
         }
 

@@ -56,27 +56,30 @@ public final class ServerFlags {
      * An annotation used to indicate when a {@link DeviceConfig#NAMESPACE_SYSTEM_TIME} key is
      * required.
      */
-    @StringDef(prefix = "KEY_", value = {
-            KEY_LOCATION_TIME_ZONE_DETECTION_FEATURE_SUPPORTED,
-            KEY_LOCATION_TIME_ZONE_DETECTION_RUN_IN_BACKGROUND_ENABLED,
-            KEY_PRIMARY_LTZP_MODE_OVERRIDE,
-            KEY_SECONDARY_LTZP_MODE_OVERRIDE,
-            KEY_LTZP_INITIALIZATION_TIMEOUT_FUZZ_MILLIS,
-            KEY_LTZP_INITIALIZATION_TIMEOUT_MILLIS,
-            KEY_LTZP_EVENT_FILTERING_AGE_THRESHOLD_MILLIS,
-            KEY_LOCATION_TIME_ZONE_DETECTION_UNCERTAINTY_DELAY_MILLIS,
-            KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_OVERRIDE,
-            KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_DEFAULT,
-            KEY_TIME_DETECTOR_LOWER_BOUND_MILLIS_OVERRIDE,
-            KEY_TIME_DETECTOR_ORIGIN_PRIORITIES_OVERRIDE,
-            KEY_TIME_ZONE_DETECTOR_AUTO_DETECTION_ENABLED_DEFAULT,
-            KEY_TIME_ZONE_DETECTOR_TELEPHONY_FALLBACK_SUPPORTED,
-            KEY_ENHANCED_METRICS_COLLECTION_ENABLED,
-            KEY_TIME_ZONE_NOTIFICATIONS_SUPPORTED,
-            KEY_TIME_ZONE_NOTIFICATIONS_ENABLED_DEFAULT,
-            KEY_TIME_ZONE_NOTIFICATIONS_TRACKING_SUPPORTED,
-            KEY_TIME_ZONE_MANUAL_CHANGE_TRACKING_SUPPORTED
-    })
+    @StringDef(
+            prefix = "KEY_",
+            value = {
+                KEY_LOCATION_TIME_ZONE_DETECTION_FEATURE_SUPPORTED,
+                KEY_LOCATION_TIME_ZONE_DETECTION_RUN_IN_BACKGROUND_ENABLED,
+                KEY_PRIMARY_LTZP_MODE_OVERRIDE,
+                KEY_SECONDARY_LTZP_MODE_OVERRIDE,
+                KEY_LTZP_INITIALIZATION_TIMEOUT_FUZZ_MILLIS,
+                KEY_LTZP_INITIALIZATION_TIMEOUT_MILLIS,
+                KEY_LTZP_EVENT_FILTERING_AGE_THRESHOLD_MILLIS,
+                KEY_LOCATION_TIME_ZONE_DETECTION_UNCERTAINTY_DELAY_MILLIS,
+                KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_OVERRIDE,
+                KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_DEFAULT,
+                KEY_TIME_DETECTOR_LOWER_BOUND_MILLIS_OVERRIDE,
+                KEY_TIME_DETECTOR_ORIGIN_PRIORITIES_OVERRIDE,
+                KEY_TIME_ZONE_DETECTOR_AUTO_DETECTION_ENABLED_DEFAULT,
+                KEY_TIME_ZONE_DETECTOR_TELEPHONY_FALLBACK_SUPPORTED,
+                KEY_ENHANCED_METRICS_COLLECTION_ENABLED,
+                KEY_TIME_ZONE_NOTIFICATIONS_SUPPORTED,
+                KEY_TIME_ZONE_NOTIFICATIONS_ENABLED_DEFAULT,
+                KEY_TIME_ZONE_NOTIFICATIONS_TRACKING_SUPPORTED,
+                KEY_TIME_ZONE_MANUAL_CHANGE_TRACKING_SUPPORTED,
+                KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_SUPPORTED,
+            })
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @Retention(RetentionPolicy.SOURCE)
     @interface DeviceConfigKey {}
@@ -219,6 +222,22 @@ public final class ServerFlags {
      */
     public static final @DeviceConfigKey String KEY_TIME_ZONE_MANUAL_CHANGE_TRACKING_SUPPORTED =
             "time_zone_manual_change_tracking_supported";
+
+    /**
+     * The key to control support for time zone offset change notifications under certain
+     * circumstances.
+     */
+    public static final @DeviceConfigKey String
+            KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_SUPPORTED =
+                    "time_zone_offset_change_notifications_supported";
+
+    /**
+     * The key for the default value used to determine whether time zone offset change notifications
+     * is enabled when the user hasn't explicitly set it yet.
+     */
+    public static final @DeviceConfigKey String
+            KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_DEFAULT =
+                    "time_zone_offset_change_notifications_enabled_default";
 
     /**
      * The registered listeners and the keys to trigger on. The value is explicitly a HashSet to

@@ -25,8 +25,8 @@ import android.content.ComponentName;
  */
 public final class UserActivitiesAllowlist extends GenericAllowlist<ComponentName> {
 
-    UserActivitiesAllowlist(String[] permanentActivities) {
-        super("activity", "activities", permanentActivities);
+    UserActivitiesAllowlist(@AllowlistMode int mode, String[] permanentActivities) {
+        super(mode, "activity", "activities", permanentActivities);
     }
 
     @Override

@@ -204,6 +204,96 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    public void testManagedProfileUnifiedChallenge_useSpProtectorPasswordAfterMigration()
+            throws Exception {
+        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        final LockscreenCredential unifiedPassword = newPassword("pwd-1");
+        setUpUnifiedPassword(unifiedPassword);
+        assertTrue(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertFalse(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+
+        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        VerifyCredentialResponse response =
+                mService.verifyTiedProfileChallenge(
+                        unifiedPassword, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        assertTrue(response.isMatched());
+    }
+
+    @Test
+    public void testManagedProfileUnifiedChallenge_readSpProtectorPasswordAfterFlagRollback()
+            throws Exception {
+        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        final LockscreenCredential unifiedPassword = newPassword("pwd-1");
+        setUpUnifiedPassword(unifiedPassword);
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+
+        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        VerifyCredentialResponse response =
+                mService.verifyTiedProfileChallenge(
+                        unifiedPassword, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        assertTrue(response.isMatched());
+    }
+
+    @Test
+    public void testManagedProfileUnifiedChallenge_parentPasswordChangedAfterFlagRollback()
+            throws Exception {
+        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        final LockscreenCredential unifiedPassword = newPassword("pwd-1");
+        setUpUnifiedPassword(unifiedPassword);
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        mService.verifyTiedProfileChallenge(
+                unifiedPassword, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+        final LockscreenCredential unifiedPassword2 = newPassword("pwd-2");
+
+        mService.setLockCredential(unifiedPassword2, unifiedPassword, PRIMARY_USER_ID);
+        final VerifyCredentialResponse response =
+                mService.verifyTiedProfileChallenge(
+                        unifiedPassword2, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        assertTrue(response.isMatched());
+    }
+
+    @Test
+    public void testManagedProfileUnifiedChallenge_childProfileLockWhenTiedAgainAfterFlagRollback()
+            throws Exception {
+        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        final LockscreenCredential unifiedPassword = newPassword("pwd-1");
+        setUpUnifiedPassword(unifiedPassword);
+        assertFalse(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertTrue(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
+        mService.verifyTiedProfileChallenge(
+                unifiedPassword, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+        clearCredential(PRIMARY_USER_ID, unifiedPassword);
+        final LockscreenCredential unifiedPassword2 = newPassword("pwd-2");
+
+        setCredential(PRIMARY_USER_ID, unifiedPassword2);
+        final VerifyCredentialResponse response =
+                mService.verifyTiedProfileChallenge(
+                        unifiedPassword2, MANAGED_PROFILE_USER_ID, 0 /* flags */);
+
+        assertTrue(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
+        assertFalse(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
+        assertTrue(response.isMatched());
+    }
+
+    private boolean hasSpProtectorPassword(int profileUserId) {
+        return mSpManager.hasProfilePassword(
+                profileUserId, mService.getCurrentLskfBasedProtectorId(profileUserId));
+    }
+
+    @Test
     public void testManagedProfileSeparateChallenge() throws RemoteException {
         final LockscreenCredential primaryPassword = newPassword("primary");
         final LockscreenCredential profilePassword = newPassword("profile");
@@ -1154,6 +1244,45 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertEquals(Duration.ZERO, lockoutEndTime);
         // should invalidate upon setting the lock credential
         verify(mInvalidateLockoutEndTimeCacheMock).run();
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE
+    })
+    @DisableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
+    public void testGetLockoutEndTime_doesNotAccountForWeaverTimeoutWhenFlagDisabled()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ZERO;
+        final Duration hwTimeout = Duration.ofMinutes(5);
+
+        mInjector.setTimeSinceBoot(now);
+        mSpManager.enableWeaver();
+        mSpManager.injectWeaverTimeout(hwTimeout);
+        setCredential(userId, credential);
+        assertEquals(Duration.ZERO, mService.getLockoutEndTime(userId).getDuration());
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+        android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
+    })
+    public void testGetLockoutEndTime_accountsForWeaverTimeout() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ZERO;
+        final Duration hwTimeout = Duration.ofMinutes(5);
+
+        mInjector.setTimeSinceBoot(now);
+        mSpManager.enableWeaver();
+        mSpManager.injectWeaverTimeout(hwTimeout);
+        setCredential(userId, credential);
+        assertEquals(hwTimeout, mService.getLockoutEndTime(userId).getDuration());
     }
 
     private void guessWrongCredential(int userId, int times) {

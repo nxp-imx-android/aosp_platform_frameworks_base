@@ -95,7 +95,8 @@ public final class AutomaticZenRule implements Parcelable {
      */
     public static final int TYPE_MANAGED = 7;
     /**
-     * The type for rules triggered during the user's transiting.
+     * The type for rules triggered during the user's transiting, in public transportation such
+     * as trains and subways, etc.
      */
     @FlaggedApi(Flags.FLAG_MODES_UI_TRANSIT)
     public static final int TYPE_TRANSIT = 8;

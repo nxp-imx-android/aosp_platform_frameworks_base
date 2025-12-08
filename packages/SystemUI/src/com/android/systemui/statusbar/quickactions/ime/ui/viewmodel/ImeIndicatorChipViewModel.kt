@@ -19,9 +19,10 @@ package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -32,26 +33,29 @@ class ImeIndicatorChipViewModel
 constructor(private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor) :
     StatusBarPopupChipViewModel, HydratedActivatable() {
 
-    override val chip: PopupChipModel by
-        imeIndicatorChipInteractor.isChipVisible
+    override val chip: QuickActionChipUiState by
+        imeIndicatorChipInteractor.chipModel
             .map { toPopupChipModel(it) }
             .hydratedStateOf(
                 traceName = "imeIndicatorChip",
-                initialValue = PopupChipModel.Hidden(PopupChipId.ImeIndicator),
+                initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator),
             )
 
-    private fun toPopupChipModel(isVisible: Boolean): PopupChipModel {
-        return if (isVisible) {
-            PopupChipModel.Shown(
-                chipId = PopupChipId.ImeIndicator,
-                // TODO(b/458557858): Replace placeholder text with IME subtype short label or icon.
-                icons = emptyList(),
-                chipText = "IME",
-                showPopup = { imeIndicatorChipInteractor.showInputMethodPicker() },
-            )
-        } else {
-            PopupChipModel.Hidden(PopupChipId.ImeIndicator)
+    private fun toPopupChipModel(model: ImeIndicatorChipModel): QuickActionChipUiState {
+        if (!model.isVisible) {
+            return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
+
+        // TODO(b/458557858): Use IME icon or subtype short label if available, update the fallback
+        // to a keyboard icon, and remove the placeholder "IME" string.
+        val chipText = model.selectedSubtype?.subtypeId?.toString() ?: "IME"
+
+        return QuickActionChipUiState.PopupChip(
+            chipId = QuickActionChipId.ImeIndicator,
+            icons = emptyList(),
+            chipText = chipText,
+            showPopup = { imeIndicatorChipInteractor.showInputMethodPicker() },
+        )
     }
 
     @AssistedFactory

@@ -45,7 +45,7 @@ import android.os.IBinder;
 import android.os.OutcomeReceiver;
 import android.os.Process;
 import android.os.RemoteException;
-import android.os.ServiceManager;
+import android.os.TelecomServiceManager;
 import android.os.UserHandle;
 import android.telephony.Annotation.CallState;
 import android.telephony.Annotation.TtyMode;
@@ -247,7 +247,7 @@ public class TelecomManager {
     private static final String ACTION_MANAGE_BLOCKED_NUMBERS =
             "android.telecom.action.MANAGE_BLOCKED_NUMBERS";
 
-    private static final String TELECOM_PACKAGE = "com.android.server.telecom";
+    private static final String TELECOM_UI_PACKAGE = "com.android.server.telecomui";
 
     /**
      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
@@ -2827,7 +2827,7 @@ public class TelecomManager {
      */
     public Intent createManageBlockedNumbersIntent() {
         Intent result = new Intent(ACTION_MANAGE_BLOCKED_NUMBERS);
-        result.setPackage(TELECOM_PACKAGE);
+        result.setPackage(TELECOM_UI_PACKAGE);
         return result;
     }
 
@@ -3469,9 +3469,8 @@ public class TelecomManager {
             return mTelecomServiceOverride;
         }
         if (sTelecomService == null) {
-            ITelecomService temp =
-                    ITelecomService.Stub.asInterface(
-                            ServiceManager.getService(Context.TELECOM_SERVICE));
+            ITelecomService temp = ITelecomService.Stub.asInterface(
+                    TelecomServiceManager.getTelecomServiceRegisterer().get());
             synchronized (CACHE_LOCK) {
                 if (sTelecomService == null && temp != null) {
                     try {

@@ -29,6 +29,7 @@ import static android.view.Surface.ROTATION_180;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -44,7 +45,6 @@ import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.window.flags.Flags;
 
 /**
@@ -146,10 +146,10 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         }
 
         if (isActivityForCameraIdRefreshing(topActivity, cameraId)) {
-            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_STATES,
-                    "Display id=%d is notified that Camera %s is closed but activity is"
+            ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Display id=%d is notified that Camera %s is closed but activity is"
                             + " still refreshing. Rescheduling an update.",
-                    topActivity.getDisplayContent().mDisplayId, cameraId);
+                    TAG, topActivity.getDisplayContent().mDisplayId, cameraId);
             return false;
         }
         return true;
@@ -194,15 +194,15 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 .compatibilityInfoForPackageLocked(app.mInfo);
         compatibilityInfo.cameraCompatibilityInfo = getCameraCompatibilityInfo(activityRecord);
         try {
-            ProtoLog.i(WmProtoLogGroups.WM_DEBUG_STATES, "Updating CameraCompatibilityInfo"
+            ProtoLog.i(WM_DEBUG_CAMERA_COMPAT, "%s: Updating CameraCompatibilityInfo"
                     + " for package: %s to: %s.", app.mInfo.packageName,
-                    compatibilityInfo.cameraCompatibilityInfo);
+                    TAG, compatibilityInfo.cameraCompatibilityInfo);
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,
                     compatibilityInfo);
         } catch (RemoteException e) {
-            ProtoLog.w(WmProtoLogGroups.WM_DEBUG_STATES,
-                    "Unable to update CompatibilityInfo for app %s", app);
+            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Unable to update CompatibilityInfo for app %s", TAG, app);
             return false;
         }
 

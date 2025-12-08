@@ -89,11 +89,11 @@ import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USE
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
-import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.CONTENT_PROTECTION_DISABLED;
 import static android.app.admin.DevicePolicyManager.ContentProtectionPolicy;
-import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
@@ -165,9 +165,9 @@ import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR;
 import static android.app.admin.DevicePolicyManager.PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -3075,7 +3075,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     ActiveAdmin getDefaultDeviceOwnerLocked(@UserIdInt int userId) {
         ensureLocked();
         ComponentName doComponent = mOwners.getDeviceOwnerComponent();
-        if (mOwners.getDeviceOwnerType(doComponent.getPackageName()) == DEFAULT_DEVICE_OWNER) {
+        if (mOwners.getDeviceOwnerType(doComponent.getPackageName()) == DEVICE_OWNER) {
             ActiveAdmin doAdmin = getUserData(userId).mAdminMap.get(doComponent);
             return doAdmin;
         }
@@ -23907,6 +23907,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      * testing purposes (such as CTS), it's necessary to set a different application as the role
      * holder. This method provides the mechanism to allow that bypass.
      *
+     * <p>To prevent the malicious use of this bypass, a series of checks are performed inside
+     * {@link #bypassingDevicePolicyManagementRoleQualificationIsSafe}. If any of these checks
+     * fails, then the bypass is not allowed (no matter what).
+     *
      * <p>To prevent compromising user privacy, the bypass is only permitted on a device considered
      * to be without user data. This "clean" state is determined by
      * {@link #shouldAllowBypassingDevicePolicyManagementRoleQualificationInternal()}, which checks
@@ -23927,7 +23931,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      * is set to {@code true} by {@code handleDevicePolicyManagementRoleChange()} the first
      * time the role is successfully overridden on a "clean" device. Once set, this method will
      * continue to return {@code true}, allowing the bypass to persist for the duration of the test,
-     * even if users or accounts are added.
+     * even if users or accounts are added, as long as it is considered safe to do so.
      *
      * <p>While this bypass flag is active, {@code handleDevicePolicyManagementRoleChange()}
      * also ensures that the role holder cannot be changed to a *different* non-default application,
@@ -23943,6 +23947,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Preconditions.checkCallAuthorization(hasCallingOrSelfPermission(
                 permission.MANAGE_ROLE_HOLDERS));
         return mInjector.binderWithCleanCallingIdentity(() -> {
+            if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                    && !bypassingDevicePolicyManagementRoleQualificationIsSafe()) {
+                return false;
+            }
             if (getUserData(
                     UserHandle.USER_SYSTEM).mBypassDevicePolicyManagementRoleQualifications) {
                 return true;
@@ -23951,28 +23959,41 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         });
     }
 
+    private boolean bypassingDevicePolicyManagementRoleQualificationIsSafe() {
+        if (hasNonTestOnlyDeviceOwner()) {
+            Slogf.i(LOG_TAG, "Found non test-only Device Owner, not allowing bypassing");
+            return false;
+        }
+
+        if (hasNonTestOnlyProfileOwner()) {
+            Slogf.i(LOG_TAG, "Found non test-only Profile Owner, not allowing bypassing");
+            return false;
+        }
+
+        if (mOwners.isDeviceManaged() && hasNonTestOnlyDevicePolicyManagementRoleHolder()) {
+            Slogf.i(LOG_TAG, "Found non test-only DMRH, not allowing bypassing");
+            return false;
+        }
+        return true;
+    }
+
     private boolean shouldAllowBypassingDevicePolicyManagementRoleQualificationInternal() {
-        // Do not allow bypassing where there are NON TEST ONLY admins on the device.
-        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
-                && hasNonTestOnlyDeviceOwner()) {
-            return false;
-        }
-
-        // Do not allow bypassing when there are NON TEST ONLY profile owners on the device.
-        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
-                && hasNonTestOnlyProfileOwner()) {
-            return false;
-        }
-
         if (nonTestNonPrecreatedUsersExist()) {
+            Slogf.i(LOG_TAG, "Found non test-only non precreated users, not allowing bypassing");
             return false;
         }
 
-        return !hasIncompatibleAccountsOnAnyUser();
+        if (hasIncompatibleAccountsOnAnyUser()) {
+            Slogf.i(LOG_TAG, "Found incompatible accounts on any user, not allowing bypassing");
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Checks if the device owner, if exists, is NOT marked as TEST ONLY.
+     *
      * @return true if there are NON TEST ONLY device owners. False otherwise.
      */
     private boolean hasNonTestOnlyDeviceOwner() {
@@ -23989,21 +24010,78 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     /**
      * Check if any profile owner is NOT marked as TEST ONLY.
+     *
      * @return true if there are NON TEST ONLY profile owners. False, otherwise.
      */
     private boolean hasNonTestOnlyProfileOwner() {
         synchronized (getLockObject()) {
-            for (int userId: mOwners.getProfileOwnerKeys()) {
+            for (int userId : mOwners.getProfileOwnerKeys()) {
                 ComponentName poComponent = mOwners.getProfileOwnerComponent(userId);
-                if (poComponent != null
-                        && !isAdminTestOnlyLocked(poComponent, userId)) {
-                    Slogf.i(LOG_TAG, "Found non test-only Profile Owner: %s for user %d",
-                            poComponent, userId);
+                if (poComponent != null && !isAdminTestOnlyLocked(poComponent, userId)) {
+                    Slogf.i(
+                            LOG_TAG,
+                            "Found non test-only Profile Owner: %s for user %d",
+                            poComponent,
+                            userId);
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Checks whether the given {@code packageName} is marked as test only.
+     *
+     * @return true if the given package has testOnly="true" in its manifest. If it does not have
+     *     testOnly="true", or it the method cannot check this, return false.
+     */
+    private boolean isPackageTestOnly(String packageName) {
+        final PackageManagerInternal packageManagerInternal = mInjector.getPackageManagerInternal();
+        AndroidPackage androidPackage = packageManagerInternal.getPackage(packageName);
+
+        if (androidPackage == null) {
+            Slogf.e(
+                    LOG_TAG,
+                    "Could not get AndroidPackage for %s. Assume it can be NON TEST ONLY.",
+                    packageName);
+            return false;
+        }
+
+        return androidPackage.isTestOnly();
+    }
+
+    /**
+     * Check if there is any DMRH app on any user, that is not marked as TEST ONLY.
+     *
+     * @return true, if such an app exists, false, otherwise
+     */
+    private boolean hasNonTestOnlyDevicePolicyManagementRoleHolder() {
+        final List<UserPackage> userPackages = getDevicePolicyManagementRoleHolderPackages();
+        for (UserPackage userPackage : userPackages) {
+            if (!isPackageTestOnly(userPackage.packageName)) {
+                Slogf.i(
+                        LOG_TAG,
+                        "Found non test-only DMRH: %s for user %d",
+                        userPackage.packageName,
+                        userPackage.userId);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<UserPackage> getDevicePolicyManagementRoleHolderPackages() {
+        List<UserPackage> dmrhPackages = new ArrayList<>();
+        for (int userId : mUserManagerInternal.getUserIds()) {
+            String roleHolderPackage =
+                    getRoleHolderPackageNameOnUser(
+                            RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT, userId);
+            if (roleHolderPackage != null) {
+                dmrhPackages.add(UserPackage.of(userId, roleHolderPackage));
+            }
+        }
+        return dmrhPackages;
     }
 
     private boolean hasAccountsOnAnyUser() {
@@ -24337,25 +24415,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private @DpcType int getDpcType(CallerIdentity caller) {
         // Check the permissions of DPCs
         if (isDefaultDeviceOwner(caller)) {
-            return DEFAULT_DEVICE_OWNER;
+            return DEVICE_OWNER;
         }
         if (isFinancedDeviceOwner(caller)) {
             return FINANCED_DEVICE_OWNER;
         }
         if (isProfileOwner(caller)) {
             if (isProfileOwnerOfOrganizationOwnedDevice(caller)) {
-                return PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+                return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
             }
             if (isManagedProfile(caller.getUserId())) {
-                return PROFILE_OWNER;
+                return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
             }
             if (isProfileOwnerOnUser0(caller)) {
                 return PROFILE_OWNER_ON_USER_0;
             }
             if (isUserAffiliatedWithDevice(caller.getUserId())) {
-                return AFFILIATED_PROFILE_OWNER_ON_USER;
+                return AFFILIATED_FULL_USER_PROFILE_OWNER;
             }
-            return PROFILE_OWNER_ON_USER;
+            return UNAFFILIATED_FULL_USER_PROFILE_OWNER;
         }
         return NOT_A_DPC;
     }
@@ -24367,19 +24445,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     private @DpcType int getDpcType(@UserIdInt int userId) {
         if (mOwners.isDefaultDeviceOwnerUserId(userId)) {
-            return DEFAULT_DEVICE_OWNER;
+            return DEVICE_OWNER;
         }
         if (mOwners.isFinancedDeviceOwnerUserId(userId)) {
             return FINANCED_DEVICE_OWNER;
         }
         if (mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId)) {
-            return PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+            return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
         }
         if (userId == 0 && mOwners.hasProfileOwner(0)) {
             return PROFILE_OWNER_ON_USER_0;
         }
         if (mOwners.hasProfileOwner(userId)) {
-            return PROFILE_OWNER;
+            return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
         }
         return NOT_A_DPC;
     }

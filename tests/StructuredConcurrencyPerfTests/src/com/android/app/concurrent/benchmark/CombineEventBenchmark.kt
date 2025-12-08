@@ -37,11 +37,10 @@ import com.android.app.concurrent.benchmark.event.SimpleWritableEventBuilder
 import com.android.app.concurrent.benchmark.event.WritableEventFactory
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorBuilder
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
-import com.android.app.concurrent.benchmark.util.IntParam
 import com.android.app.concurrent.benchmark.util.ThreadBuilder
-import com.android.app.concurrent.benchmark.util.allConsumeCpuParams
-import com.android.app.concurrent.benchmark.util.consumeCpu
+import com.android.app.concurrent.benchmark.util.allCpuWorkloads
 import com.android.app.concurrent.benchmark.util.dbg
+import com.android.app.concurrent.benchmark.util.stressCpu
 import com.android.app.concurrent.benchmark.util.times
 import java.util.concurrent.Executor
 import kotlin.random.Random
@@ -304,7 +303,7 @@ class SimpleCombineEventBenchmark(param: ThreadBuilder<Executor>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorBuilder)
     }
 }
 
@@ -316,7 +315,7 @@ class FlowCombineEventBenchmark(param: ThreadBuilder<CoroutineScope>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
     }
 }
 
@@ -409,9 +408,9 @@ class DirectHighArityCombineEventBenchmark(param: ThreadBuilder<Executor>, order
     override val randomUpdates: Boolean = order == RandomOrder
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:order={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder) * listOf(RandomOrder, SequentialOrder)
     }
 }
@@ -427,9 +426,9 @@ class SimpleHighArityCombineEventBenchmark(param: ThreadBuilder<Executor>, order
     override val randomUpdates: Boolean = order == RandomOrder
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:order={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorBuilder) * listOf(RandomOrder, SequentialOrder)
     }
 }
@@ -445,9 +444,9 @@ class FlowHighArityCombineEventBenchmark(param: ThreadBuilder<CoroutineScope>, o
     override val randomUpdates: Boolean = order == RandomOrder
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:order={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
                 listOf(RandomOrder, SequentialOrder)
     }
@@ -455,11 +454,11 @@ class FlowHighArityCombineEventBenchmark(param: ThreadBuilder<CoroutineScope>, o
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class LooperCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
+class LooperCombineSingleThreadBenchmark(val consumeCpuIterations: Int) :
     BaseLooperThreadBenchmark() {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = allConsumeCpuParams
+        @Parameters(name = "mainWorkload={0}") @JvmStatic fun getParameters() = allCpuWorkloads
     }
 
     interface BenchmarkContext : HandlerSynchronousContext {
@@ -496,7 +495,7 @@ class LooperCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
     fun benchmark_listen3_direct() {
         var sum = 0.0
         measure {
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(consumeCpuIterations) }
             ctx.a.listen { a -> if (a && ctx.b.value && ctx.c.value) ctx.endMeasurement() }
             ctx.b.listen { b -> if (ctx.a.value && b && ctx.c.value) ctx.endMeasurement() }
             ctx.c.listen { c -> if (ctx.a.value && ctx.b.value && c) ctx.endMeasurement() }
@@ -509,7 +508,7 @@ class LooperCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
     fun benchmark_listen3_deferred() {
         var sum = 0.0
         measure {
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(consumeCpuIterations) }
             ctx.a.listen { a ->
                 handler.post { if (a && ctx.b.value && ctx.c.value) ctx.endMeasurement() }
             }
@@ -527,11 +526,11 @@ class LooperCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class CoroutineCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) :
+class CoroutineCombineSingleThreadBenchmark(val mainWorkload: Int) :
     CoroutineLooperThreadBenchmark() {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = allConsumeCpuParams
+        @Parameters(name = "mainWorkload={0}") @JvmStatic fun getParameters() = allCpuWorkloads
     }
 
     interface BenchmarkContext : CoroutineScopeContext {
@@ -568,7 +567,7 @@ class CoroutineCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) 
     fun benchmark_collect3_direct() {
         var sum = 0.0
         measureCoroutine { scope ->
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(mainWorkload) }
             ctx.a
                 .filter { a -> a && ctx.b.value && ctx.c.value }
                 .onEach { ctx.endMeasurement() }
@@ -590,7 +589,7 @@ class CoroutineCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) 
     fun benchmark_collect1_combine() {
         var sum = 0.0
         measureCoroutine { scope ->
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(mainWorkload) }
             val abc = combine(ctx.a, ctx.b, ctx.c) { a, b, c -> a && b && c }
             abc.filter { it }.onEach { ctx.endMeasurement() }.launchIn(scope)
             scope.launch(start = CoroutineStart.UNDISPATCHED) { ctx.endMeasurement() }
@@ -602,7 +601,7 @@ class CoroutineCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) 
     fun benchmark_collect1_combineChained1() {
         var sum = 0.0
         measureCoroutine { scope ->
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(mainWorkload) }
             val ab = combine(ctx.a, ctx.b) { a, b -> a && b }
             val abc = combine(ab, ctx.c) { ab, c -> ab && c }
             abc.filter { it }.onEach { ctx.endMeasurement() }.launchIn(scope)
@@ -615,7 +614,7 @@ class CoroutineCombineSingleThreadBenchmark(val consumeCpuIterations: IntParam) 
     fun benchmark_collect1_combineChained2() {
         var sum = 0.0
         measureCoroutine { scope ->
-            val ctx = BenchmarkContextImpl(this) { sum += consumeCpu(consumeCpuIterations) }
+            val ctx = BenchmarkContextImpl(this) { sum += stressCpu(mainWorkload) }
             val ab = combine(ctx.a, ctx.b) { a, b -> a && b }
             val bc = combine(ctx.b, ctx.c) { b, c -> b && c }
             val abc = combine(ab, bc) { ab, bc -> ab && bc }

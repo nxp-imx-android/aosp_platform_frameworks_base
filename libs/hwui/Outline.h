@@ -42,18 +42,12 @@ public:
         mBounds.set(left, top, right, bottom);
         mRadius = radius;
 
-        // Reuse memory if previous outline was the same shape (rect or round rect).
-        if (mPath.countVerbs() > 10) {
-            mPath.reset();
-        } else {
-            mPath.rewind();
-        }
-
         // update mPath to reflect new outline
+        const SkRect rect = SkRect::MakeLTRB(left, top, right, bottom);
         if (MathUtils::isPositive(radius)) {
-            mPath.addRoundRect(SkRect::MakeLTRB(left, top, right, bottom), radius, radius);
+            mPath = SkPath::RRect(rect, radius, radius);
         } else {
-            mPath.addRect(left, top, right, bottom);
+            mPath = SkPath::Rect(rect);
         }
     }
 

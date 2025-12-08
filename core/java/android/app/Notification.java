@@ -1048,6 +1048,24 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns the color resource corresponding to a {@link SemanticStyle}, or {@code null} if the
+     * value is either {@link #SEMANTIC_STYLE_UNSPECIFIED} or out of the range of known values.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    @Nullable
+    @ColorRes
+    public static Integer semanticStyleToColorRes(@SemanticStyle int semanticStyle) {
+        return switch (semanticStyle) {
+            case SEMANTIC_STYLE_INFO -> R.color.semanticBlueOnSurfaceVariant;
+            case SEMANTIC_STYLE_SAFE -> R.color.semanticGreenOnSurfaceVariant;
+            case SEMANTIC_STYLE_CAUTION -> R.color.semanticYellowOnSurfaceVariant;
+            case SEMANTIC_STYLE_DANGER -> R.color.semanticRedOnSurfaceVariant;
+            default -> null;
+        };
+    }
+
+    /**
      * Accent color (an ARGB integer like the constants in {@link android.graphics.Color})
      * to be applied by the standard Style templates when presenting this notification.
      *
@@ -1906,6 +1924,12 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     static final String EXTRA_METRICS = "android.metrics";
 
+    /**
+     * {@link #extras} key: an int pointing to an index in {@link #EXTRA_METRICS}.
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    static final String EXTRA_METRICS_CRITICAL_INDEX = "android.metrics.criticalIndex";
+
     /** {@link #extras} key: Bundle corresponding to {@link CompactContent}. */
     @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
     static final String EXTRA_COMPACT_CONTENT = "android.compactContent";
@@ -2200,7 +2224,10 @@ public class Notification implements Parcelable
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         public static final int STYLE_ICON_AND_TEXT = 2;
 
-        /** The action is best represented by only its icon. */
+        /**
+         * The action is best represented by only its {@link #getIcon() icon}. Note that a non-null
+         * {@link #title} is still mandatory, or the action might be ignored.
+         */
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         public static final int STYLE_ICON_ONLY = 3;
 
@@ -5359,6 +5386,9 @@ public class Notification implements Parcelable
          * <p>The counter can also be set to count down to <code>when</code> when using
          * {@link #setChronometerCountDown(boolean)}.
          *
+         * <p>If the notification is {@link #FLAG_PROMOTED_ONGOING promoted ongoing} then this
+         * stopwatch might also be displayed in its status bar chip.
+         *
          * @see android.widget.Chronometer
          * @see Notification#when
          * @see #setChronometerCountDown(boolean)
@@ -5630,6 +5660,25 @@ public class Notification implements Parcelable
          * Sets a very short string summarizing the most critical information contained in the
          * notification. Suggested max length is 7 characters, and there is no guarantee how much or
          * how little of this text will be shown.
+         *
+         * <p>This field is designed exclusively for the compact representation (hereafter "chip")
+         * shown when the notification is {@link #FLAG_PROMOTED_ONGOING promoted ongoing}.
+         * <ul>
+         *     <li>A chip's content may not be shown in certain states or if it cannot fit.
+         *     <li>Short critical text will always be the highest precedence content for a chip.
+         *     <li>Setting this to {@code ""} will ensure the chip has no content; {@code null}
+         *     (the default) will fall back to the other options.
+         *     {@if (flag(Flags.FLAG_API_METRIC_STYLE)) {<li>A {@link MetricStyle}'s critical metric
+         *     is the next option for the chip's content.}}
+         *     <li>A time (from {@link #when}) is the final source of content for the chip.
+         *     <ul>
+         *         <li>If {@link #setUsesChronometer(boolean)} is {@code true}, the chip content
+         *         will be a chronometer, if that is positive (based on
+         *         {@link #setChronometerCountDown(boolean)}).
+         *         <li>If {@link #setShowWhen(boolean)} is true, the chip content will be the time
+         *         remaining until {@link #when}, if positive.
+         *     </ul>
+         * </ul>
          */
         @NonNull
         public Builder setShortCriticalText(@Nullable String shortCriticalText) {
@@ -6430,7 +6479,7 @@ public class Notification implements Parcelable
                 contentView.setViewVisibility(R.id.profile_badge, View.VISIBLE);
                 if (isBackgroundColorized(p)) {
                     contentView.setDrawableTint(R.id.profile_badge, false,
-                            getPrimaryTextColor(p), PorterDuff.Mode.SRC_ATOP);
+                            getTextColor(p), PorterDuff.Mode.SRC_ATOP);
                 }
                 contentView.setContentDescription(
                         R.id.profile_badge,
@@ -6443,7 +6492,7 @@ public class Notification implements Parcelable
             contentView.setDrawableTint(
                     R.id.alerted_icon,
                     false /* targetBackground */,
-                    getColors(p).getSecondaryTextColor(),
+                    getColors(p).getTextColor(),
                     PorterDuff.Mode.SRC_IN);
         }
 
@@ -6492,6 +6541,8 @@ public class Notification implements Parcelable
             contentView.setViewVisibility(R.id.text, View.GONE);
             contentView.setTextViewText(R.id.text, null);
             if (richOngoingImprovements()) {
+                contentView.setViewVisibility(R.id.alt_title, View.GONE);
+                contentView.setTextViewText(R.id.alt_title, null);
                 contentView.setViewVisibility(R.id.alt_subtext, View.GONE);
                 contentView.setTextViewText(R.id.alt_subtext, null);
             }
@@ -6555,7 +6606,7 @@ public class Notification implements Parcelable
             if (p.hasTitle()) {
                 contentView.setViewVisibility(p.mTitleViewId, View.VISIBLE);
                 contentView.setTextViewText(p.mTitleViewId, stripUnwantedSpans(p.mTitle, p));
-                setTextViewColorPrimary(contentView, p.mTitleViewId, p);
+                setTextColor(contentView, p.mTitleViewId, p);
             } else if (p.mTitleViewId != R.id.title) {
                 // This alternate title view ID is not cleared by resetStandardTemplate
                 contentView.setViewVisibility(p.mTitleViewId, View.GONE);
@@ -6567,14 +6618,14 @@ public class Notification implements Parcelable
                 contentView.setViewVisibility(p.mTextViewId, View.VISIBLE);
                 contentView.setBoolean(p.mTextViewId, "showAsSummarization", true);
                 contentView.setTextViewText(p.mTextViewId, p.mSummarization);
-                setTextViewColorSecondary(contentView, p.mTextViewId, p);
+                setTextColor(contentView, p.mTextViewId, p);
                 hasSecondLine = true;
             } else {
                 if (p.mText != null && p.mText.length() != 0
                         && (!showProgress || p.mAllowTextWithProgress)) {
                     contentView.setViewVisibility(p.mTextViewId, View.VISIBLE);
                     contentView.setTextViewText(p.mTextViewId, stripUnwantedSpans(p.mText, p));
-                    setTextViewColorSecondary(contentView, p.mTextViewId, p);
+                    setTextColor(contentView, p.mTextViewId, p);
                     hasSecondLine = true;
                 } else if (p.mTextViewId != R.id.text) {
                     // This alternate text view ID is not cleared by resetStandardTemplate
@@ -6640,34 +6691,19 @@ public class Notification implements Parcelable
                     RemoteViews.MARGIN_BOTTOM, marginDimen);
         }
 
-        private void setTextViewColorPrimary(RemoteViews contentView, @IdRes int id,
+        private void setTextColor(RemoteViews contentView, @IdRes int id,
                 StandardTemplateParams p) {
-            contentView.setTextColor(id, getPrimaryTextColor(p));
+            contentView.setTextColor(id, getTextColor(p));
         }
 
         /**
          * @param p the template params to inflate this with
-         * @return the primary text color
+         * @return the text color
          * @hide
          */
         @VisibleForTesting
-        public @ColorInt int getPrimaryTextColor(StandardTemplateParams p) {
-            return getColors(p).getPrimaryTextColor();
-        }
-
-        /**
-         * @param p the template params to inflate this with
-         * @return the secondary text color
-         * @hide
-         */
-        @VisibleForTesting
-        public @ColorInt int getSecondaryTextColor(StandardTemplateParams p) {
-            return getColors(p).getSecondaryTextColor();
-        }
-
-        private void setTextViewColorSecondary(RemoteViews contentView, @IdRes int id,
-                StandardTemplateParams p) {
-            contentView.setTextColor(id, getSecondaryTextColor(p));
+        public @ColorInt int getTextColor(StandardTemplateParams p) {
+            return getColors(p).getTextColor();
         }
 
         private Colors getColors(StandardTemplateParams p) {
@@ -6964,7 +7000,7 @@ public class Notification implements Parcelable
             // set default colors
             int bgColor = getBackgroundColor(p);
             int pillColor = Colors.flattenAlpha(getColors(p).getProtectionColor(), bgColor);
-            int textColor = Colors.flattenAlpha(getPrimaryTextColor(p), pillColor);
+            int textColor = Colors.flattenAlpha(getTextColor(p), pillColor);
             contentView.setInt(R.id.expand_button, "setDefaultTextColor", textColor);
             contentView.setInt(R.id.expand_button, "setDefaultPillColor", pillColor);
             // Use different highlighted colors for conversations' unread count
@@ -6982,7 +7018,7 @@ public class Notification implements Parcelable
             // set default colors
             int bgColor = getBackgroundColor(p);
             int backgroundColor = Colors.flattenAlpha(getColors(p).getProtectionColor(), bgColor);
-            int foregroundColor = Colors.flattenAlpha(getPrimaryTextColor(p), backgroundColor);
+            int foregroundColor = Colors.flattenAlpha(getTextColor(p), backgroundColor);
             contentView.setInt(R.id.close_button, "setForegroundColor", foregroundColor);
             contentView.setInt(R.id.close_button, "setBackgroundColor", backgroundColor);
         }
@@ -6994,7 +7030,7 @@ public class Notification implements Parcelable
 
             if ((showsTime || showsChronometer) && hasTextToLeft) {
                 contentView.setViewVisibility(R.id.time_divider, View.VISIBLE);
-                setTextViewColorSecondary(contentView, R.id.time_divider, p);
+                setTextColor(contentView, R.id.time_divider, p);
             }
             if (showsChronometer) {
                 contentView.setViewVisibility(R.id.chronometer, View.VISIBLE);
@@ -7003,7 +7039,7 @@ public class Notification implements Parcelable
                 contentView.setBoolean(R.id.chronometer, "setStarted", true);
                 boolean countsDown = mN.extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
                 contentView.setChronometerCountDown(R.id.chronometer, countsDown);
-                setTextViewColorSecondary(contentView, R.id.chronometer, p);
+                setTextColor(contentView, R.id.chronometer, p);
             } else if (showsTime) {
                 contentView.setViewVisibility(R.id.time, View.VISIBLE);
             }
@@ -7011,7 +7047,7 @@ public class Notification implements Parcelable
             // on demand in case it's a child notification without anything in the header
             contentView.setLong(R.id.time, "setTime", mN.getWhen() != 0 ? mN.getWhen() :
                     mN.creationTime);
-            setTextViewColorSecondary(contentView, R.id.time, p);
+            setTextColor(contentView, R.id.time, p);
         }
 
         private void bindHeaderChronometerAndTimeLegacy(RemoteViews contentView,
@@ -7020,7 +7056,7 @@ public class Notification implements Parcelable
             if (!p.mHideTime && showsTimeOrChronometer(p)) {
                 if (hasTextToLeft) {
                     contentView.setViewVisibility(R.id.time_divider, View.VISIBLE);
-                    setTextViewColorSecondary(contentView, R.id.time_divider, p);
+                    setTextColor(contentView, R.id.time_divider, p);
                 }
                 if (mN.extras.getBoolean(EXTRA_SHOW_CHRONOMETER)) {
                     contentView.setViewVisibility(R.id.chronometer, View.VISIBLE);
@@ -7029,18 +7065,18 @@ public class Notification implements Parcelable
                     contentView.setBoolean(R.id.chronometer, "setStarted", true);
                     boolean countsDown = mN.extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
                     contentView.setChronometerCountDown(R.id.chronometer, countsDown);
-                    setTextViewColorSecondary(contentView, R.id.chronometer, p);
+                    setTextColor(contentView, R.id.chronometer, p);
                 } else {
                     contentView.setViewVisibility(R.id.time, View.VISIBLE);
                     contentView.setLong(R.id.time, "setTime", mN.getWhen());
-                    setTextViewColorSecondary(contentView, R.id.time, p);
+                    setTextColor(contentView, R.id.time, p);
                 }
             } else {
                 // We still want a time to be set but gone, such that we can show and hide it
                 // on demand in case it's a child notification without anything in the header
                 contentView.setLong(R.id.time, "setTime", mN.getWhen() != 0 ? mN.getWhen() :
                         mN.creationTime);
-                setTextViewColorSecondary(contentView, R.id.time, p);
+                setTextColor(contentView, R.id.time, p);
             }
         }
 
@@ -7068,11 +7104,11 @@ public class Notification implements Parcelable
             if (!TextUtils.isEmpty(headerText)) {
                 contentView.setTextViewText(p.mSubtextViewId, stripUnwantedSpans(
                         processLegacyText(headerText), p));
-                setTextViewColorSecondary(contentView, p.mSubtextViewId, p);
+                setTextColor(contentView, p.mSubtextViewId, p);
                 contentView.setViewVisibility(p.mSubtextViewId, View.VISIBLE);
                 if (hasTextToLeft && p.mSubtextViewId == R.id.header_text) {
                     contentView.setViewVisibility(R.id.header_text_divider, View.VISIBLE);
-                    setTextViewColorSecondary(contentView, R.id.header_text_divider, p);
+                    setTextColor(contentView, R.id.header_text_divider, p);
                 }
                 return true;
             }
@@ -7090,11 +7126,11 @@ public class Notification implements Parcelable
             if (!TextUtils.isEmpty(p.mHeaderTextSecondary)) {
                 contentView.setTextViewText(R.id.header_text_secondary,
                         stripUnwantedSpans(processLegacyText(p.mHeaderTextSecondary), p));
-                setTextViewColorSecondary(contentView, R.id.header_text_secondary, p);
+                setTextColor(contentView, R.id.header_text_secondary, p);
                 contentView.setViewVisibility(R.id.header_text_secondary, View.VISIBLE);
                 if (hasTextToLeft) {
                     contentView.setViewVisibility(R.id.header_text_secondary_divider, View.VISIBLE);
-                    setTextViewColorSecondary(contentView, R.id.header_text_secondary_divider, p);
+                    setTextColor(contentView, R.id.header_text_secondary_divider, p);
                 }
                 return true;
             }
@@ -7130,7 +7166,7 @@ public class Notification implements Parcelable
             }
             contentView.setViewVisibility(R.id.app_name_text, View.VISIBLE);
             contentView.setTextViewText(R.id.app_name_text, loadHeaderAppName());
-            contentView.setTextColor(R.id.app_name_text, getSecondaryTextColor(p));
+            contentView.setTextColor(R.id.app_name_text, getTextColor(p));
             if (Flags.apiMetricStyle() && hasTextToLeft) {
                 contentView.setViewVisibility(R.id.app_name_text_divider, View.VISIBLE);
             }
@@ -7284,6 +7320,7 @@ public class Notification implements Parcelable
          * Returns the subset of actions to be shown in the actions "row" of a notification.
          * <ul>
          *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
+         *     <li>Excludes actions with null or empty title (except in MediaStyle).
          *     <li>Excludes contextual actions, which are shown separately.
          *     <li>Resolves {@link Action#STYLE_AUTO} and {@link Action#EMPHASIS_AUTO} into
          *     concrete values for RONs/FSI/CallStyle notifications.
@@ -7291,6 +7328,7 @@ public class Notification implements Parcelable
          *     <li>Limits the number of actions to 3.
          * </ul>
          */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         private @NonNull ActionButtons getEffectiveActions() {
             if (mActions == null || mActions.isEmpty()) {
                 return ActionButtons.EMPTY;
@@ -7300,6 +7338,8 @@ public class Notification implements Parcelable
             boolean isCallStyle = mN.isStyle(CallStyle.class);
             boolean isPseudoFsi = mN.fullScreenIntent != null
                     || (mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0;
+            boolean isMediaStyle = mN.isStyle(MediaStyle.class)
+                    || mN.isStyle(DecoratedMediaCustomViewStyle.class);
 
             List<ActionButton> candidates = new ArrayList<>();
             for (int i = 0; i < mActions.size(); i++) {
@@ -7310,6 +7350,9 @@ public class Notification implements Parcelable
                 if (action.isContextual()) {
                     continue;
                 }
+                if (!isMediaStyle && (action.title == null || action.title.toString().isBlank())) {
+                    continue;
+                }
                 candidates.add(new ActionButton(action, i));
                 if (candidates.size() >= MAX_ACTION_BUTTONS) {
                     break;
@@ -7317,37 +7360,32 @@ public class Notification implements Parcelable
             }
 
             // Resolve AUTO style/emphasis, or force specific style/emphasis for special cases.
-            if (Flags.apiNotificationActionCustom()) {
-                for (int i = 0; i < candidates.size(); i++) {
-                    ActionButton candidate = candidates.get(i);
-                    Action original = candidate.action;
-                    Action.Builder updated = new Action.Builder(original);
-                    if (isCallStyle) {
-                        updated.setStyleHint(Action.STYLE_ICON_AND_TEXT);
-                    } else if (!isPromotedOngoing || original.getStyleHint() == Action.STYLE_AUTO) {
-                        updated.setStyleHint(Action.STYLE_TEXT_ONLY);
-                    }
-                    if (isCallStyle) {
-                        updated.setEmphasisHint(Action.EMPHASIS_PRIMARY);
-                    } else if (!isPromotedOngoing
-                            || original.getEmphasisHint() == Action.EMPHASIS_AUTO
-                            || (isPromotedOngoing && candidates.size() == 1)) {
-                        // Promoted ongoing with 1 action is forced to SECONDARY regardless of
-                        // caller's choice.
-                        updated.setEmphasisHint(Action.EMPHASIS_SECONDARY);
-                    }
-                    candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
+            for (int i = 0; i < candidates.size(); i++) {
+                ActionButton candidate = candidates.get(i);
+                Action original = candidate.action;
+                Action.Builder updated = new Action.Builder(original);
+                if (isCallStyle) {
+                    updated.setStyleHint(Action.STYLE_ICON_AND_TEXT);
+                } else if (!isPromotedOngoing
+                        || original.getStyleHint() == Action.STYLE_AUTO
+                        || (original.getStyleHint() == Action.STYLE_ICON_ONLY
+                            && original.getIcon() == null)) {
+                    updated.setStyleHint(Action.STYLE_TEXT_ONLY);
                 }
+                if (isCallStyle) {
+                    updated.setEmphasisHint(Action.EMPHASIS_PRIMARY);
+                } else if (!isPromotedOngoing
+                        || original.getEmphasisHint() == Action.EMPHASIS_AUTO
+                        || (isPromotedOngoing && candidates.size() == 1)) {
+                    // Promoted ongoing with 1 action is forced to SECONDARY regardless of
+                    // caller's choice.
+                    updated.setEmphasisHint(Action.EMPHASIS_SECONDARY);
+                }
+                candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
             }
 
-            boolean edgeToEdge =
-                    (Flags.apiNotificationActionCustom() && (isPromotedOngoing || isPseudoFsi))
-                            || isCallStyle;
-            boolean emphasized =
-                    (Flags.apiNotificationActionCustom() && isPromotedOngoing)
-                            || isCallStyle || isPseudoFsi;
-
-            return new ActionButtons(candidates, edgeToEdge, emphasized);
+            boolean emphasizedEdgeToEdge = isPromotedOngoing || isPseudoFsi || isCallStyle;
+            return new ActionButtons(candidates, emphasizedEdgeToEdge, emphasizedEdgeToEdge);
         }
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
@@ -7540,7 +7578,7 @@ public class Notification implements Parcelable
                         View.VISIBLE);
                 contentView.setTextViewText(R.id.notification_material_reply_text_1,
                         stripUnwantedSpans(replyText[0].getText(), p));
-                setTextViewColorSecondary(contentView, R.id.notification_material_reply_text_1, p);
+                setTextColor(contentView, R.id.notification_material_reply_text_1, p);
                 contentView.setViewVisibility(R.id.notification_material_reply_progress,
                         showSpinner ? View.VISIBLE : View.GONE);
                 contentView.setProgressIndeterminateTintList(
@@ -7553,7 +7591,7 @@ public class Notification implements Parcelable
                             View.VISIBLE);
                     contentView.setTextViewText(R.id.notification_material_reply_text_2,
                             stripUnwantedSpans(replyText[1].getText(), p));
-                    setTextViewColorSecondary(contentView, R.id.notification_material_reply_text_2,
+                    setTextColor(contentView, R.id.notification_material_reply_text_2,
                             p);
 
                     if (replyText.length > 2 && !TextUtils.isEmpty(replyText[2].getText())
@@ -7562,7 +7600,7 @@ public class Notification implements Parcelable
                                 R.id.notification_material_reply_text_3, View.VISIBLE);
                         contentView.setTextViewText(R.id.notification_material_reply_text_3,
                                 stripUnwantedSpans(replyText[2].getText(), p));
-                        setTextViewColorSecondary(contentView,
+                        setTextColor(contentView,
                                 R.id.notification_material_reply_text_3, p);
                     }
                 }
@@ -8315,20 +8353,6 @@ public class Notification implements Parcelable
         }
 
         /**
-         * Determines if the color is light or dark.  Specifically, this is using the same metric as
-         * {@link ContrastColorUtil#resolvePrimaryColor(Context, int, boolean)} and peers so that
-         * the direction of color shift is consistent.
-         *
-         * @param color the color to check
-         * @return {@code true} if the color has higher contrast with white than black
-         * @hide
-         */
-        public static boolean isColorDark(int color) {
-            // as per ContrastColorUtil.shouldUseDark, this uses the color contrast midpoint.
-            return ContrastColorUtil.calculateLuminance(color) <= 0.17912878474;
-        }
-
-        /**
          * Finds a button fill color with sufficient contrast over bg (1.3:1) that has the same hue
          * as the original color, but is lightened or darkened depending on whether the background
          * is dark or light.
@@ -8337,14 +8361,7 @@ public class Notification implements Parcelable
          */
         @VisibleForTesting
         public static int ensureButtonFillContrast(int color, int bg) {
-            return ensureColorContrast(color, bg, 1.3);
-        }
-
-
-        private static int ensureColorContrast(int color, int bg, double contrastRatio) {
-            return isColorDark(bg)
-                    ? ContrastColorUtil.findContrastColorAgainstDark(color, bg, true, contrastRatio)
-                    : ContrastColorUtil.findContrastColor(color, bg, true, contrastRatio);
+            return ContrastColorUtil.ensureContrast(color, bg, 1.3);
         }
 
         /**
@@ -8409,7 +8426,7 @@ public class Notification implements Parcelable
          */
         private @ColorInt int getStandardActionColor(Notification.StandardTemplateParams p) {
             return mTintActionButtons || isBackgroundColorized(p)
-                    ? getPrimaryAccentColor(p) : getSecondaryTextColor(p);
+                    ? getPrimaryAccentColor(p) : getTextColor(p);
         }
 
         /**
@@ -9763,7 +9780,7 @@ public class Notification implements Parcelable
             if (mSummaryTextSet) {
                 contentView.setTextViewText(R.id.text,
                         mBuilder.stripUnwantedSpans(mBuilder.processLegacyText(mSummaryText), p));
-                mBuilder.setTextViewColorSecondary(contentView, R.id.text, p);
+                mBuilder.setTextColor(contentView, R.id.text, p);
                 contentView.setViewVisibility(R.id.text, View.VISIBLE);
             }
 
@@ -10695,18 +10712,18 @@ public class Notification implements Parcelable
                     bindResult);
             if (isConversationLayout && !notificationsRedesignTemplates()) {
                 // Redesign note: This view is replaced by the `title`, which is handled normally.
-                mBuilder.setTextViewColorPrimary(contentView, R.id.conversation_text, p);
+                mBuilder.setTextColor(contentView, R.id.conversation_text, p);
                 // Redesign note: This special divider is no longer needed.
-                mBuilder.setTextViewColorSecondary(contentView, R.id.app_name_divider, p);
+                mBuilder.setTextColor(contentView, R.id.app_name_divider, p);
             }
 
             addExtras(mBuilder.mN.extras, /* processSpans= */ true);
             contentView.setInt(R.id.status_bar_latest_event_content, "setLayoutColor",
                     mBuilder.getSmallIconColor(p));
             contentView.setInt(R.id.status_bar_latest_event_content, "setSenderTextColor",
-                    mBuilder.getPrimaryTextColor(p));
+                    mBuilder.getTextColor(p));
             contentView.setInt(R.id.status_bar_latest_event_content, "setMessageTextColor",
-                    mBuilder.getSecondaryTextColor(p));
+                    mBuilder.getTextColor(p));
             if (!SetNotificationBackgroundColorRefactor.isEnabled()) {
                 contentView.setInt(R.id.status_bar_latest_event_content,
                         "setNotificationBackgroundColor",
@@ -11404,7 +11421,7 @@ public class Notification implements Parcelable
                     contentView.setViewVisibility(rowIds[i], View.VISIBLE);
                     contentView.setTextViewText(rowIds[i],
                             mBuilder.stripUnwantedSpans(mBuilder.processLegacyText(str), p));
-                    mBuilder.setTextViewColorSecondary(contentView, rowIds[i], p);
+                    mBuilder.setTextColor(contentView, rowIds[i], p);
                     contentView.setViewPadding(rowIds[i], 0, topPadding, 0, 0);
                     if (first) {
                         onlyViewId = rowIds[i];
@@ -12196,7 +12213,7 @@ public class Notification implements Parcelable
             // Bind some extra conversation-specific header fields.
             if (!notificationsRedesignTemplates() && !p.mHideAppName) {
                 // Redesign note: This special divider is no longer needed.
-                mBuilder.setTextViewColorSecondary(contentView, R.id.app_name_divider, p);
+                mBuilder.setTextColor(contentView, R.id.app_name_divider, p);
                 contentView.setViewVisibility(R.id.app_name_divider, View.VISIBLE);
             }
             bindCallerVerification(contentView, p);
@@ -12222,7 +12239,7 @@ public class Notification implements Parcelable
             if (mVerificationIcon != null) {
                 contentView.setImageViewIcon(R.id.verification_icon, mVerificationIcon);
                 contentView.setDrawableTint(R.id.verification_icon, false /* targetBackground */,
-                        mBuilder.getSecondaryTextColor(p), PorterDuff.Mode.SRC_ATOP);
+                        mBuilder.getTextColor(p), PorterDuff.Mode.SRC_ATOP);
                 contentView.setViewVisibility(R.id.verification_icon, View.VISIBLE);
                 iconContentDescription = mBuilder.mContext.getString(
                         R.string.notification_verified_content_description);
@@ -12232,7 +12249,7 @@ public class Notification implements Parcelable
             }
             if (!TextUtils.isEmpty(mVerificationText)) {
                 contentView.setTextViewText(R.id.verification_text, mVerificationText);
-                mBuilder.setTextViewColorSecondary(contentView, R.id.verification_text, p);
+                mBuilder.setTextColor(contentView, R.id.verification_text, p);
                 contentView.setViewVisibility(R.id.verification_text, View.VISIBLE);
                 iconContentDescription = null;  // let the app's text take precedence
             } else {
@@ -12242,7 +12259,7 @@ public class Notification implements Parcelable
             contentView.setContentDescription(R.id.verification_icon, iconContentDescription);
             if (showDivider) {
                 contentView.setViewVisibility(R.id.verification_divider, View.VISIBLE);
-                mBuilder.setTextViewColorSecondary(contentView, R.id.verification_divider, p);
+                mBuilder.setTextColor(contentView, R.id.verification_divider, p);
             } else {
                 contentView.setViewVisibility(R.id.verification_divider, View.GONE);
             }
@@ -12365,15 +12382,28 @@ public class Notification implements Parcelable
      * <p>A MetricStyle must contain at least one {@link Metric} object to be valid; an invalid
      * style will be rejected when {@link Builder#build()} is called.
      *
+     * <p>If a notification with this style is {@link #FLAG_PROMOTED_ONGOING promoted ongoing},
+     * then one of its metrics might be displayed in the status bar chip.
+     *
      * <p>Note that this style doesn't display the large icon set via
      * {@link Builder#setLargeIcon(Icon)}.
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     public static final class MetricStyle extends Style {
 
+        /**
+         * Special value for {@link #setCriticalMetric(int)} to indicate that none of the metrics
+         * should be considered the "most important" one.
+         */
+        public static final int METRIC_INDEX_NONE = -1;
+
+        /* Index of the default critical metric (the first one). */
+        private static final int CRITICAL_METRIC_DEFAULT = 0;
+
         private static final int MAX_METRICS = 3;
 
         private final List<Metric> mMetrics = new ArrayList<>();
+        private int mCriticalMetric = CRITICAL_METRIC_DEFAULT;
 
         public MetricStyle() {
         }
@@ -12382,17 +12412,21 @@ public class Notification implements Parcelable
         public boolean equals(Object obj) {
             if (!(obj instanceof MetricStyle that)) return false;
             if (this == that) return true;
-            return Objects.equals(this.mMetrics, that.mMetrics);
+            return Objects.equals(this.mMetrics, that.mMetrics)
+                    && this.mCriticalMetric == that.mCriticalMetric;
         }
 
         @Override
         public int hashCode() {
-            return mMetrics.hashCode();
+            return Objects.hash(mMetrics, mCriticalMetric);
         }
 
         @Override
         public String toString() {
-            return "MetricStyle{" + mMetrics + "}";
+            return "MetricStyle{"
+                    + "mMetrics=" + mMetrics
+                    + ", mCriticalMetric=" + mCriticalMetric
+                    + "}";
         }
 
         /** Adds a {@link Metric} to this {@link MetricStyle}. */
@@ -12422,6 +12456,37 @@ public class Notification implements Parcelable
         @NonNull
         public List<Metric> getMetrics() {
             return Collections.unmodifiableList(mMetrics);
+        }
+
+        /**
+         * Indicates which of the metrics is considered the "most important". This may be used when
+         * the notification is displayed in other surfaces (such as a status bar chip).
+         *
+         * @param index either the index (0-based) of an item in {@link #getMetrics()}, or
+         *              {@link #METRIC_INDEX_NONE} to indicate no {@link Metric} should be used
+         *              for this purpose
+         */
+        @NonNull
+        public MetricStyle setCriticalMetric(int index) {
+            mCriticalMetric = index;
+            return this;
+        }
+
+        /**
+         * Returns which, if any, of the metrics is considered the "most important", or {@code null}
+         * if none are. This may be used when the notification is displayed in other surfaces (such
+         * as a status bar chip).
+         *
+         * <p>By default, unless {@link #setCriticalMetric(int)} has been set, the first metric in
+         * the list is considered the critical one.
+         */
+        @Nullable
+        public Metric getCriticalMetric() {
+            if (mCriticalMetric >= 0 && mCriticalMetric < mMetrics.size()) {
+                return mMetrics.get(mCriticalMetric);
+            } else {
+                return null;
+            }
         }
 
         /** @hide */
@@ -12457,6 +12522,7 @@ public class Notification implements Parcelable
                 bundles.add(Metric.toBundle(metric));
             }
             extras.putParcelableArrayList(EXTRA_METRICS, bundles);
+            extras.putInt(EXTRA_METRICS_CRITICAL_INDEX, mCriticalMetric);
         }
 
         /** @hide */
@@ -12478,6 +12544,8 @@ public class Notification implements Parcelable
                     }
                 }
             }
+
+            mCriticalMetric = extras.getInt(EXTRA_METRICS_CRITICAL_INDEX, CRITICAL_METRIC_DEFAULT);
         }
 
         /** @hide */
@@ -12639,7 +12707,7 @@ public class Notification implements Parcelable
 
                     final CharSequence metricLabel = getMetricLabel(metric, isExpandedView);
 
-                    mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
+                    mBuilder.setTextColor(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
 
                     // Choose the view (text/chronometer) to show and its visual appearance.
@@ -12656,10 +12724,10 @@ public class Notification implements Parcelable
                         if (semanticColor != COLOR_DEFAULT) {
                             contentView.setTextColor(valueViewId, semanticColor);
                         } else {
-                            mBuilder.setTextViewColorSecondary(contentView, valueViewId, p);
+                            mBuilder.setTextColor(contentView, valueViewId, p);
                         }
                     } else {
-                        mBuilder.setTextViewColorSecondary(contentView, valueViewId, p);
+                        mBuilder.setTextColor(contentView, valueViewId, p);
                     }
 
                     if (metricValue instanceof Metric.TimeDifference timeDifference) {
@@ -14629,7 +14697,7 @@ public class Notification implements Parcelable
         public static int sanitizeProgressColor(@ColorInt int color,
                 @ColorInt int bg,
                 @ColorInt int defaultColor) {
-            return Builder.ensureColorContrast(
+            return ContrastColorUtil.ensureContrast(
                     Color.alpha(color) == 0 ? defaultColor : color,
                     bg,
                     3);
@@ -15574,7 +15642,7 @@ public class Notification implements Parcelable
      *     <li>The text will be a {@link Metric.MetricValue} populated based on the data in the
      *     Notification, using the following ordered list of checks:
      *     <ol>
-     *         <li>If the Notification has {@link #getShortCriticalText()}, it will be a
+     *         <li>If the Notification has a non-null {@link #getShortCriticalText()}, it will be a
      *         {@link Metric.FixedText} with that text.
      *         <li>If the Notification uses {@link MetricStyle}, it will be the value of the
      *         first metric.
@@ -15591,7 +15659,7 @@ public class Notification implements Parcelable
      *
      * <p>NOTE: Even when the returned value contains a text with type
      * {@link Metric.TimeDifference}, the compact representation UI should not show negative
-     * chronometers or adaptive times that count up.
+     * chronometers or adaptive times.
      */
     @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
     @NonNull
@@ -15628,12 +15696,13 @@ public class Notification implements Parcelable
                 : CompactIcon.useSmallIcon();
 
         CompactText compactText;
-        if (!TextUtils.isEmpty(getShortCriticalText())) {
+        if (getShortCriticalText() != null) {
             compactText = CompactText.useShortCriticalText();
         } else if (Flags.apiMetricStyle()
                 && builder.getStyle() instanceof MetricStyle metricStyle
-                && !metricStyle.getMetrics().isEmpty()) {
-            compactText = CompactText.useStyleMetric(0);
+                && metricStyle.getCriticalMetric() != null) {
+            compactText = CompactText.useStyleMetric(
+                    metricStyle.getMetrics().indexOf(metricStyle.getCriticalMetric()));
         } else if (showsChronometer()) {
             boolean isCountdown = extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
             compactText = CompactText.useWhenAsChronometer(isCountdown);
@@ -15708,7 +15777,7 @@ public class Notification implements Parcelable
                 case CompactText.TEXT_NONE -> null;
                 case CompactText.TEXT_SHORT_CRITICAL -> {
                     String shortCriticalText = notification.getShortCriticalText();
-                    if (!TextUtils.isEmpty(shortCriticalText)) {
+                    if (shortCriticalText != null) {
                         yield new Metric.FixedText(shortCriticalText);
                     } else {
                         yield null;
@@ -18532,7 +18601,7 @@ public class Notification implements Parcelable
             // Minimally decorated custom views do not show certain pieces of chrome that have
             // always been shown when using DecoratedCustomViewStyle.
             boolean hideOtherFields = decorationType <= DECORATION_MINIMAL;
-            hideLeftIcon(false);  // The left icon decoration is better than showing nothing.
+            hideLeftIcon(hideOtherFields);
             hideRightIcon(hideOtherFields);
             hideProgress(hideOtherFields);
             hideActions(hideOtherFields);
@@ -18582,8 +18651,7 @@ public class Notification implements Parcelable
         // The following colors are the palette
         private int mBackgroundColor = COLOR_INVALID;
         private int mProtectionColor = COLOR_INVALID;
-        private int mPrimaryTextColor = COLOR_INVALID;
-        private int mSecondaryTextColor = COLOR_INVALID;
+        private int mTextColor = COLOR_INVALID;
         private int mPrimaryAccentColor = COLOR_INVALID;
         private int mSecondaryAccentColor = COLOR_INVALID;
         private int mTertiaryAccentColor = COLOR_INVALID;
@@ -18665,22 +18733,19 @@ public class Notification implements Parcelable
                 } else {
                     mBackgroundColor = rawColor;
                 }
-                boolean isBgDark = Notification.Builder.isColorDark(mBackgroundColor);
+                boolean isBgDark = ContrastColorUtil.isColorDark(mBackgroundColor);
                 int onSurfaceColorExtreme = isBgDark ? Color.WHITE : Color.BLACK;
-                mPrimaryTextColor = ContrastColorUtil.ensureContrast(
+                mTextColor = ContrastColorUtil.ensureContrast(
                         ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.9f),
                         mBackgroundColor, isBgDark, TEXT_CONTRAST);
-                mSecondaryTextColor = ContrastColorUtil.ensureContrast(
-                        ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.8f),
-                        mBackgroundColor, isBgDark, TEXT_CONTRAST);
-                mContrastColor = mPrimaryTextColor;
-                mPrimaryAccentColor = mPrimaryTextColor;
-                mSecondaryAccentColor = mSecondaryTextColor;
-                mTertiaryAccentColor = flattenAlpha(mPrimaryTextColor, mBackgroundColor);
+                mContrastColor = mTextColor;
+                mPrimaryAccentColor = mTextColor;
+                mSecondaryAccentColor = mTextColor;
+                mTertiaryAccentColor = flattenAlpha(mTextColor, mBackgroundColor);
                 mOnTertiaryAccentTextColor = mBackgroundColor;
                 mTertiaryFixedDimAccentColor = mTertiaryAccentColor;
                 mOnTertiaryFixedAccentTextColor = mOnTertiaryAccentTextColor;
-                mErrorColor = mPrimaryTextColor;
+                mErrorColor = mTextColor;
                 mRippleAlpha = 0x33;
 
                 if (Flags.apiNotificationActionCustom()) {
@@ -18701,10 +18766,7 @@ public class Notification implements Parcelable
                 };
 
                 mBackgroundColor = ctx.getColor(R.color.materialColorSurfaceContainerHigh);
-                mPrimaryTextColor = ctx.getColor(R.color.materialColorOnSurface);
-                mSecondaryTextColor = Flags.notificationsRedesignFonts()
-                        ? mPrimaryTextColor
-                        : ctx.getColor(R.color.materialColorOnSurfaceVariant);
+                mTextColor = ctx.getColor(R.color.materialColorOnSurface);
                 mPrimaryAccentColor = ctx.getColor(R.color.materialColorPrimary);
                 mSecondaryAccentColor = ctx.getColor(R.color.materialColorSecondary);
                 mTertiaryAccentColor = ctx.getColor(R.color.materialColorTertiary);
@@ -18722,14 +18784,11 @@ public class Notification implements Parcelable
                         mBackgroundColor, nightMode);
 
                 // make sure every color has a valid value
-                if (mPrimaryTextColor == COLOR_INVALID) {
-                    mPrimaryTextColor = ContrastColorUtil.resolvePrimaryColor(
+                if (mTextColor == COLOR_INVALID) {
+                    mTextColor = ContrastColorUtil.resolvePrimaryColor(
                             ctx, mBackgroundColor, nightMode);
                 }
-                if (mSecondaryTextColor == COLOR_INVALID) {
-                    mSecondaryTextColor = ContrastColorUtil.resolveSecondaryColor(
-                            ctx, mBackgroundColor, nightMode);
-                }
+
                 if (mPrimaryAccentColor == COLOR_INVALID) {
                     mPrimaryAccentColor = mContrastColor;
                 }
@@ -18753,7 +18812,7 @@ public class Notification implements Parcelable
                                     ctx, mTertiaryFixedDimAccentColor, nightMode), 0xFF);
                 }
                 if (mErrorColor == COLOR_INVALID) {
-                    mErrorColor = mPrimaryTextColor;
+                    mErrorColor = mTextColor;
                 }
 
                 if (Flags.apiNotificationActionCustom()) {
@@ -18767,13 +18826,17 @@ public class Notification implements Parcelable
 
             if (Flags.apiNotificationSemanticStyle()) {
                 mSemanticInfo = ensureTextContrast(
-                    ctx.getColor(R.color.semanticBlueOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_INFO)),
+                        mBackgroundColor);
                 mSemanticSafe = ensureTextContrast(
-                        ctx.getColor(R.color.semanticGreenOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_SAFE)),
+                        mBackgroundColor);
                 mSemanticCaution = ensureTextContrast(
-                        ctx.getColor(R.color.semanticYellowOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_CAUTION)),
+                        mBackgroundColor);
                 mSemanticDanger = ensureTextContrast(
-                        ctx.getColor(R.color.semanticRedOnSurfaceVariant), mBackgroundColor);
+                        ctx.getColor(semanticStyleToColorRes(SEMANTIC_STYLE_DANGER)),
+                        mBackgroundColor);
             }
 
             // make sure every color has a valid value
@@ -18783,15 +18846,15 @@ public class Notification implements Parcelable
         }
 
         private static @ColorInt int ensureTextContrast(@ColorInt int textColor, @ColorInt int bg) {
-            return Builder.ensureColorContrast(textColor, bg, TEXT_CONTRAST);
+            return ContrastColorUtil.ensureContrast(textColor, bg, TEXT_CONTRAST);
         }
 
         private static @ColorInt int ensureThinContrast(@ColorInt int color, @ColorInt int bg) {
-            return Builder.ensureColorContrast(color, bg, THIN_CONTRAST);
+            return ContrastColorUtil.ensureContrast(color, bg, THIN_CONTRAST);
         }
 
         private static @ColorInt int ensureMinimalContrast(@ColorInt int color, @ColorInt int bg) {
-            return Builder.ensureColorContrast(color, bg, MINIMAL_CONTRAST);
+            return ContrastColorUtil.ensureContrast(color, bg, MINIMAL_CONTRAST);
         }
 
         /** calculates the contrast color for the non-colorized notifications */
@@ -18829,14 +18892,9 @@ public class Notification implements Parcelable
             return mProtectionColor;
         }
 
-        /** @return the color for the most prominent text */
-        public @ColorInt int getPrimaryTextColor() {
-            return mPrimaryTextColor;
-        }
-
-        /** @return the color for less prominent text */
-        public @ColorInt int getSecondaryTextColor() {
-            return mSecondaryTextColor;
+        /** @return the color for notification text */
+        public @ColorInt int getTextColor() {
+            return mTextColor;
         }
 
         /** @return the theme's accent color for colored UI elements */

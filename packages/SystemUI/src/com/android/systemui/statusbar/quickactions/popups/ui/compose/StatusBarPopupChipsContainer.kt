@@ -28,13 +28,13 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
 fun StatusBarPopupChipsContainer(
-    chips: List<PopupChipModel.Shown>,
+    chips: List<QuickActionChipUiState.PopupChip>,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
     onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,
@@ -43,7 +43,7 @@ fun StatusBarPopupChipsContainer(
     if (!SceneContainerFlag.isEnabled) {
         val isMediaControlPopupShown =
             remember(chips) {
-                chips.any { it.chipId == PopupChipId.MediaControl && it.isPopupShown }
+                chips.any { it.chipId == QuickActionChipId.MediaControl && it.isPopupShown }
             }
 
         LaunchedEffect(isMediaControlPopupShown) {
@@ -52,19 +52,21 @@ fun StatusBarPopupChipsContainer(
     }
 
     //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
-    Box {
-        Row(
-            modifier = modifier.padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            chips.forEach { chip ->
-                StatusBarPopupChip(chip)
-                if (chip.isPopupShown) {
-                    StatusBarPopup(
-                        viewModel = chip,
-                        mediaViewModelFactory = mediaViewModelFactory,
-                        mediaHost = mediaHost,
-                    )
+    if (chips.isNotEmpty()) {
+        Box {
+            Row(
+                modifier = modifier.padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                chips.forEach { chip ->
+                    StatusBarPopupChip(chip)
+                    if (chip.isPopupShown) {
+                        StatusBarPopup(
+                            viewModel = chip,
+                            mediaViewModelFactory = mediaViewModelFactory,
+                            mediaHost = mediaHost,
+                        )
+                    }
                 }
             }
         }

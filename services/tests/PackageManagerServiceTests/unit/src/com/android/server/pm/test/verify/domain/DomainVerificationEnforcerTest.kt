@@ -273,7 +273,8 @@ class DomainVerificationEnforcerTest {
                 },
                 service(Type.OWNER_QUERENT_USER, "getOwnersForDomainUserId") {
                     // Re-use package name, since the result itself isn't relevant
-                    getOwnersForDomain(it.targetPackageName, it.userId)
+                    getOwnersForDomain(it.targetPackageName, it.userId,
+                                       true /*= includeUnverifiedOwners */)
                 },
             )
         }

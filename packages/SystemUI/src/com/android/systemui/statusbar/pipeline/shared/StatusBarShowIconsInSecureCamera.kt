@@ -37,7 +37,7 @@ object StatusBarShowIconsInSecureCamera {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.statusBarShowIconsInSecureCamera() && Flags.disableFlagsPerDisplay()
+        get() = Flags.statusBarShowIconsInSecureCamera()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This can be used to protect users

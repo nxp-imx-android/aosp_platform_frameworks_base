@@ -26,6 +26,7 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -48,6 +49,7 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.view.BaseIWindow;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
@@ -71,6 +73,8 @@ public class TaskSnapshotWindow {
     private final int mOrientationOnCreation;
 
     private final boolean mHasImeSurface;
+    private final WindowManager.LayoutParams mLayoutParams;
+    private SurfaceControl mRootSurface;
 
     private int mSeqId = -1;
 
@@ -112,7 +116,7 @@ public class TaskSnapshotWindow {
 
         final TaskSnapshotWindow snapshotSurface = new TaskSnapshotWindow(
                 snapshot, taskDescription, orientation,
-                clearWindowHandler, splashScreenExecutor);
+                clearWindowHandler, splashScreenExecutor, layoutParams);
         final Window window = snapshotSurface.mWindow;
 
         final InsetsState tmpInsetsState = new InsetsState();
@@ -137,7 +141,7 @@ public class TaskSnapshotWindow {
             final SurfaceControl surfaceControl = new SurfaceControl.Builder()
                     .setName(layoutParams.getTitle() + " - task-snapshot-surface")
                     .setBLASTLayer().setNotAddToRoot()
-                    .setFormat(snapshot.getHardwareBufferFormat())
+                    .setFormat(format)
                     .setCallsite("TaskSnapshotWindow#create").build();
             final Runnable reportDrawn = () -> {
                 try {
@@ -177,8 +181,10 @@ public class TaskSnapshotWindow {
         }
 
         SnapshotDrawerUtils.drawSnapshotOnSurface(layoutParams, surfaceControl, snapshot,
-                info.taskBounds, true /* releaseAfterDraw */);
+                info.taskBounds,
+                !Flags.respectRequestedTaskSnapshotResolution() /* releaseAfterDraw */);
         snapshotSurface.mHasDrawn = true;
+        snapshotSurface.mRootSurface = surfaceControl;
         snapshotSurface.reportDrawn();
 
         return snapshotSurface;
@@ -186,7 +192,7 @@ public class TaskSnapshotWindow {
 
     public TaskSnapshotWindow(TaskSnapshot snapshot, TaskDescription taskDescription,
             int currentOrientation, Runnable clearWindowHandler,
-            ShellExecutor splashScreenExecutor) {
+            ShellExecutor splashScreenExecutor, WindowManager.LayoutParams layoutParams) {
         mSplashScreenExecutor = splashScreenExecutor;
         mSession = WindowManagerGlobal.getWindowSession();
         mWindow = new Window(this);
@@ -196,6 +202,16 @@ public class TaskSnapshotWindow {
         mOrientationOnCreation = currentOrientation;
         mClearWindowHandler = clearWindowHandler;
         mHasImeSurface = snapshot.hasImeSurface();
+        mLayoutParams = layoutParams;
+    }
+
+    void redrawSnapshot(@NonNull TaskSnapshot snapshot, @NonNull Rect taskBounds) {
+        if (mRootSurface == null || !mRootSurface.isValid()) {
+            return;
+        }
+        SnapshotDrawerUtils.drawSnapshotOnSurface(mLayoutParams, mRootSurface, snapshot,
+                taskBounds, false /* releaseAfterDraw */);
+        mRootSurface.release();
     }
 
     int getBackgroundColor() {
@@ -207,6 +223,9 @@ public class TaskSnapshotWindow {
     }
 
     void removeImmediately() {
+        if (mRootSurface != null && mRootSurface.isValid()) {
+            mRootSurface.release();
+        }
         try {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
                     "Removing taskSnapshot surface, mHasDrawn=%b", mHasDrawn);

@@ -566,7 +566,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully collapsed
@@ -593,7 +593,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is expanding
@@ -621,7 +621,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully expanded
@@ -1159,7 +1159,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackViewPortHeight = stackBottom - stackTop;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
         when(mStackSizeCalculator.computeHeight(
                 eq(mStackScroller),
@@ -1197,7 +1197,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackWidth = 400;
-        mStackScroller.setStackTop(stackTop);
+        mStackScroller.setStackScrollTop(stackTop);
         mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // Given we have a limit on max displayed notifications
@@ -1582,14 +1582,14 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.applyToView(firstRow);
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(50f);
+        viewState.setYTranslation(50f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.applyToView(secondRow);
@@ -1611,14 +1611,14 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.applyToView(firstRow);
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(50f);
+        viewState.setYTranslation(50f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.applyToView(secondRow);
@@ -1641,7 +1641,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
@@ -1650,7 +1650,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(400f);
+        viewState.setYTranslation(400f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
@@ -1658,7 +1658,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(430f);
+        viewState.setYTranslation(430f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 5;
@@ -1683,7 +1683,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 200;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1.0f, "test");
@@ -1693,7 +1693,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(400f);
+        viewState.setYTranslation(400f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
@@ -1704,7 +1704,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(430f);
+        viewState.setYTranslation(430f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 5;
@@ -1731,14 +1731,14 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.applyToView(firstRow);
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(50f);
+        viewState.setYTranslation(50f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.applyToView(secondRow);
@@ -1780,7 +1780,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1f, "test");
@@ -1789,7 +1789,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(50f);
+        viewState.setYTranslation(50f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.hidden = false;
@@ -1873,7 +1873,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1f, "test");
@@ -1882,7 +1882,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         viewState = secondRow.getViewState();
         viewState.initFrom(secondRow);
-        viewState.setYTranslation(0);
+        viewState.setYTranslation(0, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.hidden = false;
@@ -1911,7 +1911,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(0f, "test");
@@ -1935,7 +1935,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1f, "test");
@@ -1960,7 +1960,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1f, "test");
@@ -1986,7 +1986,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(0f);
+        viewState.setYTranslation(0f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.setAlpha(1f, "test");
@@ -2018,7 +2018,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(200f);
+        viewState.setYTranslation(200f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
@@ -2052,7 +2052,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(200f);
+        viewState.setYTranslation(200f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
@@ -2088,7 +2088,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(200f);
+        viewState.setYTranslation(200f, "test");
         viewState.height = 100;
         viewState.setAlpha(0.0f, "test");
         viewState.notGoneIndex = 4;
@@ -2125,7 +2125,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow child = parent.getAttachedChildren().getLast();
         viewState = child.getViewState();
         viewState.initFrom(child);
-        viewState.setYTranslation(200f);
+        viewState.setYTranslation(200f, "test");
         viewState.height = 100;
         viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
@@ -2156,7 +2156,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         ExpandableViewState viewState = firstRow.getViewState();
         viewState.initFrom(firstRow);
-        viewState.setYTranslation(-100f);
+        viewState.setYTranslation(-100f, "test");
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.applyToView(firstRow);

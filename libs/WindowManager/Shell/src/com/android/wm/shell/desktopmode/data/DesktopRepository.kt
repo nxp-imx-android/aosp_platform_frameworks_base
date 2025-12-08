@@ -132,6 +132,18 @@ class DesktopRepository(
         activeTasksListeners.onEach { it.onActiveTasksChanged(displayId) }
     }
 
+    private fun updateTaskAppearedInDeskListeners(taskId: Int, displayId: Int, deskId: Int) {
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute {
+                listener.onTaskAppearingInDesk(
+                    taskId = taskId,
+                    displayId = displayId,
+                    deskId = deskId,
+                )
+            }
+        }
+    }
+
     /** Stores the last state of the given display, along with the bounds of the tasks on it. */
     fun preserveDisplay(displayId: Int, uniqueDisplayId: String) {
         logD("preserveDisplay for displayId=%d, uniqueId=%s", displayId, uniqueDisplayId)
@@ -251,7 +263,9 @@ class DesktopRepository(
         // TODO: b/457129297 - Remove log once bug is fixed
         logD("calculateDesktopExclusionRegion: desktopExclusionRegions=%s", desktopExclusionRegions)
         val desktopExclusionRegion = Region()
-        desktopExclusionRegions.valueIterator().forEach { taskExclusionRegion ->
+        // TODO: b/466443921 - Investigate why a non-Region object is in desktopExclusionRegions
+        desktopExclusionRegions.valueIterator().asSequence().filterIsInstance<Region>().forEach {
+            taskExclusionRegion ->
             desktopExclusionRegion.op(taskExclusionRegion, Region.Op.UNION)
         }
         return desktopExclusionRegion
@@ -564,6 +578,11 @@ class DesktopRepository(
         if (desk.activeTasks.add(taskId)) {
             if (desk.transientDesk) return
             updateActiveTasksListeners(displayId)
+            updateTaskAppearedInDeskListeners(
+                taskId = taskId,
+                displayId = displayId,
+                deskId = deskId,
+            )
         } else {
             logD("Active task=%d already added, displayId=%d, deskId=%d", taskId, displayId, deskId)
         }
@@ -1454,6 +1473,9 @@ class DesktopRepository(
 
         /** Called when the conditions that allow the creation of a new desk change. */
         fun onCanCreateDesksChanged(canCreateDesks: Boolean)
+
+        /** Called when a task is appearing in a desk. */
+        fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int)
     }
 
     /** Listens to changes for active tasks in desktop mode. */

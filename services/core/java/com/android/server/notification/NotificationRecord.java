@@ -757,23 +757,19 @@ public final class NotificationRecord {
                     final ArrayList<String> people =
                             adjustment.getSignals().getStringArrayList(KEY_PEOPLE);
                     setPeopleOverride(people);
-                    EventLogTags.writeNotificationAdjusted(getKey(), KEY_PEOPLE, people.toString());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_PEOPLE);
-                    }
+                    EventLogTags.writeNotificationAdjusted(getKey(), KEY_PEOPLE,
+                            people.toString());
+                    signals.remove(KEY_PEOPLE);
                 }
                 if (signals.containsKey(KEY_SNOOZE_CRITERIA)
                         && !keysToSkip.contains(KEY_SNOOZE_CRITERIA)) {
                     final ArrayList<SnoozeCriterion> snoozeCriterionList =
-                            adjustment.getSignals().getParcelableArrayList(
-                                    KEY_SNOOZE_CRITERIA,
+                            adjustment.getSignals().getParcelableArrayList(KEY_SNOOZE_CRITERIA,
                                     android.service.notification.SnoozeCriterion.class);
                     setSnoozeCriteria(snoozeCriterionList);
                     EventLogTags.writeNotificationAdjusted(getKey(), KEY_SNOOZE_CRITERIA,
                             snoozeCriterionList.toString());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_SNOOZE_CRITERIA);
-                    }
+                    signals.remove(KEY_SNOOZE_CRITERIA);
                 }
                 if (signals.containsKey(KEY_GROUP_KEY) && !keysToSkip.contains(KEY_GROUP_KEY)) {
                     final String groupOverrideKey =
@@ -781,9 +777,7 @@ public final class NotificationRecord {
                     setOverrideGroupKey(groupOverrideKey);
                     EventLogTags.writeNotificationAdjusted(getKey(), KEY_GROUP_KEY,
                             groupOverrideKey);
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_GROUP_KEY);
-                    }
+                    signals.remove(KEY_GROUP_KEY);
                 }
                 if (signals.containsKey(KEY_USER_SENTIMENT)
                         && !keysToSkip.contains(KEY_USER_SENTIMENT)) {
@@ -796,9 +790,7 @@ public final class NotificationRecord {
                         EventLogTags.writeNotificationAdjusted(getKey(),
                                 KEY_USER_SENTIMENT,
                                 Integer.toString(getUserSentiment()));
-                        if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                            signals.remove(KEY_USER_SENTIMENT);
-                        }
+                        signals.remove(KEY_USER_SENTIMENT);
                     }
                 }
                 if (signals.containsKey(KEY_CONTEXTUAL_ACTIONS)
@@ -808,47 +800,37 @@ public final class NotificationRecord {
                                     android.app.Notification.Action.class));
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_CONTEXTUAL_ACTIONS, getSystemGeneratedSmartActions().toString());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_CONTEXTUAL_ACTIONS);
-                    }
+                    signals.remove(KEY_CONTEXTUAL_ACTIONS);
                 }
                 if (signals.containsKey(KEY_TEXT_REPLIES)
                         && !keysToSkip.contains(KEY_TEXT_REPLIES)) {
                     setSmartReplies(signals.getCharSequenceArrayList(KEY_TEXT_REPLIES));
                     EventLogTags.writeNotificationAdjusted(getKey(), KEY_TEXT_REPLIES,
                             getSmartReplies().toString());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_TEXT_REPLIES);
-                    }
+                    signals.remove(KEY_TEXT_REPLIES);
                 }
                 if (signals.containsKey(KEY_IMPORTANCE) && !keysToSkip.contains(KEY_IMPORTANCE)) {
                     int importance = signals.getInt(KEY_IMPORTANCE);
                     importance = Math.max(IMPORTANCE_UNSPECIFIED, importance);
                     importance = Math.min(IMPORTANCE_HIGH, importance);
                     setAssistantImportance(importance);
-                    EventLogTags.writeNotificationAdjusted(getKey(), KEY_IMPORTANCE,
-                            Integer.toString(importance));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_IMPORTANCE);
-                    }
+                    EventLogTags.writeNotificationAdjusted(
+                            getKey(), KEY_IMPORTANCE, Integer.toString(importance));
+                    signals.remove(KEY_IMPORTANCE);
                 }
                 if (signals.containsKey(KEY_RANKING_SCORE)
                         && !keysToSkip.contains(KEY_RANKING_SCORE)) {
                     mRankingScore = signals.getFloat(KEY_RANKING_SCORE);
-                    EventLogTags.writeNotificationAdjusted(getKey(), KEY_RANKING_SCORE,
-                            Float.toString(mRankingScore));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_RANKING_SCORE);
-                    }
+                    EventLogTags.writeNotificationAdjusted(
+                            getKey(), KEY_RANKING_SCORE, Float.toString(mRankingScore));
+                    signals.remove(KEY_RANKING_SCORE);
                 }
                 if (signals.containsKey(KEY_NOT_CONVERSATION)
                         && !keysToSkip.contains(KEY_NOT_CONVERSATION)) {
                     mIsNotConversationOverride = signals.getBoolean(KEY_NOT_CONVERSATION);
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_NOT_CONVERSATION, Boolean.toString(mIsNotConversationOverride));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_NOT_CONVERSATION);
-                    }
+                    signals.remove(KEY_NOT_CONVERSATION);
                 }
                 if (signals.containsKey(KEY_IMPORTANCE_PROPOSAL)
                         && !keysToSkip.contains(KEY_IMPORTANCE_PROPOSAL)) {
@@ -856,18 +838,14 @@ public final class NotificationRecord {
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_IMPORTANCE_PROPOSAL,
                             Integer.toString(mProposedImportance));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_IMPORTANCE_PROPOSAL);
-                    }
+                    signals.remove(KEY_IMPORTANCE_PROPOSAL);
                 }
                 if (signals.containsKey(KEY_SENSITIVE_CONTENT)
                         && !keysToSkip.contains(KEY_SENSITIVE_CONTENT)) {
                     mSensitiveContent = signals.getBoolean(KEY_SENSITIVE_CONTENT);
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_SENSITIVE_CONTENT, Boolean.toString(mSensitiveContent));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_SENSITIVE_CONTENT);
-                    }
+                    signals.remove(KEY_SENSITIVE_CONTENT);
                 }
                 if (signals.containsKey(KEY_TYPE) && !keysToSkip.contains(KEY_TYPE)) {
                     // Store original channel visibility before re-assigning channel
@@ -878,9 +856,7 @@ public final class NotificationRecord {
                             NotificationChannel.class));
                     EventLogTags.writeNotificationAdjusted(
                             getKey(), KEY_TYPE, mChannel.getId());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_TYPE);
-                    }
+                    signals.remove(KEY_TYPE);
                 }
                 if (signals.containsKey(KEY_UNCLASSIFY)
                         && !keysToSkip.contains(KEY_UNCLASSIFY)) {
@@ -890,9 +866,7 @@ public final class NotificationRecord {
                             NotificationChannel.class));
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_UNCLASSIFY, mChannel.getId());
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_UNCLASSIFY);
-                    }
+                    signals.remove(KEY_UNCLASSIFY);
                 }
 
                 if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())
@@ -907,22 +881,14 @@ public final class NotificationRecord {
                     }
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_SUMMARIZATION, Boolean.toString(mSummarization != null));
-                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                        signals.remove(KEY_SUMMARIZATION);
-                    }
+                    signals.remove(KEY_SUMMARIZATION);
                 }
                 if (!signals.isEmpty() && adjustment.getIssuer() != null) {
                     mAdjustmentIssuer = adjustment.getIssuer();
                 }
-                if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                    if (adjustment.getSignals().isEmpty()) {
-                        mAdjustments.remove(i);
-                    }
+                if (adjustment.getSignals().isEmpty()) {
+                    mAdjustments.remove(i);
                 }
-            }
-            if (!com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                // We have now gotten all the information out of the adjustments and can forget them
-                mAdjustments.clear();
             }
         }
     }

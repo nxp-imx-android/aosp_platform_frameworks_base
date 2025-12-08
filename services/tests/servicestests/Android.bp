@@ -154,7 +154,8 @@ android_test {
         ":SuspendTestApp",
         ":TopologyTestApp",
         "data/broken_shortcut.xml",
-        "data/test_supplemental_security_patches.xml",
+        "data/test_system_supplemental_security_patches.xml",
+        "data/test_vendor_supplemental_security_patches.xml",
     ],
 
     java_resources: [

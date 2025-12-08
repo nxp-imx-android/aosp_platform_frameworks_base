@@ -74,8 +74,8 @@
     <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við APK mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við ELF mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Þetta forrit er ekki samhæft 16 KB. Athuganir á samræmingu APK og ELF mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita sem er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB samhæft. Athugun á samræmi við APK mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita sem er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB samhæft. Athugun á samræmi við ELF mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita og er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB-samhæft. Athugun á samræmi við APK mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB-samhæf: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita sem er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB-samhæft. Athugun á samræmi við ELF mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita sem er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB samhæft. Athuganir á samræmingu APK og ELF mistókst. Fylgdu leiðbeiningunum á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ekki sýna þetta aftur"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Samhæfi við Android-forrit"</string>
@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Veitir forritinu aðgang að tækjum á staðarneti"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"nota endurhvarfsviðmót"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Leyfir forritinu að eiga samskipti við önnur forrit í gegnum endurhvarfsviðmót"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"greina áætlaða fjarlægð á milli nálægra tækja"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Leyfðu forritinu að greina áætlaða fjarlægð á milli nálægra tækja"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Upplýsingar um valda NFC-greiðsluþjónustu"</string>
@@ -1790,7 +1794,7 @@
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="5043730590446071189">"Þú hefur gert <xliff:g id="NUMBER">%d</xliff:g> tilraunir til að opna símann án árangurs. Hann verður nú stilltur á sjálfgefnar stillingar."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="7086799295109717623">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verðurðu beðin(n) um að opna spjaldtölvuna með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verðurðu beðin(n) um að opna Android TV-tækið með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
-    <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verður þú beðin(n) um að opna símann með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
+    <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verðurðu beðin(n) um að opna símann með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
     <string name="kg_text_message_separator" product="default" msgid="4503708889934976866">" — "</string>
     <string name="kg_reordering_delete_drop_target_text" msgid="2034358143731750914">"Fjarlægja"</string>
     <string name="safe_media_volume_warning" product="default" msgid="3751676824423049994">"Hækka hljóðstyrk umfram ráðlagðan styrk?\n\nEf hlustað er á háum hljóðstyrk í langan tíma kann það að skaða heyrnina."</string>
@@ -1816,7 +1820,7 @@
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"Leyfa"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"Hafna"</string>
     <string name="accessibility_dialog_button_uninstall" msgid="2952465517671708108">"Fjarlægja"</string>
-    <string name="accessibility_dialog_touch_filtered_warning" msgid="3741940116597822451">"Forrit er að fela heimildarbeiðnina svo ekki er hægt að staðfesta svarið þitt."</string>
+    <string name="accessibility_dialog_touch_filtered_warning" msgid="3741940116597822451">"Forrit er að fela heimildarbeiðnina svo að ekki er hægt að staðfesta svarið þitt."</string>
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Ýttu á eiginleika til að byrja að nota hann:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Veldu eiginleika sem á að nota með aðgengishnappinum"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Veldu eiginleika sem á að nota með flýtileið hljóðstyrkstakka"</string>
@@ -2179,29 +2183,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Engar tillögur fyrir sjálfvirka útfyllingu"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{Ein tillaga um sjálfvirka útfyllingu}one{# tillaga um sjálfvirka útfyllingu}other{# tillögur um sjálfvirka útfyllingu}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Vista í "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"Vista upplýsingar í "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Vista <xliff:g id="TYPE">%1$s</xliff:g> í "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"Vista <xliff:g id="TYPE">%1$s</xliff:g> í "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Vista <xliff:g id="TYPE_0">%1$s</xliff:g> og <xliff:g id="TYPE_1">%2$s</xliff:g> í "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"Vista <xliff:g id="TYPE_0">%1$s</xliff:g> og <xliff:g id="TYPE_1">%2$s</xliff:g> í "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Vista <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> og <xliff:g id="TYPE_2">%3$s</xliff:g> í "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049">"Vista <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> og <xliff:g id="TYPE_2">%3$s</xliff:g> í "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b></string>
     <string name="autofill_update_title" msgid="3630695947047069136">"Uppfæra í "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920">"Uppfæra upplýsingar í "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704">"Uppfæra <xliff:g id="TYPE">%1$s</xliff:g> í "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846">"Uppfæra <xliff:g id="TYPE">%1$s</xliff:g> í "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"Uppfæra <xliff:g id="TYPE_0">%1$s</xliff:g> og <xliff:g id="TYPE_1">%2$s</xliff:g> í "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"Uppfæra <xliff:g id="TYPE_0">%1$s</xliff:g> og <xliff:g id="TYPE_1">%2$s</xliff:g> í "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Uppfæra þessi atriði í "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> og <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"Uppfæra þessi atriði í "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>": <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> og <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"Vista"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"Nei, takk"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"Ekki núna"</string>
@@ -2226,7 +2222,7 @@
     <string name="mmcc_imsi_unknown_in_hlr" msgid="227760698553988751">"SIM-korti er ekki úthlutað fyrir rödd"</string>
     <string name="mmcc_illegal_ms" msgid="7509650265233909445">"SIM-kort er ekki heimilað fyrir rödd"</string>
     <string name="mmcc_illegal_me" msgid="6505557881889904915">"Sími er ekki heimilaður fyrir rödd"</string>
-    <string name="mmcc_authentication_reject_msim_template" msgid="4480853038909922153">"SIM-kort <xliff:g id="SIMNUMBER">%d</xliff:g> er ekki leyft"</string>
+    <string name="mmcc_authentication_reject_msim_template" msgid="4480853038909922153">"SIM-kortið <xliff:g id="SIMNUMBER">%d</xliff:g> er ekki leyft"</string>
     <string name="mmcc_imsi_unknown_in_hlr_msim_template" msgid="3688508325248599657">"SIM <xliff:g id="SIMNUMBER">%d</xliff:g> hefur ekki verið úthlutað"</string>
     <string name="mmcc_illegal_ms_msim_template" msgid="832644375774599327">"SIM-kort <xliff:g id="SIMNUMBER">%d</xliff:g> er ekki leyft"</string>
     <string name="mmcc_illegal_me_msim_template" msgid="4802735138861422802">"SIM-kort <xliff:g id="SIMNUMBER">%d</xliff:g> er ekki leyft"</string>

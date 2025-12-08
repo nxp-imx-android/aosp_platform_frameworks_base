@@ -145,7 +145,7 @@ class SnapshotWritableEventExecutorBuilder(val executor: Executor) :
 class SnapshotWritableEventCoroutineBuilder(val scope: CoroutineScope) :
     SnapshotWritableEventBuilder() {
     override fun startObservation(block: () -> Unit): Closeable {
-        return SnapshotStateCoroutineObserver(scope) { with(stateReader) { block() } }.start()
+        return SnapshotStateCoroutineObserver(scope) { block() }.start()
     }
 }
 

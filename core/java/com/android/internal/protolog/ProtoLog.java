@@ -263,7 +263,8 @@ public class ProtoLog {
             @NonNull String stringMessage, @NonNull Object... args) {
         final var instance = sController.mProtoLogInstance;
         if (instance == null) {
-            Log.wtf(LOG_TAG, "Trying to use ProtoLog before it is initialized in this process.");
+            Log.wtfStack(LOG_TAG,
+                    "Trying to use ProtoLog before it is initialized in this process.");
             return;
         }
 

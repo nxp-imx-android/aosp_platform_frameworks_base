@@ -4161,6 +4161,7 @@ package android.content {
 
   public class ContentProviderClient implements java.lang.AutoCloseable {
     method @RequiresPermission(android.Manifest.permission.REMOVE_TASKS) public void setDetectNotResponding(long);
+    method @FlaggedApi("android.content.flags.enable_content_provider_client_anr_on_cancel") @RequiresPermission(android.Manifest.permission.REMOVE_TASKS) public void setDetectNotRespondingOnCancel(long, long);
   }
 
   public abstract class ContentResolver {
@@ -4878,7 +4879,9 @@ package android.content.pm {
     field @StringRes public int requestRes;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresGeneralPurposeTargetSdkVersion;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresPurposeStringTargetSdkVersion;
+    field @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public int requiresPurposeTargetSdkVersion;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidGeneralPurposeInfo> validGeneralPurposes;
+    field @FlaggedApi("android.permission.flags.ppd_purpose_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidPurposeInfo> validPurposes;
   }
 
   public class ResolveInfo implements android.os.Parcelable {
@@ -4950,6 +4953,7 @@ package android.content.pm {
     method @NonNull public java.util.Set<java.lang.String> getGeneralPurposes();
     method @NonNull public String getPermissionName();
     method @StringRes public int getPurposeStringResource();
+    method @NonNull public java.util.Set<java.lang.String> getPurposes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UsesPermissionPurposeInfo> CREATOR;
   }
@@ -4960,6 +4964,14 @@ package android.content.pm {
     method @NonNull public String getName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ValidGeneralPurposeInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public final class ValidPurposeInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getMaxTargetSdkVersion();
+    method @NonNull public String getName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ValidPurposeInfo> CREATOR;
   }
 
 }
@@ -5108,9 +5120,10 @@ package android.content.pm.verify.domain {
   }
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class DomainVerificationManager {
-    method @Nullable @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT) public android.content.pm.verify.domain.DomainVerificationInfo getDomainVerificationInfo(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
-    method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION) public java.util.SortedSet<android.content.pm.verify.domain.DomainOwner> getOwnersForDomain(@NonNull String);
+    method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.DOMAIN_VERIFICATION_AGENT, android.Manifest.permission.QUERY_DOMAIN_VERIFICATION}) public android.content.pm.verify.domain.DomainVerificationInfo getDomainVerificationInfo(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
+    method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION, android.Manifest.permission.QUERY_DOMAIN_VERIFICATION}) public java.util.SortedSet<android.content.pm.verify.domain.DomainOwner> getOwnersForDomain(@NonNull String);
     method @FlaggedApi("android.content.pm.relative_reference_intent_filters") @NonNull public java.util.Map<java.lang.String,java.util.List<android.content.UriRelativeFilterGroup>> getUriRelativeFilterGroups(@NonNull String, @NonNull java.util.List<java.lang.String>);
+    method @FlaggedApi("android.content.pm.enable_query_domain_verification") @NonNull @RequiresPermission(android.Manifest.permission.QUERY_DOMAIN_VERIFICATION) public java.util.SortedSet<android.content.pm.verify.domain.DomainOwner> getVerifiedOwnersForDomain(@NonNull String);
     method @NonNull @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT) public java.util.List<java.lang.String> queryValidVerificationPackageNames();
     method @RequiresPermission(android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION) public void setDomainVerificationLinkHandlingAllowed(@NonNull String, boolean) throws android.content.pm.PackageManager.NameNotFoundException;
     method @CheckResult @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT) public int setDomainVerificationStatus(@NonNull java.util.UUID, @NonNull java.util.Set<java.lang.String>, int) throws android.content.pm.PackageManager.NameNotFoundException;
@@ -5482,7 +5495,7 @@ package android.hardware.biometrics {
   }
 
   public static class BiometricPrompt.Builder {
-    method @FlaggedApi("android.hardware.biometrics.clear_fallback_option") @NonNull @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public android.hardware.biometrics.BiometricPrompt.Builder clearFallbackOption(int);
+    method @FlaggedApi("android.hardware.biometrics.clear_fallback_option") @NonNull @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public android.hardware.biometrics.BiometricPrompt.Builder setHideSystemFallbackOption(int);
   }
 
 }
@@ -11194,168 +11207,168 @@ package android.net.wifi {
 
 package android.net.wifi.nl80211 {
 
-  public final class DeviceWiphyCapabilities implements android.os.Parcelable {
-    ctor public DeviceWiphyCapabilities();
-    method public int describeContents();
-    method @FlaggedApi("android.net.wifi.flags.get_device_cross_akm_roaming_support") public int getMaxNumberAkms();
-    method public int getMaxNumberRxSpatialStreams();
-    method public int getMaxNumberTxSpatialStreams();
-    method public boolean isChannelWidthSupported(int);
-    method public boolean isWifiStandardSupported(int);
-    method public void setWifiStandardSupport(int, boolean);
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.DeviceWiphyCapabilities> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class DeviceWiphyCapabilities implements android.os.Parcelable {
+    ctor @Deprecated public DeviceWiphyCapabilities();
+    method @Deprecated public int describeContents();
+    method @Deprecated public int getMaxNumberAkms();
+    method @Deprecated public int getMaxNumberRxSpatialStreams();
+    method @Deprecated public int getMaxNumberTxSpatialStreams();
+    method @Deprecated public boolean isChannelWidthSupported(int);
+    method @Deprecated public boolean isWifiStandardSupported(int);
+    method @Deprecated public void setWifiStandardSupport(int, boolean);
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.DeviceWiphyCapabilities> CREATOR;
   }
 
-  public final class NativeScanResult implements android.os.Parcelable {
-    ctor public NativeScanResult();
-    method public int describeContents();
-    method @Nullable public android.net.MacAddress getBssid();
-    method public int getCapabilities();
-    method public int getFrequencyMhz();
-    method @NonNull public byte[] getInformationElements();
-    method @NonNull public java.util.List<android.net.wifi.nl80211.RadioChainInfo> getRadioChainInfos();
-    method public int getSignalMbm();
-    method @NonNull public byte[] getSsid();
-    method public long getTsf();
-    method public boolean isAssociated();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int BSS_CAPABILITY_APSD = 2048; // 0x800
-    field public static final int BSS_CAPABILITY_CF_POLLABLE = 4; // 0x4
-    field public static final int BSS_CAPABILITY_CF_POLL_REQUEST = 8; // 0x8
-    field public static final int BSS_CAPABILITY_CHANNEL_AGILITY = 128; // 0x80
-    field public static final int BSS_CAPABILITY_DELAYED_BLOCK_ACK = 16384; // 0x4000
-    field public static final int BSS_CAPABILITY_DMG_ESS = 3; // 0x3
-    field public static final int BSS_CAPABILITY_DMG_IBSS = 1; // 0x1
-    field public static final int BSS_CAPABILITY_DSSS_OFDM = 8192; // 0x2000
-    field public static final int BSS_CAPABILITY_ESS = 1; // 0x1
-    field public static final int BSS_CAPABILITY_IBSS = 2; // 0x2
-    field public static final int BSS_CAPABILITY_IMMEDIATE_BLOCK_ACK = 32768; // 0x8000
-    field public static final int BSS_CAPABILITY_PBCC = 64; // 0x40
-    field public static final int BSS_CAPABILITY_PRIVACY = 16; // 0x10
-    field public static final int BSS_CAPABILITY_QOS = 512; // 0x200
-    field public static final int BSS_CAPABILITY_RADIO_MANAGEMENT = 4096; // 0x1000
-    field public static final int BSS_CAPABILITY_SHORT_PREAMBLE = 32; // 0x20
-    field public static final int BSS_CAPABILITY_SHORT_SLOT_TIME = 1024; // 0x400
-    field public static final int BSS_CAPABILITY_SPECTRUM_MANAGEMENT = 256; // 0x100
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.NativeScanResult> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class NativeScanResult implements android.os.Parcelable {
+    ctor @Deprecated public NativeScanResult();
+    method @Deprecated public int describeContents();
+    method @Deprecated @Nullable public android.net.MacAddress getBssid();
+    method @Deprecated public int getCapabilities();
+    method @Deprecated public int getFrequencyMhz();
+    method @Deprecated @NonNull public byte[] getInformationElements();
+    method @Deprecated @NonNull public java.util.List<android.net.wifi.nl80211.RadioChainInfo> getRadioChainInfos();
+    method @Deprecated public int getSignalMbm();
+    method @Deprecated @NonNull public byte[] getSsid();
+    method @Deprecated public long getTsf();
+    method @Deprecated public boolean isAssociated();
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated public static final int BSS_CAPABILITY_APSD = 2048; // 0x800
+    field @Deprecated public static final int BSS_CAPABILITY_CF_POLLABLE = 4; // 0x4
+    field @Deprecated public static final int BSS_CAPABILITY_CF_POLL_REQUEST = 8; // 0x8
+    field @Deprecated public static final int BSS_CAPABILITY_CHANNEL_AGILITY = 128; // 0x80
+    field @Deprecated public static final int BSS_CAPABILITY_DELAYED_BLOCK_ACK = 16384; // 0x4000
+    field @Deprecated public static final int BSS_CAPABILITY_DMG_ESS = 3; // 0x3
+    field @Deprecated public static final int BSS_CAPABILITY_DMG_IBSS = 1; // 0x1
+    field @Deprecated public static final int BSS_CAPABILITY_DSSS_OFDM = 8192; // 0x2000
+    field @Deprecated public static final int BSS_CAPABILITY_ESS = 1; // 0x1
+    field @Deprecated public static final int BSS_CAPABILITY_IBSS = 2; // 0x2
+    field @Deprecated public static final int BSS_CAPABILITY_IMMEDIATE_BLOCK_ACK = 32768; // 0x8000
+    field @Deprecated public static final int BSS_CAPABILITY_PBCC = 64; // 0x40
+    field @Deprecated public static final int BSS_CAPABILITY_PRIVACY = 16; // 0x10
+    field @Deprecated public static final int BSS_CAPABILITY_QOS = 512; // 0x200
+    field @Deprecated public static final int BSS_CAPABILITY_RADIO_MANAGEMENT = 4096; // 0x1000
+    field @Deprecated public static final int BSS_CAPABILITY_SHORT_PREAMBLE = 32; // 0x20
+    field @Deprecated public static final int BSS_CAPABILITY_SHORT_SLOT_TIME = 1024; // 0x400
+    field @Deprecated public static final int BSS_CAPABILITY_SPECTRUM_MANAGEMENT = 256; // 0x100
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.NativeScanResult> CREATOR;
   }
 
-  public final class NativeWifiClient implements android.os.Parcelable {
-    ctor public NativeWifiClient(@Nullable android.net.MacAddress);
-    method public int describeContents();
-    method @Nullable public android.net.MacAddress getMacAddress();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.NativeWifiClient> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class NativeWifiClient implements android.os.Parcelable {
+    ctor @Deprecated public NativeWifiClient(@Nullable android.net.MacAddress);
+    method @Deprecated public int describeContents();
+    method @Deprecated @Nullable public android.net.MacAddress getMacAddress();
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.NativeWifiClient> CREATOR;
   }
 
-  public final class PnoNetwork implements android.os.Parcelable {
-    ctor public PnoNetwork();
-    method public int describeContents();
-    method @NonNull public int[] getFrequenciesMhz();
-    method @NonNull public byte[] getSsid();
-    method public boolean isHidden();
-    method public void setFrequenciesMhz(@NonNull int[]);
-    method public void setHidden(boolean);
-    method public void setSsid(@NonNull byte[]);
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.PnoNetwork> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class PnoNetwork implements android.os.Parcelable {
+    ctor @Deprecated public PnoNetwork();
+    method @Deprecated public int describeContents();
+    method @Deprecated @NonNull public int[] getFrequenciesMhz();
+    method @Deprecated @NonNull public byte[] getSsid();
+    method @Deprecated public boolean isHidden();
+    method @Deprecated public void setFrequenciesMhz(@NonNull int[]);
+    method @Deprecated public void setHidden(boolean);
+    method @Deprecated public void setSsid(@NonNull byte[]);
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.PnoNetwork> CREATOR;
   }
 
-  public final class PnoSettings implements android.os.Parcelable {
-    ctor public PnoSettings();
-    method public int describeContents();
-    method public long getIntervalMillis();
-    method public int getMin2gRssiDbm();
-    method public int getMin5gRssiDbm();
-    method public int getMin6gRssiDbm();
-    method @NonNull public java.util.List<android.net.wifi.nl80211.PnoNetwork> getPnoNetworks();
-    method public int getScanIntervalMultiplier();
-    method public int getScanIterations();
-    method public void setIntervalMillis(long);
-    method public void setMin2gRssiDbm(int);
-    method public void setMin5gRssiDbm(int);
-    method public void setMin6gRssiDbm(int);
-    method public void setPnoNetworks(@NonNull java.util.List<android.net.wifi.nl80211.PnoNetwork>);
-    method public void setScanIntervalMultiplier(int);
-    method public void setScanIterations(int);
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.PnoSettings> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class PnoSettings implements android.os.Parcelable {
+    ctor @Deprecated public PnoSettings();
+    method @Deprecated public int describeContents();
+    method @Deprecated public long getIntervalMillis();
+    method @Deprecated public int getMin2gRssiDbm();
+    method @Deprecated public int getMin5gRssiDbm();
+    method @Deprecated public int getMin6gRssiDbm();
+    method @Deprecated @NonNull public java.util.List<android.net.wifi.nl80211.PnoNetwork> getPnoNetworks();
+    method @Deprecated public int getScanIntervalMultiplier();
+    method @Deprecated public int getScanIterations();
+    method @Deprecated public void setIntervalMillis(long);
+    method @Deprecated public void setMin2gRssiDbm(int);
+    method @Deprecated public void setMin5gRssiDbm(int);
+    method @Deprecated public void setMin6gRssiDbm(int);
+    method @Deprecated public void setPnoNetworks(@NonNull java.util.List<android.net.wifi.nl80211.PnoNetwork>);
+    method @Deprecated public void setScanIntervalMultiplier(int);
+    method @Deprecated public void setScanIterations(int);
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.PnoSettings> CREATOR;
   }
 
-  public final class RadioChainInfo implements android.os.Parcelable {
-    ctor public RadioChainInfo(int, int);
-    method public int describeContents();
-    method public int getChainId();
-    method public int getLevelDbm();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.RadioChainInfo> CREATOR;
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public final class RadioChainInfo implements android.os.Parcelable {
+    ctor @Deprecated public RadioChainInfo(int, int);
+    method @Deprecated public int describeContents();
+    method @Deprecated public int getChainId();
+    method @Deprecated public int getLevelDbm();
+    method @Deprecated public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Deprecated @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.nl80211.RadioChainInfo> CREATOR;
   }
 
-  public class WifiNl80211Manager {
-    ctor public WifiNl80211Manager(@NonNull android.content.Context, @NonNull android.os.IBinder);
-    method public void abortScan(@NonNull String);
-    method public void enableVerboseLogging(boolean);
-    method @NonNull public int[] getChannelsMhzForBand(int);
-    method @Nullable public android.net.wifi.nl80211.DeviceWiphyCapabilities getDeviceWiphyCapabilities(@NonNull String);
-    method public int getMaxSsidsPerScan(@NonNull String);
-    method @NonNull public java.util.List<android.net.wifi.nl80211.NativeScanResult> getScanResults(@NonNull String, int);
-    method @Nullable public android.net.wifi.nl80211.WifiNl80211Manager.TxPacketCounters getTxPacketCounters(@NonNull String);
-    method public void notifyCountryCodeChanged(@Nullable String);
-    method @Nullable public static android.net.wifi.nl80211.WifiNl80211Manager.OemSecurityType parseOemSecurityTypeElement(int, int, @NonNull byte[]);
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public class WifiNl80211Manager {
+    ctor @Deprecated public WifiNl80211Manager(@NonNull android.content.Context, @NonNull android.os.IBinder);
+    method @Deprecated public void abortScan(@NonNull String);
+    method @Deprecated public void enableVerboseLogging(boolean);
+    method @Deprecated @NonNull public int[] getChannelsMhzForBand(int);
+    method @Deprecated @Nullable public android.net.wifi.nl80211.DeviceWiphyCapabilities getDeviceWiphyCapabilities(@NonNull String);
+    method @Deprecated public int getMaxSsidsPerScan(@NonNull String);
+    method @Deprecated @NonNull public java.util.List<android.net.wifi.nl80211.NativeScanResult> getScanResults(@NonNull String, int);
+    method @Deprecated @Nullable public android.net.wifi.nl80211.WifiNl80211Manager.TxPacketCounters getTxPacketCounters(@NonNull String);
+    method @Deprecated public void notifyCountryCodeChanged(@Nullable String);
+    method @Deprecated @Nullable public static android.net.wifi.nl80211.WifiNl80211Manager.OemSecurityType parseOemSecurityTypeElement(int, int, @NonNull byte[]);
     method @Deprecated public boolean registerApCallback(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.SoftApCallback);
-    method public boolean registerCountryCodeChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.CountryCodeChangedListener);
-    method public void sendMgmtFrame(@NonNull String, @NonNull byte[], int, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.SendMgmtFrameCallback);
-    method public void setOnServiceDeadCallback(@NonNull Runnable);
-    method public boolean setupInterfaceForClientMode(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.ScanEventCallback, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.ScanEventCallback);
-    method public boolean setupInterfaceForSoftApMode(@NonNull String);
+    method @Deprecated public boolean registerCountryCodeChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.CountryCodeChangedListener);
+    method @Deprecated public void sendMgmtFrame(@NonNull String, @NonNull byte[], int, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.SendMgmtFrameCallback);
+    method @Deprecated public void setOnServiceDeadCallback(@NonNull Runnable);
+    method @Deprecated public boolean setupInterfaceForClientMode(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.ScanEventCallback, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.ScanEventCallback);
+    method @Deprecated public boolean setupInterfaceForSoftApMode(@NonNull String);
     method @Deprecated @Nullable public android.net.wifi.nl80211.WifiNl80211Manager.SignalPollResult signalPoll(@NonNull String);
-    method public boolean startPnoScan(@NonNull String, @NonNull android.net.wifi.nl80211.PnoSettings, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.PnoScanRequestCallback);
+    method @Deprecated public boolean startPnoScan(@NonNull String, @NonNull android.net.wifi.nl80211.PnoSettings, @NonNull java.util.concurrent.Executor, @NonNull android.net.wifi.nl80211.WifiNl80211Manager.PnoScanRequestCallback);
     method @Deprecated public boolean startScan(@NonNull String, int, @Nullable java.util.Set<java.lang.Integer>, @Nullable java.util.List<byte[]>);
     method @Deprecated public boolean startScan(@NonNull String, int, @Nullable java.util.Set<java.lang.Integer>, @Nullable java.util.List<byte[]>, @Nullable android.os.Bundle);
-    method public int startScan2(@NonNull String, int, @Nullable java.util.Set<java.lang.Integer>, @Nullable java.util.List<byte[]>, @Nullable android.os.Bundle);
-    method public boolean stopPnoScan(@NonNull String);
-    method public boolean tearDownClientInterface(@NonNull String);
-    method public boolean tearDownInterfaces();
-    method public boolean tearDownSoftApInterface(@NonNull String);
-    method public void unregisterCountryCodeChangedListener(@NonNull android.net.wifi.nl80211.WifiNl80211Manager.CountryCodeChangedListener);
-    field public static final String EXTRA_SCANNING_PARAM_VENDOR_IES = "android.net.wifi.nl80211.extra.SCANNING_PARAM_VENDOR_IES";
-    field public static final String SCANNING_PARAM_ENABLE_6GHZ_RNR = "android.net.wifi.nl80211.SCANNING_PARAM_ENABLE_6GHZ_RNR";
-    field public static final int SCAN_TYPE_PNO_SCAN = 1; // 0x1
-    field public static final int SCAN_TYPE_SINGLE_SCAN = 0; // 0x0
-    field public static final int SEND_MGMT_FRAME_ERROR_ALREADY_STARTED = 5; // 0x5
-    field public static final int SEND_MGMT_FRAME_ERROR_MCS_UNSUPPORTED = 2; // 0x2
-    field public static final int SEND_MGMT_FRAME_ERROR_NO_ACK = 3; // 0x3
-    field public static final int SEND_MGMT_FRAME_ERROR_TIMEOUT = 4; // 0x4
-    field public static final int SEND_MGMT_FRAME_ERROR_UNKNOWN = 1; // 0x1
+    method @Deprecated public int startScan2(@NonNull String, int, @Nullable java.util.Set<java.lang.Integer>, @Nullable java.util.List<byte[]>, @Nullable android.os.Bundle);
+    method @Deprecated public boolean stopPnoScan(@NonNull String);
+    method @Deprecated public boolean tearDownClientInterface(@NonNull String);
+    method @Deprecated public boolean tearDownInterfaces();
+    method @Deprecated public boolean tearDownSoftApInterface(@NonNull String);
+    method @Deprecated public void unregisterCountryCodeChangedListener(@NonNull android.net.wifi.nl80211.WifiNl80211Manager.CountryCodeChangedListener);
+    field @Deprecated public static final String EXTRA_SCANNING_PARAM_VENDOR_IES = "android.net.wifi.nl80211.extra.SCANNING_PARAM_VENDOR_IES";
+    field @Deprecated public static final String SCANNING_PARAM_ENABLE_6GHZ_RNR = "android.net.wifi.nl80211.SCANNING_PARAM_ENABLE_6GHZ_RNR";
+    field @Deprecated public static final int SCAN_TYPE_PNO_SCAN = 1; // 0x1
+    field @Deprecated public static final int SCAN_TYPE_SINGLE_SCAN = 0; // 0x0
+    field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_ALREADY_STARTED = 5; // 0x5
+    field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_MCS_UNSUPPORTED = 2; // 0x2
+    field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_NO_ACK = 3; // 0x3
+    field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_TIMEOUT = 4; // 0x4
+    field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_UNKNOWN = 1; // 0x1
   }
 
-  public static interface WifiNl80211Manager.CountryCodeChangedListener {
-    method public void onCountryCodeChanged(@NonNull String);
+  @Deprecated public static interface WifiNl80211Manager.CountryCodeChangedListener {
+    method @Deprecated public void onCountryCodeChanged(@NonNull String);
   }
 
-  public static class WifiNl80211Manager.OemSecurityType {
-    ctor public WifiNl80211Manager.OemSecurityType(int, @NonNull java.util.List<java.lang.Integer>, @NonNull java.util.List<java.lang.Integer>, int);
-    field public final int groupCipher;
-    field @NonNull public final java.util.List<java.lang.Integer> keyManagement;
-    field @NonNull public final java.util.List<java.lang.Integer> pairwiseCipher;
-    field public final int protocol;
+  @Deprecated public static class WifiNl80211Manager.OemSecurityType {
+    ctor @Deprecated public WifiNl80211Manager.OemSecurityType(int, @NonNull java.util.List<java.lang.Integer>, @NonNull java.util.List<java.lang.Integer>, int);
+    field @Deprecated public final int groupCipher;
+    field @Deprecated @NonNull public final java.util.List<java.lang.Integer> keyManagement;
+    field @Deprecated @NonNull public final java.util.List<java.lang.Integer> pairwiseCipher;
+    field @Deprecated public final int protocol;
   }
 
-  public static interface WifiNl80211Manager.PnoScanRequestCallback {
-    method public void onPnoRequestFailed();
-    method public void onPnoRequestSucceeded();
+  @Deprecated public static interface WifiNl80211Manager.PnoScanRequestCallback {
+    method @Deprecated public void onPnoRequestFailed();
+    method @Deprecated public void onPnoRequestSucceeded();
   }
 
-  public static interface WifiNl80211Manager.ScanEventCallback {
+  @Deprecated public static interface WifiNl80211Manager.ScanEventCallback {
     method @Deprecated public void onScanFailed();
-    method public default void onScanFailed(int);
-    method public void onScanResultReady();
+    method @Deprecated public default void onScanFailed(int);
+    method @Deprecated public void onScanResultReady();
   }
 
-  public static interface WifiNl80211Manager.SendMgmtFrameCallback {
-    method public void onAck(int);
-    method public void onFailure(int);
+  @Deprecated public static interface WifiNl80211Manager.SendMgmtFrameCallback {
+    method @Deprecated public void onAck(int);
+    method @Deprecated public void onFailure(int);
   }
 
   @Deprecated public static class WifiNl80211Manager.SignalPollResult {
@@ -11371,9 +11384,9 @@ package android.net.wifi.nl80211 {
     method @Deprecated public void onSoftApChannelSwitched(int, int);
   }
 
-  public static class WifiNl80211Manager.TxPacketCounters {
-    field public final int txPacketFailed;
-    field public final int txPacketSucceeded;
+  @Deprecated public static class WifiNl80211Manager.TxPacketCounters {
+    field @Deprecated public final int txPacketFailed;
+    field @Deprecated public final int txPacketSucceeded;
   }
 
 }
@@ -14523,26 +14536,25 @@ package android.service.personalcontext.renderer {
     ctor public InsightRendererService();
     method @NonNull public final android.service.personalcontext.RenderToken mintRenderToken();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @NonNull public abstract android.service.personalcontext.renderer.RendererFilter onRegistered();
-    method public abstract void onRender(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, boolean);
+    method public void onConnected();
+    method @NonNull public abstract android.service.personalcontext.renderer.RendererFilter onInitializeFilter();
+    method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RendererFilter implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.Set<java.lang.Integer> getValidHintTypes();
-    method @NonNull public java.util.Set<java.lang.Integer> getValidInsightTypes();
-    method public boolean shouldIncludeRenderedInsights();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.renderer.RendererFilter> CREATOR;
+    field public static final android.service.personalcontext.renderer.RendererFilter REQUIRE_RENDER_TOKEN;
   }
 
   public static final class RendererFilter.Builder {
     ctor public RendererFilter.Builder();
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addValidHintType(int);
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addValidInsightType(int);
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addAllowedInsightClass(@NonNull Class<? extends android.service.personalcontext.insight.ContextInsight>);
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addAllowedInsightToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addRequiredInsightToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.renderer.RendererFilter build();
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder setShouldIncludeRenderedInsights(boolean);
   }
 
 }
@@ -16356,6 +16368,7 @@ package android.telephony {
     method public int getProfileClass();
     method @FlaggedApi("com.android.internal.telephony.flags.support_psim_to_esim_conversion") public int getTransferStatus();
     method public boolean isGroupDisabled();
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_is_private_network_api") public boolean isPrivateNetwork();
   }
 
   public class SubscriptionManager {
@@ -16367,6 +16380,7 @@ package android.telephony {
     method @Nullable public java.util.List<android.telephony.SubscriptionInfo> getAvailableSubscriptionInfoList();
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int[] getCompleteActiveSubscriptionIdList();
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int getEnabledSubscriptionId(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS, android.Manifest.permission.READ_SUBSCRIPTION_PLANS, "carrier privileges"}) public java.util.List<android.telephony.SubscriptionPlan> getEnrollableSubscriptionPlans(int);
     method @NonNull public static android.content.res.Resources getResourcesForSubId(@NonNull android.content.Context, int);
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public boolean isSubscriptionEnabled(int);
     method public void requestEmbeddedSubscriptionInfoListRefresh();
@@ -16375,13 +16389,19 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultDataSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultSmsSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultVoiceSubscriptionId(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS, "carrier privileges"}) public void setEnrollableSubscriptionPlans(int, @NonNull java.util.List<android.telephony.SubscriptionPlan>, long);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setPreferredDataSubscriptionId(int, boolean, @Nullable java.util.concurrent.Executor, @Nullable java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public boolean setSubscriptionEnabled(int, boolean);
     method @FlaggedApi("com.android.internal.telephony.flags.support_psim_to_esim_conversion") @RequiresPermission(android.Manifest.permission.WRITE_EMBEDDED_SUBSCRIPTIONS) public void setTransferStatus(int, int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setUiccApplicationsEnabled(int, boolean);
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @RequiresPermission(android.Manifest.permission.READ_SUBSCRIPTION_PLANS) public static final String ACTION_ENROLLABLE_SUBSCRIPTION_PLANS_CHANGED = "android.telephony.action.ENROLLABLE_SUBSCRIPTION_PLANS_CHANGED";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String ACTION_REFRESH_ENROLLABLE_SUBSCRIPTION_PLANS = "android.telephony.action.REFRESH_ENROLLABLE_SUBSCRIPTION_PLANS";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String ACTION_SHOW_ENROLLABLE_SUBSCRIPTION_PLANS = "android.telephony.action.SHOW_ENROLLABLE_SUBSCRIPTION_PLANS";
     field @RequiresPermission(android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS) public static final String ACTION_SUBSCRIPTION_PLANS_CHANGED = "android.telephony.action.SUBSCRIPTION_PLANS_CHANGED";
     field @NonNull public static final android.net.Uri ADVANCED_CALLING_ENABLED_CONTENT_URI;
     field @NonNull public static final android.net.Uri CROSS_SIM_ENABLED_CONTENT_URI;
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_PLAN_TYPES = "android.telephony.extra.PLAN_TYPES";
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_REFRESH_PLANS = "android.telephony.extra.REFRESH_PLANS";
     field @Deprecated public static final int PROFILE_CLASS_DEFAULT = -1; // 0xffffffff
     field public static final int PROFILE_CLASS_OPERATIONAL = 2; // 0x2
     field public static final int PROFILE_CLASS_PROVISIONING = 1; // 0x1
@@ -19634,6 +19654,7 @@ package android.view.contentcapture {
     method @Nullable public android.view.contentcapture.ViewNode getViewNode();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.contentcapture.ContentCaptureEvent> CREATOR;
+    field @FlaggedApi("android.view.contentcapture.flags.content_interaction_api_enabled") public static final int TYPE_CONTENT_INTERACTION = 12; // 0xc
     field public static final int TYPE_CONTEXT_UPDATED = 6; // 0x6
     field @FlaggedApi("android.view.contentcapture.flags.ccapi_baklava_enabled") public static final int TYPE_SESSION_FLUSH = 11; // 0xb
     field public static final int TYPE_SESSION_PAUSED = 8; // 0x8

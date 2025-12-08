@@ -59,10 +59,13 @@ public class ThemeOverlayHelperTest {
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
 
+    private ThemeOverlayHelper mThemeOverlayHelper;
+
     @Before
     public void setup() {
         // This initializes all fields annotated with @Mock and @Captor
         MockitoAnnotations.initMocks(this);
+        mThemeOverlayHelper = new ThemeOverlayHelper(mOverlayManager);
     }
 
     @Test
@@ -74,8 +77,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass true because this is simulating the Foreground User
-        ThemeOverlayHelper.applyCurrentStateOverlays(mOverlayManager, snapshot,
-                true /* applyToSystem */);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true /* applyToSystem */);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -98,8 +100,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass false because this is simulating a Background User
-        ThemeOverlayHelper.applyCurrentStateOverlays(mOverlayManager, snapshot,
-                false /* applyToSystem */);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, false /* applyToSystem */);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -122,7 +123,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Is does not matter if we pass true/false here.
-        ThemeOverlayHelper.applyCurrentStateOverlays(mOverlayManager, snapshot, true);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -146,7 +147,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action & Verification (should not crash)
-        ThemeOverlayHelper.applyCurrentStateOverlays(mOverlayManager, snapshot, true);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true);
 
         // Verify commit was still attempted
         verify(mOverlayManager).commit(any(OverlayManagerTransaction.class));

@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.None
@@ -30,13 +31,17 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
@@ -57,6 +62,10 @@ class AuthenticationInteractorTest : SysuiTestCase() {
         testScope.collectLastValue(underTest.onAuthenticationResult)
     private val failedAuthenticationAttempts by
         testScope.collectLastValue(underTest.failedAuthenticationAttempts)
+    private val lastWarmUpTrigger
+        get() = kosmos.fakeAuthenticationRepository.lastWarmUpTrigger
+    private val now
+        get() = testScope.currentTime.milliseconds
 
     @Test
     fun authenticationMethod() =
@@ -539,6 +548,51 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                 }
             }
             assertSkipped(underTest.authenticate(tooShortPassword))
+        }
+
+    @Test
+    fun onPrimaryBouncerUserInput_userInputWithinThrottleDuration_doesNotWarmUpAuth() =
+        testScope.runTest {
+            val start = now
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+            assertThat(lastWarmUpTrigger).isEqualTo(start)
+
+            advanceTimeBy(1.seconds)
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+
+            assertThat(lastWarmUpTrigger).isEqualTo(start)
+        }
+
+    @Test
+    fun onPrimaryBouncerUserInput_userInputAtThrottleDurationEnd_warmsUpAuth() =
+        testScope.runTest {
+            val start = now
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+            assertThat(lastWarmUpTrigger).isEqualTo(start)
+
+            advanceTimeBy(5.seconds)
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+
+            assertThat(lastWarmUpTrigger).isEqualTo(now)
+        }
+
+    @Test
+    fun onPrimaryBouncerUserInput_userInputAfterThrottleDuration_warmsUpAuth() =
+        testScope.runTest {
+            val start = now
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+            assertThat(lastWarmUpTrigger).isEqualTo(start)
+
+            advanceTimeBy(5.seconds + 1.milliseconds)
+            underTest.triggerAuthWarmUp()
+            runCurrent()
+
+            assertThat(lastWarmUpTrigger).isEqualTo(now)
         }
 
     private fun assertSucceeded(authenticationResult: AuthenticationResult) {

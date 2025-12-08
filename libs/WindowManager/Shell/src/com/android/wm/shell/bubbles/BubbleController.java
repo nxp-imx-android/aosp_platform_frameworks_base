@@ -1431,6 +1431,17 @@ public class BubbleController implements ConfigurationChangeListener,
                 mStackView.startMonitoringSwipeUpGesture();
             }
         }
+
+        if (com.android.wm.shell.Flags.fixBubbleSwipeUpDismissBubbleBar() && mLayerView != null
+                && mLayerView.isExpanded()) {
+            BubbleLog.d("BubbleController.onNotificationPanelExpandedChanged() expanded=%b",
+                    expanded);
+            if (expanded) {
+                mLayerView.stopMonitoringSwipeUpGesture();
+            } else {
+                mLayerView.startMonitoringSwipeUpGesture();
+            }
+        }
     }
 
     private void setSysuiProxy(Bubbles.SysuiProxy proxy) {
@@ -2613,7 +2624,9 @@ public class BubbleController implements ConfigurationChangeListener,
                         bubbleTransit.continueCollapse();
                     }
                     if (!mBubbleData.hasBubbles() && !isStackExpanded()) {
-                        mLayerView.setVisibility(INVISIBLE);
+                        if (mLayerView != null) {
+                            mLayerView.setVisibility(INVISIBLE);
+                        }
                         removeFromWindowManagerMaybe();
                     }
                 });

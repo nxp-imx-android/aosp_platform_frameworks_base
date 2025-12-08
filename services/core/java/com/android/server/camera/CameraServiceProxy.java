@@ -53,6 +53,7 @@ import android.hardware.ICameraServiceProxy;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.ICameraDeviceUser.AudioRestriction;
 import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.devicestate.DeviceStateManager.FoldStateListener;
 import android.hardware.display.DisplayManager;
@@ -101,6 +102,7 @@ import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.am.StackTracesDumpHelper;
+import com.android.server.lights.LightsManager;
 import com.android.server.utils.Slogf;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -948,6 +950,26 @@ public class CameraServiceProxy extends SystemService
         }
 
         @Override
+        public void notifyCameraDistractionRestriction(int mode) {
+            if (Binder.getCallingUid() != Process.CAMERASERVER_UID) {
+                Slog.e(TAG, "Calling UID: " + Binder.getCallingUid()
+                        + " doesn't match expected camera service UID!");
+                return;
+            }
+
+            boolean enableLights = (mode != AudioRestriction.VIBRATION_SOUND);
+            LightsManager lm = LocalServices.getService(LightsManager.class);
+            if (lm != null) {
+                lm.setEnabledState(enableLights);
+                if (DEBUG) {
+                    Slog.d(TAG, "Setting lights to: " + enableLights + ", mode: " + mode);
+                }
+            } else {
+                Slog.w(TAG, "Unable to find the Lights service");
+            }
+        }
+
+        @Override
         public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
                 String[] args, ShellCallback callback, ResultReceiver resultReceiver)
                 throws RemoteException {
@@ -1222,6 +1244,13 @@ public class CameraServiceProxy extends SystemService
 
             if ( mNotifyNfc && !wasEmpty ) {
                 notifyNfcService(/*enablePolling*/ true);
+            }
+
+            // Ensure lights are back on
+            try {
+                mCameraServiceProxy.notifyCameraDistractionRestriction(AudioRestriction.NONE);
+            } catch (RemoteException e) {
+                // ignore
             }
         }
     }

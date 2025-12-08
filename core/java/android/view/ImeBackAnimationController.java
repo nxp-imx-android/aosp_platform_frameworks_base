@@ -170,7 +170,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
             float imeHeight = shownY - hiddenY;
             int newY = (int) (imeHeight - progress * imeHeight);
             if (mStartRootScrollY != 0) {
-                mViewRoot.setScrollY((int) (mStartRootScrollY * (1 - progress)));
+                mViewRoot.setScrollY(Math.max(0, (int) (mStartRootScrollY - (shownY - newY))));
             }
             mWindowInsetsAnimationController.setInsetsAndAlpha(Insets.of(0, 0, 0, newY), 1f,
                     progress);

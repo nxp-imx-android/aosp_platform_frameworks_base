@@ -24,7 +24,6 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
-import static com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction;
@@ -1069,7 +1068,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 bt.mLaunchCookie.binder);
     }
 
-    @EnableFlags(FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE)
     @Test
     public void testLaunchOrConvert_canAnimationTransition_expandingExistingBubble() {
         final TaskView existingTaskView = setUpBubbleTaskView(mBubble);

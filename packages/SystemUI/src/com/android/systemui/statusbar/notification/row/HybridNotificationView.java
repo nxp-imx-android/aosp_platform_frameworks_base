@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationsRedesignFonts;
+
 import static android.app.Notification.COLOR_INVALID;
 
 import android.annotation.Nullable;
@@ -47,8 +47,7 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     protected final ViewTransformationHelper mTransformationHelper = new ViewTransformationHelper();
     protected TextView mTitleView;
     protected TextView mTextView;
-    protected int mPrimaryTextColor = COLOR_INVALID;
-    protected int mSecondaryTextColor = COLOR_INVALID;
+    protected int mTextColor = COLOR_INVALID;
     private static final int MAX_SUMMARIZATION_LINES = 1;
 
     public HybridNotificationView(Context context) {
@@ -101,8 +100,8 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
         resolveThemeTextColors();
         mTitleView = findViewById(R.id.notification_title);
         mTextView = findViewById(R.id.notification_text);
-        applyTextColor(mTitleView, mPrimaryTextColor);
-        applyTextColor(mTextView, mSecondaryTextColor);
+        applyTextColor(mTitleView, mTextColor);
+        applyTextColor(mTextView, mTextColor);
         mTransformationHelper.setCustomTransformation(
                 new FadeOutAndDownWithTitleTransformation(mTextView),
                 TRANSFORMING_VIEW_TEXT);
@@ -117,9 +116,7 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     }
 
     private void resolveThemeTextColors() {
-        mPrimaryTextColor = mContext.getColor(com.android.internal.R.color.materialColorOnSurface);
-        mSecondaryTextColor = notificationsRedesignFonts() ? mPrimaryTextColor : mContext.getColor(
-                com.android.internal.R.color.materialColorOnSurfaceVariant);
+        mTextColor = mContext.getColor(com.android.internal.R.color.materialColorOnSurface);
     }
 
     public void bind(@Nullable CharSequence title, @Nullable CharSequence text,

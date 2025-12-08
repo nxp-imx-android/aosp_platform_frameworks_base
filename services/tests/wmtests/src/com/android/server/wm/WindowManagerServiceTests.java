@@ -2072,6 +2072,45 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertEquals(secondaryDisplayMode, mWm.getDisplayEngagementMode(dc.getDisplayId()));
     }
 
+    @Test
+    @DisableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testConstructor_appLockFlagsAreOff_appLockControllerIsNull() {
+        assertNull(mWm.mAppLockController);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testConstructor_appLockControllerIsNotNull() {
+        assertNotNull(mWm.mAppLockController);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testSystemReady_callsAppLockControllerSystemReady() {
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doNothing().when(appLockController).systemReady();
+
+        // Mock other methods in systemReady().
+        spyOn(mWm.mAnimatorScale);
+        doNothing().when(mWm.mAnimatorScale).onSystemReady();
+        spyOn(mWm.mPolicy);
+        doNothing().when(mWm.mPolicy).systemReady();
+        spyOn(mWm.mRoot);
+        doNothing().when(mWm.mRoot).forAllDisplayPolicies(DisplayPolicy::systemReady);
+        spyOn(mWm.mSnapshotController);
+        doNothing().when(mWm.mSnapshotController).systemReady();
+        spyOn(mWm.mAppCompatConfiguration);
+        doNothing().when(mWm.mAppCompatConfiguration).onSystemReady();
+
+        mWm.systemReady();
+
+        verify(appLockController).systemReady();
+    }
+
     /**
      * Simulates IPC transfer by writing the setting to a parcel and reading it back.
      *

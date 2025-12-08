@@ -189,56 +189,48 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopFromSplitScreenWithAppHandleMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuExistingWindowsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithAppHandleMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragExistingWindowsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
      {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterDesktopWithDragWindowsLimitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithAppHandleMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-enter-EnterSplitScreenWithDragTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -250,14 +242,14 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
       "keywords": [
         "device",
         "desktop"
@@ -313,7 +305,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest",
       "keywords": [
         "device",
         "desktop"
@@ -383,6 +375,20 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseFullscreenTaskViaKeyboardShortcutTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseSplitScreenTaskViaKeyboardShortcutTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseTaskViaKeyboardShortcutTest",
       "keywords": [
         "device",
@@ -425,6 +431,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ToggleFullscreenViaFullscreenKeyTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest",
       "keywords": [
         "desktop"
@@ -457,14 +470,14 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenRecordingAppSelectorFromQSTest",
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenMediaProjectionWithMaxDesktopWindowsTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenMediaProjectionWithMaxDesktopWindowsTest",
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenRecordingAppSelectorFromQSTest",
       "keywords": [
         "device",
         "desktop"

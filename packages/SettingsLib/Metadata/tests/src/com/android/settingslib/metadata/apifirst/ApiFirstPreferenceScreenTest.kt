@@ -24,8 +24,6 @@ import com.android.settingslib.metadata.apifirst.types.AnyBoolean
 import com.android.settingslib.metadata.apifirst.types.AnyInt
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -46,10 +44,9 @@ class ApiFirstPreferenceScreenTest {
                 purpose = 0
             ) {
                 init {
-                    preference<Boolean> {
-                        key = preferenceKey1
-                        type = AnyBoolean
-                    }
+                    preference(
+                        key = preferenceKey1, purpose = 0, type = AnyBoolean
+                    ) {}
                 }
             }
         }
@@ -67,22 +64,22 @@ class ApiFirstPreferenceScreenTest {
             purpose = 0
         ) {
             init {
-                preference {
-                    key = preferenceKey1
-                    type = AnyBoolean
-
+                preference(
+                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                ) {
                     get {
                         execute {
+                            false
                         }
                     }
                 }
 
-                preference {
-                    key = preferenceKey2
-                    type = AnyInt
-
+                preference(
+                    key = preferenceKey2, purpose = 0, type = AnyInt
+                ) {
                     get {
                         execute {
+                            0
                         }
                     }
                 }
@@ -114,10 +111,9 @@ class ApiFirstPreferenceScreenTest {
             purpose = 0
         ) {
             init {
-                preference {
-                    key = preferenceKey1
-                    type = AnyBoolean
-
+                preference(
+                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                ) {
                     get {
                         execute {
                             preferenceValue1
@@ -125,10 +121,9 @@ class ApiFirstPreferenceScreenTest {
                     }
                 }
 
-                preference {
-                    key = preferenceKey2
-                    type = AnyInt
-
+                preference(
+                    key = preferenceKey2, purpose = 0, type = AnyInt
+                ) {
                     get {
                         execute {
                             preferenceValue2
@@ -166,10 +161,9 @@ class ApiFirstPreferenceScreenTest {
             purpose = 0
         ) {
             init {
-                preference {
-                    key = preferenceKey1
-                    type = AnyBoolean
-
+                preference(
+                    key = preferenceKey1, purpose = 0, type = AnyBoolean
+                ) {
                     get {
                         execute {
                             preferenceValue1
@@ -177,10 +171,9 @@ class ApiFirstPreferenceScreenTest {
                     }
                 }
 
-                preference {
-                    key = preferenceKey2
-                    type = AnyInt
-
+                preference(
+                    key = preferenceKey2, purpose = 0, type = AnyInt
+                ) {
                     get {
                         execute {
                             preferenceValue2
@@ -210,8 +203,7 @@ class ApiFirstPreferenceScreenTest {
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
         assertThat(
             secondPreference.set?.execute(
-                context,
-                newPreferenceValue2
+                context, newPreferenceValue2
             )
         ).isNotEqualTo(null)
         assertThat(secondPreference.get.execute(context)).isEqualTo(newPreferenceValue2)

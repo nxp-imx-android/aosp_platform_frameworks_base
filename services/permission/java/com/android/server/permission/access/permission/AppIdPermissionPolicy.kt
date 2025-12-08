@@ -20,6 +20,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.content.pm.PermissionGroupInfo
 import android.content.pm.PermissionInfo
+import android.content.pm.PermissionInfo.NO_TARGET_SDK_VERSION
 import android.content.pm.SigningDetails
 import android.health.connect.HealthPermissions
 import android.os.Build
@@ -1052,7 +1053,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // declare at least one valid purpose in its manifest before it can be granted. Note
             // that a flag state may have INSTALL_GRANTED and PURPOSE_REVOKED bits set, in which
             // case the permission will not be granted.
-            if (Flags.ppdInstallTimeEnabled() && permission.requiresPurpose) {
+            if (Flags.ppdInstallTimeEnabled() && permission.requiresPurposeTargetSdkVersion != NO_TARGET_SDK_VERSION) {
                 val hasValidPurpose =
                     requestingPackageStates.anyIndexed { _, it ->
                         hasValidPurposeForPackage(it.androidPackage!!, permission)

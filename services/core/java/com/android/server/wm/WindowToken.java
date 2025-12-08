@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.WINDOW_TOKEN;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.CLIENT_VISIBLE;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.HASH_CODE;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.PAUSED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.WINDOW_CONTAINER;
@@ -754,6 +755,7 @@ class WindowToken extends WindowContainer<WindowState> {
         super.dumpDebug(proto, WINDOW_CONTAINER, logLevel);
         proto.write(HASH_CODE, System.identityHashCode(this));
         proto.write(PAUSED, paused);
+        proto.write(CLIENT_VISIBLE, isClientVisible());
         proto.end(token);
     }
 

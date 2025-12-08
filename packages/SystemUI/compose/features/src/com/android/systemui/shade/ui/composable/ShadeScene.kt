@@ -52,7 +52,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.HorizontalRuler
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -68,7 +67,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
-import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.padding
@@ -112,16 +110,13 @@ import kotlinx.coroutines.flow.Flow
 
 object Shade {
     object Elements {
+        val ShadeElement = ElementKey("ShadeElement")
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
     }
 
     object Dimensions {
         val HorizontalPadding = 16.dp
-    }
-
-    object Rulers {
-        val SingleShadeNestedScrollLayoutBottom = HorizontalRuler()
     }
 }
 
@@ -170,7 +165,7 @@ constructor(
             }
         val animatedBlurRadiusPx: Float by
             animateFloatAsState(targetValue = targetBlur, label = "Shade-blurRadius")
-
+        modifier.element(Shade.Elements.ShadeElement)
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
@@ -289,7 +284,6 @@ private fun ContentScope.SingleShade(
             ) {
                 ScrollState(initial = 0)
             }
-        val scrimOverscrollEffect = rememberOffsetOverscrollEffect()
 
         ShadePanelScrim(viewModel.isTransparencyEnabled)
         SingleShadeNestedScrollLayout(
@@ -302,7 +296,6 @@ private fun ContentScope.SingleShade(
             shadeSession = shadeSession,
             viewModel = notificationsPlaceholderViewModel,
             scrollState = scrollState,
-            scrimOverScrollEffect = scrimOverscrollEffect,
             jankMonitor = jankMonitor,
             statusBarHeader = {
                 CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
@@ -367,7 +360,7 @@ private fun ContentScope.SingleShade(
                     mediaInRow = mediaInRow,
                 )
             },
-            scrollableScrim = { onContentHeightChanged ->
+            scrollableScrim = { onContentHeightChanged, scrimOverscrollEffect ->
                 NestedScrollingNotificationPanel(
                     tag = "$tag.Single",
                     shadeSession = shadeSession,
@@ -524,6 +517,7 @@ private fun ContentScope.SplitShade(
                         NestedSceneTransitionLayout(
                             state = sceneState,
                             modifier = Modifier.fillMaxSize(),
+                            debugName = "SplitShade",
                         ) {
                             scene(QS) {
                                 val tileSquishiness by

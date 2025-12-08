@@ -47,6 +47,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.WindowManage
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 import static android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE;
+import static android.os.PerfettoTrace.BIG_LOCKS_V3;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.myPid;
 import static android.os.Process.myUid;
@@ -343,6 +344,7 @@ import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.os.TransferPipe;
 import com.android.internal.policy.IKeyguardDismissCallback;
@@ -616,6 +618,7 @@ public class WindowManagerService extends IWindowManager.Stub
     final PermissionManager mPermissionManager;
     final AppOpsManager mAppOps;
     final PackageManagerInternal mPmInternal;
+    final WindowManagerInternal mInternal;
     private final TestUtilityService mTestUtilityService;
 
     @NonNull
@@ -1115,7 +1118,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     boolean mPointerLocationEnabled = false;
 
-    private final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
+    @VisibleForTesting
+    final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
             new SharedMemoryBackedCurrentAnimatorScale();
 
     @NonNull
@@ -1183,11 +1187,13 @@ public class WindowManagerService extends IWindowManager.Stub
     private final SurfaceControl.Transaction mTransaction;
 
     static void boostPriorityForLockedSection() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_acquire").emit();
         sThreadPriorityBooster.boost();
     }
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     SystemPerformanceHinter mSystemPerformanceHinter;
@@ -1238,6 +1244,10 @@ public class WindowManagerService extends IWindowManager.Stub
             }
         }
     };
+
+    // TODO(b/464052878): Make mAppLockController @NonNull when App Lock flags are removed.
+    @Nullable
+    final AppLockController mAppLockController;
 
     private final ScreenRecordingCallbackController mScreenRecordingCallbackController;
 
@@ -1493,7 +1503,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mConstants = new WindowManagerConstants(this, DeviceConfigInterface.REAL);
         mConstants.start(new HandlerExecutor(mH));
 
-        LocalServices.addService(WindowManagerInternal.class, new LocalService());
+        mInternal = new LocalService();
+        LocalServices.addService(WindowManagerInternal.class, mInternal);
         mEmbeddedWindowController = new EmbeddedWindowController(mAtmService, inputManager);
 
         mDisplayAreaPolicyProvider = DisplayAreaPolicy.Provider.fromResources(
@@ -1505,6 +1516,9 @@ public class WindowManagerService extends IWindowManager.Stub
         mStartingSurfaceController = new StartingSurfaceController(this);
         mPresentationController = new PresentationController();
 
+        mAppLockController =
+                (android.security.Flags.appLockApis() && android.security.Flags.appLockCore())
+                        ? new AppLockController(this) : null;
         mBlurController = new BlurController(mContext, mPowerManager);
         mTaskFpsCallbackController = new TaskFpsCallbackController();
         mAccessibilityController = new AccessibilityController(this);
@@ -2609,8 +2623,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
                         + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
             }
-            if (!WindowManager.useClientSurface()
-                    && (attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
+            if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
             if ((attrChanges & WindowManager.LayoutParams.TITLE_CHANGED) != 0) {
@@ -3569,9 +3582,13 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public void moveDisplayToTopIfAllowed(int displayId) {
+        moveDisplayToTopIfAllowed(displayId, true /* waitForAnimations */);
+    }
+
+    void moveDisplayToTopIfAllowed(int displayId, boolean waitForAnimations) {
         final boolean moved = moveDisplayToTopInternal(displayId);
         if (moved) {
-            syncInputTransactions(true /* waitForAnimations */);
+            syncInputTransactions(waitForAnimations);
         }
     }
 
@@ -5152,11 +5169,11 @@ public class WindowManagerService extends IWindowManager.Stub
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null || dc.mRemoteInsetsControlTarget == null) {
                     ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
                     return;
                 }
                 ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
+                        ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
                 final @InsetsType int changedTypes =
                         dc.mRemoteInsetsControlTarget.updateRequestedVisibleTypes(
                                 visibleTypes, mask);
@@ -5182,11 +5199,11 @@ public class WindowManagerService extends IWindowManager.Stub
                     final DisplayContent dc = mRoot.getDisplayContent(displayId);
                     if (dc == null || dc.mRemoteInsetsControlTarget == null) {
                         ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                                ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                         return;
                     }
                     ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                            ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                     dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
                 }
             } finally {
@@ -5995,6 +6012,10 @@ public class WindowManagerService extends IWindowManager.Stub
                 // Ignore, we cannot do anything if we failed to register VR mode listener
             }
         }
+        if (mAppLockController != null) {
+            mAppLockController.systemReady();
+        }
+        mAppCompatConfiguration.onSystemReady();
     }
 
 
@@ -8991,7 +9012,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     throw new IllegalArgumentException(
                             "Invalid overlay surfacecontrol passed in for task=" + taskId);
                 }
-                final Task task = mRoot.getRootTask(taskId);
+                final Task task = mRoot.anyTaskForId(taskId);
                 if (task == null) {
                     throw new IllegalArgumentException("no task with taskId" + taskId);
                 }
@@ -9011,7 +9032,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     throw new IllegalArgumentException(
                             "Invalid overlay surfacecontrol passed in for task=" + taskId);
                 }
-                final Task task = mRoot.getRootTask(taskId);
+                final Task task = mRoot.anyTaskForId(taskId);
                 if (task == null) {
                     throw new IllegalArgumentException("no task with taskId" + taskId);
                 }

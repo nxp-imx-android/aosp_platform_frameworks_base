@@ -69,7 +69,7 @@ import java.util.Objects;
  * <p>This class enforces session creation policies, such as limiting the number of concurrent
  * sessions and preventing creation when the device is locked.
  */
-public class ComputerControlSessionProcessor {
+public final class ComputerControlSessionProcessor {
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 
@@ -91,7 +91,9 @@ public class ComputerControlSessionProcessor {
 
     private final Object mHandlerThreadLock = new Object();
     @GuardedBy("mHandlerThreadLock")
+    @Nullable
     private ServiceThread mHandlerThread;
+    @SuppressWarnings("NullAway") // Session lifecycle makes this @NonNull, though hard to enforce
     private Handler mHandler;
 
     public ComputerControlSessionProcessor(
@@ -264,13 +266,15 @@ public class ComputerControlSessionProcessor {
         }
 
         Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
-        final ComputerControlSessionImpl session = new ComputerControlSessionImpl(
-                mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
-                mVirtualDeviceFactory, (closedSession) -> {
-            synchronized (mSessions) {
-                mSessions.remove(closedSession);
-            }
-        });
+        final ComputerControlSessionImpl session = Binder.withCleanCallingIdentity(
+                () -> new ComputerControlSessionImpl(
+                        mContext, mAllowlistController, callback.asBinder(), params,
+                        attributionSource,
+                        mVirtualDeviceFactory, (closedSession) -> {
+                    synchronized (mSessions) {
+                        mSessions.remove(closedSession);
+                    }
+                }));
         synchronized (mSessions) {
             mSessions.add(session);
         }

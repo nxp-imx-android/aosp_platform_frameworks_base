@@ -136,7 +136,7 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
         mTestExecutor = new HandlerExecutor(mTestHandler);
         mStartingSurfaceDrawer = spy(
                 new StartingSurfaceDrawer(mTestContext, mTestExecutor, mIconProvider,
-                        mTransactionPool, 0));
+                        mTransactionPool, 0, mTestExecutor));
         spyOn(mStartingSurfaceDrawer.mSplashscreenWindowCreator);
         spyOn(mStartingSurfaceDrawer.mWindowRecords);
         spyOn(mStartingSurfaceDrawer.mWindowlessRecords);
@@ -222,7 +222,7 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
         final TaskSnapshotWindow mockSnapshotWindow = new TaskSnapshotWindow(
                 snapshot, SnapshotDrawerUtils.getOrCreateTaskDescription(windowInfo.taskInfo),
                 snapshot.getOrientation(),
-                () -> {}, mTestExecutor);
+                () -> {}, mTestExecutor, new WindowManager.LayoutParams());
         spyOn(mockSnapshotWindow);
         try (AutoCloseable mockTaskSnapshotSession = new AutoCloseable() {
             MockitoSession mockSession = mockitoSession()

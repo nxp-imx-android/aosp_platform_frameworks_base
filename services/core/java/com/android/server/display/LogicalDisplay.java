@@ -18,6 +18,7 @@ package com.android.server.display;
 
 import static android.view.Display.Mode.INVALID_MODE_ID;
 
+import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static com.android.server.display.DisplayDeviceInfo.TOUCH_NONE;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
@@ -654,6 +655,18 @@ final class LogicalDisplay {
         int selectedModeId = deviceInfo.modeId;
         int userPreferredModeId = deviceInfo.userPreferredModeId;
 
+        // external display with no userPreferredMode selected
+        if (Flags.anisotropyCorrectedModeByDefault() && userPreferredModeId == INVALID_MODE_ID
+                && deviceInfo.type == Display.TYPE_EXTERNAL) {
+            // we will try to find corresponding anisotropy corrected mode
+            for (Display.Mode mode : modes) {
+                if (selectedModeId == mode.getParentModeId()
+                        && (mode.getFlags() & Display.Mode.FLAG_ANISOTROPY_CORRECTION) != 0) {
+                    return mode;
+                }
+            }
+        }
+
         if (userPreferredModeId == INVALID_MODE_ID) {
             return null;
         }
@@ -1111,6 +1124,12 @@ final class LogicalDisplay {
         // TODO(b/426331944): Change the behavior of VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR and returns
         // false for this
         if (mPrimaryDisplayDevice.shouldAutoMirror()) {
+            return true;
+        }
+
+        // The display doesn't allow dynamic content mode switch can always host tasks.
+        if ((mPrimaryDisplayDevice.getDisplayDeviceInfoLocked().flags
+                & FLAG_ALLOWS_CONTENT_MODE_SWITCH) == 0) {
             return true;
         }
 

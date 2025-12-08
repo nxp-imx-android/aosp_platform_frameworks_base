@@ -17,7 +17,6 @@
 package com.android.server.personalcontext;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -150,7 +149,7 @@ public class RendererWorkflowTest {
         verify(listener).onInsightSentToRenderer(anyLong(), eq(insight), eq(renderer));
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener, never()).onRendererWorkflowError(anyLong(), any());
-        verify(renderer).render(eq(insight), anyBoolean());
+        verify(renderer).render(eq(insight));
         verify(renderer, never()).isInterestedInInsight(any());
         verify(provider, never()).getRenderers();
     }
@@ -182,9 +181,9 @@ public class RendererWorkflowTest {
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener).onRendererWorkflowFinished(anyLong());
         verify(listener, never()).onRendererWorkflowError(anyLong(), any());
-        verify(renderer1).render(eq(insight), anyBoolean());
-        verify(renderer2).render(eq(insight), anyBoolean());
-        verify(renderer3, never()).render(eq(insight), anyBoolean());
+        verify(renderer1).render(eq(insight));
+        verify(renderer2).render(eq(insight));
+        verify(renderer3, never()).render(eq(insight));
         verify(provider, never()).getRendererById(any());
     }
 

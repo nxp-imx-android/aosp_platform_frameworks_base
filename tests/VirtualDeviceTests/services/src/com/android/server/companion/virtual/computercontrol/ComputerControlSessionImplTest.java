@@ -27,6 +27,7 @@ import static android.companion.virtual.computercontrol.ComputerControlSession.B
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_USER_INITIATED;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
@@ -43,6 +44,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,6 +60,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.AppOpsManager;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -95,6 +98,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
@@ -110,6 +115,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.server.LocalServices;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -152,6 +158,7 @@ public class ComputerControlSessionImplTest {
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
     private static final String TARGET_CLASS = "com.android.foo.FooActivity";
     private static final long GLOBAL_TIMEOUT_MILLIS = 10000L;
+    private static final String AGENT_PACKAGE = "com.package";
     private static final ComponentName TEST_COMPONENT = new ComponentName(TARGET_PACKAGE_1,
             TARGET_CLASS);
     private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
@@ -175,6 +182,8 @@ public class ComputerControlSessionImplTest {
     private IDisplayManager mDisplayManager;
     @Mock
     private PackageManager mOwnerPackageManager;
+    @Mock
+    private AppOpsManager mAppOpsManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -219,6 +228,8 @@ public class ComputerControlSessionImplTest {
     private IntentSender mIntentSender;
     @Mock
     private ComputerControlAllowlistController mAllowlistController;
+    @Mock
+    private AppInteractionService mAppInteractionService;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -251,10 +262,6 @@ public class ComputerControlSessionImplTest {
     private final Context mContext =
             spy(new ContextWrapper(
                     InstrumentationRegistry.getInstrumentation().getTargetContext()));
-    private final Context mOwnerContext =
-            spy(new ContextWrapper(
-                    InstrumentationRegistry.getInstrumentation().getTargetContext()));
-
     private final EditorInfo mEditorInfo = new EditorInfo();
 
     @Before
@@ -262,9 +269,12 @@ public class ComputerControlSessionImplTest {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mTransaction = spy(new StubTransaction());
 
+        final Context ownerContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(mContext.createContextAsUser(UserHandle.of(USER_ID), /* flags = */ 0))
-                .thenReturn(mOwnerContext);
-        when(mOwnerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
+                .thenReturn(ownerContext);
+        when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
+        when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
@@ -272,6 +282,9 @@ public class ComputerControlSessionImplTest {
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
         LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            LocalServices.addService(AppInteractionService.class, mAppInteractionService);
+        }
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
@@ -463,12 +476,31 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void createSession_startsWatchingAppOps() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mAppOpsManager).startWatchingMode(
+                eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any());
+    }
+
+    @Test
     public void closeSession_closesVirtualDevice() throws Exception {
         createComputerControlSession(mDefaultParams);
+
         mSession.close();
+
         verify(mVirtualDevice).close();
         verify(mOnClosedListener).accept(mSession);
         verify(mLifecycleCallback).onClosed(eq(CLOSE_REASON_CALLER_INITIATED));
+    }
+
+    @Test
+    public void closeSession_stopsWatchingAppOps() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.close();
+
+        verify(mAppOpsManager).stopWatchingMode(mSession);
     }
 
     @Test
@@ -476,6 +508,74 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         mSession.close(123);
         verify(mLifecycleCallback).onClosed(eq(123));
+    }
+
+    @Test
+    public void onOpChanged_modeIgnored_closesSession() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID);
+
+        // Verify the session is closed.
+        verify(mVirtualDevice).close();
+        verify(mOnClosedListener).accept(mSession);
+        verify(mLifecycleCallback).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_modeNotIgnored_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_ALLOWED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_differentPackage_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, UNDECLARED_TARGET_PACKAGE,
+                USER_ID);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
+    }
+
+    @Test
+    public void onOpChanged_differentUser_doesNothing() throws Exception {
+        // Create a session.
+        createComputerControlSession(mDefaultParams);
+        when(mAppOpsManager.checkOpNoThrow(eq(AppOpsManager.OPSTR_COMPUTER_CONTROL), anyInt(),
+                any())).thenReturn(AppOpsManager.MODE_IGNORED);
+
+        // onOpChanged callback triggered.
+        mSession.onOpChanged(AppOpsManager.OPSTR_COMPUTER_CONTROL, mSession.getOwnerPackageName(),
+                USER_ID + 1);
+
+        // Verify the session is not closed.
+        verify(mVirtualDevice, never()).close();
+        verify(mOnClosedListener, never()).accept(mSession);
+        verify(mLifecycleCallback, never()).onClosed(eq(CLOSE_REASON_USER_INITIATED));
     }
 
     @Test
@@ -822,6 +922,59 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    @EnableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenActivityIsAllowed_reportsAppInteraction()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        verify(mAppInteractionService)
+                .noteAppInteraction(
+                        eq(AGENT_PACKAGE),
+                        eq(TEST_COMPONENT.getPackageName()),
+                        isNull(),
+                        anyLong(),
+                        eq(0L),
+                        eq(USER_ID));
+    }
+
+    @Test
+    @EnableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenActivityIsBlocked_doesNotReportAppInteraction()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+
+        verify(mAppInteractionService, never())
+                .noteAppInteraction(any(), any(), any(), anyLong(), anyLong(), anyInt());
+    }
+
+    @Test
+    @DisableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+    public void onActivityLaunchRequested_whenFlagIsDisabled_doesNotCrash()
+            throws RemoteException {
+        assertThat(LocalServices.getService(AppInteractionService.class)).isNull();
+
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice)
+                .addActivityListener(any(), mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor
+                .getValue()
+                .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+    }
+
+    @Test
     public void onActivityLaunchRequested_whenActivityIsBlocked_entersBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -1089,8 +1242,8 @@ public class ComputerControlSessionImplTest {
         mSession = new ComputerControlSessionImpl(
                 mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
                 globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params,
-                new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
-                mVirtualDeviceFactory, mOnClosedListener);
+                new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE, "tag"),
+                mVirtualDeviceFactory, mOnClosedListener, Runnable::run);
     }
 
     @SuppressLint("MissingPermission")

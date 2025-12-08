@@ -53,6 +53,7 @@ import com.android.internal.jank.Cuj
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.internal.policy.SystemBarUtils
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup
@@ -203,13 +204,20 @@ abstract class CrossActivityBackAnimation(
         preparePreCommitClosingRectMovement(backMotionEvent.swipeEdge)
         preparePreCommitEnteringRectMovement()
 
+        val backgroundCrop =
+            if (closingTarget!!.windowConfiguration.tasksAreFloating()
+                || fixCrossActivityBackAnimationInBubbles()
+            ) {
+                closingTarget!!.localBounds
+            } else {
+                null
+            }
         background.ensureBackground(
                 closingTarget!!.windowConfiguration.bounds,
                 getBackgroundColor(),
                 transaction,
                 statusbarHeight,
-                if (closingTarget!!.windowConfiguration.tasksAreFloating())
-                    closingTarget!!.localBounds else null,
+            backgroundCrop,
                 cornerRadius,
                 closingTarget!!.taskInfo.getDisplayId()
         )

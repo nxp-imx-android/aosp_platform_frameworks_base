@@ -29,8 +29,6 @@ import android.util.Range;
 import android.util.Size;
 import android.view.Surface;
 
-import com.android.internal.camera.flags.Flags;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -166,11 +164,6 @@ public class SurfaceUtils {
      */
     public static int getOverrideFormat(int format, long usage) {
         if (format >= PixelFormat.RGBA_8888 && format <= BGRA_8888) {
-            if (!Flags.surfaceFormatFix()) {
-                // Maintain existing behavior
-                return ImageFormat.PRIVATE;
-            }
-
             // Only override to PRIVATE if the usage has only hardware
             // bits.
             if (((usage & USAGE_HW_MASK) != 0)

@@ -1224,13 +1224,13 @@ public final class StrictMode {
 
             /**
              * Detects when URI permissions are implicitly granted to your app, a behavior that
-             * will be discontinued in Android 18.
+             * will be discontinued in Android 18 (API 38).
              *
              * <p>Implicit URI permission grants can occur when an app receives an {@link Intent}
              * containing a {@link Uri} but without the
              * {@link Intent#FLAG_GRANT_READ_URI_PERMISSION} or
-             * {@link Intent#FLAG_GRANT_WRITE_URI_PERMISSION} flags, yet the system still grant
-             * access to the URI on behalf of app.
+             * {@link Intent#FLAG_GRANT_WRITE_URI_PERMISSION} flags, yet the system still grants
+             * access to the URI on behalf of the app.
              *
              * <p>Since implicit URI grants are being discontinued, developers must address this to
              * prevent future app breakage. When sending intents with Uris, ensure that the

@@ -21,6 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -36,7 +37,6 @@ import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
@@ -61,10 +61,11 @@ constructor(
             .map { it is ScreenRecording.Saved }
             .hydratedStateOf("PostRecordingViewModel#screenRecording", false)
 
-    private val parentUri = MutableStateFlow<Uri?>(null)
+    var parentUri: Uri? by mutableStateOf(null)
+        private set
 
     override suspend fun onActivated() {
-        parentUri.value = parentUriInteractor.getParentDirectoryUri(videoUri)
+        parentUri = parentUriInteractor.getParentDirectoryUri(videoUri)
     }
 
     fun retake() {
@@ -79,8 +80,12 @@ constructor(
         )
     }
 
+    fun view() {
+        startVideoActivity(action = Intent.ACTION_VIEW, label = null, shouldShowChooser = false)
+    }
+
     fun openInFolder() {
-        parentUri.value?.let {
+        parentUri?.let {
             startVideoActivity(
                 action = Intent.ACTION_VIEW,
                 label = null,

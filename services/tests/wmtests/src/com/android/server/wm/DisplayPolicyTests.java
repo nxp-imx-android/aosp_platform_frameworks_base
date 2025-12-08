@@ -115,6 +115,10 @@ public class DisplayPolicyTests extends WindowTestsBase {
         attrs.format = PixelFormat.TRANSPARENT;
         attrs.insetsFlags.appearance = hasLightNavBar ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0;
         win.mHasSurface = visible;
+        final var imeToken = win.mToken.asImeToken();
+        if (android.view.inputmethod.Flags.warmWorkProfileIme() && imeToken != null) {
+            imeToken.setClientVisible(visible);
+        }
         return win;
     }
 

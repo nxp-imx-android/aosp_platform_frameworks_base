@@ -81,6 +81,7 @@ class ButtonComponent(
                     contentDescription = viewModel.label
                     viewModel.stateDescription?.let { stateDescription = it }
                 },
+                isExpandedAudioTileDetailsView = isExpandedAudioTileDetailsView,
                 modifier =
                     modifier.onGloballyPositioned { gravity = calculateGravity(it, screenWidth) },
             )

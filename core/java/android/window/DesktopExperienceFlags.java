@@ -110,8 +110,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH(
             Flags::enableDensityResetOnCrossDisplaysPipLaunch, false,
             Flags.FLAG_ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH),
-    ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, true,
-            Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
@@ -166,8 +164,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DRAWING_APP_HANDLE),
     ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION(Flags::enableDreamActivityWindowingExclusion, false,
             Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION),
-    ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX(Flags::enableFilterRemovingDisplayBugfix, false,
-            Flags.FLAG_ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX),
     ENABLE_FREEFORM_BOX_SHADOWS_V2(Flags::enableFreeformBoxShadowsV2, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2),
     ENABLE_FULLSCREEN_WINDOW_CONTROLS(Flags::enableFullscreenWindowControls, false,
@@ -197,8 +193,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND),
     ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, true,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND),
-    ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX(Flags::enableMultiDisplayHomeFocusBugFix,
-            true, Flags.FLAG_ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX),
     ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX(
             Flags::nestedTasksWithIndependentBoundsBugfix, true,
             Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),
@@ -235,6 +229,8 @@ public enum DesktopExperienceFlags {
     ENABLE_REQUEST_FULLSCREEN_REFACTOR(
             Flags::enableRequestFullscreenRefactor, false,
             Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),
+    ENABLE_REQUIRE_MOVABLE_TASK_API(Flags::enableRequireMovableTaskApi, false,
+            Flags.FLAG_ENABLE_REQUIRE_MOVABLE_TASK_API),
     ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS(Flags::enableRestartMenuForConnectedDisplays, true,
             Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS),
     ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS(

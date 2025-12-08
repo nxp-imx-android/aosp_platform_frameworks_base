@@ -22,10 +22,8 @@
 #include <dlfcn.h>
 #include <log/log.h>
 
-using IntentToken = int32_t;
-
 static std::map<ANativeService*, std::shared_ptr<NativeServiceWrapper>> gServiceMap;
-static std::map<ANativeService*, std::set<IntentToken>> gIntentMap;
+static std::map<ANativeService*, std::set<uint64_t>> gBindingMap;
 
 ndk::ScopedAStatus NativeServiceWrapper::registerListener(
         const std::shared_ptr<INativeServiceListener>& listener) {
@@ -47,11 +45,11 @@ extern "C" void native_service_onDestroy(ANativeService* _Nonnull service) {
 }
 
 extern "C" AIBinder* native_service_onBind(ANativeService* _Nonnull service,
-                                           IntentToken intentToken, char const* _Nonnull action,
+                                           uint64_t bindToken, char const* _Nonnull action,
                                            char const* _Nonnull data) {
-    ALOGI("native_service_onBind – service %p, intentToken %d, action: %s, data %s", service,
-          intentToken, action, data);
-    gIntentMap[service].insert(intentToken);
+    ALOGI("native_service_onBind – service %p, bindToken %lu, action: %s, data %s", service,
+          bindToken, action, data);
+    gBindingMap[service].insert(bindToken);
     if (strncmp(action, "TEST_ACTION", 12) != 0 ||
         strncmp(data, "content://com.example/people", 29) != 0) {
         ALOGE("Invalid action or data: %s %s", action, data);
@@ -60,18 +58,18 @@ extern "C" AIBinder* native_service_onBind(ANativeService* _Nonnull service,
     return gServiceMap.at(service)->asBinder().get();
 }
 
-extern "C" void native_service_onRebind(ANativeService* _Nonnull service, IntentToken intentToken) {
-    ALOGI("native_service_onRebind – service %p, intentToken %d", service, intentToken);
-    gIntentMap[service].insert(intentToken);
+extern "C" void native_service_onRebind(ANativeService* _Nonnull service, uint64_t bindToken) {
+    ALOGI("native_service_onRebind – service %p, bindToken %lu", service, bindToken);
+    gBindingMap[service].insert(bindToken);
     gServiceMap.at(service)->doRebind();
 }
 
-extern "C" bool native_service_onUnbind(ANativeService* _Nonnull service, IntentToken intentToken) {
-    ALOGI("native_service_onUnbind – service %p, intentToken %d", service, intentToken);
+extern "C" bool native_service_onUnbind(ANativeService* _Nonnull service, uint64_t bindToken) {
+    ALOGI("native_service_onUnbind – service %p, bindToken %lu", service, bindToken);
     std::shared_ptr<NativeServiceWrapper> wrapper = gServiceMap.at(service);
-    if (gIntentMap.at(service).contains(intentToken)) {
+    if (gBindingMap.at(service).contains(bindToken)) {
         wrapper->doUnbind();
-        gIntentMap.at(service).erase(intentToken);
+        gBindingMap.at(service).erase(bindToken);
         gServiceMap.erase(service);
         AIBinder_decStrong(wrapper->asBinder().get());
     }

@@ -1604,7 +1604,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             final ActivityRecord r = activities.get(i);
             final Task task = r.getTask();
             if (pkg.equals(r.packageName) && r.isRootOfTask()) {
-                if (task.mHandlePackageUpdate) {
+                if (task.getRootTask().mHandlePackageUpdate) {
                     mUpdatingTasks.add(task);
                 }
                 // Only stop activities that are resumed and the package name of the root

@@ -91,6 +91,8 @@ class PackageFreezerTest {
         rule.system().stageNominalSystemState()
         pms = spy(createPackageManagerService(TEST_PACKAGE))
         whenever(pms.killApplication(any(), any(), any(), any(), any()))
+        whenever(pms.killApplicationSync(any(), any(), any(), any(), any()))
+        whenever(pms.stopAndKillApplication(any(), any(), any(), any(), any()))
     }
 
     @Test
@@ -148,6 +150,41 @@ class PackageFreezerTest {
         System.gc()
         System.runFinalization()
 
+        checkPackageStartable()
+    }
+
+    @Test
+    fun freezePackage_waitAppKilled() {
+        // This constructor should result in a call to killApplicationSync
+        val freezer = PackageFreezer(TEST_PACKAGE, TEST_USER_ID, TEST_REASON, pms,
+                TEST_EXIT_REASON, null /* request */, true /* waitAppKilled */)
+        verify(pms, times(1))
+                .killApplicationSync(eq(TEST_PACKAGE), any(), eq(TEST_USER_ID), eq(TEST_REASON),
+                        eq(TEST_EXIT_REASON))
+
+        assertThrowContainsMessage(SecurityException::class, frozenMessage(TEST_PACKAGE)) {
+            checkPackageStartable()
+        }
+
+        freezer.close()
+        checkPackageStartable()
+    }
+
+    @Test
+    fun freezePackage_waitAppStopped() {
+        // This constructor should result in a call to stopAndKillApplication
+        val freezer = PackageFreezer(TEST_PACKAGE, TEST_USER_ID, TEST_REASON, pms,
+                TEST_EXIT_REASON, null /* request */, false /* waitAppKilled */,
+                true /* waitAppStopped */)
+        verify(pms, times(1))
+                .stopAndKillApplication(eq(TEST_PACKAGE), any(), eq(TEST_USER_ID), eq(TEST_REASON),
+                        eq(TEST_EXIT_REASON))
+
+        assertThrowContainsMessage(SecurityException::class, frozenMessage(TEST_PACKAGE)) {
+            checkPackageStartable()
+        }
+
+        freezer.close()
         checkPackageStartable()
     }
 }

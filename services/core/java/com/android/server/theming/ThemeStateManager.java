@@ -35,6 +35,7 @@ import com.android.server.pm.UserManagerInternal;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -87,14 +88,14 @@ public class ThemeStateManager {
     private final ScheduledExecutorService mSchedulerExecutor;
 
     private UserManagerInternal mUserManager;
-    private OverlayManagerInternal mOverlayManager;
     private KeyguardManager mKeyguardManager;
+    private ThemeOverlayHelper mThemeOverlayHelper;
 
     ThemeStateManager(Context context) {
         this(context, Executors.newSingleThreadScheduledExecutor());
     }
 
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor) {
         mSchedulerExecutor = schedulerExecutor;
         mContext = context;
@@ -109,9 +110,19 @@ public class ThemeStateManager {
     void onServicesReady() {
         mUserManager = LocalServices.getService(UserManagerInternal.class);
         mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
-        mOverlayManager = LocalServices.getService(OverlayManagerInternal.class);
+        OverlayManagerInternal overlayManager = LocalServices.getService(
+                OverlayManagerInternal.class);
+
+        if (mThemeOverlayHelper == null) {
+            mThemeOverlayHelper = new ThemeOverlayHelper(overlayManager);
+        }
 
         mCurrentUserId = LocalServices.getService(ActivityManagerInternal.class).getCurrentUserId();
+    }
+
+    @VisibleForTesting
+    void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
+        mThemeOverlayHelper = themeOverlayHelper;
     }
 
     /**
@@ -121,7 +132,8 @@ public class ThemeStateManager {
      * @param seedColor         Seed color to generate palettes.
      * @param fromForegroundApp Boolean indicating if the event came from a foreground app.
      */
-    void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
         ThemeStatePair statePair = getState(userId);
 
         if (!fromForegroundApp && mKeyguardManager != null
@@ -143,7 +155,8 @@ public class ThemeStateManager {
      * @param userId    The ID of the user updating the theme.
      * @param userStyle The {@link ThemeStyle} to be applied.
      */
-    void onStyleChange(int userId, @ThemeStyle.Type Integer userStyle) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onStyleChange(int userId, @ThemeStyle.Type Integer userStyle) {
         ThemeStatePair statePair = getState(userId);
 
         if (statePair.areUpdatesDeferredOnLock()) {
@@ -160,7 +173,8 @@ public class ThemeStateManager {
      * @param userId The ID of the user updating the theme.
      * @param value  The new contrast value.
      */
-    void onContrastChange(int userId, float value) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onContrastChange(int userId, float value) {
         ThemeStatePair statePair = getState(userId);
 
         if (statePair.areUpdatesDeferredOnLock()) {
@@ -176,7 +190,8 @@ public class ThemeStateManager {
      *
      * @param userId The ID of the user who completed setup.
      */
-    void onFinishSetup(int userId) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onFinishSetup(int userId) {
         ThemeStatePair statePair = getState(userId);
 
         if (statePair.areUpdatesDeferredOnLock()) {
@@ -193,7 +208,8 @@ public class ThemeStateManager {
      * @param userId  The ID of the user the profile belongs to.
      * @param profile The ID of the new profile.
      */
-    void onProfileAdd(int userId, int profile) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onProfileAdd(int userId, int profile) {
         getState(userId).addProfile(profile);
         reevaluateSystemTheme();
     }
@@ -203,7 +219,7 @@ public class ThemeStateManager {
      *
      * @param isDeviceLocked {@code true} if the device is locked, {@code false} otherwise.
      */
-    void onLockStateChange(boolean isDeviceLocked) {
+    public void onLockStateChange(boolean isDeviceLocked) {
         if (!isDeviceLocked) return;
 
         for (ThemeStatePair statePair : getPairsSnapshot()) {
@@ -247,15 +263,14 @@ public class ThemeStateManager {
                 // CASE 3: userId is a new user
                 ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColor, contrast,
                         style);
-                int[] profiles = mUserManager.getProfileIds(userId, false);
+                int[] profiles = Objects.requireNonNullElse(
+                        mUserManager.getProfileIds(userId, false), new int[0]);
 
-                if (profiles != null) {
-                    for (int profileId : profiles) {
-                        if (profileId != userId) {
-                            Slog.d(TAG,
-                                    "Full user " + userId + " found existing profile " + profileId);
-                            newState.addProfile(profileId);
-                        }
+                for (int profileId : profiles) {
+                    if (profileId != userId) {
+                        Slog.d(TAG,
+                                "Full user " + userId + " found existing profile " + profileId);
+                        newState.addProfile(profileId);
                     }
                 }
                 mThemeStates.put(userId, newState);
@@ -367,8 +382,7 @@ public class ThemeStateManager {
                     currentUserId = mCurrentUserId;
                 }
 
-                ThemeOverlayHelper.applyCurrentStateOverlays(
-                        /*overlayManager*/ mOverlayManager,
+                mThemeOverlayHelper.applyCurrentStateOverlays(
                         /*statePair     */ overlaySnapshot,
                         /*applyToSystem */ overlaySnapshot.userId() == currentUserId);
 
@@ -394,7 +408,7 @@ public class ThemeStateManager {
     }
 
     @Nullable
-    Integer parentOf(int userId) {
+    public Integer parentOf(int userId) {
         int possibleParentID = mUserManager.getProfileParentId(userId);
         return possibleParentID == userId ? null : possibleParentID;
     }

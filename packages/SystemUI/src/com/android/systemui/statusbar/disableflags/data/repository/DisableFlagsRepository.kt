@@ -14,6 +14,8 @@
 
 package com.android.systemui.statusbar.disableflags.data.repository
 
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.DisableFlagsRepositoryLog
 import com.android.systemui.statusbar.CommandQueue
@@ -21,9 +23,7 @@ import com.android.systemui.statusbar.disableflags.DisableFlagsLogger
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,12 +38,13 @@ interface DisableFlagsRepository {
     val disableFlags: StateFlow<DisableFlagsModel>
 }
 
+@PerDisplaySingleton
 class DisableFlagsRepositoryImpl
-@AssistedInject
+@Inject
 constructor(
     commandQueue: CommandQueue,
-    @Assisted private val thisDisplayId: Int,
-    @Assisted scope: CoroutineScope,
+    @DisplayAware private val thisDisplayId: Int,
+    @DisplayAware scope: CoroutineScope,
     remoteInputQuickSettingsDisabler: RemoteInputQuickSettingsDisabler,
     @DisableFlagsRepositoryLog private val logBuffer: LogBuffer,
     private val disableFlagsLogger: DisableFlagsLogger,
@@ -82,9 +83,4 @@ constructor(
             .onEach { it.logChange(logBuffer, disableFlagsLogger) }
             // Use Eagerly because we always need to know about disable flags
             .stateIn(scope, SharingStarted.Eagerly, DisableFlagsModel(animate = false))
-
-    @AssistedFactory
-    interface Factory {
-        fun create(displayId: Int, scope: CoroutineScope): DisableFlagsRepositoryImpl
-    }
 }

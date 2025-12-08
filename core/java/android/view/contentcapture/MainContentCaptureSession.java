@@ -16,6 +16,7 @@
 package android.view.contentcapture;
 
 import static android.view.contentcapture.ContentCaptureCondition.CONDITION_ENABLE_EXPORTING_VIRTUAL_CHILDREN;
+import static android.view.contentcapture.ContentCaptureEvent.TYPE_CONTENT_INTERACTION;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_CONTEXT_UPDATED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FINISHED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FLUSH;
@@ -63,6 +64,7 @@ import android.view.contentcapture.ViewNode.ViewStructureImpl;
 import android.view.contentcapture.flags.Flags;
 import android.view.contentprotection.ContentProtectionEventProcessor;
 import android.view.inputmethod.BaseInputConnection;
+import android.widget.TextView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
@@ -927,7 +929,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
      * @return whether disabled state was changed.
      */
     boolean setDisabled(boolean disabled) {
-        return mDisabled.compareAndSet(!disabled, disabled);
+        final boolean changed = mDisabled.compareAndSet(!disabled, disabled);
+        if (changed) {
+            Trace.instant(
+                    Trace.TRACE_TAG_VIEW,
+                    disabled ? "contentCaptureDisabled" : "contentCaptureEnabled");
+        }
+
+        return changed;
     }
 
     @Override
@@ -967,6 +976,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
     void internalNotifySessionFlushEvent(int sessionId) {
         final ContentCaptureEvent event = new ContentCaptureEvent(sessionId, TYPE_SESSION_FLUSH);
         enqueueEvent(event, FORCE_FLUSH);
+    }
+
+    @Override
+    void internalNotifyContentInteractionEvent(int sessionId, @NonNull AutofillId autofillId) {
+        final ContentCaptureEvent event =
+                new ContentCaptureEvent(sessionId, TYPE_CONTENT_INTERACTION)
+                        .setAutofillId(autofillId);
+        enqueueEvent(event);
     }
 
     private List<ContentCaptureEvent> clearBufferEvents() {
@@ -1048,7 +1065,12 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     view.onProvideContentCaptureStructure(structure, /* flags= */ 0);
 
                     if (Flags.newHeuristicsForImportanceEnabled()) {
-                        setContentDescriptionFromA11yIfNeeded(view, structure);
+                        try {
+                            setContentDescriptionFromA11yIfNeeded(view, structure);
+                        } catch (NullPointerException e) {
+                            // NPE can be thrown if some views do not support a11y properly.
+                            Log.w(TAG, "Failed to set content description");
+                        }
                     }
 
                     if (Flags.enableExportAssistVirtualNodeToCcapi()
@@ -1072,13 +1094,19 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
 
     private void setContentDescriptionFromA11yIfNeeded(
             @NonNull View view, @NonNull ViewStructure structure) {
-        AccessibilityNodeInfo currentNodeInfo = view.createAccessibilityNodeInfo();
-        if (currentNodeInfo == null) {
+        // No need to set the content description for TextView as it has the text value.
+        // Return early to reduce the system health impact.
+        if (view instanceof TextView) {
             return;
         }
 
         CharSequence viewContentDescription = view.getContentDescription();
         if (viewContentDescription != null && !viewContentDescription.isEmpty()) {
+            return;
+        }
+
+        AccessibilityNodeInfo currentNodeInfo = view.createAccessibilityNodeInfo();
+        if (currentNodeInfo == null) {
             return;
         }
         structure.setContentDescription(currentNodeInfo.getText());

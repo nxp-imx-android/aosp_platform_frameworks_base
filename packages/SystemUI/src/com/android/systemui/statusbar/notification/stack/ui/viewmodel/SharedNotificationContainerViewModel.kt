@@ -24,6 +24,7 @@ import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -564,45 +565,24 @@ constructor(
     }
 
     /**
-     * Ensure view is visible when the shade/qs are expanded. Also, as QS is expanding, fade out
-     * notifications unless it's a large screen.
+     * Alpha of the container, driven by shade and QS expansion.
+     *
+     * This is 1f when the shade or QS is expanded, with a few exceptions:
+     * - In Dual Shade, notifications fade out as QS expands, unless a HUN is visible.
+     * - When transitioning to dream with the shade open, alpha is 0f to prevent visual glitches.
      */
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
                 shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
                     @Suppress("DEPRECATION") // to handle split shade
                     when (shadeMode) {
-                        Single ->
-                            shadeInteractor.qsExpansion
-                                .map { it == 1f }
-                                .distinctUntilChanged()
-                                .flatMapLatestConflated { qsFullyExpanded ->
-                                    if (qsFullyExpanded) {
-                                        // Ensure HUNs will be visible in QS shade (at least
-                                        // while unlocked)
-                                        flowOf(1f)
-                                    } else {
-                                        combineTransform(
-                                            shadeInteractor.shadeExpansion
-                                                .map { it > 0f }
-                                                .distinctUntilChanged(),
-                                            shadeInteractor.qsExpansion,
-                                        ) { shadeExpanding, qsExpansion ->
-                                            // Fade as QS shade expands
-                                            if (shadeExpanding || qsExpansion > 0) {
-                                                emit(1f - qsExpansion)
-                                            }
-                                        }
-                                    }
-                                }
-
+                        Single,
                         Split ->
                             isAnyExpanded.transform { isAnyExpanded ->
                                 if (isAnyExpanded) {
                                     emit(1f)
                                 }
                             }
-
                         Dual ->
                             headsUpNotificationInteractor
                                 .get()
@@ -645,15 +625,8 @@ constructor(
                                 // starts, it can cause keyguard to show up again briefly during the
                                 // transition.
                                 emit(0f)
-                            } else if (configurationBasedDimensions.useSplitShade) {
-                                emit(1f)
-                            } else if (qsExpansion == 1f) {
-                                // Ensure HUNs will be visible in QS shade (at least while
-                                // unlocked)
-                                emit(1f)
                             } else {
-                                // Fade as QS shade expands
-                                emit(1f - qsExpansion)
+                                emit(1f)
                             }
                         }
                     }
@@ -691,7 +664,10 @@ constructor(
                         .transitionValue(LOCKSCREEN)
                         .map { it > 0f }
                         .distinctUntilChanged(),
-                ) { bouncerExpansion, inLockscreenTransition ->
+                    sceneInteractor.transitionState
+                        .map { it is ObservableTransitionState.Idle }
+                        .distinctUntilChanged(),
+                ) { bouncerExpansion, inLockscreenTransition, isIdle ->
                     if (bouncerExpansion > 0f) {
                         // If bouncerExpansion is nonzero, we are currently transitioning to or from
                         // bouncer. In this case, only emit when going to/from lockscreen
@@ -701,9 +677,13 @@ constructor(
                         if (inLockscreenTransition) {
                             emit(alphaForBouncerExpansion(bouncerExpansion))
                         }
-                    } else {
-                        // Once bouncer is fully gone, emit 1 to make sure we leave the alpha in a
-                        // correct state when idle.
+                    } else if (isIdle) {
+                        // Once bouncer is fully gone *and* the system is at rest, emit 1 to make
+                        // sure we leave the alpha in a correct state when idle. This needs to
+                        // wait until the system is at rest in the case of transitions of the form
+                        // bouncer -> A -> B, where bouncer is fully gone by the time we reach scene
+                        // A but the system is still transitioning, so emitting an alpha of 1 at
+                        // that time would be premature.
                         emit(1f)
                     }
                 }

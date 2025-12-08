@@ -50,18 +50,24 @@ public abstract class NotificationEvent {
 
     /**
      * Indicates an attempt to unbundle an unknown event type.
+     *
+     * @hide
      */
-    public static final int EVENT_TYPE_UNKNOWN = -1;
+    static final int EVENT_TYPE_UNKNOWN = -1;
 
     /**
      * Indicates a notification was posted. Corresponds to {@link NotificationEnqueuedEvent}.
+     *
+     * @hide
      */
-    public static final int EVENT_TYPE_ENQUEUED = 1;
+    static final int EVENT_TYPE_ENQUEUED = 1;
 
     /**
      * Indicates a notification was removed. Corresponds to {@link NotificationRemovedEvent}.
+     *
+     * @hide
      */
-    public static final int EVENT_TYPE_REMOVED = 2;
+    static final int EVENT_TYPE_REMOVED = 2;
 
     /**
      * Enumeration of notification event types.
@@ -79,9 +85,10 @@ public abstract class NotificationEvent {
 
     /**
      * @return {@link EventType} of this notification event.
+     * @hide
      */
     @EventType
-    public abstract int getEventType();
+    abstract int getEventType();
 
     /**
      * Event type implementations should implement this to store their data into a bundle.

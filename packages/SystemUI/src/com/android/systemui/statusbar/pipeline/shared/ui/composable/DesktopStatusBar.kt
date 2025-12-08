@@ -19,14 +19,20 @@ package com.android.systemui.statusbar.pipeline.shared.ui.composable
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -42,6 +49,7 @@ import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
+import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
@@ -138,6 +146,10 @@ fun DesktopStatusBar(
                 Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (viewModel.isSignOutButtonVisible) {
+                SignOutButton(onSignOut = viewModel::onSignOut)
+            }
+
             val chipsVisibilityModel = viewModel.ongoingActivityChips
             if (chipsVisibilityModel.areChipsAllowed) {
                 OngoingActivityChips(
@@ -326,5 +338,28 @@ private fun QuickSettingsChip(
                 modifier = Modifier.height(batteryHeight),
             )
         }
+    }
+}
+
+@Composable
+private fun SignOutButton(onSignOut: () -> Unit) {
+    Button(
+        onClick = onSignOut,
+        contentPadding = PaddingValues(start = 6.dp, end = 6.dp),
+        modifier = Modifier.heightIn(min = 24.dp),
+    ) {
+        Icon(
+            icon =
+                IconModel.Resource(
+                    com.android.internal.R.drawable.ic_logout,
+                    contentDescription = null,
+                ),
+            modifier = Modifier.size(16.dp),
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = stringResource(com.android.internal.R.string.global_action_logout),
+            modifier = Modifier.wrapContentHeight(unbounded = true),
+        )
     }
 }

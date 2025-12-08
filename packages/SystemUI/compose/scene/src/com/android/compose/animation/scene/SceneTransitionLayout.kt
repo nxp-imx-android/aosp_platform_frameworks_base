@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import com.android.compose.animation.scene.debug.generateDefaultStlDebugName
 import com.android.compose.gesture.NestedScrollableBound
 import com.android.compose.modifiers.skipToLookaheadSize
 
@@ -70,6 +71,7 @@ fun SceneTransitionLayout(
     @FloatRange(from = 0.0, to = 0.5) transitionInterceptionThreshold: Float = 0.05f,
     // TODO(b/240432457) Remove this once test utils can access the internal STLForTesting().
     implicitTestTags: Boolean = false,
+    debugName: String = generateDefaultStlDebugName(),
     builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
 ) {
     SceneTransitionLayoutForTesting(
@@ -81,6 +83,7 @@ fun SceneTransitionLayout(
         transitionInterceptionThreshold,
         implicitTestTags = implicitTestTags,
         onLayoutImpl = null,
+        debugName = debugName,
         builder = builder,
     )
 }
@@ -301,11 +304,15 @@ interface BaseContentScope : ElementStateScope {
     fun Modifier.noResizeDuringTransitions(): Modifier = skipToLookaheadSize()
 
     /**
-     * Temporarily disable this content swipe actions when any scrollable below this modifier has
-     * consumed any amount of scroll delta, until the scroll gesture is finished.
+     * Temporarily disables swipe gestures for this content and all ancestor
+     * [SceneTransitionLayout]s when any scrollable below this modifier has consumed any amount of
+     * scroll delta.
+     *
+     * This ensures that a scroll gesture is fully consumed by the scrollable element, preventing
+     * accidental scene transitions in this layout or any ancestor [SceneTransitionLayout].
      *
      * This can for instance be used to ensure that a scrollable list is overscrolled once it
-     * reached its bounds instead of directly starting a scene transition from the same scroll
+     * reaches its bounds instead of directly starting a scene transition from the same scroll
      * gesture.
      */
     fun Modifier.disableSwipesWhenScrolling(
@@ -394,6 +401,7 @@ interface ContentScope : BaseContentScope {
     fun NestedSceneTransitionLayout(
         state: SceneTransitionLayoutState,
         modifier: Modifier,
+        debugName: String,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     )
 
@@ -424,6 +432,7 @@ internal interface InternalContentScope : ContentScope {
         state: SceneTransitionLayoutState,
         modifier: Modifier,
         onLayoutImpl: ((SceneTransitionLayoutImpl) -> Unit)?,
+        debugName: String,
         builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
     )
 }
@@ -814,6 +823,7 @@ internal fun SceneTransitionLayoutForTesting(
     ancestors: List<Ancestor> = remember { emptyList() },
     lookaheadScope: LookaheadScope? = null,
     implicitTestTags: Boolean = true,
+    debugName: String = generateDefaultStlDebugName(),
     builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
 ) {
     val density = LocalDensity.current
@@ -859,6 +869,7 @@ internal fun SceneTransitionLayoutForTesting(
                 implicitTestTags = implicitTestTags,
                 lookaheadScope = lookaheadScope,
                 defaultEffectFactory = defaultEffectFactory,
+                debugName = debugName,
             )
             .also { onLayoutImpl?.invoke(it) }
     }

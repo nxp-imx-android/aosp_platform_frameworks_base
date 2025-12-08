@@ -94,6 +94,8 @@ public class ThemeBinderServiceTests {
     private OverlayManagerInternal mOverlayManager;
     @Mock
     private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
+    private ThemeOverlayHelper mOverlayHelper;
 
     @Before
     public void setup() {
@@ -126,7 +128,8 @@ public class ThemeBinderServiceTests {
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
 
-        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mMockWmi);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(mMockWmi);
+        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
             @NonNull
             @Override
@@ -138,7 +141,7 @@ public class ThemeBinderServiceTests {
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor);
         mThemeStateManager.onServicesReady();
         mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader, mThemeStateManager);
+                systemPropertiesReader, mThemeStateManager, mOverlayHelper);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
                 systemPropertiesReader, mUserId);
@@ -190,7 +193,7 @@ public class ThemeBinderServiceTests {
         });
 
         // When no theme is set, oldSettings should be null.
-        mInternal.notifySettingsChange(mUserId, newPayload);
+        mInternal.notifySettingsChange(mUserId, null, newPayload);
         assertThat(returnedOldSettings[0]).isNull();
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
     }
@@ -226,7 +229,7 @@ public class ThemeBinderServiceTests {
         });
 
         // Notify with the new settings.
-        mInternal.notifySettingsChange(mUserId, newPayload);
+        mInternal.notifySettingsChange(mUserId, oldPayload, newPayload);
 
         // The callback should receive the new settings correctly.
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);

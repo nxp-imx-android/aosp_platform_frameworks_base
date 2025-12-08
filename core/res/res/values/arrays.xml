@@ -271,6 +271,10 @@
 
     <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
     <string-array name="hsu_allowlist_activities" translatable="false">
-       <!-- default empty (meaning all activities will be allowed) -->
+       <!-- TODO(b/454898207): remove these activities once they "allowlist themselves" -->
+       <!-- Activities below are "HOME apps" - you can check by calling (without the reverse backslash between the dashes):
+            adb shell pm query-activities -\-brief -\-user 0 -a android.intent.action.MAIN -c android.intent.category.HOME
+       -->
+      <item>com.android.settings/.FallbackHome</item>
     </string-array>
 </resources>

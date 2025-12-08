@@ -37,6 +37,7 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -519,14 +520,14 @@ class BackNavigationController {
     static boolean getAnimatablePrevActivities(@NonNull Task currentTask,
             @NonNull ActivityRecord currentActivity,
             @NonNull ArrayList<ActivityRecord> outPrevActivities) {
-        if (currentActivity.mAtmService
-                .mTaskOrganizerController.shouldInterceptBackPressedOnRootTask(
-                        currentTask.getRootTask())) {
+        final ActivityRecord root = currentTask.getRootActivity(false /*ignoreRelinquishIdentity*/,
+                true /*setToBottomIfNone*/);
+        if ((!fixCrossActivityBackAnimationInBubbles() || root == currentActivity)
+                && currentActivity.mAtmService.mTaskOrganizerController
+                .shouldInterceptBackPressedOnRootTask(currentTask.getRootTask())) {
             // The task organizer will handle back pressed, don't play animation.
             return false;
         }
-        final ActivityRecord root = currentTask.getRootActivity(false /*ignoreRelinquishIdentity*/,
-                true /*setToBottomIfNone*/);
         if (root != null && ActivityClientController.shouldMoveTaskToBack(currentActivity, root)) {
             return true;
         }

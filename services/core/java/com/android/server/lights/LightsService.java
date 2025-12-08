@@ -228,9 +228,6 @@ public class LightsService extends SystemService {
             }
         }
 
-        public void setEnabledState(boolean enabled) {
-        }
-
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
         @Override
         public void openSession(IBinder token, int priority) {
@@ -866,7 +863,16 @@ public class LightsService extends SystemService {
                 return null;
             }
         }
+
+        @Override
+        public void setEnabledState(boolean enabled) {
+            LightsService.this.setEnabledState(enabled);
+        }
     };
+
+    private void setEnabledState(boolean enabled) {
+        // TODO
+    }
 
     private static class VintfHalCache implements Supplier<ILights>, IBinder.DeathRecipient {
         @GuardedBy("this")

@@ -18,17 +18,27 @@ package com.android.systemui.inputmethod.data.repository
 
 import android.annotation.SuppressLint
 import android.os.UserHandle
+import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputmethod.data.model.InputMethodModel
+import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
 /** Provides access to input-method related application state in the bouncer. */
@@ -56,6 +66,12 @@ interface InputMethodRepository {
     suspend fun selectedInputMethodSubtypes(user: UserHandle): List<InputMethodModel.Subtype>
 
     /**
+     * The currently selected input method subtype for the given user, or null if there is no
+     * selected subtype.
+     */
+    fun selectedInputMethodSubtype(user: UserHandle): Flow<InputMethodModel.Subtype?>
+
+    /**
      * Shows the system's input method picker dialog.
      *
      * @param displayId The display ID on which to show the dialog.
@@ -72,6 +88,7 @@ class InputMethodRepositoryImpl
 constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val inputMethodManager: InputMethodManager,
+    private val secureSettings: SecureSettings,
 ) : InputMethodRepository {
 
     override suspend fun enabledInputMethods(
@@ -113,6 +130,32 @@ constructor(
                 allowsImplicitlyEnabledSubtypes = false
             )
         }
+    }
+
+    override fun selectedInputMethodSubtype(user: UserHandle): Flow<InputMethodModel.Subtype?> {
+        return secureSettings
+            .observerFlow(
+                user.identifier,
+                Settings.Secure.DEFAULT_INPUT_METHOD,
+                Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
+            )
+            .onStart { emit(Unit) }
+            .mapLatest {
+                val selectedSubtypeId =
+                    try {
+                        secureSettings.getIntForUser(
+                            Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
+                            user.identifier,
+                        )
+                    } catch (e: Settings.SettingNotFoundException) {
+                        null
+                    }
+
+                selectedSubtypeId?.let { subtypeId ->
+                    selectedInputMethodSubtypes(user).find { it.subtypeId == subtypeId }
+                }
+            }
+            .flowOn(backgroundDispatcher)
     }
 
     @SuppressLint("MissingPermission")

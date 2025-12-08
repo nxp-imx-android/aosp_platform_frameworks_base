@@ -2506,9 +2506,6 @@ public abstract class ConnectionService extends Service {
             // Tell ConnectionService to show its incoming call UX.
             connection.onShowIncomingCallUi();
         }
-        if (isUnknown) {
-            triggerConferenceRecalculate();
-        }
     }
 
     private void createConnectionFailed(final PhoneAccountHandle callManagerAccount,
@@ -3460,17 +3457,6 @@ public abstract class ConnectionService extends Service {
             @NonNull ConnectionRequest request) {
     }
 
-
-    /**
-     * Trigger recalculate functinality for conference calls. This is used when a Telephony
-     * Connection is part of a conference controller but is not yet added to Connection
-     * Service and hence cannot be added to the conference call.
-     *
-     * @hide
-     */
-    public void triggerConferenceRecalculate() {
-    }
-
     /**
      * Create a {@code Connection} given an outgoing request. This is used to initiate new
      * outgoing calls.
@@ -3688,27 +3674,27 @@ public abstract class ConnectionService extends Service {
 
     /**
      * Called when a connection is added.
-     * @hide
      */
-    public void onConnectionAdded(Connection connection) {}
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public void onConnectionAdded(@NonNull Connection connection) {}
 
     /**
      * Called when a connection is removed.
-     * @hide
      */
-    public void onConnectionRemoved(Connection connection) {}
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public void onConnectionRemoved(@NonNull Connection connection) {}
 
     /**
      * Called when a conference is added.
-     * @hide
      */
-    public void onConferenceAdded(Conference conference) {}
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public void onConferenceAdded(@NonNull Conference conference) {}
 
     /**
      * Called when a conference is removed.
-     * @hide
      */
-    public void onConferenceRemoved(Conference conference) {}
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public void onConferenceRemoved(@NonNull Conference conference) {}
 
     /**
      * Indicates that a remote conference has been created for existing {@link RemoteConnection}s.

@@ -21,6 +21,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATIN
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_GESTURE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
 
+import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.AccessibilityFragmentType.INVISIBLE_TOGGLE;
 import static com.android.internal.accessibility.common.ShortcutConstants.SERVICES_SEPARATOR;
@@ -54,7 +55,9 @@ import com.android.internal.R;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -435,6 +438,7 @@ public final class ShortcutUtils {
      */
     public static String getLabelFromKeyCode(int keyCode) {
         return switch (keyCode) {
+            case KeyEvent.KEYCODE_I -> "I";
             case KeyEvent.KEYCODE_M -> "M";
             case KeyEvent.KEYCODE_S -> "S";
             case KeyEvent.KEYCODE_T -> "T";
@@ -472,18 +476,35 @@ public final class ShortcutUtils {
 
 
     private static int getKeyCodeFromTarget(Context context, String targetName) {
-        final String selectToSpeakTargetName = getSelectToSpeakTargetName(context);
-        final String screenReaderTargetName = getScreenReaderTargetName(context);
-        final String voiceAccessTargetName = getVoiceAccessTargetName(context);
-
-        if (targetName.equals(MAGNIFICATION_CONTROLLER_NAME)) {
+        // Magnification uses the package name rather than a component name.
+        if (targetName.equals(COLOR_INVERSION_COMPONENT_NAME.flattenToString())) {
+            return KeyEvent.KEYCODE_I;
+        } else if (targetName.equals(MAGNIFICATION_CONTROLLER_NAME)) {
             return KeyEvent.KEYCODE_M;
-        } else if (targetName.equals(selectToSpeakTargetName)) {
-            return KeyEvent.KEYCODE_S;
-        } else if (targetName.equals(screenReaderTargetName)) {
-            return KeyEvent.KEYCODE_T;
-        } else if (targetName.equals(voiceAccessTargetName)) {
-            return KeyEvent.KEYCODE_V;
+        }
+
+        final Map<String, Integer> serviceToKeyCodeMap = new LinkedHashMap<>();
+        serviceToKeyCodeMap.put(getSelectToSpeakTargetName(context), KeyEvent.KEYCODE_S);
+        serviceToKeyCodeMap.put(getScreenReaderTargetName(context), KeyEvent.KEYCODE_T);
+        serviceToKeyCodeMap.put(getVoiceAccessTargetName(context), KeyEvent.KEYCODE_V);
+
+        for (Map.Entry<String, Integer> entry : serviceToKeyCodeMap.entrySet()) {
+            final String serviceName = entry.getKey();
+            final int keyCode = entry.getValue();
+
+            // Check if the input targetName directly matches the service name.
+            if (targetName.equals(serviceName)) {
+                return keyCode;
+            }
+
+            // If not, try to unflatten the service name and compare its flattened form
+            // with the input targetName.
+            if (!TextUtils.isEmpty(serviceName)) {
+                final ComponentName componentName = ComponentName.unflattenFromString(serviceName);
+                if (componentName != null && targetName.equals(componentName.flattenToString())) {
+                    return keyCode;
+                }
+            }
         }
 
         return KeyEvent.KEYCODE_UNKNOWN;
@@ -491,7 +512,9 @@ public final class ShortcutUtils {
 
     private static String getTargetFromKeyCode(Context context, int keyCode) {
         // Magnification uses the package name rather than a component name.
-        if (keyCode == KeyEvent.KEYCODE_M) {
+        if (keyCode == KeyEvent.KEYCODE_I) {
+            return COLOR_INVERSION_COMPONENT_NAME.flattenToString();
+        } else if (keyCode == KeyEvent.KEYCODE_M) {
             return MAGNIFICATION_CONTROLLER_NAME;
         }
 

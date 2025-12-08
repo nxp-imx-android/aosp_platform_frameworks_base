@@ -169,20 +169,23 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
      * inference requests initiated by that UID.
      */
     @GuardedBy("mPriorityBindingLock")
-    private final java.util.Map<Integer, Integer> mJobCountsByUid = new HashMap<>();
+    @VisibleForTesting
+    final java.util.Map<Integer, Integer> mJobCountsByUid = new HashMap<>();
     /**
      * A shared connection to the inference service with {@link Context.BIND_SCHEDULE_LIKE_TOP_APP},
      * used when at least one UID has an active job and is in the foreground.
      */
     @GuardedBy("mPriorityBindingLock")
-    private RemoteOnDeviceSandboxedInferenceService mHighPriorityConnection;
+    @VisibleForTesting
+    RemoteOnDeviceSandboxedInferenceService mHighPriorityConnection;
     /**
      * A set tracking the UIDs that have at least one active inference job and are in the foreground.
      * This is used to determine whether to create a high-priority connection to the inference
      * service.
      */
     @GuardedBy("mPriorityBindingLock")
-    private final java.util.Set<Integer> mHighPriorityUids = new HashSet<>();
+    @VisibleForTesting
+    final java.util.Set<Integer> mHighPriorityUids = new HashSet<>();
     @GuardedBy("mLock")
     private int remoteInferenceServiceUid = -1;
 
@@ -196,7 +199,9 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private String mTemporaryConfigNamespace;
 
 
-    private ActivityManager mActivityManager;
+    @VisibleForTesting
+    ActivityManager mActivityManager;
+
     private final ActivityManager.OnUidImportanceListener mUidImportanceListener =
             (uid, importance) -> {
             // Post to the foreground thread to avoid blocking the main thread.
@@ -1150,11 +1155,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             ComponentName serviceComponent = ComponentName.unflattenFromString(
                     serviceName);
             ServiceInfo serviceInfo =
-                    AppGlobals.getPackageManager().getServiceInfo(
+                    mContext.getPackageManager().getServiceInfo(
                             serviceComponent,
                             PackageManager.MATCH_DIRECT_BOOT_AWARE
-                                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE,
-                            UserHandle.SYSTEM.getIdentifier());
+                                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
             if (serviceInfo == null) {
                 throw new IllegalStateException(
                         "Remote service is not configured to complete the request.");
@@ -1173,7 +1177,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                         "Call required an isolated service, but the configured service: "
                                 + serviceName + ", is not isolated");
             }
-        } catch (RemoteException e) {
+        } catch (PackageManager.NameNotFoundException e) {
             throw new IllegalStateException(
                     "Could not fetch service info for remote services", e);
         }

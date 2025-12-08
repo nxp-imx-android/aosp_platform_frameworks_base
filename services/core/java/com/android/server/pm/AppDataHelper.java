@@ -16,6 +16,8 @@
 
 package com.android.server.pm;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+import static android.os.Process.INVALID_UID;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 
 import static com.android.server.pm.PackageManagerService.TAG;
@@ -229,6 +231,7 @@ public class AppDataHelper {
         final AndroidPackage pkg = ps.getPkg();
         final String volumeUuid = ps.getVolumeUuid();
         final int appId = ps.getAppId();
+        final int pccId = enablePccFrameworkSupport() ? ps.getPccId() : INVALID_UID;
 
         String pkgSeInfo = ps.getSeInfo();
         Preconditions.checkNotNull(pkgSeInfo);
@@ -237,7 +240,7 @@ public class AppDataHelper {
         final int targetSdkVersion = ps.getTargetSdkVersion();
         final boolean usesSdk = ps.getUsesSdkLibraries().length > 0;
         final CreateAppDataArgs args = Installer.buildCreateAppDataArgs(volumeUuid, packageName,
-                userId, flags, appId, seInfo, targetSdkVersion, usesSdk);
+                userId, flags, appId, seInfo, targetSdkVersion, usesSdk, pccId);
         args.previousAppId = previousAppId;
 
         return batch.createAppData(args).whenComplete((createAppDataResult, e) -> {
@@ -397,7 +400,12 @@ public class AppDataHelper {
 
             final File[] files = FileUtils.listFilesOrEmpty(ceDir);
             for (File file : files) {
-                final String packageName = file.getName();
+                String packageName = file.getName();
+                if (packageName.endsWith(Environment.PCC_DATA_DIRECTORY_SUFFIX)) {
+                    // Identify the corresponding packageName for the -pcc directory
+                    packageName = packageName.substring(
+                            0, packageName.lastIndexOf(Environment.PCC_DATA_DIRECTORY_SUFFIX));
+                }
                 try {
                     assertPackageStorageValid(snapshot, volumeUuid, packageName, userId);
                 } catch (PackageManagerException e) {
@@ -414,7 +422,12 @@ public class AppDataHelper {
         if ((flags & StorageManager.FLAG_STORAGE_DE) != 0) {
             final File[] files = FileUtils.listFilesOrEmpty(deDir);
             for (File file : files) {
-                final String packageName = file.getName();
+                String packageName = file.getName();
+                if (packageName.endsWith(Environment.PCC_DATA_DIRECTORY_SUFFIX)) {
+                    // Identify the corresponding packageName for the -pcc directory
+                    packageName = packageName.substring(
+                            0, packageName.lastIndexOf(Environment.PCC_DATA_DIRECTORY_SUFFIX));
+                }
                 try {
                     assertPackageStorageValid(snapshot, volumeUuid, packageName, userId);
                 } catch (PackageManagerException e) {

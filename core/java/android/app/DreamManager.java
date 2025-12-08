@@ -26,6 +26,7 @@ import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Binder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
@@ -155,7 +156,7 @@ public class DreamManager {
     /**
      * Sets or clears the system dream component.
      *
-     * The system dream component, when set, will be shown instead of the user configured dream
+     * <p>The system dream component, when set, will be shown instead of the user configured dream
      * when the system starts dreaming (not dozing). If the system is dreaming at the time the
      * system dream is set or cleared, it immediately switches dream.
      *
@@ -165,7 +166,9 @@ public class DreamManager {
     @RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)
     public void setSystemDreamComponent(@Nullable ComponentName dreamComponent) {
         try {
-            mService.setSystemDreamComponent(dreamComponent);
+            final Binder lifecycleToken =
+                    (dreamComponent != null) ? new Binder("system dream token") : null;
+            mService.setSystemDreamComponent(dreamComponent, lifecycleToken);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

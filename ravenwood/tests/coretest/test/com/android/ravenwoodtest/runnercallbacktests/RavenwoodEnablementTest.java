@@ -19,14 +19,12 @@ import static org.junit.Assert.fail;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
-import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunMode;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-@NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     @RunWith(BlockJUnit4ClassRunner.class)
     // CHECKSTYLE:OFF Generated code

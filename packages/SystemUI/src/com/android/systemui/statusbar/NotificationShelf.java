@@ -128,7 +128,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         mShelfIcons = findViewById(R.id.content);
         mShelfIcons.setClipChildren(false);
         mShelfIcons.setClipToPadding(false);
-
+        mShelfIcons.setLogTag("shelf");
         mBackgroundNormal = (NotificationShelfBackgroundView) super.mBackgroundNormal;
 
         setClipToActualHeight(false);
@@ -280,7 +280,8 @@ public class NotificationShelf extends ActivatableNotificationView {
             // if the shelf is hidden, position it at the end of the stack (plus the clip
             // padding), such that when it appears animated, it will smoothly move in from the
             // bottom, without jump cutting any notifications
-            viewState.setYTranslation(stackBottom + mPaddingBetweenElements);
+            viewState.setYTranslation(stackBottom + mPaddingBetweenElements,
+                    "NotificationShelf.updateState.hidden");
         } else {
             float yTranslation = stackBottom - viewState.height;
             ExpandableNotificationRow trackedHun = ambientState.getTrackedHeadsUpRow();
@@ -289,7 +290,7 @@ public class NotificationShelf extends ActivatableNotificationView {
                 float hunBottom = hunState.getYTranslation() + hunState.height;
                 yTranslation = Math.max(yTranslation, hunBottom + mPaddingBetweenElements);
             }
-            viewState.setYTranslation(yTranslation);
+            viewState.setYTranslation(yTranslation, "NotificationShelf.updateState.visible");
         }
     }
 

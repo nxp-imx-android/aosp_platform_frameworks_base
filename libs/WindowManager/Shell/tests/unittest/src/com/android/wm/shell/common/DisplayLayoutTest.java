@@ -38,6 +38,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
+import android.view.InsetsState;
+import android.view.WindowInsets;
 
 import androidx.test.filters.SmallTest;
 
@@ -80,31 +82,82 @@ public class DisplayLayoutTest extends ShellTestCase {
     public void testInsets() {
         Resources res = createResources(40, 50, false);
         // Test empty display, no bars or anything
-        DisplayInfo info = createDisplayInfo(1000, 1500, 0, ROTATION_0);
+        DisplayInfo info = createDisplayInfo(1000, 1500, 30, ROTATION_0);
         DisplayLayout dl = new DisplayLayout(info, res, false, false);
         when(SystemBarUtils.getStatusBarHeight(eq(res), any())).thenReturn(40);
+        InsetsState mockInsetsState = mock(InsetsState.class);
+        Rect displayFrame = new Rect(0, 0, 1000, 1500);
+        Insets combinedInsets = Insets.of(0, 30, 0, 50); // left, top, right, bottom
+        Insets taskBarInsets = Insets.of(0, 0, 0, 50); //
+        when(mockInsetsState.getDisplayFrame()).thenReturn(displayFrame);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(combinedInsets);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(Insets.of(0, 30, 0, 0));
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(taskBarInsets);
+        dl.mInsetsState = mockInsetsState;
+
+        // Just cutout
         dl.recalcInsets(res);
-        assertEquals(new Rect(0, 0, 0, 0), dl.stableInsets());
-        assertEquals(new Rect(0, 0, 0, 0), dl.nonDecorInsets());
+        assertEquals(new Rect(0, 30, 0, 0), dl.stableInsets());
+        assertEquals(new Rect(0, 30, 0, 0), dl.nonDecorInsets());
 
         // Test with bars
         dl = new DisplayLayout(info, res, true, true);
+        dl.mInsetsState = mockInsetsState;
         dl.recalcInsets(res);
         assertEquals(new Rect(0, 40, 0, 50), dl.stableInsets());
-        assertEquals(new Rect(0, 0, 0, 50), dl.nonDecorInsets());
+        assertEquals(new Rect(0, 30, 0, 50), dl.nonDecorInsets());
+    }
 
-        // Test just cutout
-        info = createDisplayInfo(1000, 1500, 60, ROTATION_0);
-        dl = new DisplayLayout(info, res, false, false);
-        dl.recalcInsets(res);
-        assertEquals(new Rect(0, 60, 0, 0), dl.stableInsets());
-        assertEquals(new Rect(0, 60, 0, 0), dl.nonDecorInsets());
+    @Test
+    public void testComputeNonDecorInsets_fromInsetsState() {
+        // 1. Setup
+        InsetsState mockInsetsState = mock(InsetsState.class);
+        Rect displayFrame = new Rect(0, 0, 1000, 1500);
+        Insets combinedInsets = Insets.of(10, 20, 30, 40);
+        Insets cutoutInsets = Insets.of(10, 20, 30, 0);
+        when(mockInsetsState.getDisplayFrame()).thenReturn(displayFrame);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(combinedInsets);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(cutoutInsets);
 
-        // Test with bars and cutout
-        dl = new DisplayLayout(info, res, true, true);
-        dl.recalcInsets(res);
-        assertEquals(new Rect(0, 60, 0, 50), dl.stableInsets());
-        assertEquals(new Rect(0, 60, 0, 50), dl.nonDecorInsets());
+        Rect outInsets = new Rect();
+
+        // 2. Action
+        DisplayLayout.computeNonDecorInsets(mockInsetsState, outInsets,
+                true /* hasNavigationBar */);
+
+        // 3. Assert
+        assertEquals(combinedInsets.toRect(), outInsets);
+
+        // 4. Test hasNavigationBar = false
+        outInsets.setEmpty();
+        DisplayLayout.computeNonDecorInsets(mockInsetsState, outInsets,
+                false /* hasNavigationBar */);
+        assertEquals(cutoutInsets.toRect(), outInsets);
     }
 
     @Test
@@ -114,12 +167,39 @@ public class DisplayLayoutTest extends ShellTestCase {
         DisplayInfo info = createDisplayInfo(1000, 1500, 60, ROTATION_0);
         DisplayLayout dl = new DisplayLayout(info, res, true, true);
         when(SystemBarUtils.getStatusBarHeight(eq(res), any())).thenReturn(40);
+        Insets combinedInsetsPort = Insets.of(0, 60, 0, 50);
+        Insets taskbarInsetsPort = Insets.of(0, 0, 0, 50);
+        Insets combinedInsetsRotatedPort = Insets.of(40, 0, 60, 0);
+        Insets combinedInestsLand = Insets.of(60, 0, 0, 40);
+        Rect displayFrame = new Rect(0, 0, 1000, 1500);
+        InsetsState mockInsetsState = mock(InsetsState.class);
+        when(mockInsetsState.getDisplayFrame()).thenReturn(displayFrame);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(combinedInsetsPort);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(taskbarInsetsPort);
+        dl.mInsetsState = mockInsetsState;
+
         dl.recalcInsets(res);
         assertEquals(new Rect(0, 60, 0, 50), dl.stableInsets());
         assertEquals(new Rect(0, 60, 0, 50), dl.nonDecorInsets());
 
         // Rotate to 90
         when(SystemBarUtils.getStatusBarHeight(eq(res), any())).thenReturn(30);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(combinedInestsLand);
         dl.rotateTo(res, ROTATION_90);
         assertEquals(new Rect(60, 30, 0, 40), dl.stableInsets());
         assertEquals(new Rect(60, 0, 0, 40), dl.nonDecorInsets());
@@ -128,6 +208,13 @@ public class DisplayLayoutTest extends ShellTestCase {
         res = createResources(40, 50, true);
         dl = new DisplayLayout(info, res, true, true);
         when(SystemBarUtils.getStatusBarHeight(eq(res), any())).thenReturn(30);
+        when(mockInsetsState.calculateInsets(
+                eq(displayFrame),
+                eq(displayFrame),
+                eq(WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()),
+                eq(true) /* ignoreVisibility */))
+                .thenReturn(combinedInsetsRotatedPort);
+        dl.mInsetsState = mockInsetsState;
         dl.rotateTo(res, ROTATION_270);
         assertEquals(new Rect(40, 30, 60, 0), dl.stableInsets());
         assertEquals(new Rect(40, 0, 60, 0), dl.nonDecorInsets());

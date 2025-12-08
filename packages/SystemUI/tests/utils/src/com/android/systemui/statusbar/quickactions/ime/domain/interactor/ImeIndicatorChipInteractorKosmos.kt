@@ -19,11 +19,13 @@ package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.user.data.repository.fakeUserRepository
 
 val Kosmos.imeIndicatorChipInteractor: ImeIndicatorChipInteractor by
     Kosmos.Fixture {
         ImeIndicatorChipInteractor(
             scope = testScope.backgroundScope,
             inputMethodRepository = fakeInputMethodRepository,
+            userRepository = fakeUserRepository,
         )
     }

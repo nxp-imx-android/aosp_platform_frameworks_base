@@ -30,8 +30,8 @@ import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -54,7 +54,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     @Test
     fun shownPopupChips_allHidden_empty() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
             assertThat(shownPopupChips).isEmpty()
         }
 
@@ -65,8 +65,9 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
 
             updateMedia(userMedia)
 
-            assertThat(underTest.shownPopupChips).hasSize(1)
-            assertThat(underTest.shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
+            assertThat(underTest.shownQuickActionChips).hasSize(1)
+            assertThat(underTest.shownQuickActionChips.first().chipId)
+                .isEqualTo(QuickActionChipId.MediaControl)
         }
 
     @Test
@@ -76,12 +77,12 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
 
             updateMedia(userMedia)
 
-            assertThat(underTest.shownPopupChips).hasSize(1)
-            val mediaChip = underTest.shownPopupChips.first()
+            assertThat(underTest.shownQuickActionChips).hasSize(1)
+            val mediaChip = underTest.shownQuickActionChips.first()
             assertThat(mediaChip.isPopupShown).isFalse()
 
             mediaChip.showPopup.invoke()
-            assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
+            assertThat(underTest.shownQuickActionChips.first().isPopupShown).isTrue()
         }
 
     @Test
@@ -90,24 +91,24 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             val userMedia = MediaData(active = true, song = "test")
             updateMedia(userMedia)
 
-            assertThat(underTest.shownPopupChips).hasSize(1)
-            var mediaChip = underTest.shownPopupChips.first()
+            assertThat(underTest.shownQuickActionChips).hasSize(1)
+            var mediaChip = underTest.shownQuickActionChips.first()
             assertThat(mediaChip.isPopupShown).isFalse()
 
             mediaChip.showPopup.invoke()
 
-            assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
+            assertThat(underTest.shownQuickActionChips.first().isPopupShown).isTrue()
 
             // Update the media to hide the chip while the popup is still showing.
             val noMedia = MediaData(active = false, song = "")
             updateMedia(noMedia)
 
-            assertThat(underTest.shownPopupChips).hasSize(0)
+            assertThat(underTest.shownQuickActionChips).hasSize(0)
 
             updateMedia(userMedia)
 
-            assertThat(underTest.shownPopupChips).hasSize(1)
-            mediaChip = underTest.shownPopupChips.first()
+            assertThat(underTest.shownQuickActionChips).hasSize(1)
+            mediaChip = underTest.shownQuickActionChips.first()
             assertThat(mediaChip.isPopupShown).isFalse()
         }
 

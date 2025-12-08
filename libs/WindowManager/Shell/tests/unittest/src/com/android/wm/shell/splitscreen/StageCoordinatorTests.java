@@ -184,6 +184,9 @@ public class StageCoordinatorTests extends ShellTestCase {
     private FakeDesktopState mDesktopState;
     private IActivityTaskManager mIActivityTaskManager;
 
+    @Mock
+    private SurfaceControl.Transaction mTransaction;
+
     private final Rect mBounds1 = new Rect(10, 20, 30, 40);
     private final Rect mBounds2 = new Rect(5, 10, 15, 20);
     private final Rect mRootBounds = new Rect(0, 0, 45, 60);
@@ -1254,6 +1257,27 @@ public class StageCoordinatorTests extends ShellTestCase {
         boolean hasReparentOp = wct.getHierarchyOps().stream().anyMatch(HierarchyOp::isReparent);
 
         assertThat(hasReparentOp).isFalse();
+    }
+
+    @Test
+    public void setDividerVisibility_hideWithInvalidLeash_doesNotHide() {
+        when(mTransactionPool.acquire()).thenReturn(mTransaction);
+
+        // Make divider visible first to ensure the subsequent hide call is not a no-op.
+        mStageCoordinator.setDividerVisibility(true, new SurfaceControl.Transaction());
+        clearInvocations(mTransactionPool);
+
+        // Prepare for hiding with an invalid leash.
+        SurfaceControl invalidLeash = mock(SurfaceControl.class);
+        when(invalidLeash.isValid()).thenReturn(false);
+        when(mSplitLayout.getDividerLeash()).thenReturn(invalidLeash);
+
+        // Action: hide the divider.
+        mStageCoordinator.setDividerVisibility(false, null);
+
+        // Verification: A transaction should not be acquired because the leash is invalid.
+        // This confirms the new check is working.
+        verify(mTransactionPool, never()).acquire();
     }
 
     private static int getLaunchWindowingMode(Bundle options) {

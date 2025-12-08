@@ -200,8 +200,8 @@ public class PipExpandHandlerTest {
         when(mMockRequestInfo.getType()).thenReturn(TRANSIT_OPEN);
         when(mMockRequestInfo.getTriggerTask()).thenReturn(pipTaskInfo);
         when(mMockPipDisplayLayoutState.getDisplayId()).thenReturn(SECONDARY_DISPLAY_ID);
-        when(mMockPipScheduler.getExitPipViaExpandIntoDisplayTransaction(
-                DEFAULT_DISPLAY_ID)).thenReturn(new WindowContainerTransaction());
+        when(mMockPipScheduler.getExitPipViaExpandTransaction())
+                .thenReturn(new WindowContainerTransaction());
 
         WindowContainerTransaction wct = mPipExpandHandler.handleRequest(
                 mMockTransitionToken, mMockRequestInfo);

@@ -16,12 +16,10 @@
 package com.android.systemui.lowlight
 
 import android.content.res.mockResources
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
@@ -69,27 +67,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidJUnit4::class)
 @EnableFlags(android.os.Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
-class LowLightBehaviorCoreStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
-
-    companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR
-            )
-        }
-    }
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
 
     val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -330,61 +312,6 @@ class LowLightBehaviorCoreStartableTest(flags: FlagsParameterization) : SysuiTes
         }
 
     @Test
-    @DisableFlags(FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR)
-    fun testSubscribeIfScreenIsOffForScreenOffBehaviorWhenStarting() =
-        kosmos.runTest {
-            lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
-            lowLightSettingsRepository.setLowLightDisplayBehavior(
-                LowLightDisplayBehavior.SCREEN_OFF
-            )
-
-            setDisplayOn(true)
-
-            start()
-            assertThat(ambientLightModeMonitor.fake.started).isTrue()
-        }
-
-    @Test
-    @DisableFlags(FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR)
-    fun testSubscribeIfDozingForScreenOffBehavior() =
-        kosmos.runTest {
-            lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
-            lowLightSettingsRepository.setLowLightDisplayBehavior(
-                LowLightDisplayBehavior.SCREEN_OFF
-            )
-
-            setBatteryPluggedIn(true)
-            setDisplayOn(false)
-
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
-            )
-
-            start()
-            assertThat(ambientLightModeMonitor.fake.started).isTrue()
-        }
-
-    @Test
-    @DisableFlags(FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR)
-    fun testDoNotSubscribeIfDozingForScreenOffBehaviorUnplugged() =
-        kosmos.runTest {
-            lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
-            lowLightSettingsRepository.setLowLightDisplayBehavior(
-                LowLightDisplayBehavior.SCREEN_OFF
-            )
-
-            setBatteryPluggedIn(false)
-            setDisplayOn(true)
-
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
-            )
-
-            start()
-            assertThat(ambientLightModeMonitor.fake.started).isFalse()
-        }
-
-    @Test
     fun testDoNotSubscribeIfDozeForLowLightBehaviorPluggedIn() =
         kosmos.runTest {
             lowLightRepository.addAction(LowLightDisplayBehavior.LOW_LIGHT_DREAM, action)
@@ -398,26 +325,6 @@ class LowLightBehaviorCoreStartableTest(flags: FlagsParameterization) : SysuiTes
             fakeKeyguardRepository.setDozeTransitionModel(
                 DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
             )
-
-            start()
-            assertThat(ambientLightModeMonitor.fake.started).isFalse()
-        }
-
-    @Test
-    @DisableFlags(FLAG_DISABLE_SCREEN_OFF_LOW_LIGHT_BEHAVIOR)
-    fun testDoNotSubscribeIfScreenOnNonIdleForScreenOffBehaviorPluggedIn() =
-        kosmos.runTest {
-            lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
-            lowLightSettingsRepository.setLowLightDisplayBehavior(
-                LowLightDisplayBehavior.SCREEN_OFF
-            )
-
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
-            )
-
-            setBatteryPluggedIn(true)
-            setDisplayOn(true)
 
             start()
             assertThat(ambientLightModeMonitor.fake.started).isFalse()

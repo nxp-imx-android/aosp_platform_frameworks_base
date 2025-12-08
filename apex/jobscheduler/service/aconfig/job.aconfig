@@ -40,13 +40,6 @@ flag {
 }
 
 flag {
-   name: "remove_user_during_user_switch"
-   namespace: "backstage_power"
-   description: "Remove started user if user will be stopped due to user switch"
-   bug: "337077643"
-}
-
-flag {
    name: "adjust_quota_default_constants"
    namespace: "backstage_power"
    description: "Adjust quota default parameters"

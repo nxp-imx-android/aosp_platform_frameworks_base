@@ -711,11 +711,24 @@ public final class MediaRoute2Info implements Parcelable {
     }
 
     /**
-     * Gets the id of the route. The routes which are given by {@link MediaRouter2} will have
-     * unique IDs.
-     * <p>
-     * In order to ensure uniqueness in {@link MediaRouter2} side, the value of this method
-     * can be different from what was set in {@link MediaRoute2ProviderService}.
+     * Gets the unique id of the route, if available. Otherwise, returns the original id set by
+     * {@link Builder#Builder(String, CharSequence)}.
+     *
+     * <p>The original id of a route is the id set by the {@link Builder} when the route is built.
+     *
+     * <p>The unique id of a route is based on the original id, and assigned by the system once a
+     * route is published by calling {@link MediaRoute2ProviderService#notifyRoutes(Collection)}.
+     * This ensures id uniqueness across routes from different providers, who assign original ids
+     * which are only unique within the scope of a single provider. As a result, calling this method
+     * on a route freshly created (which has not yet been published through {@link
+     * MediaRoute2ProviderService#notifyRoutes(Collection)}) will return the original id, and will
+     * differ from the unique id obtained from calling this method on a route obtained through
+     * {@link MediaRouter2}.
+     *
+     * <p>Routes obtained from {@link MediaRouter2} will have unique IDs. For example, routes
+     * obtained through {@link MediaRouter2#getRoutes()}, {@link
+     * MediaRouter2.RouteCallback#onRoutesUpdated(List)}, or {@link
+     * MediaRouter2.RoutingController#getSelectedRoutes()}.
      *
      * @see Builder#Builder(String, CharSequence)
      */

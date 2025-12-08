@@ -141,7 +141,7 @@ class CommandQueueInitializerTest : SysuiTestCase() {
                 context.displayId,
                 fakeStatusBarService.imeWindowVis,
                 fakeStatusBarService.imeBackDisposition,
-                fakeStatusBarService.showImeSwitcher,
+                fakeStatusBarService.showImeSwitcherButton,
             )
 
         verify(commandQueueCallbacks)
@@ -149,7 +149,7 @@ class CommandQueueInitializerTest : SysuiTestCase() {
                 SECONDARY_DISPLAY_ID,
                 fakeStatusBarService.imeWindowVisSecondaryDisplay,
                 fakeStatusBarService.imeBackDispositionSecondaryDisplay,
-                fakeStatusBarService.showImeSwitcherSecondaryDisplay,
+                fakeStatusBarService.showImeSwitcherButtonSecondaryDisplay,
             )
     }
 

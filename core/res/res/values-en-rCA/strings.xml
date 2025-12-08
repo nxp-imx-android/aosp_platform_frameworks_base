@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Allows the app to access local network devices"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"use loopback interface"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Allows the app to interact with other apps over loopback interface"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"determine relative position between nearby devices"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Allow the app to determine relative position between nearby devices"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferred NFC Payment Service Information"</string>

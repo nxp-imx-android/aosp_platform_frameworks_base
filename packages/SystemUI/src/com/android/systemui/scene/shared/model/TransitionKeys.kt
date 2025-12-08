@@ -36,6 +36,9 @@ object TransitionKeys {
     /** Reference to a transition in or out of communal scene triggered by the system. */
     val SystemCommunalTransition = TransitionKey("SystemCommunalTransition")
 
+    /** Reference to the Shade-to-Lockscreen transition with Always-on-Display enabled. */
+    val ToAlwaysOnDisplay = TransitionKey("ToAlwaysOnDisplay")
+
     /** A scene transition for swiping up to the gone scene. */
     val SwipeUpToGone = TransitionKey("SwipeUpToGone")
 }

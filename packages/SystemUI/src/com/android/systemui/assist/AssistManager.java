@@ -305,7 +305,7 @@ public class AssistManager {
     }
 
     public void startAssist(Bundle args) {
-        if (mActivityManager.getLockTaskModeState() == ActivityManager.LOCK_TASK_MODE_LOCKED) {
+        if (mActivityManager.getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE) {
             return;
         }
         if (shouldOverrideAssist(args)) {

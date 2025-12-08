@@ -39,7 +39,6 @@ import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
-import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREEN_ON;
@@ -95,6 +94,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.UserProperties;
 import android.content.res.Configuration;
@@ -133,7 +133,6 @@ import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -242,7 +241,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             new SparseArray<>();
 
     /** The current user */
-    int mCurrentUser;
+    @UserIdInt int mCurrentUser;
     /** Root task id of the front root task when user switched, indexed by userId. */
     SparseIntArray mUserRootTaskInFront = new SparseIntArray(2);
     SparseArray<IntArray> mUserVisibleRootTasks = new SparseArray<>();
@@ -430,6 +429,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     };
 
+    // TODO(b/412177078): remove @Nullable (and checks) once Flags.hsuAllowlistActivities() is gone
+    @Nullable
+    private final UserHelper mUserHelper;
+
     RootWindowContainer(WindowManagerService service) {
         super(service);
         mHandler = new MyHandler(service.mH.getLooper());
@@ -441,6 +444,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDeviceStateAutoRotateSettingController =
                 DisplayRotation.createDeviceStateAutoRotateDependencies(service.mContext,
                         mDeviceStateController, service);
+        mUserHelper = android.multiuser.Flags.hsuAllowlistActivities()
+                ? new UserHelper(service.mAtmService.getUserManagerInternal())
+                : null;
+    }
+
+    // TODO(b/412177078): remove @Nullable (and checks) once Flags.hsuAllowlistActivities() is gone
+    @Nullable
+    UserHelper getUserHelper() {
+        return mUserHelper;
     }
 
     /**
@@ -453,8 +465,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // Go through the children in z-order starting at the top-most
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final DisplayContent dc = mChildren.get(i);
-            if (ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX.isTrue()
-                    && (dc.isRemoved() || dc.isRemoving())) {
+            if ((dc.isRemoved() || dc.isRemoving())) {
                 continue;
             }
             changed |= dc.updateFocusedWindowLocked(mode, updateInputWindows, topFocusedDisplayId);
@@ -1283,14 +1294,107 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         });
     }
 
-    void startHomeOnDisplaysWithNoHome(String reason) {
+    @Nullable
+    private Pair<ActivityInfo, Intent> getHomeIntentAndInfoForTaskDisplayArea(
+            @NonNull TaskDisplayArea taskDisplayArea, int userId) {
+        Intent homeIntent;
+        ActivityInfo aInfo;
+        if (taskDisplayArea == getDefaultTaskDisplayArea()
+                || mWmService.shouldPlacePrimaryHomeOnDisplay(
+                taskDisplayArea.getDisplayId(), userId)) {
+            homeIntent = mService.getHomeIntent();
+            aInfo = resolveHomeActivity(userId, homeIntent);
+        } else if (shouldPlaceSecondaryHomeOnDisplayArea(taskDisplayArea)) {
+            Pair<ActivityInfo, Intent> info = resolveSecondaryHomeActivity(userId, taskDisplayArea);
+            aInfo = info.first;
+            homeIntent = info.second;
+        } else {
+            return null;
+        }
+        return (aInfo == null) ? null : Pair.create(aInfo, homeIntent);
+    }
+
+    /**
+     * Checks if the home is required in the given {@link TaskDisplayArea} for the specified user.
+     *
+     * @param userId          The ID of the user.
+     * @param taskDisplayArea The {@link TaskDisplayArea} to check.
+     * @return {@code true} if there is no home present in the given {@link TaskDisplayArea} or if
+     * the home package names are different; {@code false} otherwise.
+     */
+    boolean needsHomeLaunchOnDisplay(int userId, TaskDisplayArea taskDisplayArea) {
+        if (!taskDisplayArea.canHostHomeTask()) {
+            return false;
+        }
+        final ActivityRecord existingHomeForUserOnDisplay =
+                taskDisplayArea.getHomeActivityForUser(userId);
+        if (existingHomeForUserOnDisplay == null) {
+            // Even when no home activity for the given userId is on this display, a home activity
+            // for a different user might still be present. This code does not explicitly finish
+            // the old home activity; instead, relies on other system mechanisms for cleanup.
+            return true;
+        }
+
+        // Even if a home activity for the given userId is present, it could be a different
+        // package and thereby requiring launch of the correctly resolved home activity.
+        final Pair<ActivityInfo, Intent> resolvedHomeActivityIntentPair =
+                getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+        final ActivityInfo resolvedHomePackage = resolvedHomeActivityIntentPair == null ? null
+                : resolvedHomeActivityIntentPair.first;
+        if (resolvedHomePackage == null) {
+            return false;
+        }
+        return !Objects.equals(resolvedHomePackage.packageName,
+                existingHomeForUserOnDisplay.packageName);
+    }
+
+    void startHomeOnDisplaysIfNeeded(String reason) {
         forAllTaskDisplayAreas(taskDisplayArea -> {
-            if (taskDisplayArea.getHomeActivity() == null) {
-                int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
-                startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
-                        false /* allowInstrumenting */, false /* fromHomeKey */, false /* onTop */);
+            final int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
+            final Pair<ActivityInfo, Intent> homeActivityIntentPair =
+                    getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+
+            if (homeActivityIntentPair == null) {
+                return;
+            }
+
+            boolean allowHomeAlwaysPresent = isHomeAlwaysPresentAllowed(
+                    homeActivityIntentPair.first, userId);
+            if (allowHomeAlwaysPresent
+                    && homeActivityIntentPair.first.applicationInfo.isPrivilegedApp()) {
+                if (needsHomeLaunchOnDisplay(userId, taskDisplayArea)) {
+                    // Launch home not on top as this path ensures the correct home activity is
+                    // running in the background without disrupting the current foreground activity.
+                    startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                            false /* allowInstrumenting */, false /* fromHomeKey */,
+                            false /* onTop */);
+                }
+            } else {
+                if (taskDisplayArea.topRunningActivity() == null) {
+                    startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                            false /* allowInstrumenting */, false /* fromHomeKey */,
+                            true /* onTop */);
+                }
             }
         });
+    }
+
+    boolean isHomeAlwaysPresentAllowed(ActivityInfo aInfo, int userId) {
+        boolean allowHomeAlwaysPresent = false;
+        try {
+            final PackageManager pm = mService.mContext.getPackageManager();
+            final PackageManager.Property prop = pm.getPropertyAsUser(
+                    WindowManager.ALLOW_HOME_ACTIVITY_ALWAYS_PRESENT,
+                    aInfo.packageName,
+                    aInfo.name,
+                    userId);
+            if (prop != null) {
+                allowHomeAlwaysPresent = prop.getBoolean();
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // Property not found or package not found, default to false.
+        }
+        return allowHomeAlwaysPresent;
     }
 
     boolean startHomeOnDisplay(int userId, String reason, int displayId) {
@@ -1341,18 +1445,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             taskDisplayArea.setShouldKeepNoTask(false);
         }
 
-        Intent homeIntent = null;
-        ActivityInfo aInfo = null;
-        if (taskDisplayArea == getDefaultTaskDisplayArea()
-                || mWmService.shouldPlacePrimaryHomeOnDisplay(
-                        taskDisplayArea.getDisplayId(), userId)) {
-            homeIntent = mService.getHomeIntent();
-            aInfo = resolveHomeActivity(userId, homeIntent);
-        } else if (shouldPlaceSecondaryHomeOnDisplayArea(taskDisplayArea)) {
-            Pair<ActivityInfo, Intent> info = resolveSecondaryHomeActivity(userId, taskDisplayArea);
-            aInfo = info.first;
-            homeIntent = info.second;
+        final Pair<ActivityInfo, Intent> homeActivityIntentPair =
+                getHomeIntentAndInfoForTaskDisplayArea(taskDisplayArea, userId);
+
+        if (homeActivityIntentPair == null) {
+            return false;
         }
+
+        final ActivityInfo aInfo = homeActivityIntentPair.first;
+        final Intent homeIntent = homeActivityIntentPair.second;
 
         if (aInfo == null || homeIntent == null) {
             return false;
@@ -1843,7 +1944,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
-    boolean switchUser(int userId, UserState uss) {
+    boolean switchUser(@UserIdInt int userId, UserState uss) {
         final Task topFocusedRootTask = getTopDisplayFocusedRootTask();
         final int focusRootTaskId = topFocusedRootTask != null
                 ? topFocusedRootTask.getRootTaskId() : INVALID_TASK_ID;
@@ -1903,6 +2004,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             final int topRootTaskId = rootTaskIdsToRestore.get(rootTaskIdsToRestore.size() - 1);
             homeInFront = isHomeTask(topRootTaskId);
         }
+
+        if (mUserHelper != null) {
+            mUserHelper.setCurrentUserId(userId);
+        }
+
         return homeInFront;
     }
 

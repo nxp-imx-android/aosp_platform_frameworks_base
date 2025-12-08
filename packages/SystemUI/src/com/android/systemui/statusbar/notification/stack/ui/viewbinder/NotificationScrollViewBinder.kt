@@ -17,14 +17,17 @@
 package com.android.systemui.statusbar.notification.stack.ui.viewbinder
 
 import android.util.Log
+import android.view.View
+import androidx.compose.ui.geometry.Offset
 import com.android.app.tracing.coroutines.flow.collectLatestTraced
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -37,7 +40,7 @@ import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.buildDisposableHandle
 import com.android.systemui.util.kotlin.launchAndDispose
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,7 +52,7 @@ class NotificationScrollViewBinder
 @Inject
 constructor(
     dumpManager: DumpManager,
-    @Main private val mainImmediateDispatcher: CoroutineDispatcher,
+    @AndroidUi private val androidUiDispatcher: CoroutineContext,
     private val view: NotificationScrollView,
     private val viewModelFactory: NotificationScrollViewModel.Factory,
     @ShadeDisplayAware private val configuration: ConfigurationState,
@@ -66,7 +69,7 @@ constructor(
     }
 
     fun bindWhileAttached(): DisposableHandle {
-        return view.asView().repeatWhenAttached(mainImmediateDispatcher) { bind() }
+        return view.asView().repeatWhenAttached(androidUiDispatcher) { bind() }
     }
 
     suspend fun bind(): Nothing =
@@ -155,6 +158,34 @@ constructor(
                             view.setNegativeClippingShape(shape)
                         }
                     )
+                    register(
+                        viewModel.stackScrollTop.observe { scrollTop ->
+                            view.setStackScrollTop(scrollTop)
+                        }
+                    )
+                    register(
+                        viewModel.stackBounds.observe { stackBounds ->
+                            view.updateStackBounds(stackBounds)
+                        }
+                    )
+                    register(
+                        viewModel.headsUpBounds.observe { hunBounds ->
+                            view.setHeadsUpTop(hunBounds.top)
+                            view.setHeadsUpBottom(hunBounds.bottom)
+                        }
+                    )
+                    register(
+                        viewModel.stackPlaceholderAlpha.observe { alpha ->
+                            view.setPlaceholderAlpha(alpha)
+                        }
+                    )
+                    register(
+                        viewModel.stackPlaceholderScale.observe { drawScale ->
+                            // Applying the scale directly on the View, because with SceneContainer,
+                            // this is the only place where NSSL's scale is modified.
+                            view.asView().setDrawScale(drawScale)
+                        }
+                    )
                 }
             }
         }
@@ -166,4 +197,16 @@ constructor(
     /** flow of the scrim clipping radius */
     private val scrimRadius: Flow<Int>
         get() = configuration.getDimensionPixelOffset(R.dimen.notification_scrim_corner_radius)
+}
+
+/** Set an STL [Scale] on a regular [View]. */
+private fun View.setDrawScale(drawScale: Scale) {
+    scaleX = drawScale.scaleX
+    scaleY = drawScale.scaleY
+    if (drawScale.pivot != Offset.Unspecified) {
+        pivotX = drawScale.pivot.x
+        pivotY = drawScale.pivot.y
+    } else if (isPivotSet) {
+        resetPivot()
+    }
 }

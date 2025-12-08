@@ -263,7 +263,7 @@ constructor(
         contentBuilder.colors =
             PromotedNotificationContentModel.Colors(
                 backgroundColor = colorsFromNotif.backgroundColor,
-                primaryTextColor = colorsFromNotif.primaryTextColor,
+                textColor = colorsFromNotif.textColor,
             )
 
         recoveredBuilder.extractStyleContent(
@@ -320,6 +320,7 @@ constructor(
                     if (apiNotificationActionCustom())
                         R.layout.notification_2025_template_promoted_progress
                     else R.layout.notification_2025_template_expanded_progress
+
                 Style.Metric -> R.layout.notification_2025_template_expanded_metric
                 Style.MetricSingle -> R.layout.notification_2025_template_promoted_single_metric
                 Style.Ineligible -> null
@@ -384,7 +385,8 @@ constructor(
         } ?: text()
     }
 
-    private fun Notification.subText(): String? = getStringExtraUnlessEmpty(EXTRA_SUB_TEXT)
+    private fun Notification.subText(): CharSequence? =
+        getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
     private fun Notification.shortCriticalText(): String? {
         if (shortCriticalText != null) {
@@ -515,6 +517,7 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
+
                             metricValue.zeroElapsedRealtime != null ->
                                 Metric.TimeDifference.ElapsedRealtime(
                                     zeroElapsedRealtime =
@@ -523,6 +526,7 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
+
                             metricValue.pausedDuration != null ->
                                 Metric.TimeDifference.Paused(
                                     pausedDuration = checkNotNull(metricValue.pausedDuration),
@@ -530,9 +534,11 @@ constructor(
                                     useAdaptiveFormat = useAdaptiveFormat,
                                     label = label,
                                 )
+
                             else -> Metric.Text(valueString.text(), label)
                         }
                     }
+
                     else -> Metric.Text(valueString.text(), label)
                 }
             }

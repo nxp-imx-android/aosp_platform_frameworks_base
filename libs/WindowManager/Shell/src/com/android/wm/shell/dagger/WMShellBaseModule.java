@@ -122,6 +122,7 @@ import com.android.wm.shell.recents.TaskStackTransitionObserver;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
@@ -1005,10 +1006,10 @@ public abstract class WMShellBaseModule {
             @ShellSplashscreenThread ShellExecutor splashScreenExecutor,
             StartingWindowTypeAlgorithm startingWindowTypeAlgorithm, IconProvider iconProvider,
             TransactionPool pool, @ShellMainThread ShellExecutor mainExecutor,
-            Transitions transitions) {
+            Transitions transitions, @ShellBackgroundThread ShellExecutor bgExecutor) {
         return new StartingWindowController(context, shellInit, shellController, shellTaskOrganizer,
                 splashScreenExecutor, startingWindowTypeAlgorithm, iconProvider, pool, mainExecutor,
-                transitions);
+                transitions, bgExecutor);
     }
 
     // Workaround for dynamic overriding with a default implementation, see {@link DynamicOverride}

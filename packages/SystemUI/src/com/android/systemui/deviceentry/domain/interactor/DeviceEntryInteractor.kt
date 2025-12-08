@@ -36,7 +36,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.util.kotlin.pairwise
+import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
@@ -97,22 +97,20 @@ constructor(
 
     /**
      * Emits `true` when the current scene switches to [Scenes.Gone] for the first time after having
-     * been on [Scenes.Lockscreen] or [Scenes.Communal].
+     * been on [Scenes.Lockscreen] or any other keyguard scenes.
      *
-     * Different from [isDeviceEntered] such that the current scene must actually go through
-     * [Scenes.Gone] to produce a `true`. [isDeviceEntered] also takes into account the navigation
-     * back stack and will produce a `true` value even when the current scene is still not
-     * [Scenes.Gone] but the bottommost entry of the navigation back stack switched from
-     * [Scenes.Lockscreen] to [Scenes.Gone] while the user is staring at another scene.
+     * Different from [isDeviceEnteredOnBackStack] such that the current scene must actually go
+     * through [Scenes.Gone] to produce a `true`. [isDeviceEnteredOnBackStack] takes into account
+     * the navigation back stack and will produce a `true` value when the bottommost entry of the
+     * navigation back stack switched from [Scenes.Lockscreen] to [Scenes.Gone] while the user is
+     * staring at another scene.
      */
     val isDeviceEnteredDirectly: StateFlow<Boolean> by lazy {
         sceneInteractor
             .get()
             .currentScene
             .filter { currentScene ->
-                currentScene == Scenes.Gone ||
-                    currentScene == Scenes.Lockscreen ||
-                    currentScene == Scenes.Communal
+                currentScene == Scenes.Gone || currentScene.isKeyguardScene()
             }
             .mapLatestConflated { scene ->
                 if (scene == Scenes.Gone) {
@@ -132,39 +130,46 @@ constructor(
     }
 
     /**
+     * Emits `true` when the bottom of the navigation back stack switches to [Scenes.Gone], and
+     * `false` when it switches to [Scenes.Lockscreen].
+     *
+     * Different from [isDeviceEnteredDirectly] such that the current scene may not change while the
+     * device becomes "entered" or "not entered" underneath. E.g. shade is open while device gets
+     * unlocked underneath.
+     */
+    private val isDeviceEnteredOnBackStack: StateFlow<Boolean> by lazy {
+        sceneBackInteractor
+            .get()
+            .backStack
+            // The bottom of the back stack, which is Lockscreen, Gone, or null if empty.
+            .map { it.asIterable().lastOrNull() }
+            // Filter out cases where the stack changes but the bottom remains unchanged.
+            .distinctUntilChanged()
+            // Device is entered when the bottom of the back stack is Gone, and not entered when it
+            // is Lockscreen or null.
+            .map { bottomScene -> bottomScene == Scenes.Gone }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = false,
+            )
+    }
+
+    /**
      * Whether the device has been entered (i.e. the lockscreen has been dismissed, by any method).
      * This can be `false` when the device is unlocked, e.g. when the user still needs to swipe away
      * the non-secure lockscreen, even though they've already authenticated.
      *
      * Note: This does not imply that the lockscreen is visible or not.
-     *
-     * Different from [isDeviceEnteredDirectly] such that the current scene doesn't actually have to
-     * go through [Scenes.Gone] to produce a `true`. [isDeviceEnteredDirectly] doesn't take the
-     * navigation back stack into account and will only produce a `true` value even when the current
-     * scene is actually [Scenes.Gone].
      */
     val isDeviceEntered: StateFlow<Boolean> by lazy {
         combine(
                 // This flow emits true when the currentScene switches to Gone for the first time
                 // after having been on Lockscreen.
                 isDeviceEnteredDirectly,
-                // This flow emits true only if the bottom of the navigation back stack has been
-                // switched from Lockscreen to Gone. In other words, only if the device was unlocked
-                // while visiting at least one scene "above" the Lockscreen scene.
-                sceneBackInteractor
-                    .get()
-                    .backStack
-                    // The bottom of the back stack, which is Lockscreen, Gone, or null if empty.
-                    .map { it.asIterable().lastOrNull() }
-                    // Filter out cases where the stack changes but the bottom remains unchanged.
-                    .distinctUntilChanged()
-                    // Detect changes of the bottom of the stack, start with null, so the first
-                    // update emits a value and the logic doesn't need to wait for a second value
-                    // before emitting something.
-                    .pairwise(initialValue = null)
-                    // Replacing a bottom of the stack that was Lockscreen with Gone constitutes a
-                    // "device entered" event.
-                    .map { (from, to) -> from == Scenes.Lockscreen && to == Scenes.Gone },
+                // This flow emits true when the bottom of the navigation back stack switches to
+                // Gone, and false when it switches to Lockscreen.
+                isDeviceEnteredOnBackStack,
             ) { enteredDirectly, enteredOnBackStack ->
                 enteredOnBackStack || enteredDirectly
             }
@@ -328,27 +333,23 @@ constructor(
             // The device unlock interactor can't lock the device if the device has SWIPE as screen
             // lock, so we need to manually transition to lockscreen in this case.
             if (isLockscreenEnabled() && !isAuthenticationRequired()) {
-                sceneInteractor
-                    .get()
-                    .resolveSceneFamilyOrNull(SceneFamilies.Home)?.value?.let {
-                        resolvedScene ->
-                            // If the resolved scene is Gone, we should always show the lockscreen.
-                            val toScene =
-                                resolvedScene
-                                    .takeIf { it != Scenes.Gone } ?: Scenes.Lockscreen
-                            if (toScene != Scenes.Lockscreen) {
-                                // We should never be in a state where the current scene is the
-                                // [Scenes.Lockscreen] and the lockscreen is also on the back stack.
-                                sceneBackInteractor.get().addLockscreenToBackStack()
-                            }
-                            sceneInteractor
-                                .get()
-                                .changeScene(
-                                    toScene = toScene,
-                                    loggingReason =
-                                        "lock now with SWIPE auth method, reason: $debuggingReason",
-                                )
-                            }
+                sceneInteractor.get().resolveSceneFamilyOrNull(SceneFamilies.Home)?.value?.let {
+                    resolvedScene ->
+                    // If the resolved scene is Gone, we should always show the lockscreen.
+                    val toScene = resolvedScene.takeIf { it != Scenes.Gone } ?: Scenes.Lockscreen
+                    if (toScene != Scenes.Lockscreen) {
+                        // We should never be in a state where the current scene is the
+                        // [Scenes.Lockscreen] and the lockscreen is also on the back stack.
+                        sceneBackInteractor.get().addLockscreenToBackStack()
+                    }
+                    sceneInteractor
+                        .get()
+                        .changeScene(
+                            toScene = toScene,
+                            loggingReason =
+                                "lock now with SWIPE auth method, reason: $debuggingReason",
+                        )
+                }
             }
         }
     }

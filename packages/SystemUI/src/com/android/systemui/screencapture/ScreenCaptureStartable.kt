@@ -129,8 +129,23 @@ constructor(
         screenRecordingServiceInteractor.screenRecordings
             .filterIsInstance<ScreenRecording.Saved>()
             .onEach { recording ->
-                val shelf = postRecordingShelfFactory.create(recording.uri, recording.thumbnail)
-                shelf.show()
+                val displayId = focusedDisplayRepository.focusedDisplayId.value
+                val display = displayRepository.getDisplay(displayId)
+
+                if (display == null) {
+                    Log.e(
+                        "ScreenCapture",
+                        "PostRecordingShelf: Couldn't find display for id=$displayId",
+                    )
+                } else {
+                    val shelf =
+                        postRecordingShelfFactory.create(
+                            recording.uri,
+                            recording.thumbnail,
+                            display,
+                        )
+                    shelf.show()
+                }
             }
             .launchIn(appScope)
     }

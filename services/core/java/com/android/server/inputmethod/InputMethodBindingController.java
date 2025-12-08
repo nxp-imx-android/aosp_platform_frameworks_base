@@ -60,7 +60,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.GuardedBy;
@@ -277,20 +276,12 @@ final class InputMethodBindingController {
     @GuardedBy("ImfLock.class")
     private int mDeviceId = DEVICE_ID_DEFAULT;
 
-    /**
-     * The IME window visibility state of the bound IME.
-     *
-     * <p>This must be updated only from {@link #setImeWindowVis} and {@link #unbindIme}.
-     */
+    /** The IME window visibility state of the bound IME. */
     @ImeWindowVisibility
     @GuardedBy("ImfLock.class")
     private int mImeWindowVis;
 
-    /**
-     * The disposition mode that indicates the expected back button affordance of the bound IME.
-     *
-     * <p>This must be updated only from {@link #setBackDisposition} and {@link #unbindIme}.
-     */
+    /** The disposition mode that indicates the expected back button affordance of the bound IME. */
     @BackDispositionMode
     @GuardedBy("ImfLock.class")
     private int mBackDisposition = BACK_DISPOSITION_DEFAULT;
@@ -524,14 +515,34 @@ final class InputMethodBindingController {
 
     /** Returns whether the bound IME supports Stylus Handwriting. */
     @GuardedBy("ImfLock.class")
-    boolean supportsStylusHandwriting() {
+    boolean getSupportsStylusHandwriting() {
         return mSupportsStylusHw;
     }
 
-    /** Returns whether the bound IME supports connectionless Stylus Handwriting sessions. */
+    /**
+     * Sets whether the latest bound IME supports Stylus Handwriting.
+     *
+     * @param supports whether the latest bound IME supports Stylus Handwriting.
+     */
     @GuardedBy("ImfLock.class")
-    boolean supportsConnectionlessStylusHandwriting() {
+    void setSupportsStylusHandwriting(boolean supports) {
+        mSupportsStylusHw = supports;
+    }
+
+    /** Returns whether the latest bound IME supports connectionless Stylus Handwriting. */
+    @GuardedBy("ImfLock.class")
+    boolean getSupportsConnectionlessStylusHandwriting() {
         return mSupportsConnectionlessStylusHw;
+    }
+
+    /**
+     * Sets whether the latest bound IME supports connectionless Stylus Handwriting.
+     *
+     * @param supports whether the latest bound IME supports connectionless Stylus Handwriting.
+     */
+    @GuardedBy("ImfLock.class")
+    void setSupportsConnectionlessStylusHandwriting(boolean supports) {
+        mSupportsConnectionlessStylusHw = supports;
     }
 
     /**
@@ -543,6 +554,9 @@ final class InputMethodBindingController {
         @Override
         public void onBindingDied(ComponentName name) {
             synchronized (ImfLock.class) {
+                if (DEBUG) {
+                    Slog.v(TAG, "Binding died: " + name + " mCurImeIntent: " + mCurImeIntent);
+                }
                 unbindIme();
             }
         }
@@ -588,12 +602,7 @@ final class InputMethodBindingController {
 
         @Override
         public void onBindingDied(@NonNull ComponentName name) {
-            synchronized (ImfLock.class) {
-                mAutofillController.invalidateAutofillSession();
-                if (mHasVisibleConnection) {
-                    unbindVisibleConnection();
-                }
-            }
+            // This is handled by the mMainConnection.
         }
 
         @Override
@@ -603,9 +612,7 @@ final class InputMethodBindingController {
 
         @Override
         public void onServiceDisconnected(@NonNull ComponentName name) {
-            synchronized (ImfLock.class) {
-                mAutofillController.invalidateAutofillSession();
-            }
+            // This is handled by the mMainConnection.
         }
     };
 
@@ -621,6 +628,9 @@ final class InputMethodBindingController {
                 return;
             }
             synchronized (ImfLock.class) {
+                if (DEBUG) {
+                    Slog.v(TAG, "Binding died: " + name + " mCurImeIntent: " + mCurImeIntent);
+                }
                 unbindIme();
             }
         }
@@ -628,58 +638,33 @@ final class InputMethodBindingController {
         @Override
         public void onServiceConnected(@NonNull ComponentName name, @NonNull IBinder service) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.onServiceConnected");
-            synchronized (ImfLock.class) {
-                if (mCurIme != null && Flags.warmWorkProfileIme()) {
-                    // IME was bound, binding became inactive and now active again without unbinding
-                    // so the IME can be re-used.
-                    return;
-                }
-                if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
-                    mCurIme = IInputMethodInvoker.create(IInputMethod.Stub.asInterface(service));
-                    mCurImeUid = getPackageUid(name.getPackageName());
-                    if (mCurToken == null) {
-                        Slog.w(TAG, "Service connected: " + name + " without a token");
-                        unbindIme();
-                        Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            try {
+                synchronized (ImfLock.class) {
+                    if (mCurIme != null && Flags.warmWorkProfileIme()) {
+                        // IME was bound, binding became inactive and now active again without
+                        // unbinding so the IME can be re-used.
                         return;
                     }
-                    final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(mUserId)
-                            .getMethodMap().get(mSelectedImeId);
-                    final boolean supportsStylusHwChanged =
-                            mSupportsStylusHw != selectedImi.supportsStylusHandwriting();
-                    mSupportsStylusHw = selectedImi.supportsStylusHandwriting();
-                    if (supportsStylusHwChanged) {
-                        InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
+                    // If IME is unbound before this callback, the intent becomes null.
+                    if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
+                        mCurIme = IInputMethodInvoker.create(
+                                IInputMethod.Stub.asInterface(service));
+                        mCurImeUid = getPackageUid(name.getPackageName());
+                        if (DEBUG) {
+                            Slog.v(TAG, "Initializing IME with token: " + mCurToken
+                                    + " on display: " + mCurDisplayId);
+                        }
+                        mService.initializeImeLocked(mCurIme, mCurToken, mUserId);
+                        mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
+                        mAutofillController.performOnCreateInlineSuggestionsRequest();
                     }
-                    final boolean supportsConnectionlessStylusHwChanged =
-                            mSupportsConnectionlessStylusHw
-                                    != selectedImi.supportsConnectionlessStylusHandwriting();
-                    if (supportsConnectionlessStylusHwChanged) {
-                        mSupportsConnectionlessStylusHw =
-                                selectedImi.supportsConnectionlessStylusHandwriting();
-                        InputMethodManager
-                                .invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
-                    }
-                    if (DEBUG) {
-                        Slog.v(TAG, "Initializing IME with token: " + mCurToken + " on display: "
-                                + mCurDisplayId);
-                    }
-                    mService.initializeImeLocked(mCurIme, mCurToken, mUserId);
-                    mService.scheduleNotifyImeUidToAudioService(mCurImeUid);
-                    mService.reRequestCurrentClientSessionLocked(mUserId);
-                    mAutofillController.performOnCreateInlineSuggestionsRequest();
                 }
-
-                // reset Handwriting event receiver.
-                // always call this as it handles changes in mSupportsStylusHw. It is a noop
-                // if unchanged.
-                mService.scheduleResetStylusHandwriting();
-            }
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-
-            if (mLatchForTesting != null) {
-                mLatchForTesting.countDown(); // Notify the finish to tests
-                mLatchForTesting = null;
+            } finally {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                if (mLatchForTesting != null) {
+                    mLatchForTesting.countDown(); // Notify the finish to tests
+                    mLatchForTesting = null;
+                }
             }
         }
 
@@ -737,11 +722,6 @@ final class InputMethodBindingController {
     };
 
     @GuardedBy("ImfLock.class")
-    void invalidateAutofillSession() {
-        mAutofillController.invalidateAutofillSession();
-    }
-
-    @GuardedBy("ImfLock.class")
     void onCreateInlineSuggestionsRequest(@NonNull InlineSuggestionsRequestInfo requestInfo,
             @NonNull InlineSuggestionsRequestCallback callback, boolean touchExplorationEnabled) {
         mAutofillController.onCreateInlineSuggestionsRequest(requestInfo, callback,
@@ -766,28 +746,28 @@ final class InputMethodBindingController {
      */
     @GuardedBy("ImfLock.class")
     void unbindIme() {
-        if (mHasVisibleConnection) {
-            unbindVisibleConnection();
+        unbindVisibleConnection();
+        unbindMainConnection();
+        unbindBackgroundConnection();
+
+        if (mCurToken == null) {
+            // No IME is currently bound, or in the process of binding.
+            return;
         }
 
-        if (mHasMainConnection) {
-            unbindMainConnection();
+        if (DEBUG) {
+            Slog.v(TAG, "Removing window token: " + mCurToken + " on display: "
+                    + mCurDisplayId);
         }
+        mWindowManagerInternal.removeWindowToken(mCurToken, true /* removeWindows */,
+                false /* animateExit */, mCurDisplayId);
+        // ImeWindowToken#removeImmediately will call setImeWindowToken if it was the current one.
 
-        if (mHasBackgroundConnection) {
-            unbindBackgroundConnection();
-        }
-
-        if (mCurToken != null) {
-            // Reset IME window status when unbinding.
-            mImeWindowVis = 0;
-            mBackDisposition = BACK_DISPOSITION_DEFAULT;
-            mService.updateSystemUiLocked(mImeWindowVis, mBackDisposition, mUserId);
-            removeWindowToken();
-            mAutofillController.clearHostInputToken();
-        }
-
+        mCurImeIntent = null;
         mCurImeId = null;
+        mCurToken = null;
+        mCurDisplayId = INVALID_DISPLAY;
+
         clearIme();
     }
 
@@ -797,24 +777,13 @@ final class InputMethodBindingController {
      */
     @GuardedBy("ImfLock.class")
     private void clearIme() {
-        final var userData = mService.getUserData(mUserId);
-        userData.mVisibilityStateComputer.setInputShown(false);
-        mService.onImeDisconnected(mUserId);
+        if (mActive) {
+            // If inactive, the IME was already disconnected.
+            mService.onImeDisconnected(mUserId);
+            mAutofillController.invalidateAutofillSession();
+        }
         mCurIme = null;
         mCurImeUid = Process.INVALID_UID;
-    }
-
-    /** Removes the window token of the current IME. */
-    @GuardedBy("ImfLock.class")
-    private void removeWindowToken() {
-        if (DEBUG) {
-            Slog.v(TAG, "Removing window token: " + mCurToken + " on display: " + mCurDisplayId);
-        }
-        mWindowManagerInternal.removeWindowToken(mCurToken, true /* removeWindows */,
-                false /* animateExit */, mCurDisplayId);
-        // ImeWindowToken#removeImmediately will call setImeWindowToken if it was the current one.
-        mCurToken = null;
-        mCurDisplayId = INVALID_DISPLAY;
     }
 
     /**
@@ -844,40 +813,40 @@ final class InputMethodBindingController {
         }
 
         mCurImeIntent = createIntent(selectedImi.getComponent());
-
-        if (bindMainConnection()) {
-            if (!mHasBackgroundConnection && Flags.warmWorkProfileIme()) {
-                // Always bind the background connection together with the main connection.
-                // TODO(b/456469810): combine the three bindings into one.
-                mHasBackgroundConnection = bindConnection(mBackgroundConnection,
-                        mImeBackgroundBindFlags);
-            }
-            // Selected state becomes current (bound or in process of binding).
-            mCurImeId = selectedImi.getId();
-            mLastBindTime = SystemClock.uptimeMillis();
-
-            mCurToken = new Binder();
-            mCurDisplayId = mSelectedDisplayId;
-            if (DEBUG) {
-                Slog.v(TAG, "Adding window token: " + mCurToken + " on display: " + mCurDisplayId);
-            }
-            if (Flags.warmWorkProfileIme()) {
-                mWindowManagerInternal.addImeWindowToken(mCurToken, mCurDisplayId, mUserId,
-                        null /* options */);
-                mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
-            } else {
-                mWindowManagerInternal.addWindowToken(mCurToken,
-                        WindowManager.LayoutParams.TYPE_INPUT_METHOD, mCurDisplayId,
-                        null /* options */);
-            }
-            return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
-                    null /* method */, null /* accessibilitySessions */, null /* channel */,
-                    mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
+        if (!bindMainConnection()) {
+            Slog.w(TAG, "Binding IME failed for: " + mCurImeIntent);
+            mCurImeIntent = null;
+            return InputBindResult.IME_NOT_CONNECTED;
         }
 
-        Slog.w(TAG, "Binding IME failed for: " + mCurImeIntent);
-        mCurImeIntent = null;
-        return InputBindResult.IME_NOT_CONNECTED;
+        if (!mHasBackgroundConnection && Flags.warmWorkProfileIme()) {
+            // Always bind the background connection together with the main connection.
+            // TODO(b/456469810): combine the three bindings into one.
+            mHasBackgroundConnection = bindConnection(mBackgroundConnection,
+                    mImeBackgroundBindFlags);
+        }
+
+        mLastBindTime = SystemClock.uptimeMillis();
+
+        // Selected state becomes current (bound or in process of binding).
+        mCurImeId = selectedImi.getId();
+        mCurToken = new Binder();
+        mCurDisplayId = mSelectedDisplayId;
+        if (DEBUG) {
+            Slog.v(TAG, "Adding window token: " + mCurToken + " on display: " + mCurDisplayId);
+        }
+        if (Flags.warmWorkProfileIme()) {
+            mWindowManagerInternal.addImeWindowToken(mCurToken, mCurDisplayId, mUserId,
+                    null /* options */);
+            mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
+        } else {
+            mWindowManagerInternal.addWindowToken(mCurToken,
+                    WindowManager.LayoutParams.TYPE_INPUT_METHOD, mCurDisplayId,
+                    null /* options */);
+        }
+        return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
+                null /* method */, null /* accessibilitySessions */, null /* channel */,
+                mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
     }
 
     /**
@@ -903,6 +872,9 @@ final class InputMethodBindingController {
     /** Removes the {@link #mBackgroundConnection} binding. */
     @GuardedBy("ImfLock.class")
     private void unbindBackgroundConnection() {
+        if (!mHasBackgroundConnection) {
+            return;
+        }
         mContext.unbindService(mBackgroundConnection);
         mHasBackgroundConnection = false;
     }
@@ -910,13 +882,19 @@ final class InputMethodBindingController {
     /** Removes the {@link #mMainConnection} binding. */
     @GuardedBy("ImfLock.class")
     private void unbindMainConnection() {
+        if (!mHasMainConnection) {
+            return;
+        }
         mContext.unbindService(mMainConnection);
         mHasMainConnection = false;
     }
 
     /** Removes the {@link #mVisibleConnection} binding. */
     @GuardedBy("ImfLock.class")
-    private void unbindVisibleConnection() {
+    void unbindVisibleConnection() {
+        if (!mHasVisibleConnection) {
+            return;
+        }
         mContext.unbindService(mVisibleConnection);
         mHasVisibleConnection = false;
     }
@@ -984,7 +962,7 @@ final class InputMethodBindingController {
      * Sets the bound IME as visible, raising its binding priority by creating the
      * {@link #mVisibleConnection} binding, or reconnects the IME if needed.
      *
-     * <p>If no IME is currently bound or in the process of binding, this re-binds it.
+     * <p>If no IME is currently bound or in the process of binding, this fails.
      *
      * <p>If the IME is not bound, but in the process of binding, this will reconnect the
      * {@link #mMainConnection} binding if at least {@link #TIME_TO_RECONNECT_MS} milliseconds
@@ -997,19 +975,17 @@ final class InputMethodBindingController {
             if (DEBUG) {
                 Slog.d(TAG, "setImeVisibleOrReconnect: mCurToken=" + mCurToken);
             }
-            if (mHasMainConnection && !mHasVisibleConnection) {
+            if (!mHasVisibleConnection) {
                 mHasVisibleConnection = bindConnection(mVisibleConnection, IME_VISIBLE_BIND_FLAGS);
             }
             return;
         }
 
-        if (!mHasMainConnection) {
-            // IME is not bound and not in the process of binding, re-bind it.
+        if (mCurToken == null) {
+            // IME is not bound and not in the process of binding.
             if (DEBUG) {
-                Slog.d(TAG, "setImeVisibleOrReconnect with no IME bound or in the process of"
-                        + " binding, re-binding.");
+                Slog.d(TAG, "setImeVisibleOrReconnect failed, no IME is bound");
             }
-            bindIme();
             return;
         }
 
@@ -1018,8 +994,8 @@ final class InputMethodBindingController {
         if (bindingDuration >= TIME_TO_RECONNECT_MS) {
             // It has been too long since the binding was created, reconnect (unbind and rebind) the
             // main connection.
-            EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mSelectedImeId,
-                    bindingDuration, 1 /* showing */);
+            EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mCurImeId, bindingDuration,
+                    1 /* showing */);
             Slog.w(TAG, "setImeVisibleOrReconnect will reconnect the main connection"
                     + ", bindingDuration: " + bindingDuration);
             unbindMainConnection();
@@ -1027,20 +1003,9 @@ final class InputMethodBindingController {
         } else {
             // It hasn't been too long since the binding was created.
             if (DEBUG) {
-                Slog.d(TAG, "setImeVisibleOrReconnect failed with main connection created, time"
-                        + " until reconnect: " + (TIME_TO_RECONNECT_MS - bindingDuration));
+                Slog.d(TAG, "setImeVisibleOrReconnect failed, IME was bound recently but not"
+                        + " connected yet");
             }
-        }
-    }
-
-    /**
-     * Sets the IME as not visible, lowering its binding priority by removing the
-     * {@link #mVisibleConnection} binding.
-     */
-    @GuardedBy("ImfLock.class")
-    void setImeNotVisible() {
-        if (mHasVisibleConnection) {
-            unbindVisibleConnection();
         }
     }
 
@@ -1059,25 +1024,18 @@ final class InputMethodBindingController {
             return;
         }
         mActive = false;
-        if (mHasVisibleConnection) {
-            unbindVisibleConnection();
-        }
-        if (mHasMainConnection) {
-            unbindMainConnection();
-        }
+        unbindVisibleConnection();
+        unbindMainConnection();
+
         if (mCurToken == null) {
             // No IME is currently bound, or in the process of binding.
             return;
         }
-        // Reset IME window status when unbinding.
-        mImeWindowVis = 0;
-        mBackDisposition = BACK_DISPOSITION_DEFAULT;
-        mService.updateSystemUiLocked(mImeWindowVis, mBackDisposition, mUserId);
+
         mWindowManagerInternal.setImeWindowToken(null /* token */, mCurDisplayId);
-        mAutofillController.clearHostInputToken();
-        final var userData = mService.getUserData(mUserId);
-        userData.mVisibilityStateComputer.setInputShown(false);
+
         mService.onImeDisconnected(mUserId);
+        mAutofillController.invalidateAutofillSession();
     }
 
     /**
@@ -1105,28 +1063,8 @@ final class InputMethodBindingController {
 
         mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
 
-        final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(mUserId)
-                .getMethodMap().get(mSelectedImeId);
-        final boolean supportsStylusHwChanged =
-                mSupportsStylusHw != selectedImi.supportsStylusHandwriting();
-        mSupportsStylusHw = selectedImi.supportsStylusHandwriting();
-        if (supportsStylusHwChanged) {
-            InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
-        }
-        final boolean supportsConnectionlessStylusHwChanged =
-                mSupportsConnectionlessStylusHw
-                        != selectedImi.supportsConnectionlessStylusHandwriting();
-        if (supportsConnectionlessStylusHwChanged) {
-            mSupportsConnectionlessStylusHw = selectedImi.supportsConnectionlessStylusHandwriting();
-            InputMethodManager.invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
-        }
-        mService.scheduleNotifyImeUidToAudioService(mCurImeUid);
-        mService.reRequestCurrentClientSessionLocked(mUserId);
+        mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
         mAutofillController.performOnCreateInlineSuggestionsRequest();
-        // reset Handwriting event receiver.
-        // always call this as it handles changes in mSupportsStylusHw. It is a noop
-        // if unchanged.
-        mService.scheduleResetStylusHandwriting();
     }
 
     /**
@@ -1138,7 +1076,8 @@ final class InputMethodBindingController {
     @GuardedBy("ImfLock.class")
     @Nullable
     InputBindResult tryReuseConnection() {
-        if (mHasMainConnection) {
+        if (mCurToken != null) {
+            // IME is bound or in the process of binding.
             if (mCurIme != null) {
                 // IME is bound, re-use connection.
                 return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION,
@@ -1157,7 +1096,7 @@ final class InputMethodBindingController {
                 } else {
                     // It has been too long since the binding was created, fall through to reconnect
                     // (unbind and rebind) the IME.
-                    EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mSelectedImeId,
+                    EventLog.writeEvent(EventLogTags.IMF_FORCE_RECONNECT_IME, mCurImeId,
                             bindingDuration, 0 /* showing */);
                 }
             }

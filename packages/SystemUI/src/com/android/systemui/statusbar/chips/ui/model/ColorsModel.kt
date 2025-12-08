@@ -16,9 +16,12 @@
 
 package com.android.systemui.statusbar.chips.ui.model
 
+import android.annotation.ColorRes
 import android.content.Context
 import android.content.res.ColorStateList
 import androidx.annotation.ColorInt
+import androidx.annotation.VisibleForTesting
+import com.android.internal.util.ContrastColorUtil
 import com.android.systemui.res.R
 
 /** Model representing how the chip in the status bar should be colored. */
@@ -61,6 +64,41 @@ sealed interface ColorsModel {
             context.getColor(com.android.internal.R.color.materialColorOutlineVariant)
     }
 
+    /**
+     * The chip should match the system theme main color, but its individual colors can be tweaked
+     * by choosing other color resources. Note that the colors may be adjusted to ensure sufficient
+     * contrast between text and background.
+     */
+    data class SystemThemedWithOverride(
+        @param:ColorRes private val backgroundRes: Int? = null,
+        @param:ColorRes @property:VisibleForTesting val textRes: Int? = null,
+        @param:ColorRes private val outlineRes: Int? = null,
+    ) : ColorsModel {
+
+        override fun background(context: Context): ColorStateList =
+            if (backgroundRes != null) context.getColorStateList(backgroundRes)
+            else SystemThemed.background(context)
+
+        override fun text(context: Context): Int {
+            val textColor =
+                if (textRes != null) context.getColor(textRes) else SystemThemed.text(context)
+
+            // If FG or BG is nondefault, ensure contrast (assumes it's built-in in SystemTheme).
+            if (textRes != null || backgroundRes != null) {
+                // This isn't fully correct, but given that all other ColorsModel variants use ONE
+                // background color, it is sufficient. It could be impossible to find contrast with
+                // the color for all possible background states anyway!
+                val backgroundColor = background(context).defaultColor
+                return ContrastColorUtil.ensureContrast(textColor, backgroundColor, TEXT_CONTRAST)
+            } else {
+                return textColor
+            }
+        }
+
+        override fun outline(context: Context): Int =
+            if (outlineRes != null) context.getColor(outlineRes) else SystemThemed.outline(context)
+    }
+
     /** The chip should have the given background color and primary text color. */
     data class Custom(val backgroundColorInt: Int, val primaryTextColorInt: Int) : ColorsModel {
         override fun background(context: Context): ColorStateList =
@@ -82,3 +120,6 @@ sealed interface ColorsModel {
         override fun outline(context: Context) = null
     }
 }
+
+/** Minimal contrast for text-on-background. */
+private const val TEXT_CONTRAST = 4.5

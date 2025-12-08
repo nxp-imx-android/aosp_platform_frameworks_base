@@ -21,32 +21,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.height
-import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
-import com.android.systemui.common.shared.model.Icon as IconModel
-import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
@@ -56,7 +40,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.NotificationPanelView
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeViewStateProvider
@@ -129,13 +112,6 @@ constructor(
                 notificationPanelView.get().findViewById<View>(R.id.keyguard_header)?.let {
                     (it.parent as ViewGroup).removeView(it)
                 }
-
-                if (viewModel.isSignOutButtonEnabled) {
-                    view
-                        .requireViewById<FrameLayout>(R.id.sign_out_button_container)
-                        .addView(createSignOutButtonView(viewModel, context))
-                }
-
                 KeyguardStatusBarViewBinder.bind(view, viewModel)
                 viewController.init()
                 view
@@ -148,46 +124,5 @@ constructor(
                 )
             },
         )
-    }
-
-    private fun createSignOutButtonView(
-        viewModel: KeyguardStatusBarViewModel,
-        context: Context,
-    ): ComposeView {
-        return ComposeView(context).apply {
-            setViewCompositionStrategy(
-                if (SceneContainerFlag.isEnabled) {
-                    ViewCompositionStrategy.Default
-                } else {
-                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-                }
-            )
-            setContent { PlatformTheme { SignOutButton(viewModel) } }
-        }
-    }
-
-    @Composable
-    private fun SignOutButton(viewModel: KeyguardStatusBarViewModel) {
-        if (viewModel.isSignOutButtonVisible) {
-            Button(
-                onClick = viewModel::onSignOut,
-                contentPadding = PaddingValues(start = 4.dp, end = 8.dp),
-                modifier = Modifier.padding(end = 8.dp),
-            ) {
-                Icon(
-                    icon =
-                        IconModel.Resource(
-                            com.android.internal.R.drawable.ic_logout,
-                            contentDescription = null,
-                        ),
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = stringResource(com.android.internal.R.string.global_action_logout),
-                    modifier = Modifier.wrapContentHeight(unbounded = true),
-                )
-            }
-        }
     }
 }

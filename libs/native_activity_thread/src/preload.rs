@@ -31,15 +31,26 @@ static PRELOAD_INFO: OnceLock<PreloadedLib> = OnceLock::new();
 /// # Safety
 ///
 /// The caller must ensure that initialization routine of the library is safe.
+#[allow(clippy::too_many_arguments)]
 pub unsafe fn preload_lib(
     library_name: &str,
     library_paths: &str,
     allowed_lib_dirs: &str,
+    target_sdk_version: i32,
+    is_shared: bool,
+    zip_paths: &str,
+    native_shared_lib_path: &str,
     preload_func: Option<&str>,
 ) {
-    let namespace =
-        NamespaceFactory::create_linker_namespace("preload", library_paths, allowed_lib_dirs)
-            .expect("failed to create namespace");
+    let namespace = NamespaceFactory::create_linker_namespace(
+        target_sdk_version,
+        is_shared,
+        zip_paths,
+        library_paths,
+        allowed_lib_dirs,
+        native_shared_lib_path,
+    )
+    .expect("failed to create namespace");
 
     let library =
     // SAFETY: We are assuming the caller has specified valid library name and namespace parameters.

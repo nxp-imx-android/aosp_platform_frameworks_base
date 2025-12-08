@@ -770,11 +770,12 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      * Returns an existing root task compatible with the windowing mode and activity type or
      * creates one if a compatible root task doesn't exist.
      *
-     * @see #getOrCreateRootTask(int, int, boolean, Task, Task, ActivityOptions, int)
+     * @see #getOrCreateRootTask(int, int, boolean, Task, Task, ActivityOptions, int, boolean)
      */
     Task getOrCreateRootTask(int windowingMode, int activityType, boolean onTop) {
         return getOrCreateRootTask(windowingMode, activityType, onTop, null /* candidateTask */,
-                null /* sourceTask */, null /* options */, 0 /* intent */);
+                null /* sourceTask */, null /* options */, 0 /* intent */,
+                false /* forceReparentLeafTaskToTda */);
     }
 
     /**
@@ -792,12 +793,14 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      *                      adjacent roots should be launch root of the new task. Can be null.
      * @param options       The activity options used to the launch. Can be null.
      * @param launchFlags   The launch flags for this launch.
+     * @param forceReparentLeafTaskToTda If true the leaf task will be force reparent to TDA.
      * @return The root task to use for the launch.
      * @see #getRootTask(int, int)
      */
     Task getOrCreateRootTask(int windowingMode, int activityType, boolean onTop,
             @Nullable Task candidateTask, @Nullable Task sourceTask,
-            @Nullable ActivityOptions options, int launchFlags) {
+            @Nullable ActivityOptions options, int launchFlags,
+            boolean forceReparentLeafTaskToTda) {
         final int resolvedWindowingMode =
                 windowingMode == WINDOWING_MODE_UNDEFINED ? getWindowingMode() : windowingMode;
         // Need to pass in a determined windowing mode to see if a new root task should be created,
@@ -813,6 +816,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                     options, sourceTask, launchFlags, candidateTask);
             final boolean reparentToTda = (options != null && options.getReparentLeafTaskToTda())
                     || candidateTask.getRootTask().mReparentLeafTaskIfRelaunch
+                    || forceReparentLeafTaskToTda
                     // TODO(b/407669465): remove it once migrated to the new approach
                     // Before using a root task to manage the bubble tasks, the launching bubble
                     // task should be re-parented to TDA.
@@ -883,8 +887,11 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         // UNDEFINED windowing mode is a valid result and means that the new root task will inherit
         // it's display's windowing mode.
         windowingMode = validateWindowingMode(windowingMode, r, candidateTask);
+
+        final boolean forceReparentLeafTaskToTda =
+                launchParams != null && launchParams.mIsRelaunchFromHomeToReparent;
         return getOrCreateRootTask(windowingMode, activityType, onTop, candidateTask, sourceTask,
-                options, launchFlags);
+                options, launchFlags, forceReparentLeafTaskToTda);
     }
 
     @VisibleForTesting

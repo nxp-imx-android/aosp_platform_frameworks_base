@@ -710,7 +710,7 @@ constructor(
             // We avoid showing disabled users.
             !userInfo.isEnabled -> null
             // We meet the conditions to return the UserModel.
-            userInfo.isGuest || userInfo.supportsSwitchToByUser() ->
+            userInfo.isGuest || userInfo.isUiSwitchableHumanUser() ->
                 toUserModel(userInfo, selectedUserId, canSwitchUsers)
             else -> null
         }

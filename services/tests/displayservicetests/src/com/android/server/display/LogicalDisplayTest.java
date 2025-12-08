@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -34,6 +35,7 @@ import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.IBinder;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.CopyOnWriteSparseArray;
 import android.util.SparseArray;
@@ -44,6 +46,7 @@ import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 
 import org.junit.Before;
@@ -492,6 +495,8 @@ public class LogicalDisplayTest {
 
     @Test
     public void testSetCanHostTasks_nonDefaultNormalDisplay() {
+        // create a non-default display that allows content mode switch
+        mDisplayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
         mLogicalDisplay =
                 new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
                         mDisplayInfoCacheMocked);
@@ -569,6 +574,21 @@ public class LogicalDisplayTest {
                 new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
                         mDisplayInfoCacheMocked);
         mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        mLogicalDisplay.setCanHostTasksLocked(true);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+
+        mLogicalDisplay.setCanHostTasksLocked(false);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+    }
+
+    @Test
+    public void testSetCanHostTasks_doesNotAllowContentModeSwitch() {
+        // Disable FLAG_ALLOWS_CONTENT_MODE_SWITCH
+        mDisplayDeviceInfo.flags = 0;
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice,
+                        mDisplayInfoCacheMocked);
 
         mLogicalDisplay.setCanHostTasksLocked(true);
         assertTrue(mLogicalDisplay.canHostTasksLocked());
@@ -684,5 +704,134 @@ public class LogicalDisplayTest {
         assertThat(mLogicalDisplay.getDisplayInfoLocked().logicalHeight).isEqualTo(500);
         assertThat(mLogicalDisplay.getDisplayInfoLocked().physicalXDpi).isEqualTo(100);
         assertThat(mLogicalDisplay.getDisplayInfoLocked().physicalYDpi).isEqualTo(100);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
+    public void testAnisotropyCorrectedMode_selected() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
+                true, mDisplayInfoCacheMocked);
+        Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
+                1000, 1000, 60f, 60f, new float[]{}, new int[]{});
+        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,
+                Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
+                new float[]{}, new int[]{});
+
+        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
+        mDisplayDeviceInfo.supportedModes = new Display.Mode[] {
+                anisotropicMode, anisotropyCorrectedMode};
+        mDisplayDeviceInfo.modeId = MODE_ID;
+        mDisplayDeviceInfo.width = 500;
+        mDisplayDeviceInfo.height = 500;
+        mDisplayDeviceInfo.xDpi = 100;
+        mDisplayDeviceInfo.yDpi = 100;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        assertWithMessage("logicalWidth is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalWidth).isEqualTo(2000);
+        assertWithMessage("logicalHeight is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalHeight).isEqualTo(2000);
+        assertWithMessage("physicalXDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalXDpi).isEqualTo(400);
+        assertWithMessage("physicalYDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalYDpi).isEqualTo(400);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
+    public void testAnisotropyCorrectedMode_notSelectedNoMatchingMode() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
+                true, mDisplayInfoCacheMocked);
+        Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
+                1000, 1000, 60f, 60f, new float[]{}, new int[]{});
+        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, 1000,
+                Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
+                new float[]{}, new int[]{});
+
+        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
+        mDisplayDeviceInfo.supportedModes = new Display.Mode[] {
+                anisotropicMode, anisotropyCorrectedMode};
+        mDisplayDeviceInfo.modeId = MODE_ID;
+        mDisplayDeviceInfo.width = 500;
+        mDisplayDeviceInfo.height = 500;
+        mDisplayDeviceInfo.xDpi = 100;
+        mDisplayDeviceInfo.yDpi = 100;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        assertWithMessage("logicalWidth is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalWidth).isEqualTo(500);
+        assertWithMessage("logicalHeight is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalHeight).isEqualTo(500);
+        assertWithMessage("physicalXDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalXDpi).isEqualTo(100);
+        assertWithMessage("physicalYDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalYDpi).isEqualTo(100);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
+    public void testAnisotropyCorrectedMode_notSelectedIntenalDisplay() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
+                true, mDisplayInfoCacheMocked);
+        Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
+                1000, 1000, 60f, 60f, new float[]{}, new int[]{});
+        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,
+                Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
+                new float[]{}, new int[]{});
+
+        mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
+        mDisplayDeviceInfo.supportedModes = new Display.Mode[] {
+                anisotropicMode, anisotropyCorrectedMode};
+        mDisplayDeviceInfo.modeId = MODE_ID;
+        mDisplayDeviceInfo.width = 500;
+        mDisplayDeviceInfo.height = 500;
+        mDisplayDeviceInfo.xDpi = 100;
+        mDisplayDeviceInfo.yDpi = 100;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        assertWithMessage("logicalWidth is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalWidth).isEqualTo(500);
+        assertWithMessage("logicalHeight is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalHeight).isEqualTo(500);
+        assertWithMessage("physicalXDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalXDpi).isEqualTo(100);
+        assertWithMessage("physicalYDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalYDpi).isEqualTo(100);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
+    public void testAnisotropyCorrectedMode_notSelectedUserPreferredModeSetAndSelected() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
+                true, mDisplayInfoCacheMocked);
+        Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
+                1000, 1000, 60f, 60f, new float[]{}, new int[]{});
+        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,
+                Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
+                new float[]{}, new int[]{});
+
+        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
+        mDisplayDeviceInfo.supportedModes = new Display.Mode[] {
+                anisotropicMode, anisotropyCorrectedMode};
+        mDisplayDeviceInfo.modeId = MODE_ID;
+        mDisplayDeviceInfo.userPreferredModeId = MODE_ID;
+        mDisplayDeviceInfo.width = 500;
+        mDisplayDeviceInfo.height = 500;
+        mDisplayDeviceInfo.xDpi = 100;
+        mDisplayDeviceInfo.yDpi = 100;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo);
+
+        assertWithMessage("logicalWidth is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalWidth).isEqualTo(500);
+        assertWithMessage("logicalHeight is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().logicalHeight).isEqualTo(500);
+        assertWithMessage("physicalXDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalXDpi).isEqualTo(100);
+        assertWithMessage("physicalYDpi is not matching")
+                .that(mLogicalDisplay.getDisplayInfoLocked().physicalYDpi).isEqualTo(100);
     }
 }

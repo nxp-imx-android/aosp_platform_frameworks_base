@@ -175,16 +175,6 @@ flag {
 }
 
 flag {
-  name: "communal_edit_widgets_activity_finish_fix"
-  namespace: "systemui"
-  description: "finish edit widgets activity when stopping"
-  bug: "354725145"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "communal_hub_use_thread_pool_for_widgets"
   namespace: "systemui"
   description: "Use a dedicated thread pool executor for loading widgets on glanceable hub"
@@ -236,16 +226,6 @@ flag {
 }
 
 flag {
-  name: "communal_widget_trampoline_fix"
-  namespace: "systemui"
-  description: "fixes activity starts caused by non-activity trampolines from widgets."
-  bug: "350468769"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "compose_bouncer"
     namespace: "systemui"
     description: "Use the new compose bouncer in SystemUI"
@@ -265,6 +245,13 @@ flag {
     namespace: "systemui"
     description: "Decouple view and controller in AnimLib."
     bug: "393241010"
+}
+
+flag {
+    name: "default_hun_expansion"
+    namespace: "systemui"
+    description: "Enable HUNs to appear in their expanded state by default."
+    bug: "456554989"
 }
 
 flag {
@@ -310,13 +297,13 @@ flag {
 }
 
 flag {
-   name: "disable_flags_per_display"
-   namespace: "systemui"
-   description: "Make sure DisableFlags are implemented per display"
-   bug: "437310166"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
+    name: "disable_dream_suppression"
+    namespace: "systemui"
+    description: "Disable suppression of dream when device is in a vehicle."
+    bug: "457463098"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -402,10 +389,10 @@ flag {
 }
 
 flag {
-    name: "dream_suppression"
+    name: "dream_privacy_indicator"
     namespace: "systemui"
-    description: "Suppress dream when device is in a vehicle."
-    bug: "433984504"
+    description: "Show mic and camera privacy indicators in dream"
+    bug: "367251365"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -611,6 +598,13 @@ flag {
     namespace: "systemui"
     description: "Allow users to add shortcuts to open apps that are not present in the apps category in shortcut helper by default"
     bug: "394290928"
+}
+
+flag {
+    name: "extended_hun_timer_with_mouse"
+    namespace: "systemui"
+    description: "Extends the on-screen display duration for HUNs when a mouse is detected."
+    bug: "456554989"
 }
 
 flag {
@@ -858,6 +852,13 @@ flag {
 }
 
 flag {
+    name: "hun_timer_pause_on_hover"
+    namespace: "systemui"
+    description: "Enables pausing the HUN dismissal timer when the mouse cursor is hovering over the notification"
+    bug: "456554989"
+}
+
+flag {
     name: "indication_text_a11y_fix"
     namespace: "systemui"
     description: "add double shadow to the indication text at the bottom of the lock screen"
@@ -865,6 +866,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "inline_notification_settings_access"
+    namespace: "systemui"
+    description: "Enables inline notifications settings access."
+    bug: "456554989"
 }
 
 flag {
@@ -1539,16 +1547,6 @@ flag {
 }
 
 flag {
-    name: "screenshot_scroll_crop_view_crash_fix"
-    namespace: "systemui"
-    description: "Mitigate crash on invalid computed range in CropView"
-    bug: "232633995"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "secondary_user_widget_host"
   namespace: "systemui"
   description: "Host communal widgets in the current secondary user on HSUM."
@@ -1566,13 +1564,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-  name: "shade_expands_on_status_bar_long_press"
-  namespace: "systemui"
-  description: "Expands the shade on long press of any status bar"
-  bug: "371224114"
 }
 
 flag {
@@ -1907,6 +1898,13 @@ flag {
 }
 
 flag {
+    name: "stl_user_action_gesture"
+    namespace: "systemui"
+    description: "Enables internal support for the UserActionGesture interface in STL"
+    bug: "419520966"
+}
+
+flag {
    name: "switch_user_on_bg"
    namespace: "systemui"
    description: "Does user switching on a background thread"
@@ -2009,4 +2007,15 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wider_landscape_notifications"
+    namespace: "systemui"
+    description: "Make notifications take up more horizontal space in landscape single shade."
+    bug: "433921584"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end

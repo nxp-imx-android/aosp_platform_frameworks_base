@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
@@ -46,6 +47,7 @@ fun VolumePanelButton(
     icon: Icon?,
     isActive: Boolean,
     onClick: (expandable: Expandable) -> Unit,
+    isExpandedAudioTileDetailsView: Boolean,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     semantics: SemanticsPropertyReceiver.() -> Unit = {},
@@ -83,6 +85,12 @@ fun VolumePanelButton(
             text = label,
             style = MaterialTheme.typography.labelMedium,
             maxLines = 2,
+            color =
+                if (isExpandedAudioTileDetailsView) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    Color.Unspecified
+                },
         )
     }
 }

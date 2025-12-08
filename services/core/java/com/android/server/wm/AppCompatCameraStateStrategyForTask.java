@@ -18,7 +18,9 @@ package com.android.server.wm;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.os.Process.INVALID_PID;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
+import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -32,6 +34,7 @@ import java.util.List;
 // TODO(b/442299565): Rename this class once the other strategies have been removed.
 /** Class that tracks task-cameraId (and app) pairs for camera compat. */
 class AppCompatCameraStateStrategyForTask {
+    private static final String TAG = TAG_WITH_CLASS_NAME ? "AppCompatCameraStateStrategy" : TAG_WM;
     // Data set for app data and active camera IDs since we need to 1) get a camera id by a task
     // when setting up camera compat mode; 2) get a task by a camera id when camera connection is
     // closed and we need to clean up our records.
@@ -67,9 +70,6 @@ class AppCompatCameraStateStrategyForTask {
     public CameraAppInfo trackOnCameraOpened(@NonNull String cameraId,
             @NonNull String packageName) {
         final CameraAppInfo cameraAppInfo = createCameraAppInfo(cameraId, packageName);
-        ProtoLog.v(WM_DEBUG_STATES,
-                "Display id=%d is notified that Camera %s is open for package %s",
-                mDisplayContent.mDisplayId, cameraId, packageName);
         mPendingCameraUpdateRepository.trackPendingCameraOpen(cameraAppInfo);
         return cameraAppInfo;
     }
@@ -98,8 +98,7 @@ class AppCompatCameraStateStrategyForTask {
             return;
         }
 
-        // TODO(b/423883666): Use `WM_DEBUG_CAMERA_COMPAT`.
-        ProtoLog.v(WM_DEBUG_STATES,
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                 "CameraOpen: cameraApp=%s cameraInfo.mPid=%d cameraTask=%s "
                         + "cameraAppInfo.mTaskId=%d",
                 cameraApp, cameraAppInfo.mPid, cameraActivity.getTask(), cameraAppInfo.mTaskId);
@@ -147,8 +146,8 @@ class AppCompatCameraStateStrategyForTask {
         // Therefore, there will be only one app recorded with this camera opened.
         CameraAppInfo cameraAppInfo = mCameraAppInfoSet.getAnyCameraAppStateForCameraId(cameraId);
         if (cameraAppInfo == null) {
-            ProtoLog.w(WM_DEBUG_STATES, "Camera closed but cannot find the app which had it"
-                    + " opened.");
+            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT,
+                    "%s: Camera closed but cannot find the app which had it opened.", TAG);
             cameraAppInfo = new CameraAppInfo(cameraId, INVALID_PID, INVALID_TASK_ID, null);
         }
         mPendingCameraUpdateRepository.trackPendingCameraClose(cameraAppInfo);
@@ -248,7 +247,7 @@ class AppCompatCameraStateStrategyForTask {
         });
 
         if (activitiesOfPackageWhichOpenedCamera.isEmpty()) {
-            ProtoLog.w(WM_DEBUG_STATES, "Cannot find camera activity.");
+            ProtoLog.w(WM_DEBUG_CAMERA_COMPAT, "%s: Cannot find camera activity.", TAG);
             return null;
         }
 
@@ -258,7 +257,8 @@ class AppCompatCameraStateStrategyForTask {
 
         // Return null if we cannot determine which activity opened camera. This is preferred to
         // applying treatment to the wrong activity.
-        ProtoLog.w(WM_DEBUG_STATES, "Cannot determine which activity opened camera.");
+        ProtoLog.w(WM_DEBUG_CAMERA_COMPAT, "%s: Cannot determine which activity opened camera.",
+                TAG);
         return null;
     }
 

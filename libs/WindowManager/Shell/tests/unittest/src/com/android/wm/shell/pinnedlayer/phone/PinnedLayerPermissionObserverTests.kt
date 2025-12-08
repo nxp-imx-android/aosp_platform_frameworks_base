@@ -32,12 +32,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
 import com.android.wm.shell.shared.TransactionPool
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.concurrent.CountDownLatch
@@ -73,23 +75,35 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock
+    private lateinit var pinnedWindowRepositionAnimationHandler:
+        PinnedWindowRepositionAnimationHandler
     @Mock private lateinit var transactionPool: TransactionPool
+    @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
 
     private val uid = Binder.getCallingUid()
     private val shellExecutor = ObservedTestShellExecutor()
     private lateinit var pinnedLayerController: PinnedLayerController
     private lateinit var pinnedLayerPermissionObserver: PinnedLayerPermissionObserver
     private lateinit var appOpsManager: AppOpsManager
+    private lateinit var desktopState: FakeDesktopState
 
     @Before
     fun setup() {
         appOpsManager = context.getSystemService(AppOpsManager::class.java)
+
+        desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
+
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
                 transitions,
+                desktopState,
+                rootTaskDisplayAreaOrganizer,
                 presentationController,
                 windowDragTransitionHandler,
+                pinnedWindowRepositionAnimationHandler,
                 transactionPool,
             )
         pinnedLayerPermissionObserver =

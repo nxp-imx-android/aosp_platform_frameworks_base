@@ -436,16 +436,16 @@ public abstract class Connection extends Conferenceable {
      * Indicates that this {@code Connection} can be transferred to another
      * number.
      * Connection supports the confirmed and unconfirmed call transfer feature.
-     * @hide
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public static final int CAPABILITY_TRANSFER = 0x08000000;
 
     /**
      * Indicates that this {@code Connection} can be transferred to another
      * ongoing {@code Connection}.
      * Connection supports the consultative call transfer feature.
-     * @hide
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public static final int CAPABILITY_TRANSFER_CONSULTATIVE = 0x10000000;
 
     /**
@@ -3567,15 +3567,15 @@ public abstract class Connection extends Conferenceable {
      * When {@code false}, the {@link ConnectionService} should signal the network to
      * perform the transfer, but should immediately disconnect the call regardless of
      * the outcome of the transfer.
-     * @hide
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public void onTransfer(@NonNull Uri number, boolean isConfirmationRequired) {}
 
     /**
      * Notifies this Connection, a request to transfer to another Connection.
      * @param otherConnection the {@link Connection} to transfer this call to.
-     * @hide
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public void onTransfer(@NonNull Connection otherConnection) {}
 
     /**

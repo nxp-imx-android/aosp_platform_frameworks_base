@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"نماگرفت ذخیره نمی‌شود"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"برنامه یا سازمان شما اجازه نمی‌دهند نماگرفت بگیرید."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"سرپرست فناوری اطلاعات گرفتن نماگرفت را مسدود کرده است"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"کپی کردن نماگرفت در بریده‌دان"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ویرایش"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"دکمه ویرایش نماگرفت"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"هم‌رسانی"</string>
@@ -837,6 +836,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"‏%1$s. برای تنظیم روی لرزش، تک‌ضرب بزنید."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"‏%1$s. برای صامت کردن تک‌ضرب بزنید."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"کنترل نوفه زمینه"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"صدای فضایی"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"خاموش"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"ثابت"</string>
@@ -928,31 +929,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"تمام"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"اعمال"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"خاموش کردن"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"تلفن"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"رایانه لوحی"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"رایانه کیفی"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"ساعت"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"تلویزیون"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"باز کردن تنظیمات <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"بی‌صدا"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"پیش‌فرض"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"خودکار"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"این اعلان از <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> شما است"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"بدون صدا یا لرزش"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"«بدون صدا یا لرزش» همچنان در بخش مکالمه نشان داده می‌شود"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"بسته به تنظیمات دستگاه ممکن است زنگ بزند یا بلرزد"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"بسته به تنظیمات دستگاه ممکن است زنگ بزند یا بلرزد. مکالمه‌های <xliff:g id="APP_NAME">%1$s</xliff:g> به‌طور پیش‌فرض در حبابک نشان داده می‌شوند."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"سیستم را تنظیم کنید که تشخیص دهد اعلان صدا و لرزش داشته باشد یا نه"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"‏&lt;b&gt;وضعیت:&lt;/b&gt; به «پیش‌فرض» ارتقا یافت"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"می‌توانید تنظیمات و اولویت اعلان‌های همگام‌سازی‌شده را در <xliff:g id="DEVICE_NAME">%1$s</xliff:g> تعدیل کنید"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"‏&lt;b&gt;وضعیت:&lt;/b&gt; به «بی‌صدا» تنزل یافت"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"‏&lt;b&gt;وضعیت:&lt;/b&gt; در رده‌بندی بالاتری قرار گرفت"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"‏&lt;b&gt;وضعیت:&lt;/b&gt; در رده‌بندی پایین‌تری قرار گرفت"</string>
@@ -1124,7 +1117,7 @@
     <item msgid="7453955063378349599">"متمایل به چپ"</item>
     <item msgid="5874146774389433072">"متمایل به راست"</item>
   </string-array>
-    <string name="save" msgid="3392754183673848006">"ذخیره کردن"</string>
+    <string name="save" msgid="3392754183673848006">"ذخیره"</string>
     <string name="reset" msgid="8715144064608810383">"بازنشانی"</string>
     <string name="clipboard" msgid="8517342737534284617">"بریده‌دان"</string>
     <string name="accessibility_key" msgid="3471162841552818281">"دکمه پیمایش سفارشی"</string>

@@ -30,11 +30,13 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.power.shared.model.DozeScreenStateModel
 import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessModel
 import com.android.systemui.power.shared.model.WakefulnessState
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
@@ -44,6 +46,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 /** Defines interface for classes that act as source of truth for power-related data. */
@@ -106,7 +109,8 @@ class PowerRepositoryImpl
 constructor(
     private val manager: PowerManager,
     @Application private val applicationContext: Context,
-    @Application private val scope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     private val systemClock: SystemClock,
     dispatcher: BroadcastDispatcher,
     private val userActivityNotifier: UserActivityNotifier,
@@ -115,30 +119,31 @@ constructor(
     override val dozeScreenState = MutableStateFlow(DozeScreenStateModel.UNKNOWN)
 
     override val isInteractive: StateFlow<Boolean> =
-        conflatedCallbackFlow {
-                fun send() {
-                    trySendWithFailureLogging(manager.isInteractive, TAG)
-                }
-
-                val receiver =
-                    object : BroadcastReceiver() {
-                        override fun onReceive(context: Context?, intent: Intent?) {
-                            send()
-                        }
+        if (SceneContainerFlag.isEnabled) {
+            dispatcher
+                .broadcastFlow(intentFilter) { _, _ -> manager.isInteractive }
+                .onStart { emit(manager.isInteractive) }
+                .stateIn(backgroundScope, SharingStarted.Eagerly, false)
+        } else {
+            conflatedCallbackFlow {
+                    fun send() {
+                        trySendWithFailureLogging(manager.isInteractive, TAG)
                     }
 
-                dispatcher.registerReceiver(
-                    receiver,
-                    IntentFilter().apply {
-                        addAction(Intent.ACTION_SCREEN_ON)
-                        addAction(Intent.ACTION_SCREEN_OFF)
-                    },
-                )
-                send()
+                    val receiver =
+                        object : BroadcastReceiver() {
+                            override fun onReceive(context: Context?, intent: Intent?) {
+                                send()
+                            }
+                        }
 
-                awaitClose { dispatcher.unregisterReceiver(receiver) }
-            }
-            .stateIn(scope, SharingStarted.Eagerly, false)
+                    dispatcher.registerReceiver(receiver, intentFilter)
+                    send()
+
+                    awaitClose { dispatcher.unregisterReceiver(receiver) }
+                }
+                .stateIn(applicationScope, SharingStarted.Eagerly, false)
+        }
 
     private val _wakefulness = MutableStateFlow(WakefulnessModel()).traceAs("wakefulness")
     override val wakefulness = _wakefulness.asStateFlow()
@@ -194,5 +199,10 @@ constructor(
 
     companion object {
         private const val TAG = "PowerRepository"
+        private val intentFilter =
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_ON)
+                addAction(Intent.ACTION_SCREEN_OFF)
+            }
     }
 }

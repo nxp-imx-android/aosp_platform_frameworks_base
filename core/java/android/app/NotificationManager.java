@@ -142,6 +142,71 @@ public class NotificationManager {
     private static boolean localLOGV = false;
 
     /**
+     * Intent that is broadcast when a dynamic bundle has been modified.
+     *
+     * This broadcast is only sent to SystemUI
+     *
+     * Input: nothing
+     * Output: {@link #EXTRA_DYNAMIC_BUNDLE}
+     * Output: {@link #EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE}
+     * @hide
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_DYNAMIC_BUNDLE_MODIFIED =
+            "android.app.action.DYNAMIC_BUNDLE_MODIFIED";
+
+    /** @hide */
+    @IntDef(prefix = { "DYNAMIC_BUNDLE_MODIFICATION_TYPE" }, value = {
+            DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED, DYNAMIC_BUNDLE_MODIFICATION_TYPE_MODIFIED,
+            DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DynamicBundleModificationType {}
+
+    /**
+     * Extra for {@link #ACTION_DYNAMIC_BUNDLE_MODIFIED}
+     * containing the type of modification that has occurred. See
+     * {@link #DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED},
+     * {@link #DYNAMIC_BUNDLE_MODIFICATION_TYPE_MODIFIED},
+     * {@link #DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED}.
+     *
+     * @hide
+     */
+    public static final String EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE =
+            "android.app.extra.EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE";
+
+    /**
+     * Value for {@link #EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE}
+     * A dynamic bundle has been added
+     * @hide
+     */
+    public static final @DynamicBundleModificationType int DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED
+            = 1;
+    /**
+     * Value for {@link #EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE}.
+     * A dynamic bundle has been updated, for example with a new name.
+     * @hide
+     */
+    public static final @DynamicBundleModificationType int DYNAMIC_BUNDLE_MODIFICATION_TYPE_MODIFIED
+            = 2;
+    /**
+     * Value for {@link #EXTRA_DYNAMIC_BUNDLE_MODIFICATION_TYPE}
+     * A dynamic bundle has been removed,
+     * @hide
+     */
+    public static final @DynamicBundleModificationType int DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED
+            = 3;
+
+    /**
+     * Extra for {@link #ACTION_DYNAMIC_BUNDLE_MODIFIED}
+     * containing the {@link DynamicBundle} that has been added, edited, or removed
+     *
+     * @hide
+     */
+    public static final String EXTRA_DYNAMIC_BUNDLE =
+            "android.app.extra.EXTRA_DYNAMIC_BUNDLE";
+
+    /**
      * Intent that is broadcast when an application is blocked or unblocked.
      *
      * This broadcast is only sent to the app whose block state has changed.

@@ -28,7 +28,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -50,28 +50,28 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     @Test
     fun shownPopupChips_allHidden_empty() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
             assertThat(shownPopupChips).isEmpty()
         }
 
     @Test
     fun shownPopupChips_activeMedia_restHidden_mediaControlChipShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
             val userMedia = MediaData(active = true, song = "test")
 
             mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             Snapshot.takeSnapshot {
                 assertThat(shownPopupChips).hasSize(1)
-                assertThat(shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
+                assertThat(shownPopupChips.first().chipId).isEqualTo(QuickActionChipId.MediaControl)
             }
         }
 
     @Test
     fun shownPopupChips_mediaChipToggled_popupShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
+            val shownPopupChips = underTest.shownQuickActionChips
 
             val userMedia = MediaData(active = true, song = "test")
 

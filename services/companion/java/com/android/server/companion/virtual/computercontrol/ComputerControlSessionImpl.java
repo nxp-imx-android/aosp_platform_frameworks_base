@@ -23,6 +23,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_USER_INITIATED;
 
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -30,6 +31,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
+import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -79,7 +81,9 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
+import com.android.server.FgThread;
 import com.android.server.LocalServices;
+import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -92,6 +96,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -104,7 +109,7 @@ import java.util.function.Supplier;
  * The device is created and managed by the system, but it is still owned by the caller.
  */
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub
-        implements IBinder.DeathRecipient {
+        implements IBinder.DeathRecipient, AppOpsManager.OnOpChangedListener {
 
     private static final String TAG = "ComputerControlSession";
 
@@ -150,7 +155,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ComputerControlSessionParams mParams;
 
     private final UserHandle mOwnerUser;
-    private final Context mOwnerContext;
     private final String mOwnerPackageName;
 
     private final Consumer<ComputerControlSessionImpl> mOnClosedListener;
@@ -166,7 +170,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ComputerControlAudioInjector mAudioInjector;
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
+    /** Executor for the shared FgThread. */
+    private final Executor mFgThreadExecutor;
 
+    private final PackageManager mOwnerPackageManager;
+    private final AppOpsManager mAppOpsManager;
     private final WindowManagerInternal mWindowManagerInternal;
     private final InputMethodManagerInternal mInputMethodManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
@@ -179,6 +187,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ImageReader mBlockedStateImageReader;
     private final ComputerControlAllowlistController mAllowlistController;
     private final ComputerControlStatsController mStatsController;
+    @Nullable private final AppInteractionService mAppInteractionService;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -216,17 +225,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
+    @Nullable
     private NotificationInfo mNotificationInfo = null;
     private final Object mPreviewIntentLock = new Object();
     @GuardedBy("mPreviewIntentLock")
+    @Nullable
     private PendingIntent mPreviewIntent = null;
 
     @GuardedBy("mInteractiveMirrors")
     private final List<InteractiveMirrorImpl> mInteractiveMirrors = new ArrayList<>();
 
+    @Nullable
     private ScheduledFuture<?> mSwipeFuture;
+    @Nullable
     private ScheduledFuture<?> mInsertTextFuture;
+    @Nullable
     private ScheduledFuture<?> mCloseSessionFuture;
+    @Nullable
     private ScheduledFuture<?> mDisplayEmptyScheduledAction;
     @Nullable
     private Surface mClientSurface;
@@ -239,7 +254,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         this(context, DisplayManagerGlobal.getInstance(), allowlistController,
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
                 SurfaceControl.Transaction::new, appToken, params, attributionSource,
-                virtualDeviceFactory, onClosedListener);
+                virtualDeviceFactory, onClosedListener, FgThread.getExecutor());
     }
 
     @VisibleForTesting
@@ -249,8 +264,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Consumer<ComputerControlSessionImpl> onClosedListener) {
+            Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
         mContext = context;
+        mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
         mTransactionSupplier = transactionSupplier;
@@ -260,8 +276,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mPreviewIntent = params.getPreviewIntent();
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
-        mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
+        final Context ownerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
         mOwnerPackageName = attributionSource.getPackageName();
+        mOwnerPackageManager = ownerContext.getPackageManager();
 
         mOnClosedListener = onClosedListener;
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -274,6 +291,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mDisplayManagerGlobal = displayManagerGlobal;
         mStatsController = new ComputerControlStatsController(
             mContext.getPackageManager(), attributionSource, params);
+        if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+            mAppInteractionService = LocalServices.getService(AppInteractionService.class);
+        } else {
+            mAppInteractionService = null;
+        }
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
@@ -305,21 +327,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 PixelFormat.RGBA_8888, /* maxImages= */ 1);
 
         try {
-            mVirtualDevice = Binder.withCleanCallingIdentity(
-                    () -> virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
-                            virtualDeviceParams));
+            mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
+                    virtualDeviceParams);
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
 
             // Create the display with a clean identity so it can be trusted. The virtual display's
             // token must not be leaked to the client.
-            mVirtualDisplay = Binder.withCleanCallingIdentity(() -> {
-                VirtualDisplay virtualDisplay = mVirtualDevice.createVirtualDisplay(
-                        virtualDisplayConfig, null, null);
-                mWindowManagerInternal.setAnimationsDisabledForDisplay(
-                        virtualDisplay.getDisplay().getDisplayId(), true);
-                return virtualDisplay;
-            });
+            mVirtualDisplay = mVirtualDevice.createVirtualDisplay(
+                    virtualDisplayConfig, null, null);
+            mWindowManagerInternal.setAnimationsDisabledForDisplay(
+                    mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
 
             mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
@@ -364,6 +382,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+
+        mAppOpsManager = ownerContext.getSystemService(AppOpsManager.class);
+        mAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL, mOwnerPackageName,
+                this);
     }
 
     /**
@@ -410,6 +432,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mOwnerPackageName;
     }
 
+    @Nullable
     NotificationInfo getNotificationInfo() {
         synchronized (mNotificationLock) {
             return mNotificationInfo;
@@ -435,8 +458,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalArgumentException(
                     "Could not find launcher activity for " + packageName + "/" + className);
         }
-        if (!mAllowlistController.isPackageAutomatable(packageName, mOwnerPackageName,
-                mOwnerContext.getPackageManager())) {
+        if (!mAllowlistController.isPackageAutomatable(
+                packageName, mOwnerPackageName, mOwnerPackageManager)) {
             throw new IllegalArgumentException(
                     "Trying to launch " + packageName + " which is not allowlisted");
         }
@@ -541,6 +564,31 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
         mStatsController.onMirrorViewCreated();
         return mirror;
+    }
+
+    @Override
+    public void onOpChanged(String op, String packageName) {}
+
+    @Override
+    public void onOpChanged(@NonNull String op, @NonNull String packageName, int userId) {
+        if (!AppOpsManager.OPSTR_COMPUTER_CONTROL.equals(op)
+                || !Objects.equals(packageName, mOwnerPackageName)
+                || userId != mOwnerUser.getIdentifier()) {
+            return;
+        }
+
+        try {
+            final int uid = mOwnerPackageManager.getPackageUidAsUser(packageName, userId);
+            final int mode = mAppOpsManager.checkOpNoThrow(op, uid, packageName);
+            Slog.i(TAG, "onOpChanged: Found new mode " + mode + " for package " + packageName
+                    + " for user id " + userId);
+            if (mode == AppOpsManager.MODE_IGNORED) {
+                close(CLOSE_REASON_USER_INITIATED);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.e(TAG, "onOpChanged: Failed to get uid for package " + packageName
+                    + " for user id " + userId);
+        }
     }
 
     @Nullable
@@ -697,6 +745,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppToken.unlinkToDeath(this, 0);
         removeAllInteractiveMirrors();
         mOnClosedListener.accept(this);
+        mAppOpsManager.stopWatchingMode(this);
     }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {
@@ -799,15 +848,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return userId == UserHandle.USER_SYSTEM || userId == mOwnerUser.getIdentifier();
     }
 
-    private Intent getLaunchIntent(String packageName, String className) {
+    @Nullable
+    private Intent getLaunchIntent(@NonNull String packageName, @Nullable String className) {
         if (className == null) {
-            return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
+            return mOwnerPackageManager.getLaunchIntentForPackage(packageName);
         }
         final Intent intent = new Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .setClassName(packageName, className);
-        final List<ResolveInfo> resolveInfos = mOwnerContext.getPackageManager()
-                .queryIntentActivities(intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+        final List<ResolveInfo> resolveInfos = mOwnerPackageManager.queryIntentActivities(
+                intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
         if (resolveInfos.isEmpty()) {
             return null;
         }
@@ -934,15 +984,30 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mLifecycle.updateLifecycleState(
                         (config) -> config.mBlockingActivityPackage =
                                 Objects.requireNonNull(componentName.getPackageName()));
+                return;
+            }
+            if (mAppInteractionService != null) {
+                long now = System.currentTimeMillis();
+                mFgThreadExecutor.execute(
+                        () -> {
+                            mAppInteractionService.noteAppInteraction(
+                                    mOwnerPackageName,
+                                    componentName.getPackageName(),
+                                    null, // TODO(b/454891648): get attribution from agent
+                                    now,
+                                    0L, // TODO(b/454891648): remove unused duration
+                                    userId);
+                        });
             }
         }
     }
 
     static final class NotificationInfo {
         private final int mNotificationId;
+        @Nullable
         private final String mNotificationTag;
 
-        NotificationInfo(int notificationId, String notificationTag) {
+        NotificationInfo(int notificationId, @Nullable String notificationTag) {
             this.mNotificationId = notificationId;
             this.mNotificationTag = notificationTag;
         }

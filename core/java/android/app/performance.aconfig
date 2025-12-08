@@ -32,8 +32,9 @@ flag {
 }
 
 flag {
-     name: "sharedpreferences_skip_fsync"
-     namespace: "system_performance"
-     description: "What if SharedPreferences just didn't fsync()? Let's find out."
-     bug: "435433868"
+    name: "include_anr_info"
+    namespace: "system_performance"
+    is_exported: true
+    description: "Include the ANR info object in the ApplicationExitInfo which contains anr id, anr type, user perceptible, timeout "
+    bug: "459886343"
 }

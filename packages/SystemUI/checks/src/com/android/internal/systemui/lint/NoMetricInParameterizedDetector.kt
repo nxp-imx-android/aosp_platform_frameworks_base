@@ -28,25 +28,33 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import java.util.EnumSet
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UImportStatement
 
 /**
  * A detector for SysUI e2e test classes that use both `@RunWith(Parameterized)` and
  * `@NoMetricBefore` / `@NoMetricAfter`, which isn't allowed.
+ *
+ * See also: [UseNoMetricInFunctionalDetector].
  */
 class NoMetricInParameterizedDetector : Detector(), SourceCodeScanner {
     override fun getApplicableUastTypes(): List<Class<out UElement>> {
-        return listOf(UAnnotation::class.java)
+        return listOf(UAnnotation::class.java, UImportStatement::class.java)
     }
 
     override fun createUastHandler(context: JavaContext): UElementHandler {
         return object : UElementHandler() {
             private var isParameterized = false
 
-            override fun visitAnnotation(node: UAnnotation) {
-                if (node.isRunWithParameterized()) {
+            override fun visitImportStatement(node: UImportStatement) {
+                // Ideally we could check that there's a `RunWith` annotation that uses
+                // `Parameterized` as its parameter, but that doesn't work in Kotlin files. So, we
+                // just check if `Parameterized` is imported at all.
+                if (node.asRenderString() == PARAMETERIZED_IMPORT) {
                     isParameterized = true
                 }
+            }
 
+            override fun visitAnnotation(node: UAnnotation) {
                 if (isParameterized) {
                     if (node.qualifiedName == NO_METRIC_BEFORE_ANNOTATION) {
                         val location = context.getLocation(node)
@@ -62,15 +70,8 @@ class NoMetricInParameterizedDetector : Detector(), SourceCodeScanner {
         }
     }
 
-    private fun UAnnotation.isRunWithParameterized(): Boolean {
-        if (this.qualifiedName != "org.junit.runner.RunWith") {
-            return false
-        }
-        val runWithAnnotationValue = this.findAttributeValue("value")?.evaluate()
-        return runWithAnnotationValue?.toString()?.contains("Parameterized") == true
-    }
-
     companion object {
+        private const val PARAMETERIZED_IMPORT = "import org.junit.runners.Parameterized"
         private const val NO_METRIC_BEFORE_ANNOTATION =
             "android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore"
         private const val NO_METRIC_AFTER_ANNOTATION =

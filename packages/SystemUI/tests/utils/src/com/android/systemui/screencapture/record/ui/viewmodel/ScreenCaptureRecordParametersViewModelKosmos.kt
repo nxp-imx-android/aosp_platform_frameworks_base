@@ -21,19 +21,21 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordParametersInteractor
+import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsTargetInteractor
 
 val Kosmos.screenCaptureRecordParametersViewModel by Fixture {
-    ScreenCaptureRecordParametersViewModel(
-        interactor = screenCaptureRecordParametersInteractor,
-        screenRecordCameraInteractor = screenRecordCameraInteractor,
-        screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
-    )
+    screenCaptureRecordParametersViewModelFactory.create()
 }
 
 val Kosmos.screenCaptureRecordParametersViewModelFactory by Fixture {
     object : ScreenCaptureRecordParametersViewModel.Factory {
         override fun create(): ScreenCaptureRecordParametersViewModel {
-            return screenCaptureRecordParametersViewModel
+            return ScreenCaptureRecordParametersViewModel(
+                interactor = screenCaptureRecordParametersInteractor,
+                screenRecordCameraInteractor = screenRecordCameraInteractor,
+                screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
+                recordDetailsTargetInteractor = recordDetailsTargetInteractor,
+            )
         }
     }
 }

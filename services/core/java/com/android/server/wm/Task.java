@@ -220,6 +220,8 @@ class Task extends TaskFragment {
     private static final String TAG_AFFINITYINTENT = "affinity_intent";
     private static final String ATTR_REALACTIVITY = "real_activity";
     private static final String ATTR_REALACTIVITY_SUSPENDED = "real_activity_suspended";
+    private static final String ATTR_REALACTIVITY_APP_LOCK_ENABLED =
+            "real_activity_app_lock_enabled";
     private static final String ATTR_ORIGACTIVITY = "orig_activity";
     private static final String TAG_ACTIVITY = "activity";
     private static final String ATTR_AFFINITY = "affinity";
@@ -320,6 +322,8 @@ class Task extends TaskFragment {
     ComponentName realActivity; // The actual activity component that started the task.
     boolean realActivitySuspended; // True if the actual activity component that started the
                                    // task is suspended.
+    boolean mRealActivityAppLockEnabled; // True if the actual activity component's package has App
+                                         // Lock enabled.
     boolean inRecents;      // Actually in the recents list?
     long lastActiveTime;    // Last time this task was active in the current device session,
                             // including sleep. This time is initialized to the elapsed time when
@@ -478,6 +482,12 @@ class Task extends TaskFragment {
     boolean mReparentLeafTaskIfRelaunch;
 
     /**
+     * When set, disassociate the leaf task if relaunched from home and reparented it to TDA as
+     * root task if possible.
+     */
+    boolean mReparentLeafTaskIfRelaunchFromHome;
+
+    /**
      * Set to affect whether recents should be able to trim this task or not. It's set to true by
      * default.
      */
@@ -522,6 +532,11 @@ class Task extends TaskFragment {
      * Whether the child tasks can have override bounds.
      */
     private boolean mDisallowOverrideBoundsForChildren;
+
+    /**
+     * Whether the child tasks can have override windowing modes.
+     */
+    private boolean mDisallowOverrideWindowingModeForChildren;
 
     SurfaceControl[] mExcludeLayersFromTaskSnapshot;
 
@@ -661,7 +676,7 @@ class Task extends TaskFragment {
             @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
             boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
-            boolean isForceOpaque) {
+            boolean isForceOpaque, boolean _realActivityAppLockEnabled) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
@@ -677,6 +692,7 @@ class Task extends TaskFragment {
         voiceInteractor = _voiceInteractor;
         realActivity = _realActivity;
         realActivitySuspended = _realActivitySuspended;
+        mRealActivityAppLockEnabled = _realActivityAppLockEnabled;
         origActivity = _origActivity;
         rootWasReset = _rootWasReset;
         isAvailable = true;
@@ -1037,6 +1053,11 @@ class Task extends TaskFragment {
             rootWasReset = true;
         }
         mUserId = UserHandle.getUserId(info.getUid());
+        if (android.security.Flags.appLockCore() && realActivity != null) {
+            mRealActivityAppLockEnabled =
+                    mAtmService.getPackageManagerInternalLocked().isPackageAppLockEnabled(
+                            realActivity.getPackageName(), mUserId);
+        }
         mUserSetupComplete = Settings.Secure.getIntForUser(
                 mAtmService.mContext.getContentResolver(), USER_SETUP_COMPLETE, 0, mUserId) != 0;
         if ((info.flags & ActivityInfo.FLAG_AUTO_REMOVE_FROM_RECENTS) != 0) {
@@ -1234,6 +1255,11 @@ class Task extends TaskFragment {
             setBounds(null);
         }
 
+        // Clear the override windowingMode if any ancestor requested to.
+        if (!isOverrideWindowingModeAllowed()) {
+            setWindowingMode(WINDOWING_MODE_UNDEFINED);
+        }
+
         mRootWindowContainer.updateUIDsPresentOnDisplay();
     }
 
@@ -1241,6 +1267,17 @@ class Task extends TaskFragment {
         Task parentTask = getParent() != null ? getParent().asTask() : null;
         while (parentTask != null) {
             if (parentTask.mDisallowOverrideBoundsForChildren) {
+                return false;
+            }
+            parentTask = parentTask.getParent().asTask();
+        }
+        return true;
+    }
+
+    boolean isOverrideWindowingModeAllowed() {
+        Task parentTask = getParent() != null ? getParent().asTask() : null;
+        while (parentTask != null) {
+            if (parentTask.mDisallowOverrideWindowingModeForChildren) {
                 return false;
             }
             parentTask = parentTask.getParent().asTask();
@@ -2125,6 +2162,9 @@ class Task extends TaskFragment {
 
         final boolean pipChanging = wasInPictureInPicture != inPinnedWindowingMode();
         if (pipChanging) {
+            if (wasInPictureInPicture && com.android.window.flags.Flags.enableBubbleRootTask()) {
+                notifyExitPipMode();
+            }
             mTaskSupervisor.scheduleUpdatePictureInPictureModeIfNeeded(this, getRootTask());
         } else if (wasInMultiWindowMode != inMultiWindowMode()) {
             mTaskSupervisor.scheduleUpdateMultiWindowMode(this);
@@ -3389,6 +3429,7 @@ class Task extends TaskFragment {
         info.topActivity = top != null ? top.mActivityComponent : null;
         info.origActivity = origActivity;
         info.realActivity = realActivity;
+        info.isRealActivityAppLockEnabled = mRealActivityAppLockEnabled;
         info.lastActiveTime = lastActiveTime;
         info.taskDescription = new ActivityManager.TaskDescription(getTaskDescription());
         info.supportsMultiWindow = supportsMultiWindowInDisplayArea(tda);
@@ -3862,6 +3903,9 @@ class Task extends TaskFragment {
         if (mReparentLeafTaskIfRelaunch) {
             pw.println(prefix + "mReparentLeafTaskIfRelaunch=true");
         }
+        if (mReparentLeafTaskIfRelaunchFromHome) {
+            pw.println(prefix + "mReparentLeafTaskIfRelaunchFromHome=true");
+        }
         pw.println(prefix + "mSelfMovable=" + mSelfMovable);
     }
 
@@ -3936,6 +3980,7 @@ class Task extends TaskFragment {
             out.attribute(null, ATTR_REALACTIVITY, realActivity.flattenToShortString());
         }
         out.attributeBoolean(null, ATTR_REALACTIVITY_SUSPENDED, realActivitySuspended);
+        out.attributeBoolean(null, ATTR_REALACTIVITY_APP_LOCK_ENABLED, mRealActivityAppLockEnabled);
         if (origActivity != null) {
             out.attribute(null, ATTR_ORIGACTIVITY, origActivity.flattenToShortString());
         }
@@ -4033,6 +4078,7 @@ class Task extends TaskFragment {
         ArrayList<ActivityRecord> activities = new ArrayList<>();
         ComponentName realActivity = null;
         boolean realActivitySuspended = false;
+        boolean realActivityAppLockEnabled = false;
         ComponentName origActivity = null;
         String affinity = null;
         String rootAffinity = null;
@@ -4079,6 +4125,9 @@ class Task extends TaskFragment {
                     break;
                 case ATTR_REALACTIVITY_SUSPENDED:
                     realActivitySuspended = Boolean.valueOf(attrValue);
+                    break;
+                case ATTR_REALACTIVITY_APP_LOCK_ENABLED:
+                    realActivityAppLockEnabled = Boolean.valueOf(attrValue);
                     break;
                 case ATTR_ORIGACTIVITY:
                     origActivity = ComponentName.unflattenFromString(attrValue);
@@ -4258,6 +4307,7 @@ class Task extends TaskFragment {
                 .setResizeMode(resizeMode)
                 .setSupportsPictureInPicture(supportsPictureInPicture)
                 .setRealActivitySuspended(realActivitySuspended)
+                .setRealActivityAppLockEnabled(realActivityAppLockEnabled)
                 .setUserSetupComplete(userSetupComplete)
                 .setMinWidth(minWidth)
                 .setMinHeight(minHeight)
@@ -4695,6 +4745,12 @@ class Task extends TaskFragment {
 
     @Override
     public void setWindowingMode(int windowingMode) {
+        if (!isOverrideWindowingModeAllowed()
+                && windowingMode != WINDOWING_MODE_UNDEFINED) {
+            Slog.w(TAG, "Not allowed to set override windowing mode "
+                    + windowingModeToString(windowingMode) + " for " + this);
+            return;
+        }
         // Calling Task#setWindowingMode() for leaf task since this is a specialization of
         // {@link #setWindowingMode(int)} for root task.
         if (!isRootTask()) {
@@ -4768,12 +4824,9 @@ class Task extends TaskFragment {
             likelyResolvedMode = parent != null ? parent.getWindowingMode()
                     : WINDOWING_MODE_FULLSCREEN;
         }
-        if (currentMode == WINDOWING_MODE_PINNED) {
-            // In the case that we've disabled affecting the SysUI flags as a part of seamlessly
-            // transferring the transform on the leash to the task, reset this state once we're
-            // moving out of pip
-            setCanAffectSystemUiFlags(true);
-            mRootWindowContainer.notifyActivityPipModeChanged(this, null);
+        if (currentMode == WINDOWING_MODE_PINNED
+                && !com.android.window.flags.Flags.enableBubbleRootTask()) {
+            notifyExitPipMode();
         }
         if (likelyResolvedMode == WINDOWING_MODE_PINNED) {
             if (taskDisplayArea.getRootPinnedTask() != null) {
@@ -4893,6 +4946,14 @@ class Task extends TaskFragment {
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.resumeFocusedTasksTopActivities();
         }
+    }
+
+    private void notifyExitPipMode() {
+        // In the case that we've disabled affecting the SysUI flags as a part of seamlessly
+        // transferring the transform on the leash to the task, reset this state once we're
+        // moving out of pip
+        setCanAffectSystemUiFlags(true);
+        mRootWindowContainer.notifyActivityPipModeChanged(this, null);
     }
 
     /**
@@ -6409,6 +6470,12 @@ class Task extends TaskFragment {
         }
     }
 
+    void setReparentLeafTaskIfRelaunchFromHome(boolean reparentLeafTaskIfRelaunchFromHome) {
+        if (isOrganized()) {
+            mReparentLeafTaskIfRelaunchFromHome = reparentLeafTaskIfRelaunchFromHome;
+        }
+    }
+
     void setTrimmableFromRecents(boolean isTrimmable) {
         mIsTrimmableFromRecents = isTrimmable;
     }
@@ -6479,10 +6546,48 @@ class Task extends TaskFragment {
                 if (task == this) {
                     return;
                 }
+                mTransitionController.collect(task);
                 boundsChange[0] |= task.setBounds(null);
             });
         }
         return boundsChange[0];
+    }
+
+    /**
+     * Sets whether the child tasks can have override windowing modes. That is, this method will
+     * clear the override windowing mode for all child tasks if {@code
+     * disallowOverrideWindowingModeForChildren} is {@code true}.
+     *
+     * @return {@code true} if any of the child task's windowing mode is changed.
+     */
+    boolean setDisallowOverrideWindowingModeForChildren(
+            boolean disallowOverrideWindowingModeForChildren) {
+        if (!mCreatedByOrganizer) {
+            Slog.w(TAG, "Can only disable child windowing mode override on tasks created by"
+                    + " organizer");
+            return false;
+        }
+        mDisallowOverrideWindowingModeForChildren = disallowOverrideWindowingModeForChildren;
+        if (!disallowOverrideWindowingModeForChildren) {
+            return false;
+        }
+
+        final boolean[] windowingModeChanged = {false};
+        forAllTasks(task -> {
+            if (task == this) {
+                return;
+            }
+
+            final int prevWinMode = task.getWindowingMode();
+            if (task.getRequestedOverrideWindowingMode() != WINDOWING_MODE_UNDEFINED) {
+                mTransitionController.collect(task);
+                task.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                if (prevWinMode != task.getWindowingMode()) {
+                    windowingModeChanged[0] = true;
+                }
+            }
+        });
+        return windowingModeChanged[0];
     }
 
     @CallSuper
@@ -6582,6 +6687,7 @@ class Task extends TaskFragment {
         private int mResizeMode = RESIZE_MODE_RESIZEABLE;
         private boolean mSupportsPictureInPicture;
         private boolean mRealActivitySuspended;
+        private boolean mRealActivityAppLockEnabled;
         private boolean mUserSetupComplete;
         private int mMinWidth = INVALID_MIN_SIZE;
         private int mMinHeight = INVALID_MIN_SIZE;
@@ -6809,6 +6915,11 @@ class Task extends TaskFragment {
             return this;
         }
 
+        private Builder setRealActivityAppLockEnabled(boolean realActivityAppLockEnabled) {
+            mRealActivityAppLockEnabled = realActivityAppLockEnabled;
+            return this;
+        }
+
         private Builder setLastDescription(String lastDescription) {
             mLastDescription = lastDescription;
             return this;
@@ -6980,7 +7091,7 @@ class Task extends TaskFragment {
                     mRealActivitySuspended, mUserSetupComplete, mMinWidth, mMinHeight,
                     mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
                     mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
-                    mIsForceOpaque);
+                    mIsForceOpaque, mRealActivityAppLockEnabled);
         }
     }
 

@@ -47,6 +47,7 @@
 #include "SkFontTypes.h"
 #include "SkMaskFilter.h"
 #include "SkPath.h"
+#include "SkPathBuilder.h"
 #include "SkPathEffect.h"
 #include "SkPathUtils.h"
 #include "SkShader.h"
@@ -66,11 +67,11 @@ void copyMinikinRectToSkRect(const minikin::MinikinRect& minikinRect, SkRect* sk
 
 }  // namespace
 
-static void getPosTextPath(const SkFont& font, const uint16_t glyphs[], int count,
-                           const SkPoint pos[], SkPath* dst) {
-    dst->reset();
+// Append paths for the specified glyphs to dst.
+static void addPosTextPath(const SkFont& font, const uint16_t glyphs[], int count,
+                           const SkPoint pos[], SkPathBuilder* dst) {
     struct Rec {
-        SkPath* fDst;
+        SkPathBuilder* fDst;
         const SkPoint* fPos;
     } rec = { dst, pos };
     font.getPaths(glyphs, count, [](const SkPath* src, const SkMatrix& mx, void* ctx) {
@@ -276,10 +277,9 @@ namespace PaintGlue {
 
     class GetTextFunctor {
     public:
-        GetTextFunctor(const minikin::Layout& layout, SkPath* path, jfloat x, jfloat y,
-                    Paint* paint, uint16_t* glyphs, SkPoint* pos)
-                : layout(layout), path(path), x(x), y(y), paint(paint), glyphs(glyphs), pos(pos) {
-        }
+        GetTextFunctor(const minikin::Layout& layout, jfloat x, jfloat y, Paint* paint,
+                       uint16_t* glyphs, SkPoint* pos)
+                : layout(layout), x(x), y(y), paint(paint), glyphs(glyphs), pos(pos) {}
 
         void operator()(size_t start, size_t end) {
             for (size_t i = start; i < end; i++) {
@@ -288,22 +288,19 @@ namespace PaintGlue {
                 pos[i].fY = y + layout.getY(i);
             }
             const SkFont& font = paint->getSkFont();
-            if (start == 0) {
-                getPosTextPath(font, glyphs, end, pos, path);
-            } else {
-                getPosTextPath(font, glyphs + start, end - start, pos + start, &tmpPath);
-                path->addPath(tmpPath);
-            }
+            addPosTextPath(font, glyphs + start, end - start, pos + start, &path);
         }
+
+        SkPath detachPath() { return path.detach(); }
+
     private:
+        SkPathBuilder path;
         const minikin::Layout& layout;
-        SkPath* path;
         jfloat x;
         jfloat y;
         Paint* paint;
         uint16_t* glyphs;
         SkPoint* pos;
-        SkPath tmpPath;
     };
 
     static void getTextPath(JNIEnv* env, Paint* paint, const Typeface* typeface, const jchar* text,
@@ -321,8 +318,9 @@ namespace PaintGlue {
         x += MinikinUtils::xOffsetForTextAlign(paint, layout);
         Paint::Align align = paint->getTextAlign();
         paint->setTextAlign(Paint::kLeft_Align);
-        GetTextFunctor f(layout, path, x, y, paint, glyphs, pos);
+        GetTextFunctor f(layout, x, y, paint, glyphs, pos);
         MinikinUtils::forFontRun(layout, paint, f);
+        *path = f.detachPath();
         paint->setTextAlign(align);
         delete[] glyphs;
         delete[] pos;

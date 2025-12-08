@@ -9,16 +9,6 @@ flag {
 }
 
 flag {
-  name: "fix_unbolded_typeface_for_numberpicker"
-  namespace: "text"
-  description: "Use the correct bolded typeface when drawing the selector numbers"
-  bug: "318304896"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "boost_cpu_load_for_long_text_rendering"
   namespace: "text"
   description: "Use ADPF APIs to boost cpu when processing long text layout"

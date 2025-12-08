@@ -18,7 +18,6 @@ package com.android.ravenwoodtest.runnercallbacktests;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.SystemProperties;
-import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -31,7 +30,6 @@ import org.junit.runner.RunWith;
 /**
  * Test for RavenwoodRule.
  */
-@NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public class RavenwoodRuleValidationTest extends RavenwoodRunnerTestBase {
 
     public static class RuleInBaseClass {

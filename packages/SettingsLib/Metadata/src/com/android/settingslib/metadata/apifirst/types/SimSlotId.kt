@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.types
 
 /** A valid sim slot ID. */
-class SimSlotId: ApiFirstType
+class SimSlotId: ApiFirstType<String>

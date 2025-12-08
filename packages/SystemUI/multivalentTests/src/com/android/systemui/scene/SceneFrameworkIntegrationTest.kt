@@ -40,6 +40,7 @@ import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepositor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.KeyguardViewMediator
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -468,6 +469,9 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         // is not an observable that can trigger a new evaluation.
         fakeDeviceEntryRepository.setLockscreenEnabled(enableLockscreen)
         fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
+
+        // TODO(b/466145787): Merge this state with the one in DeviceEntryRepository.
+        fakeKeyguardRepository.setKeyguardEnabled(enableLockscreen)
     }
 
     /** Emulates a phone call in progress. */

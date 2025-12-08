@@ -76,6 +76,7 @@ class RootTaskDesksOrganizer(
     @VisibleForTesting val childLeashes = SparseArray<SurfaceControl>()
     private val onTaskInfoChangedListeners = mutableListOf<(RunningTaskInfo) -> Unit>()
     private val onTaskVanishedListeners = mutableListOf<(RunningTaskInfo) -> Unit>()
+    private var backPressedOnDeskListener: ((task: RunningTaskInfo) -> Unit)? = null
 
     init {
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -487,6 +488,10 @@ class RootTaskDesksOrganizer(
         onTaskVanishedListeners += listener
     }
 
+    override fun setBackPressOnDeskListener(listener: (task: RunningTaskInfo) -> Unit) {
+        backPressedOnDeskListener = listener
+    }
+
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         handleTaskAppeared(taskInfo, leash)
         updateLaunchAdjacentController()
@@ -516,6 +521,16 @@ class RootTaskDesksOrganizer(
             }
         }
         updateLaunchAdjacentController()
+    }
+
+    override fun onBackPressedOnTaskRoot(
+        taskInfo: RunningTaskInfo,
+        isFromMoveActivityTaskToBack: Boolean,
+        isOptInOnBackInvoked: Boolean,
+    ) {
+        if (Flags.enableBackNavigationDesktopAppNoMinimize() && !isOptInOnBackInvoked) {
+            backPressedOnDeskListener?.invoke(taskInfo)
+        }
     }
 
     override fun attachChildSurfaceToTask(taskId: Int, b: SurfaceControl.Builder) {

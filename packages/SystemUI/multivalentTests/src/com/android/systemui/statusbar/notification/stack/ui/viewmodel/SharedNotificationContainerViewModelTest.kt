@@ -1047,7 +1047,28 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
-    fun alphaOnFullQsExpansion() =
+    fun alpha_keyguardShadeToFullQs_remainsOpaque() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+
+            showLockscreenWithShadeExpanded()
+
+            // Alpha should remain 1f as QS expands
+            shadeTestUtil.setQsExpansion(0.5f)
+            assertThat(alpha).isEqualTo(1f)
+
+            shadeTestUtil.setQsExpansion(0.9f)
+            assertThat(alpha).isEqualTo(1f)
+
+            // Ensure that alpha is 1f when QS is fully expanded
+            shadeTestUtil.setQsExpansion(1f)
+            assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    fun alpha_keyguardFullQsToShade_remainsOpaque() =
         kosmos.runTest {
             val viewState = ViewStateAccessor()
             val alpha by
@@ -1055,14 +1076,46 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
             showLockscreenWithQSExpanded()
 
-            // Alpha fades out as QS expands
-            shadeTestUtil.setQsExpansion(0.5f)
-            assertThat(alpha).isWithin(0.01f).of(0.5f)
+            // Alpha should remain 1f as QS collapses back to the shade
             shadeTestUtil.setQsExpansion(0.9f)
-            assertThat(alpha).isWithin(0.01f).of(0.1f)
+            assertThat(alpha).isEqualTo(1f)
 
-            // Ensure that alpha is set back to 1f when QS is fully expanded
+            shadeTestUtil.setQsExpansion(0.5f)
+            assertThat(alpha).isEqualTo(1f)
+
+            shadeTestUtil.setQsExpansion(0f)
+            assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    fun alpha_shadeToFullQs_notOnKeyguard_remainsOpaque() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+
+            showShadeExpanded_notOnKeyguard()
+
+            // Alpha should remain 1f as QS expands
+            shadeTestUtil.setQsExpansion(0.5f)
+            assertThat(alpha).isEqualTo(1f)
             shadeTestUtil.setQsExpansion(1f)
+            assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    fun alpha_fullQsToShade_notOnKeyguard_remainsOpaque() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+
+            showFullQs_notOnKeyguard()
+
+            // Alpha should remain 1f as QS collapses back to the shade
+            shadeTestUtil.setQsExpansion(0.5f)
+            assertThat(alpha).isEqualTo(1f)
+            shadeTestUtil.setQsExpansion(0f)
             assertThat(alpha).isEqualTo(1f)
         }
 
@@ -1117,6 +1170,11 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 testScope = testScope,
                 fillInSteps = true,
             )
+            transitionState.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
             assertThat(alpha).isEqualTo(0f)
         }
 
@@ -1175,6 +1233,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 fillInSteps = true,
             )
             progress.value = 1f
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
             assertThat(alpha).isEqualTo(1f)
         }
 
@@ -1233,12 +1292,13 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 fillInSteps = true,
             )
             progress.value = 1f
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
             assertThat(alpha).isEqualTo(1f)
         }
 
     @Test
     @BrokenWithSceneContainer(330311871)
-    fun alphaWhenGoneIsSetToOne() =
+    fun alpha_lockscreenToGone_fadesOutThenResetsTo1f() =
         kosmos.runTest {
             val viewState = ViewStateAccessor()
             val alpha by
@@ -1925,6 +1985,20 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             to = ALTERNATE_BOUNCER,
             testScope,
         )
+    }
+
+    private suspend fun Kosmos.showShadeExpanded_notOnKeyguard() {
+        keyguardTransitionRepository.sendTransitionSteps(from = LOCKSCREEN, to = GONE, testScope)
+        fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+        shadeTestUtil.setShadeExpansion(1f)
+        shadeTestUtil.setQsExpansion(0f)
+    }
+
+    private suspend fun Kosmos.showFullQs_notOnKeyguard() {
+        keyguardTransitionRepository.sendTransitionSteps(from = LOCKSCREEN, to = GONE, testScope)
+        fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+        shadeTestUtil.setShadeExpansion(1f)
+        shadeTestUtil.setQsExpansion(1f)
     }
 
     private fun Kosmos.showCommunalScene() {

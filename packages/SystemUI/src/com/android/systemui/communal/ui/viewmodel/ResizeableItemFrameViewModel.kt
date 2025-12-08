@@ -35,7 +35,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 
-enum class DragHandle {
+enum class ResizeHandle {
     TOP,
     BOTTOM,
 }
@@ -46,8 +46,8 @@ data class ResizeInfo(
      * number indicates shrinking.
      */
     val spans: Int,
-    /** The drag handle which was used to resize the element. */
-    val fromHandle: DragHandle,
+    /** The resize handle which was used to resize the element. */
+    val fromHandle: ResizeHandle,
 ) {
     /** Whether we are expanding. If false, then we are shrinking. */
     val isExpanding = spans > 0
@@ -82,16 +82,14 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
             get() = roundDownToMultiple(getSpansForPx(minHeightPx)).coerceAtMost(currentSpan)
     }
 
-    /** Check if widget can expanded based on current drag states */
+    /** Check if widget can expanded based on current resize states */
     fun canExpand(): Boolean {
-        return getNextAnchor(bottomDragState, moveUp = false) != null ||
-            getNextAnchor(topDragState, moveUp = true) != null
+        return canExpand(ResizeHandle.BOTTOM) || canExpand(ResizeHandle.TOP)
     }
 
-    /** Check if widget can shrink based on current drag states */
+    /** Check if widget can shrink based on current resize states */
     fun canShrink(): Boolean {
-        return getNextAnchor(bottomDragState, moveUp = true) != null ||
-            getNextAnchor(topDragState, moveUp = false) != null
+        return canShrink(ResizeHandle.TOP) || canShrink(ResizeHandle.BOTTOM)
     }
 
     /** Get the next anchor value in the specified direction */
@@ -120,50 +118,89 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
         return nextAnchor
     }
 
-    /** Handle expansion to the next anchor */
+    /** Handle expansion to the next anchor. Tries bottom handle first. */
     suspend fun expandToNextAnchor() {
-        if (!canExpand()) return
-        val bottomAnchor = getNextAnchor(state = bottomDragState, moveUp = false)
-        if (bottomAnchor != null) {
-            bottomDragState.snapTo(bottomAnchor)
-            return
+        if (canExpand(ResizeHandle.BOTTOM)) {
+            expand(ResizeHandle.BOTTOM)
+        } else if (canExpand(ResizeHandle.TOP)) {
+            expand(ResizeHandle.TOP)
         }
-        val topAnchor =
-            getNextAnchor(
-                state = topDragState,
-                moveUp = true, // Moving up to expand
-            )
-        topAnchor?.let { topDragState.snapTo(it) }
     }
 
-    /** Handle shrinking to the next anchor */
+    /** Handle shrinking to the next anchor. Tries top handle first. */
     suspend fun shrinkToNextAnchor() {
-        if (!canShrink()) return
-        val topAnchor = getNextAnchor(state = topDragState, moveUp = false)
-        if (topAnchor != null) {
-            topDragState.snapTo(topAnchor)
-            return
+        if (canShrink(ResizeHandle.TOP)) {
+            shrink(ResizeHandle.TOP)
+        } else if (canShrink(ResizeHandle.BOTTOM)) {
+            shrink(ResizeHandle.BOTTOM)
         }
-        val bottomAnchor = getNextAnchor(state = bottomDragState, moveUp = true)
-        bottomAnchor?.let { bottomDragState.snapTo(it) }
+    }
+
+    /** Checks if expansion is possible from a specific handle. */
+    fun canExpand(handle: ResizeHandle): Boolean {
+        return when (handle) {
+            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = true) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = false) != null
+        }
+    }
+
+    /** Checks if shrinking is possible from a specific handle. */
+    fun canShrink(handle: ResizeHandle): Boolean {
+        return when (handle) {
+            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = false) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = true) != null
+        }
+    }
+
+    /** Handle expansion to the next anchor from a specific handle. */
+    suspend fun expand(handle: ResizeHandle) {
+        when (handle) {
+            ResizeHandle.TOP -> {
+                getNextAnchor(state = topResizeState, moveUp = true)?.let {
+                    topResizeState.snapTo(it)
+                }
+            }
+            ResizeHandle.BOTTOM -> {
+                getNextAnchor(state = bottomResizeState, moveUp = false)?.let {
+                    bottomResizeState.snapTo(it)
+                }
+            }
+        }
+    }
+
+    /** Handle shrinking to the next anchor from a specific handle. */
+    suspend fun shrink(handle: ResizeHandle) {
+        when (handle) {
+            ResizeHandle.TOP -> {
+                getNextAnchor(state = topResizeState, moveUp = false)?.let {
+                    topResizeState.snapTo(it)
+                }
+            }
+            ResizeHandle.BOTTOM -> {
+                getNextAnchor(state = bottomResizeState, moveUp = true)?.let {
+                    bottomResizeState.snapTo(it)
+                }
+            }
+        }
     }
 
     /**
-     * The layout information necessary in order to calculate the pixel offsets of the drag anchor
+     * The layout information necessary in order to calculate the pixel offsets of the resize anchor
      * points.
      */
     private val gridLayoutInfo = MutableStateFlow<GridLayoutInfo?>(null)
 
-    val topDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
-    val bottomDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val topResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val bottomResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
 
     /** Emits a [ResizeInfo] when the element is resized using a drag gesture. */
     val resizeInfo: Flow<ResizeInfo> =
         merge(
-                snapshotFlow { topDragState.settledValue }.map { ResizeInfo(-it, DragHandle.TOP) },
-                snapshotFlow { bottomDragState.settledValue }
-                    .map { ResizeInfo(it, DragHandle.BOTTOM) },
-            )
+            snapshotFlow { topResizeState.settledValue }
+                .map { ResizeInfo(-it, ResizeHandle.TOP) },
+            snapshotFlow { bottomResizeState.settledValue }
+                .map { ResizeInfo(it, ResizeHandle.BOTTOM) },
+        )
             .filter { it.spans != 0 }
             .distinctUntilChanged()
 
@@ -215,11 +252,11 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     private fun calculateAnchorsForHandle(
-        handle: DragHandle,
+        handle: ResizeHandle,
         layoutInfo: GridLayoutInfo?,
     ): DraggableAnchors<Int> {
 
-        if (layoutInfo == null || (!isDragAllowed(handle, layoutInfo))) {
+        if (layoutInfo == null || (!isResizeAllowed(handle, layoutInfo))) {
             return DraggableAnchors { 0 at 0f }
         }
         val currentRow = layoutInfo.currentRow
@@ -230,7 +267,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
 
         // The maximum row this handle can be dragged to.
         val maxRow =
-            if (handle == DragHandle.TOP) {
+            if (handle == ResizeHandle.TOP) {
                 (currentRow + currentSpan - minItemSpan).coerceAtLeast(0)
             } else {
                 (currentRow + maxItemSpan).coerceAtMost(totalSpans)
@@ -238,14 +275,15 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
 
         // The minimum row this handle can be dragged to.
         val minRow =
-            if (handle == DragHandle.TOP) {
+            if (handle == ResizeHandle.TOP) {
                 (currentRow + currentSpan - maxItemSpan).coerceAtLeast(0)
             } else {
                 (currentRow + minItemSpan).coerceAtMost(totalSpans)
             }
 
         // The current row position of this handle
-        val currentPosition = if (handle == DragHandle.TOP) currentRow else currentRow + currentSpan
+        val currentPosition =
+            if (handle == ResizeHandle.TOP) currentRow else currentRow + currentSpan
 
         return DraggableAnchors {
             for (targetRow in minRow..maxRow step layoutInfo.resizeMultiple) {
@@ -256,7 +294,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
         }
     }
 
-    private fun isDragAllowed(handle: DragHandle, layoutInfo: GridLayoutInfo): Boolean {
+    private fun isResizeAllowed(handle: ResizeHandle, layoutInfo: GridLayoutInfo): Boolean {
         val minItemSpan = layoutInfo.minSpans
         val maxItemSpan = layoutInfo.maxSpans
         val currentRow = layoutInfo.currentRow
@@ -264,19 +302,21 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
         val atMinSize = currentSpan == minItemSpan
 
         // If already at the minimum size and in the first row, item cannot be expanded from the top
-        if (handle == DragHandle.TOP && currentRow == 0 && atMinSize) {
+        if (handle == ResizeHandle.TOP && currentRow == 0 && atMinSize) {
             return false
         }
 
         // If already at the minimum size and occupying the last row, item cannot be expanded from
         // the
         // bottom
-        if (handle == DragHandle.BOTTOM && (currentRow + currentSpan) == maxItemSpan && atMinSize) {
+        if (
+            handle == ResizeHandle.BOTTOM && (currentRow + currentSpan) == maxItemSpan && atMinSize
+        ) {
             return false
         }
 
         // If at maximum size, item can only be shrunk from the bottom and not the top.
-        if (handle == DragHandle.TOP && currentSpan == maxItemSpan) {
+        if (handle == ResizeHandle.TOP && currentSpan == maxItemSpan) {
             return false
         }
 
@@ -287,11 +327,11 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
         coroutineScope("ResizeableItemFrameViewModel.onActivated") {
             gridLayoutInfo
                 .onEach { layoutInfo ->
-                    topDragState.updateAnchors(
-                        calculateAnchorsForHandle(DragHandle.TOP, layoutInfo)
+                    topResizeState.updateAnchors(
+                        calculateAnchorsForHandle(ResizeHandle.TOP, layoutInfo)
                     )
-                    bottomDragState.updateAnchors(
-                        calculateAnchorsForHandle(DragHandle.BOTTOM, layoutInfo)
+                    bottomResizeState.updateAnchors(
+                        calculateAnchorsForHandle(ResizeHandle.BOTTOM, layoutInfo)
                     )
                 }
                 .launchIn(this)

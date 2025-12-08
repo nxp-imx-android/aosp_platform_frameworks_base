@@ -532,7 +532,7 @@ flag {
 flag {
     name: "ppd_install_time_enabled"
     namespace: "permissions"
-    description: "This flag is used to enable the enforcement of install-time purpose guarded permissions and parsing of the specific purpose."
+    description: "This flag is used to enable the enforcement of install-time purpose guarded permissions and parsing of the purpose."
     bug: "418113890"
 }
 
@@ -540,7 +540,15 @@ flag {
     name: "ppd_manifest_enabled"
     is_exported: true
     namespace: "permissions"
-    description: "This flag is used to enable the parsing and system API fields in PackageInfo related to permission purpose declaration in Android Manifest. Specifically, this flag is related to the general purpose, specific purpose, and purpose string that will be used for runtime PPDs."
+    description: "This flag is used to enable the parsing and system API fields in PackageInfo related to permission purpose declaration in Android Manifest. Specifically, this flag controls the objects containing purpose info and the purpose string that will be used for runtime PPDs."
+    bug: "438463457"
+}
+
+flag {
+    name: "ppd_purpose_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "This flag is used to enable the parsing and system API fields in PackageInfo related to purposes for permission purpose declaration in Android Manifest."
     bug: "438463457"
 }
 
@@ -699,4 +707,12 @@ flag {
     namespace: "permissions"
     description: "This flag controls whether to enable the new default app confirmation dialog"
     bug: "440579404"
+}
+
+flag {
+    name: "manage_default_notes_role_package_enabled"
+    is_exported: true
+    namespace: "note"
+    description: "This flag controls role managers' ability to manage the notes role via RoleManager#getDefaultApplication and RoleManager#setDefaultApplication."
+    bug: "443222861"
 }

@@ -60,7 +60,7 @@ class ConcurrentBenchmarkDsl(build: ConcurrentBenchmarkDsl.() -> Unit) {
 
     private var withBarrier = mutableListOf<WithBarrierDsl>()
 
-    private var onEachIteration: ((Int) -> Unit) by SetOnceDelegate { n -> /* do nothing */ }
+    private var onEachIteration: ((Int) -> Unit) by SetOnceDelegate { /* do nothing */ }
 
     private var afterLastIteration: (() -> Unit) by SetOnceDelegate { /* do nothing */ }
 
@@ -202,9 +202,7 @@ class WithBarrierDsl(private val count: Int) {
     private var beforeFirstIteration:
         (CyclicCountDownBarrier) -> Unit by SetOnceDelegate { /* do nothing */ }
 
-    private var onEachIteration: (Int, CyclicCountDownBarrier) -> Unit by SetOnceDelegate {
-        n,
-        barrier ->
+    private var onEachIteration: (Int, CyclicCountDownBarrier) -> Unit by SetOnceDelegate { _, _ ->
         /* do nothing */
     }
 
@@ -241,9 +239,5 @@ open class StateChecker(
     val expectedCalc: (Int) -> String,
 ) {
     object NoOpStateChecker :
-        StateChecker(
-            isInExpectedState = { n -> true },
-            expectedStr = "",
-            expectedCalc = { n -> "" },
-        )
+        StateChecker(isInExpectedState = { true }, expectedStr = "", expectedCalc = { "" })
 }

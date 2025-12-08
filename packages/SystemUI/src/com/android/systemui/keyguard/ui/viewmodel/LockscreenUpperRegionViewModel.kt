@@ -52,6 +52,8 @@ constructor(
     private val desktopInteractor: DesktopInteractor,
     private val transitionInteractor: KeyguardTransitionInteractor,
 ) : ExclusiveActivatable() {
+    data class Decision<T>(val choice: T, val reason: String)
+
     private val hydrator = Hydrator("LockscreenUpperRegionViewModel.hydrator")
     private val keyguardMediaViewModel: KeyguardMediaViewModel by lazy {
         keyguardMediaViewModelFactory.create()
@@ -60,8 +62,8 @@ constructor(
     val isDozing: Boolean by
         hydrator.hydratedStateOf(traceName = "isDozing", source = keyguardInteractor.isDozing)
 
-    val isMediaActive: Boolean
-        get() = keyguardMediaViewModel.isMediaActive
+    val isMediaVisible: Boolean
+        get() = keyguardMediaViewModel.isMediaVisible
 
     val isNotificationStackActive: Boolean by
         hydrator.hydratedStateOf(
@@ -134,10 +136,10 @@ constructor(
             initialValue = false,
         )
 
-    fun evaluateClockSize(evaluateDynamicSize: () -> ClockSize): ClockSize {
-        return forcedClockSize
+    fun evaluateClockSize(evaluateDynamicSize: () -> Decision<ClockSize>): Decision<ClockSize> {
+        return forcedClockSize?.let { Decision(it, "forcedClockSize") }
             ?: when (clockSizeSetting) {
-                ClockSizeSetting.SMALL -> ClockSize.SMALL
+                ClockSizeSetting.SMALL -> Decision(ClockSize.SMALL, "clockSizeSetting == SMALL")
                 ClockSizeSetting.DYNAMIC -> evaluateDynamicSize()
             }
     }

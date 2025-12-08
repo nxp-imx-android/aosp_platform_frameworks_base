@@ -194,6 +194,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                 new ShadeInteractorLegacyImpl(
                         mTestScope.getBackgroundScope(),
                         mKeyguardRepository,
+                        mKosmos.getKeyguardTransitionInteractor(),
                         mShadeRepository,
                         mKosmos.getShadeConfigRepository()
                 ),

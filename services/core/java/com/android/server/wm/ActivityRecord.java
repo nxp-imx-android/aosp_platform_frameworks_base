@@ -89,13 +89,10 @@ import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.res.Configuration.ASSETS_SEQ_UNDEFINED;
-import static android.content.res.Configuration.COLOR_MODE_UNDEFINED;
-import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.content.res.Configuration.EMPTY;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
-import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.ALL_DRAWN;
@@ -145,8 +142,6 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
-import static android.window.DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH;
-import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
@@ -404,9 +399,6 @@ final class ActivityRecord extends WindowToken {
     private static final String ATTR_COMPONENTSPECIFIED = "component_specified";
     private static final String TAG_INITIAL_CALLER_INFO = "initial_caller_info";
     static final String ACTIVITY_ICON_SUFFIX = "_activity_icon_";
-
-    // How many activities have to be scheduled to stop to force a stop pass.
-    private static final int MAX_STOPPING_TO_FORCE = 3;
 
     static final int STARTING_WINDOW_TYPE_NONE = 0;
     static final int STARTING_WINDOW_TYPE_SNAPSHOT = 1;
@@ -2339,6 +2331,10 @@ final class ActivityRecord extends WindowToken {
                 // Add a reference before removing snapshot from cache.
                 snapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                 mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
+            } else if (from != null && (mActivityComponent.equals(from.mActivityComponent)
+                    || from.mStartingData instanceof SplashScreenStartingData)
+                    && transferStartingWindow(from)) {
+                return true;
             }
             return createSnapshot(snapshot, typeParameter);
         }
@@ -3679,7 +3675,7 @@ final class ActivityRecord extends WindowToken {
                             null /* resuming */, "finish");
                 }
 
-                if (endTask) {
+                if (endTask && !Flags.clearLockTaskWhenTaskEnd()) {
                     mAtmService.getLockTaskController().clearLockedTask(task);
                 }
             } else if (!isState(PAUSING)) {
@@ -3834,8 +3830,7 @@ final class ActivityRecord extends WindowToken {
             if (isNextNotYetVisible || delayRemoval || (next != null && inTransition())) {
                 // Add this activity to the list of stopping activities. It will be processed and
                 // destroyed when the next activity reports idle.
-                addToStopping(false /* scheduleIdle */, false /* idleDelayed */,
-                        "completeFinishing");
+                addToStopping(false /* scheduleIdle */, "completeFinishing");
                 setState(STOPPING, "completeFinishing");
             } else if (addToFinishingAndWaitForIdle()) {
                 // We added this activity to the finishing list and something else is becoming
@@ -4056,6 +4051,14 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         finishing = true;
+
+        if (Flags.clearLockTaskWhenTaskEnd()) {
+            // Clear the lock task if needed when the task ends.
+            if (task != null && task.getTopNonFinishingActivity() == null
+                    && !task.isClearingToReuseTask()) {
+                mAtmService.getLockTaskController().clearLockedTask(task);
+            }
+        }
 
         // Transfer the launch cookie to the next running activity above this in the same task.
         if (mLaunchCookie != null && mState != RESUMED && task != null && !task.mInRemoveTask
@@ -5981,8 +5984,6 @@ final class ActivityRecord extends WindowToken {
             Slog.v(TAG_VISIBILITY, "Making invisible: " + this + ", state=" + mState);
         }
         try {
-            final boolean canEnterPictureInPicture = checkEnterPictureInPictureState(
-                    "makeInvisible", true /* beforeStopping */);
             setVisibility(false);
 
             switch (mState) {
@@ -6006,8 +6007,7 @@ final class ActivityRecord extends WindowToken {
                 case PAUSING:
                 case PAUSED:
                 case STARTED:
-                    addToStopping(true /* scheduleIdle */,
-                            canEnterPictureInPicture /* idleDelayed */, "makeInvisible");
+                    addToStopping(true /* scheduleIdle */, "makeInvisible");
                     break;
                 default:
                     break;
@@ -6435,41 +6435,19 @@ final class ActivityRecord extends WindowToken {
         mTaskSupervisor.checkReadyForSleepLocked();
     }
 
-    void addToStopping(boolean scheduleIdle, boolean idleDelayed, String reason) {
+    void addToStopping(boolean scheduleIdle, String reason) {
         if (!mTaskSupervisor.mStoppingActivities.contains(this)) {
             EventLogTags.writeWmAddToStopping(mUserId, System.identityHashCode(this),
                     shortComponentName, reason);
             mTaskSupervisor.mStoppingActivities.add(this);
         }
 
-        if (com.android.window.flags.Flags.reduceUnnecessaryScheduleIdleMsg()) {
-            // Schedule idle to process the stopping activities if there won't be further events to
-            // handle them.
-            if (scheduleIdle && (isSleeping() || (!mTransitionController.inTransition()
-                    && !mTransitionController.inFinishingTransition(this)))) {
-                ProtoLog.v(WM_DEBUG_STATES, "Scheduling idle now");
-                mTaskSupervisor.scheduleIdle();
-            }
-            return;
-        }
-
-        final Task rootTask = getRootTask();
-        // If we already have a few activities waiting to stop, then give up on things going idle
-        // and start clearing them out. Or if r is the last of activity of the last task the root
-        // task will be empty and must be cleared immediately.
-        boolean forceIdle = mTaskSupervisor.mStoppingActivities.size() > MAX_STOPPING_TO_FORCE
-                || (isRootOfTask() && rootTask.getChildCount() <= 1);
-        if (scheduleIdle || forceIdle) {
-            ProtoLog.v(WM_DEBUG_STATES,
-                    "Scheduling idle now: forceIdle=%b immediate=%b", forceIdle, !idleDelayed);
-
-            if (!idleDelayed) {
-                mTaskSupervisor.scheduleIdle();
-            } else {
-                mTaskSupervisor.scheduleIdleTimeout(this);
-            }
-        } else {
-            rootTask.checkReadyForSleep();
+        // Schedule idle to process the stopping activities if there won't be further events to
+        // handle them.
+        if (scheduleIdle && (isSleeping() || (!mTransitionController.inTransition()
+                && !mTransitionController.inFinishingTransition(this)))) {
+            ProtoLog.v(WM_DEBUG_STATES, "Scheduling idle now");
+            mTaskSupervisor.scheduleIdle();
         }
     }
 
@@ -7562,38 +7540,6 @@ final class ActivityRecord extends WindowToken {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
 
-        // If the previously resolved full config and new parent activity is in PiP, retain the
-        // following configs so that the activity doesn't get destroyed and recreated on display
-        // transfer while still remaining in PiP mode.
-        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && mLastReportedPictureInPictureMode
-                && newParentConfiguration.windowConfiguration.getWindowingMode()
-                == WINDOWING_MODE_PINNED) {
-            final Configuration lastReportedMergedConfig =
-                    mLastReportedConfiguration.getMergedConfiguration();
-            int configChanges = info.getRealConfigChanged();
-            if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
-                requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
-                requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
-                requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
-            }
-        }
-
-        // Reset density and other configs when launching PiP as a full task on another display
-        // TODO(b/443008096): Remove this override once we find the root cause behind activity
-        // recycling leading to PiP removal
-        if (ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue()
-                && mLastReportedPictureInPictureMode
-                && newParentConfiguration.windowConfiguration.getWindowingMode()
-                != WINDOWING_MODE_PINNED) {
-            requestedOverrideConfig.colorMode = COLOR_MODE_UNDEFINED;
-            requestedOverrideConfig.touchscreen = TOUCHSCREEN_UNDEFINED;
-            requestedOverrideConfig.densityDpi = DENSITY_DPI_UNDEFINED;
-        }
-
         super.resolveOverrideConfiguration(newParentConfiguration);
         final Configuration resolvedConfig = getResolvedOverrideConfiguration();
 
@@ -8651,10 +8597,14 @@ final class ActivityRecord extends WindowToken {
      * @param changes the changes due to the given configuration.
      * @param changesConfig the configuration that was used to calculate the given changes via a
      *        call to getConfigurationChanges.
+     *
+     * TODO(b/464080038): Migrate this method to AppCompatRecreateOnConfigChangePolicy
      */
     private boolean shouldRelaunchLocked(int changes, Configuration changesConfig) {
-        int configChanged = info.getRealConfigChanged();
-        if ((configChanged & CONFIG_RESOURCES_UNUSED) != 0) {
+        // Bitmask of configuration changes that will be handled by the activity itself. If a
+        // configuration change occurs that is covered by this mask, skip relaunching the activity.
+        int skipRelaunchConfigMask = info.getRealConfigChanged();
+        if ((skipRelaunchConfigMask & CONFIG_RESOURCES_UNUSED) != 0) {
             // Don't relaunch any activities that claim they do not use resources at all.
             // If they still do, the onConfigurationChanged() callback will get called to
             // let them know anyway.
@@ -8670,18 +8620,18 @@ final class ActivityRecord extends WindowToken {
         if (info.applicationInfo.targetSdkVersion < O
                 && requestedVrComponent != null
                 && onlyVrUiModeChanged) {
-            configChanged |= CONFIG_UI_MODE;
+            skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
 
         // TODO(b/274944389): remove workaround after long-term solution is implemented
         // Don't restart due to desk mode change if the app does not have desk resources.
         if (mWmService.mSkipActivityRelaunchWhenDocking && onlyDeskInUiModeChanged(changesConfig)
                 && !hasDeskResources()) {
-            configChanged |= CONFIG_UI_MODE;
+            skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
 
         // Some apps relaunch unexpectedly with display move and crash.
-        configChanged |= mAppCompatController.getDisplayCompatModePolicy()
+        skipRelaunchConfigMask |= mAppCompatController.getDisplayCompatModePolicy()
                 .getDisplayCompatModeConfigMask();
 
         // For CONFIG_ASSETS_PATHS change, check the constraints for the resource overlays which
@@ -8690,14 +8640,18 @@ final class ActivityRecord extends WindowToken {
         // done.
         // TODO(b/454293961): Explore if display-specific configuration changes can be applied for
         // RROs with constraints, and if so, then remove this temporary solution.
-        if ((configChanged & CONFIG_ASSETS_PATHS) == 0
+        if ((skipRelaunchConfigMask & CONFIG_ASSETS_PATHS) == 0
                 && (changes & CONFIG_ASSETS_PATHS) != 0
                 && !mAppCompatController.getResourceOverlayPolicy()
                 .doResourceOverlayChangesAffectActivity()) {
-            configChanged |= CONFIG_ASSETS_PATHS;
+            skipRelaunchConfigMask |= CONFIG_ASSETS_PATHS;
         }
 
-        return (changes & (~configChanged)) != 0;
+        // If the app has resource for a specific config, relaunch the activity.
+        skipRelaunchConfigMask &= (~mAppCompatController.getRecreateOnConfigChangePolicy()
+                .getRecreateConfigMask());
+
+        return (changes & (~skipRelaunchConfigMask)) != 0;
     }
 
     /**
@@ -8742,7 +8696,7 @@ final class ActivityRecord extends WindowToken {
             Resources packageResources = mAtmService.mContext.createPackageContextAsUser(
                     packageName, 0, UserHandle.of(mUserId)).getResources();
             for (Configuration sizeConfiguration :
-                    packageResources.getSizeAndUiModeConfigurations()) {
+                    packageResources.getResourceConfigurations()) {
                 if (isInDeskUiMode(sizeConfiguration)) {
                     mHasDeskResources = true;
                     break;

@@ -50,6 +50,8 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
+import com.android.server.personalcontext.notifications.ContextActionResolver;
+import com.android.server.personalcontext.notifications.NotificationActionFactory;
 import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 import com.android.server.personalcontext.textclassifier.TextClassificationActionRenderer;
 
@@ -191,9 +193,11 @@ public class PersonalContextManagerService extends SystemService {
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
             final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
-                            userContext,
                             getLocalService(NotificationManagerInternal.class),
-                            userContext.getPackageManager());
+                            new NotificationActionFactory(
+                                    userContext,
+                                    userContext.getPackageManager(),
+                                    new ContextActionResolver(userContext)));
             final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer();
 
             TextClassificationActionRenderer textClassificationActionRenderer =

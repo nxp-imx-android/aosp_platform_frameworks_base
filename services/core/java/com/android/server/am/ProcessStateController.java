@@ -94,7 +94,7 @@ public class ProcessStateController {
      */
     private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
-    private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
+    private ProcessStateController(ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecordInternal> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
@@ -118,14 +118,14 @@ public class ProcessStateController {
             }
         };
         mOomConstants = oomConstants;
-        mOomAdjuster = new OomAdjusterImpl(ams, ams.mProcLock, processList, activeUids,
+        mOomAdjuster = new OomAdjusterImpl(mLock, mProcLock, processList, activeUids,
                 handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
                 updateHandler);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
-            synchronized (ams) {
+            synchronized (mLock) {
                 if (cr.setOngoingCalls(hasOngoingCalls)) {
                     runUpdate(cr.getClient(), OOM_ADJ_REASON_SERVICE_BINDER_CALL);
                 }
@@ -621,7 +621,7 @@ public class ProcessStateController {
     /**
      * Initialize a process that is being attached.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mLock", "mProcLock"})
     public void setAttachingProcessStatesLSP(@NonNull ProcessRecordInternal proc) {
         mOomAdjuster.setAttachingProcessStatesLSP(proc);
     }
@@ -824,8 +824,9 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public boolean startService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
-        return psr.startService(sr);
+    public boolean addRunningService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
+        return psr.addRunningService(sr);
     }
 
     /**
@@ -833,8 +834,9 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public boolean stopService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
-        return psr.stopService(sr);
+    public boolean removeRunningService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
+        return psr.removeRunningService(sr);
     }
 
     /**
@@ -842,7 +844,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopAllServices(@NonNull ProcessServiceRecord psr) {
+    public void stopAllServices(@NonNull ProcessServiceRecordInternal psr) {
         psr.stopAllServices();
     }
 
@@ -851,7 +853,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void startExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
+    public void startExecutingService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
         psr.startExecutingService(sr);
     }
 
@@ -860,7 +863,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
+    public void stopExecutingService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
         psr.stopExecutingService(sr);
     }
 
@@ -869,7 +873,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopAllExecutingServices(@NonNull ProcessServiceRecord psr) {
+    public void stopAllExecutingServices(@NonNull ProcessServiceRecordInternal psr) {
         psr.stopAllExecutingServices();
     }
 
@@ -968,24 +972,25 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void updateHasAboveClientLocked(@NonNull ProcessServiceRecord psr) {
-        psr.updateHasAboveClientLocked();
+    public void updateHasAboveClientLocked(@NonNull ProcessServiceRecordInternal psr) {
+        psr.updateHasAboveClient();
     }
 
     /**
      * Cleanup a process's state.
      */
     @GuardedBy("mLock")
-    public void onCleanupApplicationRecord(@NonNull ProcessServiceRecord psr) {
-        psr.onCleanupApplicationRecordLocked();
+    public void onCleanupApplicationRecord(@NonNull ProcessServiceRecordInternal psr) {
+        psr.onCleanupApplicationRecord();
     }
 
     /**
      * Set which process is hosting a service.
      */
     @GuardedBy("mLock")
-    public void setHostProcess(@NonNull ServiceRecord sr, @Nullable ProcessRecord host) {
-        sr.app = host;
+    public void setHostProcess(@NonNull ServiceRecordInternal sr,
+            @Nullable ProcessRecordInternal host) {
+        sr.setHostProcess(host);
     }
 
     /**
@@ -1009,16 +1014,16 @@ public class ProcessStateController {
      * Note the start time of a short foreground service.
      */
     @GuardedBy("mLock")
-    public void setShortFgsInfo(@NonNull ServiceRecord sr, long uptimeNow) {
-        sr.setShortFgsInfo(uptimeNow);
+    public void setShortFgsStartTime(@NonNull ServiceRecordInternal sr, long uptimeNow) {
+        sr.setShortFgsStartTime(uptimeNow);
     }
 
     /**
      * Note that a short foreground service has stopped.
      */
     @GuardedBy("mLock")
-    public void clearShortFgsInfo(@NonNull ServiceRecord sr) {
-        sr.clearShortFgsInfo();
+    public void clearShortFgsStartTime(@NonNull ServiceRecordInternal sr) {
+        sr.clearShortFgsStartTime();
     }
 
     /**
@@ -1266,7 +1271,6 @@ public class ProcessStateController {
      * Builder for ProcessStateController.
      */
     public static class Builder {
-        private final ActivityManagerService mAms;
         private final ProcessListInternal mProcessList;
         private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
@@ -1275,14 +1279,14 @@ public class ProcessStateController {
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
+        private Object mProcLock = null;
         private Consumer<ProcessRecordInternal> mTopChangeCallback = null;
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
-        public Builder(ActivityManagerService ams, ProcessListInternal processList,
+        public Builder(ProcessListInternal processList,
                 ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
                 OomAdjuster.Callback oomAdjCallback, OomAdjuster.StateGetter oomAdjStateGetter) {
-            mAms = ams;
             mProcessList = processList;
             mActiveUids = activeUids;
             mOomConstants = oomConstants;
@@ -1300,6 +1304,9 @@ public class ProcessStateController {
             if (mLock == null) {
                 mLock = new Object();
             }
+            if (mProcLock == null) {
+                mProcLock = new Object();
+            }
             if (mTopChangeCallback == null) {
                 mTopChangeCallback = proc -> {};
             }
@@ -1314,8 +1321,8 @@ public class ProcessStateController {
             if (mOomAdjInjector == null) {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
-            return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
+            return new ProcessStateController(mProcessList, mActiveUids, mHandlerThread,
+                    mLock, mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
                     mOomConstants, mOomAdjCallback, mOomAdjStateGetter);
         }
 
@@ -1342,6 +1349,14 @@ public class ProcessStateController {
          */
         public Builder setLockObject(Object lock) {
             mLock = lock;
+            return this;
+        }
+
+        /**
+         * Sets the lock object used for synchronizing access to process-related data structures.
+         */
+        public Builder setProcLockObject(Object lock) {
+            mProcLock = lock;
             return this;
         }
 

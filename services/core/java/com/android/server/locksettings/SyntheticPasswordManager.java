@@ -550,6 +550,13 @@ class SyntheticPasswordManager {
     private LockSettingsStorage mStorage;
     private volatile IWeaver mWeaver;
     private WeaverConfig mWeaverConfig;
+
+    // Lock that synchronizes getting the Weaver service. Locking order is
+    // this -> SoftwareRateLimiter -> mGetWeaverServiceLock.
+    // This separate lock is needed instead of just using 'this' because
+    // getHardwareRateLimiterTimeout() can be called with only the SoftwareRateLimiter lock held.
+    private final Object mGetWeaverServiceLock = new Object();
+
     private PasswordSlotManager mPasswordSlotManager;
     private final KeyStore mKeyStore;
 
@@ -665,11 +672,9 @@ class SyntheticPasswordManager {
         return null;
     }
 
-    /**
-     * Returns a handle to the Weaver service, or null if Weaver is unavailable.  Note that not all
-     * devices support Weaver.
-     */
-    private synchronized @Nullable IWeaver getWeaverService() {
+    // Uncomment this when android.security.Flags.enableWeaverGetTimeout() is made unconditional.
+    // @GuardedBy("mGetWeaverServiceLock")
+    private @Nullable IWeaver getWeaverServiceLocked() {
         IWeaver weaver = mWeaver;
         if (weaver != null) {
             return weaver;
@@ -698,6 +703,22 @@ class SyntheticPasswordManager {
         mPasswordSlotManager.refreshActiveSlots(getUsedWeaverSlots());
         Slog.i(TAG, "Weaver service initialized");
         return weaver;
+    }
+
+    /**
+     * Returns a handle to the Weaver service, or null if Weaver is unavailable. Note that not all
+     * devices support Weaver.
+     */
+    private @Nullable IWeaver getWeaverService() {
+        if (android.security.Flags.enableWeaverGetTimeout()) {
+            synchronized (mGetWeaverServiceLock) {
+                return getWeaverServiceLocked();
+            }
+        } else {
+            synchronized (this) {
+                return getWeaverServiceLocked();
+            }
+        }
     }
 
     /**
@@ -1143,12 +1164,25 @@ class SyntheticPasswordManager {
             saveState(PASSWORD_DATA_NAME, pwd.toBytes(), protectorId, userId);
             savePasswordMetrics(credential, sp, protectorId, userId);
         }
-        createSyntheticPasswordBlob(protectorId, PROTECTOR_TYPE_LSKF_BASED, sp, protectorSecret,
-                sid, userId);
+        createSyntheticPasswordBlob(
+                protectorId, PROTECTOR_TYPE_LSKF_BASED, sp, protectorSecret, sid, userId);
+        if (android.security.Flags.enableAtomicChildProfileLskf()
+                && credential.isUnifiedProfilePassword()) {
+            final UserInfo parent = mUserManager.getProfileParent(userId);
+            if (parent == null) {
+                throw new IllegalStateException("User has no parent user");
+            }
+            tieProtectorToParent(gatekeeper, userId, protectorId, parent.id, credential);
+        }
         syncState(userId); // ensure the new files are really saved to disk
         return protectorId;
     }
 
+    /**
+     * Creates a unified profile password for the given profileUserId encrypted by a key bound to
+     * the parent sid. The caller is responsible for calling {@link
+     * LockSettingsStorage#syncSyntheticPasswordState(int)} afterward.
+     */
     void tieProtectorToParent(
             IGateKeeperService gatekeeper,
             int profileUserId,
@@ -2307,6 +2341,43 @@ class SyntheticPasswordManager {
             return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
         }
         return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
+    }
+
+    /**
+     * Queries the hardware rate-limiter for the remaining timeout for the given LSKF. Returns
+     * {@link Duration.ZERO} if there is no timeout or if the timeout is unknown.
+     *
+     * <p>The return value is appropriate to use only to compare to the timeout the system currently
+     * has cached, update it to the greater of the two, and update the UI accordingly. This is
+     * useful when the system has "forgotten" the timeout, such as after a reboot, to make the UI
+     * correctly reflect the timeout. Since this is best-effort only and falls back to zero when the
+     * timeout is unknown, this must not be relied on for any hard security boundary.
+     *
+     * <p>This must not synchronize on the {@link SyntheticPasswordManager}, since it is called
+     * under the {@link SoftwareRateLimiter} lock which is the inner lock.
+     */
+    public Duration getHardwareRateLimiterTimeout(LskfIdentifier id) {
+        if (!android.security.Flags.enableWeaverGetTimeout()) {
+            return Duration.ZERO;
+        }
+        if (id.isSpecialCredential()) {
+            return Duration.ZERO;
+        }
+        int slot = loadWeaverSlot(id.protectorId, id.userId);
+        if (slot == INVALID_WEAVER_SLOT) {
+            return Duration.ZERO;
+        }
+        IWeaver weaver = getWeaverService();
+        if (weaver == null) {
+            return Duration.ZERO;
+        }
+        try {
+            long timeout = weaver.getTimeout(slot);
+            return Duration.ofMillis(timeout);
+        } catch (Exception e) {
+            Slogf.w(TAG, "Unable to get timeout of Weaver slot %d: %s", slot, e.getMessage());
+            return Duration.ZERO;
+        }
     }
 
     public byte[] loadProfilePassword(int profileUserId, long protectorId) {

@@ -677,7 +677,16 @@ class BubblePositionerTest {
     }
 
     @Test
-    fun update_shouldBePendingBubbleBarTopOnScreen() {
+    fun update_showingAsFloating_shouldNotBePendingBubbleBarTopOnScreen() {
+        positioner.isShowingInBubbleBar = false
+        positioner.update(defaultDeviceConfig)
+
+        assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
+    }
+
+    @Test
+    fun update_showingAsBubbleBar_shouldBePendingBubbleBarTopOnScreen() {
+        positioner.isShowingInBubbleBar = true
         positioner.update(defaultDeviceConfig)
 
         assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isTrue()
@@ -685,6 +694,7 @@ class BubblePositionerTest {
 
     @Test
     fun updateBubbleBarTopOnScreen_shouldResetPendingSignal() {
+        positioner.isShowingInBubbleBar = true
         positioner.update(defaultDeviceConfig)
         positioner.updateBubbleBarTopOnScreen(200)
 

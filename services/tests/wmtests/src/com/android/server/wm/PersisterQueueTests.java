@@ -23,15 +23,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.MediumTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +61,11 @@ public class PersisterQueueTests {
     // We allow at most 0.2s more than the expected timeout.
     private static final long TIMEOUT_ALLOWANCE = 200;
 
+    @Mock
+    private Context mMockContext;
+
+    private BroadcastReceiver mShutdownReceiver;
+
     private final PersisterQueue mTarget =
             new PersisterQueue(INTER_WRITE_DELAY_MS, PRE_TASK_DELAY_MS);
 
@@ -59,6 +74,8 @@ public class PersisterQueueTests {
 
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this).close();
+
         mListener = new TestPersisterQueueListener();
         mListener.setExpectedOnPreProcessItemCallbackTimes(1);
         mTarget.addListener(mListener);
@@ -66,6 +83,14 @@ public class PersisterQueueTests {
         mFactory = new TestWriteQueueItemFactory();
 
         mTarget.startPersisting();
+        mTarget.onSystemReady(mMockContext);
+
+        final ArgumentCaptor<BroadcastReceiver> receiverCaptor =
+                ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mMockContext).registerReceiver(receiverCaptor.capture(),
+                argThat(filter -> Intent.ACTION_SHUTDOWN.equals(filter.getAction(0))),
+                any(), any());
+        mShutdownReceiver = receiverCaptor.getValue();
 
         assertTrue("Target didn't call callback on start up.",
                 mListener.waitForAllExpectedCallbackDone(TIMEOUT_ALLOWANCE));
@@ -315,6 +340,49 @@ public class PersisterQueueTests {
                 + processTime).that(processTime).isLessThan(TIMEOUT_ALLOWANCE);
     }
 
+    @Test
+    public void testShutdownFlushesSynchronously() {
+        final long dispatchTime = SystemClock.uptimeMillis();
+        mTarget.addItem(mFactory.createItem(), false);
+        mTarget.addItem(mFactory.createItem(), false);
+
+        mShutdownReceiver.onReceive(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                new Intent(Intent.ACTION_SHUTDOWN));
+
+        assertEquals("Flush should wait until all items are processed before return.",
+                2, mFactory.getTotalProcessedItemCount());
+        final long processTime = SystemClock.uptimeMillis() - dispatchTime;
+        assertWithMessage("Flush should trigger immediate flush without delays. processTime: "
+                + processTime).that(processTime).isLessThan(TIMEOUT_ALLOWANCE);
+    }
+
+    @Test
+    public void testAlwaysFlushAfterShutdown() throws Exception {
+        mShutdownReceiver.onReceive(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                new Intent(Intent.ACTION_SHUTDOWN));
+
+        mFactory.setExpectedProcessedItemNumber(1);
+        mListener.setExpectedOnPreProcessItemCallbackTimes(1);
+
+        final long dispatchTime = SystemClock.uptimeMillis();
+        mTarget.addItem(mFactory.createItem(), false);
+        assertTrue("Target didn't process item enough times.",
+                mFactory.waitForAllExpectedItemsProcessed(TIMEOUT_ALLOWANCE));
+        assertEquals("Target didn't process item.", 1, mFactory.getTotalProcessedItemCount());
+        final long processDuration = SystemClock.uptimeMillis() - dispatchTime;
+        assertTrue("Target didn't process item immediately after shutdown. duration: "
+                        + processDuration + "ms pretask delay: "
+                        + PRE_TASK_DELAY_MS + "ms",
+                processDuration < PRE_TASK_DELAY_MS);
+
+        assertTrue("Target didn't call callback enough times.",
+                mListener.waitForAllExpectedCallbackDone(TIMEOUT_ALLOWANCE));
+        // Once before processing this item, once after that.
+        assertEquals(2, mListener.mProbablyDoneResults.size());
+        // The last one must be called with probably done being true.
+        assertTrue("The last probablyDone must be true.", mListener.mProbablyDoneResults.get(1));
+    }
+
     private static class TestWriteQueueItemFactory {
         private final AtomicInteger mItemCount = new AtomicInteger(0);;
         private CountDownLatch mLatch;
@@ -393,7 +461,7 @@ public class PersisterQueueTests {
         }
     }
 
-    private class TestPersisterQueueListener implements PersisterQueue.Listener {
+    private static class TestPersisterQueueListener implements PersisterQueue.Listener {
         CountDownLatch mCallbackLatch;
         final List<Boolean> mProbablyDoneResults = new ArrayList<>();
 

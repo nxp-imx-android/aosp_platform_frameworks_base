@@ -645,6 +645,10 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ସ୍ଥାନୀୟ ନେଟୱାର୍କ ଡିଭାଇସଗୁଡ଼ିକୁ ଆକ୍ସେସ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ଲୁପବେକ ଇଣ୍ଟରଫେସ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ଲୁପବେକ ଇଣ୍ଟରଫେସ ମାଧ୍ୟମରେ ଅନ୍ୟ ଆପ୍ସ ସହ ଇଣ୍ଟରାକ୍ଟ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
+    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
+    <skip />
+    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"ଆଖପାଖର ଡିଭାଇସ ମଧ୍ୟରେ ଆପେକ୍ଷିକ ଅବସ୍ଥିତିକୁ ନିର୍ଦ୍ଧାରଣ କର"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ଆଖପାଖର ଡିଭାଇସଗୁଡ଼ିକ ମଧ୍ୟରେ ଆପେକ୍ଷିକ ଅବସ୍ଥିତିକୁ ନିର୍ଦ୍ଧାରଣ କରିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ପସନ୍ଦର NFC ପେମେଣ୍ଟ ସେବା ସୂଚନା"</string>
@@ -2179,29 +2183,21 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"କୌଣସି ଅଟୋଫିଲ୍‍ ପରାମର୍ଶ ନାହିଁ"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{ଗୋଟିଏ ସ୍ୱତଃପୂରଣ ପରାମର୍ଶ}other{#ଟି ସ୍ୱତଃପୂରଣ ପରାମର୍ଶ}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"କୁ ସେଭ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_save_title_expressive (2665408870424848558) -->
-    <skip />
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"ରେ ସୂଚନା ସେଭ କରନ୍ତୁ"</string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"କୁ <xliff:g id="TYPE">%1$s</xliff:g> ସେଭ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_save_title_with_type_expressive (6063660551496235255) -->
-    <skip />
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE">%1$s</xliff:g> ସେଭ କରନ୍ତୁ"</string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"କୁ <xliff:g id="TYPE_0">%1$s</xliff:g> ଏବଂ <xliff:g id="TYPE_1">%2$s</xliff:g> ସେଭ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_save_title_with_2types_expressive (2996687022212666293) -->
-    <skip />
+    <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE_0">%1$s</xliff:g> ଏବଂ <xliff:g id="TYPE_1">%2$s</xliff:g> ସେଭ କରନ୍ତୁ"</string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"କୁ <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g> ସେଭ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_save_title_with_3types_expressive (3301676215501214049) -->
-    <skip />
+    <string name="autofill_save_title_with_3types_expressive" msgid="3301676215501214049"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g> ସେଭ କରନ୍ତୁ"</string>
     <string name="autofill_update_title" msgid="3630695947047069136"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"ରେ ଅପ୍‌ଡେଟ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_update_title_expressive (7660582214109012920) -->
-    <skip />
+    <string name="autofill_update_title_expressive" msgid="7660582214109012920"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"ରେ ସୂଚନା ଅପଡେଟ କରନ୍ତୁ"</string>
     <string name="autofill_update_title_with_type" msgid="5264152633488495704"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE">%1$s</xliff:g>କୁ ଅପ୍‌ଡେଟ୍ କରିବେ।"</string>
-    <!-- no translation found for autofill_update_title_with_type_expressive (6162413585161767846) -->
-    <skip />
+    <string name="autofill_update_title_with_type_expressive" msgid="6162413585161767846"><b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE">%1$s</xliff:g> ଅପଡେଟ କରନ୍ତୁ"</string>
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE_0">%1$s</xliff:g> ଏବଂ <xliff:g id="TYPE_1">%2$s</xliff:g> ଅପ୍‌ଡେଟ୍ କରିବେ?"</string>
-    <!-- no translation found for autofill_update_title_with_2types_expressive (1911825941498393471) -->
-    <skip />
+    <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE_0">%1$s</xliff:g> ଏବଂ <xliff:g id="TYPE_1">%2$s</xliff:g> ଅପଡେଟ କରନ୍ତୁ"</string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"ରେ ଏହି ଆଇଟମଗୁଡ଼ିକୁ ଅପଡେଟ କରିବେ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <!-- no translation found for autofill_update_title_with_3types_expressive (6040725201378429027) -->
-    <skip />
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"ରେ ଏହି ଆଇଟମଗୁଡ଼ିକୁ ଅପଡେଟ କରନ୍ତୁ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"ସେଭ୍‌ କରନ୍ତୁ"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"ନାଁ, ପଚାରିଥିବାରୁ ଧନ୍ୟବାଦ"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"ଏବେ ନୁହେଁ"</string>

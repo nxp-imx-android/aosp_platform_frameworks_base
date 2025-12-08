@@ -19,8 +19,10 @@ package com.android.systemui.scene.ui.viewmodel
 import android.content.res.Resources
 import android.os.Build
 import android.view.MotionEvent
+import android.view.WindowInsetsController
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsCompat
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.DefaultEdgeDetector
@@ -35,6 +37,8 @@ import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
@@ -66,6 +70,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /** Models UI state for the scene container. */
 class SceneContainerViewModel
@@ -86,6 +91,7 @@ constructor(
     val lightRevealScrim: LightRevealScrimViewModel,
     val wallpaperViewModel: WallpaperViewModel,
     keyguardInteractor: KeyguardInteractor,
+    keyguardTransitionInteractor: KeyguardTransitionInteractor,
     val burnIn: AodBurnInViewModel,
     val clock: KeyguardClockViewModel,
     val dualShadeEducationalTooltipsViewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
@@ -106,11 +112,25 @@ constructor(
 
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
 
+    val isAodOrDozing: Boolean by
+        hydrator.hydratedStateOf(
+            false,
+            keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
+                it.to == KeyguardState.DOZING || it.to == KeyguardState.AOD
+            },
+        )
+
     /**
      * Whether to reject the transition to this ContentKey because the FalsingManager believes the
      * transition is from a false touch. If null, do not reject the current transition.
      */
     private var falsingCheckRejectsTransitionToContent: ContentKey? = null
+
+    /**
+     * Whether the last navigation bar visible request was to show navigation bars. If null, no
+     * request has been sent.
+     */
+    private var lastNavigationBarVisibleRequest: Boolean? = null
 
     private val dualShadeGestureSplitRatio =
         resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
@@ -402,6 +422,38 @@ constructor(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
         return sceneInteractor.filteredUserActions(unfiltered)
+    }
+
+    suspend fun updateNavigationBarVisibility(
+        windowInsetsController: WindowInsetsController?,
+        hasBackAction: Boolean,
+        sceneKey: SceneKey,
+        aodOrDozing: Boolean,
+    ) {
+        if (windowInsetsController == null) {
+            return
+        }
+        coroutineScope {
+            // We launch a new coroutine that will be processed on the main thread message queue
+            // after the frame to avoid blocking calls during frame rendering.
+            // Note: We cannot update windowInsetsController from a background thread because
+            // showing and hiding navigation bars must be called from the main thread.
+            launch {
+                val isNavigationBarVisible =
+                    hasBackAction ||
+                        sceneKey == Scenes.Gone ||
+                        sceneKey == Scenes.Communal ||
+                        (sceneKey == Scenes.Lockscreen && !aodOrDozing)
+                if (lastNavigationBarVisibleRequest != isNavigationBarVisible) {
+                    lastNavigationBarVisibleRequest = isNavigationBarVisible
+                    if (isNavigationBarVisible) {
+                        windowInsetsController.show(WindowInsetsCompat.Type.navigationBars())
+                    } else {
+                        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+                    }
+                }
+            }
+        }
     }
 
     /** Immediately changes the initial scene if necessary. */

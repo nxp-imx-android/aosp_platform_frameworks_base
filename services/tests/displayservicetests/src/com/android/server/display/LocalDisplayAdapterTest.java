@@ -1161,7 +1161,7 @@ public class LocalDisplayAdapterTest {
                 new DisplayModeDirector.DesiredDisplayModeSpecs(
                         /*baseModeId*/ baseModeId,
                         /*allowGroupSwitching*/ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
                 ));
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
@@ -1171,7 +1171,7 @@ public class LocalDisplayAdapterTest {
                         /* applyToken */ null,
                         /* baseModeId */ 0,
                         /* allowGroupSwitching */ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
                 )});
 
         // Change the display
@@ -1198,7 +1198,7 @@ public class LocalDisplayAdapterTest {
                 new DisplayModeDirector.DesiredDisplayModeSpecs(
                         /*baseModeId*/ baseModeId,
                         /*allowGroupSwitching*/ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
                 ));
 
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
@@ -1211,7 +1211,7 @@ public class LocalDisplayAdapterTest {
                         /* applyToken */ null,
                         /* baseModeId */ 2,
                         /* allowGroupSwitching */ false,
-                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
+                        REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
                 )});
     }
 
@@ -1891,7 +1891,7 @@ public class LocalDisplayAdapterTest {
                         /* defaultMode */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES,
-                        new IdleScreenRefreshRateConfig(100)
+                        new IdleScreenRefreshRateConfig(100), null
                 );
 
         private FakeDisplay(int port) {

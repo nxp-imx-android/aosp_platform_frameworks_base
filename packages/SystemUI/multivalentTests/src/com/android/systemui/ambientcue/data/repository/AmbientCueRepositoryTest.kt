@@ -70,6 +70,8 @@ import com.android.systemui.shared.settings.data.repository.secureSettingsReposi
 import com.android.systemui.shared.system.taskStackChangeListeners
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.time.Duration
+import java.time.Instant
 import kotlinx.coroutines.flow.update
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -643,6 +645,51 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             assertThat(isAmbientCueEnabled).isFalse()
         }
     }
+
+    @Test
+    fun addDismissedGroups_updatesFlow() =
+        kosmos.runTest {
+            val dismissedGroups by collectLastValue(underTest.dismissedGroups)
+            runCurrent()
+
+            val expiry = Instant.now().plus(Duration.ofHours(1))
+            val groupIds = setOf("group1", "group2")
+
+            underTest.addDismissedGroups(groupIds, expiry)
+            runCurrent()
+
+            assertThat(dismissedGroups).hasSize(2)
+            assertThat(dismissedGroups?.keys).containsExactly("group1", "group2")
+            assertThat(dismissedGroups?.get("group1")).isEqualTo(expiry)
+        }
+
+    @Test
+    fun addDismissedGroups_enforcesCapacity_removesOldest() =
+        kosmos.runTest {
+            val dismissedGroups by collectLastValue(underTest.dismissedGroups)
+            runCurrent()
+
+            // Add 20 items (Max Capacity) with older timestamp
+            val oldExpiry = Instant.now().plus(Duration.ofHours(1))
+            val oldGroups =
+                (1..AmbientCueRepositoryImpl.MAX_DISMISSED_GROUPS_SIZE).map { "group$it" }.toSet()
+            underTest.addDismissedGroups(oldGroups, oldExpiry)
+            runCurrent()
+            assertThat(dismissedGroups).hasSize(20)
+
+            // Add 1 new item with newer timestamp
+            val newExpiry = Instant.now().plus(Duration.ofHours(2))
+            val newGroup = setOf("newGroup")
+            underTest.addDismissedGroups(newGroup, newExpiry)
+            runCurrent()
+
+            // Assert size is still 20, "newGroup" exists, and one old group is gone
+            assertThat(dismissedGroups).hasSize(20)
+            assertThat(dismissedGroups?.containsKey("newGroup")).isTrue()
+            // We verify at least one key from the original set is missing
+            val remainingOldKeys = dismissedGroups?.keys?.filter { it.startsWith("group") }
+            assertThat(remainingOldKeys).hasSize(19)
+        }
 
     companion object {
 

@@ -28,6 +28,7 @@ import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.internal.widget.LockscreenCredential
 import com.android.keyguard.KeyguardSecurityModel
+import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Biometric
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.None
@@ -52,7 +53,9 @@ import dagger.Module
 import java.util.function.Function
 import javax.inject.Inject
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
@@ -194,6 +197,27 @@ interface AuthenticationRepository {
      * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
      */
     fun getPowerButtonInstantlyLocks(): Boolean
+
+    /**
+     * The last time a warm up signal was triggered to the system, as a Duration wrapping
+     * [SystemClock.elapsedRealtime] milliseconds. [ZERO - WARM_UP_THROTTLE_DURATION] serves as the
+      first value to allow for a warm up to be triggered immediately after boot.
+     */
+    var lastWarmUpTrigger: Duration
+
+    /**
+     * Sends a signal to the system to trigger warm ups of any LSKF auth system components that may
+     * be in a low power state. The signal is expected to be handled by the system and return
+     * instantly without throwing any exceptions.
+     *
+     * The signal is expected to only be sent down to the system a maximum of once for every
+     * [WARM_UP_THROTTLE_DURATION].
+     */
+    suspend fun triggerAuthWarmUp()
+
+    companion object {
+        val WARM_UP_THROTTLE_DURATION = 5.seconds
+    }
 }
 
 @SysUISingleton
@@ -282,6 +306,8 @@ constructor(
 
     private val _isDuplicateAttempt = MutableStateFlow(false)
     override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
+
+    override var lastWarmUpTrigger = ZERO - WARM_UP_THROTTLE_DURATION
 
     init {
         if (SceneContainerFlag.isEnabled) {
@@ -375,6 +401,14 @@ constructor(
     override fun getPowerButtonInstantlyLocks(): Boolean {
         return !lockPatternUtils.isSecure(selectedUserId) ||
             lockPatternUtils.getPowerButtonInstantlyLocks(selectedUserId)
+    }
+
+    override suspend fun triggerAuthWarmUp() {
+        withContext(backgroundDispatcher) {
+            val now = clock.elapsedRealtime().milliseconds
+            lockPatternUtils.prepareToVerifyCredential(selectedUserId)
+            Log.d(TAG, "Triggered a background auth warm up for user $selectedUserId at $now")
+        }
     }
 
     private val selectedUserId: Int

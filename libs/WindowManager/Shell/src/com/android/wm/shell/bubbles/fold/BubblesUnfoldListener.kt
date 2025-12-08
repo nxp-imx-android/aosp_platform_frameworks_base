@@ -40,7 +40,7 @@ class BubblesUnfoldListener(
                 selectedBubble is Bubble &&
                 foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
-            val moveToFullscreen: Boolean = selectedBubble.isTaskValidToBubble
+            val moveToFullscreen: Boolean = !selectedBubble.isTaskValidToBubble
             onStartBarToFloatingOrFullscreenTransition(selectedBubble, moveToFullscreen)
         }
     }

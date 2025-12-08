@@ -16,6 +16,9 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
@@ -25,6 +28,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.proto.ProtoOutputStream;
 import android.view.SurfaceControl;
 
 import com.android.internal.protolog.ProtoLog;
@@ -125,5 +129,14 @@ final class ImeWindowToken extends WindowToken {
         pw.print(" visibleRequested="); pw.print(isVisibleRequested());
         pw.print(" clientVisible="); pw.println(isClientVisible());
         pw.print(" targetUserId="); pw.println(mTargetUserId);
+    }
+
+    @Override
+    void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
+        final long token = proto.start(fieldId);
+        proto.write(HASH_CODE, System.identityHashCode(this));
+        proto.write(USER_ID, mTargetUserId);
+        proto.write(TITLE, "ImeWindowToken");
+        proto.end(token);
     }
 }

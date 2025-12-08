@@ -2524,27 +2524,24 @@
              of Android higher than the number given here, the permission will not
              be created.  -->
         <attr name="maxSdkVersion" />
-        <!-- TODO(b/443057927): Remove when updating to specific purpose.
-             Optional: specify if valid purpose is required for this permission. True indicates
-             it is required, false or not specifying the element indicates optional.
+        <!-- Used to specify the app's minimum target SDK version for which purpose
+             validation should be enforced in order to prevent app compatibility issues. This must
+             be set to at least SDK version 37.
 
-             <p>If set to true, {@link #AndroidManifestValidPurpose valid-purpose} tag must be used
-             to specify at least one valid purpose. As a result of doing that, to prevent automatic
-             revocation at install time, all permission requests made using the
-             {@link #AndroidManifestUsesPermission uses-permission} tag will need to specify at
-             least one of these configured valid purposes. This enforcement of purpose validation
-             is currently only supported for normal permissions defined within the platform
-             manifest. -->
-        <attr name="requiresPurpose" format="boolean" />
-        <!-- TODO(b/443057927): Rename for specific purpose.
-             Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
-             Use it to specify the app's minimum target SDK version for which purpose validation
-             should be enforced in order to prevent app compatibility issues. This must be set to
-             at least SDK version 37. -->
+             <p>If specified, {@link #AndroidManifestValidPurpose valid-purpose}
+             tag must be used to specify at least one valid purpose. For install-time
+             permissions, permission requests made using the {@link #AndroidManifestUsesPermission
+             uses-permission} tag will need to specify at least one of these configured valid
+             purposes to prevent permission from being revoked. This enforcement of purpose
+             validation is currently only supported for permissions defined within the platform
+             manifest.-->
         <attr name="requiresPurposeTargetSdkVersion"  format="integer" />
         <!-- Used to specify the app's minimum target SDK version for which general purpose
              validation should be enforced in order to prevent app compatibility issues. This must
-             be set to at least SDK version 37. -->
+             be set to at least SDK version 37.
+
+             <p>If specified, {@link #AndroidManifestValidGeneralPurpose valid-general-purpose} tag
+             must be used to specify at least one valid general purpose.-->
         <attr name="requiresGeneralPurposeTargetSdkVersion"  format="integer" />
 
         <!-- Used to specify the app's minimum target SDK version for which a purpose string
@@ -2553,9 +2550,9 @@
 
     </declare-styleable>
 
-     <!-- TODO(b/443057927): Rename for specific purpose.
-          The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
-          If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+     <!-- The <code>valid-purpose</code> tag is used to specify valid purpose(s)
+          for a permission. If there are multiple valid purposes, use multiple
+          <code>valid-purpose</code> tags.
 
           <p>This appears as a child tag of the
           {@link #AndroidManifestPermission permission} tag. -->

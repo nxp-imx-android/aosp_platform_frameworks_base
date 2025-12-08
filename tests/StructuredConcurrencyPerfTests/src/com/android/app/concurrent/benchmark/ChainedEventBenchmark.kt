@@ -108,9 +108,9 @@ class SimpleChainedEventBenchmark(
     ChainedEventBenchmark<SimpleWritableEventBuilder, SimpleEvent<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:chainLength={1}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorBuilder) * CHAIN_LENGTHS
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorBuilder) * CHAIN_LENGTHS
     }
 }
 
@@ -127,9 +127,9 @@ class FlowChainedEventBenchmark(
     ChainedEventBenchmark<FlowWritableEventBuilder, Flow<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:chainLength={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) * CHAIN_LENGTHS
     }
 }
@@ -144,9 +144,9 @@ class KairosChainedEventBenchmark(
     ChainedEventBenchmark<KairosWritableEventBuilder, KairosState<*>> {
 
     companion object {
-        @Parameters(name = "{0},{1}")
+        @Parameters(name = "{0}:chainLength={1}")
         @JvmStatic
-        fun getDispatchers() =
+        fun getParameters() =
             listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) * CHAIN_LENGTHS
     }
 }

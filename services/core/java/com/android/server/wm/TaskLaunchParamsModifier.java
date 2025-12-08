@@ -158,13 +158,20 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
             appendLog("inherit-from-source="
                     + WindowConfiguration.windowingModeToString(launchMode));
         }
+        final boolean isRelaunchOriginatedFromHome =
+                request != null && request.mLaunchOriginatedFromHome;
+        final boolean isRelaunchFromHomeToReparent = isRelaunchOriginatedFromHome
+                && task != null && task.getRootTask() != null
+                && task.getRootTask().mReparentLeafTaskIfRelaunchFromHome;
+        outParams.mIsRelaunchFromHomeToReparent = isRelaunchFromHomeToReparent;
         // If the launch windowing mode is still undefined, inherit from the target task if the
         // task is already on the right display area (otherwise, the task may be on a different
         // display area that has incompatible windowing mode or the task organizer request to
         // disassociate the leaf task if relaunched and reparented it to TDA as root task).
         if (launchMode == WINDOWING_MODE_UNDEFINED
                 && task != null && task.getTaskDisplayArea() == suggestedDisplayArea
-                && !task.getRootTask().mReparentLeafTaskIfRelaunch) {
+                && !task.getRootTask().mReparentLeafTaskIfRelaunch
+                && !isRelaunchFromHomeToReparent) {
             launchMode = task.getWindowingMode();
             appendLog("inherit-from-task=" + WindowConfiguration.windowingModeToString(launchMode));
         }
@@ -295,7 +302,8 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
         }
         final boolean isNonRootLeafTask = task != null && !task.isRootTask();
         if (launchMode == WINDOWING_MODE_FULLSCREEN && isNonRootLeafTask
-                && task.getRootTask().inMultiWindowMode()) {
+                && task.getRootTask().inMultiWindowMode()
+                && !isRelaunchFromHomeToReparent) {
             // Seems not making sense to have a fullscreen task in a multi-window Task, let it
             // inherits from the root task.
             launchMode = WINDOWING_MODE_UNDEFINED;

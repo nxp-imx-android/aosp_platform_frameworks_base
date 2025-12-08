@@ -90,7 +90,7 @@ class BluetoothIconViewModelTest : SysuiTestCase() {
     companion object {
         private val expectedBluetoothIcon =
             Icon.Resource(
-                resId = R.drawable.ic_bluetooth_connected,
+                resId = R.drawable.stat_sys_data_bluetooth_connected,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_bluetooth_connected),
             )

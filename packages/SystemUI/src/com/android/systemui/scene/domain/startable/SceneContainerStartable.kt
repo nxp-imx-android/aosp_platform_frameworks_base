@@ -21,6 +21,7 @@ import android.view.Display
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.TransitionKey
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.AuthInteractionProperties
 import com.android.systemui.CoreStartable
@@ -49,8 +50,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
-import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
@@ -74,6 +75,8 @@ import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
+import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -86,6 +89,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.phone.CentralSurfaces
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.util.asIndenting
+import com.android.systemui.util.kotlin.Quad
 import com.android.systemui.util.kotlin.getOrNull
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
@@ -164,6 +168,7 @@ constructor(
     private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
+    private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -289,7 +294,13 @@ constructor(
     /** Updates the visibility of the scene container. */
     private fun hydrateVisibility() {
         applicationScope.launch {
-            deviceProvisioningInteractor.isDeviceProvisioned
+            combine(
+                    deviceProvisioningInteractor.isDeviceProvisioned,
+                    deviceUnlockedInteractor.deviceUnlockStatus,
+                ) { isProvisioned, unlockStatus ->
+                    isProvisioned || !unlockStatus.isUnlocked
+                }
+                .distinctUntilChanged()
                 .flatMapLatest { isAllowedToBeVisible ->
                     if (isAllowedToBeVisible) {
                         combine(
@@ -351,7 +362,7 @@ constructor(
                             }
                             .distinctUntilChanged()
                     } else {
-                        flowOf(false to "Device not provisioned or Factory Reset Protection active")
+                        flowOf(false to "Device not provisioned and unlocked")
                     }
                 }
                 .collect { (isVisible, loggingReason) ->
@@ -479,10 +490,13 @@ constructor(
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
                         return@map if (
-                            renderedScenes.any { it in keyguardScenes } ||
+                            renderedScenes.any { it.isKeyguardScene() } ||
                                 Overlays.Bouncer in renderedOverlays
                         ) {
-                            // Already on a keyguard scene or bouncer, no need to change scenes.
+                            // The device locked while already on a keyguard scene or bouncer, no
+                            // need to change scenes. But make sure to replace the Gone scene in
+                            // the back stack with Lockscreen.
+                            sceneBackInteractor.replaceGoneSceneOnBackStack()
                             SwitchSceneCommand.NoOp
                         } else {
                             // The device locked while on a scene that's not a keyguard scene, go
@@ -722,22 +736,23 @@ constructor(
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
-                        keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                        transitionKey =
+                            if (keyguardInteractor.isAodAvailable.value) ToAlwaysOnDisplay
+                            else null,
+                        keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                         freezeAndAnimateToCurrentState = true,
+                        instantlySnapScenes = keyguardInteractor.isAodAvailable.value,
                     )
                 } else {
-                    val canSwipeToEnter = deviceEntryInteractor.canSwipeToEnter.value
-                    val isUnlocked = deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
-                    if (isUnlocked && canSwipeToEnter == false) {
+                    if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
                         val isTransitioningToLockscreen =
                             sceneInteractor.transitioningTo.value == Scenes.Lockscreen
                         if (!isTransitioningToLockscreen) {
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
                                 loggingReason =
-                                    "device is waking up while unlocked without the ability to" +
-                                        " swipe up on lockscreen to enter and not on or" +
-                                        " transitioning to, the lockscreen scene.",
+                                    "device is waking up while we can wake directly to gone, and " +
+                                        "is not already en route to lockscreen",
                             )
                         }
                     } else if (
@@ -747,6 +762,14 @@ constructor(
                         sceneInteractor.showOverlay(
                             overlay = Overlays.Bouncer,
                             loggingReason = "device is starting to wake up with a locked sim",
+                        )
+                    } else if (
+                        occlusionInteractor.isKeyguardOccluded.value &&
+                            !keyguardInteractor.isDreaming.value
+                    ) {
+                        switchToScene(
+                            targetSceneKey = Scenes.Occluded,
+                            loggingReason = "device is waking up while occluded",
                         )
                     }
                 }
@@ -768,7 +791,7 @@ constructor(
                         .collect {
                             switchToScene(
                                 targetSceneKey = Scenes.Lockscreen,
-                                keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                                keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                                 loggingReason =
                                     "device became non-interactive (SceneContainerStartable)",
                             )
@@ -1049,11 +1072,16 @@ constructor(
         applicationScope.launch {
             occlusionInteractor.isKeyguardOccluded
                 .sample(
-                    combine(keyguardInteractor.isAbleToDream, sceneBackInteractor.backScene, ::Pair)
-                ) { occluded, (dreaming, backScene) ->
-                    Triple(occluded, dreaming, backScene)
+                    combine(
+                        keyguardInteractor.isAbleToDream,
+                        sceneBackInteractor.backScene,
+                        powerInteractor.isAwake,
+                        ::Triple,
+                    )
+                ) { occluded, (dreaming, backScene, isAwake) ->
+                    Quad(occluded, dreaming, backScene, isAwake)
                 }
-                .collect { (occluded, dreaming, backScene) ->
+                .collect { (occluded, dreaming, backScene, isAwake) ->
                     // Dreaming is a special case where the keyguard is occluded, and is handled
                     // separately. See [handleDreamState].
                     if (occluded && !dreaming) {
@@ -1083,9 +1111,14 @@ constructor(
                                 "unoccluded and device not entered, " +
                                     "bouncer was showing; leaving it up",
                                 hideOverlays = HideOverlayCommand.HideNone,
+                                keyguardState = getKeyguardStateForWakefulness(isAwake),
                             )
                         } else {
-                            switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
+                            switchToScene(
+                                Scenes.Lockscreen,
+                                "unoccluded and device not entered",
+                                keyguardState = getKeyguardStateForWakefulness(isAwake),
+                            )
                         }
                     }
                 }
@@ -1140,6 +1173,7 @@ constructor(
     private fun switchToScene(
         targetSceneKey: SceneKey,
         loggingReason: String,
+        transitionKey: TransitionKey? = null,
         keyguardState: KeyguardState? = null,
         freezeAndAnimateToCurrentState: Boolean = false,
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
@@ -1162,6 +1196,7 @@ constructor(
             sceneInteractor.changeScene(
                 toScene = targetSceneKey,
                 loggingReason = loggingReason,
+                transitionKey = transitionKey,
                 keyguardState = keyguardState,
                 forceSettleToTargetScene = freezeAndAnimateToCurrentState,
                 hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
@@ -1265,6 +1300,17 @@ constructor(
                         lockscreenUserManager.updatePublicMode()
                     }
                 }
+        }
+    }
+
+    /**
+     * Helper to return the appropriate keyguard state given the current wakefulness of the device.
+     */
+    private fun getKeyguardStateForWakefulness(isAwake: Boolean): KeyguardState {
+        return if (isAwake) {
+            KeyguardState.LOCKSCREEN
+        } else {
+            keyguardInteractor.asleepKeyguardState.value
         }
     }
 

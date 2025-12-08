@@ -65,12 +65,15 @@ import static org.mockito.Mockito.when;
 import android.annotation.NonNull;
 import android.app.Instrumentation;
 import android.app.UiModeManager;
+import android.compat.testing.PlatformCompatChangeRule;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.ForceDarkType;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
+import android.os.Build;
 import android.os.VibrationAttributes;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -103,12 +106,16 @@ import com.android.cts.input.BlockingQueueEventVerifier;
 import com.android.frameworks.coretests.R;
 import com.android.window.flags.Flags;
 
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
+
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.rules.TestRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -117,7 +124,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import android.content.ContextWrapper;
+import android.content.pm.ApplicationInfo;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests for {@link ViewRootImpl}
@@ -133,6 +143,11 @@ public class ViewRootImplTest {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @Rule
+    public TestRule compatChangeRule = new PlatformCompatChangeRule();
+
+    private static final long ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS = 464275874L;
 
     private ViewRootImpl mViewRootImpl;
     private View mView;
@@ -174,7 +189,7 @@ public class ViewRootImplTest {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws Exception {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
             Settings.Secure.resetToDefaults(sContext.getContentResolver(), TAG);
             Settings.System.resetToDefaults(sContext.getContentResolver(), TAG);
@@ -284,6 +299,7 @@ public class ViewRootImplTest {
         assertEquals(fitMaxInsets, attrs.isFitInsetsIgnoringVisibility());
     }
 
+    @UiThreadTest
     @Test
     public void adjustLayoutParamsForCompatibility_noAdjustAppearance() {
         final InsetsController controller = mViewRootImpl.getInsetsController();
@@ -307,6 +323,7 @@ public class ViewRootImplTest {
         assertEquals(appearance, controller.getSystemBarsAppearance());
     }
 
+    @UiThreadTest
     @Test
     public void adjustLayoutParamsForCompatibility_noAdjustBehavior() {
         final InsetsController controller = mViewRootImpl.getInsetsController();
@@ -2232,5 +2249,70 @@ public class ViewRootImplTest {
             mViewRootImpl.setView(view, layoutParams, /* panelParentView= */ null);
             mViewRootImpl.updateConfiguration(context.getDisplayNoVerify().getDisplayId());
         });
+    }
+
+    /**
+     * Tests that the checkThreadCompat method posts to the correct thread when the {@link
+     * ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId is disabled.
+     */
+    @Test
+    @DisableCompatChanges(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)
+    public void
+            checkThreadCompat_whenCalledFromWrongThread_andChangeIsDisabled_postsToCorrectThread()
+                    throws Exception {
+        checkThreadCompat(false);
+    }
+
+    /**
+     * Tests that the checkThreadCompat method throws an exception when the
+     * {@link ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId is disabled.
+     */
+    @Test
+    @EnableCompatChanges(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)
+    public void checkThreadCompat_whenCalledFromWrongThread_andChangeIsEnabled_throwsException()
+            throws Exception {
+        checkThreadCompat(true);
+    }
+
+    private void checkThreadCompat(boolean expectException) throws Exception {
+        final AtomicReference<ViewRootImpl> viewRootRef = new AtomicReference<>();
+        sInstrumentation.runOnMainSync(() -> {
+            Display display = sContext.getSystemService(DisplayManager.class).getDisplay(
+                    Display.DEFAULT_DISPLAY);
+            viewRootRef.set(new ViewRootImpl(sContext, display));
+        });
+        ViewRootImpl viewRootImpl = viewRootRef.get();
+
+        assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(1.0f);
+
+        final WindowManager.LayoutParams newAttributes = new WindowManager.LayoutParams();
+        newAttributes.copyFrom(viewRootImpl.mWindowAttributes);
+        newAttributes.alpha = 0.5f;
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Throwable> thrown = new AtomicReference<>();
+
+        new Thread(() -> {
+            try {
+                viewRootImpl.setLayoutParams(newAttributes, false);
+            } catch (Throwable e) {
+                thrown.set(e);
+            } finally {
+                latch.countDown();
+            }
+        }).start();
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+        if (expectException) {
+            assertThat(thrown.get())
+                    .isInstanceOf(ViewRootImpl.CalledFromWrongThreadException.class);
+            assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(1.0f);
+        } else {
+            assertThat(thrown.get()).isNull();
+            // Wait for the handler to process the message.
+            sInstrumentation.waitForIdleSync();
+            assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(0.5f);
+        }
     }
 }

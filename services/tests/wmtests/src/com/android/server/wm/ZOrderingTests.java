@@ -586,6 +586,7 @@ public class ZOrderingTests extends WindowTestsBase {
                 imeWindowToken1.getSurfaceControl());
 
         imeContainer.setImeWindowToken(imeWindowToken2);
+        makeWindowVisible(imeWin2);
         mDisplayContent.assignChildLayers(mTransaction);
 
         assertThat(systemDialogWindow.needsRelativeLayeringToIme()).isTrue();

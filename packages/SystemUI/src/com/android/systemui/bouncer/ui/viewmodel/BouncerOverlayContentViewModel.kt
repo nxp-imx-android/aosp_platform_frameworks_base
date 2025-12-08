@@ -20,6 +20,7 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyResources
 import android.content.Context
 import android.graphics.Bitmap
+import android.security.Flags.enableWeaverWarmup
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
@@ -89,7 +90,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
-) : HydratedActivatable() {
+) : HydratedActivatable(enableEnqueuedActivations = enableWeaverWarmup()) {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
 
@@ -388,6 +389,9 @@ constructor(
 
     private fun onIntentionalUserInput() {
         message.showDefaultMessage()
+        if (enableWeaverWarmup()) {
+            enqueueOnActivatedScope { authenticationInteractor.triggerAuthWarmUp() }
+        }
         bouncerInteractor.onIntentionalUserInput()
     }
 

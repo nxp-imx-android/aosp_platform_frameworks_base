@@ -144,6 +144,14 @@ flag {
 }
 
 flag {
+    name: "battery_manufacturer_diagnostics_api"
+    is_exported: false
+    namespace: "system_sw_battery"
+    description: "Feature flag for adding Health Hal battery manufacturer diagnostics APIs."
+    bug: "425196435"
+}
+
+flag {
     name: "battery_part_status_api"
     is_exported: true
     namespace: "phoenix"

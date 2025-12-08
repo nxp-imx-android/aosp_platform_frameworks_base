@@ -1665,7 +1665,8 @@ static void isolateJitProfile(JNIEnv* env, jobjectArray pkg_data_info_list,
   // Sandbox processes do not have JIT profile, so no data needs to be bind mounted. However, it
   // should still not have access to JIT profile, so tmpfs is mounted.
   appid_t appId = multiuser_get_app_id(uid);
-  if (appId >= AID_SDK_SANDBOX_PROCESS_START && appId <= AID_SDK_SANDBOX_PROCESS_END) {
+  if ((appId >= AID_SDK_SANDBOX_PROCESS_START && appId <= AID_SDK_SANDBOX_PROCESS_END) ||
+      (appId >= AID_PCC_COMPONENT_PROCESS_START && appId <= AID_PCC_COMPONENT_PROCESS_END)) {
       return;
   }
 
@@ -1971,6 +1972,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
         }
         isolateAppData(env, pkg_data_info_list, allowlisted_data_info_list, uid, process_name,
                        managed_nice_name, fail_fn);
+
         isolateJitProfile(env, pkg_data_info_list, uid, process_name, managed_nice_name, fail_fn);
     }
     // MOUNT_EXTERNAL_INSTALLER, MOUNT_EXTERNAL_PASS_THROUGH, MOUNT_EXTERNAL_ANDROID_WRITABLE apps

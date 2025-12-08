@@ -116,4 +116,9 @@ object BubbleLog {
     fun dump(pw: PrintWriter, prefix: String = "") {
         bubbleEventHistoryLogger.dump(pw, prefix)
     }
+
+    /** Flushes all stored logs. */
+    fun flush() {
+        bubbleEventHistoryLogger.flush()
+    }
 }

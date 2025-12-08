@@ -22,6 +22,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.notifications.ui.notificationPlaceholderStateStorage
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
@@ -35,6 +36,7 @@ val Kosmos.notificationsPlaceholderViewModelFactory by Fixture {
         override fun create(contentKey: ContentKey): NotificationsPlaceholderViewModel {
             return NotificationsPlaceholderViewModel(
                 contentKey = contentKey,
+                placeholderStateStorage = notificationPlaceholderStateStorage,
                 interactor = notificationStackAppearanceInteractor,
                 sceneInteractor = sceneInteractor,
                 shadeInteractor = shadeInteractor,

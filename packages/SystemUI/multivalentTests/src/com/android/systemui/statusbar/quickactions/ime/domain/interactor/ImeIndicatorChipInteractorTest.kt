@@ -22,6 +22,7 @@ import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
@@ -30,6 +31,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
@@ -49,16 +51,30 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagDisabled_isNotVisible() =
         kosmos.runTest {
-            backgroundScope.launch { underTest.isChipVisible.collect {} }
-            assertThat(underTest.isChipVisible.value).isFalse()
+            backgroundScope.launch { underTest.chipModel.collect {} }
+            assertThat(underTest.chipModel.value.isVisible).isFalse()
         }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagEnabled_isVisible() =
         kosmos.runTest {
-            backgroundScope.launch { underTest.isChipVisible.collect {} }
-            assertThat(underTest.isChipVisible.value).isTrue()
+            backgroundScope.launch { underTest.chipModel.collect {} }
+            assertThat(underTest.chipModel.value.isVisible).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
+    fun chip_selectedSubtypeUpdated_updatesChipModel() =
+        kosmos.runTest {
+            backgroundScope.launch { underTest.chipModel.collect {} }
+            assertThat(underTest.chipModel.value.selectedSubtype).isNull()
+
+            val subtype = InputMethodModel.Subtype(subtypeId = 123, isAuxiliary = false)
+            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
+            fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
+
+            assertThat(underTest.chipModel.value.selectedSubtype).isEqualTo(subtype)
         }
 
     @Test

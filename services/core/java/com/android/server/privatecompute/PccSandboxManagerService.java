@@ -45,5 +45,12 @@ public class PccSandboxManagerService extends SystemService {
             LocalServices.addService(PccSandboxManagerInternal.class, mInternal);
         }
     }
+
+    @Override
+    public void onBootPhase(int phase) {
+        if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+            mInternal.awaitPccTrustedPackages();
+        }
+    }
 }
 

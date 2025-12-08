@@ -195,6 +195,7 @@ constructor(
                                     },
                                 oneTapEnabled = action.oneTapEnabled,
                                 oneTapDelayMs = action.oneTapDelayMs,
+                                dismissalGroupId = action.dismissalGroupId,
                             )
                         }
                     },
@@ -216,6 +217,16 @@ constructor(
         ambientCueInteractor.setDeactivated(true)
         isExpanded = false
         disableFirstTimeHint()
+
+        actions
+            .mapNotNull { it.dismissalGroupId }
+            .filter { it.isNotEmpty() }
+            .toSet()
+            .takeIf { it.isNotEmpty() }
+            ?.let { idsToDismiss: Set<String> ->
+                ambientCueInteractor.dismissGroupIds(idsToDismiss)
+            }
+
         ambientCueLogger.setClickedCloseButtonStatus()
     }
 

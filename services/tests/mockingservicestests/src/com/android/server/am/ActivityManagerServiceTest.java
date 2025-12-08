@@ -338,11 +338,13 @@ public class ActivityManagerServiceTest {
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_pccToRegular_isDelegatedToPccSandboxManager() {
         when(mMockPccSandboxManagerInternal.validateAssociationAllowed(
-                eq(PCC_UID_1), eq(PCC_PACKAGE_1), eq(REGULAR_UID), eq(REGULAR_PACKAGE)))
+                eq(PCC_UID_1), eq(PCC_PACKAGE_1), eq(REGULAR_UID), eq(REGULAR_PACKAGE),
+                anyInt(), nullable(Bundle.class)))
                 .thenReturn(false);
 
         boolean allowed = mAms.validateAssociationAllowedLocked(
-                PCC_PACKAGE_1, PCC_UID_1, REGULAR_PACKAGE, REGULAR_UID);
+                PCC_PACKAGE_1, PCC_UID_1, REGULAR_PACKAGE, REGULAR_UID,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, /*debugTag=*/ null);
 
         assertFalse("Association between a PCC UID and a regular UID should be denied", allowed);
     }
@@ -353,7 +355,8 @@ public class ActivityManagerServiceTest {
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_regularToRegular_fallsThrough() {
         boolean allowed = mAms.validateAssociationAllowedLocked(
-                REGULAR_PACKAGE, REGULAR_UID, REGULAR_PACKAGE_2, REGULAR_UID_2);
+                REGULAR_PACKAGE, REGULAR_UID, REGULAR_PACKAGE_2, REGULAR_UID_2,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, /*debugTag=*/ null);
 
         assertTrue("Association between two regular UIDs with no restrictions is allowed", allowed);
     }

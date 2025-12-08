@@ -41,6 +41,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
 import android.os.Build;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Slog;
@@ -83,10 +84,10 @@ public class BackupEligibilityRules {
                     Sets.newArraySet(WALLPAPER_PACKAGE, SETTINGS_PACKAGE));
 
     /**
-     * List of system packages that are eligible for backup for the main user in Headless System
-     * User Mode (HSUM). In HSUM, certain packages are only backed up for the main user.
+     * List of system packages that are eligible for backup for the admin user in Headless System
+     * User Mode (HSUM). In HSUM, certain packages are only backed up for the admin user.
      */
-    private static final Set<String> systemPackagesAllowedForHsumMainUser =
+    private static final Set<String> systemPackagesAllowedForHsumAdminUser =
             SetUtils.union(
                     systemPackagesAllowedForNonSystemUsers,
                     Sets.newArraySet(TELEPHONY_PROVIDER_PACKAGE));
@@ -188,7 +189,7 @@ public class BackupEligibilityRules {
         if (UserHandle.isCore(app.uid)) {
             // System apps are additionally checked:
             // ...if not allowed for the current user (governed by user-specific allowlists)
-            if (!isSystemPackageAllowedForCurrentUser(app.packageName)) {
+            if (!isSystemPackageAllowedForCurrentUser(app)) {
                 return false;
             }
 
@@ -217,7 +218,8 @@ public class BackupEligibilityRules {
      * type (profile, HSUM main, etc.) and specific allowlists.
      */
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
-    private boolean isSystemPackageAllowedForCurrentUser(String packageName) {
+    private boolean isSystemPackageAllowedForCurrentUser(ApplicationInfo app) {
+        String packageName = app.packageName;
         if (mUserId == UserHandle.USER_SYSTEM) {
             return true;
         }
@@ -226,11 +228,11 @@ public class BackupEligibilityRules {
             return systemPackagesAllowedForProfileUser.contains(packageName);
         }
 
-        // In Headless System User Mode, certain packages are only backed up for the main user.
+        // In Headless System User Mode, certain packages are only backed up for the admin users.
         if (UserManager.isHeadlessSystemUserMode()) {
-            int mainUserId = mUserManagerInternal.getMainUserId();
-            if (mainUserId != UserHandle.USER_NULL && mainUserId == mUserId) {
-                return systemPackagesAllowedForHsumMainUser.contains(packageName);
+            if (mUserManagerInternal.getUserInfo(mUserId).isAdmin()) {
+                return systemPackagesAllowedForHsumAdminUser.contains(packageName)
+                        || (UserHandle.getAppId(app.uid) == Process.BLUETOOTH_UID);
             }
         }
 

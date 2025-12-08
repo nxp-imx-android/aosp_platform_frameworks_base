@@ -22,7 +22,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.withoutEventHandling
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -62,6 +66,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -83,8 +88,7 @@ import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
-import com.android.compose.lifecycle.DisposableEffectWithLifecycle
-import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
+import com.android.compose.modifiers.onUnplaced
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
@@ -95,10 +99,8 @@ import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadi
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.sessionCoroutineScope
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.ShadeColors
-import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
@@ -125,12 +127,18 @@ object Notifications {
          * The [ElementKey] identifying the space reserved for the main list of notifications. This
          * key only links to an empty box sized to the height of the Stack (placeholder), so STL
          * transitions are not fully supported here, except vertical positioning.
+         *
+         * If you change the contentPicker of this element, consider also changing
+         * [StackPlaceholderContentPicker].
          */
         val StackPlaceholder = ElementKey("StackPlaceholder")
         /**
          * The [ElementKey] identifying the space reserved for the top HUN. This key only links to
          * an empty box sized to the height of Notifications (placeholder), so STL transitions are
          * not fully supported here, except vertical positioning.
+         *
+         * If you change the contentPicker of this element, consider also changing
+         * [HeadsUpPlaceholderContentPicker].
          */
         val HeadsUpNotificationPlaceholder =
             ElementKey("HeadsUpNotificationPlaceholder", contentPicker = LowestZIndexContentPicker)
@@ -149,17 +157,19 @@ fun ContentScope.ConstrainedNotificationStack(
         modifier =
             modifier
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
-                .onGloballyPositioned {
-                    if (shouldUseLockscreenStackBounds(sceneContainerLayoutState)) {
-                        stackScrollView.updateStackBounds(it.rawBoundsInWindow())
-                    }
+                .onPlaced {
+                    val rawBounds = it.rawBoundsInWindow()
+                    debugLog(viewModel) { "Constrained.container onPlaced bounds=$rawBounds" }
+                    viewModel.setStackBounds(rawBounds)
+                }
+                .onUnplaced {
+                    debugLog(viewModel) { "Constrained.container onUnplaced" }
+                    viewModel.resetStackBounds()
                 }
     ) {
         StackPlaceholder(
             tag = "Constrained",
-            stackScrollView = stackScrollView,
             viewModel = viewModel,
-            useStackBounds = { shouldUseLockscreenStackBounds(sceneContainerLayoutState) },
             modifier =
                 Modifier.fillMaxWidth()
                     .notificationStackHeight(view = stackScrollView, constrainToMaxHeight = true)
@@ -173,12 +183,6 @@ fun ContentScope.ConstrainedNotificationStack(
             tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
-            useHunBounds = {
-                shouldUseLockscreenHunBounds(
-                    sceneContainerLayoutState,
-                    viewModel.quickSettingsShadeContentKey,
-                )
-            },
             modifier = Modifier.align(Alignment.TopCenter),
         )
     }
@@ -208,12 +212,12 @@ fun ContentScope.ScrollingNotificationPanel(
     overscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect(),
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    if (isActivated) {
+    if (isActivated && isAlwaysComposedContentVisible()) {
         val composeViewRoot = LocalView.current
         // whether the stack is moving due to a swipe or fling
         val isScrollInProgress = scrollState.isScrollInProgress || overscrollEffect.isInProgress
 
-        LaunchedEffectWithLifecycle(isScrollInProgress) {
+        LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
                 jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
                 debugLog(viewModel) { "STACK scroll begins" }
@@ -234,7 +238,7 @@ fun ContentScope.ScrollingNotificationPanel(
                     )
                 }
             }
-        LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
     }
 
     NestedScrollingNotificationPanel(
@@ -291,11 +295,16 @@ fun ContentScope.NestedScrollingNotificationPanel(
     // The top y bound of the IME.
     val imeTop = remember { mutableFloatStateOf(0f) }
 
-    if (isActivated) {
+    // Some scenes or overlays that use this Composable may be using alwaysCompose=true which will
+    // cause them to compose everything but not be visible. Because these side effects push UI state
+    // upstream to observers which are shared between callers of this composable, invisible
+    // components could pollute the shared state with incorrect values. The cleanest way to prevent
+    // this is to remove these side effects when the content is not visible.
+    if (isActivated && isAlwaysComposedContentVisible()) {
         val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
 
         // set the bounds to null when the scrim disappears
-        DisposableEffectWithLifecycle(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
+        DisposableEffect(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
 
         val isRemoteInputActive by viewModel.isRemoteInputActive.collectAsStateWithLifecycle(false)
 
@@ -305,7 +314,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
         // if remote input state changes, compare the row and IME's overlap and offset the scrim and
         // placeholder accordingly.
-        LaunchedEffectWithLifecycle(isRemoteInputActive, remoteInputRowBottom, imeTop) {
+        LaunchedEffect(isRemoteInputActive, remoteInputRowBottom, imeTop) {
             imeTop.floatValue = 0f
             snapshotFlow { imeTop.floatValue }
                 .collect { imeTopValue ->
@@ -329,7 +338,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
         // TalkBack sends a scroll event, when it wants to navigate to an item that is not displayed
         // in
         // the current viewport.
-        LaunchedEffectWithLifecycle(viewModel) {
+        LaunchedEffect(viewModel) {
             viewModel.setAccessibilityScrollEventConsumer { event ->
                 // scroll up, or down by the height of the visible portion of the notification stack
                 val direction =
@@ -421,16 +430,18 @@ fun ContentScope.NestedScrollingNotificationPanel(
             )
         }
 
-    val overScrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
+    val scrimOverscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
 
     val interactionSource = remember { MutableInteractionSource() }
+
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
 
     Layout(
         modifier =
             modifier
                 .element(Notifications.Elements.NotificationScrim)
                 .overscroll(verticalOverscrollEffect)
-                .overscroll(overscrollEffect.withoutEventHandling())
+                .overscroll(scrimOverscrollEffect.withoutEventHandling())
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
@@ -503,12 +514,18 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         Column(
                             modifier =
                                 Modifier.padding(top = stackTopPadding, bottom = stackBottomPadding)
-                                    .onGloballyPositioned {
-                                        if (!shouldUseLockscreenStackBounds(layoutState)) {
-                                            stackScrollView.updateStackBounds(
-                                                it.rawBoundsInWindow()
-                                            )
+                                    .onPlaced {
+                                        val rawBounds = it.rawBoundsInWindow()
+                                        debugLog(viewModel) {
+                                            "$tag.NestedScroll.container onPlaced bounds=$rawBounds"
                                         }
+                                        viewModel.setStackBounds(rawBounds)
+                                    }
+                                    .onUnplaced {
+                                        debugLog(viewModel) {
+                                            "$tag.NestedScroll.container onUnplaced"
+                                        }
+                                        viewModel.resetStackBounds()
                                     }
                                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
                                     .disableSwipesWhenScrolling()
@@ -517,9 +534,14 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         connection = object : NestedScrollConnection {},
                                         dispatcher = nestedScrollDispatcher,
                                     )
-                                    .verticalScroll(
-                                        scrollState,
-                                        overscrollEffect = overScrollEffect,
+                                    // Adding these 3 modifiers is needed to enable overscroll
+                                    // when the list fits within its bounds: b/295810376
+                                    .overscroll(overscrollEffect)
+                                    .verticalScroll(scrollState)
+                                    .scrollable(
+                                        rememberScrollableState { 0f },
+                                        Orientation.Vertical,
+                                        overscrollEffect = overscrollEffect,
                                     )
                                     .fillMaxWidth()
                                     // Added extra bottom padding for keeping footerView inside
@@ -532,9 +554,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         ) {
                             StackPlaceholder(
                                 tag = "NestedScroll",
-                                stackScrollView = stackScrollView,
                                 viewModel = viewModel,
-                                useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },
                                 modifier =
                                     Modifier.notificationStackHeight(view = stackScrollView)
                                         .onSizeChanged { size ->
@@ -566,12 +586,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                 tag = "$tag.Nested",
                                 stackScrollView = stackScrollView,
                                 viewModel = viewModel,
-                                useHunBounds = {
-                                    !shouldUseLockscreenHunBounds(
-                                        layoutState,
-                                        viewModel.quickSettingsShadeContentKey,
-                                    )
-                                },
                                 modifier = Modifier.padding(top = stackTopPadding),
                             )
                         }
@@ -587,31 +601,28 @@ fun ContentScope.NestedScrollingNotificationPanel(
             val contentMeasurable = measurables[1][0]
 
             if (shouldFillMaxSize) {
-                // Fill the entire available space with the content, while constraining the
-                // background. We find a specific boundary (bottomRulerY) and force the background's
-                // height to match it, while ensuring it is at least as large as the content itself.
+                // Fill the entire available space with the content. We force the background to
+                // match the screen height to ensure it covers the full display area.
 
-                val maxConstraints = Constraints.fixed(constraints.maxWidth, constraints.maxHeight)
-                val content = contentMeasurable.measure(maxConstraints)
+                val content =
+                    contentMeasurable.measure(
+                        Constraints.fixed(
+                            width = constraints.maxWidth,
+                            height = constraints.maxHeight,
+                        )
+                    )
+
+                val background =
+                    backgroundMeasurable.measure(
+                        Constraints.fixed(
+                            width = constraints.maxWidth,
+                            height = screenHeightDp.roundToPx(),
+                        )
+                    )
+
                 layout(width = content.width, height = content.height) {
                     content.place(IntOffset.Zero)
-
-                    val bottomRulerY =
-                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(Float.MIN_VALUE)
-
-                    val backgroundConstraints =
-                        if (bottomRulerY == Float.MIN_VALUE) {
-                            // no ruler defined
-                            constraints
-                        } else {
-                            // maxHeight and minHeight must be >= 0
-                            Constraints.fixed(
-                                width = constraints.maxWidth,
-                                height = bottomRulerY.roundToInt().coerceAtLeast(content.height),
-                            )
-                        }
-
-                    backgroundMeasurable.measure(backgroundConstraints).place(IntOffset.Zero)
+                    background.place(IntOffset.Zero)
                 }
             } else {
                 // Make the background size match the content size.
@@ -652,48 +663,6 @@ private suspend fun scrollStackWithNestedScroll(
             source = NestedScrollSource.UserInput,
         )
     return consumed + preConsumed + postConsumed
-}
-
-private fun SceneTransitionLayoutState.isIdleOnLockscreenWithNoShade(): Boolean {
-    return isIdle(Scenes.Lockscreen) &&
-        !isInCurrentOverlays(Overlays.NotificationsShade) &&
-        !isInCurrentOverlays(Overlays.QuickSettingsShade)
-}
-
-private fun shouldUseLockscreenStackBounds(state: SceneTransitionLayoutState): Boolean {
-    return when {
-        // Idle on the Lockscreen without Shade overlays.
-        state.isIdleOnLockscreenWithNoShade() -> true
-
-        // When going from Lockscreen to a content without the placeholder, keep the LS bounds.
-        state.isTransitioning(from = Scenes.Lockscreen) &&
-            !state.isTransitioning(to = Scenes.Shade) &&
-            !state.isTransitioning(to = Overlays.NotificationsShade) &&
-            !state.isTransitioning(to = Scenes.QuickSettings) -> true
-
-        // When transitioning between LS and Bouncer, keep using the LS bounds, because there is no
-        // placeholder on Bouncer.
-        state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer) -> true
-
-        // Otherwise don't use the LS bounds.
-        else -> false
-    }
-}
-
-private fun shouldUseLockscreenHunBounds(
-    state: SceneTransitionLayoutState,
-    quickSettingsShade: ContentKey,
-): Boolean {
-    return when {
-        // Idle on the Lockscreen without Shade overlays.
-        state.isIdleOnLockscreenWithNoShade() -> true
-
-        // Transitioning from QS to LS.
-        state.isTransitioning(from = quickSettingsShade, to = Scenes.Lockscreen) -> true
-
-        // Otherwise don't use the LS bounds.
-        else -> false
-    }
 }
 
 private fun shouldAnimateScrimCornerRadius(

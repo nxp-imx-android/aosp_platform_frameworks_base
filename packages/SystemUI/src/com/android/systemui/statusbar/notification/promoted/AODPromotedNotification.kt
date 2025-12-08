@@ -18,8 +18,10 @@ package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags.apiMetricStyle
 import android.app.Flags.notificationsRedesignTemplates
+import android.app.Flags.richOngoingImprovements
 import android.app.Notification
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
@@ -273,6 +275,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             if (notificationsRedesignTemplates()) R.id.title else R.id.conversation_text
         )
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
+    // TODO : This is not used here! consider removing it with its divider.
     private val headerText: TextView? = root.findViewById(R.id.header_text)
     private val headerTextDivider: TextView? = root.findViewById(R.id.header_text_divider)
     private val headerTextSecondary: TextView? = root.findViewById(R.id.header_text_secondary)
@@ -292,6 +295,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val timeDivider: TextView? = root.findViewById(R.id.time_divider)
     private val title: TextView? = root.findViewById(R.id.title)
     private val altTitle: TextView? = root.findViewById(R.id.alt_title)
+    private val altSubtext: TextView? = root.findViewById(R.id.alt_subtext)
     private val appNameTextDivider: TextView? = root.findViewById(R.id.app_name_text_divider)
     private val header: NotificationHeaderView? = root.findViewById(R.id.notification_header)
     private val topLine: NotificationTopLineView? = root.findViewById(R.id.notification_top_line)
@@ -413,7 +417,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
         textView: ImageFloatingTextView? = text,
     ) {
-        val headerTitleView = if (collapsed) title else null
+        val headerTitleView =
+            when {
+                collapsed -> title
+                richOngoingImprovements() -> altTitle
+                else -> null
+            }
+
+        title?.isVisible = headerTitleView !== altTitle
+
         updateHeader(content, headerTitleView = headerTitleView, collapsed = collapsed)
 
         if (headerTitleView == null) {
@@ -479,13 +491,16 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateMetricStyle(content: PromotedNotificationContentModel) {
-        updateHeader(content, collapsed = false, null)
-        updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
-
-        val hasTitle = !content.title.isNullOrEmpty()
-        altTitle?.text = content.title
-        altTitle?.isVisible = hasTitle
-        appNameTextDivider?.isVisible = altTitle != null && hasTitle
+        if (!richOngoingImprovements()) {
+            updateHeader(content, collapsed = false, null)
+            updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
+            val hasTitle = !content.title.isNullOrEmpty()
+            altTitle?.text = content.title
+            altTitle?.isVisible = hasTitle
+            appNameTextDivider?.isVisible = altTitle != null && hasTitle
+        } else {
+            updateBase(content = content, collapsed = false, textView = null)
+        }
 
         metricViews.forEach {
             it.container?.isVisible = false
@@ -532,6 +547,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
         headerTitleView: TextView?,
     ) {
+
+        val isMetricStyle = !content.metrics.isNullOrEmpty()
+
         val hasTitleInHeader = headerTitleView != null && !content.title.isNullOrEmpty()
         val hasSubText = !content.subText.isNullOrEmpty()
 
@@ -542,10 +560,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         // the collapsed form doesn't show the app name unless there is no other text in the header
         val appNameRequired = !hasTitleInHeader && !hasSubText
-        val hideAppName = (!appNameRequired && collapsed)
+        var hideAppName = (!appNameRequired && collapsed)
 
         // We're only showing the top line (e.g. for redacted notifs), so center it
-        val isMetricStyle = !content.metrics.isNullOrEmpty()
         header?.centerTopLine(!isMetricStyle && isSingleLine)
         // We normally use the (empty) actions container for the bottom padding of the notification,
         // but that's not necessary when single line
@@ -553,8 +570,25 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         // they have only 1 line below topline for single metric
         actionsContainer?.isVisible = !isSingleLine
 
+        if (richOngoingImprovements()) {
+            // For metric style notifications, we show app name in topline only if there is no title
+            if (isMetricStyle && !hasTitleInHeader) {
+                hideAppName = false
+            } else {
+                hideAppName = true
+            }
+        }
+
         updateAppName(content, forceHide = hideAppName)
-        updateTextView(headerTextSecondary, content.subText)
+
+        val isSubTextOnHeader = !richOngoingImprovements() || isMetricStyle
+
+        if (isSubTextOnHeader) {
+            updateTextView(headerTextSecondary, content.subText)
+        } else {
+            updateTextView(altSubtext, content.subText)
+        }
+
         updateTitle(headerTitleView, content)
         updateTimeAndChronometer(content)
         updateProfileBadge(content)
@@ -562,32 +596,48 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateHeaderDividers(content, hideTitle = !hasTitleInHeader, hideAppName = hideAppName)
     }
 
-    private val PromotedNotificationContentModel.isMetricStyleWithSingleMetric
-        get(): Boolean {
-            return metrics?.size == 1
-        }
-
     private fun updateHeaderDividers(
         content: PromotedNotificationContentModel,
         hideAppName: Boolean,
         hideTitle: Boolean,
     ) {
-        val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
-        val hasSubText = !content.subText.isNullOrEmpty()
-        val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
-        val hasTimeOrChronometer = content.time != null
+        if (richOngoingImprovements()) {
+            // only metricStyle has headers on the top line view.
+            val isSubTextOnHeader = !content.metrics.isNullOrEmpty()
+            val hasSubText = isSubTextOnHeader && !content.subText.isNullOrEmpty()
+            val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
 
-        val hasTextBeforeSubText = hasAppName
-        val hasTextBeforeHeader = hasAppName || hasSubText
-        val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
+            val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
+            val hasChronometer = content.time is When.Chronometer
+            val hasTextBeforeAppName = hasHeader
+            val hasTextBeforeSubText = hasAppName || hasHeader
+            val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
 
-        val showDividerBeforeSubText = hasTextBeforeSubText && hasSubText
-        val showDividerBeforeHeader = hasTextBeforeHeader && hasHeader
-        val showDividerBeforeTime = hasTextBeforeTime && hasTimeOrChronometer
+            val showDividerBeforeAppName = hasTextBeforeAppName && hasAppName
+            val showDividerBeforeSubText = hasTextBeforeSubText && hasSubText
+            val showDividerBeforeTime = hasTextBeforeTime && hasChronometer
 
-        headerTextSecondaryDivider?.isVisible = showDividerBeforeSubText
-        headerTextDivider?.isVisible = showDividerBeforeHeader
-        timeDivider?.isVisible = showDividerBeforeTime
+            headerTextSecondaryDivider?.isVisible = showDividerBeforeSubText
+            timeDivider?.isVisible = showDividerBeforeTime
+            appNameTextDivider?.isVisible = showDividerBeforeAppName
+        } else {
+            val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
+            val hasSubText = !content.subText.isNullOrEmpty()
+            val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
+            val hasTimeOrChronometer = content.time != null
+
+            val hasTextBeforeSubText = hasAppName
+            val hasTextBeforeHeader = hasAppName || hasSubText
+            val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
+
+            val showDividerBeforeSubText = hasTextBeforeSubText && hasSubText
+            val showDividerBeforeHeader = hasTextBeforeHeader && hasHeader
+            val showDividerBeforeTime = hasTextBeforeTime && hasTimeOrChronometer
+
+            headerTextSecondaryDivider?.isVisible = showDividerBeforeSubText
+            headerTextDivider?.isVisible = showDividerBeforeHeader
+            timeDivider?.isVisible = showDividerBeforeTime
+        }
     }
 
     private fun updateConversationHeader(
@@ -595,8 +645,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
     ) {
         updateAppName(content, forceHide = collapsed)
-        updateTimeAndChronometer(content)
-        updateProfileBadge(content)
+        updateTimeAndChronometer(content, isCallStyle = true)
+        updateProfileBadge(content, isCallStyle = true)
 
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
@@ -647,23 +697,41 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTextView(titleView, content.title, color = PrimaryText)
     }
 
-    private fun updateTimeAndChronometer(content: PromotedNotificationContentModel) {
-        if (content.time is When.Time) {
-            time?.setTime(content.time.currentTimeMillis)
-        }
+    private fun updateTimeAndChronometer(
+        content: PromotedNotificationContentModel,
+        isCallStyle: Boolean = false,
+    ) {
+        val canShowTime = !richOngoingImprovements() || isCallStyle
+        if (canShowTime) {
+            if (content.time is When.Time) {
+                time?.setTime(content.time.currentTimeMillis)
+            }
 
-        if (content.time is When.Chronometer) {
-            inflateChronometer()
-            chronometer?.base = content.time.elapsedRealtimeMillis
-            chronometer?.isCountDown = content.time.isCountDown
-            chronometer?.setStarted(true)
+            if (content.time is When.Chronometer) {
+                inflateChronometer()
+                chronometer?.base = content.time.elapsedRealtimeMillis
+                chronometer?.isCountDown = content.time.isCountDown
+                chronometer?.setStarted(true)
+            } else {
+                chronometer?.stop()
+            }
+            setTextViewColor(time, SecondaryText)
+            setTextViewColor(chronometer, SecondaryText)
+            time?.isVisible = (content.time is When.Time)
+            chronometer?.isVisible = (content.time is When.Chronometer)
         } else {
+            time?.isVisible = false
+            chronometer?.isVisible = false
             chronometer?.stop()
+            if (content.time is When.Chronometer) {
+                inflateChronometer()
+                chronometer?.base = content.time.elapsedRealtimeMillis
+                chronometer?.isCountDown = content.time.isCountDown
+                chronometer?.setStarted(true)
+                chronometer?.isVisible = true
+                setTextViewColor(chronometer, SecondaryText)
+            }
         }
-        setTextViewColor(time, SecondaryText)
-        setTextViewColor(chronometer, SecondaryText)
-        time?.isVisible = (content.time is When.Time)
-        chronometer?.isVisible = (content.time is When.Chronometer)
     }
 
     private fun updateRightIconAndSpacing(image: ImageModel?) {
@@ -682,11 +750,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         val hasRightIcon = image?.drawable != null
         val spaceBasedOnRightIcon =
             if (hasRightIcon) rightIconSizePx.width + 2 * marginPx else marginPx
-        (title?.layoutParams as? MarginLayoutParams)?.let {
-            it.marginEnd = spaceBasedOnRightIcon
-            title.layoutParams = it
+        title?.setMarginEnd(spaceBasedOnRightIcon)
+        if (richOngoingImprovements()) {
+            altSubtext?.setMarginEnd(spaceBasedOnRightIcon)
         }
         topLine?.headerTextMarginEnd = spaceBasedOnRightIcon
+    }
+
+    fun View?.setMarginEnd(marginEnd: Int) {
+        val lp = this?.layoutParams as? MarginLayoutParams ?: return
+        lp.marginEnd = marginEnd
+        this.layoutParams = lp
     }
 
     private fun calculateRightIconDimensions(drawable: Drawable?): Size {
@@ -708,11 +782,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         return Size(viewWidthPx, viewHeightPx)
     }
 
-    private fun updateProfileBadge(content: PromotedNotificationContentModel) {
-        if (content.profileBadgeBitmap != null) {
+    private fun updateProfileBadge(
+        content: PromotedNotificationContentModel,
+        isCallStyle: Boolean = false,
+    ) {
+        val canShowProfileBadge = !richOngoingImprovements() || isCallStyle
+        if (canShowProfileBadge && content.profileBadgeBitmap != null) {
             profileBadge?.setImageBitmap(content.profileBadgeBitmap)
             profileBadge?.visibility = VISIBLE
             profileBadge?.setColorFilter(PrimaryText.colorInt, PorterDuff.Mode.SRC_IN)
+        } else {
+            profileBadge?.visibility = GONE
         }
     }
 

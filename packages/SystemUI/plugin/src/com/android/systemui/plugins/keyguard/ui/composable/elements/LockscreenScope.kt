@@ -123,6 +123,7 @@ interface LockscreenScope<out TScope : BaseContentScope> {
             sceneKey: SceneKey,
             transitions: SceneTransitionsBuilder.() -> Unit,
             modifier: Modifier = Modifier,
+            debugName: String,
             content: NestedSceneScope.() -> Unit,
         ) {
             val coroutineScope = rememberCoroutineScope()
@@ -136,7 +137,7 @@ interface LockscreenScope<out TScope : BaseContentScope> {
                 sceneState.setTargetScene(sceneKey, coroutineScope)
             }
 
-            contentScope.NestedSceneTransitionLayout(sceneState, modifier) {
+            contentScope.NestedSceneTransitionLayout(sceneState, modifier, debugName) {
                 NestedSceneScopeImpl(this@NestedScenes, this).content()
             }
         }

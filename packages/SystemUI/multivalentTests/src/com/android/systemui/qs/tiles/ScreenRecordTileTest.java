@@ -192,7 +192,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     // Test that the tile is inactive and labeled correctly when the controller is neither starting
     // or recording, and that clicking on the tile in this state brings up the record prompt
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
     public void testNotActive() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
@@ -232,7 +233,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that the tile cancels countdown if it is clicked when the controller is starting
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
     public void testCancelRecording() {
         when(mController.isStarting()).thenReturn(true);
         when(mController.isRecording()).thenReturn(false);
@@ -243,8 +245,9 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    public void testClickOpensNewToolbar() {
+    @EnableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
+    public void testClickOpensNewUI() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
 
@@ -278,7 +281,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that clicking the tile opens the recording dialog if flag is disabled.
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
     public void testClickNewToolbarFlagDisabled() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
@@ -308,7 +312,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that the tile stops the recording if it is clicked when the controller is recording
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
     public void testStopRecording() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(true);
@@ -393,7 +398,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    @DisableFlags({Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR, Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+            Flags.FLAG_LARGE_SCREEN_RECORDING})
     public void showingDialogPrompt_logsMediaProjectionPermissionRequested() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);

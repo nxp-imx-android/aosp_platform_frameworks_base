@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Ezin da gorde pantaila-argazkia"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Aplikazioak edo erakundeak ez du onartzen pantaila-argazkiak ateratzea"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"IKT saileko administratzaileak blokeatu egin dizu pantaila-argazkiak ateratzeko aukera"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopiatu pantaila-argazkia arbelean"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editatu"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Pantaila-argazkia editatzeko botoia"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Partekatu"</string>
@@ -837,6 +836,8 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Sakatu hau dardara ezartzeko."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Sakatu hau audioa desaktibatzeko."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Zarata-kontrola"</string>
+    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
+    <skip />
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Audio espaziala"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Desaktibatuta"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Finkoa"</string>
@@ -928,31 +929,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Eginda"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplikatu"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desaktibatu"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefonoa"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tableta"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ordenagailu eramangarria"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"erlojua"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"telebista"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Ireki <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> gailuaren ezarpenak"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Isila"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Lehenetsia"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatikoa"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"Jakinarazpen hau <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> gailutik dator"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Ez du tonurik jotzen edo dar-dar egiten"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Ez du tonurik jotzen edo dar-dar egiten, baina elkarrizketen atalean agertzen da"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Baliteke tonua jotzea edo dardara egitea, gailuaren ezarpenen arabera"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Baliteke tonua jotzea edo dardara egitea, gailuaren ezarpenen arabera. Modu lehenetsian, <xliff:g id="APP_NAME">%1$s</xliff:g> aplikazioko elkarrizketak burbuila gisa agertzen dira."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Ezarri sistemak zehaztu dezala jakinarazpen honek soinua edo dardara egin behar duen ala ez"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"Lehenetsi gisa ezarri da &lt;b&gt;egoera:&lt;/b&gt;"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"<xliff:g id="DEVICE_NAME">%1$s</xliff:g> gailuan doi ditzakezu sinkronizatutako jakinarazpenen lehentasuna eta ezarpenak"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"Soinurik gabeko modura aldatu da &lt;b&gt;egoera:&lt;/b&gt;"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"Mailaz igo da &lt;b&gt;egoera:&lt;/b&gt;"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"Mailaz jaitsi da &lt;b&gt;egoera:&lt;/b&gt;"</string>

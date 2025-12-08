@@ -123,7 +123,8 @@ public class BroadcastSkipPolicy {
                     + r.options.getRequireCompatChangeId();
         }
         if (!mService.validateAssociationAllowedLocked(r.callerPackage, r.callingUid,
-                component.getPackageName(), receiverUid)) {
+                component.getPackageName(), receiverUid,
+                ActivityManagerService.ASSOCIATION_TYPE_RECEIVER, r.intent.getExtras())) {
             return "Association not allowed: broadcasting "
                     + broadcastDescription(r, component);
         }
@@ -363,7 +364,8 @@ public class BroadcastSkipPolicy {
                     + r.options.getRequireCompatChangeId();
         }
         if (!mService.validateAssociationAllowedLocked(r.callerPackage, r.callingUid,
-                filter.packageName, filter.owningUid)) {
+                filter.packageName, filter.owningUid,
+                ActivityManagerService.ASSOCIATION_TYPE_RECEIVER, r.intent.getExtras())) {
             return "Association not allowed: broadcasting "
                     + r.intent.toString()
                     + " from " + r.callerPackage + " (pid=" + r.callingPid

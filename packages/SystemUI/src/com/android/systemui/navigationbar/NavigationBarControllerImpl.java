@@ -444,7 +444,7 @@ public class NavigationBarControllerImpl implements
             public void onViewAttachedToWindow(View v) {
                 if (result != null) {
                     navBar.setImeWindowStatus(display.getDisplayId(), result.mImeWindowVis,
-                            result.mImeBackDisposition, result.mShowImeSwitcher);
+                            result.mImeBackDisposition, result.mShowImeSwitcherButton);
                 }
             }
 

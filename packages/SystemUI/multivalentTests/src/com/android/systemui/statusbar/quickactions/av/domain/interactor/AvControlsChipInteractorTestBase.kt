@@ -42,19 +42,25 @@ abstract class AvControlsChipInteractorTestBase() : SysuiTestCase() {
         PrivacyItem(PrivacyType.TYPE_MICROPHONE, PrivacyApplication("fakepackage", 0))
 
     protected fun cameraModel() =
-        AvControlsChipModel(SensorActivityModel.Active(SensorActivityModel.Active.Sensors.CAMERA))
+        AvControlsChipModel(
+            sensorActivityModel =
+                SensorActivityModel.Active(SensorActivityModel.Active.Sensors.CAMERA)
+        )
 
     protected fun microphoneModel() =
         AvControlsChipModel(
-            SensorActivityModel.Active(SensorActivityModel.Active.Sensors.MICROPHONE)
+            sensorActivityModel =
+                SensorActivityModel.Active(SensorActivityModel.Active.Sensors.MICROPHONE)
         )
 
     protected fun cameraAndMicrophoneModel() =
         AvControlsChipModel(
-            SensorActivityModel.Active(SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE)
+            sensorActivityModel =
+                SensorActivityModel.Active(SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE)
         )
 
-    protected fun inactiveModel() = AvControlsChipModel(SensorActivityModel.Inactive)
+    protected fun inactiveModel() =
+        AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive)
 
     protected fun Kosmos.lastModel(): AvControlsChipModel? =
         collectLastValue(underTest.model).invoke()

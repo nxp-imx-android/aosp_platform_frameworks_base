@@ -817,6 +817,24 @@ public final class Settings {
             "android.settings.VPN_SETTINGS";
 
     /**
+     * Activity Action: Shows a settings screen to configure application exclusions for
+     * a platform VPN.
+     * <p>
+     * When this action is used to start an Activity, the system displays a user
+     * interface allowing the user to select applications that are excluded from the VPN
+     * provisioned through {@link android.net.VpnManager} by the calling package.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_VPN_APP_EXCLUSION_SETTINGS =
+            "android.settings.VPN_APP_EXCLUSION_SETTINGS";
+
+    /**
      * Activity Action: Show settings to allow configuration of Wi-Fi.
      * <p>
      * In some cases, a matching Activity may not exist, so ensure you
@@ -11099,13 +11117,6 @@ public final class Settings {
         public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NONE = 0;
 
         /**
-         * The screen should turn completely off in low light.
-         *
-         * @hide
-         */
-        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF = 1;
-
-        /**
          * The screen should switch to a low light clock dream if dreaming is enabled in low light.
          *
          * @hide
@@ -11123,7 +11134,6 @@ public final class Settings {
         @Retention(RetentionPolicy.SOURCE)
         @IntDef({
                 LOW_LIGHT_DISPLAY_BEHAVIOR_NONE,
-                LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF,
                 LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM,
                 LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM,
         })
@@ -14342,6 +14352,17 @@ public final class Settings {
          * @hide
          */
         public static final String TIME_ZONE_NOTIFICATIONS = "time_zone_notifications";
+
+        /**
+         * Value to specify if the device should send notifications when the device's time zone
+         * offset changes (e.g. for daylight saving time).
+         *
+         * <p>1=yes, 0=no.
+         *
+         * @hide
+         */
+        public static final String TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS =
+                "time_zone_offset_change_notifications";
 
         /**
          * URI for the car dock "in" event sound.

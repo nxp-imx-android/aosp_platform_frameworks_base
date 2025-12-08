@@ -126,6 +126,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.DropBoxManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -2306,7 +2307,19 @@ public final class ProcessList extends ProcessListInternal
                 Slog.w(TAG, packageName + " inode == 0 or app uninstalled with keep-data");
                 return null;
             }
-            result.put(packageName, Pair.create(volumeUuid, inode));
+
+            final long finalInode;
+            final String finalPackageName;
+            if (Process.isPrivateComputeCoreUid(uid)) {
+                // Currently, we do not anticipate PCC apps needing to start before device unlock so
+                // it's safe to pass 0 as the inode value.
+                finalInode = 0L;
+                finalPackageName = packageName + Environment.PCC_DATA_DIRECTORY_SUFFIX;
+            } else {
+                finalInode = inode;
+                finalPackageName = packageName;
+            }
+            result.put(finalPackageName, Pair.create(volumeUuid, finalInode));
         }
 
         return result;
@@ -2346,7 +2359,7 @@ public final class ProcessList extends ProcessListInternal
             boolean bindMountAppStorageDirs = false;
             boolean bindMountAppsData = mAppDataIsolationEnabled
                     && (UserHandle.isApp(app.uid) || UserHandle.isIsolated(app.uid)
-                        || app.isSdkSandbox)
+                        || app.isSdkSandbox || Process.isPrivateComputeCoreUid(uid))
                     && mPlatformCompat.isChangeEnabled(APP_DATA_DIRECTORY_ISOLATION, app.info);
 
             // Get all packages belongs to the same shared uid. sharedPackages is empty array
@@ -4080,18 +4093,19 @@ public final class ProcessList extends ProcessListInternal
         for (int j = psr.numberOfConnections() - 1; j >= 0; j--) {
             ConnectionRecord cr = psr.getConnectionAt(j);
             if (cr.binding != null && !cr.serviceDead && cr.binding.service != null
-                    && cr.binding.service.app != null
-                    && cr.binding.service.app.getLruSeq() != getLruSeqLOSP()
+                    && cr.binding.service.getHostProcess() != null
+                    && cr.binding.service.getHostProcess().getLruSeq() != getLruSeqLOSP()
                     && cr.notHasFlag(Context.BIND_REDUCTION_FLAGS)
-                    && !cr.binding.service.app.isPersistent()) {
-                if (cr.binding.service.app.mServices.hasClientActivities()) {
+                    && !cr.binding.service.getHostProcess().isPersistent()) {
+                if (cr.binding.service.getHostProcess().mServices.hasClientActivities()) {
                     if (nextActivityIndex >= 0) {
-                        indices.append(offerLruProcessInternalLSP(cr.binding.service.app, now,
+                        indices.append(offerLruProcessInternalLSP(
+                                cr.binding.service.getHostProcess(), now,
                                 "service connection", cr, app), true);
                     }
                 } else {
-                    indices.append(offerLruProcessInternalLSP(cr.binding.service.app, now,
-                            "service connection", cr, app), false);
+                    indices.append(offerLruProcessInternalLSP(cr.binding.service.getHostProcess(),
+                            now, "service connection", cr, app), false);
                 }
             }
         }
@@ -5600,11 +5614,28 @@ public final class ProcessList extends ProcessListInternal
     }
 
     /**
-     * Called by ActivityManagerService when it decides to kill an application process.
+     * Called by ActivityManagerService when it decides to kill an application process except ANR.
      */
     @GuardedBy("mService")
-    void noteAppKill(final ProcessRecord app, final @Reason int reason,
-            final @SubReason int subReason, final String msg) {
+    void noteAppKill(
+            final ProcessRecord app,
+            final @Reason int reason,
+            final @SubReason int subReason,
+            final String msg) {
+        noteAppKill(app, reason, subReason, msg, /* anrInfo= */ null);
+    }
+
+    /**
+     * Called by ActivityManagerService when it decides to kill an application process if reason is
+     * ANR.
+     */
+    @GuardedBy("mService")
+    void noteAppKill(
+            final ProcessRecord app,
+            final @Reason int reason,
+            final @SubReason int subReason,
+            final String msg,
+            @Nullable ApplicationExitInfo.AnrInfo anrInfo) {
         if (DEBUG_PROCESSES) {
             Slog.i(TAG, "note: " + app + " is being killed, reason: "
                     + ApplicationExitInfo.reasonCodeToString(reason) + ", sub-reason: "
@@ -5615,7 +5646,7 @@ public final class ProcessList extends ProcessListInternal
             mDyingProcesses.put(app.processName, app.uid, app);
             app.setDyingPid(app.getPid());
         }
-        mAppExitInfoTracker.scheduleNoteAppKill(app, reason, subReason, msg);
+        mAppExitInfoTracker.scheduleNoteAppKill(app, reason, subReason, msg, anrInfo);
     }
 
     @GuardedBy("mService")

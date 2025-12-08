@@ -50,22 +50,25 @@ public final class ConversationData implements Parcelable {
     private final @NonNull Instant mProcessingStartTimestamp;
     private final @NonNull Instant mProcessingEndTimestamp;
     private final @NonNull ComponentName mComponentName;
-    private final @NonNull AutofillId mInputBoxAutofillId;
+    private final @Nullable AutofillId mInputBoxAutofillId;
     private final @NonNull String mInputBoxText;
     private final @NonNull String mConversationTitle;
     private final boolean mIsKeyboardShown;
     private final boolean mIsLastMessageFromTheUser;
+
+    private final boolean mHasNewMessage;
     private final @NonNull List<ChatMessageData> mChatMessages;
 
     private ConversationData(
             @NonNull Instant processingStartTimestamp,
             @NonNull Instant processingEndTimestamp,
             @NonNull ComponentName componentName,
-            @NonNull AutofillId inputBoxAutofillId,
+            @Nullable AutofillId inputBoxAutofillId,
             @NonNull String inputBoxText,
             @NonNull String conversationTitle,
             boolean isKeyboardShown,
             boolean isLastMessageFromTheUser,
+            boolean hasNewMessage,
             @NonNull List<ChatMessageData> chatMessages) {
         this(
                 null,
@@ -77,6 +80,7 @@ public final class ConversationData implements Parcelable {
                 conversationTitle,
                 isKeyboardShown,
                 isLastMessageFromTheUser,
+                hasNewMessage,
                 chatMessages);
     }
 
@@ -85,11 +89,12 @@ public final class ConversationData implements Parcelable {
             @NonNull Instant processingStartTimestamp,
             @NonNull Instant processingEndTimestamp,
             @NonNull ComponentName componentName,
-            @NonNull AutofillId inputBoxAutofillId,
+            @Nullable AutofillId inputBoxAutofillId,
             @NonNull String inputBoxText,
             @NonNull String conversationTitle,
             boolean isKeyboardShown,
             boolean isLastMessageFromTheUser,
+            boolean hasNewMessage,
             @NonNull List<ChatMessageData> chatMessages) {
         mActivityId = activityId;
         mProcessingStartTimestamp = processingStartTimestamp;
@@ -100,6 +105,7 @@ public final class ConversationData implements Parcelable {
         mConversationTitle = conversationTitle;
         mIsKeyboardShown = isKeyboardShown;
         mIsLastMessageFromTheUser = isLastMessageFromTheUser;
+        mHasNewMessage = hasNewMessage;
         mChatMessages = chatMessages;
     }
 
@@ -113,6 +119,7 @@ public final class ConversationData implements Parcelable {
         mConversationTitle = in.readString8();
         mIsKeyboardShown = in.readBoolean();
         mIsLastMessageFromTheUser = in.readBoolean();
+        mHasNewMessage = in.readBoolean();
         mChatMessages = in.createTypedArrayList(ChatMessageData.CREATOR);
     }
 
@@ -146,7 +153,7 @@ public final class ConversationData implements Parcelable {
     }
 
     /** Returns the autofill id of the input box in the conversation. */
-    @NonNull
+    @Nullable
     public AutofillId getInputBoxAutofillId() {
         return mInputBoxAutofillId;
     }
@@ -171,6 +178,11 @@ public final class ConversationData implements Parcelable {
     /** Returns whether the last message in the conversation is from the user. */
     public boolean isLastMessageFromTheUser() {
         return mIsLastMessageFromTheUser;
+    }
+
+    /** Returns whether there is a new message in view. */
+    public boolean hasNewMessage() {
+        return mHasNewMessage;
     }
 
     /** Returns the chat messages in the conversation. */
@@ -206,6 +218,7 @@ public final class ConversationData implements Parcelable {
         dest.writeString8(mConversationTitle);
         dest.writeBoolean(mIsKeyboardShown);
         dest.writeBoolean(mIsLastMessageFromTheUser);
+        dest.writeBoolean(mHasNewMessage);
         dest.writeTypedList(mChatMessages);
     }
 
@@ -228,6 +241,7 @@ public final class ConversationData implements Parcelable {
                 && Objects.equals(mInputBoxAutofillId, that.mInputBoxAutofillId)
                 && Objects.equals(mInputBoxText, that.mInputBoxText)
                 && Objects.equals(mConversationTitle, that.mConversationTitle)
+                && mHasNewMessage == that.mHasNewMessage
                 && Objects.equals(mChatMessages, that.mChatMessages);
     }
 
@@ -243,6 +257,7 @@ public final class ConversationData implements Parcelable {
                 mConversationTitle,
                 mIsKeyboardShown,
                 mIsLastMessageFromTheUser,
+                mHasNewMessage,
                 mChatMessages);
     }
 
@@ -269,6 +284,8 @@ public final class ConversationData implements Parcelable {
                 + mIsKeyboardShown
                 + ", mIsLastMessageFromTheUser="
                 + mIsLastMessageFromTheUser
+                + ", mHasNewMessage="
+                + mHasNewMessage
                 + ", mChatMessages="
                 + mChatMessages
                 + "}";
@@ -286,6 +303,8 @@ public final class ConversationData implements Parcelable {
         private @Nullable String mConversationTitle;
         private @Nullable Boolean mIsKeyboardShown;
         private @Nullable Boolean mIsLastMessageFromTheUser;
+
+        private @NonNull Boolean mHasNewMessage;
         private @Nullable List<ChatMessageData> mChatMessages;
 
         public Builder() {}
@@ -301,6 +320,13 @@ public final class ConversationData implements Parcelable {
         @NonNull
         public Builder setLastMessageFromTheUser(boolean isLastMessageFromTheUser) {
             mIsLastMessageFromTheUser = isLastMessageFromTheUser;
+            return this;
+        }
+
+        /** Sets whether there is a new message in view. */
+        @NonNull
+        public Builder setHasNewMessage(boolean hasNewMessage) {
+            mHasNewMessage = hasNewMessage;
             return this;
         }
 
@@ -338,7 +364,7 @@ public final class ConversationData implements Parcelable {
 
         /** Sets the autofill id of the input box in the conversation. */
         @NonNull
-        public Builder setInputBoxAutofillId(@NonNull AutofillId inputBoxAutofillId) {
+        public Builder setInputBoxAutofillId(@Nullable AutofillId inputBoxAutofillId) {
             mInputBoxAutofillId = inputBoxAutofillId;
             return this;
         }
@@ -372,11 +398,12 @@ public final class ConversationData implements Parcelable {
                     requireNonNull(mProcessingStartTimestamp),
                     requireNonNull(mProcessingEndTimestamp),
                     requireNonNull(mComponentName),
-                    requireNonNull(mInputBoxAutofillId),
+                    mInputBoxAutofillId,
                     requireNonNull(mInputBoxText),
                     requireNonNull(mConversationTitle),
                     requireNonNull(mIsKeyboardShown),
                     requireNonNull(mIsLastMessageFromTheUser),
+                    requireNonNull(mHasNewMessage),
                     requireNonNull(mChatMessages));
         }
     }

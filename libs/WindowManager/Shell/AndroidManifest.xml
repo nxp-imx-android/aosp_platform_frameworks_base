@@ -38,5 +38,9 @@
             android:theme="@style/DesktopWallpaperTheme"
             android:taskAffinity="com.android.wm.shell.desktop_wallpaper"/>
 
+        <activity
+            android:name=".packageupdate.PackageUpdateActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop" />
     </application>
 </manifest>

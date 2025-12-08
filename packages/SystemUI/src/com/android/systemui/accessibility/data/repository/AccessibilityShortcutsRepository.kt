@@ -214,6 +214,7 @@ constructor(
                     ttsText,
                 )
             }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val featureName = getFeatureName(keyGestureType, targetName) ?: return null
@@ -351,7 +352,13 @@ constructor(
                     .toMutableSet()
                     // This observes targets being assigned/unassigned to the shortcut.
                     .apply { add(ShortcutUtils.convertToKey(shortcutType)) }
-                    .map { key -> secureSettings.registerContentObserverAsync(key, observer) }
+                    .map { key ->
+                        secureSettings.registerContentObserverForUserAsync(
+                            key,
+                            observer,
+                            userTracker.userId,
+                        )
+                    }
                     .joinAll()
 
                 // Emits the initial state of the list of accessibility targets.
@@ -378,6 +385,10 @@ constructor(
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {
         return when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION ->
+                resources.getString(
+                    R.string.quick_settings_inversion_label
+                )
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
                 resources.getString(
                     com.android.settingslib.R.string.accessibility_screen_magnification_title
@@ -405,6 +416,7 @@ constructor(
                     featureName,
                 )
             }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 resources.getString(
@@ -425,6 +437,8 @@ constructor(
     ): CharSequence? {
         val contentTemplateResId: Int? =
             when (keyGestureType) {
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION ->
+                    R.string.accessibility_key_gesture_color_inversion_dialog_content
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
                     R.string.accessibility_key_gesture_magnification_dialog_content
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->

@@ -37,7 +37,6 @@ import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 import android.window.TaskSnapshotManager;
 
 import androidx.annotation.OptIn;
@@ -103,6 +102,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.common.transition.TransitionStateHolder;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
@@ -181,6 +181,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarterInitializer;
 import com.android.wm.shell.freeform.TaskChangeListener;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
+import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
@@ -767,7 +768,9 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            FocusTransitionObserver focusTransitionObserver,
+            InputManager inputManager) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -797,7 +800,9 @@ public abstract class WMShellModule {
                 desktopState,
                 activityTaskManager,
                 msdlPlayer,
-                bubbleController);
+                bubbleController,
+                focusTransitionObserver,
+                inputManager);
     }
 
     //
@@ -1042,7 +1047,8 @@ public abstract class WMShellModule {
             TransactionPool transactionPool,
             PipTransitionState pipTransitionState,
             LockTaskChangeListener lockTaskChangeListener,
-            LauncherApps launcherApps) {
+            LauncherApps launcherApps,
+            TransitionStateHolder transitionStateHolder) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1098,7 +1104,8 @@ public abstract class WMShellModule {
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
                         : Optional.empty(),
                 lockTaskChangeListener,
-                launcherApps);
+                launcherApps,
+                transitionStateHolder);
     }
 
     @WMSingleton
@@ -2108,6 +2115,26 @@ public abstract class WMShellModule {
             Transitions transitions) {
         if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
             return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+        }
+        return Optional.empty();
+    }
+
+    //
+    // Package Update
+    //
+
+    @WMSingleton
+    @Provides
+    static Optional<PackageUpdateController> providePackageUpdateController(
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer,
+            ShellInit shellInit,
+            UserProfileContexts userProfileContexts
+    ) {
+        if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+            return Optional.of(
+                    new PackageUpdateController(transitions, shellTaskOrganizer,
+                            shellInit, userProfileContexts));
         }
         return Optional.empty();
     }

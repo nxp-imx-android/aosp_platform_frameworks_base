@@ -19,16 +19,8 @@ package com.android.server.personalcontext.notifications;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Notification;
-import android.app.PendingIntent;
-import android.app.RemoteAction;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Icon;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.hint.ContextHint;
@@ -37,8 +29,10 @@ import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueu
 import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.InsightCollection;
+import android.service.personalcontext.insight.DisplayInsight;
 import android.service.personalcontext.insight.InsightDisplayDetails;
+import android.service.personalcontext.insight.InsightTraverser;
+import android.service.personalcontext.insight.InsightVisitor;
 import android.util.Log;
 import android.util.Slog;
 
@@ -46,19 +40,19 @@ import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * A {@link Renderer} that adds contextual {@link android.app.Notification.Action}s to a {@link
- * StatusBarNotification} based on a given {@link ContextInsight}.
+ * A {@link Renderer} that adds contextual {@link android.app.Notification.Action}s or text replies
+ * to a {@link StatusBarNotification} based on a given {@link ContextInsight}.
  *
  * <p>This renderer inspects the provided {@link ContextInsight} to identify the target notification
- * and the type of action to be added. It then constructs the appropriate action and applies it to
- * the notification using an {@link Adjustment}. This renderer can handle a single {@link
- * ActionableInsight} or an {@link InsightCollection} of them. When processing an {@link
+ * and the type of action to be added. It then constructs the appropriate action or reply and
+ * applies it to the notification using an {@link Adjustment}. This renderer can handle a single
+ * {@link ActionableInsight} or an {@link InsightCollection} of them. When processing an {@link
  * InsightCollection}, it groups insights by notification and creates a single {@link Adjustment}
  * per notification.
  *
@@ -68,7 +62,7 @@ public class NotificationActionRenderer implements Renderer {
     private static final String TAG = "NotifActionRenderer";
 
     static final int MAX_NOTIFICATION_ACTIONS = 4;
-    static final int MAX_RECURSION_DEPTH = 10;
+    static final int MAX_TEXT_REPLIES = 5;
 
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
@@ -76,19 +70,17 @@ public class NotificationActionRenderer implements Renderer {
     private static final String NO_EXPLANATION = "";
 
     private final NotificationManagerInternal mNotificationManagerInternal;
-    private final PackageManager mPackageManager;
-    private final Context mContext;
+    private final NotificationActionFactory mNotificationActionFactory;
     private final UUID mComponentId = UUID.randomUUID();
 
     public NotificationActionRenderer(
-            Context context, NotificationManagerInternal nmi, PackageManager pm) {
-        mContext = context;
+            NotificationManagerInternal nmi, NotificationActionFactory notificationActionFactory) {
         mNotificationManagerInternal = nmi;
-        mPackageManager = pm;
+        mNotificationActionFactory = notificationActionFactory;
     }
 
     @Nullable
-    private StatusBarNotification getSbnFromInsight(ContextInsight insight) {
+    private static StatusBarNotification getSbnFromInsight(ContextInsight insight) {
         for (ContextHint hint : ContextHintWithSignature.unwrapList(insight.getOriginHints())) {
             if (hint instanceof NotificationHint notificationHint
                     && notificationHint.getNotificationEvent()
@@ -100,30 +92,25 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean alreadyRendered) {
+    public void render(@NonNull ContextInsight insight) {
         if (mNotificationManagerInternal == null) {
             Slog.e(TAG, "NotificationManagerInternal not found.");
             return;
         }
 
-        List<ActionableInsight> actionableInsights = getActionableInsights(insight);
+        final Map<String, AdjustmentInfo> adjustmentsInfo = new LinkedHashMap<>();
+        final InsightCollector collector =
+                new InsightCollector(mNotificationActionFactory, adjustmentsInfo);
+        InsightTraverser.traverse(insight, collector);
 
-        if (actionableInsights.isEmpty()) {
+        if (adjustmentsInfo.isEmpty()) {
             if (DEBUG) {
-                Slog.d(TAG, "No ActionableInsights to render from: " + insight);
+                Slog.d(TAG, "No relevant insights to render from: " + insight);
             }
             return;
         }
 
-        Map<String, InsightGroup> insightsByNotificationKey =
-                groupInsightsByNotificationKey(actionableInsights);
-
-        if (insightsByNotificationKey.isEmpty()) {
-            Slog.w(TAG, "Could not find SBN for any of the insights.");
-            return;
-        }
-
-        List<Adjustment> adjustments = createAdjustments(insightsByNotificationKey);
+        List<Adjustment> adjustments = createAdjustments(adjustmentsInfo);
 
         if (!adjustments.isEmpty()) {
             if (DEBUG) {
@@ -134,31 +121,6 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     /**
-     * Groups a list of {@link ActionableInsight}s by their corresponding notification key.
-     *
-     * @param actionableInsights The list of insights to group.
-     * @return A map where keys are notification keys and values are lists of insights for that
-     *     notification.
-     */
-    @NonNull
-    private Map<String, InsightGroup> groupInsightsByNotificationKey(
-            @NonNull List<ActionableInsight> actionableInsights) {
-        Map<String, InsightGroup> insightsByNotificationKey = new HashMap<>();
-        for (final ActionableInsight insight : actionableInsights) {
-            StatusBarNotification sbn = getSbnFromInsight(insight);
-            if (sbn != null) {
-                insightsByNotificationKey
-                        .computeIfAbsent(sbn.getKey(), k -> new InsightGroup(sbn))
-                        .mInsights
-                        .add(insight);
-            } else if (DEBUG) {
-                Slog.d(TAG, "Skipping insight, SBN not found: " + insight);
-            }
-        }
-        return insightsByNotificationKey;
-    }
-
-    /**
      * Creates a list of {@link Adjustment}s from a map of grouped insights.
      *
      * @param insightsByNotificationKey A map of insights grouped by notification key.
@@ -166,10 +128,10 @@ public class NotificationActionRenderer implements Renderer {
      */
     @NonNull
     private List<Adjustment> createAdjustments(
-            @NonNull Map<String, InsightGroup> insightsByNotificationKey) {
+            @NonNull Map<String, AdjustmentInfo> adjustmentsInfo) {
         final List<Adjustment> adjustments = new ArrayList<>();
-        for (final InsightGroup insightGroup : insightsByNotificationKey.values()) {
-            final Adjustment adjustment = createAdjustmentForInsightGroup(insightGroup);
+        for (final AdjustmentInfo adjustmentInfo : adjustmentsInfo.values()) {
+            final Adjustment adjustment = createAdjustmentFromInfo(adjustmentInfo);
             if (adjustment != null) {
                 adjustments.add(adjustment);
             }
@@ -178,76 +140,25 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     /**
-     * Extracts a list of {@link ActionableInsight}s from a given {@link ContextInsight}.
+     * Creates an {@link Adjustment} for a group of {@link ContextInsight}s that belong to the same
+     * notification.
      *
-     * <p>If the insight is an {@link ActionableInsight}, it returns a list containing just that
-     * insight. If it's an {@link InsightCollection}, it filters and returns all the {@link
-     * ActionableInsight}s within it. Otherwise, it returns an empty list.
-     *
-     * @param insight The {@link ContextInsight} to process.
-     * @return A list of {@link ActionableInsight}s.
-     */
-    @NonNull
-    private List<ActionableInsight> getActionableInsights(@NonNull ContextInsight insight) {
-        final List<ActionableInsight> result = new ArrayList<>();
-        collectActionableInsights(insight, result, 0);
-        return result;
-    }
-
-    private void collectActionableInsights(
-            @NonNull ContextInsight insight,
-            @NonNull List<ActionableInsight> destination,
-            int depth) {
-        if (depth >= MAX_RECURSION_DEPTH) {
-            Slog.w(TAG, "Max recursion depth reached. Skipping insight: " + insight);
-            return;
-        }
-        if (insight instanceof ActionableInsight) {
-            destination.add((ActionableInsight) insight);
-        } else if (insight instanceof InsightCollection) {
-            final InsightCollection collection = (InsightCollection) insight;
-            for (final ContextInsight i : collection) {
-                collectActionableInsights(i, destination, depth + 1);
-            }
-        }
-    }
-
-    /**
-     * Creates an {@link Adjustment} for a group of {@link ActionableInsight}s that belong to the
-     * same notification.
-     *
-     * @param insightGroup A list of {@link ActionableInsight}s for a single notification.
-     * @return An {@link Adjustment} containing all the generated actions, or {@code null} if no
-     *     actions could be created.
+     * @param insightGroup A group of {@link ContextInsight}s for a single notification.
+     * @return An {@link Adjustment} containing all the generated actions and replies, or {@code
+     *     null} if none could be created.
      */
     @Nullable
-    private Adjustment createAdjustmentForInsightGroup(@NonNull InsightGroup insightGroup) {
-        if (insightGroup.mInsights.isEmpty()) {
+    private Adjustment createAdjustmentFromInfo(@NonNull AdjustmentInfo adjustmentInfo) {
+        if (adjustmentInfo.mActions.isEmpty() && adjustmentInfo.mTextReplies.isEmpty()) {
+            Slog.w(
+                    TAG,
+                    "Could not create any notification actions or replies for sbn: "
+                            + adjustmentInfo.mSbn.getKey());
             return null;
         }
 
-        final StatusBarNotification sbn = insightGroup.mSbn;
-        final UserHandle user = sbn.getUser();
-        final List<Notification.Action> notificationActions = new ArrayList<>();
-        for (final ActionableInsight actionableInsight : insightGroup.mInsights) {
-            if (notificationActions.size() >= MAX_NOTIFICATION_ACTIONS) {
-                Slog.w(
-                        TAG,
-                        "Max number of actions reached. Skipping insight: " + actionableInsight);
-                break;
-            }
-            Notification.Action action = createNotificationAction(actionableInsight, user);
-            if (action != null) {
-                notificationActions.add(action);
-            }
-        }
-
-        if (notificationActions.isEmpty()) {
-            Slog.w(TAG, "Could not create any notification actions for sbn: " + sbn.getKey());
-            return null;
-        }
-
-        return createAdjustment(sbn, notificationActions);
+        return createAdjustment(
+                adjustmentInfo.mSbn, adjustmentInfo.mActions, adjustmentInfo.mTextReplies);
     }
 
     /**
@@ -258,118 +169,24 @@ public class NotificationActionRenderer implements Renderer {
      * icon.
      *
      * @param insight The insight containing the details for the action.
-     * @param user The user for whom the action is being created.
      * @return A {@link Notification.Action} if it can be created, or {@code null} otherwise.
      */
     @Nullable
-    private Notification.Action createNotificationAction(
-            ActionableInsight insight, UserHandle user) {
-        Intent actionIntent = insight.getActionDetails().createActionIntent();
-        // TODO(b/462239221): simplify logic when we migrate remote action to pending intent
-        RemoteAction remoteAction = insight.getActionDetails().getRemoteAction();
-        PendingIntent pendingIntent;
-        if (actionIntent != null) {
-            // Action details contain intent, create a PendingIntent for the adjustment.
-            pendingIntent =
-                    PendingIntent.getActivityAsUser(
-                            mContext,
-                            /* requestCode= */ actionIntent.hashCode(),
-                            actionIntent,
-                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
-                            /* options= */ null,
-                            user);
-        } else if (remoteAction != null) {
-            // Action details contains RemoteAction, grab the intent and PendingIntent from that.
-            pendingIntent = remoteAction.getActionIntent();
-            actionIntent = pendingIntent.getIntent();
-        } else {
-            // Action details did not contain any action, give up.
-            return null;
-        }
-
-        if (actionIntent == null) {
-            return null;
-        }
-
-        final ActivityInfo activityInfo = getActivityInfo(actionIntent, user);
-
-        if (activityInfo == null) {
-            return null;
-        }
-
-        final InsightDisplayDetails displayDetails = insight.getDisplayDetails();
-
-        final Icon icon = getIconOrDefault(displayDetails.getIcon(), activityInfo);
-
-        // TODO(b/460848566): icon is not included for some CUJs, handle gracefully
-        if (icon == null) {
-            Slog.w(
-                    TAG,
-                    "Could not get icon to create notification action for "
-                            + activityInfo.packageName);
-            return null;
-        }
-
-        final CharSequence title = getTitleOrDefault(displayDetails.getTitle(), activityInfo);
-
-        final Bundle extras = new Bundle();
-        final CharSequence contentDescription = displayDetails.getContentDescription();
-        if (contentDescription != null) {
-            extras.putCharSequence(
-                    Notification.Action.EXTRA_CONTENT_DESCRIPTION, contentDescription);
-        }
-        extras.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
-
-        return new Notification.Action.Builder(icon, title, pendingIntent)
-                .setContextual(true)
-                .addExtras(extras)
-                .build();
-    }
-
-    @NonNull
-    private CharSequence getTitleOrDefault(
-            @Nullable CharSequence title, @NonNull ActivityInfo activityInfo) {
-        if (title != null) {
-            return title;
-        }
-        final CharSequence appLabel =
-                mPackageManager.getApplicationLabel(activityInfo.applicationInfo);
-        return mContext.getString(com.android.internal.R.string.open_app_name, appLabel);
-    }
-
-    @Nullable
-    private ActivityInfo getActivityInfo(Intent actionIntent, UserHandle user) {
-        if (actionIntent == null) {
-            Slog.w(TAG, "Action intent is null for user: " + user);
-            return null;
-        }
-        final List<ResolveInfo> resolveInfos =
-                mPackageManager.queryIntentActivitiesAsUser(
-                        actionIntent, PackageManager.MATCH_ALL, user.getIdentifier());
-        if (resolveInfos == null || resolveInfos.isEmpty()) {
-            Slog.w(
-                    TAG,
-                    "Could not resolve action intent to get app info: "
-                            + actionIntent
-                            + " for user: "
-                            + user);
-            return null;
-        }
-        return resolveInfos.get(0).activityInfo;
-    }
-
-    @Nullable
-    private Icon getIconOrDefault(@Nullable Icon icon, @NonNull ActivityInfo activityInfo) {
-        if (icon != null) {
-            return icon;
-        }
-        return Icon.createWithResource(activityInfo.packageName, activityInfo.getIconResource());
-    }
-
     private Adjustment createAdjustment(
-            StatusBarNotification sbn, List<Notification.Action> actions) {
+            StatusBarNotification sbn,
+            List<Notification.Action> actions,
+            List<CharSequence> textReplies) {
         final Bundle signals = new Bundle();
-        signals.putParcelableArrayList(Adjustment.KEY_CONTEXTUAL_ACTIONS, new ArrayList<>(actions));
+
+        if (!actions.isEmpty()) {
+            signals.putParcelableArrayList(
+                    Adjustment.KEY_CONTEXTUAL_ACTIONS, new ArrayList<>(actions));
+        }
+
+        if (!textReplies.isEmpty()) {
+            signals.putCharSequenceArrayList(
+                    Adjustment.KEY_TEXT_REPLIES, new ArrayList<>(textReplies));
+        }
 
         return new Adjustment(
                 sbn.getPackageName(), sbn.getKey(), signals, NO_EXPLANATION, sbn.getUser());
@@ -387,12 +204,110 @@ public class NotificationActionRenderer implements Renderer {
         return false;
     }
 
-    private static class InsightGroup {
+    /**
+     * Holds state for a specific notification adjustment. Encapsulates the logic for enforcing
+     * system limits on actions and replies.
+     */
+    private static class AdjustmentInfo {
         final StatusBarNotification mSbn;
-        final List<ActionableInsight> mInsights = new ArrayList<>();
+        final List<Notification.Action> mActions = new ArrayList<>();
+        final List<CharSequence> mTextReplies = new ArrayList<>();
 
-        InsightGroup(StatusBarNotification sbn) {
+        AdjustmentInfo(StatusBarNotification sbn) {
             mSbn = sbn;
+        }
+
+        /**
+         * Adds a contextual action to this adjustment.
+         *
+         * @return {@code true} if the action was added, or {@code false} if the limit has been
+         *     reached.
+         */
+        boolean addAction(@NonNull Notification.Action action) {
+            if (isActionLimitReached()) {
+                Slog.w(TAG, "Max number of actions reached. Dropping action.");
+                return false;
+            }
+            mActions.add(action);
+            return true;
+        }
+
+        /**
+         * Adds a text reply suggestion to this adjustment.
+         *
+         * @return {@code true} if the reply was added, or {@code false} if the limit has been
+         *     reached.
+         */
+        boolean addReply(@NonNull CharSequence reply) {
+            if (isReplyLimitReached()) {
+                Slog.w(TAG, "Max number of replies reached. Dropping reply.");
+                return false;
+            }
+            mTextReplies.add(reply);
+            return true;
+        }
+
+        /** Returns {@code true} if the number of actions has reached the system limit. */
+        boolean isActionLimitReached() {
+            return mActions.size() >= MAX_NOTIFICATION_ACTIONS;
+        }
+
+        /** Returns {@code true} if the number of text replies has reached the system limit. */
+        boolean isReplyLimitReached() {
+            return mTextReplies.size() >= MAX_TEXT_REPLIES;
+        }
+    }
+
+    /**
+     * An {@link InsightVisitor} that collects {@link ActionableInsight}s and {@link
+     * DisplayInsight}s, groups them by notification, and prepares them for adjustment.
+     */
+    private static class InsightCollector implements InsightVisitor {
+        private final NotificationActionFactory mNotificationActionFactory;
+        private final Map<String, AdjustmentInfo> mAdjustments;
+
+        InsightCollector(
+                @NonNull NotificationActionFactory notificationActionFactory,
+                @NonNull Map<String, AdjustmentInfo> adjustments) {
+            mNotificationActionFactory = notificationActionFactory;
+            mAdjustments = adjustments;
+        }
+
+        @Nullable
+        private AdjustmentInfo getAdjustmentInfo(@NonNull ContextInsight insight) {
+            final StatusBarNotification sbn = getSbnFromInsight(insight);
+            if (sbn == null) {
+                return null;
+            }
+            return mAdjustments.computeIfAbsent(sbn.getKey(), k -> new AdjustmentInfo(sbn));
+        }
+
+        @Override
+        public void visit(@NonNull ActionableInsight insight) {
+            final AdjustmentInfo info = getAdjustmentInfo(insight);
+            if (info == null || info.isActionLimitReached()) {
+                return;
+            }
+
+            final Notification.Action action =
+                    mNotificationActionFactory.createNotificationAction(insight);
+
+            if (action != null) {
+                info.addAction(action);
+            }
+        }
+
+        @Override
+        public void visit(@NonNull DisplayInsight insight) {
+            final AdjustmentInfo info = getAdjustmentInfo(insight);
+            if (info == null || info.isReplyLimitReached()) {
+                return;
+            }
+
+            final CharSequence reply = insight.getDetails().getTitle();
+            if (reply != null) {
+                info.addReply(reply);
+            }
         }
     }
 }

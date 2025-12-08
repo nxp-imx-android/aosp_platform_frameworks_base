@@ -16,21 +16,43 @@
 
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
+import android.Manifest
+import android.app.AppOpsManager
+import android.app.IActivityManager
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import android.hardware.SensorPrivacyManager
+import android.os.UserHandle
+import android.permission.PermissionManager
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
+import com.android.systemui.statusbar.quickactions.av.shared.model.Sensor
+import com.android.systemui.statusbar.quickactions.av.shared.model.SensorAccess
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivityModel
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Interactor for managing the state of the video conference privacy chip in the status bar.
@@ -41,14 +63,20 @@ import kotlinx.coroutines.flow.stateIn
  * This functionality is only enabled on large screen devices.
  */
 interface AvControlsChipInteractor {
-    /** Encodes whether the feature is enabled. */
-    // val isEnabled: StateFlow<Boolean>
-
     /** Chip updates. */
     val model: StateFlow<AvControlsChipModel>
 
     /** Whether the display of the privacy dot should be suppressed to avoid duplicity. */
     val isShowingAvChip: StateFlow<Boolean>
+
+    val cameraBlocked: StateFlow<Boolean>
+    val microphoneBlocked: StateFlow<Boolean>
+
+    abstract fun setCameraBlocked(value: Boolean)
+
+    abstract fun setMicrophoneBlocked(value: Boolean)
+
+    abstract fun closeApp(packageName: String)
 }
 
 /**
@@ -56,23 +84,192 @@ interface AvControlsChipInteractor {
  * available.
  */
 class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInteractor {
-    // override val isEnabled = MutableStateFlow<Boolean>(false)
     override val model = MutableStateFlow<AvControlsChipModel>(AvControlsChipModel())
     override val isShowingAvChip = MutableStateFlow<Boolean>(false)
+    override val cameraBlocked: StateFlow<Boolean> = MutableStateFlow(false)
+    override val microphoneBlocked: StateFlow<Boolean> = MutableStateFlow(false)
+
+    override fun setCameraBlocked(value: Boolean) {}
+
+    override fun setMicrophoneBlocked(value: Boolean) {}
+
+    override fun closeApp(packageName: String) {}
 }
 
 class AvControlsChipInteractorImpl
 @Inject
 constructor(
     @Background private val backgroundScope: CoroutineScope,
-    private val privacyChipRepository: PrivacyChipRepository,
+    @Background private val bgDispatcher: CoroutineDispatcher,
+    privacyChipRepository: PrivacyChipRepository,
     statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
+    private val sensorPrivacyController: IndividualSensorPrivacyController,
+    private val permissionManager: PermissionManager,
+    private val packageManager: PackageManager,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val appIconProvider: AppIconProvider,
+    private val appOpsManager: AppOpsManager,
+    private val activityManager: IActivityManager,
 ) : AvControlsChipInteractor {
-    // override val isEnabled = MutableStateFlow<Boolean>(true)
+
+    private data class BlockedSensorInfo(
+        val cameraBlocked: Boolean = false,
+        val micBlocked: Boolean = false,
+    )
+
+    private val _sensorsState: StateFlow<BlockedSensorInfo> =
+        callbackFlow<(BlockedSensorInfo) -> BlockedSensorInfo> {
+                val callback =
+                    object : IndividualSensorPrivacyController.Callback {
+                        override fun onSensorBlockedChanged(sensor: Int, blocked: Boolean) {
+                            trySend { prev: BlockedSensorInfo ->
+                                when (sensor) {
+                                    SensorPrivacyManager.Sensors.CAMERA ->
+                                        prev.copy(cameraBlocked = blocked)
+
+                                    SensorPrivacyManager.Sensors.MICROPHONE ->
+                                        prev.copy(micBlocked = blocked)
+
+                                    else -> prev
+                                }
+                            }
+                        }
+                    }
+                sensorPrivacyController.addCallback(callback)
+                awaitClose { sensorPrivacyController.removeCallback(callback) }
+            }
+            .scan(initial = BlockedSensorInfo()) { state, eventF -> eventF(state) }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = BlockedSensorInfo(),
+            )
+
+    private val _sensorAccessList: Flow<List<SensorAccess>> =
+        callbackFlow {
+                val listener =
+                    object : AppOpsManager.OnOpActiveChangedListener {
+                        override fun onOpActiveChanged(
+                            op: String,
+                            uid: Int,
+                            packageName: String,
+                            active: Boolean,
+                        ) {
+                            trySend(Unit)
+                        }
+
+                        override fun onOpActiveChanged(
+                            op: String,
+                            uid: Int,
+                            packageName: String,
+                            attributionTag: String?,
+                            virtualDeviceId: Int,
+                            active: Boolean,
+                            attributionFlags: Int,
+                            attributionChainId: Int,
+                        ) {
+                            trySend(Unit)
+                        }
+                    }
+                appOpsManager.startWatchingActive(
+                    arrayOf<String>(AppOpsManager.OPSTR_CAMERA, AppOpsManager.OPSTR_RECORD_AUDIO),
+                    bgDispatcher.asExecutor(),
+                    listener,
+                )
+                awaitClose { appOpsManager.stopWatchingActive(listener) }
+            }
+            .onStart { emit(Unit) }
+            .map {
+                // TODO(436221760): Maybe we can just update the list rather than
+                sensorAccessList()
+            }
+            .flowOn(bgDispatcher)
+
+    override val cameraBlocked: StateFlow<Boolean> =
+        _sensorsState
+            .map { it.cameraBlocked }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    override val microphoneBlocked: StateFlow<Boolean> =
+        _sensorsState
+            .map { it.micBlocked }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    private suspend fun sensorAccessList(): List<SensorAccess> =
+        withContext(bgDispatcher) {
+            permissionManager.getIndicatorAppOpUsageData(false).mapNotNull {
+                val sensor: Sensor? =
+                    when (it.permissionGroupName) {
+                        Manifest.permission_group.CAMERA -> Sensor.CAMERA
+                        Manifest.permission_group.MICROPHONE -> Sensor.MICROPHONE
+                        else -> null
+                    }
+                if (sensor == null) {
+                    return@mapNotNull null
+                }
+                var appName = it.packageName
+
+                var icon: Drawable? = null
+                try {
+                    icon =
+                        appIconProvider.getOrFetchAppIcon(
+                            packageName = it.packageName,
+                            userHandle = UserHandle.of(selectedUserInteractor.getSelectedUserId()),
+                            instanceKey = "AvControlsChipInteractor",
+                        )
+                } catch (_: PackageManager.NameNotFoundException) {}
+                if (!it.isPhoneCall) {
+                    try {
+                        val appInfo =
+                            packageManager.getApplicationInfoAsUser(
+                                it.packageName,
+                                0,
+                                UserHandle.getUserId(it.uid),
+                            )
+                        appName = appInfo.loadLabel(packageManager).toString()
+                    } catch (_: PackageManager.NameNotFoundException) {}
+                }
+                return@mapNotNull SensorAccess(
+                    packageName = it.packageName,
+                    appName = appName,
+                    sensor = sensor,
+                    icon = icon,
+                )
+            }
+        }
+
+    override fun setCameraBlocked(value: Boolean) {
+        backgroundScope.launch {
+            sensorPrivacyController.setSensorBlocked(
+                SensorPrivacyManager.Sources.OTHER, // TODO: Add new source?
+                SensorPrivacyManager.Sensors.CAMERA,
+                value,
+            )
+        }
+    }
+
+    override fun setMicrophoneBlocked(value: Boolean) {
+        backgroundScope.launch {
+            sensorPrivacyController.setSensorBlocked(
+                SensorPrivacyManager.Sources.OTHER, // TODO: Add new source?
+                SensorPrivacyManager.Sensors.MICROPHONE,
+                value,
+            )
+        }
+    }
 
     override val model: StateFlow<AvControlsChipModel> =
-        privacyChipRepository.privacyItems
-            .map { privacyItems ->
+        combine(_sensorAccessList, privacyChipRepository.privacyItems) {
+                sensorAccessList,
+                privacyItems ->
                 AvControlsChipModel(
                     sensorActivityModel =
                         createSensorActivityModel(
@@ -80,7 +277,8 @@ constructor(
                                 privacyItems.any { it.privacyType == PrivacyType.TYPE_CAMERA },
                             microphoneActive =
                                 privacyItems.any { it.privacyType == PrivacyType.TYPE_MICROPHONE },
-                        )
+                        ),
+                    sensorAccessList = sensorAccessList,
                 )
             }
             .stateIn(
@@ -121,4 +319,10 @@ constructor(
 
             else -> SensorActivityModel.Inactive
         }
+
+    override fun closeApp(packageName: String) {
+        backgroundScope.launch {
+            activityManager.stopAppForUser(packageName, selectedUserInteractor.getSelectedUserId())
+        }
+    }
 }

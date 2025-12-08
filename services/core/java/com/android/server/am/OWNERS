@@ -23,6 +23,7 @@ per-file appexitinfo.proto = file:/ACTIVITY_MANAGER_OWNERS
 per-file UidObserverController* = file:/ACTIVITY_MANAGER_OWNERS
 per-file App*StartInfo* = file:/PERFORMANCE_OWNERS
 per-file appstartinfo.proto = file:/PERFORMANCE_OWNERS
+per-file MemoryLimiter* = file:/PERFORMANCE_OWNERS
 
 # Permissions & Packages
 per-file AccessCheckDelegateHelper.java = file:/core/java/android/permission/OWNERS
@@ -65,6 +66,9 @@ per-file CarUserSwitchingDialog.java = file:platform/packages/services/Car:/OWNE
 
 # Activity Security
 per-file ActivityManager* = file:/ACTIVITY_SECURITY_OWNERS
+
+#App Lock
+per-file AppLockLocalService = file:/core/java/android/content/pm/APP_LOCK_OWNERS
 
 # Native Application
 per-file *NativeApplication* = file:/libs/native_activity_thread/OWNERS

@@ -361,6 +361,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         private final String mDeviceConfigKey;
         private final Object mLock = new Object();
         @GuardedBy("mLock")
+        @Nullable
         private SignedPackages mSignedPackages = null;
 
         RemoteList(@NonNull File file, @NonNull String deviceConfigKey) {

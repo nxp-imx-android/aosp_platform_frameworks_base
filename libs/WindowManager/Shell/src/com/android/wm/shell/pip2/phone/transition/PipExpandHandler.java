@@ -136,10 +136,9 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
         // Launching the task while it's in PiP on another display
         if (isLaunchingPipActivityFromDifferentDisplay(request, taskInfo)) {
             mExitViaExpandTransition = transition;
-            final WindowContainerTransaction wct =
-                    mPipScheduler.getExitPipViaExpandIntoDisplayTransaction(taskInfo.displayId);
-
-            RunOnTransitStart desktopPipRunnable = mPipScheduler.augmentExitViaExpandWCT(wct);
+            final WindowContainerTransaction wct = mPipScheduler.getExitPipViaExpandTransaction();
+            RunOnTransitStart desktopPipRunnable = mPipScheduler.augmentExitViaExpandWCT(wct,
+                    taskInfo.displayId);
             if (desktopPipRunnable != null) {
                 desktopPipRunnable.invoke(transition);
             }

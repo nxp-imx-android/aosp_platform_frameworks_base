@@ -312,25 +312,6 @@ class MenuViewLayer extends FrameLayout implements
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
-    private void onPositionChanged(MenuPosition position) {
-        if (position == null) return;
-
-        switch (position) {
-            case TOP_LEFT:
-                mMenuAnimationController.moveToTopLeftPosition();
-                break;
-            case TOP_RIGHT:
-                mMenuAnimationController.moveToTopRightPosition();
-                break;
-            case BOTTOM_LEFT:
-                mMenuAnimationController.moveToBottomLeftPosition();
-                break;
-            case BOTTOM_RIGHT:
-                mMenuAnimationController.moveToBottomRightPosition();
-                break;
-        }
-    }
-
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         mDragToInteractView.updateResources();
@@ -379,7 +360,6 @@ class MenuViewLayer extends FrameLayout implements
         mMenuViewModel.getDockTooltipVisibilityData().observeForever(mDockTooltipObserver);
         mMenuViewModel.getMigrationTooltipVisibilityData().observeForever(
                 mMigrationTooltipObserver);
-        mMenuViewModel.getPositionData().observeForever(this::onPositionChanged);
         mMessageView.setUndoListener(view -> undo());
         getContext().registerComponentCallbacks(this);
         mNavigationModeController.addListener(mNavigationModeChangedListender);
@@ -396,7 +376,6 @@ class MenuViewLayer extends FrameLayout implements
         mMenuViewModel.getDockTooltipVisibilityData().removeObserver(mDockTooltipObserver);
         mMenuViewModel.getMigrationTooltipVisibilityData().removeObserver(
                 mMigrationTooltipObserver);
-        mMenuViewModel.getPositionData().removeObserver(this::onPositionChanged);
         mHandler.removeCallbacksAndMessages(/* token= */ null);
         getContext().unregisterComponentCallbacks(this);
         mNavigationModeController.removeListener(mNavigationModeChangedListender);

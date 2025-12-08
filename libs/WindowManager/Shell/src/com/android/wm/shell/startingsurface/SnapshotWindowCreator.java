@@ -16,19 +16,27 @@
 
 package com.android.wm.shell.startingsurface;
 
+import android.annotation.NonNull;
+import android.os.RemoteException;
 import android.window.StartingWindowInfo;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 
+import com.android.internal.protolog.ProtoLog;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
 class SnapshotWindowCreator {
     private final ShellExecutor mMainExecutor;
+    private final ShellExecutor mBgExecutor;
     private final StartingSurfaceDrawer.StartingWindowRecordManager
             mStartingWindowRecordManager;
 
-    SnapshotWindowCreator(ShellExecutor mainExecutor,
+    SnapshotWindowCreator(ShellExecutor mainExecutor, ShellExecutor bgExecutor,
             StartingSurfaceDrawer.StartingWindowRecordManager startingWindowRecordManager) {
         mMainExecutor = mainExecutor;
+        mBgExecutor = bgExecutor;
         mStartingWindowRecordManager = startingWindowRecordManager;
     }
 
@@ -44,11 +52,34 @@ class SnapshotWindowCreator {
                     startingWindowInfo.taskInfo.topActivityType, mMainExecutor,
                     taskId, mStartingWindowRecordManager);
             mStartingWindowRecordManager.addRecord(taskId, tView);
+
+            if (Flags.respectRequestedTaskSnapshotResolution() && snapshot.isLowResolution()) {
+                tView.scheduleRedrawSnapshot(mBgExecutor, () -> {
+                    final TaskSnapshot replace;
+                    try {
+                        replace = TaskSnapshotManager.getInstance()
+                                .getTaskSnapshot(taskId, TaskSnapshotManager.RESOLUTION_HIGH);
+                    } catch (RemoteException r) {
+                        return;
+                    }
+                    if (replace != null) {
+                        mMainExecutor.execute(() -> {
+                            if (mStartingWindowRecordManager.getRecord(taskId) == tView) {
+                                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
+                                        "redrawSnapshot for task=%d", taskId);
+                                surface.redrawSnapshot(replace, startingWindowInfo.taskBounds);
+                            }
+                        });
+                    }
+                });
+            }
         }
     }
 
     private static class SnapshotWindowRecord extends StartingSurfaceDrawer.SnapshotRecord {
         private final TaskSnapshotWindow mTaskSnapshotWindow;
+        private ShellExecutor mBgExecutor;
+        private Runnable mRedrawSnapshotCallback;
 
         SnapshotWindowRecord(TaskSnapshotWindow taskSnapshotWindow,
                 int activityType, ShellExecutor removeExecutor, int id,
@@ -62,11 +93,22 @@ class SnapshotWindowCreator {
         protected void removeImmediately() {
             super.removeImmediately();
             mTaskSnapshotWindow.removeImmediately();
+            if (mBgExecutor != null) {
+                mBgExecutor.removeCallbacks(mRedrawSnapshotCallback);
+                mRedrawSnapshotCallback = null;
+            }
         }
 
         @Override
         protected boolean hasImeSurface() {
             return mTaskSnapshotWindow.hasImeSurface();
+        }
+
+        void scheduleRedrawSnapshot(@NonNull ShellExecutor bgExecutor,
+                @NonNull Runnable redrawCallback) {
+            mBgExecutor = bgExecutor;
+            mRedrawSnapshotCallback = redrawCallback;
+            mBgExecutor.execute(mRedrawSnapshotCallback);
         }
     }
 }

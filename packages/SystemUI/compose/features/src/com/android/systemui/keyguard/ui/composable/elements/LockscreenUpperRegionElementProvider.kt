@@ -44,6 +44,7 @@ import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenUpperRegionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenUpperRegionViewModel.Decision
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
@@ -64,6 +65,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.model.ShadeMode
+import com.google.errorprone.annotations.CompileTimeConstant
 import javax.inject.Inject
 
 @SysUISingleton
@@ -86,7 +88,7 @@ constructor(
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             val viewModel = rememberViewModel("LockscreenUpperRegion") { viewModelFactory.create() }
-            val layoutType = getLayoutType(viewModel.shadeMode)
+            val layoutType = logDecision("LayoutType") { getLayoutDecision(viewModel.shadeMode) }
             val layout =
                 remember(viewModel, layoutType) {
                     when (layoutType) {
@@ -180,11 +182,14 @@ constructor(
         @Composable
         override fun LockscreenScope<ContentScope>.Layout(modifier: Modifier) {
             val clockSize =
-                viewModel.evaluateClockSize {
-                    when {
-                        viewModel.isNotificationStackActive -> ClockSize.SMALL
-                        viewModel.isMediaActive -> ClockSize.SMALL
-                        else -> ClockSize.LARGE
+                logDecision("NarrowLayout: ClockSize") {
+                    viewModel.evaluateClockSize {
+                        when {
+                            viewModel.isNotificationStackActive ->
+                                Decision(ClockSize.SMALL, "isNotificationStackActive")
+                            viewModel.isMediaVisible -> Decision(ClockSize.SMALL, "isMediaVisible")
+                            else -> Decision(ClockSize.LARGE, "Default Case")
+                        }
                     }
                 }
 
@@ -209,6 +214,7 @@ constructor(
                     }
                 },
                 modifier = modifier,
+                debugName = "NarrowLayout - Clocks",
             ) {
                 scene(NarrowScenes.LargeClock) { LockscreenElement(Region.Clock.Large) }
                 scene(NarrowScenes.SmallClock) {
@@ -227,21 +233,29 @@ constructor(
         @Composable
         override fun LockscreenScope<ContentScope>.Layout(modifier: Modifier) {
             val clockSize =
-                viewModel.evaluateClockSize {
-                    when {
-                        viewModel.shadeMode == ShadeMode.Dual -> ClockSize.LARGE
-                        viewModel.isMediaActive -> ClockSize.SMALL
-                        else -> ClockSize.LARGE
+                logDecision("WideLayout: ClockSize") {
+                    viewModel.evaluateClockSize {
+                        when {
+                            viewModel.shadeMode == ShadeMode.Dual ->
+                                Decision(ClockSize.LARGE, "shadeMode == ShadeMode.Dual")
+                            viewModel.isMediaVisible -> Decision(ClockSize.SMALL, "isMediaVisible")
+                            else -> Decision(ClockSize.LARGE, "Default Case")
+                        }
                     }
                 }
 
             val isTwoColumn =
-                when {
-                    clockSize == ClockSize.SMALL -> true
-                    !viewModel.isDozing && viewModel.isNotificationStackActive -> true
-                    viewModel.isDozing && viewModel.isHeadsUpNotificationActive -> true
-                    viewModel.isDozing && viewModel.isPromotedNotificationActive -> true
-                    else -> false
+                logDecision("WideLayout: TwoColumn") {
+                    when {
+                        clockSize == ClockSize.SMALL -> Decision(true, "clockSize == SMALL")
+                        !viewModel.isDozing && viewModel.isNotificationStackActive ->
+                            Decision(true, "!isDozing && isNotificationStackActive")
+                        viewModel.isDozing && viewModel.isHeadsUpNotificationActive ->
+                            Decision(true, "isDozing && isHeadsUpNotificationActive")
+                        viewModel.isDozing && viewModel.isPromotedNotificationActive ->
+                            Decision(true, "isDozing && isPromotedNotificationActive")
+                        else -> Decision(false, "Default Case")
+                    }
                 }
 
             NestedScenes(
@@ -290,6 +304,7 @@ constructor(
                     }
                 },
                 modifier = modifier,
+                debugName = "WideLayout - Clocks",
             ) {
                 scene(WideScenes.CenteredClock) {
                     // Media is unsupported with centered large clock
@@ -346,7 +361,7 @@ constructor(
                 contentAlignment = Alignment.Center,
             ) {
                 LockscreenElement(Region.Clock.Large)
-                Notifications(aodAlignment = notifAlignment)
+                AODNotifications(context.burnInModifier.align(notifAlignment))
             }
         }
 
@@ -466,6 +481,19 @@ constructor(
         }
     }
 
+    @Composable
+    fun <T> logDecision(
+        @CompileTimeConstant prefix: String,
+        func: @Composable () -> Decision<T>,
+    ): T {
+        val decision = func()
+        logger.i({ "$prefix: decision=$str1; reason=$str2" }) {
+            str1 = "${decision.choice}"
+            str2 = decision.reason
+        }
+        return decision.choice
+    }
+
     companion object {
         const val CLOCK_CENTERING_DURATION_MILLIS = 1000
 
@@ -475,10 +503,10 @@ constructor(
         }
 
         @Composable
-        fun getLayoutType(shadeMode: ShadeMode): LayoutType {
+        fun getLayoutDecision(shadeMode: ShadeMode): Decision<LayoutType> {
             return when (shadeMode) {
-                ShadeMode.Single -> LayoutType.NARROW
-                ShadeMode.Split -> LayoutType.WIDE
+                ShadeMode.Single -> Decision(LayoutType.NARROW, "Single Shade")
+                ShadeMode.Split -> Decision(LayoutType.WIDE, "Split Shade")
                 ShadeMode.Dual -> {
                     with(LocalWindowSizeClass.current) {
                         val isWindowLarge =
@@ -486,10 +514,20 @@ constructor(
                                 WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
                                 WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
                             )
-                        if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+
+                        if (isWindowLarge) {
+                            Decision(LayoutType.WIDE, "Dual Shade && SizeClass >= Medium")
+                        } else {
+                            Decision(LayoutType.NARROW, "Dual Shade && SizeClass < Medium")
+                        }
                     }
                 }
             }
+        }
+
+        @Composable
+        fun getLayoutType(shadeMode: ShadeMode): LayoutType {
+            return getLayoutDecision(shadeMode).choice
         }
     }
 }

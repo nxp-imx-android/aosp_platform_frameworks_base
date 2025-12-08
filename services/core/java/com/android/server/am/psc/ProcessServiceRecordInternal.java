@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * This class provides common fields and methods for managing service-related properties
  * that influence process importance and OOM adjustment.
  */
-public abstract class ProcessServiceRecordInternal {
+public class ProcessServiceRecordInternal {
     /** Controls whether argument validation checks are performed. */
     private static final boolean DEBUG_FGS_ARGS = false;
 
@@ -87,6 +87,8 @@ public abstract class ProcessServiceRecordInternal {
 
     /** All ServiceRecord running in this process. */
     final ArraySet<ServiceRecordInternal> mServices = new ArraySet<>();
+    /** Services that are currently executing code (need to remain foreground). */
+    private final ArraySet<ServiceRecordInternal> mExecutingServices = new ArraySet<>();
     /** All outgoing connections from this process. */
     private final ArraySet<ConnectionRecordInternal> mConnections = new ArraySet<>();
     /** All ConnectionRecord this process holds indirectly to SDK sandbox processes. */
@@ -127,6 +129,27 @@ public abstract class ProcessServiceRecordInternal {
 
     public void setHasAboveClient(boolean hasAboveClient) {
         mHasAboveClient = hasAboveClient;
+    }
+
+    /** Resets service-related flags when the application record is being cleaned up. */
+    public void onCleanupApplicationRecord() {
+        setTreatLikeActivity(false);
+        setHasAboveClient(false);
+        setHasClientActivities(false);
+    }
+
+    /** Recalculates and updates the {@link #mHasAboveClient} flag. */
+    public void updateHasAboveClient() {
+        setHasAboveClient(false);
+        for (int i = numberOfConnections() - 1; i >= 0; i--) {
+            final ConnectionRecordInternal cr = getConnectionInternalAt(i);
+            final boolean isSameProcess = cr.getService().getHostProcessInternal() != null
+                    && cr.getService().getHostProcessInternal().getServices() == this;
+            if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
+                setHasAboveClient(true);
+                break;
+            }
+        }
     }
 
     /**
@@ -304,9 +327,40 @@ public abstract class ProcessServiceRecordInternal {
         return mServices.remove(service);
     }
 
-    /** Removes all services from the set of running services for this process. */
-    public void clearRunningServices() {
+    /** Stops all services running in this process. */
+    public void stopAllServices() {
         mServices.clear();
+        updateHasTopStartedAlmostPerceptibleServices();
+    }
+
+    /** Checks if there are any services currently executing in this process. */
+    public boolean hasExecutingServices() {
+        return !mExecutingServices.isEmpty();
+    }
+
+    /** Returns the number of services that are currently executing code in this process. */
+    public int numberOfExecutingServices() {
+        return mExecutingServices.size();
+    }
+
+    /** Retrieves the executing service at the specified index. */
+    protected ServiceRecordInternal getExecutingServiceInternalAt(int index) {
+        return mExecutingServices.valueAt(index);
+    }
+
+    /** Adds a service to the set of services that are currently executing code. */
+    public void startExecutingService(ServiceRecordInternal service) {
+        mExecutingServices.add(service);
+    }
+
+    /** Removes a service from the set of services that are currently executing code. */
+    public void stopExecutingService(ServiceRecordInternal service) {
+        mExecutingServices.remove(service);
+    }
+
+    /** Clears the set of all executing services. */
+    public void stopAllExecutingServices() {
+        mExecutingServices.clear();
     }
 
     /** Returns the number of active connections to services in this process. */
@@ -397,9 +451,6 @@ public abstract class ProcessServiceRecordInternal {
             mSdkSandboxConnections.clear();
         }
     }
-
-    /** Checks if there are any services currently executing in this process. */
-    public abstract boolean hasExecutingServices();
 
     protected static boolean isAlmostPerceptible(ServiceRecordInternal record) {
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() <= 0) {

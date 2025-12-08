@@ -55,6 +55,9 @@ interface NotificationScrollView {
     /** Max alpha for this view */
     fun setMaxAlpha(alpha: Float)
 
+    /** Alpha set on the placeholder composable. */
+    fun setPlaceholderAlpha(alpha: Float)
+
     /** Set whether this view is occluded by something else. */
     fun setOccluded(isOccluded: Boolean)
 
@@ -80,7 +83,7 @@ interface NotificationScrollView {
     fun setEnabled(enabled: Boolean)
 
     /** set the y position in px of the top of the stack in this view's coordinates */
-    fun setStackTop(stackTop: Float)
+    fun setStackScrollTop(stackTop: Float)
 
     /** sets the vertical bounds for the user visible area of the notification stack */
     fun updateStackBounds(boundsInWindow: YSpace)

@@ -89,8 +89,8 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
 import static android.Manifest.permission.QUERY_ADMIN_POLICY;
 import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
-import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
-import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE_OWNER;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
@@ -100,9 +100,9 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
 import static android.app.admin.DevicePolicyManager.DpcType;
 import static android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -283,7 +283,7 @@ public class PermissionChecker implements IPermissionChecker {
     }
 
     // Permissions of existing DPC types.
-    private static final List<String> DEFAULT_DEVICE_OWNER_PERMISSIONS = List.of(
+    private static final List<String> DEVICE_OWNER_PERMISSIONS = List.of(
             MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT, MANAGE_DEVICE_POLICY_ACROSS_USERS,
             MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
             MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL, MANAGE_DEVICE_POLICY_AIRPLANE_MODE,
@@ -328,35 +328,54 @@ public class PermissionChecker implements IPermissionChecker {
             MANAGE_DEVICE_POLICY_SAFE_BOOT, MANAGE_DEVICE_POLICY_SUPPORT_MESSAGE,
             MANAGE_DEVICE_POLICY_TIME, MANAGE_DEVICE_POLICY_WIPE_DATA);
 
-    /**
-     * All the permissions granted to a profile owner.
-     */
-    private static final List<String> PROFILE_OWNER_PERMISSIONS = List.of(
-            MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT,
-            MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL, MANAGE_DEVICE_POLICY_APPS_CONTROL,
-            MANAGE_DEVICE_POLICY_APP_FUNCTIONS, MANAGE_DEVICE_POLICY_APP_RESTRICTIONS,
-            MANAGE_DEVICE_POLICY_AUDIO_OUTPUT, MANAGE_DEVICE_POLICY_AUTOFILL,
-            MANAGE_DEVICE_POLICY_BLUETOOTH, MANAGE_DEVICE_POLICY_CALLS, MANAGE_DEVICE_POLICY_CAMERA,
-            MANAGE_DEVICE_POLICY_CERTIFICATES, MANAGE_DEVICE_POLICY_CONTENT_PROTECTION,
-            MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES, MANAGE_DEVICE_POLICY_DISPLAY,
-            MANAGE_DEVICE_POLICY_FACTORY_RESET, MANAGE_DEVICE_POLICY_INPUT_METHODS,
-            MANAGE_DEVICE_POLICY_INSTALL_UNKNOWN_SOURCES, MANAGE_DEVICE_POLICY_KEYGUARD,
-            MANAGE_DEVICE_POLICY_LOCALE, MANAGE_DEVICE_POLICY_LOCATION, MANAGE_DEVICE_POLICY_LOCK,
-            MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS, MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS,
-            MANAGE_DEVICE_POLICY_NEARBY_COMMUNICATION, MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY,
-            MANAGE_DEVICE_POLICY_PACKAGE_STATE, MANAGE_DEVICE_POLICY_PRINTING,
-            MANAGE_DEVICE_POLICY_PROFILES, MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
-            MANAGE_DEVICE_POLICY_RESET_PASSWORD, MANAGE_DEVICE_POLICY_RUNTIME_PERMISSIONS,
-            MANAGE_DEVICE_POLICY_SCREEN_CAPTURE, MANAGE_DEVICE_POLICY_SCREEN_CONTENT,
-            MANAGE_DEVICE_POLICY_SUPPORT_MESSAGE, MANAGE_DEVICE_POLICY_SYSTEM_DIALOGS,
-            MANAGE_DEVICE_POLICY_TIME, MANAGE_DEVICE_POLICY_VPN, MANAGE_DEVICE_POLICY_WIPE_DATA,
-            MANAGE_DEVICE_POLICY_QUERY_SYSTEM_UPDATES);
+    /** All the permissions granted to a profile owner. */
+    private static final List<String> MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS =
+            List.of(
+                    MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT,
+                    MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL,
+                    MANAGE_DEVICE_POLICY_APPS_CONTROL,
+                    MANAGE_DEVICE_POLICY_APP_FUNCTIONS,
+                    MANAGE_DEVICE_POLICY_APP_RESTRICTIONS,
+                    MANAGE_DEVICE_POLICY_AUDIO_OUTPUT,
+                    MANAGE_DEVICE_POLICY_AUTOFILL,
+                    MANAGE_DEVICE_POLICY_BLUETOOTH,
+                    MANAGE_DEVICE_POLICY_CALLS,
+                    MANAGE_DEVICE_POLICY_CAMERA,
+                    MANAGE_DEVICE_POLICY_CERTIFICATES,
+                    MANAGE_DEVICE_POLICY_CONTENT_PROTECTION,
+                    MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES,
+                    MANAGE_DEVICE_POLICY_DISPLAY,
+                    MANAGE_DEVICE_POLICY_FACTORY_RESET,
+                    MANAGE_DEVICE_POLICY_INPUT_METHODS,
+                    MANAGE_DEVICE_POLICY_INSTALL_UNKNOWN_SOURCES,
+                    MANAGE_DEVICE_POLICY_KEYGUARD,
+                    MANAGE_DEVICE_POLICY_LOCALE,
+                    MANAGE_DEVICE_POLICY_LOCATION,
+                    MANAGE_DEVICE_POLICY_LOCK,
+                    MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS,
+                    MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS,
+                    MANAGE_DEVICE_POLICY_NEARBY_COMMUNICATION,
+                    MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY,
+                    MANAGE_DEVICE_POLICY_PACKAGE_STATE,
+                    MANAGE_DEVICE_POLICY_PRINTING,
+                    MANAGE_DEVICE_POLICY_PROFILES,
+                    MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
+                    MANAGE_DEVICE_POLICY_RESET_PASSWORD,
+                    MANAGE_DEVICE_POLICY_RUNTIME_PERMISSIONS,
+                    MANAGE_DEVICE_POLICY_SCREEN_CAPTURE,
+                    MANAGE_DEVICE_POLICY_SCREEN_CONTENT,
+                    MANAGE_DEVICE_POLICY_SUPPORT_MESSAGE,
+                    MANAGE_DEVICE_POLICY_SYSTEM_DIALOGS,
+                    MANAGE_DEVICE_POLICY_TIME,
+                    MANAGE_DEVICE_POLICY_VPN,
+                    MANAGE_DEVICE_POLICY_WIPE_DATA,
+                    MANAGE_DEVICE_POLICY_QUERY_SYSTEM_UPDATES);
 
     /**
      * All the additional permissions granted to an organisation owned profile owner.
      */
     private static final List<String>
-            ADDITIONAL_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS = List.of(
+            ADDITIONAL_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS = List.of(
             MANAGE_DEVICE_POLICY_ACROSS_USERS, MANAGE_DEVICE_POLICY_AIRPLANE_MODE,
             MANAGE_DEVICE_POLICY_APPS_CONTROL, MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE,
             MANAGE_DEVICE_POLICY_DEFAULT_SMS, MANAGE_DEVICE_POLICY_LOCALE,
@@ -382,74 +401,92 @@ public class PermissionChecker implements IPermissionChecker {
             MANAGE_DEVICE_POLICY_WINDOWS, SET_TIME, SET_TIME_ZONE);
 
     /**
-     * All the additional permissions granted to a Profile Owner on an unaffiliated user.
+     * All the additional permissions granted to a Profile Owner on an unaffiliated full user.
      */
-    private static final List<String> ADDITIONAL_PROFILE_OWNER_ON_USER_PERMISSIONS = List.of(
-            MANAGE_DEVICE_POLICY_LOCK_TASK);
+    private static final List<String> ADDITIONAL_UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS =
+            List.of(MANAGE_DEVICE_POLICY_LOCK_TASK);
 
     /**
-     * All the additional permissions granted to a Profile Owner on an affiliated user.
+     * All the additional permissions granted to a Profile Owner on an affiliated full user.
      */
-    private static final List<String> ADDITIONAL_AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS =
+    private static final List<String> ADDITIONAL_AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS =
             List.of(MANAGE_DEVICE_POLICY_STATUS_BAR);
 
     /**
-     * Combination of {@link PROFILE_OWNER_PERMISSIONS} and
-     * {@link ADDITIONAL_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS}.
+     * Combination of {@link MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS} and
+     * {@link ADDITIONAL_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS}.
      */
-    private static final List<String> PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS =
-            new ArrayList();
+    private static final List<String>
+            MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS = new ArrayList();
 
     /**
-     * Combination of {@link PROFILE_OWNER_PERMISSIONS} and
+     * Combination of {@link MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS} and
      * {@link ADDITIONAL_PROFILE_OWNER_ON_USER_0_PERMISSIONS}.
      */
     private static final List<String> PROFILE_OWNER_ON_USER_0_PERMISSIONS = new ArrayList();
 
     /**
-     * Combination of {@link PROFILE_OWNER_PERMISSIONS} and
+     * Combination of {@link MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS} and
      * {@link ADDITIONAL_AFFILIATED_PROFIL_OWNER_ON_USER_PERMISSIONS}.
      */
-    private static final List<String> AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS =
+    private static final List<String> AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS =
             new ArrayList();
 
     /**
-     * Combination of {@link PROFILE_OWNER_PERMISSIONS} and
-     * {@link ADDITIONAL_PROFILE_OWNER_ON_USER_PERMISSIONS}.
+     * Combination of {@link MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS} and
+     * {@link ADDITIONAL_UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS}.
      */
-    private static final List<String> PROFILE_OWNER_ON_USER_PERMISSIONS = new ArrayList();
+    private static final List<String> UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS =
+            new ArrayList();
 
     private static final HashMap<Integer, List<String>> DPC_PERMISSIONS = new HashMap<>();
 
     static {
         // Organisation owned profile owners have all the permission of a profile owner plus
         // some extra permissions.
-        PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS.addAll(PROFILE_OWNER_PERMISSIONS);
-        PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS.addAll(
-                ADDITIONAL_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS);
+        MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS.addAll(
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS
+        );
+        MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS.addAll(
+                ADDITIONAL_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS);
         // Profile owners on user 0 have all the permission of a profile owner plus
         // some extra permissions.
-        PROFILE_OWNER_ON_USER_0_PERMISSIONS.addAll(PROFILE_OWNER_PERMISSIONS);
+        PROFILE_OWNER_ON_USER_0_PERMISSIONS.addAll(
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS
+        );
         PROFILE_OWNER_ON_USER_0_PERMISSIONS.addAll(ADDITIONAL_PROFILE_OWNER_ON_USER_0_PERMISSIONS);
         // Profile owners on users have all the permission of a profile owner plus
         // some extra permissions.
-        PROFILE_OWNER_ON_USER_PERMISSIONS.addAll(PROFILE_OWNER_PERMISSIONS);
-        PROFILE_OWNER_ON_USER_PERMISSIONS.addAll(ADDITIONAL_PROFILE_OWNER_ON_USER_PERMISSIONS);
+        UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS.addAll(
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS
+        );
+        UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS.addAll(
+                ADDITIONAL_UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS
+        );
         // Profile owners on affiliated users have all the permission of a profile owner on a user
         // plus some extra permissions.
-        AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS.addAll(PROFILE_OWNER_ON_USER_PERMISSIONS);
-        AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS.addAll(
-                ADDITIONAL_AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS);
+        AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS.addAll(
+                UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS
+        );
+        AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS.addAll(
+                ADDITIONAL_AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS);
 
-        DPC_PERMISSIONS.put(DEFAULT_DEVICE_OWNER, DEFAULT_DEVICE_OWNER_PERMISSIONS);
+        DPC_PERMISSIONS.put(DEVICE_OWNER, DEVICE_OWNER_PERMISSIONS);
         DPC_PERMISSIONS.put(FINANCED_DEVICE_OWNER, FINANCED_DEVICE_OWNER_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
-                PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS);
+        DPC_PERMISSIONS.put(MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+                MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_PERMISSIONS );
         DPC_PERMISSIONS.put(PROFILE_OWNER_ON_USER_0, PROFILE_OWNER_ON_USER_0_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER, PROFILE_OWNER_PERMISSIONS);
-        DPC_PERMISSIONS.put(PROFILE_OWNER_ON_USER, PROFILE_OWNER_ON_USER_PERMISSIONS);
-        DPC_PERMISSIONS.put(AFFILIATED_PROFILE_OWNER_ON_USER,
-                AFFILIATED_PROFILE_OWNER_ON_USER_PERMISSIONS);
+        DPC_PERMISSIONS.put(
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE,
+                MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE_PERMISSIONS
+
+        );
+        DPC_PERMISSIONS.put(
+                UNAFFILIATED_FULL_USER_PROFILE_OWNER,
+                UNAFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS
+        );
+        DPC_PERMISSIONS.put(AFFILIATED_FULL_USER_PROFILE_OWNER,
+                AFFILIATED_FULL_USER_PROFILE_OWNER_PERMISSIONS);
     }
 
     // Map of user restriction to permission.

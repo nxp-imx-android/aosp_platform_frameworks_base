@@ -27,19 +27,14 @@ import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintA
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.advanceTimeBy
-import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -47,6 +42,7 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.never
@@ -57,14 +53,9 @@ import org.mockito.kotlin.verify
 class DreamStartableTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private var Kosmos.underTest by Fixture {
-        DreamStartable(
-            applicationScope = backgroundScope,
-            sceneInteractor = sceneInteractor,
-            dreamManager = dreamManager,
-            keyguardInteractor = keyguardInteractor,
-            logBuffer = logcatLogBuffer("DreamStartableTest"),
-        )
+    @Before
+    fun setUp() {
+        kosmos.dreamStartable.start()
     }
 
     /**
@@ -75,8 +66,6 @@ class DreamStartableTest : SysuiTestCase() {
     @Test
     fun testStopDreamWhenGoingToGone() =
         kosmos.runTest {
-            underTest.start()
-
             // Start dreaming.
             keyguardRepository.setDreaming(true)
             advanceTimeBy(DREAMING_DELAY_MS)
@@ -117,8 +106,6 @@ class DreamStartableTest : SysuiTestCase() {
             sceneInteractor.showOverlay(Overlays.Bouncer, "show bouncer")
             runCurrent()
 
-            underTest.start()
-
             // Start dreaming.
             keyguardRepository.setDreaming(true)
             advanceTimeBy(DREAMING_DELAY_MS)
@@ -136,8 +123,6 @@ class DreamStartableTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             sceneInteractor.changeScene(Scenes.Shade, "starting scene")
             runCurrent()
-
-            underTest.start()
 
             // Start dreaming.
             keyguardRepository.setDreaming(true)
@@ -167,9 +152,6 @@ class DreamStartableTest : SysuiTestCase() {
             advanceTimeBy(DREAMING_DELAY_MS)
             runCurrent()
 
-            // Start the main component.
-            underTest.start()
-
             // The scene should now be Dream because isAbleToDream was true on start.
             assertThat(currentScene).isEqualTo(Scenes.Dream)
 
@@ -191,7 +173,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun staysOnDream_whenOccludedWhileDreaming() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // Start on the lockscreen.
             sceneInteractor.changeScene(Scenes.Lockscreen, "starting on lockscreen")
@@ -228,7 +209,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun staysOnLockscreen_whenDozing() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // Start on the lockscreen.
             sceneInteractor.changeScene(Scenes.Lockscreen, "starting on lockscreen")
@@ -248,7 +228,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun switchFromShadeToDream_whenDreamStarted() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // GIVEN we are on the shade
             sceneInteractor.changeScene(Scenes.Shade, "reason")
@@ -269,7 +248,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun switchFromQuickSettingsToDream_whenDreamStarted() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // GIVEN we are on quick settings
             sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
@@ -290,7 +268,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun switchFromOccludedToDream_whenDreamStarted() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // GIVEN we are on occluded
             sceneInteractor.changeScene(Scenes.Occluded, "starting on occluded")
@@ -311,7 +288,6 @@ class DreamStartableTest : SysuiTestCase() {
     fun switchFromCommunalToDream_whenDreamStarted() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            underTest.start()
 
             // GIVEN we are on communal
             sceneInteractor.changeScene(Scenes.Communal, "reason")

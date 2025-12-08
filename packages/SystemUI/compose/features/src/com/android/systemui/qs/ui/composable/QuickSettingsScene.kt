@@ -240,7 +240,11 @@ private fun ContentScope.QuickSettingsScene(
             }
         }
 
-        NestedSceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
+        NestedSceneTransitionLayout(
+            state = sceneState,
+            debugName = "QuickSettingsScene",
+            modifier = Modifier.fillMaxSize(),
+        ) {
             scene(QS) {
                 Element(QS.rootElementKey, Modifier) {
                     QuickSettingsContent(
@@ -346,7 +350,8 @@ private fun ContentScope.QuickSettingsContent(
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 Column(
                     modifier =
-                        Modifier.verticalScroll(scrollState, enabled = isScrollable)
+                        Modifier.disableSwipesWhenScrolling()
+                            .verticalScroll(scrollState, enabled = isScrollable)
                             .clipScrollableContainer(Orientation.Horizontal)
                             .fillMaxWidth()
                             .wrapContentHeight(unbounded = true)
@@ -390,7 +395,6 @@ private fun ContentScope.QuickSettingsContent(
             tag = "QSScene",
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
-            useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .navigationBarsPadding()

@@ -36,6 +36,7 @@ import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Overall information about a uid that has actively running processes.
@@ -158,6 +159,27 @@ public final class UidRecord extends UidRecordInternal {
             }
         }
         return null;
+    }
+
+    /**
+     * Checks if any {@link ProcessRecord} within this Uid, belonging to the specified package,
+     * satisfies the given predicate.
+     *
+     * @param packageName The name of the package to check.
+     * @param predicate The predicate to test against each matching {@link ProcessRecord}.
+     * @return {@code true} if at least one process in the package matches the predicate,
+     *         {@code false} otherwise.
+     */
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    boolean anyProcessInPackageMatches(String packageName, Predicate<ProcessRecord> predicate) {
+        for (int i = mProcRecords.size() - 1; i >= 0; i--) {
+            final ProcessRecord app = mProcRecords.valueAt(i);
+            if (app != null && TextUtils.equals(app.info.packageName, packageName)
+                    && predicate.test(app)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

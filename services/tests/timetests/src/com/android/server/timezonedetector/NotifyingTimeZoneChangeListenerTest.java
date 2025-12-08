@@ -74,6 +74,7 @@ import org.mockito.junit.MockitoRule;
 import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 /** White-box unit tests for {@link NotifyingTimeZoneChangeListener}. */
 @RunWith(JUnitParamsRunner.class)
@@ -671,22 +672,5 @@ public class NotifyingTimeZoneChangeListenerTest {
                 .setManualChangeTrackingSupported(config.isManualChangeTrackingSupported());
     }
 
-    private static class FakeNotificationManager extends NotificationManager {
 
-        private final List<Notification> mNotifications = new ArrayList<>();
-
-        FakeNotificationManager(Context context, InstantSource clock) {
-            super(context, clock);
-        }
-
-        @Override
-        public void notifyAsUser(
-                @Nullable String tag, int id, Notification notification, UserHandle user) {
-            mNotifications.add(notification);
-        }
-
-        public List<Notification> getNotifications() {
-            return mNotifications;
-        }
-    }
 }

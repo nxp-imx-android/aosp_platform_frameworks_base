@@ -56,24 +56,23 @@ import java.util.Set;
  */
 public final class ServiceConfigAccessorImpl implements ServiceConfigAccessor {
 
-    /**
-     * Device config keys that can affect the content of {@link ConfigurationInternal}.
-     */
-    private static final Set<String> CONFIGURATION_INTERNAL_SERVER_FLAGS_KEYS_TO_WATCH = Set.of(
-            ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_FEATURE_SUPPORTED,
-            ServerFlags.KEY_PRIMARY_LTZP_MODE_OVERRIDE,
-            ServerFlags.KEY_SECONDARY_LTZP_MODE_OVERRIDE,
-            ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_RUN_IN_BACKGROUND_ENABLED,
-            ServerFlags.KEY_ENHANCED_METRICS_COLLECTION_ENABLED,
-            ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_DEFAULT,
-            ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_OVERRIDE,
-            ServerFlags.KEY_TIME_ZONE_DETECTOR_AUTO_DETECTION_ENABLED_DEFAULT,
-            ServerFlags.KEY_TIME_ZONE_DETECTOR_TELEPHONY_FALLBACK_SUPPORTED,
-            ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_SUPPORTED,
-            ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_ENABLED_DEFAULT,
-            ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_TRACKING_SUPPORTED,
-            ServerFlags.KEY_TIME_ZONE_MANUAL_CHANGE_TRACKING_SUPPORTED
-    );
+    /** Device config keys that can affect the content of {@link ConfigurationInternal}. */
+    private static final Set<String> CONFIGURATION_INTERNAL_SERVER_FLAGS_KEYS_TO_WATCH =
+            Set.of(
+                    ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_FEATURE_SUPPORTED,
+                    ServerFlags.KEY_PRIMARY_LTZP_MODE_OVERRIDE,
+                    ServerFlags.KEY_SECONDARY_LTZP_MODE_OVERRIDE,
+                    ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_RUN_IN_BACKGROUND_ENABLED,
+                    ServerFlags.KEY_ENHANCED_METRICS_COLLECTION_ENABLED,
+                    ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_DEFAULT,
+                    ServerFlags.KEY_LOCATION_TIME_ZONE_DETECTION_SETTING_ENABLED_OVERRIDE,
+                    ServerFlags.KEY_TIME_ZONE_DETECTOR_AUTO_DETECTION_ENABLED_DEFAULT,
+                    ServerFlags.KEY_TIME_ZONE_DETECTOR_TELEPHONY_FALLBACK_SUPPORTED,
+                    ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_SUPPORTED,
+                    ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_ENABLED_DEFAULT,
+                    ServerFlags.KEY_TIME_ZONE_NOTIFICATIONS_TRACKING_SUPPORTED,
+                    ServerFlags.KEY_TIME_ZONE_MANUAL_CHANGE_TRACKING_SUPPORTED,
+                    ServerFlags.KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_SUPPORTED);
 
     /**
      * Device config keys that can affect {@link
@@ -204,6 +203,10 @@ public final class ServiceConfigAccessorImpl implements ServiceConfigAccessor {
                 contentObserver);
         contentResolver.registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.TIME_ZONE_NOTIFICATIONS), true,
+                contentObserver);
+        contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(Settings.Global.TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS),
+                true,
                 contentObserver);
 
         // Add async callbacks for user scoped location settings being changed.
@@ -351,6 +354,16 @@ public final class ServiceConfigAccessorImpl implements ServiceConfigAccessor {
             }
             setNotificationsEnabledIfRequired(newConfiguration.areNotificationsEnabled());
         }
+
+        if (areTimeZoneOffsetChangeNotificationsSupported()) {
+            if (requestedConfigurationUpdates.hasIsTimeZoneOffsetChangeNotificationsEnabled()) {
+                setTimeZoneOffsetChangeNotificationsEnabledSetting(
+                        requestedConfigurationUpdates
+                                .areTimeZoneOffsetChangeNotificationsEnabled());
+            }
+            setTimeZoneOffsetChangeNotificationsEnabledIfRequired(
+                    newConfiguration.areTimeZoneOffsetChangeNotificationsEnabled());
+        }
     }
 
     @Override
@@ -372,6 +385,10 @@ public final class ServiceConfigAccessorImpl implements ServiceConfigAccessor {
                 .setNotificationsEnabledSetting(getNotificationsEnabledSetting())
                 .setNotificationsTrackingSupported(isNotificationTrackingSupported())
                 .setManualChangeTrackingSupported(isManualChangeTrackingSupported())
+                .setTimeZoneOffsetChangeNotificationsSupported(
+                        areTimeZoneOffsetChangeNotificationsSupported())
+                .setTimeZoneOffsetChangeNotificationsEnabledSetting(
+                        getTimeZoneOffsetChangeNotificationsEnabledSetting())
                 .build();
     }
 
@@ -485,6 +502,43 @@ public final class ServiceConfigAccessorImpl implements ServiceConfigAccessor {
         // for stable behavior during tests.
         if (getNotificationsEnabledSetting() != enabled) {
             Settings.Global.putInt(mCr, Settings.Global.TIME_ZONE_NOTIFICATIONS, enabled ? 1 : 0);
+        }
+    }
+
+    private boolean areTimeZoneOffsetChangeNotificationsSupported() {
+        return mServerFlags.getBoolean(
+                ServerFlags.KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_SUPPORTED,
+                getConfigBoolean(R.bool.config_enableTimeZoneOffsetChangeNotificationsSupported));
+    }
+
+    private boolean getTimeZoneOffsetChangeNotificationsEnabledSetting() {
+        final boolean notificationsEnabledByDefault =
+                areTimeZoneOffsetChangeNotificationsEnabledByDefault();
+        return Settings.Global.getInt(
+                        mCr,
+                        Settings.Global.TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS,
+                        (notificationsEnabledByDefault ? 1 : 0) /* defaultValue */)
+                != 0;
+    }
+
+    private boolean areTimeZoneOffsetChangeNotificationsEnabledByDefault() {
+        return mServerFlags.getBoolean(
+                ServerFlags.KEY_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_DEFAULT, true);
+    }
+
+    private void setTimeZoneOffsetChangeNotificationsEnabledSetting(boolean enabled) {
+        Settings.Global.putInt(
+                mCr, Settings.Global.TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS, enabled ? 1 : 0);
+    }
+
+    private void setTimeZoneOffsetChangeNotificationsEnabledIfRequired(boolean enabled) {
+        // This check is racey, but the whole settings update process is racey. This check prevents
+        // a ConfigurationChangeListener callback triggering due to ContentObserver's still
+        // triggering *sometimes* for no-op updates. Because callbacks are async this is necessary
+        // for stable behavior during tests.
+        if (getTimeZoneOffsetChangeNotificationsEnabledSetting() != enabled) {
+            Settings.Global.putInt(
+                    mCr, Settings.Global.TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS, enabled ? 1 : 0);
         }
     }
 

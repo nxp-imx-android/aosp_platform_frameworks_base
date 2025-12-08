@@ -24,6 +24,7 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SystemServerClassLoaderFactory;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 
 import dalvik.system.PathClassLoader;
 
@@ -112,6 +113,9 @@ public class PluginManager {
             Set<PluginType<?>> enabledTypes = new HashSet<>();
             if (flags.isHdrOverrideEnabled()) {
                 enabledTypes.add(PluginType.HDR_BOOST_OVERRIDE);
+            }
+            if (Flags.enableMaxBrightnessCapOverridePluginType()) {
+                enabledTypes.add(PluginType.MAX_BRIGHTNESS_CAP_OVERRIDE);
             }
             return enabledTypes;
         }

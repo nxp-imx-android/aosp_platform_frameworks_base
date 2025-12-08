@@ -110,17 +110,17 @@ public class Utilities {
     /**
      * Updates the navigation bar state flags with the given IME state.
      *
-     * @param oldFlags        current navigation bar state flags.
-     * @param backDisposition the IME back disposition mode. Only takes effect if
-     *                        {@code isImeVisible} is {@code true}.
-     * @param isImeVisible    whether the IME is currently visible.
-     * @param showImeSwitcher whether the IME Switcher button should be shown. Only takes effect if
-     *                        {@code isImeVisible} is {@code true}.
+     * @param oldFlags              current navigation bar state flags.
+     * @param backDisposition       the IME back disposition mode. Only takes effect if
+     *                              {@code isImeVisible} is {@code true}.
+     * @param isImeVisible          whether the IME is currently visible.
+     * @param showImeSwitcherButton whether the IME Switcher button should be shown. Only takes
+     *                              effect if {@code isImeVisible} is {@code true}.
      */
     @NavbarFlags
     public static int updateNavbarFlagsFromIme(@NavbarFlags int oldFlags,
             @BackDispositionMode int backDisposition, boolean isImeVisible,
-            boolean showImeSwitcher) {
+            boolean showImeSwitcherButton) {
         int flags = oldFlags;
         switch (backDisposition) {
             case InputMethodService.BACK_DISPOSITION_DEFAULT:
@@ -141,7 +141,7 @@ public class Utilities {
         } else {
             flags &= ~NAVBAR_IME_VISIBLE;
         }
-        if (showImeSwitcher && isImeVisible) {
+        if (showImeSwitcherButton && isImeVisible) {
             flags |= NAVBAR_IME_SWITCHER_BUTTON_VISIBLE;
         } else {
             flags &= ~NAVBAR_IME_SWITCHER_BUTTON_VISIBLE;

@@ -429,6 +429,8 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
 private object AsyncPreferenceMetadata : PreferenceMetadata {
     override val key: String
         get() = ""
+    override val purpose: Int
+        get() = 0
 }
 
 /**

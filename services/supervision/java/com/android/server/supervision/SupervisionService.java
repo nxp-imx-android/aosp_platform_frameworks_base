@@ -39,6 +39,7 @@ import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.StatsManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.OnRoleHoldersChangedListener;
@@ -66,7 +67,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.IpcDataCache;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
@@ -83,7 +83,9 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.notification.SystemNotificationChannels;
+import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.DumpUtils;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
@@ -195,6 +197,41 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return abs != null
                 ? abs.getAppServiceConnectionsBlocking(SupervisionAppServiceFinder.class, userId)
                 : new ArrayList<>();
+    }
+
+    private void registerStatsPullAtomCallback() {
+        StatsManager statsManager = mInjector.context.getSystemService(StatsManager.class);
+        if (statsManager == null) {
+            return;
+        }
+        statsManager.setPullAtomCallback(
+                FrameworkStatsLog.SUPERVISION_STATE,
+                null, // metadata
+                ConcurrentUtils.DIRECT_EXECUTOR,
+                this::onPullAtom);
+    }
+
+    @VisibleForTesting
+    int onPullAtom(int atomTag, List<android.util.StatsEvent> data) {
+        boolean isCredentialSet = hasSupervisionCredentials();
+
+        synchronized (getLockObject()) {
+            SupervisionRecoveryInfo recoveryInfo = getSupervisionRecoveryInfo();
+            int recoveryState = (recoveryInfo != null) ? recoveryInfo.getState() : -1;
+
+            mSupervisionSettings.forEachUserData(
+                    (userId, userData) -> {
+                        data.add(
+                                FrameworkStatsLog.buildStatsEvent(
+                                        atomTag,
+                                        userData.supervisionEnabled,
+                                        isCredentialSet,
+                                        recoveryState,
+                                        userId));
+                    });
+        }
+
+        return StatsManager.PULL_SUCCESS;
     }
 
     /**
@@ -670,12 +707,58 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
             List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(false);
             synchronized (getLockObject()) {
+                if (Flags.enableSupervisionManagerPolicyApis()) {
+                    mSupervisionSettings.dump(pw);
+                }
                 for (var user : users) {
                     getUserDataLocked(user.id).dump(pw);
                     pw.println();
                 }
             }
         }
+    }
+
+    private boolean doUpgrade(int fromVersion, int toVersion) {
+        // Perform upgrade without holding the lock
+        if (!mInjector.areAllRequiredServicesAvailable()) {
+            Slogf.e(
+                    SupervisionLog.TAG,
+                    "Cannot perform upgrade, required services are not available.");
+            return false;
+        }
+
+        final Context context = mInjector.context;
+        return new SupervisionSettingsUpgrader(
+                        context,
+                        mInjector.getUserManagerInternal(),
+                        context.getSystemService(RoleManager.class),
+                        context.getSystemService(DevicePolicyManager.class))
+                .upgrade(fromVersion, toVersion);
+    }
+
+    private void onBootCompleted() {
+        final int fromVersion;
+        final int toVersion = SupervisionSettings.VERSION;
+
+        synchronized (getLockObject()) {
+            fromVersion = mSupervisionSettings.getVersion();
+        }
+
+        if (fromVersion < toVersion) {
+            final boolean success = doUpgrade(fromVersion, toVersion);
+            if (success) {
+                synchronized (getLockObject()) {
+                    mSupervisionSettings.setVersion(toVersion);
+                    mSupervisionSettings.saveUserData();
+                }
+            }
+        }
+
+        mPackageMonitor.register(
+                mInjector.context,
+                mServiceThreadHandler.getLooper(),
+                UserHandle.ALL,
+                /* externalStorage= */ false);
     }
 
     private Object getLockObject() {
@@ -1216,6 +1299,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
         int getCallingUid() {
             return Binder.getCallingUid();
         }
+
+        boolean areAllRequiredServicesAvailable() {
+            if (getDpmInternal() == null
+                    || getUserManagerInternal() == null
+                    || context.getSystemService(RoleManager.class) == null
+                    || context.getSystemService(DevicePolicyManager.class) == null) {
+                Slogf.e(SupervisionLog.TAG, "Required services are not available.");
+                return false;
+            }
+            return true;
+        }
     }
 
     final class SupervisionPackageMonitor extends PackageMonitor {
@@ -1294,21 +1388,22 @@ public class SupervisionService extends ISupervisionManager.Stub {
         public void onBootPhase(int phase) {
             switch (phase) {
                 case SystemService.PHASE_SYSTEM_SERVICES_READY -> onSystemServicesReady();
-                case SystemService.PHASE_BOOT_COMPLETED -> {
-                    if (Flags.enableSupervisionManagerPolicyApis()) {
-                        mSupervisionService.mPackageMonitor.register(
-                                getContext(),
-                                mSupervisionService.mServiceThreadHandler.getLooper(),
-                                UserHandle.ALL,
-                                /* externalStorage= */ false);
-                    }
-                }
+                case SystemService.PHASE_BOOT_COMPLETED -> onBootCompleted();
             }
         }
 
         private void onSystemServicesReady() {
             mSupervisionService.executeOnServiceThread(
                     SupervisionManager::invalidateGetPoliciesCache);
+        }
+
+        private void onBootCompleted() {
+            if (Flags.enableSupervisionSettingsUiUpdates()) {
+                mSupervisionService.registerStatsPullAtomCallback();
+            }
+            if (Flags.enableSupervisionManagerPolicyApis()) {
+                mSupervisionService.onBootCompleted();
+            }
         }
 
         @VisibleForTesting

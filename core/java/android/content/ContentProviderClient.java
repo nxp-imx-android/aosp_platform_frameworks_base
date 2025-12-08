@@ -16,7 +16,11 @@
 
 package android.content;
 
+import static android.content.flags.Flags.FLAG_ENABLE_CONTENT_PROVIDER_CLIENT_ANR_ON_CANCEL;
+import static android.content.flags.Flags.enableContentProviderClientAnrOnCancel;
+
 import android.annotation.DurationMillisLong;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -91,8 +95,31 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private final AtomicBoolean mClosed = new AtomicBoolean();
     private final CloseGuard mCloseGuard = CloseGuard.get();
 
+    /**
+     * Fixed timeout (in ms) for remote {@link ContentProvider} calls. If the call does not finish
+     * in the specified time, the remote provider process is terminated with ANR.
+     */
     private long mAnrTimeout;
-    private NotRespondingRunnable mAnrRunnable;
+
+    /**
+     * A Runnable that is executed after {@link mAnrTimeout} passes, terminating the remote provider
+     * with ANR.
+     */
+    @Nullable private NotRespondingRunnable mAnrRunnable;
+
+    /**
+     * Similar to mAnrTimeout, but the timeout starts when a {@link CancellationSignal} passed to
+     * the remote {@link ContentProvider} call is called. Only applies to calls that take a
+     * cancellation signal. If this variable is set to greater than 0, timeout on cancellation will
+     * be used instead of fixed timeout. Otherwise mAnrTimeout is used for all calls.
+     */
+    private long mAnrTimeoutOnCancel;
+
+    /**
+     * A Runnable that is executed after {@link mAnrTimeoutOnCancel} passes, terminating the remote
+     * provider with ANR.
+     */
+    @Nullable private NotRespondingRunnable mAnrRunnableOnCancel;
 
     /** @hide */
     @VisibleForTesting
@@ -117,18 +144,21 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     }
 
     /**
-     * Configure this client to automatically detect and kill the remote
-     * provider when an "application not responding" event is detected.
+     * Configure this client to automatically detect and kill the remote provider when a provider
+     * call blocks longer than the specified amount of time.
      *
-     * @param timeoutMillis the duration for which a pending call is allowed
-     *            block before the remote provider is considered to be
-     *            unresponsive. Set to {@code 0} to allow pending calls to block
-     *            indefinitely with no action taken.
+     * @param timeoutMillis the duration for which a pending call is allowed block before the remote
+     *     provider is considered to be unresponsive. Set to {@code 0} to allow pending calls to
+     *     block indefinitely with no action taken.
      * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.REMOVE_TASKS)
     public void setDetectNotResponding(@DurationMillisLong long timeoutMillis) {
+        if (enableContentProviderClientAnrOnCancel()) {
+            setDetectNotRespondingOnCancel(timeoutMillis, /* timeoutOnCancelMillis= */ 0);
+            return;
+        }
         synchronized (sLock) {
             mAnrTimeout = timeoutMillis;
 
@@ -153,8 +183,68 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         }
     }
 
+    /**
+     * Configure this client to automatically detect and kill the remote provider when a provider
+     * call blocks longer than the specified amount of time. This variant configures two timeout
+     * values: one for calls that take a {@link android.os.CancellationSignal} and one for calls
+     * that do not. For calls that support cancellation, the timeout starts after the cancellation
+     * signal is called. For calls that do not, the timeout starts once the call is made, as is with
+     * the {@link #setDetectNotResponding(long)}.
+     *
+     * @param timeoutFixedMillis the duration for which a pending call is allowed block before the
+     *     remote provider is considered to be unresponsive. Set to {@code 0} to allow pending calls
+     *     to block indefinitely with no action taken.
+     * @param timeoutOnCancelMillis the duration for which a pending call is allowed block after
+     *     cancellation before the remote provider is considered to be unresponsive. Only applies to
+     *     calls that take a {@link CancellationSignal}. If set to greater than {@code 0}, fixed
+     *     timeout will not apply to such calls. If set to {@code 0}, fixed timeout will be used for
+     *     all calls, regardless if they take a cancellation signal or not.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_ENABLE_CONTENT_PROVIDER_CLIENT_ANR_ON_CANCEL)
+    @RequiresPermission(android.Manifest.permission.REMOVE_TASKS)
+    public void setDetectNotRespondingOnCancel(
+            @DurationMillisLong long timeoutFixedMillis,
+            @DurationMillisLong long timeoutOnCancelMillis) {
+        synchronized (sLock) {
+            mAnrTimeout = timeoutFixedMillis;
+            mAnrTimeoutOnCancel = timeoutOnCancelMillis;
+
+            if (sAnrHandler == null) {
+                sAnrHandler = new Handler(Looper.getMainLooper(), null, /* async= */ true);
+            }
+
+            mAnrRunnable = timeoutFixedMillis > 0 ? new NotRespondingRunnable() : null;
+            mAnrRunnableOnCancel = timeoutOnCancelMillis > 0 ? new NotRespondingRunnable() : null;
+
+            if (timeoutFixedMillis > 0 || timeoutOnCancelMillis > 0) {
+                Binder.allowBlocking(mContentProvider.asBinder());
+            } else {
+                Binder.defaultBlocking(mContentProvider.asBinder());
+            }
+        }
+    }
+
     private void beforeRemote() {
         if (mAnrRunnable != null) {
+            sAnrHandler.postDelayed(mAnrRunnable, mAnrTimeout);
+        }
+    }
+
+    private void beforeRemote(CancellationSignal cancellationSignal) {
+        if (!enableContentProviderClientAnrOnCancel()) {
+            beforeRemote();
+            return;
+        }
+
+        if (mAnrRunnable == null) {
+            return;
+        }
+
+        // Apply fixed timeout to calls without cancellation signal, or calls
+        // with cancellation signal when timeout on cancel is not set.
+        if (cancellationSignal == null || mAnrRunnableOnCancel == null) {
             sAnrHandler.postDelayed(mAnrRunnable, mAnrTimeout);
         }
     }
@@ -163,6 +253,27 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         if (mAnrRunnable != null) {
             sAnrHandler.removeCallbacks(mAnrRunnable);
         }
+        if (enableContentProviderClientAnrOnCancel()) {
+            if (mAnrRunnableOnCancel != null) {
+                sAnrHandler.removeCallbacks(mAnrRunnableOnCancel);
+            }
+        }
+    }
+
+    private CancellationSignal maybeWrapNotRespondingSignal(CancellationSignal callerSignal) {
+        if (mAnrRunnableOnCancel == null) {
+            return callerSignal;
+        }
+        CancellationSignal innerSignal = new CancellationSignal();
+        callerSignal.setOnCancelListener(
+                new CancellationSignal.OnCancelListener() {
+                    @Override
+                    public void onCancel() {
+                        innerSignal.cancel();
+                        sAnrHandler.postDelayed(mAnrRunnableOnCancel, mAnrTimeoutOnCancel);
+                    }
+                });
+        return innerSignal;
     }
 
     /** See {@link ContentProvider#query ContentProvider.query} */
@@ -189,11 +300,15 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
                     throws RemoteException {
         Objects.requireNonNull(uri, "url");
 
-        beforeRemote();
+        beforeRemote(cancellationSignal);
+
         try {
             ICancellationSignal remoteCancellationSignal = null;
             if (cancellationSignal != null) {
                 cancellationSignal.throwIfCanceled();
+                if (enableContentProviderClientAnrOnCancel()) {
+                    cancellationSignal = maybeWrapNotRespondingSignal(cancellationSignal);
+                }
                 remoteCancellationSignal = mContentProvider.createCancellationSignal();
                 cancellationSignal.setRemote(remoteCancellationSignal);
             }
@@ -219,7 +334,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public @Nullable String getType(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.getType(mAttributionSource, url);
         } catch (DeadObjectException e) {
@@ -239,7 +355,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mimeTypeFilter, "mimeTypeFilter");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.getStreamTypes(mAttributionSource, url, mimeTypeFilter);
         } catch (DeadObjectException e) {
@@ -257,7 +374,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public final @Nullable Uri canonicalize(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.canonicalize(mAttributionSource, url);
         } catch (DeadObjectException e) {
@@ -275,7 +393,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public final @Nullable Uri uncanonicalize(@NonNull Uri url) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.uncanonicalize(mAttributionSource, url);
         } catch (DeadObjectException e) {
@@ -294,11 +413,15 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable CancellationSignal cancellationSignal) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(cancellationSignal);
+
         try {
             ICancellationSignal remoteCancellationSignal = null;
             if (cancellationSignal != null) {
                 cancellationSignal.throwIfCanceled();
+                if (enableContentProviderClientAnrOnCancel()) {
+                    cancellationSignal = maybeWrapNotRespondingSignal(cancellationSignal);
+                }
                 remoteCancellationSignal = mContentProvider.createCancellationSignal();
                 cancellationSignal.setRemote(remoteCancellationSignal);
             }
@@ -320,7 +443,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException {
         Objects.requireNonNull(uri, "uri");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.checkUriPermission(mAttributionSource, uri, uid,
                     modeFlags);
@@ -346,7 +470,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             @Nullable Bundle extras) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.insert(mAttributionSource, url, initialValues,
                     extras);
@@ -367,7 +492,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(initialValues, "initialValues");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.bulkInsert(mAttributionSource, url, initialValues);
         } catch (DeadObjectException e) {
@@ -391,7 +517,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     public int delete(@NonNull Uri url, @Nullable Bundle extras) throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.delete(mAttributionSource, url, extras);
         } catch (DeadObjectException e) {
@@ -416,7 +543,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException {
         Objects.requireNonNull(url, "url");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.update(mAttributionSource, url, values, extras);
         } catch (DeadObjectException e) {
@@ -454,11 +582,15 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mode, "mode");
 
-        beforeRemote();
+        beforeRemote(signal);
+
         try {
             ICancellationSignal remoteSignal = null;
             if (signal != null) {
                 signal.throwIfCanceled();
+                if (enableContentProviderClientAnrOnCancel()) {
+                    signal = maybeWrapNotRespondingSignal(signal);
+                }
                 remoteSignal = mContentProvider.createCancellationSignal();
                 signal.setRemote(remoteSignal);
             }
@@ -498,11 +630,15 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mode, "mode");
 
-        beforeRemote();
+        beforeRemote(signal);
+
         try {
             ICancellationSignal remoteSignal = null;
             if (signal != null) {
                 signal.throwIfCanceled();
+                if (enableContentProviderClientAnrOnCancel()) {
+                    signal = maybeWrapNotRespondingSignal(signal);
+                }
                 remoteSignal = mContentProvider.createCancellationSignal();
                 signal.setRemote(remoteSignal);
             }
@@ -539,11 +675,15 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(uri, "uri");
         Objects.requireNonNull(mimeTypeFilter, "mimeTypeFilter");
 
-        beforeRemote();
+        beforeRemote(signal);
+
         try {
             ICancellationSignal remoteSignal = null;
             if (signal != null) {
                 signal.throwIfCanceled();
+                if (enableContentProviderClientAnrOnCancel()) {
+                    signal = maybeWrapNotRespondingSignal(signal);
+                }
                 remoteSignal = mContentProvider.createCancellationSignal();
                 signal.setRemote(remoteSignal);
             }
@@ -573,7 +713,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throws RemoteException, OperationApplicationException {
         Objects.requireNonNull(operations, "operations");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.applyBatch(mAttributionSource, authority,
                     operations);
@@ -600,7 +741,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         Objects.requireNonNull(authority, "authority");
         Objects.requireNonNull(method, "method");
 
-        beforeRemote();
+        beforeRemote(/* cancellationSignal= */ null);
+
         try {
             return mContentProvider.call(mAttributionSource, authority, method, arg,
                     extras);

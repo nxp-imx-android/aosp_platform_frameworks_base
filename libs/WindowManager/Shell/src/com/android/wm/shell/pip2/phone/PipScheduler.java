@@ -21,7 +21,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -129,7 +128,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     }
 
     @Nullable
-    private WindowContainerTransaction getExitPipViaExpandTransaction() {
+    public WindowContainerTransaction getExitPipViaExpandTransaction() {
         WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
         if (pipTaskToken == null) {
             return null;
@@ -139,47 +138,6 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken,
                 mPipDesktopState.getOutPipWindowingMode(/* isMultiActivityChild= */false));
-        wct.setDensityDpi(pipTaskToken, Configuration.DENSITY_DPI_UNDEFINED);
-        return wct;
-    }
-
-    /**
-     * Returns a wct for exiting PiP and expanding on a different display.
-     */
-    @Nullable
-    public WindowContainerTransaction getExitPipViaExpandIntoDisplayTransaction(int displayId) {
-        WindowContainerToken pipToken = mPipTransitionState.getPipTaskToken();
-        WindowContainerTransaction wct = getExitPipViaExpandTransaction();
-        DisplayAreaInfo displayAreaInfo =
-                mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
-                        displayId);
-
-        if (pipToken == null || wct == null || displayAreaInfo == null) {
-            return null;
-        }
-
-        wct.reparent(pipToken, displayAreaInfo.token, true);
-        wct.setDensityDpi(pipToken, Configuration.DENSITY_DPI_UNDEFINED);
-        return wct;
-    }
-
-    /**
-     * Returns a wct for exiting PiP and expanding on a different display with specific bounds
-     * and windowing mode.
-     */
-    @Nullable
-    @VisibleForTesting
-    WindowContainerTransaction getExitPipViaExpandIntoDisplayTransaction(int displayId,
-            Rect bounds, int windowingMode) {
-        final WindowContainerTransaction wct = getExitPipViaExpandIntoDisplayTransaction(displayId);
-        final WindowContainerToken pipToken = mPipTransitionState.getPipTaskToken();
-
-        if (wct == null || pipToken == null) {
-            return null;
-        }
-
-        wct.setWindowingMode(pipToken, windowingMode);
-        wct.setBounds(pipToken, bounds);
         return wct;
     }
 
@@ -193,6 +151,9 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
         wct.reorder(pipTaskToken, false);
+        if (mDesktopPipTransitionController.isPresent()) {
+            mDesktopPipTransitionController.get().handleRemovePipTransition(wct, pipTaskToken);
+        }
 
         final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
         if (PipUtils.isContentPip(pipTaskInfo)) {
@@ -213,33 +174,17 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
     /**
      * Schedules exit PiP via expand transition.
-     */
-    public void scheduleExitPipViaExpand(boolean wasVisible) {
-        scheduleExitPipViaExpand(wasVisible, getExitPipViaExpandTransaction());
-    }
-
-    /**
-     * Returns a wct for exiting PiP and expanding on a different display.
-     */
-    public void scheduleExitPipViaExpand(boolean wasVisible, int displayId, Rect bounds,
-            int windowingMode) {
-        scheduleExitPipViaExpand(wasVisible,
-                getExitPipViaExpandIntoDisplayTransaction(displayId, bounds, windowingMode));
-    }
-
-    /**
-     * Private helper to handle the common logic for exiting PiP via expansion.
      *
      * @param wasVisible Whether the underlying activity was visible before entering PiP.
-     * @param expandWct wct for the expansion
+     * @param displayId The display id where we want to expand PiP to
      */
-    private void scheduleExitPipViaExpand(boolean wasVisible,
-            WindowContainerTransaction expandWct) {
+    public void scheduleExitPipViaExpand(boolean wasVisible, int displayId) {
         mMainExecutor.execute(() -> {
             if (!mPipTransitionState.isInPip()) return;
+            final WindowContainerTransaction expandWct = getExitPipViaExpandTransaction();
             if (expandWct == null) return;
 
-            RunOnTransitStart desktopPipRunnable = augmentExitViaExpandWCT(expandWct);
+            RunOnTransitStart desktopPipRunnable = augmentExitViaExpandWCT(expandWct, displayId);
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             mSplitScreenControllerOptional.ifPresent(splitScreenController -> {
                 int lastParentTaskId = mPipTransitionState.getPipTaskInfo()
@@ -263,11 +208,14 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
      * Helper to add necessary changes for Desktop Windowing to exit-Pip-via-expand wct.
      *
      * @param wct wct for the expansion
+     * @param displayId The display id where we want to expand PiP to
      */
-    public RunOnTransitStart augmentExitViaExpandWCT(WindowContainerTransaction wct) {
+    public RunOnTransitStart augmentExitViaExpandWCT(WindowContainerTransaction wct,
+            int displayId) {
         if (mDesktopPipTransitionController.isPresent()) {
             return mDesktopPipTransitionController.get()
-                    .updateExpandWctForDesktop(wct, mPipTransitionState.getPipTaskInfo());
+                    .updateExpandWctForDesktop(wct, mPipTransitionState.getPipTaskInfo(),
+                            displayId);
         }
         return null;
     }

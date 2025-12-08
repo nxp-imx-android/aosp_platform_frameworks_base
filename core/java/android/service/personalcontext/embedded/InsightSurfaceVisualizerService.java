@@ -24,10 +24,12 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -37,6 +39,7 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.WindowManager;
+import android.window.InputTransferToken;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,7 +47,10 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -88,17 +94,32 @@ public abstract class InsightSurfaceVisualizerService extends Service {
     private BinderService mBinder;
 
     /**
+     * A helper object to create {@link SurfaceControlViewHost}s.
+     * @hide
+     */
+    @VisibleForTesting
+    public interface SurfaceControlViewHostFactory {
+        /**
+         * Create a {@link SurfaceControlViewHost}.
+         */
+        SurfaceControlViewHost createSurfaceControlViewHost(
+                @NonNull Context context,
+                @NonNull Display display,
+                @NonNull InputTransferToken inputTransferToken);
+    }
+
+    /**
      * A helper object to inject dependencies into {@link InsightSurfaceVisualizerService}.
      * @hide
      */
     @VisibleForTesting
     public interface Injector {
         /**
-         * Create the display context that will be used when instantiating the {@link View}
+         * Return the display context that will be used when instantiating the {@link View}
          * hierarchy to be returned from the visualizer.
-         * @return the created display {@link Context}
+         * @return the display {@link Context}
          */
-        Context createDisplayContext();
+        Context getDisplayContext();
 
         /**
          * Get the default display that will be used when instantiating the {@link View} hierarchy
@@ -108,33 +129,51 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         Display getDisplay();
 
         /**
-         * Create the executor on which binder work will be performed.
+         * Return the executor on which binder work will be performed.
          * @return the {@link Executor}
          */
-        Executor createExecutor();
+        Executor getExecutor();
+
+        /**
+         * Return the SurfaceControlViewHostFactory used to create a new
+         * {@link SurfaceControlViewHost}.
+         */
+        SurfaceControlViewHostFactory getSurfaceControlViewHostFactory();
     }
 
     private static final class DefaultInjector implements Injector {
         private final Context mContext;
+        private final Executor mExecutor = new HandlerExecutor(new Handler(Looper.getMainLooper()));
+        private final SurfaceControlViewHostFactory mSurfaceControlViewHostFactory =
+                SurfaceControlViewHost::new;
 
         DefaultInjector(Context context) {
             mContext = context;
         }
 
         @Override
-        public Context createDisplayContext() {
+        public Context getDisplayContext() {
             return mContext.getApplicationContext().createDisplayContext(getDisplay())
                     .createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION, null);
         }
 
         @Override
         public Display getDisplay() {
-            return mContext.getApplicationContext().getDisplay();
+            // TODO(b/462739275): Needs to support displays other than DEFAULT_DISPLAY
+            return mContext
+                    .getApplicationContext()
+                    .getSystemService((DisplayManager.class))
+                    .getDisplay(Display.DEFAULT_DISPLAY);
         }
 
         @Override
-        public Executor createExecutor() {
-            return new HandlerExecutor(new Handler(Looper.getMainLooper()));
+        public Executor getExecutor() {
+            return mExecutor;
+        }
+
+        @Override
+        public SurfaceControlViewHostFactory getSurfaceControlViewHostFactory() {
+            return mSurfaceControlViewHostFactory;
         }
     }
 
@@ -161,9 +200,10 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         mBinder =
                 new BinderService(
                         this,
-                        mInjector.createDisplayContext(),
+                        mInjector.getDisplayContext(),
                         mInjector.getDisplay(),
-                        mInjector.createExecutor());
+                        mInjector.getExecutor(),
+                        mInjector.getSurfaceControlViewHostFactory());
     }
 
     @Nullable
@@ -213,37 +253,54 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         private final Context mContext;
         private final Display mDisplay;
         private final Executor mExecutor;
+        private final SurfaceControlViewHostFactory mSurfaceControlViewHostFactory;
+        private final Map<UUID, SurfaceControlViewHost> mSurfaceControlViewHostsByClient =
+                new HashMap<>();
 
         BinderService(
                 InsightSurfaceVisualizerService service,
                 Context context,
                 Display display,
-                Executor executor) {
+                Executor executor,
+                SurfaceControlViewHostFactory surfaceControlViewHostFactory) {
             mService = new WeakReference<>(service);
             mContext = context;
             mDisplay = display;
             mExecutor = executor;
+            mSurfaceControlViewHostFactory = surfaceControlViewHostFactory;
         }
 
         @Override
         public void createVisualizationForClient(
-                List<ContextInsightWrapper> insights, InsightSurfaceClientInfo clientInfo) {
+                List<ContextInsightWrapper> insights,
+                InsightSurfaceClientInfo clientInfo,
+                IEmbeddedInsightSurfaceVisualizerCallback callback) {
             post(service -> {
+
                 final View view = service.onCreateEmbeddedView(
                         mContext, ContextInsightWrapper.unwrapList(insights), clientInfo);
                 if (view == null) {
                     Log.e(TAG, "onCreateEmbeddedView returned null for client: " + clientInfo);
+                    sendResult(/*visualizationCreated= */ false, callback);
                     return;
                 }
 
+                // Release an existing host before creating a new one. This can happen if the
+                // service is asked to create a new visualization after it has already created one.
+                // Not properly releasing a host can result in a thrown exception.
+                releaseHostForClient(clientInfo);
+
                 final SurfaceControlViewHost surfaceControlViewHost =
-                        new SurfaceControlViewHost(
+                        mSurfaceControlViewHostFactory.createSurfaceControlViewHost(
                                 mContext, mDisplay, clientInfo.getInputTransferToken());
+                mSurfaceControlViewHostsByClient.put(clientInfo.getId(), surfaceControlViewHost);
+
                 surfaceControlViewHost.setView(
                         view,
                         MeasureSpec.getSize(clientInfo.getWidthMeasureSpec()),
                         MeasureSpec.getSize(clientInfo.getHeightMeasureSpec()));
                 clientInfo.onSurfaceCreated(surfaceControlViewHost.getSurfacePackage());
+                sendResult(/*visualizationCreated= */ true, callback);
             });
         }
 
@@ -254,17 +311,36 @@ public abstract class InsightSurfaceVisualizerService extends Service {
 
         @Override
         public void onClientDisconnected(InsightSurfaceClientInfo client) {
-            post(service -> service.onClientDisconnected(client));
+            post(service -> {
+                releaseHostForClient(client);
+                service.onClientDisconnected(client);
+            });
+        }
+
+        private void releaseHostForClient(InsightSurfaceClientInfo client) {
+            final SurfaceControlViewHost host =
+                    mSurfaceControlViewHostsByClient.remove(client.getId());
+            if (host != null) {
+                host.release();
+            }
+        }
+
+        private void sendResult(
+                boolean visualizationCreated, IEmbeddedInsightSurfaceVisualizerCallback callback) {
+            try {
+                callback.onResult(visualizationCreated);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error sending result", e);
+            }
         }
 
         private void post(Consumer<InsightSurfaceVisualizerService> consumer) {
-            final InsightSurfaceVisualizerService service = mService.get();
-
-            if (service == null) {
-                return;
-            }
-
-            mExecutor.execute(() -> consumer.accept(service));
+            mExecutor.execute(() -> {
+                final InsightSurfaceVisualizerService service = mService.get();
+                if (service != null) {
+                    consumer.accept(service);
+                }
+            });
         }
     }
 }

@@ -41,7 +41,7 @@ flag {
 
 flag {
     name: "x86_cpu_energy_attribution"
-    namespace: "desktop_pnp"
+    namespace: "backstage_power"
     description: "Enable CPU energy attribution for x86 platforms using eBPF and RAPL."
     bug: "452123601"
 }

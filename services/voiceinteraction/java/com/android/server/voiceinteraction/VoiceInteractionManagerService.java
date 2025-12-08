@@ -81,6 +81,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SharedMemory;
 import android.os.ShellCallback;
+import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -176,6 +177,15 @@ public class VoiceInteractionManagerService extends SystemService {
     @ChangeId
     @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.CINNAMON_BUN)
     static final long ENABLE_RESTRICT_ASSIST_STRUCTURE = 437416500L;
+
+    /**
+     * Length of time in milliseconds where the current VIS service can trigger a new session in
+     * response to a Hotword detection event.
+     *
+     * This corresponds to Android compatibility definition document [9.8/H-1-5] around VIS audio
+     * interactions.
+     */
+    static final long HOTWORD_TRIGGER_WINDOW_MILLIS = 30_000L;
 
     final Context mContext;
     final ContentResolver mResolver;
@@ -1074,9 +1084,10 @@ public class VoiceInteractionManagerService extends SystemService {
             synchronized (this) {
                 enforceIsCurrentVoiceInteractionService();
 
+                final int callingUid = Binder.getCallingUid();
                 final long caller = Binder.clearCallingIdentity();
 
-                int modifiedFlags = enforceSessionFlags(flags);
+                int modifiedFlags = enforceSessionFlags(flags, callingUid);
                 try {
                     mImpl.showSessionLocked(args, modifiedFlags, attributionTag, null, null);
                 } finally {
@@ -1086,30 +1097,40 @@ public class VoiceInteractionManagerService extends SystemService {
         }
 
         /**
-         * Enforces session flag restrictions based on the active voice interaction service's
-         * manifest.
+         * Enforces restrictions on session flags based on the active voice interaction service's
+         * manifest and the nature of the session trigger.
          *
-         * <p>For services targeting {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} or higher
-         * (as determined by the {@link #ENABLE_RESTRICT_ASSIST_STRUCTURE} compatibility change),
-         * this method strips flags for features that the service has not explicitly declared in its
-         * manifest.
+         * <p>This method applies two main sets of restrictions:
          *
-         * <ul>
-         *   <li>If {@code usesAssistData} is not declared, {@link
-         *       VoiceInteractionSession#SHOW_WITH_ASSIST} is removed.
-         *   <li>If {@code usesAssistScreenshots} is not declared, {@link
-         *       VoiceInteractionSession#SHOW_WITH_SCREENSHOT} is removed.
-         *   <li>If {@code usesAssistStructureScreenContent} is not declared, {@link
-         *       VoiceInteractionSession#SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT} is removed.
-         * </ul>
-         *
-         * This ensures that services only receive assist data and screenshots if they have
-         * explicitly opted in via their manifest.
+         * <ol>
+         *   <li><b>Manifest-based restrictions:</b> For services targeting {@link
+         *       android.os.Build.VERSION_CODES#CINNAMON_BUN} or higher (as determined by the {@link
+         *       #ENABLE_RESTRICT_ASSIST_STRUCTURE} compatibility change), this method removes flags
+         *       for features that the service has not explicitly declared in its manifest.
+         *       Specifically:
+         *       <ul>
+         *         <li>{@link VoiceInteractionSession#SHOW_WITH_ASSIST} is removed if {@code
+         *             usesAssistData} is not declared.
+         *         <li>{@link VoiceInteractionSession#SHOW_WITH_SCREENSHOT} is removed if {@code
+         *             usesAssistScreenshots} is not declared.
+         *         <li>{@link VoiceInteractionSession#SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT} is
+         *             removed if {@code usesAssistStructureScreenContent} is not declared.
+         *       </ul>
+         *   <li><b>Self-trigger restrictions:</b> If the session is initiated by the voice
+         *       interaction service itself from the background without a valid user signal (as
+         *       determined by {@link #isSelfTriggerAllowed()}), all flags related to accessing
+         *       screen content ({@link VoiceInteractionSession#SHOW_WITH_ASSIST}, {@link
+         *       VoiceInteractionSession#SHOW_WITH_SCREENSHOT}, and {@link
+         *       VoiceInteractionSession#SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT}) are removed.
+         *       This prevents the service from accessing sensitive data during a disallowed
+         *       background start.
+         * </ol>
          *
          * @param requestedFlags The original set of flags requested for the session.
-         * @return The filtered set of flags, with undeclared feature flags removed.
+         * @param callingUid The UID of the triggering caller.
+         * @return The filtered set of flags, with any disallowed feature flags removed.
          */
-        private int enforceSessionFlags(int requestedFlags) {
+        private int enforceSessionFlags(int requestedFlags, int callingUid) {
 
             // Ensure both an active VIS service and service info object exist, or exit early.
             if (mImpl == null || mImpl.mInfo == null) {
@@ -1134,7 +1155,83 @@ public class VoiceInteractionManagerService extends SystemService {
                             ~VoiceInteractionSession.SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT;
                 }
             }
+
+            // If this is a self trigger which is not deemed allowed, then strip all assist data
+            // flags to prevent the VIS service from acquiring any assist data for this restricted
+            // session.
+            if (com.android.server.voiceinteraction.flags.Flags.enableRestrictVisSelfTrigger()
+                    && !isSelfTriggerAllowed(callingUid)) {
+                modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_ASSIST;
+                modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_SCREENSHOT;
+                modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT;
+            }
+
             return modifiedFlags;
+        }
+
+        /**
+         * Determines if a voice interaction service is allowed to trigger a new session on its own
+         * behalf.
+         *
+         * <p>A self-trigger is permitted under two conditions:
+         *
+         * <ol>
+         *   <li>There has been a recent hotword detection event within a specific time window
+         *       ({@link #HOTWORD_TRIGGER_WINDOW}).
+         *   <li>The voice interaction service's application is already in the foreground.
+         * </ol>
+         *
+         * <p>This check prevents the service from starting sessions and potentially accessing
+         * screen content from the background without a recent, explicit user signal.
+         *
+         * @param callingUid The UID of the triggering caller.
+         * @return {@code true} if the self-trigger is allowed, {@code false} otherwise.
+         */
+        private boolean isSelfTriggerAllowed(int callingUid) {
+
+            if (mImpl == null) {
+                // No current impl is started, so the session cannot be started anyway.
+                return false;
+            }
+
+            int visUid = -1;
+            if (mImpl.mInfo != null) {
+                visUid = mImpl.mInfo.getServiceInfo().applicationInfo.uid;
+            }
+
+            final boolean isCallerCurrentVoiceInteractionService =
+                    visUid != -1 && visUid == callingUid;
+
+            if (!isCallerCurrentVoiceInteractionService) {
+                Slog.d(TAG, "Self-trigger check: not from VIS");
+                // Current caller is not the VIS, so this is not considered a self-trigger.
+                return true;
+            }
+
+            // Condition 1: There has been a hotword trigger inside the allowable window.
+            final long now = SystemClock.uptimeMillis();
+            final boolean recentHotword =
+                    now - mImpl.getLastHotwordDetectedMillis() <= HOTWORD_TRIGGER_WINDOW_MILLIS;
+            Slog.d(TAG, "Now: " + now + " last: " + mImpl.getLastHotwordDetectedMillis());
+
+            if (recentHotword) {
+                Slog.d(TAG, "Self-trigger check: VIS triggering from recent hotword");
+                return true;
+            }
+
+            // Condition 2: VIS application is already in the foreground
+            boolean isVisForeground =
+                    LocalServices.getService(ActivityTaskManagerInternal.class)
+                            .isUidForeground(callingUid);
+
+            if (isVisForeground) {
+                Slog.d(TAG, "Self-trigger check: VIS triggering from foreground");
+                return true;
+            }
+
+            // Neither condition has been met, this trigger should be disallowed.
+            Slog.d(TAG, "Self-trigger check: VIS self trigger not allowed.");
+            return false;
         }
 
         @Override
@@ -1229,9 +1326,10 @@ public class VoiceInteractionManagerService extends SystemService {
                 if (token == null) {
                     HotwordMetricsLogger.cancelHotwordTriggerToUiLatencySession(mContext);
                 }
+                final int callingUid = Binder.getCallingUid();
                 final long caller = Binder.clearCallingIdentity();
 
-                int modifiedFlags = enforceSessionFlags(flags);
+                int modifiedFlags = enforceSessionFlags(flags, callingUid);
                 try {
                     return mImpl.showSessionLocked(
                             sessionArgs, modifiedFlags, attributionTag, null, null);

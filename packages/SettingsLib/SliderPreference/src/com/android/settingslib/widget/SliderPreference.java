@@ -365,6 +365,7 @@ public class SliderPreference extends Preference {
         final CharSequence title = getTitle();
         if (!TextUtils.isEmpty(mSliderContentDescription)) {
             holder.itemView.setContentDescription(mSliderContentDescription);
+            mSlider.setContentDescription(mSliderContentDescription);
         } else if (!TextUtils.isEmpty(title)) {
             mSlider.setContentDescription(title);
         } else {

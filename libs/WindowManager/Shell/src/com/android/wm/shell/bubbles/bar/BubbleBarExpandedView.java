@@ -712,6 +712,23 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         }
     }
 
+    /**
+     * Return content height: taskView or overflow.
+     *
+     * <p>Takes into account clippings represented by {@code mBottomClip}
+     *
+     * @return if bubble is for overflow, return overflow height, otherwise return taskView height
+     */
+    public int getContentHeight() {
+        if (mIsOverflow) {
+            return mOverflowView.getHeight() - mBottomClip;
+        }
+        if (mTaskView != null) {
+            return mTaskView.getHeight() - mBottomClip;
+        }
+        return 0;
+    }
+
     private class HandleViewAccessibilityDelegate extends AccessibilityDelegate {
         @Override
         public void onInitializeAccessibilityNodeInfo(@NonNull View host,

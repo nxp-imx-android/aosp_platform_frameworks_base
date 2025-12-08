@@ -1079,7 +1079,7 @@ public final class RemoteSelectionToolbar {
         return new LinearLayout(mContext) {
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                if (isOverflowAnimating()) {
+                if (mMainPanelSize != null && isOverflowAnimating()) {
                     // Update widthMeasureSpec to make sure that this view is not clipped
                     // as we offset its coordinates with respect to its parent.
                     widthMeasureSpec = MeasureSpec.makeMeasureSpec(

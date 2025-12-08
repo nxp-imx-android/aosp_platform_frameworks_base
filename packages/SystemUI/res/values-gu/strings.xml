@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"સ્ક્રીનશૉટ સાચવી શકાતો નથી"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ઍપ્લિકેશન કે તમારી સંસ્થા દ્વારા સ્ક્રીનશૉટ લેવાની મંજૂરી નથી"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"તમારા IT ઍડમિન દ્વારા સ્ક્રીનશૉટ લેવાની સુવિધા બ્લૉક કરવામાં આવી છે"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"ક્લિપબોર્ડ પર સ્ક્રીનશૉટ કૉપિ કરો"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ફેરફાર કરો"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"\'સ્ક્રીનશૉટમાં ફેરફાર કરો\' બટન"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"શેર કરો"</string>
@@ -837,6 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. કંપન પર સેટ કરવા માટે ટૅપ કરો."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. મ્યૂટ કરવા માટે ટૅપ કરો."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"અવાજનું નિયંત્રણ"</string>
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"માઇકનું અવાજ રદ્દીકરણ"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"સ્પેશલ ઑડિયો"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"બંધ"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"ફિક્સ કરેલું"</string>
@@ -928,31 +928,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ફોન"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ટૅબ્લેટ"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"લૅપટૉપ"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"વૉચ"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ટીવી"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ના સેટિંગ ખોલો"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"સાઇલન્ટ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ડિફૉલ્ટ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ઑટોમૅટિક રીતે"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"આ નોટિફિકેશન તમારા <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> તરફથી છે"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"કોઈપણ સાઉન્ડ અથવા વાઇબ્રેશન નથી"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"કોઈ સાઉન્ડ કે વાઇબ્રેશન ન હોવા છતાં વાતચીત વિભાગમાં જોવા મળે છે"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ડિવાઇસના સેટિંગના આધારે રિંગ અથવા વાઇબ્રેટ થઈ શકે છે"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ડિવાઇસના સેટિંગના આધારે રિંગ અથવા વાઇબ્રેટ થઈ શકે છે. ડિફૉલ્ટ તરીકે <xliff:g id="APP_NAME">%1$s</xliff:g> બબલની વાતચીત."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"આ નોટિફિકેશન સાઉન્ડ અથવા વાઇબ્રેટ કરી શકશે કે નહીં તે સિસ્ટમને નક્કી કરવા દો"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;સ્ટેટસ:&lt;/b&gt; ડિફૉલ્ટ તરીકે બઢતી આપવામાં આવી"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"તમારા <xliff:g id="DEVICE_NAME">%1$s</xliff:g> પર સિંક કરેલા નોટિફિકેશનની પ્રાધાન્યતા અને સેટિંગ ગોઠવી શકાય છે"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;સ્ટેટસ:&lt;/b&gt; સાઇલન્ટ પર અવનત કરવામાં આવ્યું"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;સ્ટેટસ:&lt;/b&gt; ઉપલી રેંક આપવામાં આવી"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;સ્ટેટસ:&lt;/b&gt; નીચલી રેંક આપવામાં આવી"</string>

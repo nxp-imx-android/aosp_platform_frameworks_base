@@ -1008,6 +1008,7 @@ package android.companion {
 
   public final class CompanionDeviceManager {
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void overrideTransportType(int);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission("android.Manifest.permission.USE_COMPANION_TRANSPORTS") public void setRequestActionAllowList(@Nullable java.util.List<java.lang.String>);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {
@@ -1306,7 +1307,6 @@ package android.content.pm {
     method public boolean isRestricted();
     method @FlaggedApi("android.multiuser.allow_supervising_profile") public boolean isSupervisingProfile();
     method public boolean supportsSwitchTo();
-    method public boolean supportsSwitchToByUser();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UserInfo> CREATOR;
     field public static final int FLAG_ADMIN = 2; // 0x2
@@ -1359,11 +1359,15 @@ package android.content.pm {
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class UsesPermissionPurposeInfo implements android.os.Parcelable {
-    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>, @StringRes int);
+    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>, @NonNull java.util.Set<java.lang.String>, @StringRes int);
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class ValidGeneralPurposeInfo implements android.os.Parcelable {
     ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public ValidGeneralPurposeInfo(@NonNull String, int);
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public final class ValidPurposeInfo implements android.os.Parcelable {
+    ctor @FlaggedApi("android.permission.flags.ppd_purpose_enabled") public ValidPurposeInfo(@NonNull String, int);
   }
 
 }
@@ -2036,19 +2040,19 @@ package android.hardware.input {
   public class InputSettings {
     method public static int getAccessibilityBounceKeysThreshold(@NonNull android.content.Context);
     method public static int getAccessibilitySlowKeysThreshold(@NonNull android.content.Context);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") public static int getRepeatKeysDelay(@NonNull android.content.Context);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") public static int getRepeatKeysTimeout(@NonNull android.content.Context);
+    method public static int getRepeatKeysDelay(@NonNull android.content.Context);
+    method public static int getRepeatKeysTimeout(@NonNull android.content.Context);
     method public static boolean isAccessibilityMouseKeysEnabled(@NonNull android.content.Context);
     method public static boolean isAccessibilityStickyKeysEnabled(@NonNull android.content.Context);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") public static boolean isRepeatKeysEnabled(@NonNull android.content.Context);
+    method public static boolean isRepeatKeysEnabled(@NonNull android.content.Context);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setAccessibilityBounceKeysThreshold(@NonNull android.content.Context, int);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setAccessibilityMouseKeysEnabled(@NonNull android.content.Context, boolean);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setAccessibilitySlowKeysThreshold(@NonNull android.content.Context, int);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setAccessibilityStickyKeysEnabled(@NonNull android.content.Context, boolean);
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setMaximumObscuringOpacityForTouch(@NonNull android.content.Context, @FloatRange(from=0, to=1) float);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysDelay(@NonNull android.content.Context, int);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysEnabled(@NonNull android.content.Context, boolean);
-    method @FlaggedApi("com.android.input.flags.keyboard_repeat_keys") @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysTimeout(@NonNull android.content.Context, int);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysDelay(@NonNull android.content.Context, int);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysEnabled(@NonNull android.content.Context, boolean);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void setRepeatKeysTimeout(@NonNull android.content.Context, int);
     field public static final int DEFAULT_POINTER_SPEED = 0; // 0x0
   }
 
@@ -3294,6 +3298,8 @@ package android.provider {
 
   public static interface Telephony.TextBasedSmsColumns {
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String CONTAINS_OTP = "contains_otp";
+    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 256; // 0x100
+    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_WEB_OTP = 512; // 0x200
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_CONTAINS_OTP = 1; // 0x1
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_NONE = 0; // 0x0
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_PENDING = 2; // 0x2
@@ -4746,7 +4752,7 @@ package android.window {
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public android.window.WindowContainerToken getImeLayeringTarget(int);
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public java.util.List<android.app.ActivityManager.RunningTaskInfo> getRootTasks(int, @NonNull int[]);
     method @BinderThread public void onAppSplashScreenViewRemoved(int);
-    method @BinderThread public void onBackPressedOnTaskRoot(@NonNull android.app.ActivityManager.RunningTaskInfo, boolean);
+    method @BinderThread public void onBackPressedOnTaskRoot(@NonNull android.app.ActivityManager.RunningTaskInfo, boolean, boolean);
     method @BinderThread public void onTaskAppeared(@NonNull android.app.ActivityManager.RunningTaskInfo, @NonNull android.view.SurfaceControl);
     method @BinderThread public void onTaskInfoChanged(@NonNull android.app.ActivityManager.RunningTaskInfo);
     method @BinderThread public void onTaskVanished(@NonNull android.app.ActivityManager.RunningTaskInfo);

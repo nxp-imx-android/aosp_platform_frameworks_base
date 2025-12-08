@@ -396,6 +396,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     final ProcessCachedOptimizerRecord mOptRecord;
 
     /**
+     * The MemoryLimiter associated with this process.  The limiter may be null.
+     */
+    private final MemoryLimiter mMemoryLimiter;
+
+    /**
      * The preceding instance of the process, which would exist when the previous process is killed
      * but not fully dead yet; in this case, the new instance of the process should be held until
      * this preceding instance is fully dead.
@@ -619,6 +624,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
+        mMemoryLimiter = new MemoryLimiter();
 
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
@@ -698,6 +704,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         }
         mPid = pid;
         mWindowProcessController.setPid(pid);
+        mMemoryLimiter.setPidUid(getPid(), (mUidRecord != null) ? mUidRecord.getUid() : 0);
         mShortStringName = null;
         mStringName = null;
         synchronized (mProfile.mProfilerLock) {
@@ -1316,8 +1323,14 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
 
     @Override
     @GuardedBy("mService")
-    public void killLocked(String reason, String description, @Reason int reasonCode,
-            @SubReason int subReason, boolean noisy, boolean asyncKPG) {
+    public void killLocked(
+            String reason,
+            String description,
+            @Reason int reasonCode,
+            @SubReason int subReason,
+            @Nullable ApplicationExitInfo.AnrInfo anrInfo,
+            boolean noisy,
+            boolean asyncKPG) {
         if (!isKilledByAm()) {
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
@@ -1339,7 +1352,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 mOptRecord.setFrozen(false);
             }
             if (mPid > 0) {
-                mService.mProcessList.noteAppKill(this, reasonCode, subReason, description);
+                mService.mProcessList.noteAppKill(
+                        this, reasonCode, subReason, description, anrInfo);
                 EventLog.writeEvent(EventLogTags.AM_KILL,
                         userId, mPid, processName, getSetAdj(), reason, getRss(mPid));
                 Process.killProcessQuiet(mPid);
@@ -1551,6 +1565,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         // Release the lock before calling the notifier, in case that calls back into AM.
         if (t != null) t.onProcessPausedCancelled();
         mServices.onProcessFrozenCancelled();
+    }
+
+    void onProcStateUpdated() {
+        mMemoryLimiter.onProcStateUpdated(getCurProcState());
     }
 
     /*
@@ -1822,12 +1840,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     public void forEachConnectionHost(Consumer<ProcessRecord> consumer) {
         for (int i = mServices.numberOfConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = mServices.getConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.app;
+            final ProcessRecord service = cr.binding.service.getHostProcess();
             consumer.accept(service);
         }
         for (int i = mServices.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = mServices.getSdkSandboxConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.app;
+            final ProcessRecord service = cr.binding.service.getHostProcess();
             consumer.accept(service);
         }
         for (int i = mProviders.numberOfProviderConnections() - 1; i >= 0; i--) {

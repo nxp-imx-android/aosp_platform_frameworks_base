@@ -25,6 +25,7 @@ import android.os.UserHandle;
 import android.util.Pair;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.DynamicColors;
@@ -37,31 +38,32 @@ import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 /**
- * A stateless utility class responsible for creating and applying color-based theme overlays.
+ * A utility class responsible for creating and applying color-based theme overlays.
  * <p>
  * This class encapsulates the logic for generating {@link FabricatedOverlay} instances
  * from a {@link ColorScheme} and committing them to the {@link OverlayManagerInternal}.
  *
  * @hide
  */
-final class ThemeOverlayHelper {
+public class ThemeOverlayHelper {
     private static final String TAG = "ThemeOverlayHelper";
     private static final String ANDROID_PACKAGE = "android";
     private static final String SYSUI_PACKAGE = "com.android.systemui";
 
-    // Private constructor to prevent instantiation of this utility class.
-    private ThemeOverlayHelper() {}
+    private final OverlayManagerInternal mOverlayManager;
+
+    ThemeOverlayHelper(OverlayManagerInternal overlayManager) {
+        mOverlayManager = overlayManager;
+    }
 
     /**
      * Applies color overlays for a given user based on their current theme state.
      *
-     * @param overlayManager The service to commit the transaction to.
-     * @param snapshot The snapshot containing all necessary user, profile, and color info.
+     * @param snapshot      The snapshot containing all necessary user, profile, and color info.
      * @param applyToSystem whenever to apply overlays to the system user as well.
      */
-    public static void applyCurrentStateOverlays(OverlayManagerInternal overlayManager,
-            ThemeStatePair.OverlaySnapshot snapshot, boolean applyToSystem)
-            throws CancellationException {
+    public void applyCurrentStateOverlays(ThemeStatePair.OverlaySnapshot snapshot,
+            boolean applyToSystem) throws CancellationException {
 
         final ColorScheme lightScheme = snapshot.lightScheme();
         final ColorScheme darkScheme = snapshot.darkScheme();
@@ -104,13 +106,13 @@ final class ThemeOverlayHelper {
         }
 
         try {
-            overlayManager.commit(transaction.build());
+            mOverlayManager.commit(transaction.build());
         } catch (SecurityException | IllegalStateException e) {
             Slog.e(TAG, "Could not commit overlays to OverlayManager", e);
         }
     }
 
-    private static FabricatedOverlay createNeutralOverlay(ColorScheme lightColorScheme,
+    private FabricatedOverlay createNeutralOverlay(ColorScheme lightColorScheme,
             ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("neutral");
         assignColorsToOverlay(overlay, DynamicColors.getAllNeutralPalette(), false,
@@ -118,7 +120,7 @@ final class ThemeOverlayHelper {
         return overlay;
     }
 
-    private static FabricatedOverlay createAccentOverlay(ColorScheme lightColorScheme,
+    private FabricatedOverlay createAccentOverlay(ColorScheme lightColorScheme,
             ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("accent");
         assignColorsToOverlay(overlay, DynamicColors.getAllAccentPalette(), false,
@@ -126,7 +128,16 @@ final class ThemeOverlayHelper {
         return overlay;
     }
 
-    static FabricatedOverlay createDynamicOverlay(ColorScheme lightColorScheme,
+
+    /**
+     * Creates a fabricated overlay for dynamic colors.
+     *
+     * @param lightColorScheme The color scheme for light theme.
+     * @param darkColorScheme The color scheme for dark theme.
+     * @return A fabricated overlay containing dynamic colors.
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public FabricatedOverlay createDynamicOverlay(ColorScheme lightColorScheme,
             ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("dynamic");
 
@@ -142,7 +153,7 @@ final class ThemeOverlayHelper {
         return overlay;
     }
 
-    private static void assignColorsToOverlay(FabricatedOverlay overlay,
+    private void assignColorsToOverlay(FabricatedOverlay overlay,
             List<Pair<String, DynamicColor>> colors, Boolean isFixed,
             ColorScheme lightColorScheme, ColorScheme darkColorScheme) {
         for (Pair<String, DynamicColor> p : colors) {
@@ -159,11 +170,11 @@ final class ThemeOverlayHelper {
         }
     }
 
-    private static FabricatedOverlay newFabricatedOverlay(String name) {
+    private FabricatedOverlay newFabricatedOverlay(String name) {
         return new FabricatedOverlay.Builder(SYSUI_PACKAGE, name, ANDROID_PACKAGE).build();
     }
 
-    private static void checkCancellation() throws CancellationException {
+    private void checkCancellation() throws CancellationException {
         if (Thread.currentThread().isInterrupted()) {
             throw new CancellationException("Operation cancelled");
         }

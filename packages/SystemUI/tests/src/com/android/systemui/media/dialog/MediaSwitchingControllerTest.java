@@ -112,6 +112,7 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.Co
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
 
@@ -211,6 +212,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Mock
     private UserTracker mUserTracker;
     @Mock private AudioSharingRepository mAudioSharingRepository;
+    @Mock private ExpandedAudioTileDetailsFeatureInteractor
+            mExpandedAudioTileDetailsFeatureInteractor;
 
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
     @Mock private JavaAdapter mJavaAdapter;
@@ -314,6 +317,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(bundle.getParcelable(Notification.EXTRA_MEDIA_SESSION,
                 MediaSession.Token.class)).thenReturn(token);
         when(token.getBinder()).thenReturn(binder);
+
+        when(mExpandedAudioTileDetailsFeatureInteractor.isEnabled()).thenReturn(false);
     }
 
     @Test
@@ -374,7 +379,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         mMediaSwitchingController.start(mCb);
 
@@ -421,7 +427,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         mMediaSwitchingController.start(mCb);
 
@@ -689,7 +696,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
         AudioDeviceInfo[] audioDeviceInfos = {};
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
                 .thenReturn(audioDeviceInfos);
@@ -748,7 +756,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
         AudioDeviceInfo[] audioDeviceInfos = {};
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
                 .thenReturn(audioDeviceInfos);
@@ -1065,7 +1074,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
         testMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -1097,7 +1107,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
         testMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -1149,7 +1160,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
@@ -1185,7 +1197,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
@@ -1407,7 +1420,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         assertThat(mMediaSwitchingController.getNotificationIcon()).isNull();
     }
@@ -1555,7 +1569,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
-                        mAudioSharingRepository);
+                        mAudioSharingRepository,
+                        mExpandedAudioTileDetailsFeatureInteractor);
 
         testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded(mMediaDevice2);
 
@@ -2089,7 +2104,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 mVolumePanelGlobalStateInteractor,
                 mUserTracker,
                 mJavaAdapter,
-                mAudioSharingRepository);
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor);
     }
 
     private Notification setupNotificationMock() {

@@ -22,8 +22,8 @@ import android.os.Process
 import android.os.Process.SCHED_OTHER
 import android.os.Trace
 import android.util.Log
+import com.android.app.concurrent.benchmark.base.getCurrentBgThreadName
 import com.android.app.concurrent.benchmark.util.BgExceptionHandler.rethrowInterruptWithCause
-import com.android.app.concurrent.benchmark.util.CsvMetricCollector.Helper.getCurrentBgThreadName
 import com.android.app.tracing.coroutines.createCoroutineTracingContext
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
@@ -71,13 +71,29 @@ interface ThreadHandle<T> : AutoCloseable {
  * @param startThread start a new thread, and return a handle that can be used to later shutdown
  *   that thread
  */
-sealed class ThreadBuilder<S : Any>(private val name: String) {
+sealed class ThreadBuilder<S : Any>(
+    private val threadType: String,
+    private val schedulerType: String,
+) {
     abstract fun startThread(): ThreadHandle<S>
 
     override fun toString(): String {
-        return name
+        return "threadType=$threadType:scheduler=$schedulerType"
     }
 }
+
+abstract class LooperThreadHandleBuilder<S : Any>(schedulerType: String) :
+    ThreadBuilder<S>("Looper", schedulerType) {
+    abstract override fun startThread(): LooperThreadHandle<S>
+}
+
+abstract class ExecutorServiceThreadBuilder<S : Any>(schedulerType: String) :
+    ThreadBuilder<S>("ExecutorService", schedulerType) {
+    abstract override fun startThread(): ExecutorServiceThread<S>
+}
+
+abstract class NoThreadBuilder<S : Any>(schedulerType: String) :
+    ThreadBuilder<S>("None", schedulerType)
 
 private fun tracingContextIfDebug(): CoroutineContext {
     return if (DEBUG) {
@@ -88,7 +104,7 @@ private fun tracingContextIfDebug(): CoroutineContext {
 }
 
 object BgExceptionHandler : Thread.UncaughtExceptionHandler {
-    private val mainThreadHolder = AtomicReference<Thread?>(Thread.currentThread())
+    private val mainThreadHolder = AtomicReference(Thread.currentThread())
     private val bgExceptionHolder = AtomicReference<Throwable>()
 
     /**
@@ -227,7 +243,7 @@ abstract class LooperThreadHandle<T>() : ThreadHandle<T> {
 }
 
 object ExecutorServiceThreadWithExecutorBuilder :
-    ThreadBuilder<Executor>(name = "ExecutorServiceThread-Executor") {
+    ExecutorServiceThreadBuilder<Executor>("Executor") {
 
     /**
      * Creates a thread backed by a worker / ExecutorService that uses a
@@ -241,7 +257,7 @@ object ExecutorServiceThreadWithExecutorBuilder :
 }
 
 object ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder :
-    ThreadBuilder<CoroutineScope>(name = "ExecutorServiceThread-ExecutorCoroutineDispatcher") {
+    ExecutorServiceThreadBuilder<CoroutineScope>("ExecutorCoroutineDispatcher") {
 
     /**
      * Creates a thread backed by a worker / ExecutorService that uses a
@@ -260,7 +276,7 @@ object ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder :
     }
 }
 
-object LooperThreadWithHandlerBuilder : ThreadBuilder<Handler>(name = "LooperThread-Handler") {
+object LooperThreadWithHandlerBuilder : LooperThreadHandleBuilder<Handler>("Handler") {
     /**
      * Creates a thread backed by a [Looper] that uses [android.os.MessageQueue] to schedule work.
      */
@@ -271,7 +287,7 @@ object LooperThreadWithHandlerBuilder : ThreadBuilder<Handler>(name = "LooperThr
     }
 }
 
-object LooperThreadWithExecutorBuilder : ThreadBuilder<Executor>(name = "LooperThread-Executor") {
+object LooperThreadWithExecutorBuilder : LooperThreadHandleBuilder<Executor>("Executor") {
     /**
      * Creates a thread backed by a [Looper] that uses [android.os.MessageQueue] to schedule work.
      */
@@ -283,7 +299,7 @@ object LooperThreadWithExecutorBuilder : ThreadBuilder<Executor>(name = "LooperT
 }
 
 object LooperThreadWithImmediateExecutorBuilder :
-    ThreadBuilder<Executor>(name = "LooperThread-ImmediateExecutor") {
+    LooperThreadHandleBuilder<Executor>("ImmediateExecutor") {
     /**
      * Creates a thread backed by a [Looper] that uses [android.os.MessageQueue] to schedule work.
      */
@@ -301,8 +317,8 @@ object LooperThreadWithImmediateExecutorBuilder :
 }
 
 object LooperThreadWithHandlerDispatcherBuilder :
-    ThreadBuilder<CoroutineScope>(name = "LooperThread-HandlerDispatcher") {
-    override fun startThread(): ThreadHandle<CoroutineScope> {
+    LooperThreadHandleBuilder<CoroutineScope>("HandlerDispatcher") {
+    override fun startThread(): LooperThreadHandle<CoroutineScope> {
         return object : LooperThreadHandle<CoroutineScope>() {
             override val scheduler: CoroutineScope =
                 CoroutineScope(handler.asCoroutineDispatcher() + tracingContextIfDebug())
@@ -316,8 +332,8 @@ object LooperThreadWithHandlerDispatcherBuilder :
 }
 
 object LooperThreadWithImmediateHandlerDispatcherBuilder :
-    ThreadBuilder<CoroutineScope>(name = "LooperThread-HandlerDispatcher.immediate") {
-    override fun startThread(): ThreadHandle<CoroutineScope> {
+    LooperThreadHandleBuilder<CoroutineScope>("HandlerDispatcher.immediate") {
+    override fun startThread(): LooperThreadHandle<CoroutineScope> {
         return object : LooperThreadHandle<CoroutineScope>() {
             override val scheduler: CoroutineScope =
                 CoroutineScope(handler.asCoroutineDispatcher().immediate + tracingContextIfDebug())
@@ -331,7 +347,7 @@ object LooperThreadWithImmediateHandlerDispatcherBuilder :
 }
 
 object NoThreadWithDirectImmediateExecutorBuilder :
-    ThreadBuilder<Executor>(name = "NoThread-DirectImmediateExecutor") {
+    NoThreadBuilder<Executor>("DirectImmediateExecutor") {
     override fun startThread(): ThreadHandle<Executor> {
         return object : ThreadHandle<Executor> {
             override val scheduler: Executor = Executor { r -> r.run() }
@@ -342,7 +358,7 @@ object NoThreadWithDirectImmediateExecutorBuilder :
 }
 
 object NoThreadWithUnconfinedDispatcherBuilder :
-    ThreadBuilder<CoroutineScope>(name = "NoThread-UnconfinedDispatcher") {
+    NoThreadBuilder<CoroutineScope>("UnconfinedDispatcher") {
     override fun startThread(): ThreadHandle<CoroutineScope> {
         return object : ThreadHandle<CoroutineScope> {
             override val scheduler: CoroutineScope =
@@ -354,7 +370,7 @@ object NoThreadWithUnconfinedDispatcherBuilder :
 }
 
 object NoThreadWithDirectImmediateDispatcherBuilder :
-    ThreadBuilder<CoroutineScope>(name = "NoThread-DirectImmediateDispatcher") {
+    NoThreadBuilder<CoroutineScope>("DirectImmediateDispatcher") {
     override fun startThread(): ThreadHandle<CoroutineScope> {
         return object : ThreadHandle<CoroutineScope> {
             override val scheduler: CoroutineScope =

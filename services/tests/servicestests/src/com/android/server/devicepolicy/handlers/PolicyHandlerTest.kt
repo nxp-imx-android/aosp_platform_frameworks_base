@@ -16,13 +16,13 @@
 
 package com.android.server.devicepolicy.handlers
 
-import android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER
+import android.app.admin.DevicePolicyManager.DEVICE_OWNER
 import android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
-import android.app.admin.DevicePolicyManager.PROFILE_OWNER
+import android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
 import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.IntegerPolicyValue
 import android.app.admin.NoArgsPolicyKey
@@ -308,11 +308,14 @@ open class PolicyHandlerTest {
             copyOf(
                 Policy.metadata,
                 requiredPermission = "thePermissionThatShallNotBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER),
+                allowedDpcTypes = setOf(
+                    DEVICE_OWNER,
+                    MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+                ),
             )
         val handler = createHandler(metadata = metadata)
 
-        mockDelegate.stub { on { getDpcType(any()) } doReturn DEFAULT_DEVICE_OWNER }
+        mockDelegate.stub { on { getDpcType(any()) } doReturn DEVICE_OWNER }
 
         handler.checkPermissions(anyCaller, anyScope)
 
@@ -325,7 +328,7 @@ open class PolicyHandlerTest {
             copyOf(
                 Policy.metadata,
                 requiredPermission = "thePermissionThatShallBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER),
+                allowedDpcTypes = setOf(DEVICE_OWNER, MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE),
             )
         val handler = createHandler(metadata = metadata)
         val theCaller = anyCaller
@@ -347,12 +350,12 @@ open class PolicyHandlerTest {
                 allowedScopes = setOf(POLICY_SCOPE_DEVICE),
                 requiredPermission = "thePermissionThatShallNotBeChecked",
                 requiredCrossUserPermission = "theCrossUserPermissionThatShallBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER),
+                allowedDpcTypes = setOf(DEVICE_OWNER),
             )
         val handler = createHandler(metadata = metadata)
         val theCaller = anyCaller
 
-        mockDelegate.stub { on { getDpcType(any()) } doReturn DEFAULT_DEVICE_OWNER }
+        mockDelegate.stub { on { getDpcType(any()) } doReturn DEVICE_OWNER }
 
         handler.checkPermissions(theCaller, POLICY_SCOPE_DEVICE)
 

@@ -287,6 +287,18 @@ public final class Telephony {
         public static final String CREATOR = "creator";
 
         /**
+         * Bit shift for the OTP subtype information.
+         * @hide
+         */
+        public static final int OTP_SUBTYPE_SHIFT = 8;
+
+        /**
+         * Mask for OTP subtype information.
+         * @hide
+         */
+        public static final int OTP_SUBTYPE_MASK = 0xFF00;
+
+        /**
          * The body of the message contains an otp code. This should only be applied by the SMS
          * provider itself.
          *
@@ -320,6 +332,22 @@ public final class Telephony {
         @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
         @TestApi
         public static final int OTP_TYPE_PENDING = 2;
+
+        /**
+         * The message is SMS Retriever OTP.
+         * @hide
+         */
+        @FlaggedApi(android.view.flags.Flags.FLAG_SMS_PROVIDER_REDACT_OTP_APP_COMPAT_API)
+        @TestApi
+        public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 1 << OTP_SUBTYPE_SHIFT;
+
+        /**
+         * The message is WebOTP.
+         * @hide
+         */
+        @FlaggedApi(android.view.flags.Flags.FLAG_SMS_PROVIDER_REDACT_OTP_APP_COMPAT_API)
+        @TestApi
+        public static final int OTP_SUBTYPE_WEB_OTP = 2 << OTP_SUBTYPE_SHIFT;
     }
 
     /**
@@ -5204,6 +5232,14 @@ public final class Telephony {
         public static final String COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY =
                 "satellite_entitlement_voice_service_policy";
 
+        /**
+         * TelephonyProvider column name for whether a subscription is for private network.
+         * <p>Type: INTEGER (int), 1 for private network or 0 for not.
+         *
+         * @hide
+         */
+        public static final String COLUMN_IS_PRIVATE_NETWORK = "is_private_network";
+
         /** All columns in {@link SimInfo} table. */
         private static final List<String> ALL_COLUMNS = List.of(
                 COLUMN_UNIQUE_KEY_SUBSCRIPTION_ID,
@@ -5287,7 +5323,8 @@ public final class Telephony {
                 COLUMN_SATELLITE_ENTITLEMENT_DATA_PLAN_PLMNS,
                 COLUMN_SATELLITE_ENTITLEMENT_SERVICE_TYPE_MAP,
                 COLUMN_SATELLITE_ENTITLEMENT_DATA_SERVICE_POLICY,
-                COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY
+                COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY,
+                COLUMN_IS_PRIVATE_NETWORK
         );
 
         /**

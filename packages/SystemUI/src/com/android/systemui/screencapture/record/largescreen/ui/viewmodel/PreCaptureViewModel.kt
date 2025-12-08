@@ -33,6 +33,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
+import com.android.systemui.screencapture.record.largescreen.shared.model.AppWindowModel
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -76,9 +77,12 @@ constructor(
             recordingParameters.largeScreenParameters?.defaultCaptureRegion
                 ?: ScreenCaptureRegion.FULLSCREEN
         )
-    private val topTaskSource = MutableStateFlow<ActivityManager.RunningTaskInfo?>(null)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
+
     private var runningTasks: List<ActivityManager.RunningTaskInfo> = emptyList()
+    private val topTaskSource = MutableStateFlow<ActivityManager.RunningTaskInfo?>(null)
+    private val appWindowSelectionSource = MutableStateFlow<AppWindowModel?>(null)
+    val appWindowSelection: AppWindowModel? by appWindowSelectionSource.hydratedStateOf()
 
     val toolbarViewModel = toolbarViewModelFactory.create()
 
@@ -134,6 +138,37 @@ constructor(
                 )
             }
         topTaskSource.value = task
+
+        if (task != null) {
+            appWindowSelectionSource.value = calculateVisibleArea(task)
+        } else {
+            appWindowSelectionSource.value = null
+        }
+    }
+
+    private fun calculateVisibleArea(
+        selectedTask: ActivityManager.RunningTaskInfo
+    ): AppWindowModel {
+        val selectedTaskIndex = runningTasks.indexOf(selectedTask)
+        val selectedTaskBounds = selectedTask.configuration.windowConfiguration.bounds
+        val overlappingBounds = mutableListOf<Rect>()
+
+        if (selectedTaskIndex > 0) {
+            for (i in 0 until selectedTaskIndex) {
+                val overlayingTask = runningTasks[i]
+                if (overlayingTask.isVisible) {
+                    val overlayingTaskBounds =
+                        overlayingTask.configuration.windowConfiguration.bounds
+                    if (Rect.intersects(selectedTaskBounds, overlayingTaskBounds)) {
+                        overlappingBounds.add(overlayingTaskBounds)
+                    }
+                }
+            }
+        }
+        return AppWindowModel(
+            taskBounds = selectedTaskBounds,
+            overlappingBounds = overlappingBounds,
+        )
     }
 
     fun updateRegionBoxBounds(bounds: Rect) {
@@ -152,7 +187,7 @@ constructor(
         when (captureRegionSource.value) {
             ScreenCaptureRegion.FULLSCREEN -> beginFullscreenScreenshot()
             ScreenCaptureRegion.PARTIAL -> beginPartialScreenshot()
-            ScreenCaptureRegion.APP_WINDOW -> topTask?.taskId?.let { beginAppWindowScreenshot(it) }
+            ScreenCaptureRegion.APP_WINDOW -> topTask?.let { beginAppWindowScreenshot(it.taskId) }
         }
     }
 
@@ -220,6 +255,7 @@ constructor(
         return activityTaskManager.getTasks(Integer.MAX_VALUE).filter {
             it.topActivity != null &&
                 it.isVisible &&
+                it.displayId == displayId &&
                 it.configuration.windowConfiguration.activityType ==
                     WindowConfiguration.ACTIVITY_TYPE_STANDARD
         }
@@ -229,7 +265,7 @@ constructor(
         when (captureRegionSource.value) {
             ScreenCaptureRegion.FULLSCREEN -> startFullscreenRecording()
             ScreenCaptureRegion.PARTIAL -> {}
-            ScreenCaptureRegion.APP_WINDOW -> topTask?.taskId?.let { startAppWindowRecording(it) }
+            ScreenCaptureRegion.APP_WINDOW -> topTask?.let { startAppWindowRecording(it.taskId) }
         }
     }
 

@@ -89,6 +89,8 @@ filegroup {
         ":ProxyHandler-aidl-sources",
         ":vcn-utils-platform-sources",
         ":net-utils-framework-common-srcs",
+        // Temporary dependencies during Telecom Mainline launch
+        ":telecom_mainline_deps_srcs",
 
         // AIDL from frameworks/base/native/
         ":platform-compat-native-aidl",
@@ -99,7 +101,7 @@ filegroup {
         ":android.hardware.biometrics.fingerprint-V5-java-source",
         ":android.hardware.biometrics.fingerprint.virtualhal-java-source",
         ":android.hardware.biometrics.face.virtualhal-java-source",
-        ":android.hardware.biometrics.face-V4-java-source",
+        ":android.hardware.biometrics.face-V5-java-source",
         ":android.hardware.gnss-V2-java-source",
         ":android.hardware.graphics.common-V3-java-source",
         ":android.hardware.keymaster-V4-java-source",
@@ -219,7 +221,7 @@ java_library {
         "android.hardware.contexthub-V1.0-java",
         "android.hardware.contexthub-V1.1-java",
         "android.hardware.contexthub-V1.2-java",
-        "android.hardware.contexthub-V4-java",
+        "android.hardware.contexthub-V5-java",
         "android.hardware.gnss-V1.0-java",
         "android.hardware.gnss-V2.1-java",
         "android.hardware.health-V1.0-java-constants",
@@ -343,6 +345,7 @@ java_defaults {
             "hardware/interfaces/biometrics/fingerprint/aidl",
             "hardware/interfaces/common/aidl",
             "hardware/interfaces/common/fmq/aidl",
+            "hardware/interfaces/contexthub/aidl",
             "hardware/interfaces/graphics/common/aidl",
             "hardware/interfaces/keymaster/aidl",
             "hardware/interfaces/power/aidl",

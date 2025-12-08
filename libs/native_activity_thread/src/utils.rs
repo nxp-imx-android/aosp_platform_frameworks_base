@@ -15,8 +15,10 @@
 
 use anyhow::{bail, Context, Result};
 use bitflags::bitflags;
-use libc::mallopt;
-use native_activity_thread_bindgen::tzset;
+use libc::{
+    dl_iterate_phdr, dl_phdr_info, mallopt, mprotect, size_t, PROT_EXEC, PROT_READ, PT_LOAD,
+};
+use native_activity_thread_bindgen::{tzset, PF_X};
 use nix::{
     errno::Errno,
     sys::resource::{getrlimit, setrlimit, Resource},
@@ -24,8 +26,9 @@ use nix::{
 };
 use rustutils::android::system_properties;
 
-use std::ffi::{c_int, c_ulong};
+use std::ffi::{c_int, c_ulong, c_void};
 use std::io::Error;
+use std::slice;
 
 const AID_APP_START: u32 = 10000;
 
@@ -38,14 +41,79 @@ pub fn reset_time_zone() {
     unsafe { tzset() };
 }
 
+#[allow(non_camel_case_types)]
+#[cfg(target_pointer_width = "64")]
+type ElfW_Phdr = libc::Elf64_Phdr;
+#[allow(non_camel_case_types)]
+#[cfg(target_pointer_width = "32")]
+type ElfW_Phdr = libc::Elf32_Phdr;
+
+/// A callback function for `dl_iterate_phdr` which changes XO regions to RX.
+///
+/// # Safety
+/// Callers must ensure that `info` is a valid pointer to `dl_phdr_info` which outlives this
+/// function and contains a shared object information.
+unsafe extern "C" fn disable_execute_only(
+    info: *mut dl_phdr_info,
+    _size: usize,
+    _data: *mut c_void,
+) -> c_int {
+    if info.is_null() {
+        return 0;
+    }
+
+    // SAFETY: `info` is a valid pointer which outlives this function and is aligned properly.
+    let info_ref = unsafe { &*info };
+
+    let phdr_ptr = info_ref.dlpi_phdr;
+    let phdr_count = info_ref.dlpi_phnum as usize;
+
+    // SAFETY: `phdr_ptr` points to a valid ElfW_Phdr array of `phdr_count` elements.
+    let program_headers: &[ElfW_Phdr] = unsafe { slice::from_raw_parts(phdr_ptr, phdr_count) };
+
+    // Search for any execute-only segments and mark them read+execute.
+    // This operation only affects RWX flags because of the implementation
+    // of mprotect, so other architectural flags (like PROT_BTI) will not be cleared.
+    for phdr in program_headers {
+        if phdr.p_type == PT_LOAD && phdr.p_flags == PF_X {
+            let addr = (info_ref.dlpi_addr + phdr.p_vaddr) as *mut c_void;
+            let len = phdr.p_memsz as size_t;
+
+            // SAFETY: Callers guarantee that `addr` is an address of a page-aligned memory region
+            // and `len` is the size of the region.
+            let ret = unsafe { mprotect(addr, len, PROT_READ | PROT_EXEC) };
+            if ret != 0 {
+                log::warn!("Failed to mprotect(): {}", Error::last_os_error());
+            }
+        }
+    }
+
+    0
+}
+
 bitflags! {
     /// Runtime flag constants.
     /// Must match values in com.android.internal.os.Zygote.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct RuntimeFlags: u32 {
         const DEBUG_ENABLE_JDWP = 1;
+        const DEBUG_ENABLE_CHECKJNI = 1 << 1;
+        const DEBUG_ENABLE_ASSERT = 1 << 2;
+        const DEBUG_ENABLE_SAFEMODE = 1 << 3;
+        const DEBUG_ENABLE_JNI_LOGGING = 1 << 4;
+        const DEBUG_GENERATE_DEBUG_INFO = 1 << 5;
+        const DEBUG_ALWAYS_JIT = 1 << 6;
+        const DEBUG_NATIVE_DEBUGGABLE = 1 << 7;
+        const DEBUG_JAVA_DEBUGGABLE = 1 << 8;
+        const DISABLE_VERIFIER = 1 << 9;
+        const ONLY_USE_SYSTEM_OAT_FILES = 1 << 10;
+        const DEBUG_GENERATE_MINI_DEBUG_INFO = 1 << 11;
+        const API_ENFORCEMENT_POLICY_MASK = (1 << 12) | (1 << 13);
         const PROFILE_SYSTEM_SERVER = 1 << 14;
         const PROFILE_FROM_SHELL = 1 << 15;
+        const USE_APP_IMAGE_STARTUP_CACHE = 1 << 16;
+        const DEBUG_IGNORE_APP_SIGNAL_HANDLER = 1 << 17;
+        const DISABLE_TEST_API_ENFORCEMENT_POLICY = 1 << 18;
         const MEMORY_TAG_LEVEL_MASK = (1 << 19) | (1 << 20);
         const MEMORY_TAG_LEVEL_TBI = 1 << 19;
         const MEMORY_TAG_LEVEL_ASYNC = 2 << 19;
@@ -59,6 +127,7 @@ bitflags! {
         const PROFILEABLE = 1 << 24;
         const DEBUG_ENABLE_PTRACE = 1 << 25;
         const ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26;
+        const ENABLE_EXECUTE_ONLY_MEMORY = 1 << 27;
     }
 }
 
@@ -83,15 +152,15 @@ impl RuntimeFlags {
     pub fn is_profileable_from_shell(&self) -> bool {
         self.contains(Self::PROFILE_FROM_SHELL)
     }
+
+    pub fn is_execute_only_memory_enabled(&self) -> bool {
+        self.contains(Self::ENABLE_EXECUTE_ONLY_MEMORY)
+    }
 }
 
-pub fn apply_runtime_flags(runtime_flags: u32) {
-    let flags = match RuntimeFlags::from_bits(runtime_flags) {
-        Some(flags) => flags,
-        None => {
-            log::warn!("runtime_flags doesn't have a valid representation: {}", runtime_flags);
-            return;
-        }
+pub fn apply_runtime_flags(runtime_flags: u32) -> Result<()> {
+    let Some(flags) = RuntimeFlags::from_bits(runtime_flags) else {
+        bail!("runtime_flags doesn't have a valid representation: {:#x}", runtime_flags);
     };
 
     // Set process properties to enable debugging if required.
@@ -123,6 +192,17 @@ pub fn apply_runtime_flags(runtime_flags: u32) {
             Error::last_os_error()
         );
     }
+
+    // If the app does not support execute-only memory, then iterate through
+    // the shared objects and mark them readable.
+    if cfg!(feature = "build_execute_only_memory") && !flags.is_execute_only_memory_enabled() {
+        // SAFETY: Passes a callback function which has the expected function signature. The
+        // callback doesn't use `data`. The libc runtime guarantees to meet the safety requirements
+        // of the callback.
+        unsafe { dl_iterate_phdr(Some(disable_execute_only), std::ptr::null_mut()) };
+    }
+
+    Ok(())
 }
 
 // Enum corresponding to SUID_DUMP_* defined in linux/sched/coredump.h.

@@ -366,20 +366,17 @@ public class RavenwoodErrorHandler {
 
             var stacks = Thread.getAllStackTraces();
             var threads = stacks.keySet().stream().sorted(
-                    Comparator.comparingLong(Thread::getId)).collect(Collectors.toList());
+                    Comparator.comparingLong(Thread::threadId)).collect(Collectors.toList());
 
             // Put the test and the main thread at the top.
-            var env = RavenwoodEnvironment.getInstance();
-            var testThread = env.getTestThread();
+            var testThread = RavenwoodAwareTestRunner.sTestThread;
             var mainThread = Looper.getMainLooper().getThread();
             if (mainThread != null) {
                 threads.remove(mainThread);
-                threads.add(0, mainThread);
+                threads.addFirst(mainThread);
             }
-            if (testThread != null) {
-                threads.remove(testThread);
-                threads.add(0, testThread);
-            }
+            threads.remove(testThread);
+            threads.addFirst(testThread);
             // Put the exception thread at the top.
             // Also inject the stacktrace from the exception.
             if (exceptionThread != null) {

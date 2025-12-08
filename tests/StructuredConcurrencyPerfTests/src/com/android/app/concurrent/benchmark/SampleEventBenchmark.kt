@@ -44,7 +44,7 @@ private sealed interface SampleEventBenchmark<T, E : Any>
     val context: T
 
     /**
-     * Tests the performance of System UI's [sample] operator, which is used to snapshot a flow's
+     * Tests the performance of System UI's `sample` operator, which is used to snapshot a flow's
      * value based on a trigger.
      */
     @Test
@@ -104,7 +104,7 @@ class SimpleSampleEventBenchmark(param: ThreadBuilder<Executor>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorBuilder)
     }
 }
 
@@ -120,6 +120,6 @@ class FlowSampleEventBenchmark(param: ThreadBuilder<CoroutineScope>) :
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
+        fun getParameters() = listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder)
     }
 }

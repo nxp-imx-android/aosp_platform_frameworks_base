@@ -484,7 +484,8 @@ public class ShortcutService extends IShortcutService.Stub {
         }
     }
 
-    private final PackageMonitor myPackageMonitor = new PackageMonitor() {
+    @VisibleForTesting
+    final PackageMonitor myPackageMonitor = new PackageMonitor() {
         @Override
         public void onPackageAppLockEnabled(String packageName) {
             if(android.content.pm.Flags.appLockShortcutRemoval()) {

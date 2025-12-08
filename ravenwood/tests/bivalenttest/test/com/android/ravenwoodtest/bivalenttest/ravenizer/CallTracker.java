@@ -51,6 +51,13 @@ public class CallTracker {
     }
 
     /**
+     * Reset the call tracker.
+     */
+    public void reset() {
+        mNumCalled.clear();
+    }
+
+    /**
      * Return the current method name. (with the class name.)
      */
     private static String getCallingMethodName(int frameOffset) {

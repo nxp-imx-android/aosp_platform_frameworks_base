@@ -23,7 +23,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import com.android.systemui.brightness.domain.interactor.BrightnessPolicyEnforcementInteractor
 import com.android.systemui.brightness.domain.interactor.ScreenBrightnessInteractor
-import com.android.systemui.brightness.shared.model.GammaBrightness
+import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.common.shared.model.Icon

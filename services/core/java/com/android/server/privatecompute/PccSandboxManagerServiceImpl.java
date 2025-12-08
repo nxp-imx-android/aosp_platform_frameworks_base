@@ -16,39 +16,19 @@
 
 package com.android.server.privatecompute;
 
-import com.android.internal.annotations.GuardedBy;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccSandboxManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Environment;
 import android.os.PersistableBundle;
 import android.os.Process;
 
-import android.util.Log;
-import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.GuardedBy;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.nio.file.StandardOpenOption;
-import java.util.function.Supplier;
 
 /**
  * Implementation of the {@link IPccSandboxManager} binder service.
@@ -64,9 +44,14 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private @Nullable AuditModeContext mAuditModeContext = null;
 
     private final Object mAuditModeLock = new Object();
+    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
 
     public PccSandboxManagerServiceImpl(Context context) {
         mContext = context;
+    }
+
+    public ExecutorService getExecutorService() {
+        return mExecutorService;
     }
 
     @Override

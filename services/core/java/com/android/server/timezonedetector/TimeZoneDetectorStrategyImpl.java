@@ -51,6 +51,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ConfigurationInternal.DetectionMode;
+import com.android.server.timezonedetector.TimeZoneOffsetChangeListener.TimeZoneOffsetChangeEvent;
 import com.android.server.timezonedetector.FusedTimeZoneDetector.TimeZoneSetter;
 
 import java.time.Duration;
@@ -175,6 +176,8 @@ public final class TimeZoneDetectorStrategyImpl
     /** A component that provides time zone suggestions based on various sources. */
     @NonNull private final FusedTimeZoneDetector mFusedTimeZoneDetector;
 
+    @Nullable private final TimeZoneOffsetChangeListener mTimeZoneOffsetChangeListener;
+
     /**
      * A snapshot of the current detector status. A local copy is cached because it is relatively
      * heavyweight to obtain and is used more often than it is expected to change.
@@ -221,8 +224,15 @@ public final class TimeZoneDetectorStrategyImpl
                         environment);
         FusedTimeZoneDetector fusedTimeZoneDetector =
                 FusedTimeZoneDetectorImpl.create(context, serviceConfigAccessor, handler);
+        TimeZoneOffsetChangeListener timeZoneOffsetChangeListener =
+                NotifyingTimeZoneOffsetChangeListener.create(context, serviceConfigAccessor);
+
         return new TimeZoneDetectorStrategyImpl(
-                serviceConfigAccessor, environment, changeEventTracker, fusedTimeZoneDetector);
+                serviceConfigAccessor,
+                environment,
+                changeEventTracker,
+                fusedTimeZoneDetector,
+                timeZoneOffsetChangeListener);
     }
 
     @VisibleForTesting
@@ -230,13 +240,20 @@ public final class TimeZoneDetectorStrategyImpl
             @NonNull ServiceConfigAccessor serviceConfigAccessor,
             @NonNull Environment environment,
             @NonNull TimeZoneChangeListener changeEventTracker,
-            @NonNull FusedTimeZoneDetector fusedTimeZoneDetector) {
+            @NonNull FusedTimeZoneDetector fusedTimeZoneDetector,
+            @NonNull TimeZoneOffsetChangeListener timeZoneOffsetChangeListener) {
         mEnvironment = Objects.requireNonNull(environment);
         mServiceConfigAccessor = Objects.requireNonNull(serviceConfigAccessor);
         mChangeTracker = Objects.requireNonNull(changeEventTracker);
 
         mFusedTimeZoneDetector = Objects.requireNonNull(fusedTimeZoneDetector);
         mFusedTimeZoneDetector.setTimeZoneSetter(this);
+
+        if (ExperimentHelper.isTimeZoneOffsetChangeNotificationEnabled()) {
+            mTimeZoneOffsetChangeListener = Objects.requireNonNull(timeZoneOffsetChangeListener);
+        } else {
+            mTimeZoneOffsetChangeListener = null;
+        }
 
         // Start with telephony fallback enabled.
         mTelephonyTimeZoneFallbackEnabled =
@@ -975,6 +992,13 @@ public final class TimeZoneDetectorStrategyImpl
 
         if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
             mFusedTimeZoneDetector.dump(ipw, args);
+        }
+
+        if (ExperimentHelper.isTimeZoneOffsetChangeNotificationEnabled()) {
+            ipw.println("Time zone offset change notifier:");
+            ipw.increaseIndent(); // level 2
+            mTimeZoneOffsetChangeListener.dump(ipw);
+            ipw.decreaseIndent(); // level 2
         }
 
         ipw.decreaseIndent(); // level 1

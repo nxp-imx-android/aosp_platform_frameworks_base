@@ -19,6 +19,7 @@ package com.android.internal.accessibility.dialog;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.view.View;
 
@@ -28,17 +29,28 @@ import com.android.internal.accessibility.common.ShortcutConstants.ShortcutMenuM
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 import com.android.internal.accessibility.dialog.TargetAdapter.ViewHolder;
 
-/**
- * Extension for {@link AccessibilityTarget} with {@link AccessibilityFragmentType#TOGGLE}
- * type.
- */
+/** Extension for {@link AccessibilityTarget} with {@link AccessibilityFragmentType#TOGGLE} type. */
 class ToggleAllowListingFeatureTarget extends AccessibilityTarget {
 
-    ToggleAllowListingFeatureTarget(Context context, @UserShortcutType int shortcutType,
-            boolean isShortcutSwitched, String id, int uid, CharSequence label, Drawable icon,
+    ToggleAllowListingFeatureTarget(
+            Context context,
+            @UserShortcutType int shortcutType,
+            boolean isShortcutSwitched,
+            String id,
+            int uid,
+            CharSequence label,
+            Drawable icon,
             String key) {
-        super(context, shortcutType, AccessibilityFragmentType.TOGGLE, isShortcutSwitched, id,
-                uid, label, icon, key);
+        super(
+                context,
+                shortcutType,
+                AccessibilityFragmentType.TOGGLE,
+                isShortcutSwitched,
+                id,
+                uid,
+                label,
+                icon,
+                key);
 
         final boolean isStateOn = isFeatureEnabled();
         final int statusResId =
@@ -50,12 +62,11 @@ class ToggleAllowListingFeatureTarget extends AccessibilityTarget {
     }
 
     @Override
-    public void updateActionItem(@NonNull ViewHolder holder,
-            @ShortcutMenuMode int shortcutMenuMode) {
+    public void updateActionItem(
+            @NonNull ViewHolder holder, @ShortcutMenuMode int shortcutMenuMode) {
         super.updateActionItem(holder, shortcutMenuMode);
 
-        final boolean isEditMenuMode =
-                shortcutMenuMode == ShortcutMenuMode.EDIT;
+        final boolean isEditMenuMode = shortcutMenuMode == ShortcutMenuMode.EDIT;
         holder.mStatusView.setVisibility(isEditMenuMode ? View.GONE : View.VISIBLE);
         holder.mStatusView.setText(getStateDescription());
     }
@@ -66,7 +77,13 @@ class ToggleAllowListingFeatureTarget extends AccessibilityTarget {
     }
 
     private boolean isFeatureEnabled() {
-        return Settings.Secure.getInt(getContext().getContentResolver(),
-                getKey(), /* settingsValueOff */ 0) == /* settingsValueOn */ 1;
+        // Check for value greater than 0 to handle settings like bounce keys and slow keys, where
+        // the setting value also represents the time delay.
+        return Settings.Secure.getIntForUser(
+                        getContext().getContentResolver(),
+                        getKey(),
+                        /* settingsValueOff */ 0,
+                        UserHandle.USER_CURRENT)
+                > 0;
     }
 }

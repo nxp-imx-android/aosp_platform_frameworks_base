@@ -2190,7 +2190,7 @@
     <!-- Message shown during face acquisition when only the left part of the user's face was detected [CHAR LIMIT=50] -->
     <string name="face_acquired_too_left">Move phone to your right</string>
     <!-- Message shown during face acquisition when the user is not front facing the sensor [CHAR LIMIT=50] -->
-    <string name="face_acquired_poor_gaze">Please look more directly at your device.</string>
+    <string name="face_acquired_poor_gaze">Look more directly at your camera</string>
     <!-- Message shown during face acquisition when the user is not detected [CHAR LIMIT=75] -->
     <string name="face_acquired_not_detected">Can\u2019t see your face. Hold your phone at eye level.</string>
     <!-- Message shown during face acquisition when the device is not steady [CHAR LIMIT=50] -->
@@ -3993,6 +3993,14 @@
     <string name="time_zone_change_notification_title">Your time zone changed</string>
     <!-- Body for time zone change notifications -->
     <string name="time_zone_change_notification_body">You\'re now in <xliff:g id="time_zone_display_name">%1$s</xliff:g> (<xliff:g id="time_zone_offset">%2$s</xliff:g>)</string>
+
+     <!-- Title for the notification shown when the daylight saving time changes. [CHAR LIMIT=50] -->
+    <string name="time_zone_offset_change_notification_title">Clock change</string>
+    <!-- Body for the notification shown when the daylight saving time changes and clocks move forward. [CHAR LIMIT=100] -->
+    <string name="time_zone_offset_change_notification_body_forward">Clocks moved forward <xliff:g id="time_zone_offset_duration" example="1h">%1$s</xliff:g>. You\'re now in <xliff:g id="time_zone_display_name">%2$s</xliff:g> (<xliff:g id="time_zone_offset">%3$s</xliff:g>).</string>
+    <!-- Body for the notification shown when the daylight saving time changes and clocks move backward. [CHAR LIMIT=100] -->
+    <string name="time_zone_offset_change_notification_body_backward">Clocks moved backward <xliff:g id="time_zone_offset_duration" example="1h">%1$s</xliff:g>. You\'re now in <xliff:g id="time_zone_display_name">%2$s</xliff:g> (<xliff:g id="time_zone_offset">%3$s</xliff:g>).</string>
+
 
     <!-- Date/Time picker dialogs strings -->
 

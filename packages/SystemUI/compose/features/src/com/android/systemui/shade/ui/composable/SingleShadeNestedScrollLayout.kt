@@ -24,10 +24,12 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.offset
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
@@ -79,11 +82,14 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     shadeSession: SaveableSession,
     viewModel: NotificationsPlaceholderViewModel,
     scrollState: ScrollState,
-    scrimOverScrollEffect: OffsetOverscrollEffect,
     jankMonitor: InteractionJankMonitor,
     statusBarHeader: @Composable () -> Unit,
     mediaAndQqsHeader: @Composable () -> Unit,
-    scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
+    scrollableScrim:
+        @Composable
+        (
+            onContentHeightChanged: (Int) -> Unit, scrimOverScrollEffect: OffsetOverscrollEffect,
+        ) -> Unit,
     cutoutInsetsProvider: () -> WindowInsets?,
 ) {
     val coroutineScope = shadeSession.sessionCoroutineScope(key = "SingleShadeNestedScrollLayout")
@@ -104,33 +110,54 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     // The height in px of the contents of the scrollable content.
     val contentHeight =
         shadeSession.rememberSession(key = "ScrimContentHeight") { mutableIntStateOf(0) }
-    // whether the stack is moving due to a swipe or fling
-    val isScrollInProgress =
-        scrollState.isScrollInProgress ||
-            scrimOverScrollEffect.isInProgress ||
-            scrimOffset.isRunning
-    LaunchedEffectWithLifecycle(isScrollInProgress) {
-        if (isScrollInProgress) {
-            jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
-            debugLog(viewModel) { "STACK scroll begins" }
-        } else {
-            debugLog(viewModel) { "STACK scroll ends" }
-            jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+
+    /** Is the content taller than the scrim at rest (when QQS, Media can be fully visible). */
+    val isContentTallerThanScrimAtRest by
+        remember(minScrimHeight, contentHeight) {
+            derivedStateOf { minScrimHeight.intValue < contentHeight.intValue }
         }
-    }
-    val shadeScrollState by
-        shadeSession.rememberSession(key = "SingleShadeScrollState") {
-            derivedStateOf {
-                ShadeScrollState(
-                    // we are not scrolled to the top unless the scroll position is zero,
-                    // and the scrim is at its maximum offset
-                    isScrolledToTop = scrimOffset.value >= 0f && scrollState.value == 0,
-                    scrollPosition = scrollState.value,
-                    maxScrollPosition = scrollState.maxValue,
-                )
+
+    val scrimOverscrollEffect =
+        rememberOffsetOverscrollEffect(
+            maxDistance =
+                if (isContentTallerThanScrimAtRest) OffsetOverscrollEffect.DefaultMaxDistance
+                else OffsetOverscrollEffect.ShortMaxDistance
+        )
+
+    // Some scenes or overlays that use this Composable may be using alwaysCompose=true which will
+    // cause them to compose everything but not be visible. Because these side effects push UI state
+    // upstream to observers which are shared between callers of this composable, invisible
+    // components could pollute the shared state with incorrect values. The cleanest way to prevent
+    // this is to remove these side effects when the content is not visible.
+    if (isAlwaysComposedContentVisible()) {
+        // whether the stack is moving due to a swipe or fling
+        val isScrollInProgress =
+            scrollState.isScrollInProgress ||
+                scrimOverscrollEffect.isInProgress ||
+                scrimOffset.isRunning
+        LaunchedEffect(isScrollInProgress) {
+            if (isScrollInProgress) {
+                jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+                debugLog(viewModel) { "STACK scroll begins" }
+            } else {
+                debugLog(viewModel) { "STACK scroll ends" }
+                jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
             }
         }
-    LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+        val shadeScrollState by
+            shadeSession.rememberSession(key = "SingleShadeScrollState") {
+                derivedStateOf {
+                    ShadeScrollState(
+                        // we are not scrolled to the top unless the scroll position is zero,
+                        // and the scrim is at its maximum offset
+                        isScrolledToTop = scrimOffset.value >= 0f && scrollState.value == 0,
+                        scrollPosition = scrollState.value,
+                        maxScrollPosition = scrollState.maxValue,
+                    )
+                }
+            }
+        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+    }
 
     val isContentOverscrolledOnTop by
         remember(scrollState) {
@@ -140,16 +167,13 @@ fun ContentScope.SingleShadeNestedScrollLayout(
             }
         }
 
-    /** Is the content taller than the scrim at rest (when QQS, Media can be fully visible). */
-    fun isContentTallerThanScrimAtRest(): Boolean {
-        return minScrimHeight.intValue < contentHeight.intValue
-    }
     // If contentHeight drops below minimum visible scrim height while scrim is
     // expanded and IME is not showing, reset scrim offset.
     LaunchedEffectWithLifecycle(contentHeight, minScrimHeight, scrimOffset) {
         snapshotFlow { contentHeight.intValue < minScrimHeight.intValue && scrimOffset.value < 0f }
             .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.snapTo(0f) }
     }
+    var scrimHeight by remember { mutableIntStateOf(0) }
     Layout(
         modifier = modifier,
         contents =
@@ -194,23 +218,25 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                                         collapsibleHeaderHeight = {
                                             overlappableHeaderHeight.intValue.toFloat()
                                         },
-                                        canOverscrollContent = { isContentTallerThanScrimAtRest() },
+                                        canOverscrollContent = { isContentTallerThanScrimAtRest },
                                         flingBehavior = flingBehavior,
                                     )
                                 }
                             )
                     ) {
-                        scrollableScrim { contentHeight.intValue = it }
+                        scrollableScrim({ contentHeight.intValue = it }, scrimOverscrollEffect)
                     }
                 },
             ),
-    ) { measurables, constraints ->
+    ) { measurables, layoutConstraints ->
         check(measurables.size == 3)
         check(measurables[0].size == 1) { "headers compose only top-level composable" }
         check(measurables[1].size == 1) { "headers should compose only top-level composable" }
         check(measurables[2].size == 1) { "content should compose only top-level composable" }
 
         val cutoutInsets: WindowInsets? = cutoutInsetsProvider()
+        // Don't propagate min constraints to children, to allow them to be smaller if they want to.
+        val constraints = layoutConstraints.copyMaxDimensions()
         val constraintsWithCutout = applyCutout(constraints, cutoutInsets)
         val insetsLeft = cutoutInsets?.getLeft(this, layoutDirection) ?: 0
         val insetsTop = cutoutInsets?.getTop(this) ?: 0
@@ -224,13 +250,16 @@ fun ContentScope.SingleShadeNestedScrollLayout(
 
         // Reduce the Scrim's height so it only fills the visible space, when we offset it down.
         val layoutBottom = constraints.maxHeight
-        val constrainedScrimHeight = constraints.constrainHeight(layoutBottom - totalScrimOffset)
+
+        if (isLookingAhead) {
+            // Calculate height only in the lookahead pass (the idle state) to prevent the scrim
+            // from resizing during animations.
+            scrimHeight = constraints.constrainHeight(layoutBottom - totalScrimOffset)
+        }
+
         val scrim =
             measurables[2][0].measure(
-                constraints.copy(
-                    minHeight = constrainedScrimHeight,
-                    maxHeight = constrainedScrimHeight,
-                )
+                constraints.copy(minHeight = scrimHeight, maxHeight = scrimHeight)
             )
 
         // Update the last height of the header.
@@ -242,9 +271,6 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         layout(
             width = maxOf(alwaysVisibleHeader.width, overlappableHeader.width, scrim.width),
             height = layoutBottom,
-            rulers = {
-                Shade.Rulers.SingleShadeNestedScrollLayoutBottom provides layoutBottom.toFloat()
-            },
         ) {
             alwaysVisibleHeader.place(insetsLeft, insetsTop)
             overlappableHeader.place(insetsLeft, insetsTop + alwaysVisibleHeader.height)

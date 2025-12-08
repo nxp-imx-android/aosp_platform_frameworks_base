@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.types
 
 /** Any int in the given range, along the given step. */
-class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiFirstType
+class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiFirstType<Int>

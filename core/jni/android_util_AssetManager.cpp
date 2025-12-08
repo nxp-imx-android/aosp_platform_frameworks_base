@@ -1121,7 +1121,7 @@ static jobject ConstructConfigurationObject(JNIEnv* env, const ResTable_config& 
   return result;
 }
 
-static jobjectArray NativeGetResourceConfigurations(JNIEnv* env, jlong ptr) {
+static jobjectArray NativeGetResourceConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
   auto assetmanager = LockAndStartAssetManager(ptr);
   auto configurations = assetmanager->GetResourceConfigurations(true /*exclude_system*/,
                                                                 false /*exclude_mipmap*/);
@@ -1146,14 +1146,6 @@ static jobjectArray NativeGetResourceConfigurations(JNIEnv* env, jlong ptr) {
     env->DeleteLocalRef(java_configuration);
   }
   return array;
-}
-
-static jobjectArray NativeGetSizeConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-  return NativeGetResourceConfigurations(env, ptr);
-}
-
-static jobjectArray NativeGetSizeAndUiModeConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-  return NativeGetResourceConfigurations(env, ptr);
 }
 
 static jintArray NativeAttributeResolutionStack(JNIEnv* env, jclass /*clazz*/, jlong ptr,
@@ -1616,10 +1608,6 @@ static const JNINativeMethod gAssetManagerMethods[] = {
         {"nativeGetLastResourceResolution", "(J)Ljava/lang/String;",
          (void*)NativeGetLastResourceResolution},
         {"nativeGetLocales", "(JZ)[Ljava/lang/String;", (void*)NativeGetLocales},
-        {"nativeGetSizeConfigurations", "(J)[Landroid/content/res/Configuration;",
-         (void*)NativeGetSizeConfigurations},
-        {"nativeGetSizeAndUiModeConfigurations", "(J)[Landroid/content/res/Configuration;",
-         (void*)NativeGetSizeAndUiModeConfigurations},
         {"nativeGetResourceConfigurations", "(J)[Landroid/content/res/Configuration;",
          (void*)NativeGetResourceConfigurations},
 

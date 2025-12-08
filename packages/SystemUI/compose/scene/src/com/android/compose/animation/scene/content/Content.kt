@@ -105,7 +105,19 @@ internal sealed class Content(
     val alwaysCompose: Boolean,
 ) {
     private val nestedScrollControlState = NestedScrollControlState()
-    internal val scope = ContentScopeImpl(layoutImpl, content = this, nestedScrollControlState)
+
+    internal val scope =
+        ContentScopeImpl(
+            layoutImpl = layoutImpl,
+            content = this,
+            nestedScrollControlStates =
+                // This ensures that if a child requests to disable swiping, the entire hierarchy
+                // respects it.
+                layoutImpl.ancestors.fastMap {
+                    it.layoutImpl.content(it.inContent).nestedScrollControlState
+                } + nestedScrollControlState,
+        )
+
     val containerState = ContainerState()
 
     // Important: All fields in this class should be backed by State given that contents are updated
@@ -297,7 +309,7 @@ internal class ContentEffects(factory: OverscrollFactory) {
 internal class ContentScopeImpl(
     private val layoutImpl: SceneTransitionLayoutImpl,
     private val content: Content,
-    private val nestedScrollControlState: NestedScrollControlState,
+    private val nestedScrollControlStates: List<NestedScrollControlState>,
 ) : InternalContentScope, ElementStateScope by layoutImpl.elementStateScope {
     override val contentKey: ContentKey
         get() = content.key
@@ -371,16 +383,17 @@ internal class ContentScopeImpl(
     }
 
     override fun Modifier.disableSwipesWhenScrolling(bounds: NestedScrollableBound): Modifier {
-        return nestedScrollController(nestedScrollControlState, bounds)
+        return nestedScrollController(nestedScrollControlStates, bounds)
     }
 
     @Composable
     override fun NestedSceneTransitionLayout(
         state: SceneTransitionLayoutState,
         modifier: Modifier,
+        debugName: String,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     ) {
-        NestedSceneTransitionLayoutForTesting(state, modifier, null, builder)
+        NestedSceneTransitionLayoutForTesting(state, modifier, null, debugName, builder)
     }
 
     @Composable
@@ -388,6 +401,7 @@ internal class ContentScopeImpl(
         state: SceneTransitionLayoutState,
         modifier: Modifier,
         onLayoutImpl: ((SceneTransitionLayoutImpl) -> Unit)?,
+        debugName: String,
         builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
     ) {
         val ancestors =
@@ -402,6 +416,7 @@ internal class ContentScopeImpl(
             sharedElementMap = layoutImpl.elements,
             ancestors = ancestors,
             lookaheadScope = layoutImpl.lookaheadScope,
+            debugName = debugName,
             implicitTestTags = layoutImpl.implicitTestTags,
         )
     }

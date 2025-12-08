@@ -91,7 +91,7 @@ constructor(
             displayId,
             result.mImeWindowVis,
             result.mImeBackDisposition,
-            result.mShowImeSwitcher,
+            result.mShowImeSwitcherButton,
         )
 
         // set the initial view visibility

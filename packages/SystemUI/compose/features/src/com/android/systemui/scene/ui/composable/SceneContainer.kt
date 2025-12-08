@@ -31,7 +31,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -44,7 +43,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowInsetsCompat
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
@@ -64,7 +62,6 @@ import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.OverlayShade
@@ -186,9 +183,8 @@ fun SceneContainer(
         remember {
             mutableStateMapOf()
         }
-    val windowInsetsController = view.windowInsetsController
-    var lastNavigationBarVisibleRequest: Boolean? by remember { mutableStateOf(null) }
-    LaunchedEffect(actionableContentKey) {
+    val aodOrDozing = viewModel.isAodOrDozing
+    LaunchedEffect(actionableContentKey, aodOrDozing, state.currentScene) {
         try {
             val actionableContent: ActionableContent =
                 checkNotNull(
@@ -199,17 +195,12 @@ fun SceneContainer(
             viewModel.filteredUserActions(actionableContent.userActions).collect { userActions ->
                 userActionsByContentKey[actionableContentKey] =
                     viewModel.resolveSceneFamilies(userActions)
-
-                val isNavigationBarVisible =
-                    userActions.containsKey(Back) || actionableContentKey == Scenes.Gone
-                if (isNavigationBarVisible != lastNavigationBarVisibleRequest) {
-                    lastNavigationBarVisibleRequest = isNavigationBarVisible
-                    if (isNavigationBarVisible) {
-                        windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
-                    } else {
-                        windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
-                    }
-                }
+                viewModel.updateNavigationBarVisibility(
+                    windowInsetsController = view.windowInsetsController,
+                    hasBackAction = userActions.containsKey(Back),
+                    sceneKey = state.currentScene,
+                    aodOrDozing = aodOrDozing,
+                )
             }
         } finally {
             userActionsByContentKey[actionableContentKey] = emptyMap()
@@ -244,6 +235,7 @@ fun SceneContainer(
             swipeSourceDetector = viewModel.swipeSourceDetector,
             swipeDetector =
                 remember { PassthroughSwipeDetector(velocityThreshold = swipeVelocityThreshold) },
+            debugName = "SceneContainer",
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
                 scene(

@@ -17,6 +17,8 @@
 package com.android.wm.shell.dagger.pinnedlayer
 
 import android.content.Context
+import android.view.SurfaceControl
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
@@ -28,6 +30,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPermissionObserver
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
+import com.android.wm.shell.pinnedlayer.phone.PinnedWindowRepositionAnimationHandler
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -73,17 +76,22 @@ object PinnedLayerModule {
         displayController: DisplayController,
         desktopState: DesktopState,
         windowDragTransitionHandler: WindowDragTransitionHandler,
+        windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
         transactionPool: TransactionPool,
+        rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                 PinnedLayerController(
                     shellInit = shellInit,
                     transitions = transitions,
+                    taskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
                     presentationController =
                         PinnedLayerPresentationController(context, displayController, desktopState),
                     windowDragTransitionHandler = windowDragTransitionHandler,
+                    windowRepositionAnimationHandler = windowRepositionAnimationHandler,
                     transactionPool = transactionPool,
+                    desktopState = desktopState,
                 )
             )
         }
@@ -104,4 +112,15 @@ object PinnedLayerModule {
                 pinnedLayerController = controller,
             )
         }
+
+    @WMSingleton
+    @Provides
+    fun providePinnedWindowRepositionAnimationHandler(
+        transitions: Transitions
+    ): PinnedWindowRepositionAnimationHandler {
+        return PinnedWindowRepositionAnimationHandler(
+            transitions = transitions,
+            transactionFactory = { SurfaceControl.Transaction() },
+        )
+    }
 }

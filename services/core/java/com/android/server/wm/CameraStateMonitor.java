@@ -15,7 +15,7 @@
  */
 package com.android.server.wm;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
@@ -137,9 +137,9 @@ class CameraStateMonitor {
         // delaying orientation update to accommodate for that.
         // If an activity is restarting or camera is flipping, the camera connection can be
         // quickly closed and reopened.
-        ProtoLog.v(WM_DEBUG_STATES,
-                "Display id=%d is notified that Camera %s is open for package %s",
-                mDisplayContent.mDisplayId, cameraId, packageName);
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                "%s: Display id=%d is notified that Camera %s is open for package %s",
+                TAG, mDisplayContent.mDisplayId, cameraId, packageName);
         final CameraAppInfo cameraAppInfo = mAppCompatCameraStateStrategy.trackOnCameraOpened(
                 cameraId, packageName);
         mHandler.postDelayed(() -> {
@@ -160,9 +160,9 @@ class CameraStateMonitor {
      * and when an activity is refreshed due to camera compat treatment.
      */
     private void notifyCameraClosedWithDelay(@NonNull String cameraId) {
-        ProtoLog.v(WM_DEBUG_STATES,
-                "Display id=%d is notified that Camera %s is closed.",
-                mDisplayContent.mDisplayId, cameraId);
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
+                "%s: Display id=%d is notified that Camera %s is closed.",
+                TAG, mDisplayContent.mDisplayId, cameraId);
         scheduleRemoveCameraId(cameraId);
     }
 

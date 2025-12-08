@@ -149,6 +149,7 @@ class DraggableHandlerTest {
                     animationScope = testScope,
                     directionChangeSlop = directionChangeSlop,
                     defaultEffectFactory = defaultEffectFactory,
+                    debugName = "NestedStl",
                 )
                 .apply { setContentsAndLayoutTargetSizeForTest(LAYOUT_SIZE) }
 

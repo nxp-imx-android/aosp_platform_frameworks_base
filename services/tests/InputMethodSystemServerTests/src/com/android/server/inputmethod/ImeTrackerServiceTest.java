@@ -151,7 +151,7 @@ public class ImeTrackerServiceTest {
         final var token = new ImeTracker.Token(id, tag);
         final int uid = 20;
         final int type = ImeTracker.TYPE_SHOW;
-        final int origin = ImeTracker.ORIGIN_WM_SHELL;
+        final int origin = ImeTracker.ORIGIN_SHELL;
         final int reason = SoftInputShowHideReason.SHOW_AUTO_EDITOR_FORWARD_NAV;
         final boolean fromUser = false;
         final int userId = 10;
