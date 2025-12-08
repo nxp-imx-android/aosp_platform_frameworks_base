@@ -41,16 +41,6 @@ flag {
 }
 
 flag {
-    name: "floating_menu_update_on_feature_enabled"
-    namespace: "accessibility"
-    description: "Adds tracking for multiple features that can be toggled by FAB but are not services."
-    bug: "422639727"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "hearing_devices_dialog_related_tools"
     namespace: "accessibility"
     description: "Shows the related tools for hearing devices dialog."
