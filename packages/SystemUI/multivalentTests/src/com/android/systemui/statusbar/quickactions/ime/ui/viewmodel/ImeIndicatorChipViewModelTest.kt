@@ -45,7 +45,11 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
     private val fakeInputMethodRepository = kosmos.fakeInputMethodRepository
     private val Kosmos.underTest by
-        Kosmos.Fixture { imeIndicatorChipViewModelFactory.create().apply { activateIn(testScope) } }
+        Kosmos.Fixture {
+            imeIndicatorChipViewModelFactory.create(Display.DEFAULT_DISPLAY).apply {
+                activateIn(testScope)
+            }
+        }
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
@@ -87,7 +91,6 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
             shownChip.showPopup()
             testScope.runCurrent()
 
-            // TODO(b/458557860): Should be shown on the display containing the chip.
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
                 .isEqualTo(Display.DEFAULT_DISPLAY)
         }

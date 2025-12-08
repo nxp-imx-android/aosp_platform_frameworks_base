@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
@@ -81,11 +80,11 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun showInputMethodPicker_showsPicker() =
         kosmos.runTest {
-            underTest.showInputMethodPicker()
+            val displayId = 1
+            underTest.showInputMethodPicker(displayId)
             testScope.runCurrent()
 
-            // TODO(b/458557860): Should be shown on the display containing the chip.
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
-                .isEqualTo(Display.DEFAULT_DISPLAY)
+                .isEqualTo(displayId)
         }
 }

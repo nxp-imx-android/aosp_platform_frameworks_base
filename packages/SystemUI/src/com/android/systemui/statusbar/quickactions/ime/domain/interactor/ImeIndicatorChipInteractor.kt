@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
-import android.view.Display
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -66,11 +65,10 @@ constructor(
                 initialValue = ImeIndicatorChipModel(isFeatureEnabled, selectedSubtype = null),
             )
 
-    fun showInputMethodPicker() {
-        // TODO(b/458557860): Show on the display containing the chip.
+    fun showInputMethodPicker(displayId: Int) {
         scope.launch {
             inputMethodRepository.showInputMethodPicker(
-                displayId = Display.DEFAULT_DISPLAY,
+                displayId = displayId,
                 showAuxiliarySubtypes = true,
             )
         }

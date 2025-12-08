@@ -302,7 +302,9 @@ constructor(
     val logger = loggerFactory.getOrCreate(logBufferName(thisDisplayId), 60)
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
 
-    private val statusBarPopupChips by lazy { statusBarPopupChipsViewModelFactory.create() }
+    private val statusBarPopupChips by lazy {
+        statusBarPopupChipsViewModelFactory.create(thisDisplayId)
+    }
 
     override val isTransitioningFromLockscreenToOccluded: StateFlow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
