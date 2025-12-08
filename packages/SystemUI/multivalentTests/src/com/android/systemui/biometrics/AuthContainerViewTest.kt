@@ -580,6 +580,17 @@ open class AuthContainerViewTest : SysuiTestCase() {
         verify(callback).onTryAgainPressed(authContainer?.requestId ?: 0L)
     }
 
+    @Test
+    fun testDelayedFingerprintStartWhenFaceFastFails() {
+        val container = initializeCoexContainer(addToView = false)
+
+        container.onAuthenticationFailed(BiometricAuthenticator.TYPE_FACE, "failed")
+
+        container.addToView()
+
+        verify(callback).onDialogAnimatedIn(authContainer?.requestId ?: 0L, true)
+    }
+
     private fun initializeCredentialPasswordContainer(
         addToView: Boolean = true
     ): TestAuthContainerView {

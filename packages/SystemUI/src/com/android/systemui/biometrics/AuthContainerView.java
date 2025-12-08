@@ -818,7 +818,8 @@ public class AuthContainerView extends LinearLayout
         }
         mContainerState = STATE_SHOWING;
         if (mBiometricView != null) {
-            final boolean delayFingerprint = mBiometricView.isCoex() && !mConfig.mRequireConfirmation;
+            final boolean delayFingerprint = mBiometricView.isCoex()
+                    && !mConfig.mRequireConfirmation && mBiometricView.isFingerprintPending();
             mConfig.mCallback.onDialogAnimatedIn(getRequestId(), !delayFingerprint);
             mBiometricView.onDialogAnimatedIn(!delayFingerprint);
         }

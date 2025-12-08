@@ -764,6 +764,9 @@ class Spaghetti(
     fun isFaceOnly() = modalities.hasFaceOnly
 
     fun asView() = view
+
+    fun isFingerprintPending() =
+        viewModel.fingerprintStartMode.value == FingerprintStartMode.Pending
 }
 
 private fun BiometricModalities.asDefaultHelpMessage(context: Context): String =
