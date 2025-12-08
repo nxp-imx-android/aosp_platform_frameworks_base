@@ -11336,6 +11336,15 @@ public class Notification implements Parcelable
         }
 
         /**
+         * Clears the current lines.
+         * @hide
+         */
+        public InboxStyle clearLines() {
+            mTexts.clear();
+            return this;
+        }
+
+        /**
          * @hide
          */
         public ArrayList<CharSequence> getLines() {
