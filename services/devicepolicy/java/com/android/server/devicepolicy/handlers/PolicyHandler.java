@@ -31,15 +31,14 @@ import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValue;
 import android.app.admin.PolicyValueTransport;
-import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.PolicyTransportValueConvertor;
+
 import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.IPermissionChecker;
 import com.android.server.devicepolicy.PolicyDefinition;
-import java.util.ArrayList;
+
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
