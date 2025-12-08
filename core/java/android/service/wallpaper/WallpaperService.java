@@ -1634,7 +1634,7 @@ public abstract class WallpaperService extends Service {
                     frameRateCompat).apply();
             // TODO: b/406967924 - remove after creating public APIs
             sendTransformSurfaceControl();
-            return mBbqSurfaceControl;
+            return mTransformSurfaceControl;
         }
 
         private void sendTransformSurfaceControl() {

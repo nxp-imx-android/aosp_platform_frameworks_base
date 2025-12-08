@@ -774,7 +774,6 @@ public final class ViewRootImpl implements ViewParent,
     boolean mLayoutRequested;
     boolean mFirst;
 
-    @Nullable
     int mContentCaptureEnabled = CONTENT_CAPTURE_ENABLED_NOT_CHECKED;
     boolean mPerformContentCapture;
 
@@ -888,6 +887,14 @@ public final class ViewRootImpl implements ViewParent,
     public final Surface mSurface = new Surface();
     @NonNull
     private SurfaceControl mSurfaceControl = new SurfaceControl();
+
+    /**
+     * The cached surface if {@link #mViewVisibility} is invisible. This can reduce surface creation
+     * when it becomes visible again. The common case is notification shade.
+     * TODO(b/308662081): Remove this field and keep mSurfaceControl valid while VRI is alive.
+     */
+    @Nullable
+    private SurfaceControl mCachedSurfaceControl;
 
     private BLASTBufferQueue mBlastBufferQueue;
     private IBinder mBbqApplyToken = new Binder();
@@ -9844,13 +9851,24 @@ public final class ViewRootImpl implements ViewParent,
         int relayoutResult = 0;
         if (viewVisibility == View.VISIBLE) {
             if (!mSurfaceControl.isValid()) {
-                Trace.traceBegin(Trace.TRACE_TAG_VIEW, "createSurfaceControl");
-                mSurfaceControl = createSurfaceControl();
-                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+                final SurfaceControl cachedSurfaceControl = mCachedSurfaceControl;
+                mCachedSurfaceControl = null;
+                if (cachedSurfaceControl == null || !cachedSurfaceControl.isValid()) {
+                    Trace.traceBegin(Trace.TRACE_TAG_VIEW, "createSurfaceControl");
+                    mSurfaceControl = createSurfaceControl();
+                    Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+                } else {
+                    mSurfaceControl = cachedSurfaceControl;
+                }
                 relayoutResult |= RELAYOUT_RES_SURFACE_CHANGED | RELAYOUT_RES_FIRST_TIME;
             }
         } else if (mSurfaceControl.isValid()) {
-            mSurfaceControl.release();
+            if (viewVisibility == View.INVISIBLE) {
+                mCachedSurfaceControl = mSurfaceControl;
+                mSurfaceControl = new SurfaceControl();
+            } else {
+                mSurfaceControl.release();
+            }
         }
         return relayoutResult;
     }
@@ -10595,6 +10613,10 @@ public final class ViewRootImpl implements ViewParent,
                     }
 
                     destroySurface();
+                    if (mCachedSurfaceControl != null) {
+                        mCachedSurfaceControl.release();
+                        mCachedSurfaceControl = null;
+                    }
                 }
             }
 
