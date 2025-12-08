@@ -93,11 +93,22 @@ class BubbleEventHistoryLogger(
         if (recentEvents.size >= maxLogEvents) {
             recentEvents.removeAt(0)
         }
+        // Transform the params to prevent memory leaks.
+        // If the object is a primitive wrapper, keep it. Otherwise, call toString() now.
+        val convertedParams = titleParams.map { param ->
+            when (param) {
+                null -> null
+                is Boolean, is Int, is Long, is Float, is Double,
+                is Char, is Byte, is Short, is String -> param
+
+                else -> param.toString() // Immediately break the strong reference
+            }
+        }.toTypedArray()
         @Suppress("UNCHECKED_CAST")
         recentEvents.add(
             BubbleEvent(
                 title = title,
-                titleParams = titleParams as Array<Any?>,
+                titleParams = convertedParams as Array<Any?>,
                 eventData = eventData,
                 timestamp = timestamp,
             )
