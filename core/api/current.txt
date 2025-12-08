@@ -35967,7 +35967,6 @@ package android.os {
     field public static final String DISALLOW_FACTORY_RESET = "no_factory_reset";
     field public static final String DISALLOW_FUN = "no_fun";
     field public static final String DISALLOW_GRANT_ADMIN = "no_grant_admin";
-    field @FlaggedApi("android.companion.task_continuity") public static final String DISALLOW_HANDOFF = "no_handoff";
     field public static final String DISALLOW_INSTALL_APPS = "no_install_apps";
     field public static final String DISALLOW_INSTALL_UNKNOWN_SOURCES = "no_install_unknown_sources";
     field public static final String DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY = "no_install_unknown_sources_globally";
@@ -35990,6 +35989,7 @@ package android.os {
     field public static final String DISALLOW_SIM_GLOBALLY = "no_sim_globally";
     field public static final String DISALLOW_SMS = "no_sms";
     field public static final String DISALLOW_SYSTEM_ERROR_DIALOGS = "no_system_error_dialogs";
+    field @FlaggedApi("android.companion.task_continuity") public static final String DISALLOW_TASK_CONTINUITY_HANDOFF = "no_task_continuity_handoff";
     field @FlaggedApi("com.android.net.thread.platform.flags.thread_user_restriction_enabled") public static final String DISALLOW_THREAD_NETWORK = "no_thread_network";
     field public static final String DISALLOW_ULTRA_WIDEBAND_RADIO = "no_ultra_wideband_radio";
     field public static final String DISALLOW_UNIFIED_PASSWORD = "no_unified_password";
