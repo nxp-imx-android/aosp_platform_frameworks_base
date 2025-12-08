@@ -90,6 +90,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.FileUtils;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -1899,8 +1900,9 @@ public abstract class BaseShortcutManagerTest {
 
         final ArgumentCaptor<Intent[]> intentsCaptor = ArgumentCaptor.forClass(Intent[].class);
         verify(mMockActivityTaskManagerInternal).startActivitiesAsPackage(
+                anyOrNull(IBinder.class) /* callingActivityToken */,
                 eq(packageName),
-                isNull(),
+                isNull() /* featureId */,
                 eq(userId),
                 intentsCaptor.capture(),
                 anyOrNull(Bundle.class));
@@ -1958,9 +1960,10 @@ public abstract class BaseShortcutManagerTest {
         }
         // This shouldn't have been called.
         verify(mMockActivityTaskManagerInternal, times(0)).startActivitiesAsPackage(
-                anyString(),
-                isNull(),
-                anyInt(),
+                anyOrNull(IBinder.class) /* callingActivityToken */,
+                anyString() /* packageName */,
+                isNull() /* featureId */,
+                anyInt() /* userId */,
                 any(Intent[].class),
                 anyOrNull(Bundle.class));
     }
