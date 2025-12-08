@@ -40,7 +40,7 @@ constructor(
         background,
         rootTaskDisplayAreaOrganizer,
         SurfaceControl.Transaction(),
-        handler
+        handler,
     ) {
 
     private val postCommitInterpolator = Interpolators.EMPHASIZED
@@ -56,8 +56,8 @@ constructor(
         targetClosingRect.scaleCentered(MAX_SCALE)
         if (swipeEdge != BackEvent.EDGE_RIGHT) {
             targetClosingRect.offset(
-                    startClosingRect.right - targetClosingRect.right - displayBoundsMargin,
-                    0f
+                startClosingRect.right - targetClosingRect.right - displayBoundsMargin,
+                0f,
             )
         }
     }
@@ -94,18 +94,17 @@ constructor(
             closingTarget?.leash,
             currentClosingRect,
             closingAlpha,
-            flingMode = FlingMode.FLING_BOUNCE
+            flingMode = FlingMode.FLING_BOUNCE,
         )
         currentEnteringRect.setInterpolatedRectF(startEnteringRect, targetEnteringRect, progress)
         applyTransform(
             enteringTarget?.leash,
             currentEnteringRect,
             1f,
-            flingMode = FlingMode.FLING_BOUNCE
+            flingMode = FlingMode.FLING_BOUNCE,
         )
         applyTransaction()
     }
-
 
     companion object {
         private const val POST_COMMIT_DURATION = 450L
