@@ -38,8 +38,8 @@ import java.util.StringJoiner
 import java.util.concurrent.Executor
 
 /**
- * A [Transitions.TransitionObserver] that observes shell transitions, tracks the visible tasks
- * and notifies listeners whenever the visible tasks change (at the start and end of a transition).
+ * A [Transitions.TransitionObserver] that observes shell transitions, tracks the visible tasks and
+ * notifies listeners whenever the visible tasks change (at the start and end of a transition).
  *
  * This can be replaced once we have a generalized task repository tracking visible tasks.
  */
@@ -91,9 +91,10 @@ class TaskStackTransitionObserver(
 
             // Find the first task that is opening, this should be the one at the front after
             // the transition
-            if (TransitionUtil.isOpeningType(change.mode) ||
+            if (
+                TransitionUtil.isOpeningType(change.mode) ||
                     (change.mode == TRANSIT_CHANGE &&
-                            change.flags and TransitionInfo.FLAG_MOVED_TO_TOP != 0)
+                        change.flags and TransitionInfo.FLAG_MOVED_TO_TOP != 0)
             ) {
                 notifyOnTaskMovedToFront(taskInfo)
                 break
@@ -103,9 +104,7 @@ class TaskStackTransitionObserver(
         }
     }
 
-    /**
-     * This method handles transition ready when Flags.enableShellTopTaskTracking() is set.
-     */
+    /** This method handles transition ready when Flags.enableShellTopTaskTracking() is set. */
     private fun onShellTopTaskTrackerFlagTransitionReady(info: TransitionInfo) {
         ProtoLog.v(WM_SHELL_TASK_OBSERVER, "Transition ready: %d", info.debugId)
 
@@ -138,8 +137,9 @@ class TaskStackTransitionObserver(
                 if (!pendingCloseTasks.any { it.taskId == taskInfo.taskId }) {
                     pendingCloseTasks.add(taskInfo)
                 }
-            } else if (TransitionUtil.isOpeningMode(change.mode)
-                    || TransitionUtil.isOrderOnly(change)) {
+            } else if (
+                TransitionUtil.isOpeningMode(change.mode) || TransitionUtil.isOrderOnly(change)
+            ) {
                 ProtoLog.v(WM_SHELL_TASK_OBSERVER, "\tOpening task=%d", taskInfo.taskId)
 
                 // Remove from pending close tasks list if it's being opened again
@@ -164,8 +164,10 @@ class TaskStackTransitionObserver(
         val orderedVisibleTasks = mutableListOf<RunningTaskInfo>()
         var numAlwaysOnTop = 0
         for (info in visibleTasks) {
-            if (info.windowingMode == WINDOWING_MODE_PINNED
-                    || info.configuration.windowConfiguration.isAlwaysOnTop) {
+            if (
+                info.windowingMode == WINDOWING_MODE_PINNED ||
+                    info.configuration.windowConfiguration.isAlwaysOnTop
+            ) {
                 orderedVisibleTasks.add(numAlwaysOnTop, info)
                 numAlwaysOnTop++
             } else {
@@ -182,7 +184,7 @@ class TaskStackTransitionObserver(
         transition: IBinder,
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
-        finishTransaction: SurfaceControl.Transaction
+        finishTransaction: SurfaceControl.Transaction,
     ) {
         if (enableShellTopTaskTracking()) {
             onShellTopTaskTrackerFlagTransitionReady(info)
@@ -203,9 +205,7 @@ class TaskStackTransitionObserver(
         if (pendingCloseTasks.isNotEmpty()) {
             // Update the visible task list based on the pending close tasks
             for (change in pendingCloseTasks) {
-                visibleTasks.removeIf {
-                    it.taskId == change.taskId
-                }
+                visibleTasks.removeIf { it.taskId == change.taskId }
             }
             updateVisibleTasksList("transition-finished")
         }
@@ -223,19 +223,15 @@ class TaskStackTransitionObserver(
         }
     }
 
-    /**
-     * Adds a new task stack observer.
-     */
+    /** Adds a new task stack observer. */
     fun addTaskStackTransitionObserverListener(
         taskStackTransitionObserverListener: TaskStackTransitionObserverListener,
-        executor: Executor
+        executor: Executor,
     ) {
         taskStackTransitionObserverListeners[taskStackTransitionObserverListener] = executor
     }
 
-    /**
-     * Removes an existing task stack observer.
-     */
+    /** Removes an existing task stack observer. */
     fun removeTaskStackTransitionObserverListener(
         taskStackTransitionObserverListener: TaskStackTransitionObserverListener
     ) {
@@ -287,8 +283,12 @@ class TaskStackTransitionObserver(
         }
         ProtoLog.v(WM_SHELL_TASK_OBSERVER, "\tVisible tasks (%s)", reason)
         for (task in visibleTasks) {
-            ProtoLog.v(WM_SHELL_TASK_OBSERVER, "\t\ttaskId=%d package=%s", task.taskId,
-                task.baseIntent.component?.packageName)
+            ProtoLog.v(
+                WM_SHELL_TASK_OBSERVER,
+                "\t\ttaskId=%d package=%s",
+                task.taskId,
+                task.baseIntent.component?.packageName,
+            )
         }
     }
 
@@ -296,8 +296,10 @@ class TaskStackTransitionObserver(
     interface TaskStackTransitionObserverListener {
         /** Called when a task is moved to front. */
         fun onTaskMovedToFrontThroughTransition(taskInfo: RunningTaskInfo) {}
+
         /** Called when the set of visible tasks have changed. */
         fun onVisibleTasksChanged(visibleTasks: List<RunningTaskInfo>) {}
+
         /** Called when a task info has changed. */
         fun onTaskChangedThroughTransition(taskInfo: RunningTaskInfo) {}
     }

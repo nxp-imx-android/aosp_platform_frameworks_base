@@ -20,9 +20,8 @@ import android.os.RemoteException
 import com.android.wm.shell.sysui.ShellCommandHandler.ShellCommandActionHandler
 import java.io.PrintWriter
 
-class RecentsShellCommandHandler(
-    private val recentTasksController: RecentTasksController
-) : ShellCommandActionHandler {
+class RecentsShellCommandHandler(private val recentTasksController: RecentTasksController) :
+    ShellCommandActionHandler {
     override fun onShellCommand(args: Array<out String>, pw: PrintWriter): Boolean {
         when (args[0]) {
             "clearAll" -> return runClearAll(pw)

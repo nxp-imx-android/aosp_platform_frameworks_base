@@ -89,8 +89,8 @@ class ShellCrashHandler(
     }
 
     /**
-     * Cleans up any existing bubble tasks by removing bubble specific overrides.
-     * After cleanup, the device will be transitioned to the home screen.
+     * Cleans up any existing bubble tasks by removing bubble specific overrides. After cleanup, the
+     * device will be transitioned to the home screen.
      */
     private fun handleBubbleTaskCleanup(bc: BubbleController) {
         val wct = WindowContainerTransaction()

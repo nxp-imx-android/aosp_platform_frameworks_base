@@ -22,5 +22,5 @@ package com.android.wm.shell.repository
  */
 fun <Key, Item> GenericRepository<Key, Item>.iterate(
     predicate: (Key, Item) -> Boolean = { _, _ -> true },
-    fn: (Item) -> Unit
+    fn: (Item) -> Unit,
 ) = find(predicate).forEach(fn)
