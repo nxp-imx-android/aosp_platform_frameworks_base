@@ -15,3 +15,9 @@ flag {
   bug: "354763298"
   is_fixed_read_only: true
 }
+flag {
+  name: "use_new_jank_classification_for_jps"
+  namespace: "window_surfaces"
+  description: "Whether to use the new jank classification for the JPS metric"
+  bug: "430220320"
+}
