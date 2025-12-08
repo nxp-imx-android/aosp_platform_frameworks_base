@@ -349,6 +349,18 @@ public class ThemeStateManager {
     }
 
     /**
+     * Checks if the theme state for the given user exists.
+     *
+     * @param userId The ID of the user to check.
+     * @return {@code true} if the state exists, {@code false} otherwise.
+     */
+    public boolean hasState(int userId) {
+        synchronized (mLock) {
+            return mThemeStates.contains(userId);
+        }
+    }
+
+    /**
      * Re-evaluates the current system theme for all users and updates overlays if necessary.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
