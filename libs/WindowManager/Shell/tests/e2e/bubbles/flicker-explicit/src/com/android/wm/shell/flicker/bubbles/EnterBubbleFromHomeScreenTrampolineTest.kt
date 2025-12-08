@@ -53,10 +53,7 @@ import org.junit.runners.MethodSorters
  * - [ColdLaunchTaskTrampolineTestCases]
  * - [TaskTrampolineBecomesExpandedTestCases]
  */
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit

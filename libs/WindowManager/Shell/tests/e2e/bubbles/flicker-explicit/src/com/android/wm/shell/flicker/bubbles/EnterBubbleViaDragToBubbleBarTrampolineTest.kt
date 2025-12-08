@@ -61,11 +61,7 @@ import org.junit.runners.Parameterized.Parameters
  * - [ColdLaunchTaskTrampolineTestCases]
  * - [EnterBubbleViaDragToBubbleBarTestCases]
  */
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    Flags.FLAG_ENABLE_BUBBLE_BAR,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit

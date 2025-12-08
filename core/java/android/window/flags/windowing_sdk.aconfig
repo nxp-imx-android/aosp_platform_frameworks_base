@@ -104,16 +104,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_bubble_trampoline_animation"
-    description: "Fix the animation for Bubble Task Trampoline"
-    bug: "417848405"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "fix_bubble_back_gesture"
     description: "Fix no responsive back gesture on some Bubbled apps"
     bug: "416330151"
