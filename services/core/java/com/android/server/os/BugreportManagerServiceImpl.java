@@ -737,17 +737,11 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                     mInjector.getUserManager().getProfileParent(effectiveCallingUserId);
             if (profileParent == null) {
                 isAdminUser = mInjector.getUserManager().isUserAdmin(effectiveCallingUserId);
-                if (treatAsAdminAnyway(effectiveCallingUserId)) {
-                    isAdminUser = true;
-                }
             } else {
                 // If the caller is a profile, we need to check its parent user instead.
                 // Therefore setting the profile parent user as the effective calling user.
                 effectiveCallingUserId = profileParent.id;
                 isAdminUser = profileParent.isAdmin();
-                if (treatAsAdminAnyway(effectiveCallingUserId)) {
-                    isAdminUser = true;
-                }
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -761,16 +755,6 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                     + " Only admin users and their profiles are allowed to take bugreport.",
                     effectiveCallingUserId));
         }
-    }
-
-    private boolean treatAsAdminAnyway(int userId) {
-        // TODO(b/457559134): On most devices, the SYSTEM is already an Admin. But for HSUM devices,
-        //  the HSU is no longer an Admin. Currently, that breaks stuff on HSUM, so - for now -
-        //  treat the SYSTEM user as if it were an Admin regardless in these otherwise-broken areas.
-        //  See b/457559134 and b/461646697.
-        return android.multiuser.Flags.hsuNotAdmin()
-                && !android.multiuser.Flags.hsuNotAdminNoExemptions()
-                && userId == UserHandle.USER_SYSTEM;
     }
 
     /**
