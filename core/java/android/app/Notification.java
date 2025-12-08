@@ -7332,20 +7332,26 @@ public class Notification implements Parcelable
             boolean isMediaStyle = mN.isStyle(MediaStyle.class)
                     || mN.isStyle(DecoratedMediaCustomViewStyle.class);
 
+            int actionsCounted = 0;
             List<ActionButton> candidates = new ArrayList<>();
             for (int i = 0; i < mActions.size(); i++) {
                 Notification.Action action = mActions.get(i);
-                if (isPromotedOngoing && hasValidRemoteInput(action)) {
+                if (action.isContextual()) {
                     continue;
                 }
-                if (action.isContextual()) {
+                // Except for the case of contextual actions (which are always separate), whenever
+                // we skip an action do not allow those past the 3d one to "page in". Mostly for
+                // compatibility reasons, as these actions were never displayed before we started
+                // filtering.
+                actionsCounted++;
+                if (isPromotedOngoing && hasValidRemoteInput(action)) {
                     continue;
                 }
                 if (!isMediaStyle && (action.title == null || action.title.toString().isBlank())) {
                     continue;
                 }
                 candidates.add(new ActionButton(action, i));
-                if (candidates.size() >= MAX_ACTION_BUTTONS) {
+                if (actionsCounted >= MAX_ACTION_BUTTONS) {
                     break;
                 }
             }
