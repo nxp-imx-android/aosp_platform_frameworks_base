@@ -130,6 +130,16 @@ flag {
 }
 
 flag {
+    name: "enable_capability_controller_computation"
+    namespace: "backstage_power"
+    description: "Enable capability controller computation with no side-effect"
+    bug: "466961280"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "perceptible_tasks"
     namespace: "system_performance"
     description: "Boost the oom_score_adj of activities in perceptible tasks"
