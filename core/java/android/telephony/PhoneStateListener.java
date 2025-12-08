@@ -1733,6 +1733,11 @@ public class PhoneStateListener {
                 int slotIndex, int subscriptionId) {
             // not supported on the deprecated interface - Use TelephonyCallback instead
         }
+
+        public final void onNetworkSecurityEvents(
+                List<NetworkSecurityEvent> events) {
+            // not supported on the deprecated interface - Use TelephonyCallback instead
+        }
     }
 
     private void log(String s) {
