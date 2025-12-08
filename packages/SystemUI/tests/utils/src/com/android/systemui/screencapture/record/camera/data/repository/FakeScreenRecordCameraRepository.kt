@@ -21,6 +21,7 @@ import android.view.Surface
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -31,7 +32,7 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
         get() = emptyFlow()
 
     private val _state = MutableStateFlow(STATE_STOPPED)
-    override val state: Flow<Int>
+    override val state: StateFlow<Int>
         get() = _state.asStateFlow()
 
     private val _isConnected = MutableStateFlow(false)

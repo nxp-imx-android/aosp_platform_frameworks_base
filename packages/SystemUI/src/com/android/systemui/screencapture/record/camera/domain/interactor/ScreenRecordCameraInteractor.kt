@@ -126,23 +126,23 @@ constructor(
     suspend fun startStream(surface: Surface, width: Int, height: Int) {
         val optimalSize = repository.configureViewport(0, 0)
         if (optimalSize == null) {
-            Log.w(TAG, "Couldn't get optimal size. Skipping stream start")
+            Log.wtf(TAG, "Couldn't get optimal size. Skipping stream start")
             return
         }
         if (width != optimalSize.width || height != optimalSize.height) {
-            Log.w(
+            Log.wtf(
                 TAG,
                 "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height",
             )
             return
         }
-        Log.i(TAG, "Starting a stream with size=$optimalSize")
         repository.startStream(surface, optimalSize)
+        Log.i(TAG, "Started a stream with size=$optimalSize")
     }
 
     suspend fun stopStream() {
-        Log.i(TAG, "Stopping the stream")
         repository.stopStream()
+        Log.i(TAG, "Stopped the stream")
     }
 
     fun setBackgroundColor(@ColorInt color: Int) {
