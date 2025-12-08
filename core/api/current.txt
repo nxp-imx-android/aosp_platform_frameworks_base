@@ -43719,6 +43719,10 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
+    method public abstract int getEventType();
+    field public static final int EVENT_TYPE_ENQUEUED = 1; // 0x1
+    field public static final int EVENT_TYPE_REMOVED = 2; // 0x2
+    field public static final int EVENT_TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationEnqueuedEvent extends android.service.personalcontext.hint.NotificationEvent {
