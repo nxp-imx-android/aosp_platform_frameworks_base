@@ -180,7 +180,7 @@ class DesktopModeLoggerTransitionObserver(
             postTransitionFreeformTasks.remove(taskInfo.taskId)
             ProtoLog.v(
                 WM_SHELL_DESKTOP_MODE,
-                "DesktopModeLogger: processing tasks after task vanished %s",
+                "DesktopModeLogger: processing tasks after task vanished %d",
                 postTransitionFreeformTasks.size,
             )
             identifyLogEventAndUpdateState(
@@ -259,7 +259,7 @@ class DesktopModeLoggerTransitionObserver(
 
         ProtoLog.v(
             WM_SHELL_DESKTOP_MODE,
-            "DesktopModeLogger: taskInfo map after processing changes %s",
+            "DesktopModeLogger: taskInfo map after processing changes %d",
             postTransitionFreeformTasks.size,
         )
 
@@ -537,7 +537,7 @@ class DesktopModeLoggerTransitionObserver(
                     ProtoLog.w(
                         WM_SHELL_DESKTOP_MODE,
                         "Unknown enter reason for transition type: %s",
-                        transitionInfo?.type,
+                        transitionInfo?.type ?: "null",
                     )
                     EnterReason.UNKNOWN_ENTER
                 }
@@ -571,7 +571,7 @@ class DesktopModeLoggerTransitionObserver(
                 ProtoLog.w(
                     WM_SHELL_DESKTOP_MODE,
                     "Unknown exit reason for transition type: %s",
-                    transitionInfo?.type,
+                    transitionInfo?.type ?: "null",
                 )
                 ExitReason.UNKNOWN_EXIT
             }

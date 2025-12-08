@@ -7043,7 +7043,7 @@ class DesktopTasksController(
                     ProtoLog.v(
                         WM_SHELL_DESKTOP_MODE,
                         "IDesktopModeImpl: onTaskbarCornerRoundingUpdate " +
-                            "doesAnyTaskRequireTaskbarRounding=%s, displayId=%s",
+                            "doesAnyTaskRequireTaskbarRounding=%b, displayId=%d",
                         hasTasksRequiringTaskbarRounding,
                         displayId,
                     )
@@ -7059,7 +7059,7 @@ class DesktopTasksController(
                 override fun onEnterDesktopModeTransitionStarted(transitionDuration: Int) {
                     ProtoLog.v(
                         WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onEnterDesktopModeTransitionStarted transitionTime=%s",
+                        "IDesktopModeImpl: onEnterDesktopModeTransitionStarted transitionTime=%d",
                         transitionDuration,
                     )
                     remoteListener.call { l ->
@@ -7073,7 +7073,8 @@ class DesktopTasksController(
                 ) {
                     ProtoLog.v(
                         WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onExitDesktopModeTransitionStarted transitionTime=%s shouldEndUpAtHome=%b",
+                        "IDesktopModeImpl: onExitDesktopModeTransitionStarted " +
+                            "transitionTime=%d shouldEndUpAtHome=%b",
                         transitionDuration,
                         shouldEndUpAtHome,
                     )
