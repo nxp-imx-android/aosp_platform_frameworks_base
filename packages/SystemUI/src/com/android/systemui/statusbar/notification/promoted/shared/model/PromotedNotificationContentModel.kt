@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.promoted.shared.model
 
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
-import android.annotation.FlaggedApi
 import android.app.Notification
 import android.app.Notification.ResolvedCompactContent
 import android.graphics.Bitmap
@@ -73,10 +72,9 @@ data class PromotedNotificationContentModel(
     val iconLevel: Int,
     val appName: CharSequence?,
     val subText: CharSequence?,
-    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
+    // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
     val shortCriticalText: String?,
-    // TODO: b/462677827 - Make non-nullable when inlining API_NOTIFICATION_CHIP
-    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
+    // TODO: b/462677827 - Non-nullable when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
     val compactContent: ResolvedCompactContent?,
 
     /**

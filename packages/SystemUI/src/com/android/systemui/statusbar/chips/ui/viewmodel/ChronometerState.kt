@@ -15,7 +15,6 @@
  */
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.annotation.FlaggedApi
 import android.text.format.DateUtils
 import android.widget.ChronometerAdaptiveFormat
 import androidx.compose.runtime.Composable
@@ -170,7 +169,6 @@ sealed interface Formatter {
         override fun updatePeriod(currentValue: Duration): Duration = Duration.ofSeconds(1)
     }
 
-    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     object Adaptive : Formatter {
         override fun format(value: Duration): String = ChronometerAdaptiveFormat.format(value)
 
