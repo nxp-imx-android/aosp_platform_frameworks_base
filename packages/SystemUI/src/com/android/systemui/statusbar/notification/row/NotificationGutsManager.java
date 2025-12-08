@@ -345,8 +345,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         try {
             if (gutsContent instanceof NotificationSnooze ns) {
                 initializeSnoozeView(row, sbn, ranking, ns);
-            } else if (gutsContent instanceof NotificationInfo ni) {
-                initializeNotificationInfo(row, sbn, ranking, ni);
             } else if (gutsContent instanceof NotificationConversationInfo nci) {
                 initializeConversationNotificationInfo(
                         row, sbn, ranking, nci);
@@ -356,6 +354,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 initializeDemoteView(sbn, ppgc);
             } else if (gutsContent instanceof BundledNotificationInfo bni) {
                 initializeBundledNotificationInfo(row, sbn, ranking, bni);
+            } else if (gutsContent instanceof NotificationInfo ni) {
+                // Note: Keep this as the last check here, since some guts types like
+                // BundledNotificationInfo inherit from NotificationInfo.
+                initializeNotificationInfo(row, sbn, ranking, ni);
             }
             return true;
         } catch (Exception e) {
