@@ -20,15 +20,11 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
-import static com.android.server.am.Flags.FLAG_ROLLOUT_COMPUTER_CONTROL;
 
 import static org.mockito.Mockito.verify;
 
 import android.content.ContentResolver;
 import android.os.SystemProperties;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -39,7 +35,6 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
@@ -57,9 +52,6 @@ import java.util.List;
  * Test SettingsToPropertiesMapper.
  */
 public class SettingsToPropertiesMapperTest {
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
     private static final String NAME_VALID_CHARACTERS_REGEX = "^[\\w\\-@:]*$";
     private static final String[] TEST_MAPPING = new String[]{
             Settings.Global.SQLITE_COMPATIBILITY_WAL_FLAGS
@@ -176,30 +168,6 @@ public class SettingsToPropertiesMapperTest {
                 Assert.fail(deviceConfigScope + " contains invalid characters. "
                         + "Only alphanumeric characters, '-', '@', ':' and '_' are valid.");
             }
-        }
-    }
-
-    @Test
-    @EnableFlags(FLAG_ROLLOUT_COMPUTER_CONTROL)
-    public void validateComputerControlPresent() {
-        HashSet<String> hashSet = new HashSet<>(
-                Arrays.asList(SettingsToPropertiesMapper.getDeviceConfigScopes()));
-        if (!hashSet.contains("computer_control")) {
-            Assert.fail(
-                    "validateComputerControlPresent: computer_control isn't present in "
-                            + "sDeviceConfigScopes");
-        }
-    }
-
-    @Test
-    @DisableFlags(FLAG_ROLLOUT_COMPUTER_CONTROL)
-    public void validateComputerControlNotPresent() {
-        HashSet<String> hashSet = new HashSet<>(
-                Arrays.asList(SettingsToPropertiesMapper.getDeviceConfigScopes()));
-        if (hashSet.contains("computer_control")) {
-            Assert.fail(
-                    "validateComputerControlPresent: computer_control is present in "
-                            + "sDeviceConfigScopes");
         }
     }
 

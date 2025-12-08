@@ -20,8 +20,6 @@ import static com.android.aconfig_new_storage.Flags.enableAconfigStorageDaemon;
 import static com.android.aconfig_new_storage.Flags.enableAconfigdFromMainline;
 import static com.android.aconfig_new_storage.Flags.supportClearLocalOverridesImmediately;
 import static com.android.aconfig_new_storage.Flags.supportImmediateLocalOverrides;
-import static com.android.server.am.Flags.rolloutComputerControl;
-
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 import android.aconfigd.Aconfigd.StorageRequestMessage;
@@ -43,17 +41,14 @@ import android.text.TextUtils;
 import android.util.Slog;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.providers.settings.Flags;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -95,9 +90,6 @@ public class SettingsToPropertiesMapper {
     // TODO(b/282593625): Move this constant to DeviceConfig module
     private static final String NAMESPACE_TETHERING_U_OR_LATER_NATIVE =
             "tethering_u_or_later_native";
-
-    private static final String NAMESPACE_COMPUTER_CONTROL =
-            "computer_control";
 
     // All the flags under the listed DeviceConfig scopes will be synced to native level.
     //
@@ -622,10 +614,7 @@ public class SettingsToPropertiesMapper {
     @VisibleForTesting
     static String[] getDeviceConfigScopes() {
         String[] deviceConfigScopes = sDeviceConfigScopes;
-        if (rolloutComputerControl()) {
-            deviceConfigScopes = Arrays.copyOf(sDeviceConfigScopes, sDeviceConfigScopes.length + 1);
-            deviceConfigScopes[sDeviceConfigScopes.length] = NAMESPACE_COMPUTER_CONTROL;
-        }
+        // Add new namespace behind a flag here. e.g., ag/35184768
         return deviceConfigScopes;
     }
 }
