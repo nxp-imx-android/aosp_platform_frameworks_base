@@ -235,6 +235,18 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_multipleActivities() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> {
+                s.mShouldRecoverFromSelfKill = true;
+                s.mLaunchMultipleActivities = true;
+            });
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
     void runTestScenario(@NonNull Consumer<DisplayCompatRobotTest> consumer) {
         final DisplayCompatRobotTest robot = new DisplayCompatRobotTest(this);
         consumer.accept(robot);
@@ -245,6 +257,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         boolean mMoveDisplays = true;
         boolean mRemoveDisplay = false;
         boolean mRelaunchActivity = true;
+        boolean mLaunchMultipleActivities = false;
         SelfKillType mSelfKillType = SelfKillType.FINISH_ACTIVITY;
     }
 
@@ -287,6 +300,9 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
         void selfKillOnDisplayMove() {
             activity().createActivityWithComponentInSecondaryDisplay();
+            if (mSelfKillState.mLaunchMultipleActivities) {
+                activity().createActivityWithComponent();
+            }
             activity().setTopActivityResumed();
             activity().setTopActivityConfigChanges(
                     mSelfKillState.mRelaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);

@@ -328,6 +328,11 @@ class AppCompatDisplayCompatPolicy {
 
         void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
                 @NonNull DisplayContent newDisplay) {
+            if (mActivityRecord.mAppCompatController.getTransparentPolicy().isRunning()
+                    || mActivityRecord.getTask() == null
+                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()) {
+                return;
+            }
             final Transition displayMoveTransition =
                     mActivityRecord.mTransitionController.getCollectingTransition();
             if (displayMoveTransition == null) {
