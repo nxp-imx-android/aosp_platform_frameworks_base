@@ -297,7 +297,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mAppInteractionService = null;
         }
 
-        // TODO(b/440005498): Consider using the display from the app's context instead.
+        // TODO(b/469400179): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
                 mOwnerUser.getIdentifier());
 
