@@ -64,6 +64,7 @@ import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
@@ -13035,7 +13036,13 @@ public class DevicePolicyManager {
      * @see #setDelegatedScopes
      * @see #DELEGATION_PACKAGE_ACCESS
      */
-    public void enableSystemApp(@NonNull ComponentName admin, String packageName) {
+    @FlaggedApi(FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT)
+    public void enableSystemApp(@SuppressLint("InvalidNullConversion")
+            @Nullable ComponentName admin, String packageName) {
+        // The class can not be extended, thus changing the nullability of the admin parameter
+        // is not source breaking.
+        // TODO(b/466995800): Review Metalava's handling of non-extensible classes for
+        // nullability changes.
         throwIfParentInstance("enableSystemApp");
         if (mService != null) {
             try {
@@ -13060,7 +13067,13 @@ public class DevicePolicyManager {
      * @see #setDelegatedScopes
      * @see #DELEGATION_PACKAGE_ACCESS
      */
-    public int enableSystemApp(@NonNull ComponentName admin, Intent intent) {
+    @FlaggedApi(FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT)
+    public int enableSystemApp(@SuppressLint("InvalidNullConversion")
+            @Nullable ComponentName admin, Intent intent) {
+        // The class can not be extended, thus changing the nullability of the admin parameter
+        // is not source breaking.
+        // TODO(b/466995800): Review Metalava's handling of non-extensible classes for
+        // nullability changes.
         throwIfParentInstance("enableSystemApp");
         if (mService != null) {
             try {
@@ -14452,7 +14465,8 @@ public class DevicePolicyManager {
      * permissions affected, and the behavior change for managed profiles and fully-managed
      * devices.
      *
-     * @param admin Which profile or device owner this request is associated with.
+     * @param admin Which profile or device owner this request is associated with, or
+     *            {@code null} if the caller is a set permission policy delegate.
      * @param policy One of the policy constants {@link #PERMISSION_POLICY_PROMPT},
      *            {@link #PERMISSION_POLICY_AUTO_GRANT} and {@link #PERMISSION_POLICY_AUTO_DENY}.
      * @throws SecurityException if {@code admin} is not a device or profile owner.
@@ -14460,7 +14474,13 @@ public class DevicePolicyManager {
      * @see #setDelegatedScopes
      * @see #DELEGATION_PERMISSION_GRANT
      */
-    public void setPermissionPolicy(@NonNull ComponentName admin, int policy) {
+    @FlaggedApi(FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT)
+    public void setPermissionPolicy(@SuppressLint("InvalidNullConversion")
+            @Nullable ComponentName admin, int policy) {
+        // The class can not be extended, thus changing the nullability of the admin parameter
+        // is not source breaking.
+        // TODO(b/466995800): Review Metalava's handling of non-extensible classes for
+        // nullability changes.
         throwIfParentInstance("setPermissionPolicy");
         try {
             mService.setPermissionPolicy(admin, mContext.getPackageName(), policy);
