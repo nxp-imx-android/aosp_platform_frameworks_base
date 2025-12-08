@@ -10147,6 +10147,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             }
             throw new IllegalStateException(errorMessage.append('.').toString());
         }
+        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                && hasNonDefaultDevicePolicyManagementRoleHolder()
+                && !isAdminTestOnlyLocked(owner, userId)) {
+            throw new IllegalStateException("Cannot set non-test profile owner on user " + userId
+                    + " because a non-default Device Policy Management role holder is set.");
+        }
+
         if (isAdb(caller)) {
             if ((mIsWatch || hasUserSetupCompleted(userId))
                     && hasIncompatibleAccountsOrNonAdb) {
@@ -16869,6 +16876,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     callingUserId, /* allowedToRemoveOne= */ false)) {
                 Slogf.i(LOG_TAG, "Cannot add more managed profiles.");
                 return STATUS_CANNOT_ADD_MANAGED_PROFILE;
+            }
+
+            if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                    && hasNonDefaultDevicePolicyManagementRoleHolder()
+                    && !isPackageTestOnly(packageName)) {
+                return STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS;
             }
         } finally {
             mInjector.binderRestoreCallingIdentity(ident);
