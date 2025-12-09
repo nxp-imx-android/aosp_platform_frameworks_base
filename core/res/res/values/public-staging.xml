@@ -34,7 +34,9 @@
         as a result. This is uncommon, but not rare.
 
     Finalizing a release's resources:
-        1. $ANDROID_BUILD_TOP/frameworks/base/tools/aapt2/tools/finalize_res.py \
+        1. lunch sdk-next-eng && \
+           m finalize_res && \
+           finalize_res \
            $ANDROID_BUILD_TOP/frameworks/base/core/res/res/values/public-staging.xml \
            $ANDROID_BUILD_TOP/frameworks/base/core/res/res/values/public-final.xml
         2. Rename "NEXT" in the new public-staging.xml resources header to the next platform short
