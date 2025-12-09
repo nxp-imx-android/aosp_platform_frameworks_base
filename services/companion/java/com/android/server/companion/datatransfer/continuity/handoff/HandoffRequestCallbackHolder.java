@@ -16,15 +16,19 @@
 
 package com.android.server.companion.datatransfer.continuity.handoff;
 
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
+
 import android.annotation.NonNull;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.TaskContinuityManager.HandoffRequestResultCode;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Slog;
-
 import com.android.internal.annotations.GuardedBy;
-
+import com.android.internal.util.FrameworkStatsLog;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -58,7 +62,9 @@ class HandoffRequestCallbackHolder {
                             + " and task "
                             + taskId);
 
-            mCallbacks.register(callback, new RequestCookie(associationId, taskId));
+            RequestCookie requestCookie = new RequestCookie(associationId, taskId);
+            mCallbacks.register(callback, requestCookie);
+            FrameworkStatsLog.write(FrameworkStatsLog.HANDOFF_REQUESTED, requestCookie.hashCode());
         }
     }
 
@@ -86,16 +92,7 @@ class HandoffRequestCallbackHolder {
             mCallbacks.broadcast(
                     (callback, cookie) -> {
                         if (request.equals(cookie)) {
-                            try {
-                                callback.onHandoffRequestFinished(
-                                        associationId, taskId, statusCode);
-                            } catch (RemoteException e) {
-                                Slog.e(
-                                        TAG,
-                                        "Failed to notify callback of handoff request result",
-                                        e);
-                            }
-
+                            finishCallback(callback, request, statusCode);
                             callbacksToRemove.add(callback);
                         }
                     });
@@ -116,17 +113,7 @@ class HandoffRequestCallbackHolder {
             List<IHandoffRequestCallback> callbacksToRemove = new ArrayList<>();
             mCallbacks.broadcast(
                     (callback, cookie) -> {
-                        RequestCookie requestCookie = (RequestCookie) cookie;
-                        try {
-                            callback.onHandoffRequestFinished(
-                                    requestCookie.associationId, requestCookie.taskId, statusCode);
-                        } catch (RemoteException e) {
-                            Slog.e(
-                                    TAG,
-                                    "Failed to notify callback of handoff request cancellation",
-                                    e);
-                        }
-
+                        finishCallback(callback, (RequestCookie) cookie, statusCode);
                         callbacksToRemove.add(callback);
                     });
             clearCallbacks(callbacksToRemove);
@@ -140,6 +127,41 @@ class HandoffRequestCallbackHolder {
             for (IHandoffRequestCallback callback : callbacks) {
                 mCallbacks.unregister(callback);
             }
+        }
+    }
+
+    private void finishCallback(
+            @NonNull IHandoffRequestCallback callback,
+            @NonNull RequestCookie requestCookie,
+            int statusCode) {
+        Objects.requireNonNull(callback);
+        Objects.requireNonNull(requestCookie);
+        try {
+            callback.onHandoffRequestFinished(
+                    requestCookie.associationId, requestCookie.taskId, statusCode);
+
+            int statusCodeForMetrics =
+                    switch (statusCode) {
+                        case HANDOFF_REQUEST_RESULT_SUCCESS ->
+                                FrameworkStatsLog.HANDOFF_REQUEST_FINISHED__STATUS_CODE__SUCCESS;
+                        case HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK ->
+                                FrameworkStatsLog
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_NO_DATA_PROVIDED_BY_TASK;
+                        case HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND ->
+                                FrameworkStatsLog
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_TASK_NOT_FOUND;
+                        case HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT ->
+                                FrameworkStatsLog
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_TIMEOUT;
+                        default -> FrameworkStatsLog.HANDOFF_REQUEST_FINISHED__STATUS_CODE__UNKNOWN;
+                    };
+
+            FrameworkStatsLog.write(
+                    FrameworkStatsLog.HANDOFF_REQUEST_FINISHED,
+                    requestCookie.hashCode(),
+                    statusCodeForMetrics);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to notify callback of handoff request cancellation", e);
         }
     }
 }
