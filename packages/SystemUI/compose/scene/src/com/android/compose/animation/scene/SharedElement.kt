@@ -34,6 +34,10 @@ internal fun shouldPlaceSharedElement(
             toContentZIndex = layoutImpl.content(transition.toContent).globalZIndex,
         )
 
+    log(elementKey, content) {
+        "shouldPlaceSharedElement() pickedContent=$pickedContent, " +
+            "isAncestor=${layoutImpl.isAncestorContent(pickedContent)} "
+    }
     return pickedContent == content || layoutImpl.isAncestorContent(pickedContent)
 }
 

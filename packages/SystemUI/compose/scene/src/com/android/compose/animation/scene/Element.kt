@@ -54,6 +54,12 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.util.lerp
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.debug.StlDebugConfig
+import com.android.compose.animation.scene.debug.debugElement
+import com.android.compose.animation.scene.debug.filterOutElementExclusive
+import com.android.compose.animation.scene.debug.logElementState
+import com.android.compose.animation.scene.debug.performLog
+import com.android.compose.animation.scene.debug.placedInContents
 import com.android.compose.animation.scene.transformation.CustomPropertyTransformation
 import com.android.compose.animation.scene.transformation.CustomSharedPropertyTransformation
 import com.android.compose.animation.scene.transformation.InterpolatedPropertyTransformation
@@ -169,11 +175,15 @@ internal fun Modifier.element(
     // we can ensure that SceneTransitionLayoutImpl will compose new contents first.
     val currentTransitionStates = getAllNestedTransitionStates(layoutImpl)
 
-    return then(ElementModifier(layoutImpl, currentTransitionStates, content, key))
+    return thenIf(StlDebugConfig.logElements) { Modifier.logElementState(layoutImpl, key, content) }
+        .then(ElementModifier(layoutImpl, currentTransitionStates, content, key))
         .thenIf(layoutImpl.state.isElevationPossible(content.key, key)) {
             Modifier.maybeElevateInContent(layoutImpl, content, key, currentTransitionStates)
         }
         .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
+        .thenIf(StlDebugConfig.showElementBorders || StlDebugConfig.showElementLabels) {
+            Modifier.debugElement(key)
+        }
 }
 
 /**
@@ -276,6 +286,7 @@ internal class ElementNode(
         super.onAttach()
         updateElementAndContentValues()
         addNodeToContentState()
+        log { "onAttach()" }
     }
 
     private fun updateElementAndContentValues() {
@@ -291,8 +302,12 @@ internal class ElementNode(
             val elementState = Element.State(contents)
             element.stateByContent[content.key] = elementState
 
+            log { "updateElementAndContentValues(): New stateByContent added" }
             layoutImpl.ancestors.fastForEach {
                 element.stateByContent.putIfAbsent(it.inContent, elementState)
+                log {
+                    "and propagated to ${it.inContent} of ancestor STL(${it.layoutImpl.debugName})"
+                }
             }
         }
     }
@@ -313,6 +328,7 @@ internal class ElementNode(
 
     override fun onDetach() {
         super.onDetach()
+        log { "onDetach()" }
         removeNodeFromContentState()
         maybePruneMaps(layoutImpl, element, stateInContent)
 
@@ -341,20 +357,25 @@ internal class ElementNode(
 
         addNodeToContentState()
         maybePruneMaps(layoutImpl, prevElement, prevElementState)
+        log { "update()" }
     }
 
     override fun isMeasurementApproachInProgress(lookaheadSize: IntSize): Boolean {
+        val result = isAnyStateTransitioning()
+        log { "isMeasurementApproachInProgress() returns $result" }
         // TODO(b/324191441): Investigate whether making this check more complex (checking if this
         // element is shared or transformed) would lead to better performance.
-        return isAnyStateTransitioning()
+        return result
     }
 
     override fun Placeable.PlacementScope.isPlacementApproachInProgress(
         lookaheadCoordinates: LayoutCoordinates
     ): Boolean {
+        val result = isAnyStateTransitioning()
+        log { "isPlacementApproachInProgress() returns $result" }
         // TODO(b/324191441): Investigate whether making this check more complex (checking if this
         // element is shared or transformed) would lead to better performance.
-        return isAnyStateTransitioning()
+        return result
     }
 
     private fun isAnyStateTransitioning(): Boolean {
@@ -382,6 +403,7 @@ internal class ElementNode(
                             lookaheadScopeCoordinates.localLookaheadPositionOf(coords)
                     }
                 }
+                log { "measure() layout() place" }
                 place(0, 0)
             }
         }
@@ -393,6 +415,9 @@ internal class ElementNode(
     ): MeasureResult {
         syncAncestorElementState()
         val elementState = elementState(layoutImpl, element, currentTransitionStates)
+        log {
+            "approachMeasure() elementState=$elementState, picked from currentTransitionState $currentTransitionStates"
+        }
         if (elementState == null) {
             // If the element is not part of any transition, place it normally in its idle scene.
             // This is the case if for example a transition between two overlays is ongoing where
@@ -428,7 +453,10 @@ internal class ElementNode(
         stateInContent.lastSize = Element.SizeUnspecified
 
         val placeable = measurable.measure(constraints)
-        return layout(placeable.width, placeable.height) { /* Do not place */ }
+        return layout(placeable.width, placeable.height) {
+            /* Do not place */
+            log { "doNotPlace()" }
+        }
     }
 
     private fun ApproachMeasureScope.placeNormally(
@@ -445,6 +473,8 @@ internal class ElementNode(
                 }
             }
 
+            log { "placeNormally()" }
+            trackPlacement()
             placeable.place(0, 0)
         }
     }
@@ -462,6 +492,9 @@ internal class ElementNode(
             // No need to place the element in this content if we don't want to draw it anyways.
             if (!shouldPlaceElement(layoutImpl, content.key, element, elementState)) {
                 recursivelyClearPlacementValues()
+                log {
+                    "place() not placing due to shouldPlaceElement() - elementState $elementState"
+                }
                 return
             }
 
@@ -507,7 +540,7 @@ internal class ElementNode(
                 )
 
             stateInContent.lastOffset = interruptedOffset
-
+            trackPlacement()
             val offset = (interruptedOffset - currentOffset).round()
             if (
                 isElementOpaqueWithDefaultScale(content, element, transition) &&
@@ -527,8 +560,10 @@ internal class ElementNode(
                 // TODO(b/291071158): Call placeWithLayer() if offset != IntOffset.Zero and size is
                 // not animated once b/305195729 is fixed. Test that drawing is not invalidated in
                 // that case.
+                log { "place()" }
                 placeable.place(offset)
             } else {
+                log { "placeWithLayer()" }
                 placeable.placeWithLayer(offset) {
                     // This layer might still run on its own (outside of the placement phase) even
                     // if this element is not placed or composed anymore, so we need to double check
@@ -537,6 +572,7 @@ internal class ElementNode(
                     // make sure that we are using the current transition and not a reference to an
                     // old one. See b/343138966 for details.
                     if (_element == null) {
+                        log { "placeWithLayer() layerBlock - not placing _element is null" }
                         return@placeWithLayer
                     }
 
@@ -545,6 +581,10 @@ internal class ElementNode(
                         elementState == null ||
                             !shouldPlaceElement(layoutImpl, content.key, element, elementState)
                     ) {
+                        log {
+                            "placeWithLayer() layerBlock - not placing due to " +
+                                "shouldPlaceElement() - elementState $elementState"
+                        }
                         return@placeWithLayer
                     }
 
@@ -564,6 +604,7 @@ internal class ElementNode(
                                 pivotFractionY = scale.pivot.y,
                             )
                         }
+                    log { "placeWithLayer() layerBlock" }
                 }
             }
         }
@@ -654,6 +695,12 @@ internal class ElementNode(
         traverseDescendants(ElementTraverseKey) { node ->
             if ((node as ElementNode)._element != null) {
                 node.stateInContent.clearLastPlacementValues()
+                log(node.key, node.content.key) {
+                    "recursivelyClearPlacementValues started by $key clearing for ${node.key}: " +
+                        "off:${node.stateInContent.lastOffset}, " +
+                        "scale:${node.stateInContent.lastScale}, " +
+                        "alpha:${node.stateInContent.lastAlpha}"
+                }
             }
             TraversableNode.Companion.TraverseDescendantsAction.ContinueTraversal
         }
@@ -662,6 +709,17 @@ internal class ElementNode(
     override fun ContentDrawScope.draw() {
         element.wasDrawnInAnyContent = true
         drawContent()
+    }
+
+    private fun trackPlacement() {
+        if (StlDebugConfig.logElements) {
+            placedInContents.getOrDefault(element.key, mutableSetOf()).add(content.key)
+        }
+    }
+
+    private inline fun log(msg: () -> String) {
+        if (!StlDebugConfig.logElementsVerbose || filterOutElementExclusive(element.key)) return
+        performLog(element.key, content.key, msg())
     }
 
     companion object {
@@ -1078,6 +1136,7 @@ private fun shouldPlaceElement(
     elementState: TransitionState,
 ): Boolean {
     if (element.key.placeAllCopies) {
+        log(element.key) { "shouldPlaceElement() placing all copies" }
         return true
     }
 
@@ -1103,6 +1162,7 @@ private fun shouldPlaceElement(
             (!isReplacingOverlay || content != transition.currentScene) &&
             transitionDoesNotInvolveAncestorContent(layoutImpl, transition)
     ) {
+        log(element.key, content) { "shouldPlaceElement() not placing - not part of transition" }
         return false
     }
 
@@ -1112,11 +1172,15 @@ private fun shouldPlaceElement(
     if (transition.toContent in element.stateByContent) copies++
     if (isReplacingOverlay && transition.currentScene in element.stateByContent) copies++
     if (copies <= 1) {
+        log(element.key, content) { "shouldPlaceElement() placing - not shared" }
         return true
     }
 
     val sharedTransformation = sharedElementTransformation(element.key, transition)
     if (sharedTransformation?.enabled == false) {
+        log(element.key, content) {
+            "shouldPlaceElement() placing - sharedTransformation is disabled"
+        }
         return true
     }
 
@@ -1909,4 +1973,9 @@ private inline fun <T> interpolateSharedElement(
             }
         }
     }
+}
+
+internal inline fun log(elementKey: ElementKey, contentKey: ContentKey? = null, msg: () -> String) {
+    if (!StlDebugConfig.logElementsVerbose || filterOutElementExclusive(elementKey)) return
+    performLog(elementKey, contentKey, msg())
 }
