@@ -630,6 +630,20 @@ final class IInputMethodManagerGlobalInvoker {
     }
 
     @AnyThread
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    static void setPreventImeStartupBypassedAppsForTest(@Nullable List<String> allowedPackages) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.setPreventImeStartupBypassedAppsForTest(allowedPackages);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
     @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
             Manifest.permission.TEST_INPUT_METHOD,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL},

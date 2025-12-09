@@ -217,6 +217,9 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         void setAllowedImesByPolicyForTest(
                 @NonNull IInputMethodClient client, @NonNull List<String> allowedPackages);
 
+        @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
+        void setPreventImeStartupBypassedAppsForTest(@Nullable List<String> allowedPackages);
+
         IImeTracker getImeTrackerService();
 
         void onShellCommand(@Nullable FileDescriptor in, @Nullable FileDescriptor out,
@@ -507,6 +510,14 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         super.setAllowedImesByPolicyForTest_enforcePermission();
 
         mCallback.setAllowedImesByPolicyForTest(client, allowedPackages);
+    }
+
+    @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
+    @Override
+    public void setPreventImeStartupBypassedAppsForTest(@Nullable List<String> allowedPackages) {
+        super.setPreventImeStartupBypassedAppsForTest_enforcePermission();
+
+        mCallback.setPreventImeStartupBypassedAppsForTest(allowedPackages);
     }
 
     @Override

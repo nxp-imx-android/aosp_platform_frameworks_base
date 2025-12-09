@@ -305,7 +305,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @SharedByAllUsersField
     @Nullable
-    private final String[] mPreventImeStartupBypassedApps;
+    private String[] mPreventImeStartupBypassedApps;
 
     /**
      * See {@link #shouldEnableConcurrentMultiUserMode(Context)} about when set to be {@code true}.
@@ -1295,7 +1295,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 mNonPreemptibleInputMethods = mRes.getStringArray(
                         com.android.internal.R.array.config_nonPreemptibleInputMethods);
             } else {
-                mPreventImeStartupBypassedApps = null;
                 mNonPreemptibleInputMethods = null;
             }
             Runnable discardDelegationTextRunnable = this::discardHandwritingDelegationText;
@@ -2250,6 +2249,17 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return false;
         }
         return !ArrayUtils.contains(mNonPreemptibleInputMethods, selectedImi.getPackageName());
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
+    public void setPreventImeStartupBypassedAppsForTest(@Nullable List<String> allowedPackages) {
+        if (allowedPackages == null) {
+            mPreventImeStartupBypassedApps = mContext.getResources().getStringArray(
+                    com.android.internal.R.array.config_preventImeStartupBypassedApps);
+        } else {
+            mPreventImeStartupBypassedApps = allowedPackages.toArray(new String[0]);
+        }
     }
 
     @GuardedBy("ImfLock.class")
