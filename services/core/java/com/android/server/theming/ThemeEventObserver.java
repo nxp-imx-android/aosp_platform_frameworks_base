@@ -251,9 +251,12 @@ public class ThemeEventObserver {
     };
 
     private void handleThemeCustomizationChanged(int userId) {
-        if (!shouldHandleEventForUser(userId, "onStyleChange")) {
+        if (!shouldHandleEventForUser(userId, "onThemeSettingsChanged")) {
             return;
         }
+        // The settings have changed on disk, invalidate the local cache.
+        mThemeManagerInternal.forceReloadSettings(userId);
+
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
 
         if (userSettings.colorSource().equals(VALUE_PRESET)) {

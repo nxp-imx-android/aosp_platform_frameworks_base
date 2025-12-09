@@ -137,6 +137,16 @@ class ThemeSettingsManager {
         return true;
     }
 
+    /**
+     * Invalidates the settings cache for a specific user.
+     * This forces the next getSettings call to read from disk.
+     */
+    void invalidateCache(@UserIdInt int userId) {
+        synchronized (mLock) {
+            mSettingsCache.remove(userId);
+        }
+    }
+
     @Nullable
     private ThemeSettings readFromDisk(@UserIdInt int userId, ContentResolver contentResolver) {
         try {

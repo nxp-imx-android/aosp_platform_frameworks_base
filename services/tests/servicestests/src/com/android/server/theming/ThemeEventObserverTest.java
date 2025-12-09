@@ -316,4 +316,20 @@ public class ThemeEventObserverTest {
         verify(mThemeStateManager).onSeedColorChange(USER_ID, Color.RED, true);
         verify(mThemeStateManager).onStyleChange(USER_ID, ThemeStyle.TONAL_SPOT);
     }
+
+    @Test
+    public void testThemeCustomizationChanged_forcesReloadSettings() {
+        ThemeSettings settings = new ThemeSettings.Builder().setColorSource(
+                VALUE_PRESET).setSystemPalette(Color.valueOf(Color.RED)).setThemeStyle(
+                ThemeStyle.TONAL_SPOT).build();
+        when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID)).thenReturn(settings);
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
+
+        // Trigger ContentObserver
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "{}", USER_ID);
+        mThemeEventObserver.mThemeSettingsObserver.onChange(false, null, 0, USER_ID);
+
+        verify(mThemeManagerInternal).forceReloadSettings(USER_ID);
+    }
 }
