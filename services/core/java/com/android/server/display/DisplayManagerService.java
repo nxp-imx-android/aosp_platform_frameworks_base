@@ -93,6 +93,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
+import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
@@ -206,6 +207,7 @@ import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
 import com.android.server.input.InputManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.FoldSettingProvider;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.DesktopModeHelper;
@@ -315,6 +317,7 @@ public final class DisplayManagerService extends SystemService {
     private InputManagerInternal mInputManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    private UserManagerInternal mUserManagerInternal;
     private final UidImportanceListener mUidImportanceListener = new UidImportanceListener();
 
     private final DisplayFrameworkStatsLogger mStatsLogger = new DisplayFrameworkStatsLogger();
@@ -932,6 +935,16 @@ public final class DisplayManagerService extends SystemService {
                 mIncludeDefaultDisplayInTopology =
                         mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)
                                 || getIncludeDefaultDisplayInTopologySetting();
+            }
+            mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+            if (mUserManagerInternal != null) {
+                mUserManagerInternal.addUserLifecycleListener(
+                        new UserManagerInternal.UserLifecycleListener() {
+                            @Override
+                            public void onUserRemoved(UserInfo user) {
+                                mPersistentDataStore.removeUserData(user.serialNumber);
+                            }
+                        });
             }
         }
 
