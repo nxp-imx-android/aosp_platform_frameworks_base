@@ -597,8 +597,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         final TransitionInfo.Change closingBubble = bubbleHelper.getClosingBubbleTask(info);
         if (closingBubble != null) {
-            if (com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
-                    && closingBubble.getMode() == TRANSIT_CLOSE
+            if (closingBubble.getMode() == TRANSIT_CLOSE
                     && enterBubbleTask.getMode() == TRANSIT_OPEN) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition"
                         + " for opening bubble from another closing bubbled task");

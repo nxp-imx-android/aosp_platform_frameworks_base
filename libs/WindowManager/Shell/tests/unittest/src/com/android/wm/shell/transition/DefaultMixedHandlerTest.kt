@@ -30,7 +30,6 @@ import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
-import com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
@@ -296,7 +295,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     fun test_startAnimation_taskTrampolineBubbleLaunch() {
         val openingChange =
             TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
