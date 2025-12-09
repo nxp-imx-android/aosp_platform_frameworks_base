@@ -25,7 +25,6 @@ import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
 import static android.media.audio.Flags.FLAG_BT_AUDIO_DISCONNECT_API;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
-import static android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
 import static android.media.audio.Flags.FLAG_AMSCO_AVAILABLE_API;
 import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
@@ -1350,15 +1349,10 @@ public class AudioManager {
     /**
      * Returns the maximum volume index for a particular stream.
      *
-     * <p>Starting with targetSdkVersion 37, requires {@link Manifest.permission#QUERY_AUDIO_VOLUME}
-     * to use this API.</p>
-     *
      * @param streamType The stream type whose maximum volume index is returned.
      * @return The maximum valid volume index for the stream.
      * @see #getStreamVolume(int)
      */
-    @FlaggedApi(FLAG_GUARD_STREAM_VOLUME_APIS)
-    @RequiresPermission(value = Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)
     public int getStreamMaxVolume(int streamType) {
         return mVolMaxCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MAX));
     }
@@ -1394,16 +1388,11 @@ public class AudioManager {
     /**
      * Returns the current volume index for a particular stream.
      *
-     * <p>Starting with targetSdkVersion 37, requires {@link Manifest.permission#QUERY_AUDIO_VOLUME}
-     * to use this API.</p>
-     *
      * @param streamType The stream type whose volume index is returned.
      * @return The current volume index for the stream.
      * @see #getStreamMaxVolume(int)
      * @see #setStreamVolume(int, int, int)
      */
-    @FlaggedApi(FLAG_GUARD_STREAM_VOLUME_APIS)
-    @RequiresPermission(value = Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)
     public int getStreamVolume(int streamType) {
         return mVolCache.query(new VolumeCacheQuery(streamType, QUERY_VOL));
     }

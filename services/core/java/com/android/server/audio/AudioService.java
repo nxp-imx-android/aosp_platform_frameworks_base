@@ -61,7 +61,6 @@ import static android.media.audio.Flags.dapInjectionStarveManagement;
 import static android.media.audio.Flags.deviceVolumeApis;
 import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatency;
 import static android.media.audio.Flags.focusFreezeTestApi;
-import static android.media.audio.Flags.guardStreamVolumeApis;
 import static android.media.audio.Flags.manageAssistantAudioPermission;
 import static android.media.audio.Flags.registerVolumeCallbackApiHardening;
 import static android.media.audio.Flags.roForegroundAudioControl;
@@ -103,7 +102,6 @@ import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresPermission;
 import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.SuppressLint;
@@ -117,14 +115,11 @@ import android.app.IUidObserver;
 import android.app.NotificationManager;
 import android.app.PropertyInvalidatedCache;
 import android.app.UidObserver;
-import android.app.compat.CompatChanges;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
-import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledSince;
 import android.content.AttributionSource;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -387,13 +382,6 @@ public class AudioService extends IAudioService.Stub
 
     /** How long to delay after a volume down event before unmuting a stream */
     private static final int UNMUTE_STREAM_DELAY = 350;
-
-    // TODO(b/419394842) - Remove and use defined build version code when available.
-    private static final int BUILD_VERSION_CODE_C = android.os.Build.VERSION_CODES.BAKLAVA + 1;
-
-    @ChangeId
-    @EnabledSince(targetSdkVersion = BUILD_VERSION_CODE_C)
-    static final long VOLUME_API_PERMISSION_ENABLED = 417787833L;
 
     /**
      * Delay before disconnecting a device that would cause BECOMING_NOISY intent to be sent,
@@ -5662,7 +5650,7 @@ public class AudioService extends IAudioService.Stub
                 + manageAssistantAudioPermission());
         pw.println("\tandroid.media.audio.Flags.concurrentAudioRecordBypassPermission:"
                 + concurrentAudioRecordBypassPermission());
-        pw.println("\tandroid.media.audio.Flags.guardStreamVolumeApis:" + guardStreamVolumeApis());
+
         pw.println("\tcom.android.media.audio.optimizeBtDeviceSwitch:"
                 + optimizeBtDeviceSwitch());
         pw.println("\tandroid.media.audio.unifyAbsoluteVolumeManagement:"
@@ -6330,24 +6318,12 @@ public class AudioService extends IAudioService.Stub
     }
 
     /** @see AudioManager#getStreamVolume(int) */
-    @PermissionManuallyEnforced
     public int getStreamVolume(int streamType) {
         streamType = replaceBtScoStreamWithVoiceCall(streamType, "getStreamVolume");
+
         ensureValidStreamType(streamType);
-
-        if (isStreamVolumeAccessForbidden()) {
-            return (MAX_STREAM_VOLUME[streamType] + MIN_STREAM_VOLUME[streamType]) / 2;
-        }
-
         int device = getDeviceForStream(streamType);
         return getStreamVolume(streamType, device);
-    }
-
-    private boolean isStreamVolumeAccessForbidden() {
-        return guardStreamVolumeApis()
-                && CompatChanges.isChangeEnabled(VOLUME_API_PERMISSION_ENABLED)
-                && mContext.checkCallingOrSelfPermission(Manifest.permission.QUERY_AUDIO_VOLUME)
-                    != PackageManager.PERMISSION_GRANTED;
     }
 
     private int getStreamVolume(int streamType, int device) {
@@ -6412,15 +6388,9 @@ public class AudioService extends IAudioService.Stub
     }
 
     /** @see AudioManager#getStreamMaxVolume(int) */
-    @PermissionManuallyEnforced
     public int getStreamMaxVolume(int streamType) {
         streamType = replaceBtScoStreamWithVoiceCall(streamType, "getStreamMaxVolume");
         ensureValidStreamType(streamType);
-
-        if (isStreamVolumeAccessForbidden()) {
-            return (MAX_STREAM_VOLUME[streamType] + MIN_STREAM_VOLUME[streamType]) / 2;
-        }
-
         return (getVssForStreamOrDefault(streamType).getMaxIndex() + 5) / 10;
     }
 
