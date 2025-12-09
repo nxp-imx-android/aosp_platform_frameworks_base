@@ -917,6 +917,12 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     }
 
     private void stashEndActionIfNeeded() {
+        if (!mPipTransitionState.isPipStateIdle()) {
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                    "stashEndAction not allowed in current transition state: %s",
+                    mPipTransitionState);
+            return;
+        }
         boolean isStashing = mPipBoundsState.getBounds().right > mPipBoundsState
                 .getDisplayBounds().width() || mPipBoundsState.getBounds().left < 0;
         if (!isStashing) {
