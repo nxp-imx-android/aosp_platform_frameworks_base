@@ -16,7 +16,6 @@
 
 package com.android.systemui.wmshell;
 
-import static com.android.systemui.Flags.shadeAppLaunchAnimationSkipInDesktop;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BUBBLES_EXPANDED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BUBBLES_MANAGE_MENU_EXPANDED;
@@ -38,7 +37,6 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.InputMethodService.BackDispositionMode;
 import android.inputmethodservice.InputMethodService.ImeWindowVisibility;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
@@ -436,18 +434,6 @@ public final class WMShell implements
     }
 
     void initDesktopMode(DesktopMode desktopMode) {
-        desktopMode.addVisibleTasksListener(
-                new DesktopRepository.VisibleTasksListener() {
-                    @Override
-                    public void onTasksVisibilityChanged(int displayId, int visibleTasksCount) {
-                        if (displayId == Display.DEFAULT_DISPLAY
-                                && !shadeAppLaunchAnimationSkipInDesktop()) {
-                            mSysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
-                                            visibleTasksCount > 0)
-                                    .commitUpdate(mDisplayTracker.getDefaultDisplayId());
-                        }
-                    }
-                }, mSysUiMainExecutor);
         desktopMode.addDeskChangeListener(new DesktopRepository.DeskChangeListener() {
             @Override
             public void onDeskAdded(int displayId, int deskId) {
@@ -472,13 +458,6 @@ public final class WMShell implements
                     if (DEBUG) {
                         Log.d(TAG, "onActiveDeskChanged: sysUiState is null for displayId="
                                 + displayId);
-                    }
-                    return;
-                }
-                if (!shadeAppLaunchAnimationSkipInDesktop()) {
-                    if (DEBUG) {
-                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
-                                + ": shadeAppLaunchAnimationSkipInDesktop flag is false");
                     }
                     return;
                 }

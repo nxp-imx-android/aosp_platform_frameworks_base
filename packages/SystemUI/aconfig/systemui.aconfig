@@ -1557,16 +1557,6 @@ flag {
 }
 
 flag {
-    name: "shade_app_launch_animation_skip_in_desktop"
-    namespace: "systemui"
-    description: "Fixes the animation for notification shade entry points in Desktop Mode"
-    bug: "383061244"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "shade_qsvisible_logic"
   namespace: "systemui"
   description: "Changes the way that QS visibility is calculated"
