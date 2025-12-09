@@ -3123,6 +3123,14 @@ public class AppOpsService extends IAppOpsService.Stub {
             return MODE_IGNORED;
         }
 
+        if (Process.isPrivateComputeCoreUid(uid)) {
+            int pccMode = AppOpsManager.opToPccMode(code);
+            if (AppOpsManager.isModeValid(pccMode)) {
+                return pccMode;
+            } // else, determine the mode using its defining app uid
+            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
+        }
+
         synchronized (this) {
             if (isOpRestrictedLocked(uid, code, packageName, attributionTag, virtualDeviceId,
                     pvr.bypass, isCheckOp)) {
@@ -3439,6 +3447,15 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (proxyAttributionTag != null
                 && !isAttributionTagDefined(packageName, proxyPackageName, proxyAttributionTag)) {
             proxyAttributionTag = null;
+        }
+
+        if (Process.isPrivateComputeCoreUid(uid)) {
+            int pccMode = AppOpsManager.opToPccMode(code);
+            if (AppOpsManager.isModeValid(pccMode)) {
+                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
+            }
+            // else, determine the mode using its defining app uid
+            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
         }
 
         synchronized (this) {
@@ -4101,6 +4118,15 @@ public class AppOpsService extends IAppOpsService.Stub {
             proxyAttributionTag = null;
         }
 
+        if (Process.isPrivateComputeCoreUid(uid)) {
+            int pccMode = AppOpsManager.opToPccMode(code);
+            if (AppOpsManager.isModeValid(pccMode)) {
+                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
+            }
+            // else, determine the mode using its defining app uid
+            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
+        }
+
         boolean isRestricted = false;
         int startType = START_TYPE_FAILED;
         synchronized (this) {
@@ -4235,6 +4261,15 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
                     packageName);
+        }
+
+        if (Process.isPrivateComputeCoreUid(uid)) {
+            int pccMode = AppOpsManager.opToPccMode(code);
+            if (AppOpsManager.isModeValid(pccMode)) {
+                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
+            }
+            // else, determine the mode using its defining app uid
+            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
         }
 
         boolean isRestricted = false;
