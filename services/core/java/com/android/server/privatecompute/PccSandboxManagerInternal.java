@@ -107,6 +107,8 @@ public final class PccSandboxManagerInternal {
 
     @VisibleForTesting
     void populatePccTrustedPackages() {
+        String settingsIntelligencePackage = mContext.getString(
+                com.android.internal.R.string.config_systemSettingsIntelligence);
         String systemUiPackage = mContext.getString(
                 com.android.internal.R.string.config_systemUi);
 
@@ -121,8 +123,14 @@ public final class PccSandboxManagerInternal {
                 android.provider.Downloads.Impl.AUTHORITY);
         String externalStoragePackage = resolveProviderPackageName(
                 android.provider.DocumentsContract.EXTERNAL_STORAGE_PROVIDER_AUTHORITY);
+        String settingsPackage = resolveProviderPackageName(
+                android.provider.Settings.AUTHORITY);
 
         synchronized (mLock) {
+            if (settingsIntelligencePackage != null && !settingsIntelligencePackage.isEmpty()) {
+                mPccTrustedPackages.add(settingsIntelligencePackage);
+            }
+
             if (systemUiPackage != null && !systemUiPackage.isEmpty()) {
                 mPccTrustedPackages.add(systemUiPackage);
             }
@@ -143,6 +151,9 @@ public final class PccSandboxManagerInternal {
             }
             if (externalStoragePackage != null) {
                 mPccTrustedPackages.add(externalStoragePackage);
+            }
+            if (settingsPackage != null) {
+                mPccTrustedPackages.add(settingsPackage);
             }
             Slog.d(TAG, "Trusted PCC Packages: " + mPccTrustedPackages);
         }
