@@ -776,10 +776,6 @@ public final class BatteryService extends SystemService {
             mHandler.post(this::notifyChargingPolicyChanged);
         }
 
-        final boolean includeChargeCounter =
-                !com.android.server.flags.Flags.rateLimitBatteryChangedBroadcast()
-                        && mHealthInfo.batteryChargeCounterUah != mLastBroadcastChargeCounter;
-
         if (force
                 || (mHealthInfo.batteryStatus != mLastBroadcastBatteryStatus
                 || mHealthInfo.batteryHealth != mLastBroadcastBatteryHealth
@@ -790,7 +786,6 @@ public final class BatteryService extends SystemService {
                 || mHealthInfo.batteryTemperatureTenthsCelsius != mLastBroadcastBatteryTemperature
                 || mHealthInfo.maxChargingCurrentMicroamps != mLastBroadcastMaxChargingCurrent
                 || mHealthInfo.maxChargingVoltageMicrovolts != mLastBroadcastMaxChargingVoltage
-                || includeChargeCounter
                 || mInvalidCharger != mLastBroadcastInvalidCharger
                 || mHealthInfo.batteryCycleCount != mLastBroadcastBatteryCycleCount
                 || mHealthInfo.chargingState != mLastBroadcastChargingState
@@ -1241,9 +1236,6 @@ public final class BatteryService extends SystemService {
      * Rate limit's the broadcast based on the changes in temp, voltage and chargeCounter.
      */
     private boolean rateLimitBatteryChangedBroadcast(boolean forceUpdate) {
-        if (!com.android.server.flags.Flags.rateLimitBatteryChangedBroadcast()) {
-            return false;
-        }
         if (mIsFirstBatteryChangedUpdate) {
             mLastBroadcastVoltageUpdateTime = SystemClock.elapsedRealtime();
             mLastBroadcastMaxChargingCurrentUpdateTime = SystemClock.elapsedRealtime();
