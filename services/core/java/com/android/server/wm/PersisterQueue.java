@@ -16,16 +16,11 @@
 
 package com.android.server.wm;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.os.BackgroundThread;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -75,20 +70,6 @@ class PersisterQueue {
     private long mNextWriteTime = 0;
 
     private boolean mShuttingDown;
-    private final BroadcastReceiver mShutdownReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // There are three types of shutdown broadcasts:
-            // 1) Individual users are stopped. We handle this case through
-            //    SystemService#onUserStopping().
-            // 2) The userspace is restarting. We're in the userspace so we flush items.
-            // 3) The system is going down. Flush items.
-            synchronized (PersisterQueue.this) {
-                mShuttingDown = true;
-                flush();
-            }
-        }
-    };
 
     PersisterQueue() {
         this(INTER_WRITE_DELAY_MS, PRE_TASK_DELAY_MS);
@@ -105,14 +86,6 @@ class PersisterQueue {
         mInterWriteDelayMs = interWriteDelayMs;
         mPreTaskDelayMs = preTaskDelayMs;
         mLazyTaskWriterThread = new LazyTaskWriterThread("LazyTaskWriterThread");
-    }
-
-    void onSystemReady(Context context) {
-        // Register the shutdown receiver for the system user. When the system user is shutting down
-        // the entire system is shutting down.
-        final IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
-        context.registerReceiver(mShutdownReceiver, filter, /* broadcastPermission */ null,
-                BackgroundThread.getHandler());
     }
 
     /**
@@ -160,6 +133,11 @@ class PersisterQueue {
             mLazyTaskWriterThread.interrupt();
         }
         mLazyTaskWriterThread.join();
+    }
+
+    synchronized void onSystemShutdown() {
+        mShuttingDown = true;
+        flushNoWait();
     }
 
     synchronized void addItem(WriteQueueItem item, boolean flush) {
@@ -220,9 +198,13 @@ class PersisterQueue {
         }
     }
 
-    synchronized void flush() {
+    private synchronized void flushNoWait() {
         mNextWriteTime = FLUSH_QUEUE;
         notifyAll();
+    }
+
+    synchronized void flush() {
+        flushNoWait();
         do {
             try {
                 wait();

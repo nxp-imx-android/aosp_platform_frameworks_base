@@ -2103,8 +2103,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         doNothing().when(mWm.mRoot).forAllDisplayPolicies(DisplayPolicy::systemReady);
         spyOn(mWm.mSnapshotController);
         doNothing().when(mWm.mSnapshotController).systemReady();
-        spyOn(mWm.mAppCompatConfiguration);
-        doNothing().when(mWm.mAppCompatConfiguration).onSystemReady();
 
         mWm.systemReady();
 
