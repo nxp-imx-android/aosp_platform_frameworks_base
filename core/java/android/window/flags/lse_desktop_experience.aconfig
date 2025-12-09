@@ -915,13 +915,6 @@ flag {
 }
 
 flag {
-    name: "enable_move_to_next_display_shortcut"
-    namespace: "lse_desktop_experience"
-    description: "Add new keyboard shortcut of moving a task into next display"
-    bug: "364154795"
-}
-
-flag {
     name: "enable_multi_display_split"
     namespace: "lse_desktop_experience"
     description: "Enables split screen on multiple displays at the same time"
