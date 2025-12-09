@@ -48,6 +48,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
+import com.android.wm.shell.sysui.ShellController;
 
 /**
  * A class which able to draw splash screen or snapshot as the starting window for a task.
@@ -74,11 +75,11 @@ public class StartingSurfaceDrawer {
      */
     public StartingSurfaceDrawer(Context context, ShellExecutor splashScreenExecutor,
             IconProvider iconProvider, TransactionPool pool, long minimumIconShowDuration,
-            ShellExecutor bgExecutor) {
+            ShellExecutor bgExecutor, ShellController shellController) {
         mSplashScreenExecutor = splashScreenExecutor;
         final DisplayManager displayManager = context.getSystemService(DisplayManager.class);
         mSplashscreenContentDrawer = new SplashscreenContentDrawer(context, iconProvider, pool,
-                minimumIconShowDuration);
+                minimumIconShowDuration, shellController);
         displayManager.getDisplay(DEFAULT_DISPLAY);
 
         mSplashscreenWindowCreator = new SplashscreenWindowCreator(mSplashscreenContentDrawer,
