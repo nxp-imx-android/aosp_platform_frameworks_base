@@ -250,12 +250,8 @@ bool IsFabricatedOverlay(std::string_view path) {
   if (!IsFabricatedOverlayName(path)) {
     return false;
   }
-  std::string path_copy;
-  if (path[path.size()] != '\0') {
-    path_copy.assign(path);
-    path = path_copy;
-  }
-  auto fd = base::unique_fd(base::utf8::open(path.data(), O_RDONLY|O_CLOEXEC|O_BINARY));
+  std::string path_with_nul{path};
+  auto fd = base::unique_fd(base::utf8::open(path_with_nul.data(), O_RDONLY|O_CLOEXEC|O_BINARY));
   if (fd < 0) {
     return false;
   }

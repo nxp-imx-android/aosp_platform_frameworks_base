@@ -17,7 +17,6 @@ package android.platform.test.ravenwood;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
@@ -102,8 +101,9 @@ public final class RavenwoodMessageTracker {
                 var poster = showPendingMessagePosters ? entry.getValue() : null;
 
                 String thread = "(n/a)";
-                if (m.getTarget() != null) {
-                    thread = m.getTarget().getLooper().getThread().getName();
+                var target = m.getTarget();
+                if (target != null) {
+                    thread = target.getLooper().getThread().getName();
                 }
 
                 Log.w(TAG, "    #" + (i++) + ": Thread=" + thread + ", " + m, poster);

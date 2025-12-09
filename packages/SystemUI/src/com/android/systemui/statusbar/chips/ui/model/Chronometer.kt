@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.chips.ui.model
 
 import android.annotation.ElapsedRealtimeLong
-import android.annotation.FlaggedApi
 import com.android.systemui.util.time.SystemClock
 import java.time.Duration
 import java.time.Instant
@@ -32,7 +31,6 @@ sealed class Chronometer {
     data class Running(val eventTime: EventTime, val isCountdown: Boolean = false) : Chronometer()
 
     /** Chronometer paused at a specific time. Won't be displayed if negative. */
-    @FlaggedApi(android.app.Flags.FLAG_API_NOTIFICATION_CHIP)
     data class Paused(val atDuration: Duration) : Chronometer()
 }
 

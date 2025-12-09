@@ -3725,7 +3725,7 @@ package android.telephony {
   }
 
   @FlaggedApi("com.android.internal.telephony.flags.network_security_event_indications") public final class NetworkSecurityEvent implements android.os.Parcelable {
-    ctor public NetworkSecurityEvent(int, int, @NonNull int[], int, int, int, @NonNull String, int, boolean);
+    ctor public NetworkSecurityEvent(int, int, @NonNull int[], long, int, int, @NonNull String, int, boolean);
   }
 
   public class PhoneNumberUtils {

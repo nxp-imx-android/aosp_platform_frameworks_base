@@ -11336,6 +11336,15 @@ public class Notification implements Parcelable
         }
 
         /**
+         * Clears the current lines.
+         * @hide
+         */
+        public InboxStyle clearLines() {
+            mTexts.clear();
+            return this;
+        }
+
+        /**
          * @hide
          */
         public ArrayList<CharSequence> getLines() {
@@ -15666,16 +15675,21 @@ public class Notification implements Parcelable
     public ResolvedCompactContent resolveCompactContent(@NonNull Context context) {
         requireNonNull(context);
         Builder builder = Builder.recoverBuilder(context, this);
-
-        try {
-            CompactContent suppliedContent = CompactContent.fromExtras(this.extras);
-            if (suppliedContent != null) {
-                return CompactContentResolver.resolveCompactContent(context, this, builder,
-                        suppliedContent);
+        // Although this method is @FlaggedApi it will be used by SystemUI, ONLY for the DEFAULT
+        // case. Thus we must ensure that it does NOT use any CompactContent customization that
+        // could find its way into the Notification (e.g. via directly setting extras) until the
+        // flag is launched.
+        if (Flags.apiNotificationChip()) {
+            try {
+                CompactContent suppliedContent = CompactContent.fromExtras(this.extras);
+                if (suppliedContent != null) {
+                    return CompactContentResolver.resolveCompactContent(context, this, builder,
+                            suppliedContent);
+                }
+            } catch (Exception e) {
+                // If there is trash in the extras, also fall back to the default.
+                Log.w(TAG, "Error reading or resolving supplied CompactContent", e);
             }
-        } catch (Exception e) {
-            // If there is trash in the extras, also fall back to the default.
-            Log.w(TAG, "Error reading or resolving supplied CompactContent", e);
         }
 
         CompactContent defaultContent = getDefaultCompactContent(context, builder);

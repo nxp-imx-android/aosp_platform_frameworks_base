@@ -24,6 +24,7 @@ import android.telephony.CellularIdentifierDisclosure;
 import android.telephony.DataConnectionRealTimeInfo;
 import android.telephony.LinkCapacityEstimate;
 import android.telephony.TelephonyDisplayInfo;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.PhoneCapability;
 import android.telephony.PhysicalChannelConfig;
 import android.telephony.PreciseCallState;
@@ -93,4 +94,5 @@ oneway interface IPhoneStateListener {
     void onCellularIdentifierDisclosedChanged(in CellularIdentifierDisclosure disclosure);
     void onDomainSelectionEmergencyModeEntered(int type, int slotIndex, int subscriptionId);
     void onDomainSelectionEmergencyModeExited(int type, int slotIndex, int subscriptionId);
+    void onNetworkSecurityEvents(in List<NetworkSecurityEvent> events);
 }

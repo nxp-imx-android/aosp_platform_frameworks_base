@@ -55,7 +55,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
-import com.android.systemui.statusbar.notification.shared.NotificationChipApi
+import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -147,7 +147,7 @@ constructor(
         val chipChronometerFormat: OngoingActivityChipModel.Content.Timer.Format?
         val chipSemanticStyle: Int?
 
-        if (NotificationChipApi.isEnabled) {
+        if (NotificationChipFromCompactContent.isEnabled) {
             if (content.compactContent is ResolvedBasicCompactContent) {
                 val contentText = content.compactContent.text
                 chipText =
@@ -238,7 +238,7 @@ constructor(
             OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE
         else OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER
 
-    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
+    // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
     private fun PromotedNotificationContentModel.Metric.TimeDifference.toWhen():
         PromotedNotificationContentModel.When? =
         when (this) {
@@ -273,12 +273,12 @@ constructor(
         }
 
     /** Converts a system time (epoch millis) to elapsed realtime. */
-    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
+    // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
     private fun SystemClock.toElapsedRealtime(fromSystemTime: Long): Long =
         fromSystemTime + (elapsedRealtime() - currentTimeMillis())
 
     /** Converts an elapsed realtime to a system time (epoch millis). */
-    // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
+    // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
     private fun SystemClock.toSystemTime(fromElapsedRealtime: Long): Long =
         fromElapsedRealtime + (currentTimeMillis() - elapsedRealtime())
 
@@ -375,7 +375,7 @@ constructor(
             }
 
         val colors =
-            if (NotificationChipApi.isEnabled && this.semanticStyle != null) {
+            if (NotificationChipFromCompactContent.isEnabled && this.semanticStyle != null) {
                 ColorsModel.SystemThemedWithOverride(textRes = this.semanticStyle.toColorResource())
             } else {
                 ColorsModel.SystemThemed
@@ -413,13 +413,14 @@ constructor(
                     // time.
                     OngoingActivityChipModel.Content.IconOnly
                 }
-                NotificationChipApi.isEnabled && chronometer != null ->
+                NotificationChipFromCompactContent.isEnabled && chronometer != null ->
                     OngoingActivityChipModel.Content.Timer(
                         value = chronometer,
                         format = chronometerFormat,
                         timeSource = systemClock,
                     )
-                NotificationChipApi.isEnabled -> OngoingActivityChipModel.Content.IconOnly
+                NotificationChipFromCompactContent.isEnabled ->
+                    OngoingActivityChipModel.Content.IconOnly
                 else -> {
                     when (time) {
                         null -> OngoingActivityChipModel.Content.IconOnly
@@ -522,7 +523,7 @@ constructor(
             OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
         @Notification.SemanticStyle val semanticStyle: Int?,
         /** The time to show in the chip, or null if the time shouldn't be shown. */
-        // TODO: b/462677827 - Delete when inlining API_NOTIFICATION_CHIP
+        // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
         val time: PromotedNotificationContentModel.When?,
         /** See [PromotedNotificationContentModel.wasPromotedAutomatically]. */
         val wasPromotedAutomatically: Boolean,

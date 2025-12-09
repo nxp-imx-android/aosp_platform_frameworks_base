@@ -37,6 +37,7 @@ import static android.app.Notification.EXTRA_PEOPLE_LIST;
 import static android.app.Notification.EXTRA_PICTURE;
 import static android.app.Notification.EXTRA_PICTURE_ICON;
 import static android.app.Notification.EXTRA_SUMMARY_TEXT;
+import static android.app.Notification.EXTRA_TEXT_LINES;
 import static android.app.Notification.EXTRA_TITLE;
 import static android.app.Notification.FLAG_CAN_COLORIZE;
 import static android.app.Notification.GROUP_ALERT_CHILDREN;
@@ -2992,6 +2993,31 @@ public class NotificationTest {
 
         assertThat(progressStyle1.isStyledByProgress()).isTrue();
     }
+
+    @Test
+    public void inboxStyle_addLine() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.InboxStyle()
+                        .addLine("hello")
+                        .addLine("goodbye"))
+                .build();
+        assertThat(n.extras.getCharSequenceArray(EXTRA_TEXT_LINES)).asList()
+                .containsExactly("hello", "goodbye");
+    }
+
+    @Test
+    public void inboxStyle_clearLines() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.InboxStyle()
+                        .addLine("hello")
+                        .addLine("goodbye")
+                        .clearLines())
+                .build();
+        assertThat(n.extras.getCharSequenceArray(EXTRA_TEXT_LINES)).asList().isEmpty();
+    }
+
     private void assertValid(Notification.Colors c) {
         // Assert that all colors are populated
         assertThat(c.getBackgroundColor()).isNotEqualTo(Notification.COLOR_INVALID);

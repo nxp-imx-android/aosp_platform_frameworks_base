@@ -23,6 +23,7 @@ import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.LogBufferHelper.Companion.adjustMaxSize
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.echo.LogcatEchoTrackerAlways
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @SysUISingleton
@@ -32,6 +33,7 @@ constructor(
     private val dumpManager: DumpManager,
     private val logcatEchoTracker: LogcatEchoTracker,
 ) : LogBufferFactory {
+    private val existingBuffers = ConcurrentHashMap<String, LogBuffer>()
 
     override fun create(
         name: String,
@@ -46,4 +48,15 @@ constructor(
         dumpManager.registerBuffer(name, buffer)
         return buffer
     }
+
+    override fun getOrCreate(
+        name: String,
+        maxSize: Int,
+        systrace: Boolean,
+        alwaysLogToLogcat: Boolean,
+        systraceTrackName: String,
+    ): LogBuffer =
+        existingBuffers.computeIfAbsent(name) {
+            create(name, maxSize, systrace, alwaysLogToLogcat, systraceTrackName)
+        }
 }

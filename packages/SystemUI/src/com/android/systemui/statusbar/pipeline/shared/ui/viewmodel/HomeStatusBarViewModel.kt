@@ -42,6 +42,11 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
+import com.android.systemui.log.core.LogLevel
+import com.android.systemui.log.core.MessageInitializer
+import com.android.systemui.log.core.MessagePrinter
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.plugins.DarkIconDispatcher
@@ -264,6 +269,7 @@ constructor(
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
     override val appHandlesViewModelFactory: AppHandlesViewModel.Factory,
+    loggerFactory: LogBufferFactory,
     tableLoggerFactory: TableLogBufferFactory,
     @DisplayAware private val resources: Resources,
     @DisplayAware homeStatusBarInteractor: HomeStatusBarInteractor,
@@ -293,6 +299,7 @@ constructor(
     private val userLogoutInteractor: UserLogoutInteractor,
 ) : HomeStatusBarViewModel, HydratedActivatable(enableEnqueuedActivations = true) {
 
+    val logger = loggerFactory.getOrCreate(logBufferName(thisDisplayId), 60)
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
 
     private val statusBarPopupChips by lazy { statusBarPopupChipsViewModelFactory.create() }
@@ -752,6 +759,7 @@ constructor(
             .hydratedStateOf(traceName = "isSignOutButtonVisible", initialValue = false)
 
     override fun onSignOut() {
+        logger.d { "onSignOut" }
         enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
     }
 
@@ -795,9 +803,17 @@ constructor(
         private const val COL_PREFIX_NOTIF_CONTAINER = "notifContainer"
         private const val COL_PREFIX_SYSTEM_INFO = "systemInfo"
 
+        private const val TAG = "HomeStatusBarViewModel"
+
         private const val TRACK_GROUP = "StatusBar"
 
-        fun tableLogBufferName(displayId: Int) = "HomeStatusBarViewModel[$displayId]"
+        private fun logBufferName(displayId: Int) = "HomeStatusBarViewModelLog[$displayId]"
+
+        private fun tableLogBufferName(displayId: Int) =
+            "HomeStatusBarViewModelTableLog[$displayId]"
+
+        private fun LogBuffer.d(initializer: MessageInitializer = {}, printer: MessagePrinter) =
+            this.log(TAG, LogLevel.DEBUG, initializer, printer)
     }
 }
 

@@ -258,6 +258,7 @@ internal class TransitionSpecImpl(
                                 range = it.range?.reversed(),
                             )
                         },
+                    isReversed = !reverse.isReversed,
                 )
             },
         )
@@ -286,6 +287,7 @@ internal class TransformationSpecImpl(
     override val distance: UserActionDistance?,
     override val intrinsicDirection: SwipeDirection?,
     override val transformationMatchers: List<TransformationMatcher>,
+    val isReversed: Boolean = false,
 ) : TransformationSpec {
     private val cache = mutableMapOf<ElementKey, MutableMap<ContentKey, ElementTransformations?>>()
 

@@ -1178,7 +1178,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(dpm.getDeviceOwnerComponentOnAnyUser()).isEqualTo(admin1);
     }
 
-    // TODO(b/174859111): move to automotive-only section
     private void setDeviceOwner_headlessSystemUser() throws Exception {
         mContext.callerPermissions.add(permission.MANAGE_DEVICE_ADMINS);
         mContext.callerPermissions.add(permission.MANAGE_PROFILE_AND_DEVICE_OWNERS);
@@ -3935,7 +3934,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE, false);
     }
 
-    // TODO(b/174859111): move to automotive-only section
     private void setup_firstBoot_headlessSystemUserMode() throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_UID;
         when(getServices().userManager.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM, false))
@@ -3945,7 +3943,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     /**
-     * TODO(b/174859111): move to automotive-only section
      * Tests provision from secondary user during first boot.
     **/
     @Test

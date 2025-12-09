@@ -806,6 +806,20 @@ class FixedDistance(private val distance: Dp) : UserActionDistance {
     ): Float = distance.toPx()
 }
 
+internal object DefaultSwipeDistance : UserActionDistance {
+    override fun UserActionDistanceScope.absoluteDistance(
+        fromContent: ContentKey,
+        toContent: ContentKey,
+        orientation: Orientation,
+    ): Float {
+        val fromContentSize = checkNotNull(fromContent.targetSize())
+        return when (orientation) {
+            Orientation.Horizontal -> fromContentSize.width
+            Orientation.Vertical -> fromContentSize.height
+        }.toFloat()
+    }
+}
+
 /**
  * An internal version of [SceneTransitionLayout] to be used for tests, that provides access to the
  * internal [SceneTransitionLayoutImpl] and implicitly tags all scenes and elements.

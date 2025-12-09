@@ -16,23 +16,22 @@
 
 package com.android.systemui.statusbar.notification.shared
 
-import android.app.Flags
 import com.android.systemui.flags.RefactorFlagUtils
 
-/** Helper for reading or using the api notification chip flag state. */
+/** Helper for reading or using the "notification chip from compact content" flag. */
 @Suppress("NOTHING_TO_INLINE")
-object NotificationChipApi {
+object NotificationChipFromCompactContent {
     /** The aconfig flag name */
     const val MULTIPLE_FLAG_NAMES =
-        "${Flags.FLAG_API_NOTIFICATION_CHIP} and ${Flags.FLAG_API_METRIC_STYLE} and ${Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE}"
+        "${com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT} and ${android.app.Flags.FLAG_API_METRIC_STYLE} and ${android.app.Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE}"
 
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
         get() =
-            Flags.apiNotificationChip() &&
-                Flags.apiMetricStyle() &&
-                Flags.apiNotificationSemanticStyle()
+            com.android.systemui.Flags.notificationChipFromCompactContent() &&
+                android.app.Flags.apiMetricStyle() &&
+                android.app.Flags.apiNotificationSemanticStyle()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This can be used to protect users

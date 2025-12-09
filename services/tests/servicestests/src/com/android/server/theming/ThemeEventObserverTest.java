@@ -138,10 +138,28 @@ public class ThemeEventObserverTest {
         Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
         intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
         when(mThemeStateManager.parentOf(PROFILE_ID)).thenReturn(USER_ID);
+        // Simulate state already exists for parent
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         mThemeEventObserver.mBroadcastReceiver.onReceive(mContext, intent);
 
         verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(PROFILE_ID);
+        verify(mThemeStateManager).onProfileAdd(USER_ID, PROFILE_ID);
+    }
+
+    @Test
+    public void testProfileAdded_lazyLoadsState_ifMissing() {
+        Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
+        intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
+        when(mThemeStateManager.parentOf(PROFILE_ID)).thenReturn(USER_ID);
+        // Simulate state missing initially for parent
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(false);
+
+        mThemeEventObserver.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(PROFILE_ID);
+        // Verify lazy load happened for parent
+        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
         verify(mThemeStateManager).onProfileAdd(USER_ID, PROFILE_ID);
     }
 
@@ -188,6 +206,8 @@ public class ThemeEventObserverTest {
                 VALUE_HOME_WALLPAPER).setSystemPalette(Color.valueOf(Color.BLUE)).setThemeStyle(
                 ThemeStyle.TONAL_SPOT).build();
         when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID)).thenReturn(settings);
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         WallpaperColors colors = new WallpaperColors(Color.valueOf(Color.RED), null, null);
         mWallpaperListener.onColorsChanged(colors, 0, 0, USER_ID, true);
@@ -202,6 +222,8 @@ public class ThemeEventObserverTest {
                 VALUE_PRESET).setSystemPalette(Color.valueOf(Color.BLUE)).setThemeStyle(
                 ThemeStyle.TONAL_SPOT).build();
         when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID)).thenReturn(settings);
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         WallpaperColors colors = new WallpaperColors(Color.valueOf(Color.RED), null, null);
         mWallpaperListener.onColorsChanged(colors, 0, 0, USER_ID, true);
@@ -213,6 +235,8 @@ public class ThemeEventObserverTest {
     public void testContrastChanged_callsStateManager() {
         verify(mUiModeManagerInternal).addContrastListener(mContrastListenerCaptor.capture(),
                 any(Executor.class));
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         mContrastListenerCaptor.getValue().onContrastChange(USER_ID, 0.5f);
 
@@ -234,8 +258,26 @@ public class ThemeEventObserverTest {
         // Trigger ContentObserver
         Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
                 USER_ID);
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
+
         mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
 
+        verify(mThemeStateManager).onFinishSetup(USER_ID);
+    }
+
+    @Test
+    public void testUserSetupComplete_lazyLoadsState_ifMissing() {
+        // Simulate state missing initially
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(false);
+
+        // Trigger ContentObserver
+        Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
+                USER_ID);
+        mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
+
+        // Verify lazy load happened BEFORE onFinishSetup
+        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
         verify(mThemeStateManager).onFinishSetup(USER_ID);
     }
 
@@ -245,6 +287,8 @@ public class ThemeEventObserverTest {
                 VALUE_HOME_WALLPAPER).setSystemPalette(Color.valueOf(Color.BLUE)).setThemeStyle(
                 ThemeStyle.EXPRESSIVE).build();
         when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID)).thenReturn(settings);
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         // Trigger ContentObserver
         Settings.Secure.putStringForUser(mContentResolver,
@@ -261,6 +305,8 @@ public class ThemeEventObserverTest {
                 VALUE_PRESET).setSystemPalette(Color.valueOf(Color.RED)).setThemeStyle(
                 ThemeStyle.TONAL_SPOT).build();
         when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID)).thenReturn(settings);
+        // Simulate state already exists
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(true);
 
         // Trigger ContentObserver
         Settings.Secure.putStringForUser(mContentResolver,

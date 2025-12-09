@@ -137,9 +137,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 deviceConfig.isSmallTablet(), mShowingInBubbleBar,
                 deviceConfig.getWindowBounds());
         updateInternal(deviceConfig.getInsets(), deviceConfig.getWindowBounds());
-        if (isShowingInBubbleBar()) {
-            mPendingBubbleBarTopOnScreenUpdate = true;
-        }
+        mPendingBubbleBarTopOnScreenUpdate = isShowingInBubbleBar();
     }
 
     /** Returns the device config being used. */
@@ -924,7 +922,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
      * position of the bubble bar from launcher.
      */
     public boolean isPendingBubbleBarTopOnScreenUpdate() {
-        return mPendingBubbleBarTopOnScreenUpdate;
+        return mPendingBubbleBarTopOnScreenUpdate && isShowingInBubbleBar();
     }
 
     /** Updates the top coordinate of bubble bar on screen. */

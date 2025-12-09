@@ -29,7 +29,6 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
@@ -71,7 +70,7 @@ import com.android.systemui.statusbar.notification.data.repository.addNotifs
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
-import com.android.systemui.statusbar.notification.shared.NotificationChipApi
+import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
@@ -340,7 +339,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
 
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
-                    if (NotificationChipApi.isEnabled) {
+                    if (NotificationChipFromCompactContent.isEnabled) {
                         this.compactContent =
                             Notification.ResolvedBasicCompactContent(
                                 COMPACT_ICON,
@@ -1076,7 +1075,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                android.app.Flags.FLAG_API_NOTIFICATION_CHIP
+                com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
             )
         }
 
@@ -1245,12 +1244,12 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
         key: String
     ): PromotedNotificationContentBuilder {
         val builder = PromotedNotificationContentBuilder(key)
-        if (NotificationChipApi.isEnabled) {
+        if (NotificationChipFromCompactContent.isEnabled) {
             builder.applyToShared {
-                // If API_NOTIFICATION_CHIP is active, then PromotedNotificationContentModel must
-                // have SOME compactContent, otherwise toPrunedModel() will throw. We provide a
-                // default here. Tests that want to check chip icon/text should set an explicit
-                // one.
+                // If NOTIFICATION_CHIP_FROM_COMPACT_CONTENT is active, then
+                // PromotedNotificationContentModel must have SOME compactContent, otherwise
+                // toPrunedModel() will throw. We provide a default here. Tests that want to check
+                // chip icon/text should set an explicit one.
                 this.compactContent =
                     Notification.ResolvedBasicCompactContent(
                         COMPACT_ICON,

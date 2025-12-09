@@ -22,9 +22,39 @@ import android.os.Bundle;
  * @hide
  */
 interface IBroadcastTime {
+    /**
+     * Gets the UTC time from the transport stream.
+     *
+     * @return The difference, in milliseconds, between the current time and the
+     *         Unix epoch (midnight, January 1, 1970 UTC).
+     */
     long getUtcTime();
+    /**
+     * Gets the local time from the transport stream, adjusted for the current time zone offset.
+     *
+     * @return The local time in milliseconds since the Unix epoch.
+     */
     long getLocalTime();
+    /**
+     * Gets time zone information from the transport stream.
+     *
+     * @return A Bundle containing time zone details with bundle keys defined as
+     *         @TimeConstants.TimeZoneInfoBundleKey.
+     */
     Bundle getTimeZoneInfo();
+    /**
+     * Gets the UTC time from the transport stream for a specific multi-session instance.
+     *
+     * @param SessionToken A unique token created by the TIS to identify a specific session.
+     * @return The difference, in milliseconds, between the current time and the Unix epoch.
+     */
     long getUtcTimePerStream(String SessionToken);
+    /**
+     * Gets the local time from the transport stream for a specific multi-session instance,
+     * adjusted for the current time zone offset.
+     *
+     * @param SessionToken A unique token created by the TIS to identify a specific session.
+     * @return The local time in milliseconds since the Unix epoch.
+     */
     long getLocalTimePerStream(String SessionToken);
 }
