@@ -674,7 +674,6 @@ public class BubbleData {
      * removal is ignored.
      */
     public void dismissBubbleWithKey(String key, @DismissReason int reason, long removalTimestamp) {
-        BubbleLog.d("BubbleData.dismissBubbleWithKey() key=%s", key);
         boolean shouldRemove = true;
         // if the bubble was removed from launcher, verify that the removal happened after the last
         // time it was updated
@@ -685,6 +684,7 @@ public class BubbleData {
                 shouldRemove = false;
             }
         }
+        BubbleLog.d("BubbleData.dismissBubbleWithKey() key=%s shouldRemove=%b", key, shouldRemove);
         if (shouldRemove) {
             doRemove(key, reason);
             dispatchPendingChanges();
