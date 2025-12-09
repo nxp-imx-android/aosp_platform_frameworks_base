@@ -3187,6 +3187,7 @@ class ActivityStarter {
             } else {
                 // TODO(b/199997762): Consider leaving all reparent operation of organized tasks
                 //  to task organizer.
+                intentTask.mTransitionController.collectExistenceChange(intentTask);
                 intentTask.reparent(mTargetRootTask, ON_TOP, REPARENT_MOVE_ROOT_TASK_TO_FRONT,
                         ANIMATE, DEFER_RESUME, "reparentToTargetRootTask");
                 mMovedToFront = true;
