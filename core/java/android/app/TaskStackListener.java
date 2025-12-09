@@ -21,7 +21,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ComponentName;
 import android.os.Build;
 import android.os.RemoteException;
-import android.window.TaskSnapshot;
 
 /**
  * Classes interested in observing only a subset of changes using ITaskStackListener can extend
@@ -167,28 +166,6 @@ public abstract class TaskStackListener extends ITaskStackListener.Stub {
     public void onTaskProfileLocked(RunningTaskInfo taskInfo)
             throws RemoteException {
     }
-
-    /**
-     * @deprecated Use {@link android.window.TaskSnapshotManager.TaskSnapshotListener} to receive
-     * callback.
-     */
-    @Deprecated
-    @Override
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public void onTaskSnapshotChanged(int taskId, TaskSnapshot snapshot) throws RemoteException {
-        if (!mIsRemote || snapshot == null) {
-            return;
-        }
-        snapshot.closeBuffer();
-    }
-
-    /**
-     * @deprecated Use {@link android.window.SnapshotManager.TaskSnapshotListener} to receive
-     * callback.
-     */
-    @Deprecated
-    @Override
-    public void onTaskSnapshotInvalidated(int taskId) { }
 
     @Override
     public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo)

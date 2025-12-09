@@ -28,7 +28,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.SomeArgs;
@@ -48,7 +47,6 @@ class TaskChangeNotificationController {
     private static final int NOTIFY_ACTIVITY_REQUESTED_ORIENTATION_CHANGED_LISTENERS = 12;
     private static final int NOTIFY_TASK_REMOVAL_STARTED_LISTENERS = 13;
     private static final int NOTIFY_TASK_PROFILE_LOCKED_LISTENERS_MSG = 14;
-    private static final int NOTIFY_TASK_SNAPSHOT_CHANGED_LISTENERS_MSG = 15;
     private static final int NOTIFY_ACTIVITY_UNPINNED_LISTENERS_MSG = 17;
     private static final int NOTIFY_ACTIVITY_LAUNCH_ON_SECONDARY_DISPLAY_FAILED_MSG = 18;
     private static final int NOTIFY_ACTIVITY_LAUNCH_ON_SECONDARY_DISPLAY_REROUTED_MSG = 19;
@@ -147,12 +145,6 @@ class TaskChangeNotificationController {
         l.onTaskProfileLocked((RunningTaskInfo) m.obj, m.arg1);
     };
 
-    private final TaskStackConsumer mNotifyTaskSnapshotChangedRemote = (l, m) -> {
-        final TaskSnapshot taskSnapshot = (TaskSnapshot) m.obj;
-        taskSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-        l.onTaskSnapshotChanged(m.arg1, taskSnapshot);
-    };
-
     private final TaskStackConsumer mNotifyTaskDisplayChanged = (l, m) -> {
         l.onTaskDisplayChanged(m.arg1, m.arg2);
     };
@@ -246,10 +238,6 @@ class TaskChangeNotificationController {
                     break;
                 case NOTIFY_TASK_PROFILE_LOCKED_LISTENERS_MSG:
                     forAllRemoteListeners(mNotifyTaskProfileLocked, msg);
-                    break;
-                case NOTIFY_TASK_SNAPSHOT_CHANGED_LISTENERS_MSG:
-                    forAllRemoteListeners(mNotifyTaskSnapshotChangedRemote, msg);
-                    ((TaskSnapshot) msg.obj).removeReference(TaskSnapshot.REFERENCE_BROADCAST);
                     break;
                 case NOTIFY_BACK_PRESSED_ON_TASK_ROOT:
                     forAllRemoteListeners(mNotifyBackPressedOnTaskRoot, msg);
