@@ -92,6 +92,10 @@ constructor(
         val request = makeAppWindowRequest(bitmap, displayId)
 
         takeScreenshot(request)
+
+        uiEventLogger.log(
+            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_APP_WINDOW_SCREENSHOT_REQUESTED
+        )
     }
 
     private fun makeAppWindowRequest(bitmap: Bitmap, displayId: Int): ScreenshotRequest {
