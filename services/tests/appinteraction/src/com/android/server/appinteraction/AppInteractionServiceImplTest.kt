@@ -95,12 +95,11 @@ class AppInteractionServiceImplTest {
             "pkg.exists",
             null,
             0L,
-            0L,
             TEST_USER.userIdentifier,
         )
 
         verify(mockUserHistory, never())
-            .insertAppInteractionHistory(any(), any(), anyOrNull(), any(), any())
+            .insertAppInteractionHistory(any(), any(), anyOrNull(), any())
     }
 
     @Test
@@ -119,12 +118,11 @@ class AppInteractionServiceImplTest {
             "pkg.not.found",
             null,
             0L,
-            0L,
             TEST_USER.userIdentifier,
         )
 
         verify(mockUserHistory, never())
-            .insertAppInteractionHistory(any(), any(), anyOrNull(), any(), any())
+            .insertAppInteractionHistory(any(), any(), anyOrNull(), any())
     }
 
     @Test
@@ -138,7 +136,6 @@ class AppInteractionServiceImplTest {
             "pkg.exists.2",
             attribution,
             1L,
-            2L,
             TEST_USER.userIdentifier,
         )
 
@@ -148,7 +145,6 @@ class AppInteractionServiceImplTest {
                 eq("pkg.exists.2"),
                 eq(attribution),
                 eq(1L),
-                eq(2L),
             )
     }
 
@@ -157,10 +153,10 @@ class AppInteractionServiceImplTest {
         whenever(mockMultiUserHistory.asUser(TEST_USER.userIdentifier))
             .doThrow(IllegalStateException("User locked"))
 
-        service.noteAppInteraction("pkg1", "pkg2", null, 0L, 0L, TEST_USER.userIdentifier)
+        service.noteAppInteraction("pkg1", "pkg2", null, 0L, TEST_USER.userIdentifier)
 
         verify(mockUserHistory, never())
-            .insertAppInteractionHistory(any(), any(), anyOrNull(), any(), any())
+            .insertAppInteractionHistory(any(), any(), anyOrNull(), any())
     }
 
     companion object {

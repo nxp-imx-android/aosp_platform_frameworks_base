@@ -937,7 +937,6 @@ public class ComputerControlSessionImplTest {
                         eq(TEST_COMPONENT.getPackageName()),
                         isNull(),
                         anyLong(),
-                        eq(0L),
                         eq(USER_ID));
     }
 
@@ -954,7 +953,7 @@ public class ComputerControlSessionImplTest {
                 .onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
 
         verify(mAppInteractionService, never())
-                .noteAppInteraction(any(), any(), any(), anyLong(), anyLong(), anyInt());
+                .noteAppInteraction(any(), any(), any(), anyLong(), anyInt());
     }
 
     @Test

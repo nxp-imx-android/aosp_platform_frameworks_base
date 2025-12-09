@@ -126,13 +126,6 @@ public final class AppInteractionContract implements BaseColumns {
     public static final String COLUMN_ACCESS_TIME = "access_time";
 
     /**
-     * The duration (in milliseconds) of the app interaction.
-     *
-     * <p>Type: INTEGER (long)
-     */
-    public static final String COLUMN_DURATION = "access_duration";
-
-    /**
      * Gets the {@code content://} style URI for the App Interaction history table for the user from
      * the context used to obtain the instance of this class.
      *

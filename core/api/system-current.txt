@@ -718,7 +718,6 @@ package android.app {
     field public static final String COLUMN_ACCESS_TIME = "access_time";
     field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
     field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
-    field public static final String COLUMN_DURATION = "access_duration";
     field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
     field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
     field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";

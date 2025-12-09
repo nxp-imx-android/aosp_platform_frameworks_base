@@ -90,7 +90,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
-import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -1335,16 +1334,14 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private void recordAppFunctionInteraction(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
         if (!android.app.appfunctions.flags.Flags.enableAppInteractionApi()) return;
-        Objects.requireNonNull(mAppFunctionAccessService);
+        Objects.requireNonNull(mAppInteractionService);
 
-        final long duration = SystemClock.elapsedRealtime() - aidlRequest.getRequestTime();
         final long accessTime = aidlRequest.getRequestWallTime();
         mAppInteractionService.noteAppInteraction(
                 aidlRequest.getCallingPackage(),
                 aidlRequest.getClientRequest().getTargetPackageName(),
                 aidlRequest.getClientRequest().getAttribution(),
                 accessTime,
-                duration,
                 aidlRequest.getUserHandle().getIdentifier());
     }
 

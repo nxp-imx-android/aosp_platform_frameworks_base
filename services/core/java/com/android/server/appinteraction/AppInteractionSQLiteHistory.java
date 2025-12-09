@@ -16,6 +16,7 @@
 
 package com.android.server.appinteraction;
 
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppInteractionAttribution;
@@ -57,8 +58,6 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
                         + AppInteractionContract.COLUMN_INTERACTION_URI
                         + " TEXT, "
                         + AppInteractionContract.COLUMN_ACCESS_TIME
-                        + " INTEGER, "
-                        + AppInteractionContract.COLUMN_DURATION
                         + " INTEGER);";
 
         static final String DELETE_TABLE_DATA_BEFORE_ACCESS_TIME =
@@ -141,8 +140,7 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
             @NonNull String sourcePackage,
             @NonNull String targetPackage,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            long accessTime,
-            long duration) {
+            @CurrentTimeMillisLong long accessTime) {
         Objects.requireNonNull(sourcePackage);
         Objects.requireNonNull(targetPackage);
 
@@ -150,11 +148,7 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
             final SQLiteDatabase db = getWritableDatabase();
             final ContentValues values =
                     prepareAppInteractionContentValue(
-                            sourcePackage,
-                            targetPackage,
-                            appInteractionAttribution,
-                            accessTime,
-                            duration);
+                            sourcePackage, targetPackage, appInteractionAttribution, accessTime);
 
             return db.insert(AccessHistoryTable.DB_TABLE, /* nullColumnHack= */ null, values);
         } catch (Exception e) {
@@ -168,8 +162,7 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
             @NonNull String sourcePackage,
             @NonNull String targetPackage,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            long accessTime,
-            long duration) {
+            @CurrentTimeMillisLong long accessTime) {
         Objects.requireNonNull(sourcePackage);
         Objects.requireNonNull(targetPackage);
 
@@ -178,7 +171,6 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
         values.put(AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME, sourcePackage);
         values.put(AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME, targetPackage);
         values.put(AppInteractionContract.COLUMN_ACCESS_TIME, accessTime);
-        values.put(AppInteractionContract.COLUMN_DURATION, duration);
 
         if (appInteractionAttribution != null) {
             values.put(
