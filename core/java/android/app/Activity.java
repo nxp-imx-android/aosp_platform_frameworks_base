@@ -915,6 +915,7 @@ public class Activity extends ContextThemeWrapper
     private boolean mDestroyed;
     private boolean mDoReportFullyDrawn = true;
     private boolean mRestoredFromBundle;
+    private boolean mIsHandoffEnabled;
 
     /** {@code true} if the activity lifecycle is in a state which supports picture-in-picture.
      * This only affects the client-side exception, the actual state check still happens in AMS. */
@@ -7737,7 +7738,7 @@ public class Activity extends ContextThemeWrapper
      */
     @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public final boolean isHandoffEnabled() {
-        return ActivityClient.getInstance().isHandoffEnabled(mToken);
+        return mIsHandoffEnabled;
     }
 
     /**
@@ -7759,6 +7760,7 @@ public class Activity extends ContextThemeWrapper
         @Nullable HandoffActivityParams handoffActivityParams) {
         ActivityClient.getInstance().setHandoffEnabled(
                 mToken, handoffEnabled, handoffActivityParams);
+        mIsHandoffEnabled = handoffEnabled;
     }
 
     /**

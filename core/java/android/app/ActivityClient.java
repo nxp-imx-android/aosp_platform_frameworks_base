@@ -377,14 +377,6 @@ public class ActivityClient {
         }
     }
 
-    boolean isHandoffEnabled(IBinder token) {
-        try {
-            return getActivityClientController().isHandoffEnabled(token);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
     @Nullable
     HandoffActivityParams getHandoffActivityParams(IBinder token) {
         try {

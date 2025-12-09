@@ -911,7 +911,7 @@ public class ActivityRecordTests extends WindowTestsBase {
     public void testClientControllerCanModifyHandoffStatus() {
         // Create a new task, verify Handoff is disabled by default.
         final ActivityRecord activity = createActivityWithTask();
-        assertFalse(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        assertFalse(activity.isHandoffEnabled());
         HandoffActivityParams params =
                 mAtm.mActivityClientController.getHandoffActivityParams(activity.token);
         assertNull(params);
@@ -923,7 +923,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         mAtm
             .mActivityClientController
             .setHandoffEnabled(activity.token, true, handoffEnabledParams);
-        assertTrue(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        assertTrue(activity.isHandoffEnabled());
         assertEquals(
                 handoffEnabledParams,
                 mAtm.mActivityClientController.getHandoffActivityParams(

@@ -111,7 +111,6 @@ interface IActivityClientController {
     boolean isImmersive(in IBinder token);
     void setImmersive(in IBinder token, boolean immersive);
 
-    boolean isHandoffEnabled(in IBinder token);
     HandoffActivityParams getHandoffActivityParams(in IBinder token);
     void setHandoffEnabled(
         in IBinder token,
