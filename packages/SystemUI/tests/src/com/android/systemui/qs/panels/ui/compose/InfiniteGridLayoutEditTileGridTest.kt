@@ -25,6 +25,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
@@ -117,17 +118,20 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
 
     @Composable
     private fun TestEditTileGrid() {
-        PlatformTheme {
-            with(kosmos) {
-                val tiles by editModeViewModel.tiles.collectAsState(emptyList())
-                underTest.EditTileGrid(
-                    tiles = tiles,
-                    modifier = Modifier.fillMaxSize(),
-                    onAddTile = editModeViewModel::addTile,
-                    onRemoveTile = editModeViewModel::removeTile,
-                    onSetTiles = editModeViewModel::setTiles,
-                    onStopEditing = {},
-                )
+        // TODO(b/467024654): Remove LookaheadScope when the bug is fixed.
+        LookaheadScope {
+            PlatformTheme {
+                with(kosmos) {
+                    val tiles by editModeViewModel.tiles.collectAsState(emptyList())
+                    underTest.EditTileGrid(
+                        tiles = tiles,
+                        modifier = Modifier.fillMaxSize(),
+                        onAddTile = editModeViewModel::addTile,
+                        onRemoveTile = editModeViewModel::removeTile,
+                        onSetTiles = editModeViewModel::setTiles,
+                        onStopEditing = {},
+                    )
+                }
             }
         }
     }

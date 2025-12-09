@@ -25,12 +25,15 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.overscroll
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.testTag
@@ -89,17 +92,20 @@ class OffsetOverscrollEffectTest {
             scrollableState = rememberScrollableState { if (canScroll()) it else 0f }
             overscrollEffect = rememberOffsetOverscrollEffect()
 
-            Box(
-                Modifier.overscroll(overscrollEffect)
-                    // A scrollable that does not consume the scroll gesture.
-                    .scrollable(
-                        state = scrollableState,
-                        orientation = scrollableOrientation,
-                        overscrollEffect = overscrollEffect,
-                    )
-                    .size(layoutSize)
-                    .testTag(BOX_TAG)
-            )
+            // TODO(b/467024654): Remove LookaheadScope when the bug is fixed.
+            LookaheadScope {
+                Box(
+                    Modifier.overscroll(overscrollEffect)
+                        // A scrollable that does not consume the scroll gesture.
+                        .scrollable(
+                            state = scrollableState,
+                            orientation = scrollableOrientation,
+                            overscrollEffect = overscrollEffect,
+                        )
+                        .size(layoutSize)
+                        .testTag(BOX_TAG)
+                )
+            }
         }
         return LayoutInfo(layoutSize, touchSlop, density, scrollableState, overscrollEffect)
     }

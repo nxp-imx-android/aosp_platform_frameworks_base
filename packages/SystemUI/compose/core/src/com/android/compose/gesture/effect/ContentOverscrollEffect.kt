@@ -22,6 +22,8 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
@@ -54,13 +56,12 @@ open class BaseContentOverscrollEffect(
     override val overscrollDistance: Float
         get() = animatable.value
 
-    override val isInProgress: Boolean
-        /**
-         * We need both checks, because [overscrollDistance] can be
-         * - zero while it is already being animated, if the animation starts from 0
-         * - greater than zero without an animation, if the content is still being dragged
-         */
-        get() = overscrollDistance != 0f || animatable.isRunning
+    override val isInProgress: Boolean by derivedStateOf {
+        // We need both checks, because [overscrollDistance] can be
+        // - zero while it is already being animated, if the animation starts from 0
+        // - greater than zero without an animation, if the content is still being dragged
+        overscrollDistance != 0f || animatable.isRunning
+    }
 
     override fun applyToScroll(
         delta: Offset,
