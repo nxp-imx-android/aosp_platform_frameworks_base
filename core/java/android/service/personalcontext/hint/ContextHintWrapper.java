@@ -18,12 +18,14 @@ package android.service.personalcontext.hint;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -101,7 +103,9 @@ public final class ContextHintWrapper implements Parcelable {
      * {@link ContextHintWrapper}.
      */
     @NonNull
-    public static List<ContextHintWrapper> wrapList(@NonNull Collection<ContextHint> hints) {
+    public static List<ContextHintWrapper> wrapList(@Nullable Collection<ContextHint> hints) {
+        if (hints == null) return Collections.emptyList();
+
         List<ContextHintWrapper> list = new ArrayList<>();
         for (ContextHint hint : hints) {
             list.add(new ContextHintWrapper(hint));
