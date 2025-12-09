@@ -16,11 +16,14 @@
 
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
-import com.android.compose.animation.scene.DefaultElementContentPicker
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.HighestZIndexContentPicker
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.StaticElementContentPicker
+import com.android.compose.animation.scene.content.state.TransitionState
 
 /** Keys for scenes and overlays that our movable elements may appear in */
 object LockscreenMovableParentKeys {
@@ -64,8 +67,11 @@ object LockscreenElementKeys {
      * copies of the wrapped view cannot be created at the same time.
      */
     val ContentPicker =
-        DefaultElementContentPicker(
-            contents =
+        // TODO(b/b/454283910 ): Replace this by DefaultElementContentPicker and stop sharing the
+        // same picker for all elements. Each element should have its own picker, with the exact set
+        // of scenes in which the element *is* composed.
+        object : StaticElementContentPicker {
+            override val contents: Set<ContentKey> =
                 setOf(
                     LockscreenMovableParentKeys.Lockscreen,
                     LockscreenMovableParentKeys.NotificationsShade,
@@ -75,7 +81,21 @@ object LockscreenElementKeys {
                     LockscreenMovableParentKeys.UpperRegion.WideLayout.TwoColumn.LargeClock,
                     LockscreenMovableParentKeys.UpperRegion.WideLayout.TwoColumn.SmallClock,
                 )
-        )
+
+            override fun contentDuringTransition(
+                element: ElementKey,
+                transition: TransitionState.Transition,
+                fromContentZIndex: Long,
+                toContentZIndex: Long,
+            ): ContentKey {
+                return HighestZIndexContentPicker.contentDuringTransition(
+                    element,
+                    transition,
+                    fromContentZIndex,
+                    toContentZIndex,
+                )
+            }
+        }
 
     /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")
