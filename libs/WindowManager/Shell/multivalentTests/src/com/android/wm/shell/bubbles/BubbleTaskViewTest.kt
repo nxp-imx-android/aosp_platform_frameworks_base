@@ -57,7 +57,9 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     private val componentName = ComponentName(context, "TestClass")
     private val runningTaskInfo = ActivityManager.RunningTaskInfo()
     private val splitScreenController = mock<SplitScreenController>()
-    private val bubbleController = mock<BubbleController>()
+    private val bubbleHelper = mock<BubbleHelper>()
+    private val bubbleController =
+        mock<BubbleController> { on { bubbleHelper } doReturn bubbleHelper }
     private val taskViewTaskController = mock<TaskViewTaskController>()
     private val taskView =
         mock<TaskView> {
@@ -103,7 +105,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     @DisableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
     @Test
     fun cleanup_noTaskCreated_removesTask() {
-        bubbleController.stub { on { shouldBeAppBubble(any()) } doReturn true }
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
         bubbleTaskView.cleanup()
 
         verify(taskView, never()).unregisterTask()
@@ -123,7 +125,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     @Test
     fun cleanup_regularBubbleTask_removesTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
-        bubbleController.stub { on { shouldBeAppBubble(any()) } doReturn true }
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
 
         bubbleTaskView.cleanup()
 
@@ -135,7 +137,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     @Test
     fun cleanup_regularBubbleTask_unregistersTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
-        bubbleController.stub { on { shouldBeAppBubble(any()) } doReturn true }
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
 
         bubbleTaskView.cleanup()
 

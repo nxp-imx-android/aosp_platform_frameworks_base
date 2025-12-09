@@ -238,6 +238,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         protected final StageCoordinator mSplitHandler;
         protected final KeyguardTransitionHandler mKeyguardHandler;
         protected final BubbleTransitions mBubbleTransitions;
+        protected final BubbleHelper mBubbleHelper;
         protected final @Nullable PinnedLayerHandler mPinnedLayerHandler;
 
         Transitions.TransitionHandler mLeftoversHandler = null;
@@ -263,7 +264,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         MixedTransition(@MixedTransitionType int type, IBinder transition, Transitions player,
                 MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
                 StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
-                BubbleTransitions bubbleTransitions, PinnedLayerHandler pinnedLayerHandler) {
+                BubbleTransitions bubbleTransitions, BubbleHelper bubbleHelper,
+                PinnedLayerHandler pinnedLayerHandler) {
             mType = type;
             mTransition = transition;
             mPlayer = player;
@@ -272,6 +274,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             mSplitHandler = splitHandler;
             mKeyguardHandler = keyguardHandler;
             mBubbleTransitions = bubbleTransitions;
+            mBubbleHelper = bubbleHelper;
             mPinnedLayerHandler = pinnedLayerHandler;
         }
 
@@ -347,7 +350,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 // The previously resolved mixed handler is no longer relevant, and we can replace
                 // it entirely because there are only opening bubble tasks in the changes.
                 final List<Integer> openingAppBubbleChangeIndexes =
-                        getOpeningAppBubbleChangeIndexes(mBubbleTransitions, info);
+                        getOpeningAppBubbleChangeIndexes(mBubbleHelper, info);
                 return openingAppBubbleChangeIndexes.isEmpty()
                         || openingAppBubbleChangeIndexes.size() != info.getChanges().size();
             }
@@ -461,7 +464,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         + "from an app bubble or for an existing bubble");
                 WindowContainerTransaction out = new WindowContainerTransaction();
                 if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-                    if (task != null && mBubbleTransitions.shouldBeAppBubble(task)) {
+                    if (task != null && mBubbleHelper.isAppBubbleTask(task)) {
                         int currentWindowingMode = task.getWindowingMode();
                         if (currentWindowingMode != WINDOWING_MODE_MULTI_WINDOW) {
                             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -732,7 +735,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             IBinder transition, int displayId) {
         return new RecentsMixedTransition(type, transition, mPlayer, this, mPipHandler,
                 mSplitHandler, mKeyguardHandler, mRecentsHandler, mDesktopTasksController,
-                mBubbleTransitions, mPinnedLayerHandler, displayId);
+                mBubbleTransitions, mBubbleHelper, mPinnedLayerHandler, displayId);
     }
 
     static TransitionInfo subCopy(@NonNull TransitionInfo info,
@@ -779,7 +782,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 // If there was no requested transition but the transition includes an opening
                 // bubble task, then handle it here now.
                 final List<Integer> openingAppBubbleChangeIndexes =
-                        getOpeningAppBubbleChangeIndexes(mBubbleTransitions, info);
+                        getOpeningAppBubbleChangeIndexes(mBubbleHelper, info);
                 if (!openingAppBubbleChangeIndexes.isEmpty()) {
                     if (mSplitHandler != null && mSplitHandler.requestImpliesSplitToBubble(
                             info.getChanges().get(
@@ -1041,7 +1044,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         keyguardInfo.setFlags(info.getFlags());
 
         final Set<Integer> bubbleChangeIndexes = new HashSet<>(
-                getOpeningAppBubbleChangeIndexes(mBubbleTransitions, info));
+                getOpeningAppBubbleChangeIndexes(mBubbleHelper, info));
         for (int i = 0; i < info.getChanges().size(); i++) {
             TransitionInfo.Change change = info.getChanges().get(i);
             if (change.getTaskInfo() != null
@@ -1158,7 +1161,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             @NonNull TransitionRequestInfo request) {
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
-                && mBubbleTransitions.shouldBeAppBubble(request.getTriggerTask());
+                && mBubbleHelper.isAppBubbleTask(request.getTriggerTask());
     }
 
     /**
@@ -1166,7 +1169,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
      * started transition.
      */
     private static List<Integer> getOpeningAppBubbleChangeIndexes(
-            @NonNull BubbleTransitions bubbleTransitions, @NonNull TransitionInfo info) {
+            @NonNull BubbleHelper bubbleHelper, @NonNull TransitionInfo info) {
         final ArrayList<Integer> bubbleChangeIndexes = new ArrayList<>();
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change chg = info.getChanges().get(i);
@@ -1180,8 +1183,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 continue;
             }
             // Skip non-app-bubble tasks
-            if (!bubbleTransitions.shouldBeAppBubble(taskInfo)
-                    && !bubbleTransitions.isAppBubbleRootTask(taskInfo)) {
+            if (!bubbleHelper.isAppBubbleTask(taskInfo)
+                    && !bubbleHelper.isAppBubbleRootTask(taskInfo)) {
                 continue;
             }
             bubbleChangeIndexes.add(i);

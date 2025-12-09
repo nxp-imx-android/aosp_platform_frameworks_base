@@ -143,20 +143,6 @@ public class BubbleTransitions {
     }
 
     /**
-     * Returns whether the given Task should be an App Bubble.
-     */
-    public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        return mBubbleController.shouldBeAppBubble(taskInfo);
-    }
-
-    /**
-     * Returns whether the given Task is the App Bubble Root Task.
-     */
-    public boolean isAppBubbleRootTask(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        return mBubbleController.isAppBubbleRootTask(taskInfo.taskId);
-    }
-
-    /**
      * Returns whether there is a pending transition for the given request.
      */
     public boolean hasPendingEnterTransition(@NonNull TransitionRequestInfo info) {
@@ -366,7 +352,7 @@ public class BubbleTransitions {
                 continue;
             }
             // Check whether it is still an app bubble.
-            return !shouldBeAppBubble(taskInfo);
+            return !mBubbleHelper.isAppBubbleTask(taskInfo);
         }
         return false;
     }
@@ -682,7 +668,7 @@ public class BubbleTransitions {
                     mPlayConvertTaskAnimation = false;
                     found = true;
                 } else if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && taskInfo != null
-                        && mBubbleController.shouldBeAppBubble(taskInfo)) {
+                        && mBubbleHelper.isAppBubbleTask(taskInfo)) {
                     // Starting a new bubble from an existing expanded bubble may immediately hide
                     // the currently expanded bubble in the same transition. Ensure the surfaces
                     // stays in the TaskView vs. under the transition root.
@@ -1179,7 +1165,7 @@ public class BubbleTransitions {
                 opts.setLaunchCookie(mLaunchCookie);
                 opts.setReparentLeafTaskToTda(true);
                 final WindowContainerToken rootTaskToken =
-                        mBubbleController.getAppBubbleRootTaskToken();
+                        mBubbleHelper.getAppBubbleRootTaskToken();
                 if (rootTaskToken != null) {
                     opts.setLaunchRootTask(rootTaskToken);
                 } else {
@@ -1573,7 +1559,7 @@ public class BubbleTransitions {
             final boolean reparentToTda =
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
-            final WindowContainerToken rootToken = mBubbleController.getAppBubbleRootTaskToken();
+            final WindowContainerToken rootToken = mBubbleHelper.getAppBubbleRootTaskToken();
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
                     mTaskInfo.token, rootToken, launchBounds,
                     true /* isAppBubble */, reparentToTda);

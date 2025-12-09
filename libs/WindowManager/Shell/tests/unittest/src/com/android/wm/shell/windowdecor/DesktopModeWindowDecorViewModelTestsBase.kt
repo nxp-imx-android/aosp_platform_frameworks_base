@@ -39,11 +39,9 @@ import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowInsets.Type.statusBars
 import android.window.DesktopExperienceFlags
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
-import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -53,6 +51,7 @@ import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
 import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl
 import com.android.wm.shell.apptoweb.AssistContentRequester
 import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.common.DisplayChangeController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -109,6 +108,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -173,7 +173,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
     private val packageManager = mock<PackageManager>()
-    protected val mockBubbleController = mock<BubbleController>()
+    protected val bubbleHelper = mock<BubbleHelper>()
+    protected val bubbleController =
+        mock<BubbleController> { on { bubbleHelper } doReturn bubbleHelper }
     protected val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
@@ -229,7 +231,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 displayController = mockDisplayController,
                 desktopModeCompatPolicy = desktopModeCompatPolicy,
                 desktopState = desktopState,
-                bubbleController = Optional.of(mockBubbleController),
+                bubbleController = Optional.of(bubbleController),
                 lockTaskChangeListener = mockLockTaskChangeListener,
             )
         desktopModeWindowDecorViewModel =
@@ -334,8 +336,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         val recentsTransitionStateListenerCaptor = argumentCaptor<RecentsTransitionStateListener>()
         verify(mockRecentsTransitionHandler)
             .addTransitionStateListener(recentsTransitionStateListenerCaptor.capture())
-        desktopModeRecentsTransitionStateListener =
-            recentsTransitionStateListenerCaptor.firstValue
+        desktopModeRecentsTransitionStateListener = recentsTransitionStateListenerCaptor.firstValue
         val keyguardChangedCaptor = argumentCaptor<DesktopModeKeyguardChangeListener>()
         verify(mockShellController).addKeyguardChangeListener(keyguardChangedCaptor.capture())
         desktopModeOnKeyguardChangedListener = keyguardChangedCaptor.firstValue

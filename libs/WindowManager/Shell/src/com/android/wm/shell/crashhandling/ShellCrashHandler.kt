@@ -23,7 +23,7 @@ import android.view.WindowManager
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
-import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.util.BubbleUtils
 import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -41,7 +41,7 @@ class ShellCrashHandler(
     private val transitions: Transitions,
     private val homeIntentProvider: HomeIntentProvider,
     private val desktopState: DesktopState,
-    private val bubbleController: Optional<BubbleController>,
+    private val bubbleHelper: Optional<BubbleHelper>,
     shellInit: ShellInit,
 ) {
     init {
@@ -74,7 +74,7 @@ class ShellCrashHandler(
             }
         }
 
-        bubbleController.ifPresent { handleBubbleTaskCleanup(it) }
+        bubbleHelper.ifPresent { handleBubbleTaskCleanup(it) }
         handlePipTaskCleanup()
     }
 
@@ -92,10 +92,10 @@ class ShellCrashHandler(
      * Cleans up any existing bubble tasks by removing bubble specific overrides.
      * After cleanup, the device will be transitioned to the home screen.
      */
-    private fun handleBubbleTaskCleanup(bc: BubbleController) {
+    private fun handleBubbleTaskCleanup(bubbleHelper: BubbleHelper) {
         val wct = WindowContainerTransaction()
         for (task in shellTaskOrganizer.getRunningTasks()) {
-            if (bc.shouldBeAppBubble(task)) {
+            if (bubbleHelper.isAppBubbleTask(task)) {
                 val exitWct =
                     BubbleUtils.getExitBubbleTransaction(task.token, /* captionInsetsOwner= */ null)
                 wct.merge(exitWct, /* transfer= */ true)

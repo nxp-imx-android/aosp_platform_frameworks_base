@@ -478,7 +478,7 @@ class BubbleTaskViewListenerTest {
 
         taskInfo.isRunning = true
         taskInfo.token = taskViewTaskToken
-        whenever(expandedViewManager.shouldBeAppBubble(eq(taskInfo))).doReturn(true)
+        whenever(expandedViewManager.isAppBubbleTask(eq(taskInfo))).doReturn(true)
         getInstrumentation().runOnMainSync { bubbleTaskViewListener.onTaskRemovalStarted(1) }
 
         verify(expandedViewManager).removeBubble(eq(b.key), eq(Bubbles.DISMISS_TASK_FINISHED))

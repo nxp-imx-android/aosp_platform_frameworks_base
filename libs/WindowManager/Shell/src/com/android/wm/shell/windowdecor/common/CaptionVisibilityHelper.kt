@@ -133,7 +133,7 @@ class CaptionVisibilityHelper(
                     .map { controller ->
                         controller.hasStableBubbleForTask(taskId) ||
                             (BubbleAnythingFlagHelper.enableRootTaskForBubble() &&
-                                controller.shouldBeAppBubble(this))
+                                controller.bubbleHelper.isAppBubbleTask(this))
                     }
                     .orElse(false)
             } else {

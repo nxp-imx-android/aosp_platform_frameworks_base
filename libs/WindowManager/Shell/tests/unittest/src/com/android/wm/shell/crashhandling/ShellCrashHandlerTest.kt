@@ -34,7 +34,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
 import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ShellExecutor
@@ -49,10 +49,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -67,7 +69,7 @@ class ShellCrashHandlerTest : ShellTestCase() {
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val desktopState = FakeDesktopState()
     private val transitions = mock<Transitions>()
-    private val bubbleController = mock<BubbleController>()
+    private val bubbleHelper = mock<BubbleHelper>()
 
     private lateinit var homeIntentProvider: HomeIntentProvider
     private lateinit var crashHandler: ShellCrashHandler
@@ -87,7 +89,7 @@ class ShellCrashHandlerTest : ShellTestCase() {
                 transitions,
                 homeIntentProvider,
                 desktopState,
-                Optional.of(bubbleController),
+                Optional.of(bubbleHelper),
                 shellInit,
             )
     }
@@ -109,7 +111,7 @@ class ShellCrashHandlerTest : ShellTestCase() {
     fun init_bubbleTaskExists_convertsToUndefined() {
         val bubbleTask = createTaskInfo(1, windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(bubbleTask))
-        whenever(bubbleController.shouldBeAppBubble(bubbleTask)).thenReturn(true)
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
 
         shellInit.init()
 
