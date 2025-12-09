@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.util.Slog;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import com.android.internal.util.FrameworkStatsLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,5 +95,10 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
                         remoteTaskInfo);
             }
         }
+    }
+
+    @Override
+    public int getTypeForMetrics() {
+        return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_STACK_BROADCAST;
     }
 }

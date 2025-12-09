@@ -32,4 +32,7 @@ public interface TaskContinuityMessage {
 
     /** Writes this object to a proto output stream. */
     void writeToProto(@NonNull ProtoOutputStream pos) throws IOException;
+
+    /** Returns the type of this message for outputting to metrics. */
+    int getTypeForMetrics();
 }
