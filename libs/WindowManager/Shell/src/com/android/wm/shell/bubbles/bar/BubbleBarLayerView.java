@@ -270,6 +270,10 @@ public class BubbleBarLayerView extends FrameLayout
         super.onDetachedFromWindow();
         getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
 
+        if (com.android.wm.shell.Flags.fixBubbleSwipeUpDismissBubbleBar()) {
+            stopMonitoringSwipeUpGesture();
+        }
+
         if (mExpandedView != null) {
             mEducationViewController.hideEducation(/* animated = */ false);
             removeView(mExpandedView);
