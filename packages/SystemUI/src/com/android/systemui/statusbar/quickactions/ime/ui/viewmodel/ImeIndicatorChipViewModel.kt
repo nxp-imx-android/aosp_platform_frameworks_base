@@ -17,11 +17,15 @@
 package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.Assisted
@@ -50,13 +54,27 @@ constructor(
             return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
 
-        // TODO(b/458557858): Use IME icon or subtype short label if available, update the fallback
-        // to a keyboard icon, and remove the placeholder "IME" string.
-        val chipText = model.selectedSubtype?.subtypeId?.toString() ?: "IME"
+        // TODO(b/458557858): Use IME icon or subtype short label if available.
+        val chipText = model.selectedSubtype?.subtypeId?.toString()
+        val icons =
+            if (chipText != null) {
+                emptyList()
+            } else {
+                listOf(
+                    ChipIcon(
+                        Icon.Resource(
+                            R.drawable.ic_keyboard,
+                            ContentDescription.Resource(
+                                R.string.accessibility_status_bar_input_method_indicator
+                            ),
+                        )
+                    )
+                )
+            }
 
         return QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.ImeIndicator,
-            icons = emptyList(),
+            icons = icons,
             chipText = chipText,
             showPopup = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
         )
