@@ -824,7 +824,10 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     @ServiceThreadOnly
     void onNewAvrAdded(HdmiDeviceInfo avr) {
         assertRunOnServiceThread();
-        addAndStartAction(new SystemAudioAutoInitiationAction(this, avr.getLogicalAddress()));
+        // Only init SAM for the connected AVR if the port supports ARC.
+        if (isConnected(avr.getPortId()) && isArcFeatureEnabled(avr.getPortId())) {
+            addAndStartAction(new SystemAudioAutoInitiationAction(this, avr.getLogicalAddress()));
+        }
         if (!isDirectConnectAddress(avr.getPhysicalAddress())) {
             startArcAction(false);
         } else if (isConnected(avr.getPortId()) && isArcFeatureEnabled(avr.getPortId())
