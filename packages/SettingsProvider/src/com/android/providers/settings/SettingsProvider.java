@@ -34,6 +34,8 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OV
 
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.util.AccessibilityUtils.ACCESSIBILITY_MENU_IN_SYSTEM;
+import static com.android.providers.settings.SettingsState.ACONFIG_FLAG_TYPE_INVALID;
+import static com.android.providers.settings.SettingsState.ACONFIG_FLAG_TYPE_RO;
 import static com.android.providers.settings.SettingsState.FALLBACK_FILE_SUFFIX;
 import static com.android.providers.settings.SettingsState.isConfigSettingsKey;
 import static com.android.providers.settings.SettingsState.isGlobalSettingsKey;
@@ -42,7 +44,6 @@ import static com.android.providers.settings.SettingsState.isSystemSettingsKey;
 import static com.android.providers.settings.SettingsState.makeKey;
 
 import android.Manifest;
-import android.aconfigd.AconfigdFlagInfo;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeCURRENT;
@@ -1490,9 +1491,6 @@ public class SettingsProvider extends ContentProvider {
                 }
             }
 
-            Map<String, AconfigdFlagInfo> aconfigFlagInfos =
-                    settingsState.getAconfigDefaultFlags();
-
             for (int i = 0; i < nameCount; i++) {
                 String name = names.get(i);
                 Setting setting = settingsState.getSettingLocked(name);
@@ -1504,8 +1502,8 @@ public class SettingsProvider extends ContentProvider {
                                 && slashIndex != name.length();
                         if (validSlashIndex) {
                             String flagName = name.substring(slashIndex + 1);
-                            AconfigdFlagInfo flagInfo = aconfigFlagInfos.get(flagName);
-                            if (flagInfo != null && !flagInfo.getIsReadWrite()) {
+                            if (settingsState.getAconfigFlagType(flagName)
+                                    == ACONFIG_FLAG_TYPE_RO) {
                                 continue;
                             }
                         }
@@ -3692,7 +3690,8 @@ public class SettingsProvider extends ContentProvider {
                     if (validSlashIndex) {
                         String namespace = name.substring(0, slashIndex);
                         String flagName = name.substring(slashIndex + 1);
-                        if (settingsState.getAconfigDefaultFlags().containsKey(flagName)) {
+                        if (settingsState.getAconfigFlagType(flagName)
+                                != ACONFIG_FLAG_TYPE_INVALID) {
                             String stagedName = "staged/" + namespace + "*" + flagName;
                             notifyForSettingsChange(key, stagedName);
                         }
