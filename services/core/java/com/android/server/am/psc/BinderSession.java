@@ -28,7 +28,6 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.IntPair;
-import com.android.server.am.ProcessStateController;
 
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;

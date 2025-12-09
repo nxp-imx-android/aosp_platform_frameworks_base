@@ -175,6 +175,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;

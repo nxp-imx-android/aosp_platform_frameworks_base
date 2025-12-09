@@ -24,6 +24,7 @@ import android.content.Context;
 import android.platform.test.annotations.Presubmit;
 
 import com.android.server.am.psc.OomAdjuster;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import org.junit.Test;

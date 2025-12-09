@@ -43,7 +43,7 @@ public abstract class ContentProviderRecordInternal {
         return mHasExternalProcessHandles;
     }
 
-    public void setHasExternalProcessHandles(boolean value) {
+    void setHasExternalProcessHandles(boolean value) {
         mHasExternalProcessHandles = value;
     }
 }

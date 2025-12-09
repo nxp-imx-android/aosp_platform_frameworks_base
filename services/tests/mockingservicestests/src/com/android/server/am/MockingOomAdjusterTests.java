@@ -50,7 +50,6 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.server.am.MockingOomAdjusterTests.ProcessStateAssert.assertThatProcess;
-import static com.android.server.am.ProcessStateController.FOLLOW_UP_UPDATE_MSG;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
@@ -86,6 +85,7 @@ import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_
 import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
 import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
+import static com.android.server.am.psc.ProcessStateController.FOLLOW_UP_UPDATE_MSG;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
@@ -139,10 +139,11 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
-import com.android.server.am.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
+import com.android.server.am.psc.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.tests.assertutils.FlagAssert;

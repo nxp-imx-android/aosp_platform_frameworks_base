@@ -496,6 +496,7 @@ import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterDebugLogger;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
