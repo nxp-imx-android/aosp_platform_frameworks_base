@@ -31,9 +31,11 @@ import static android.app.ActivityManager.START_SUCCESS;
 import static android.app.ActivityManager.START_TASK_TO_FRONT;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
+import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 import static android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED;
@@ -719,8 +721,10 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         // Launch the activity to its adjacent parent
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchRootTask(adjacentParent.mRemoteToken.toWindowContainerToken());
-        prepareStarter(FLAG_ACTIVITY_NEW_TASK, false /* mockGetRootTask */)
-                .setIntent(activity.intent)
+        final Intent intent = activity.intent;
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_MULTIPLE_TASK);
+        prepareStarter(intent.getFlags(), false /* mockGetRootTask */)
+                .setIntent(intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
                 .execute();
@@ -980,6 +984,38 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
 
         // Ensure secondary display only creates one stack.
         verify(secondaryTaskContainer, times(1)).createRootTask(anyInt(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    public void testLaunchTopFocusedActivityToDifferentRootTask() {
+        // Launch an activity to be the top focused one.
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        final Task initialTask = activity.getTask();
+        mAtm.setFocusedTask(initialTask.mTaskId);
+
+        // Create a new RootTask to be the target
+        final Task targetRootTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setCreatedByOrganizer(true)
+                .setOnTop(false)
+                .build();
+
+        // Prepare to launch the SAME activity intent, but targeting the new root task
+        final Intent intent = new Intent(activity.intent);
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchRootTask(targetRootTask.mRemoteToken.toWindowContainerToken());
+
+        // Execute the start
+        prepareStarter(intent.getFlags(), false /* mockGetRootTask */)
+                .setIntent(intent)
+                .setActivityOptions(options.toBundle(),
+                        Binder.getCallingPid(), Binder.getCallingUid())
+                .execute();
+
+        // The activity's task should now be reparented under the targetRootTask
+        assertEquals(targetRootTask, initialTask.getParent());
+        assertEquals(activity, initialTask.getTopNonFinishingActivity());
     }
 
     /**
