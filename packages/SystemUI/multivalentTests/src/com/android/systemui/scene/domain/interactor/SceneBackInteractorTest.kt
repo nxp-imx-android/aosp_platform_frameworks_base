@@ -21,8 +21,8 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
-import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
