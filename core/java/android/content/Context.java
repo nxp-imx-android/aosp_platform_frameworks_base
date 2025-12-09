@@ -7111,7 +7111,7 @@ public abstract class Context {
      *
      * @see #getSystemService(String)
      */
-    @FlaggedApi(com.android.webapp.flags.Flags.FLAG_ENABLE_WEB_APP_SERVICE)
+    @FlaggedApi(com.android.webapp.flags.Flags.FLAG_ENABLE_WEB_APP_SERVICE_V2)
     public static final String WEB_APP_SERVICE = "web_app";
 
     /**
