@@ -1424,6 +1424,14 @@ public class BubbleStackView extends FrameLayout
     @Override
     public void animateExpand(@Nullable BubbleViewProvider previousBubble,
             @Nullable Runnable animFinish) {
+        if (mIsExpanded && !mIsExpansionAnimating) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateExpand -- already expanded");
+            mAfterTransitionRunnable = null;
+            if (animFinish != null) {
+                animFinish.run();
+            }
+            return;
+        }
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateExpand -- caching runnable");
         mAfterTransitionRunnable = animFinish;
     }
