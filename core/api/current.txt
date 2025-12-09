@@ -47620,6 +47620,7 @@ package android.telephony {
     method public long getDataUsageBytes();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @Nullable public java.time.ZonedDateTime getDataUsageResetTime();
     method public long getDataUsageTime();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getId();
     method @NonNull public int[] getNetworkTypes();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @Nullable public java.time.ZonedDateTime getPlanEndDate();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public int getSubscriptionStatus();
@@ -47651,6 +47652,7 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_TRIAL = 3; // 0x3
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0; // 0x0
     field public static final long TIME_UNKNOWN = -1L; // 0xffffffffffffffffL
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int UNSPECIFIED_ID = -1; // 0xffffffff
   }
 
   public static class SubscriptionPlan.Builder {
@@ -47662,6 +47664,7 @@ package android.telephony {
     method public android.telephony.SubscriptionPlan.Builder setDataLimit(long, int);
     method public android.telephony.SubscriptionPlan.Builder setDataUsage(long, long);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setDataUsageResetTime(@Nullable java.time.ZonedDateTime);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setId(int);
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(int);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(int);

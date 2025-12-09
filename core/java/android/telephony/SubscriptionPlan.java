@@ -295,6 +295,12 @@ public final class SubscriptionPlan implements Parcelable {
     public static final int PLAN_TYPE_TETHERING = 10;
 
     /**
+     * Value indicating that the SubscriptionPlan ID is not available.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int UNSPECIFIED_ID = -1;
+
+    /**
      * The billing cycle of the subscription plan. It defines a series of time intervals
      * over which usage is measured and billed.
      * <p>
@@ -469,6 +475,18 @@ public final class SubscriptionPlan implements Parcelable {
     private final ZonedDateTime mDataUsageResetTime;
 
     /**
+     * The unique integer identifier for this subscription plan.
+     * <p>
+     * This ID is provided by the carrier and can be used to uniquely identify this plan,
+     * particularly when interacting with entitlement server for enrolling.
+     * <p>
+     * It may be {@link #UNSPECIFIED_ID} if no ID is specified.
+     *
+     * @see #getId()
+     */
+    private final int mId;
+
+    /**
      * The type of this subscription plan.
      * <p>
      * This indicates the type of the subscription, such as whether it is a cellular or satellite
@@ -517,6 +535,7 @@ public final class SubscriptionPlan implements Parcelable {
         this.mStreamingAppMaxDownlinkKbps = builder.mStreamingAppMaxDownlinkKbps;
         this.mStreamingAppMaxUplinkKbps = builder.mStreamingAppMaxUplinkKbps;
         this.mDataUsageResetTime = builder.mDataUsageResetTime;
+        this.mId = builder.mId;
     }
 
     /**
@@ -540,6 +559,7 @@ public final class SubscriptionPlan implements Parcelable {
         mStreamingAppMaxDownlinkKbps = in.readInt();
         mStreamingAppMaxUplinkKbps = in.readInt();
         mDataUsageResetTime = RecurrenceRule.convertZonedDateTime(in.readString());
+        mId = in.readInt();
     }
 
     @Override
@@ -562,6 +582,7 @@ public final class SubscriptionPlan implements Parcelable {
         dest.writeInt(mStreamingAppMaxDownlinkKbps);
         dest.writeInt(mStreamingAppMaxUplinkKbps);
         dest.writeString(RecurrenceRule.convertZonedDateTime(mDataUsageResetTime));
+        dest.writeInt(mId);
     }
 
     @Override
@@ -586,6 +607,7 @@ public final class SubscriptionPlan implements Parcelable {
                 + ", streamingAppMaxDownlinkKbps=" + mStreamingAppMaxDownlinkKbps
                 + ", streamingAppMaxUplinkKbps=" + mStreamingAppMaxUplinkKbps
                 + ", dataUsageResetTime=" + mDataUsageResetTime
+                + ", id=" + mId
                 + "}";
     }
 
@@ -640,7 +662,7 @@ public final class SubscriptionPlan implements Parcelable {
         return Objects.hash(mCycleRule, mTitle, mSummary, mDataLimitBytes,
                 mDataLimitBehavior, mDataUsageBytes, mDataUsageTime, mNetworkTypes,
                 mSubscriptionStatus, mTypes, mStreamingAppMaxDownlinkKbps,
-                mStreamingAppMaxUplinkKbps, mDataUsageResetTime);
+                mStreamingAppMaxUplinkKbps, mDataUsageResetTime, mId);
     }
 
     @Override
@@ -658,7 +680,8 @@ public final class SubscriptionPlan implements Parcelable {
                     && Objects.equals(mTypes, other.mTypes)
                     && mStreamingAppMaxDownlinkKbps == other.mStreamingAppMaxDownlinkKbps
                     && mStreamingAppMaxUplinkKbps == other.mStreamingAppMaxUplinkKbps
-                    && Objects.equals(mDataUsageResetTime, other.mDataUsageResetTime);
+                    && Objects.equals(mDataUsageResetTime, other.mDataUsageResetTime)
+                    && mId == other.mId;
         }
         return false;
     }
@@ -917,6 +940,22 @@ public final class SubscriptionPlan implements Parcelable {
     }
 
     /**
+     * Returns the unique integer identifier for this subscription plan.
+     * <p>
+     * This ID is provided by the carrier and can be used to uniquely identify this plan,
+     * particularly when interacting with entitlement server for enrolling.
+     * <p>
+     * It may be {@link #UNSPECIFIED_ID} if no ID is specified.
+     *
+     * @return The unique integer identifier for the plan, or {@link #UNSPECIFIED_ID} if not
+     * specified.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public int getId() {
+        return mId;
+    }
+
+    /**
      * Returns the characteristics of this subscription plan as a set of type constants.
      * A plan can have multiple types that describe its nature. For example, a plan might be both a
      * {@link #PLAN_TYPE_CELLULAR} and a {@link #PLAN_TYPE_POSTPAID} plan.
@@ -1122,6 +1161,19 @@ public final class SubscriptionPlan implements Parcelable {
          */
         @Nullable
         private ZonedDateTime mDataUsageResetTime = null;
+
+        /**
+         * The unique integer identifier for this subscription plan.
+         * <p>
+         * This ID is provided by the carrier and can be used to uniquely identify this plan,
+         * particularly when interacting with entitlement server for enrolling.
+         * <p>
+         * It may be {@link #UNSPECIFIED_ID} if no ID is specified. Defaults to
+         * {@link #UNSPECIFIED_ID}.
+         *
+         * @see #getId()
+         */
+        private int mId = UNSPECIFIED_ID;
 
         /**
          * The type of this subscription plan.
@@ -1402,6 +1454,24 @@ public final class SubscriptionPlan implements Parcelable {
         @NonNull
         public Builder setDataUsageResetTime(@Nullable ZonedDateTime dataUsageResetTime) {
             this.mDataUsageResetTime = dataUsageResetTime;
+            return this;
+        }
+
+        /**
+         * Sets the unique integer identifier for this subscription plan.
+         * <p>
+         * This ID is provided by the carrier and can be used to uniquely identify this plan,
+         * particularly when interacting with entitlement server for enrolling.
+         *
+         * @param id The unique integer integer identifier for the plan, or {@link #UNSPECIFIED_ID}
+         * to clear it.
+         *
+         * @return The same {@link Builder} instance to continue building the plan.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setId(int id) {
+            mId = id;
             return this;
         }
 
