@@ -93,11 +93,11 @@ constructor(
     }
 
     fun notifyPluggedIn(@IntRange(from = 0, to = 100) batteryLevel: Int) {
-        scheduler.onStatusEvent(BatteryEvent(batteryLevel))
+        scope.launch(mainCoroutineContext) { scheduler.onStatusEvent(BatteryEvent(batteryLevel)) }
     }
 
     fun notifyPrivacyItemsEmpty() {
-        scheduler.removePersistentDot()
+        scope.launch(mainCoroutineContext) { scheduler.removePersistentDot() }
     }
 
     fun notifyPrivacyItemsChanged(showAnimation: Boolean = true) {
