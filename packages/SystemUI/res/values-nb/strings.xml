@@ -419,7 +419,7 @@
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Sted"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Skjermsparer"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kameratilgang"</string>
-    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofontilgang"</string>
+    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofon­tilgang"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Tilgjengelig"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Blokkert"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"Medieenhet"</string>
@@ -444,8 +444,8 @@
     <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Mikrofonvolumet justeres automatisk"</string>
     <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Effekter"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Lysstyrke"</string>
-    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Farge&amp;#173;invertering"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Fargekorrigering"</string>
+    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Farge­invertering"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Farge­korrigering"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Skriftstørrelse"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Brukervalg"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Ferdig"</string>
@@ -503,11 +503,11 @@
     <string name="custom" msgid="3337456985275158299">"Egendefinert"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Innstillinger for egendefinert spor"</string>
     <string name="restore_default" msgid="5259420807486239755">"Gjenopprett standard"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Enhåndsmodus"</string>
-    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Høreapparater"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Enhånds­modus"</string>
+    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Høre­apparater"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Aktiv"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Frakoblet"</string>
-    <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"Høreapparater"</string>
+    <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"Høre­apparater"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"Koble til en ny enhet"</string>
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Klikk for å koble til en ny enhet"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Kunne ikke oppdatere forhåndsinnstillingen"</string>
@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Trykk for å angi vibrasjon."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Trykk for å slå av lyden."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Støykontroll"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Støyreduksjon for mikrofon"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Romlig lyd"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Av"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fast"</string>
@@ -1176,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Vil du slå på hurtigtasten <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ikke slå på"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Slå på hurtigtasten"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Hurtigtasten <xliff:g id="ID_1">%1$s</xliff:g> er slått på"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_4">^4</xliff:g>, som er en tilgjengelighetsfunksjon. Dette gjør at du raskt kan zoome inn på skjermen for å gjøre innhold større. Når forstørring er på, trykker du på <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> og «+» eller «-» for å justere zoomnivået."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Slå av hurtigtasten"</string>
@@ -1189,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Den kan spore kommunikasjonen din med en app eller maskinvaresensor og kommunisere med apper på dine vegne."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Hvis du trykker på <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, slås <xliff:g id="ID_4">^4</xliff:g> på. Dette er en tilgjengelighetsfunksjon. Dette gjør at du kan kontrollere enheten håndfritt."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Tilgjengelighet"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Ferdig"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Låseskjerm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Slår av …"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Se hva du kan gjøre"</string>
@@ -1586,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Du må låse opp enheten for å tilpasse låseskjermen"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wifi er ikke tilgjengelig"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Posisjon er aktiv"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kameraet er blokkert"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kameraet og mikrofonen er blokkert"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofonen er blokkert"</string>

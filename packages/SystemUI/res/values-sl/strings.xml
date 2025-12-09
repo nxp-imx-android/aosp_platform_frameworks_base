@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Dotaknite se, če želite nastaviti vibriranje."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Dotaknite se, če želite izklopiti zvok."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Omejevanje hrupa"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Izločanje hrupa v mikrofonu"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Prostorski zvok"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Izklopljeno"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fiksno"</string>
@@ -1176,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Želite vklopiti bližnjične tipke za funkcijo <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne vklopi"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Vklopi bližnjico"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Bližnjična tipka za funkcijo <xliff:g id="ID_1">%1$s</xliff:g> je vklopljena"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo funkcije dostopnosti <xliff:g id="ID_4">^4</xliff:g>. Tako lahko hitro povečate zaslon in s tem vsebino na njem. Ko je povečava vklopljena, pritisnite <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> in »+« ali »–«, če želite prilagoditi povečavo."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Izklopi bližnjico"</string>
@@ -1189,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Spremlja lahko vaše interakcije z aplikacijo ali tipali v napravi ter komunicira z aplikacijami v vašem imenu."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Če pritisnete "<annotation id="action_key_icon">"ikono"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, vklopite funkcijo dostopnosti <xliff:g id="ID_4">^4</xliff:g>. Tako lahko prostoročno upravljate napravo."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Dostopnost"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Končano"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaklenjen zaslon"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Zaustavljanje …"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Oglejte si navodila za ukrepanje"</string>
@@ -1586,6 +1586,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Odklenite za prilagajanje zaklenjenega zaslona"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi ni na voljo."</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Lokacija je aktivna"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"Fotoaparat je aktiven"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"Mikrofon je aktiven"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Fotoaparat je blokiran."</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Fotoaparat in mikrofon sta blokirana."</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofon je blokiran."</string>

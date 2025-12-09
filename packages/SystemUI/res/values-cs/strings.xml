@@ -69,7 +69,7 @@
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Uživatel aktuálně přihlášený k tomuto zařízení nemůže zapnout bezdrátové ladění. Pokud chcete tuto funkci používat, přepněte na administrativního uživatele."</string>
     <string name="change_connected_wifi_text" msgid="6346095920396568246">"Toto nastavení můžete změnit po přihlášení"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"Port USB je deaktivován"</string>
-    <string name="usb_contaminant_message" msgid="7730476585174719805">"Kvůli ochraně vašeho zařízení před tekutinami a nečistotami je port USB zakázán a nerozpozná žádné příslušenství.\n\nAž bude opět bezpečné port USB použít, budeme vás informovat."</string>
+    <string name="usb_contaminant_message" msgid="7730476585174719805">"Kvůli ochraně vašeho zařízení před tekutinami a nečistotami je port USB zakázán a nerozpozná žádné příslušenství.\n\nAž bude opět bezpečné port USB použít, budeme vás informovat."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Port USB může zjišťovat nabíječky a příslušenství"</string>
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"Aktivovat USB"</string>
     <string name="learn_more" msgid="4690632085667273811">"Další informace"</string>
@@ -838,8 +838,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Klepnutím nastavíte vibrace."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Klepnutím vypnete zvuk."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Omezení hluku"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Potlačení hluku mikrofonu"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Prostorový zvuk"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Vypnuto"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fixovaný"</string>
@@ -1167,7 +1166,7 @@
     <string name="accessibility_quick_settings_collapse" msgid="4674876336725041982">"Zavřít rychlé nastavení."</string>
     <string name="accessibility_quick_settings_user" msgid="505821942882668619">"Jste přihlášeni jako <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_choose_user_action" msgid="4554388498186576087">"zvolit uživatele"</string>
-    <string name="data_connection_no_internet" msgid="691058178914184544">"Nejste připojeni k internetu"</string>
+    <string name="data_connection_no_internet" msgid="691058178914184544">"Nemáte připojení k internetu"</string>
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Otevřít nastavení aplikace <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Upravit pořadí Rychlého nastavení."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Nabídka vypínače"</string>
@@ -1178,6 +1177,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Zapnout klávesovou zkratku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nezapínat"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Zapnout zkratku"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová zkratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_4">^4</xliff:g>, což je funkce pro usnadnění přístupu. Umožňuje rychle přiblížit obrazovku a zvětšit tak obsah. Po zapnutí zvětšení můžete stisknutím <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikony"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> a „+“ nebo „-“ upravovat přiblížení."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnout zkratku"</string>
@@ -1191,7 +1192,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Může sledovat vaše interakce s aplikací nebo hardwarovým senzorem a komunikovat s aplikacemi místo vás."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Stisknutím <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikony"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> zapnete <xliff:g id="ID_4">^4</xliff:g>, funkci pro usnadnění přístupu Umožňuje ovládat zařízení handsfree."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Přístupnost"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Hotovo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Obrazovka uzamčení"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Vypínání…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Zobrazit pokyny, co dělat"</string>
@@ -1588,6 +1588,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Obrazovku uzamčení upravíte, když zařízení odemknete"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Síť Wi-Fi není dostupná"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Určování polohy aktivní"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera je blokována"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera a mikrofon jsou blokovány"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofon je blokován"</string>

@@ -1175,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"要啟用「<xliff:g id="ID_1">%1$s</xliff:g>」的鍵盤快速鍵嗎？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"不要啟用"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"啟用捷徑"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>鍵盤快速鍵已開啟"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 是無障礙功能「<xliff:g id="ID_4">^4</xliff:g>」的鍵盤快速鍵，可以快速放大畫面內容。放大功能啟用後，按下<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_6">^2</xliff:g>，再按「+」或「-」就可以調整縮放比例。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"關閉快速鍵"</string>
@@ -1188,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"這項功能會追蹤你與應用程式或硬件感應器的互動情況，並會代你與應用程式互動。"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"按下「<xliff:g id="ID_1">^1</xliff:g>」"<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>，即可啟用無障礙功能「<xliff:g id="ID_4">^4</xliff:g>」，讓你開句聲就能控制裝置。"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"無障礙功能"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"完成"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"螢幕鎖定"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在關機…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"查看保養步驟"</string>
@@ -1585,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"解鎖後即可自訂上鎖畫面"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"無法連線至 Wi-Fi"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"正在使用位置權限"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"已封鎖相機"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"已封鎖相機和麥克風"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"已封鎖麥克風"</string>
