@@ -2726,8 +2726,6 @@ class DesktopTasksController(
             return null
         }
         val packageName = componentName?.packageName ?: return null
-        // TODO: b/452162812 - Support collision avoidance. Maybe we can merge it with
-        // cascadeWindow?
         if (
             shellTaskOrganizer.runningTasks.any {
                 it.baseActivity?.packageName == packageName && it.taskId != taskInfo?.taskId
@@ -2788,19 +2786,18 @@ class DesktopTasksController(
             )
         val bounds = rememberedBounds ?: calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        if (rememberedBounds == null) {
-            val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
-            cascadeWindow(
-                context,
-                recentTasksController,
-                repository,
-                shellTaskOrganizer,
-                bounds,
-                displayLayout,
-                deskId,
-                stableBounds,
-            )
-        }
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        cascadeWindow(
+            context,
+            recentTasksController,
+            repository,
+            shellTaskOrganizer,
+            bounds,
+            displayLayout,
+            deskId,
+            stableBounds,
+            isRememberedBounds = rememberedBounds != null,
+        )
         val ops =
             ActivityOptions.fromBundle(options).apply {
                 launchWindowingMode = WINDOWING_MODE_FREEFORM
@@ -5104,7 +5101,7 @@ class DesktopTasksController(
             displayLayout.getStableBoundsForDesktopMode(stableBounds)
             hasLayoutGravityApplied = applyLayoutGravityIfNeeded(taskInfo, bounds, stableBounds)
         }
-        if (!hasLayoutGravityApplied && rememberedBounds == null) {
+        if (!hasLayoutGravityApplied) {
             cascadeWindow(
                 context,
                 recentTasksController,
@@ -5113,6 +5110,7 @@ class DesktopTasksController(
                 bounds,
                 displayLayout,
                 deskId,
+                isRememberedBounds = rememberedBounds != null,
             )
         }
         return bounds
