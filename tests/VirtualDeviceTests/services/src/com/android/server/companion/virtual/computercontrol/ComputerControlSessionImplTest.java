@@ -316,8 +316,7 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
-                .thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(anyString(), any())).thenReturn(true);
     }
 
     @After
@@ -634,8 +633,7 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
-                .thenReturn(false);
+        when(mAllowlistController.isPackageAutomatable(anyString(), any())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));

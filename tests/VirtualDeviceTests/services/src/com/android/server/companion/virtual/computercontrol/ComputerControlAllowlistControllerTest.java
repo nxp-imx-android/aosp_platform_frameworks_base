@@ -16,6 +16,8 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
+
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_NAMESPACE;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY;
@@ -32,6 +34,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 import android.annotation.NonNull;
+import android.app.KeyguardManager;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -54,6 +57,7 @@ import android.util.PackageUtils;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.pm.permission.PermissionManagerServiceInterface;
 
 import com.google.common.util.concurrent.MoreExecutors;
 
@@ -89,6 +93,12 @@ public class ComputerControlAllowlistControllerTest {
     @Mock
     private PackageManager mPackageManager;
     @Mock
+    private KeyguardManager mKeyguardManager;
+    @Mock
+    private PermissionManagerServiceInterface mPermissionManager;
+    @Mock
+    private ComputerControlSessionImpl mSession;
+    @Mock
     private Resources mResources;
 
     private AutoCloseable mMockitoSession;
@@ -119,6 +129,13 @@ public class ComputerControlAllowlistControllerTest {
         mAutomatableAppDenylistFile =
                 new File(new File(mContext.getFilesDir(), folderName), "blocked_apps.txt");
         createAllowlistController(/* buildIsDebuggable */ true);
+
+        when(mSession.isTestSession()).thenReturn(false);
+        when(mSession.getPackageManager()).thenReturn(mPackageManager);
+        when(mSession.getKeyguardManager()).thenReturn(mKeyguardManager);
+
+        when(mPermissionManager.checkUidPermission(anyInt(), eq(ACCESS_COMPUTER_CONTROL), any()))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
     }
 
     @After
@@ -150,15 +167,11 @@ public class ComputerControlAllowlistControllerTest {
         createAllowlistController(/* buildIsDebuggable */ false);
         final String packageName = "com.hello.app3";
         final Signature signature = generateSignature((byte) 2);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(packageName, signature,
+                /* preinstalled= */ true, /* testOnly= */ false);
         // Make PackageManager infer that the given package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
                 .thenReturn(Process.myUid());
-        // Make PackageManager infer that the given package is pre-installed.
-        final ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.flags = ApplicationInfo.FLAG_SYSTEM;
-        when(mPackageManager.getApplicationInfo(eq(packageName), anyInt()))
-                .thenReturn(applicationInfo);
 
         mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
@@ -178,10 +191,6 @@ public class ComputerControlAllowlistControllerTest {
         // Make PackageManager infer that the given package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
                 .thenReturn(Process.myUid());
-        // Make PackageManager infer that the given package is not pre-installed.
-        final ApplicationInfo applicationInfo = new ApplicationInfo();
-        when(mPackageManager.getApplicationInfo(eq(packageName), anyInt()))
-                .thenReturn(applicationInfo);
 
         mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
@@ -293,13 +302,86 @@ public class ComputerControlAllowlistControllerTest {
         // Make PackageManager infer that the given package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(eq(SUPER_AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
-        // Make PackageManager infer that the given package is not pre-installed.
-        final ApplicationInfo applicationInfo = new ApplicationInfo();
-        when(mPackageManager.getApplicationInfo(eq(SUPER_AGENT_PACKAGE), anyInt()))
-                .thenReturn(applicationInfo);
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
                 SUPER_AGENT_PACKAGE, mPackageManager));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAllowedToCreateSession_noPermission_testOnly_returnsTrue()
+            throws Exception {
+        final String packageName = "com.hello.cts";
+        final Signature signature = generateSignature((byte) 1);
+        preparePackage(packageName, signature, /* preinstalled= */ false, /* testOnly= */ true);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        when(mPermissionManager.checkUidPermission(
+                eq(Process.myUid()), eq(ACCESS_COMPUTER_CONTROL), any()))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
+                packageName, mPackageManager));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAllowedToCreateSession_noPermission_nonTestOnly_returnsFalse()
+            throws Exception {
+        final String packageName = "com.hello.cts";
+        final Signature signature = generateSignature((byte) 1);
+        preparePackage(packageName, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        when(mPermissionManager.checkUidPermission(
+                eq(Process.myUid()), eq(ACCESS_COMPUTER_CONTROL), any()))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
+                packageName, mPackageManager));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_testSession_nullPackage_returnsFalse() {
+        when(mSession.isTestSession()).thenReturn(true);
+        assertFalse(mAllowlistController.isPackageAutomatable(null, mSession));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_testSession_nonTestOnlyApp_returnsFalse() throws Exception {
+        when(mSession.isTestSession()).thenReturn(true);
+        final String packageName = "com.hello.test";
+        preparePackage(packageName, generateSignature((byte) 2));
+
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, mSession));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_testSession_secureKeyguard_returnsFalse() throws Exception {
+        when(mSession.isTestSession()).thenReturn(true);
+        final String packageName = "com.hello.test";
+        preparePackage(packageName, generateSignature((byte) 2), /* preinstalled= */ false,
+                /* testOnly= */ true);
+        when(mKeyguardManager.isKeyguardSecure()).thenReturn(true);
+
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, mSession));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_testSession_returnsTrue() throws Exception {
+        when(mSession.isTestSession()).thenReturn(true);
+        final String packageName = "com.hello.test";
+        preparePackage(packageName, generateSignature((byte) 2), /* preinstalled= */ false,
+                /* testOnly= */ true);
+        when(mKeyguardManager.isKeyguardSecure()).thenReturn(false);
+
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, mSession));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -701,16 +783,32 @@ public class ComputerControlAllowlistControllerTest {
     private void createAllowlistController(boolean buildIsDebuggable) {
         mAllowlistController = new ComputerControlAllowlistController(mSpyContext,
                 MoreExecutors.directExecutor(), mSessionOwnerAllowlistFile,
-                mAutomatableAppAllowlistFile, mAutomatableAppDenylistFile, buildIsDebuggable);
+                mAutomatableAppAllowlistFile, mAutomatableAppDenylistFile, mPermissionManager,
+                buildIsDebuggable);
         mAllowlistController.initialize();
     }
 
     private String preparePackage(@NonNull String packageName, @NonNull Signature signature)
             throws Exception {
+        return preparePackage(packageName, signature, /* preinstalled= */ false,
+                /* testOnly= */ false);
+    }
+
+    private String preparePackage(@NonNull String packageName, @NonNull Signature signature,
+            boolean preinstalled, boolean testOnly) throws Exception {
         final String certificateDigest = PackageUtils.computeSha256Digest(signature.toByteArray());
         final PackageInfo packageInfo = generatePackageInfo(signature);
         when(mPackageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES))
                 .thenReturn(packageInfo);
+        final ApplicationInfo applicationInfo = new ApplicationInfo();
+        if (preinstalled) {
+            applicationInfo.flags |= ApplicationInfo.FLAG_SYSTEM;
+        }
+        if (testOnly) {
+            applicationInfo.flags |= ApplicationInfo.FLAG_TEST_ONLY;
+        }
+        when(mPackageManager.getApplicationInfo(eq(packageName), any()))
+                .thenReturn(applicationInfo);
         return certificateDigest;
     }
 
