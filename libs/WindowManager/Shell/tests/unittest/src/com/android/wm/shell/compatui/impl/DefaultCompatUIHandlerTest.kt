@@ -205,6 +205,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
 
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(0)
+        fakeLifecycle.assertOnRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(1)
         compatUICompatUIRepository.assertHasStateEqualsTo(generatedId, fakeComponentState)
         compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
@@ -213,6 +214,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
 
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(1)
+        fakeLifecycle.assertOnRemovalInvocation(1)
         fakeLifecycle.assertInitialStateInvocation(1)
         compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
         compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = false)

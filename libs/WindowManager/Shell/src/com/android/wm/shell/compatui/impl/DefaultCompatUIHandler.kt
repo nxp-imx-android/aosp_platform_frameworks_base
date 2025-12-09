@@ -27,6 +27,7 @@ import com.android.wm.shell.compatui.api.CompatUIRepository
 import com.android.wm.shell.compatui.api.CompatUIRequest
 import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import com.android.wm.shell.repository.iterate
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import java.util.function.Consumer
 
 /** Default implementation of {@link CompatUIHandler} to handle CompatUI components */
@@ -36,7 +37,7 @@ class DefaultCompatUIHandler(
     private val sharedStateRepository: CompatUISharedStateRepository,
     private val componentIdGenerator: CompatUIComponentIdGenerator,
     private val componentFactory: CompatUIComponentFactory,
-    private val executor: ShellExecutor,
+    @param:ShellMainThread private val executor: ShellExecutor,
 ) : CompatUIHandler {
 
     private var compatUIEventSender: Consumer<CompatUIEvent>? = null
@@ -92,6 +93,7 @@ class DefaultCompatUIHandler(
                         spec.log("Component $componentId released")
                         compatUIComponentRepository.unregisterUIComponent(componentId)
                         spec.log("Component $componentId removed from registry")
+                        spec.lifecycle.onRemoval(compatUIInfo, sharedState)
                     } else {
                         executor.execute {
                             // The component exists so we need to invoke the update methods

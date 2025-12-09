@@ -38,6 +38,8 @@ class CompatUILifecyclePredicates(
     val stateBuilder: (CompatUIInfo, CompatUISharedState) -> CompatUIComponentState? = { _, _ ->
         null
     },
+    // Invoked after the removal of a component. It contains clean up code.
+    val onRemoval: (CompatUIInfo, CompatUISharedState) -> Unit = { _, _ -> },
 )
 
 /** Type for the function responsible to get the position of the ComponentUI */
