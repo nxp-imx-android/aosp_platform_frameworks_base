@@ -91,6 +91,7 @@ flag {
 
 flag {
   name: "string_rebuild_api"
+  is_exported: true
   namespace: "autofill"
   description: "API to provide noise-injected text for server side string rebuild"
   bug: "441075073"
