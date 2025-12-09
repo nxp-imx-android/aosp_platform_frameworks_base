@@ -129,16 +129,6 @@ flag {
 }
 
 flag {
-  name: "disable_opt_out_universal_resizable_by_default"
-  namespace: "windowing_frontend"
-  description: "Disable opt out universal resizability on large screen since target SDK 37"
-  bug: "447301631"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "skip_add_recents_to_sync_set"
   namespace: "windowing_frontend"
   description: "Reduce recents transition latency"
