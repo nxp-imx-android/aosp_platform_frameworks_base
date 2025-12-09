@@ -202,6 +202,8 @@ public final class ServiceBindingOomAdjPolicyTest {
         // Necessary for calling package to match caller uid
         doReturn(myUid()).when(mPackageManagerInt).getPackageUid(
                 eq(TEST_APP1_NAME), anyLong(), anyInt());
+        doReturn(true).when(mPackageManagerInt).isSameApp(
+                eq(TEST_APP1_NAME), anyLong(), eq(myUid()), anyInt());
         doReturn(true).when(mIntentFirewall).checkService(any(), any(), anyInt(), anyInt(), any(),
                 any());
         doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),

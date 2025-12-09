@@ -3267,10 +3267,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             // checks and restrictions
             return;
         }
+
         final int userId = UserHandle.getUserId(callingUid);
-        final int packageUid = getPackageManagerInternal().getPackageUid(packageName,
-                /*flags=*/ 0, userId);
-        if (packageUid != callingUid) {
+        final PackageManagerInternal pmi = getPackageManagerInternal();
+        boolean isSameApp = enablePccFrameworkSupport()
+                ? pmi.isSameApp(packageName, /*flags*/ 0, callingUid, userId)
+                : pmi.getPackageUid(packageName, /*flags*/ 0, userId) == callingUid;
+        if (!isSameApp) {
             final SecurityException e =
                     new SecurityException(packageName + " does not belong to uid " + callingUid);
             if (throwException) {
