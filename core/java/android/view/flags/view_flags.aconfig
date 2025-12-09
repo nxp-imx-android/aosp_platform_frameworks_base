@@ -151,7 +151,7 @@ flag {
     name: "enable_windowless_window_focus_navigation"
     namespace: "window_surfaces"
     description: "Enable focus navigation for between embedded and host windows"
-    bug: "358638520"
+    bug: "425417918"
     is_fixed_read_only: false
 }
 
