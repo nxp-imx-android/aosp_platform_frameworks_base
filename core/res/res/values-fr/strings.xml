@@ -646,10 +646,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Autorise l\'appli à accéder aux appareils du réseau local"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"utiliser l\'interface de rebouclage"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permet à l\'appli d\'interagir avec d\'autres applis par le biais de l\'interface de rebouclage"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"forcer l\'utilisation de l\'interface de rebouclage"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Permet à l\'appli d\'interagir avec d\'autres applis par le biais de l\'interface de rebouclage sans que les autres applis aient besoin de disposer des autorisations de rebouclage"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"déterminer l\'emplacement relatif entre des appareils à proximité"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Autorisez l\'appli à déterminer l\'emplacement relatif entre des appareils à proximité"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informations sur le service de paiement NFC préféré"</string>
@@ -775,7 +773,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Déplacez le téléphone vers le bas"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Déplacez le téléphone vers la gauche"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Déplacez le téléphone vers la droite"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Mettez-vous bien de face et regardez l\'appareil."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Visage non détecté. Tenez votre téléphone à hauteur des yeux."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Trop de mouvement. Ne bougez pas le téléphone."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Veuillez enregistrer à nouveau votre visage."</string>
@@ -1210,7 +1209,7 @@
     <string name="weeks" msgid="3516247214269821391">"semaines"</string>
     <string name="year" msgid="5182610307741238982">"année"</string>
     <string name="years" msgid="5797714729103773425">"années"</string>
-    <string name="now_string_shortest" msgid="3684914126941650330">"maintenant"</string>
+    <string name="now_string_shortest" msgid="3684914126941650330">"Maintenant"</string>
     <string name="duration_minutes_shortest" msgid="5744379079540806690">"<xliff:g id="COUNT">%d</xliff:g> min"</string>
     <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> h"</string>
     <string name="duration_days_shortest" msgid="4083124701676227233">"<xliff:g id="COUNT">%d</xliff:g> j"</string>
@@ -1455,6 +1454,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Appuyez ici pour effectuer la configuration."</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Votre fuseau horaire a changé"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Vous êtes maintenant sur le fuseau horaire <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Définir l\'heure"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Définir la date"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Définir"</string>
@@ -1752,7 +1757,7 @@
     <string name="media_route_status_scanning" msgid="8045156315309594482">"Analyse en cours..."</string>
     <string name="media_route_status_connecting" msgid="5845597961412010540">"Connexion en cours..."</string>
     <string name="media_route_status_available" msgid="1477537663492007608">"Disponible"</string>
-    <string name="media_route_status_not_available" msgid="480912417977515261">"Indisponible"</string>
+    <string name="media_route_status_not_available" msgid="480912417977515261">"Non disponible"</string>
     <string name="media_route_status_in_use" msgid="6684112905244944724">"En cours d\'utilisation"</string>
     <string name="display_manager_built_in_display_name" msgid="1015775198829722440">"Écran intégré"</string>
     <string name="display_manager_hdmi_display_name" msgid="1022758026251534975">"Écran HDMI"</string>

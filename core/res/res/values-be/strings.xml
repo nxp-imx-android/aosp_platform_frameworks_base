@@ -647,10 +647,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дазваляе праграме атрымліваць доступ да прылад, падключаных да лакальнай сеткі"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"выкарыстоўваць інтэрфейс зваротнай пятлі"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Праграма зможа ўзаемадзейнічаць з іншымі праграмамі праз інтэрфейс зваротнай пятлі"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"прымусовае выкарыстанне інтэрфейсу зваротнай пятлі"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Праграма зможа ўзаемадзейнічаць з іншымі праграмамі праз інтэрфейс зваротнай пятлі, нават калі ў іх няма дазволу на яго"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Дазвольце праграме вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Інфармацыя пра прыярытэтны сэрвіс аплаты NFC"</string>
@@ -776,7 +774,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Перамясціце тэлефон ніжэй"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Перамясціце тэлефон улева"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Перамясціце тэлефон управа"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Глядзіце прама на экран прылады."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Не відаць твару. Трымайце тэлефон на ўзроўні вачэй."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Трымайце прыладу нерухома. Трымайце тэлефон роўна."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Паўтарыце рэгістрацыю твару."</string>
@@ -1456,6 +1455,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Краніце, каб наладзіць"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Ваш часавы пояс зменены"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Задаць час"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Задаць дату"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Задаць"</string>

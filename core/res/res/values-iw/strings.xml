@@ -87,7 +87,7 @@
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"השירות לא הוקצה."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"אינך יכול לשנות את הגדרת זיהוי המתקשר."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"הנתונים עברו אל <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
-    <string name="auto_data_switch_content" msgid="803557715007110959">"תמיד אפשר לשנות זאת ב\'הגדרות\'"</string>
+    <string name="auto_data_switch_content" msgid="803557715007110959">"תמיד אפשר לשנות זאת ב\'הגדרות‘"</string>
     <string name="RestrictedOnDataTitle" msgid="1500576417268169774">"אין שירות של חבילת גלישה"</string>
     <string name="RestrictedOnEmergencyTitle" msgid="2852916906106191866">"שיחות חירום לא זמינות"</string>
     <string name="RestrictedOnNormalTitle" msgid="7009474589746551737">"אין אפשרות לבצע שיחות רגילות"</string>
@@ -646,10 +646,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ההרשאה מאפשרת לאפליקציה לגשת למכשירים ברשת המקומית"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"‏שימוש בממשק לולאה חוזרת (loopback)"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"‏ההרשאה מאפשרת לאפליקציה ליצור אינטראקציה עם אפליקציות אחרות דרך ממשק לולאה חוזרת (loopback)"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"‏אילוץ השימוש בממשק לולאה חוזרת (loopback)"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"ההרשאה מאפשרת לאפליקציה ליצור אינטראקציה עם אפליקציות אחרות דרך ממשק לולאה חוזרת, גם אם לאפליקציות האחרות אין הרשאות מתאימות"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"זיהוי המיקום היחסי בין מכשירים קרובים"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"האפליקציה תזהה את המיקום היחסי בין מכשירים קרובים"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏פרטים על שירות תשלום מועדף ב-NFC"</string>
@@ -775,7 +773,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"צריך להזיז את הטלפון כלפי מטה"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"צריך להזיז את הטלפון שמאלה"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"צריך להזיז את הטלפון ימינה"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"יש להביט ישירות אל המכשיר."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"לא רואים את הפנים שלך. יש להחזיק את הטלפון בגובה העיניים."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"יותר מדי תנועה. יש להחזיק את הטלפון בצורה יציבה."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"יש לסרוק שוב את הפנים."</string>
@@ -1455,6 +1454,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"יש ללחוץ כדי להגדיר"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"אזור הזמן שלך השתנה"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"שינוי השעון"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"השעונים הוזזו קדימה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"השעונים הוזזו אחורה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"הגדרת שעה"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"הגדרת תאריך"</string>
     <string name="date_time_set" msgid="4603445265164486816">"הגדרה"</string>
@@ -2025,7 +2027,7 @@
     <string name="zen_mode_until" msgid="2250286190237669079">"עד <xliff:g id="FORMATTEDTIME">%1$s</xliff:g>"</string>
     <string name="zen_mode_alarm" msgid="7046911727540499275">"עד <xliff:g id="FORMATTEDTIME">%1$s</xliff:g> (ההתראה הבאה)"</string>
     <string name="zen_mode_forever" msgid="740585666364912448">"עד הכיבוי"</string>
-    <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"עד להשבתת התכונה \'נא לא להפריע\'"</string>
+    <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"עד להשבתת התכונה \'נא לא להפריע‘"</string>
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g> / <xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"כיווץ"</string>
     <string name="zen_mode_feature_name" msgid="3785547207263754500">"נא לא להפריע"</string>
@@ -2184,7 +2186,7 @@
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"אין הצעות של מילוי אוטומטי"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{הצעה אחת של מילוי אוטומטי}one{# הצעות של מילוי אוטומטי}two{# הצעות של מילוי אוטומטי}other{# הצעות של מילוי אוטומטי}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"לשמור בשירות "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
-    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"שמירה של המידע ב-"<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
+    <string name="autofill_save_title_expressive" msgid="2665408870424848558">"שמירת המידע ב-"<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"האם לשמור את <xliff:g id="TYPE">%1$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
     <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"שמירה של <xliff:g id="TYPE">%1$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"האם לשמור את <xliff:g id="TYPE_0">%1$s</xliff:g> ואת <xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
@@ -2198,7 +2200,7 @@
     <string name="autofill_update_title_with_2types" msgid="1797514386321086273">"האם לעדכן את <xliff:g id="TYPE_0">%1$s</xliff:g> ואת <xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
     <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471">"עדכון של <xliff:g id="TYPE_0">%1$s</xliff:g> ו-<xliff:g id="TYPE_1">%2$s</xliff:g> ב-"<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"לעדכן את הפריטים אלה ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-<xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
-    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"עדכון של הפריטים האלה ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> ו-<xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
+    <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027">"עדכון של הפריטים האלה ב-"<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>":‏ <xliff:g id="TYPE_0">%1$s</xliff:g>,‏ <xliff:g id="TYPE_1">%2$s</xliff:g> וב-<xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"שמירה"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"לא, תודה"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"לא עכשיו"</string>

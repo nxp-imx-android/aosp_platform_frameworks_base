@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"এপ্‌টোক স্থানীয় নেটৱৰ্কৰ ডিভাইচ এক্সেছ কৰিবলৈ অনুমতি দিয়ে"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"লুপবেক ইণ্টাৰফে’চ ব্যৱহাৰ কৰক"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"এপ্‌টোক লুপবেক ইণ্টাৰফে’চৰ জৰিয়তে অন্য এপ্‌সমূহৰ সৈতে ভাব-বিনিময় কৰিবলৈ অনুমতি দিয়ে"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"লুপবেক ইণ্টাৰফে’চ বলপূৰ্বকভাৱে ব্যৱহাৰ কৰক"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"আন এপ্‌টোৱে লুপবেকৰ অনুমতি ধৰি ৰখাৰ প্ৰয়োজন নোহোৱাকৈ এপ্‌টোক লুপবেক ইণ্টাৰফে’চৰ জৰিয়তে অন্য এপ্‌সমূহৰ সৈতে ভাব-বিনিময় কৰিবলৈ অনুমতি দিয়ে"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"নিকটৱৰ্তী ডিভাইচৰ মাজৰ আপেক্ষিক স্থান নিৰ্ধাৰণ কৰক"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"এপ্‌টোক নিকটৱৰ্তী ডিভাইচসমূহৰ মাজৰ আপেক্ষিক স্থান নিৰ্ধাৰণ কৰিবলৈ অনুমতি দিয়ক"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"অগ্ৰাধিকাৰ দিয়া NFC পৰিশোধ সেৱাৰ তথ্য"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ফ’নটো তললৈ নিয়ক"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ফ’নটো আপোনাৰ বাওঁফাললৈ নিয়ক"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ফ’নটো আপোনাৰ সোঁফাললৈ নিয়ক"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"আপোনাৰ ডিভাইচটোলৈ অধিক পোনে পোনে চাওক।"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"আপোনাৰ মুখাৱয়ব দেখা নাই। আপোনাৰ ফ’নটো চকুৰ স্তৰত ধৰি ৰাখক।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"বেছি লৰচৰ কৰি আছে। ফ’নটো স্থিৰকৈ ধৰক।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"আপোনাৰ মুখমণ্ডল পুনৰ পঞ্জীয়ন কৰক।"</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"ছেট আপ কৰিবলৈ টিপক"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"আপোনাৰ সময় মণ্ডল সলনি হৈছে"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"আপুনি এতিয়া <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g>ত (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) আছে"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"সময় ছেট কৰক"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"তাৰিখ ছেট কৰক"</string>
     <string name="date_time_set" msgid="4603445265164486816">"ছেট কৰক"</string>

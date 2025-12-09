@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"အက်ပ်အား အိမ်သုံးကွန်ရက်ရှိ စက်များကို သုံးခွင့်ပေးသည်"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"နောက်ပြန်ကျော့ခြင်း အင်တာဖေ့စ်ကို သုံးရန်"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"အက်ပ်အား နောက်ပြန်ကျော့ခြင်း အင်တာဖေ့စ်မှတစ်ဆင့် အခြားအက်ပ်များနှင့် ပြန်လှန်တုံ့ပြန်ခွင့်ပြုသည်"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"နောက်ပြန်ကျော့အင်တာဖေ့စ် မဖြစ်မနေသုံးခြင်း"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"အခြားအက်ပ်တွင် နောက်ပြန်ကျော့ခွင့်မလိုဘဲ အက်ပ်အား အခြားအက်ပ်နှင့် နောက်ပြန်ကျော့အင်တာဖေ့စ်မှ ပြန်လှန်တုံ့ပြန်ခွင့်ပြုသည်"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"အနီးတစ်ဝိုက်ရှိ စက်များကြား ဆက်စပ်နေရာသတ်မှတ်ခြင်း"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"အနီးတစ်ဝိုက်ရှိ စက်များကြား ဆက်စပ်နေရာသတ်မှတ်ရန် အက်ပ်ကိုခွင့်ပြုသည်"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ဦးစားပေး NFC ငွေပေးချေမှုဆိုင်ရာ ဝန်ဆောင်မှု အချက်အလက်များ"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ဖုန်းကို နှိမ့်လိုက်ပါ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ဖုန်းကို သင့်ဘယ်ဘက်သို့ ရွှေ့ပါ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ဖုန်းကို သင့်ညာဘက်သို့ ရွှေ့ပါ"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"သင့်စက်ပစ္စည်းကို တည့်တည့်ကြည့်ပါ။"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"သင့်မျက်နှာ မမြင်ရပါ။ ဖုန်းနှင့် မျက်စိ တစ်တန်းတည်းထားပါ။"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"လှုပ်လွန်းသည်။ ဖုန်းကို ငြိမ်ငြိမ်ကိုင်ပါ။"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"သင့်မျက်နှာကို ပြန်စာရင်းသွင်းပါ။"</string>
@@ -1454,6 +1453,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"၎င်းကိုတပ်ဆင်ရန် တို့ပါ"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"သင်၏ဒေသစံတော်ချိန် ပြောင်းသွားပါပြီ"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"သင်သည် ယခု <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) တွင် ရှိနေသည်"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"နာရီပြောင်းလဲမှု"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"နာရီများကို <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> ရှေ့သို့ရွှေ့ထားသည်။ သင်သည် ယခု <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) တွင် ရှိနေသည်။"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"နာရီများကို <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> နောက်သို့ရွှေ့ထားသည်။ သင်သည် ယခု <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) တွင် ရှိနေသည်။"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"အချိန်သတ်မှတ်ရန်"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"ရက်စွဲ အတည်ပြုရန်"</string>
     <string name="date_time_set" msgid="4603445265164486816">"သတ်မှတ်ရန်"</string>

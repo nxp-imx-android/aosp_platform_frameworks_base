@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Laat die app toe om toegang tot plaaslikenetwerktoestelle te kry"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"gebruik terugluskoppelvlak"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Laat die app toe om met ander apps interaksie oor terugluskoppelvlak te hê"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"verplig gebruik van terugluskoppelvlak"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Die app kan met ander apps oor terugluskoppelvlak interaksie hê sonder dat die ander app teruglustoestemmings moet hou"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"bepaal relatiewe posisie tussen toestelle in die omtrek"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Laat die app toe om relatiewe posisie tussen toestelle in die omtrek te bepaal"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Voorkeur-NFC-betalingdiensinligting"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Beweeg foon laer af"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Beweeg foon na jou linkerkant"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Beweeg foon na jou regterkant"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Kyk asseblief meer reguit na jou toestel."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Kan nie jou gesig sien nie. Hou jou foon op oogvlak."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Te veel beweging. Hou foon stil."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Skryf jou gesig asseblief weer in."</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Tik om dit op te stel"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Jou tydsone het verander"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Jy is nou in <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Stel tyd"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Stel datum"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Stel"</string>

@@ -646,10 +646,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Dozvoljava aplikaciji da pristupa uređajima na lokalnoj mreži"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"korišćenje interfejsa povratne petlje"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Dozvoljava aplikaciji da ostvaruje interakciju sa drugim aplikacijama preko interfejsa povratne petlje"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"prinudno korišćenje interfejsa povratne petlje"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Dozvoljava aplikaciji da komunicira sa drugim aplikacijama preko interfejsa povratne petlje čak i ako nemaju potrebne dozvole"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"određivanje razdaljine između uređaja u blizini"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Dozvolite aplikaciji da određuje relativnu razdaljinu između uređaja u blizini"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informacije o željenoj NFC usluzi za plaćanje"</string>
@@ -775,7 +773,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Pomerite telefon nadole"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Pomerite telefon ulevo"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Pomerite telefon udesno"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Gledajte pravo u uređaj."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Ne vidi se lice. Držite telefon u visini očiju."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Mnogo se pomerate. Držite telefon mirno."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Ponovo registrujte lice."</string>
@@ -1455,6 +1454,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Dodirnite za podešavanje"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Vremenska zona je promenjena"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Sada ste u vremenskoj zoni <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Promena sata"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Satovi su pomereni unapred za <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Sada ste u vremenskoj zoni <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Satovi su pomereni unazad za <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Sada ste u vremenskoj zoni <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Podesite vreme"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Podešavanje datuma"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Podesi"</string>

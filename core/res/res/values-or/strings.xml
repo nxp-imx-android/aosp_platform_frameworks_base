@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ସ୍ଥାନୀୟ ନେଟୱାର୍କ ଡିଭାଇସଗୁଡ଼ିକୁ ଆକ୍ସେସ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ଲୁପବେକ ଇଣ୍ଟରଫେସ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ଲୁପବେକ ଇଣ୍ଟରଫେସ ମାଧ୍ୟମରେ ଅନ୍ୟ ଆପ୍ସ ସହ ଇଣ୍ଟରାକ୍ଟ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"ଲୁପବେକ ଇଣ୍ଟରଫେସ ବ୍ୟବହାର କରିବାକୁ ଫୋର୍ସ କରନ୍ତୁ"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"ଲୁପବେକ ଅନୁମତିଗୁଡ଼ିକ ରଖିବାକୁ ଅନ୍ୟ ଆପ ଆବଶ୍ୟକ ନକରି ଲୁପବେକ ଇଣ୍ଟରଫେସ ମାଧ୍ୟମରେ ଅନ୍ୟ ଆପ୍ସ ସହ ଇଣ୍ଟରାକ୍ଟ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ଆଖପାଖର ଡିଭାଇସ ମଧ୍ୟରେ ଆପେକ୍ଷିକ ଅବସ୍ଥିତିକୁ ନିର୍ଦ୍ଧାରଣ କର"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ଆଖପାଖର ଡିଭାଇସଗୁଡ଼ିକ ମଧ୍ୟରେ ଆପେକ୍ଷିକ ଅବସ୍ଥିତିକୁ ନିର୍ଦ୍ଧାରଣ କରିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ପସନ୍ଦର NFC ପେମେଣ୍ଟ ସେବା ସୂଚନା"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ଫୋନ୍‌କୁ ତଳକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ଫୋନକୁ ଆପଣଙ୍କ ବାମ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ଫୋନକୁ ଆପଣଙ୍କ ଡାହାଣ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"ଦୟାକରି ଆପଣଙ୍କ ଡିଭାଇସ୍‌କୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ।"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ଆପଣଙ୍କ ଫେସ ଦେଖାଯାଉନାହିଁ। ଆପଣଙ୍କ ଫୋନକୁ ଆଖି ସିଧାରେ ଧରି ରଖନ୍ତୁ।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ଅତ୍ୟଧିକ ଅସ୍ଥିର। ଫୋନ୍‍କୁ ସ୍ଥିର ଭାବେ ଧରନ୍ତୁ।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ଦୟାକରି ଆପଣଙ୍କର ମୁହଁ ପୁଣି-ଏନ୍‍ରୋଲ୍ କରନ୍ତୁ।"</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"ଏହା ସେଟଅପ୍‌ କରିବା ପାଇଁ ଟାପ୍‌ କରନ୍ତୁ"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"ଆପଣଙ୍କ ଟାଇମ ଜୋନ ପରିବର୍ତ୍ତନ ହୋଇଛି"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)ରେ ଅଛନ୍ତି"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"ସମୟ ସେଟ୍ କରନ୍ତୁ"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"ତାରିଖ ସେଟ୍‍ କରନ୍ତୁ"</string>
     <string name="date_time_set" msgid="4603445265164486816">"ସେଟ୍‍ କରନ୍ତୁ"</string>

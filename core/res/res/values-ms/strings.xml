@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Membenarkan apl mengakses peranti rangkaian setempat"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"gunakan antara muka gelung balik"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Membenarkan apl berinteraksi dengan apl lain melalui antara muka gelung balik"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"paksa penggunaan antara muka gelung balik"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Membenarkan apl berinteraksi dengan apl lain melalui antara muka gelung balik tanpa memerlukan kebenaran gelung balik"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"tentukan kedudukan relatif antara peranti berdekatan"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Benarkan apl menentukan kedudukan relatif antara peranti berdekatan"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Maklumat Perkhidmatan Pembayaran NFC Pilihan"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Rendahkan lagi telefon"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Gerakkan telefon ke kiri"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Gerakkan telefon ke kanan"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Sila lihat terus pada peranti anda."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Wajah tidak kelihatan. Pegang telefon pada aras mata."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Terlalu bnyk gerakan. Pegang telefon dgn stabil."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Sila daftarkan semula wajah anda."</string>
@@ -1454,6 +1453,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Ketik untuk menyediakannya"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Zon waktu anda berubah"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Kini anda berada dalam <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Perubahan jam"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Jam dialihkan ke hadapan <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Kini anda berada dalam <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Jam dialihkan ke belakang <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Kini anda berada dalam <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Tetapkan masa"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Tetapkan tarikh"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Tetapkan"</string>
