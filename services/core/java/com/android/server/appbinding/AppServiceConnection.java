@@ -84,7 +84,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onConnected(@NonNull IInterface service) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             scheduleCallbacks();
         } else {
             mConditionVariable.open();
@@ -93,7 +93,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onDisconnected() {
-        if (!Flags.enableAppServiceConnectionCallback()) {
+        if (!Flags.enableAppServiceConnectionCallbacks()) {
             mConditionVariable.close();
         }
     }
@@ -112,7 +112,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * @param callback The action to be executed
      */
     public void addCallback(Consumer<AppServiceConnection> callback) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             synchronized (mLock) {
                 mCallbacks.add(callback);
             }
@@ -147,7 +147,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * @return true if the service connected successfully within the timeout, false otherwise.
      */
     public boolean awaitConnection() {
-        if (!Flags.enableAppServiceConnectionCallback()) {
+        if (!Flags.enableAppServiceConnectionCallbacks()) {
             long timeoutMs = mConstants.SERVICE_RECONNECT_MAX_BACKOFF_SEC * 10 * 1000L;
             return mConditionVariable.block(timeoutMs) && isConnected();
         }

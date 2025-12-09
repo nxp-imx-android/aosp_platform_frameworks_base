@@ -191,7 +191,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
     }
 
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
     private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
         AppBindingService abs = mInjector.getAppBindingService();
         return abs != null
@@ -828,7 +828,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void executeOnSupervisionEnabled(Runnable runnable) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             Binder.withCleanCallingIdentity(runnable::run);
         } else {
             executeOnServiceThread(runnable);
@@ -836,12 +836,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @NonNull
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
     private List<ISupervisionListener> getSupervisionAppServiceListeners(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
-        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallback()) {
+        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallbacks()) {
             return listeners;
         }
 
@@ -872,7 +872,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void dispatchSupervisionEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             dispatchSupervisionAppServiceEvent(userId, action);
         }
         // Add SupervisionAppServices listeners before the platform listeners.
