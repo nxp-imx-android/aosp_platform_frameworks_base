@@ -997,6 +997,18 @@ public class HubEndpoint {
         return mMessageCallback;
     }
 
+    @FlaggedApi(Flags.FLAG_FMCQ_API)
+    @Nullable
+    public DataFlowCallback getDataFlowCallback() {
+        return mDataFlowCallback;
+    }
+
+    @FlaggedApi(Flags.FLAG_FMCQ_API)
+    @NonNull
+    public Looper getLooper() {
+        return mLooper;
+    }
+
     /** Builder for a {@link HubEndpoint} object. */
     public static final class Builder {
         private final String mPackageName;
@@ -1099,13 +1111,26 @@ public class HubEndpoint {
         }
 
         /**
+         * Attach a callback interface for data flow events for this Endpoint. The callback will be
+         * posted to the main thread.
+         */
+        @FlaggedApi(Flags.FLAG_FMCQ_API)
+        @NonNull
+        public Builder setDataFlowCallback(@NonNull DataFlowCallback dataFlowCallback) {
+            Objects.requireNonNull(dataFlowCallback);
+            mDataFlowCallbackExecutor = null;
+            mDataFlowCallback = dataFlowCallback;
+            return this;
+        }
+
+        /**
          * Attach a callback interface for data flow events for this Endpoint with a specified
          * executor.
          *
          * @param executor The executor to post data flow events to
          * @param dataFlowCallback The callback interface for handling data flow events
-         * @hide
          */
+        @FlaggedApi(Flags.FLAG_FMCQ_API)
         @NonNull
         public Builder setDataFlowCallback(
                 @NonNull @CallbackExecutor Executor executor,
@@ -1135,10 +1160,11 @@ public class HubEndpoint {
          * {@link android.os.Looper#getMainLooper()} will be used.
          *
          * @param looper The {@link android.os.Looper} to use for epoll
-         * @hide
          */
+        @FlaggedApi(Flags.FLAG_FMCQ_API)
         @NonNull
         public Builder setLooper(@NonNull Looper looper) {
+            Objects.requireNonNull(looper);
             mLooper = looper;
             return this;
         }
@@ -1153,9 +1179,7 @@ public class HubEndpoint {
                     mMessageCallback,
                     mMessageCallbackExecutor != null ? mMessageCallbackExecutor : mMainExecutor,
                     mDataFlowCallback,
-                    mDataFlowCallbackExecutor != null
-                            ? mDataFlowCallbackExecutor
-                            : mMessageCallbackExecutor,
+                    mDataFlowCallbackExecutor != null ? mDataFlowCallbackExecutor : mMainExecutor,
                     mLooper != null ? mLooper : Looper.getMainLooper());
         }
     }
