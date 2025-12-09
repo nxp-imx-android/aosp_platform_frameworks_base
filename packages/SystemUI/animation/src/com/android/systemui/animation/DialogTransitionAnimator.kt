@@ -228,7 +228,6 @@ constructor(
      * The set of dialogs that were animated using this animator and that are still opened (not
      * dismissed, but can be hidden).
      */
-    // TODO(b/201264644): Remove this set.
     private val openedDialogs = hashSetOf<AnimatedDialog>()
 
     /**
