@@ -282,7 +282,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     statusBarNotificationIconsInteractor: StatusBarNotificationIconsInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
-    private val sceneInteractor: SceneInteractor,
+    sceneInteractor: SceneInteractor,
     occlusionInteractor: KeyguardOcclusionInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
@@ -750,12 +750,15 @@ constructor(
             ?: flowOf(Rect(0, 0, 0, 0)).flowOn(bgDispatcher)
 
     override val isSignOutButtonVisible: Boolean by
-        combine(userLogoutInteractor.isLogoutToSystemUserEnabled, sceneInteractor.currentScene) {
-                isLogoutToSystemUserEnabled,
-                currentScene ->
+        combine(
+                userLogoutInteractor.isLogoutToSystemUserEnabled,
+                deviceProvisioningInteractor.isDeviceProvisioned,
+                sceneInteractor.currentScene,
+            ) { isLogoutToSystemUserEnabled, isDeviceProvisioned, currentScene ->
                 Flags.signOutButtonOnKeyguardStatusBar() &&
                     keyguardInteractor.isSignOutButtonOnStatusBarEnabled &&
                     isLogoutToSystemUserEnabled &&
+                    isDeviceProvisioned &&
                     currentScene == Scenes.Lockscreen
             }
             .hydratedStateOf(traceName = "isSignOutButtonVisible", initialValue = false)
