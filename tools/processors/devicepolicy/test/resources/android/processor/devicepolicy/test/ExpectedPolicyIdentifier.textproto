@@ -104,7 +104,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_DEFAULT_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
 }
 policy_metadata {
   identifier {
@@ -142,7 +142,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
 }
 policy_metadata {
   identifier {
@@ -180,7 +180,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
 }
 policy_metadata {
   identifier {
@@ -199,7 +199,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER
+  allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
 }
 policy_metadata {
   identifier {
@@ -218,7 +218,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
 }
 policy_metadata {
   identifier {
@@ -237,10 +237,10 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_DEFAULT_DEVICE_OWNER
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER
-  allowed_dpc_types: DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
 }
 policy_metadata {
   identifier {
