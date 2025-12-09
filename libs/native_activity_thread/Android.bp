@@ -25,13 +25,51 @@ rust_bindgen {
     source_stem: "native_activity_thread_bindings",
     header_libs: [
         "libandroid_headers_private",
+        "libcutils_headers",
         "native_headers",
     ],
     shared_libs: [
         "libandroid",
         "libbinder_ndk",
+        "libcutils",
         "libdl_android",
     ],
+}
+
+cc_library_shared {
+    name: "libminikin_system_font_bridge",
+    srcs: [
+        "src/ffi/SystemFontsBridge.cpp",
+    ],
+    header_libs: [
+        "libminikin_headers",
+        "libhwui_internal_headers",
+        "libminikin_system_font_bridge_headers",
+    ],
+    shared_libs: [
+        "libharfbuzz_ng",
+        "libhwui",
+        "libminikin",
+    ],
+    generated_headers: [
+        "cxx-bridge-header",
+    ],
+    generated_sources: [
+        "libminikin_system_font_bridge_code",
+    ],
+}
+
+genrule {
+    name: "libminikin_system_font_bridge_code",
+    tools: ["cxxbridge"],
+    cmd: "$(location cxxbridge) $(in) > $(out)",
+    srcs: ["src/font.rs"],
+    out: ["libminikin_system_font_bridge_cxx_generated.cc"],
+}
+
+cc_library_headers {
+    name: "libminikin_system_font_bridge_headers",
+    export_include_dirs: ["src/ffi/include"],
 }
 
 rust_defaults {
@@ -47,6 +85,7 @@ rust_defaults {
         "libatrace_rust",
         "libbitflags",
         "libbinder_rs",
+        "libcxx",
         "liblogger",
         "liblibc",
         "libnix",
@@ -64,6 +103,11 @@ rust_defaults {
         ],
         default: [],
     }),
+    shared_libs: [
+        "libminikin_system_font_bridge",
+        "libminikin",
+        "libharfbuzz_ng",
+    ],
 }
 
 rust_library {

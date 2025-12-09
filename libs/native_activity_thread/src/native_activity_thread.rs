@@ -31,9 +31,10 @@ use native_activity_thread_bindgen::{
 };
 use std::{collections::BTreeMap, ffi::CString};
 
+use crate::font::load_system_font_map;
 use crate::library_loader::{LinkerNamespace, LoadedLibrary, NamespaceFactory};
 use crate::native_application_thread::{
-    BindServiceRequest, CreateServiceRequest, DestroyServiceRequest,
+    BindApplicationRequest, BindServiceRequest, CreateServiceRequest, DestroyServiceRequest,
     NativeApplicationThreadRequest, UnbindServiceRequest,
 };
 use crate::preload;
@@ -294,13 +295,17 @@ impl NativeActivityThread {
         Ok(())
     }
 
-    fn handle_bind_application_request(&mut self) -> Result<()> {
+    fn handle_bind_application_request(&mut self, req: BindApplicationRequest) -> Result<()> {
         atrace::trace_method!(AtraceTag::ActivityManager);
 
         // Reset the time zone to be the system time zone. This needs to be done because the system
         // time zone could have changed after the spawning of this process. Without doing this, this
         // process would have the incorrect system time zone.
         reset_time_zone();
+
+        if let Some(fd) = req.system_font_map_fd {
+            load_system_font_map(fd)?;
+        }
 
         // We don't support calling Application.onCreate in native processes.
         self.activity_manager
@@ -333,8 +338,8 @@ impl HandlerCallback<NativeApplicationThreadRequest> for NativeActivityThread {
             NativeApplicationThreadRequest::TrimMemory(level) => {
                 self.handle_trim_memory_request(level)
             }
-            NativeApplicationThreadRequest::BindApplication => {
-                self.handle_bind_application_request()
+            NativeApplicationThreadRequest::BindApplication(req) => {
+                self.handle_bind_application_request(req)
             }
             NativeApplicationThreadRequest::SetProcessState(state) => {
                 self.handle_set_process_state(state)

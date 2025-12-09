@@ -31,6 +31,7 @@
 
 #include "FontUtils.h"
 #include "GraphicsJNI.h"
+#include "MinikinFontSkiaFactory.h"
 #include "SkData.h"
 #include "SkTypeface.h"
 #include "fonts/Font.h"
@@ -193,16 +194,13 @@ static sk_sp<SkData> makeSkDataCached(const std::string& path, bool hasVerity) {
     return entry;
 }
 
-class MinikinFontSkiaFactory : minikin::MinikinFontFactory {
-private:
-    MinikinFontSkiaFactory() : MinikinFontFactory() { MinikinFontFactory::setInstance(this); }
+MinikinFontSkiaFactory::MinikinFontSkiaFactory() : MinikinFontFactory() {
+    MinikinFontFactory::setInstance(this);
+}
 
-public:
-    static void init() { static MinikinFontSkiaFactory factory; }
-    void skip(minikin::BufferReader* reader) const override;
-    std::shared_ptr<minikin::MinikinFont> create(minikin::BufferReader reader) const override;
-    void write(minikin::BufferWriter* writer, const minikin::MinikinFont* typeface) const override;
-};
+void MinikinFontSkiaFactory::init() {
+    static MinikinFontSkiaFactory factory;
+}
 
 void MinikinFontSkiaFactory::skip(minikin::BufferReader* reader) const {
     // Advance reader's position.
