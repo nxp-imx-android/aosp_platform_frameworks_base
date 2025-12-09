@@ -1131,10 +1131,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
         UserHandle userHandle = Binder.getCallingUserHandle();
         int callingUid = Binder.getCallingUid();
 
-        List<String> roleHolders =
-                new ArrayList<String>(
-                        mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, userHandle));
-        roleHolders.addAll(mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, userHandle));
+        List<String> roleHolders = new ArrayList<String>();
+        synchronized (getLockObject()) {
+            roleHolders.addAll(
+                    getUserDataLocked(UserHandle.getUserId(callingUid)).supervisionRoleHolders);
+        }
 
         String[] packages = mInjector.getPackageManager().getPackagesForUid(callingUid);
         if (packages != null) {
@@ -1157,7 +1158,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     private List<String> updateSupervisionRoleHolders(@UserIdInt int userId) {
         List<String> newRoleHolders =
-                mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId));
+                new ArrayList<String>(
+                        mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId)));
+        newRoleHolders.addAll(
+                mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
 
         synchronized (getLockObject()) {
             SupervisionUserData data = getUserDataLocked(userId);
@@ -1503,7 +1507,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         @Override
         public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
-            if (ROLE_SUPERVISION.equals(roleName)) {
+            if (ROLE_SUPERVISION.equals(roleName) || ROLE_SYSTEM_SUPERVISION.equals(roleName)) {
                 executeOnServiceThread(
                         () -> {
                             maybeApplyUserRestrictionsFor(user);
