@@ -28,5 +28,5 @@ class InvalidPreference(
     otherPreferenceScreenKey: Int,
     otherPreferenceKey: Int,
     otherPreferenceParams: KeyParametersSchema?,
-    reason: String
-) : ApiFirstPreconditions
+    override val reason: Int
+) : Disallowed

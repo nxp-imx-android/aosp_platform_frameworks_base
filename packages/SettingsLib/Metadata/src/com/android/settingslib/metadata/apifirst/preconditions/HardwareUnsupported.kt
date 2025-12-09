@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.preconditions
 
 /** The getter is unavailable due to some hardware issue, the reason should give details. */
-class HardwareUnsupported(val reason: String): ApiFirstPreconditions
+class HardwareUnsupported(override val reason: Int) : Disallowed
