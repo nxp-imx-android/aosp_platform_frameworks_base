@@ -276,9 +276,11 @@ public class AutomatedPackagesRepositoryTest {
     }
 
     @Test
-    public void createAutomatedAppLaunchWarningIntent_createsInterceptionIntent() {
+    public void createAutomatedAppLaunchWarningIntent_createsInterceptionIntent() throws Exception {
+        mRepo.registerAutomatedPackageListener(mListener);
+
         mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
-        processOneHandlerMessage();
+        assertListenerReceived(List.of(PACKAGE1), USER1);
 
         Intent intent = mRepo.createAutomatedAppLaunchWarningIntent(
                 PACKAGE1, USER1.getIdentifier(), PACKAGE2, null, mCloseVirtualDeviceMock);
@@ -291,9 +293,13 @@ public class AutomatedPackagesRepositoryTest {
 
         // The user chose to stop the automation.
         resultReceiver.send(Activity.RESULT_OK, null);
+        processOneHandlerMessage();
+
+        // An update is triggered prior to the device closure to inform the repository that nothing
+        // is really running there anymore.
+        assertListenerReceived(List.of(), USER1);
 
         // Subsequent launch is not intercepted.
-        processOneHandlerMessage();
         assertThat(mRepo.createAutomatedAppLaunchWarningIntent(
                 PACKAGE1, USER1.getIdentifier(), PACKAGE2, null, mCloseVirtualDeviceMock))
                 .isNull();
@@ -301,6 +307,7 @@ public class AutomatedPackagesRepositoryTest {
         // The session is closed.
         processOneHandlerMessage();
         verify(mCloseVirtualDeviceMock).accept(DEVICE_ID1);
+        assertThat(mTestLooperManager.poll()).isNull();
     }
 
     private void assertListenerReceived(List<String> packages, UserHandle user) throws Exception {
