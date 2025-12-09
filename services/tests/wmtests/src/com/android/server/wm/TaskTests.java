@@ -2525,6 +2525,28 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(restored.mRealActivityAppLockEnabled);
     }
 
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testCreateTask_appLockFlagIsOff_doesNotRegisterToAppLockOverlayController() {
+        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
+        spyOn(appLockOverlayController);
+
+        final Task task = getTestTask();
+
+        verify(appLockOverlayController, never()).registerTask(task);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testCreateTask_registersToAppLockOverlayController() {
+        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
+        spyOn(appLockOverlayController);
+
+        final Task task = getTestTask();
+
+        verify(appLockOverlayController).registerTask(task);
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }
