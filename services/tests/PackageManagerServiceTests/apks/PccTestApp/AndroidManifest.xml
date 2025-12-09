@@ -4,6 +4,6 @@
         android:versionCode="1">
     <application>
         <service android:name=".PccService"
-            android:isPrivateComputeCoreProcess="true" />
+            android:privateComputeCore="true" />
     </application>
 </manifest>

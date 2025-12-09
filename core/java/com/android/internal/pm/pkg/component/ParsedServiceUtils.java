@@ -113,11 +113,11 @@ public class ParsedServiceUtils {
 
             if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
                 service.setFlags(service.getFlags() | flag(ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX,
-                         R.styleable.AndroidManifestService_isPrivateComputeCoreProcess, sa));
+                         R.styleable.AndroidManifestService_privateComputeCore, sa));
                 if ((service.getFlags() & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0
                          && (service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0) {
                     return input.error("Service has both isIsolatedProcess and "
-                        + "isPrivateComputeCoreProcess set.");
+                        + "privateComputeCore set.");
                 }
             }
 

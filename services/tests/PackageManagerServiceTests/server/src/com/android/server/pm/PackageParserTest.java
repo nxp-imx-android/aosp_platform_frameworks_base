@@ -1176,11 +1176,11 @@ public class PackageParserTest {
         final File testFile = extractFile(TEST_APP_PCC_AND_ISOLATED_SERVICE_APK);
         try {
             new TestPackageParser2().parsePackage(testFile, 0, false);
-            fail("Parsing a service with both isPrivateComputeCoreProcess and isolatedProcess"
+            fail("Parsing a service with both privateComputeCore and isolatedProcess"
                     + " should fail.");
         } catch (PackageParserException e) {
             assertThat(e.getMessage()).contains(
-                    "Service has both isIsolatedProcess and isPrivateComputeCoreProcess set.");
+                    "Service has both isIsolatedProcess and privateComputeCore set.");
         } finally {
             testFile.delete();
         }

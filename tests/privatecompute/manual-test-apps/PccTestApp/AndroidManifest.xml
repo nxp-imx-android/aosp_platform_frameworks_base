@@ -25,6 +25,6 @@
         </activity>
         <service
             android:name=".TestPccService"
-            android:isPrivateComputeCoreProcess="true"/>
+            android:privateComputeCore="true"/>
     </application>
 </manifest>
