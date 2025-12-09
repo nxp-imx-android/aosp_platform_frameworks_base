@@ -349,16 +349,12 @@ class SupervisionSettingsTest {
             )
 
         private val TEST_PACKAGE_POLICY =
-            PackageUsagePolicy.Builder()
+            PackageUsagePolicy.Builder("test.package", PackageUsagePolicy.TYPE_BLOCKED)
                 .setVersion(1)
-                .setPackageName("test.package")
-                .setType(PackageUsagePolicy.TYPE_BLOCKED)
                 .build()
         private val TEST_PACKAGE_POLICY_2 =
-            PackageUsagePolicy.Builder()
+            PackageUsagePolicy.Builder("test.package2", PackageUsagePolicy.TYPE_BLOCKED)
                 .setVersion(1)
-                .setPackageName("test.package2")
-                .setType(PackageUsagePolicy.TYPE_BLOCKED)
                 .build()
 
         fun SupervisionUserData.changeUserData(

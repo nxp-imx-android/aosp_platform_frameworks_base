@@ -176,8 +176,17 @@ public final class PackageUsagePolicy extends Policy {
         private String mPackageName;
         private @Type int mType = -1;
 
-        /** Constructs a new builder. */
-        public Builder() {}
+        /**
+         * Constructs a new builder with the given package name and type.
+         *
+         * @param packageName the package name to set
+         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED} or
+         *     {@link PackageUsagePolicy#TYPE_BLOCKED}
+         */
+        public Builder(@NonNull String packageName, @Type int type) {
+            setPackageName(packageName);
+            setType(type);
+        }
 
         /**
          * Constructs a new builder from an existing policy.
