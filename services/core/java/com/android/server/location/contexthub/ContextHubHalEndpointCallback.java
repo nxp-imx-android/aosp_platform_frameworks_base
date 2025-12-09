@@ -161,7 +161,7 @@ public class ContextHubHalEndpointCallback
                 handle,
                 new HubEndpointInfo.HubEndpointIdentifier(producerId.hubId, producerId.id),
                 new HubEndpointInfo.HubEndpointIdentifier(consumerId.hubId, consumerId.id),
-                ContextHubServiceUtil.createHubMessage(msg),
+                msg == null ? null : ContextHubServiceUtil.createHubMessage(msg),
                 sessionId);
     }
 

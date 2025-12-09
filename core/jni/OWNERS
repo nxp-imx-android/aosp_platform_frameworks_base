@@ -52,6 +52,9 @@ per-file EphemeralStorage* = file:platform/system/libhwbinder:/OWNERS
 # Sensor
 per-file android_hardware_SensorManager* = arthuri@google.com, bduddie@google.com, stange@google.com
 
+# Context Hub
+per-file android_hardware_HubEndpoint* = file:/services/core/java/com/android/server/location/contexthub/OWNERS
+
 # Security
 per-file android_os_SELinux.cpp = file:/core/java/android/security/OWNERS
 per-file android_security_* = file:/core/java/android/security/OWNERS
