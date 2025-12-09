@@ -129,7 +129,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     private val metricsLogger = kosmos.metricsLogger
     private val deviceProvisionedController = kosmos.deviceProvisionedController
     private val accessibilityManager = kosmos.accessibilityManager
-    private val mBarService = kosmos.statusBarService
+    private val statusBarService = kosmos.statusBarService
     private val launcherApps = kosmos.launcherApps
     private val shadeController = kosmos.shadeControllerSceneImpl
     private val notificationLockscreenUserManager = kosmos.notificationLockscreenUserManager
@@ -166,7 +166,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         windowRootViewVisibilityInteractor =
             WindowRootViewVisibilityInteractor(
                 testScope.backgroundScope,
-                WindowRootViewVisibilityRepository(mBarService, executor),
+                WindowRootViewVisibilityRepository(statusBarService, executor),
                 FakeKeyguardRepository(),
                 headsUpManager,
                 create().powerInteractor,
@@ -199,7 +199,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 windowRootViewVisibilityInteractor,
                 notificationLockscreenUserManager,
                 statusBarStateController,
-                mBarService,
                 deviceProvisionedController,
                 metricsLogger,
                 headsUpManager,
