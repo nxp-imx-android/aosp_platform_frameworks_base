@@ -19,4 +19,40 @@ package com.android.settingslib.metadata.apifirst.types
 import kotlin.reflect.KClass
 
 /** An entry from the enum. */
-class CustomEnum<T : Enum<T>>(val enumValue: T): ApiFirstType<T>
+class CustomEnum<T, E>(enumClass: KClass<E>) : ApiFirstType<E> where E : Enum<E>, E : EnumApi<T> {
+
+    @Suppress("UNCHECKED_CAST")
+    private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)
+
+    private val valueMap: Map<T, E> = entries.associateBy { it.asApiValue }
+
+    /** Finds the Enum constant associated with the given API value. */
+    fun fromApiValue(value: T): E? = valueMap[value]
+
+    /** Returns all entries. */
+    fun getEntries(): List<E> = entries.toList()
+}
+
+/**
+ * Defines a contract for Enums that require mapping to a specific API value type and providing a
+ * human-readable purpose.
+ *
+ * This interface allows generic wrappers to handle serialization and UI display logic uniformly
+ * across different Enum types.
+ *
+ * @param T The type of the value used by the API (e.g., [Int], [String]).
+ *
+ * Example usage:
+ * ```
+ * enum class ConnectionState(override val asApiValue: Int, override val purpose: Int) :
+ *     EnumApi<Int> {
+ *     CONNECTED(1, R.string.connected),
+ *     DISCONNECTED(0, R.string.disconnected),
+ * }
+ * ```
+ */
+interface EnumApi<T> {
+    val asApiValue: T
+    val purpose: Int
+}
+
