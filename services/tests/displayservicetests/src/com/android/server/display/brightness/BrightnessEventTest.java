@@ -60,6 +60,8 @@ public final class BrightnessEventTest {
         mBrightnessEvent.setHdrBrightness(0.6f);
         mBrightnessEvent.setRecommendedBrightness(0.6f);
         mBrightnessEvent.setHbmMax(0.62f);
+        mBrightnessEvent.setBrightnessMin(0);
+        mBrightnessEvent.setBrightnessMax(0.62f);
         mBrightnessEvent.setRbcStrength(-1);
         mBrightnessEvent.setThermalMax(0.65f);
         mBrightnessEvent.setPowerFactor(0.2f);
@@ -125,6 +127,23 @@ public final class BrightnessEventTest {
                         + "preLux=150.0, lastReadLux=831.49, wasShortTermModelActive=true, "
                         + "autoBrightness=true (idle), unclampedBrt=0.65, hbmMax=0.62, "
                         + "hbmMode=off, thrmMax=0.65, rbcStrength=-1, powerFactor=0.2, "
+                        + "physDisp=display_name(987654321), logicalId=1, slowChange=true, "
+                        + "rampSpeed=0.3";
+        assertEquals(expectedString, actualString);
+    }
+
+    @Test
+    public void testToStringWorksAsExpected_brightnessRange() {
+        mBrightnessEvent.setBrightnessMin(0.05f);
+        mBrightnessEvent.setBrightnessMax(0.3f);
+        String actualString = mBrightnessEvent.toString(false);
+        String expectedString =
+                "BrightnessEvent: brt=0.6(46.5%), nits=893.8, lux=100.0, reason=doze [ "
+                        + "low_pwr ], strat=strategy_name, state=ON, stateReason=DEFAULT_POLICY, "
+                        + "policy=BRIGHT, flags=, initBrt=25.0, rcmdBrt=0.6, preBrt=NaN, "
+                        + "preLux=150.0, wasShortTermModelActive=true, autoBrightness=true (idle), "
+                        + "unclampedBrt=0.65, brtRange=[0.05, 0.3], hbmMax=0.62, hbmMode=off, "
+                        + "thrmMax=0.65, rbcStrength=-1, powerFactor=0.2, "
                         + "physDisp=display_name(987654321), logicalId=1, slowChange=true, "
                         + "rampSpeed=0.3";
         assertEquals(expectedString, actualString);
