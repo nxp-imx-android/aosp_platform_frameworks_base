@@ -79,7 +79,7 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rDRhXcT" opt; do
+while getopts "sx:f:dtbLa:rDRhXcTtw" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -95,7 +95,7 @@ case "$opt" in
     d) # Dry run
         dry_run="echo"
         ;;
-    t) # Redirect log to terminal
+    l) # Redirect log to terminal (live logcat)
         run export RAVENWOOD_LOG_OUT=-
         disable_tf_rolling_log
         ;;
@@ -103,9 +103,15 @@ case "$opt" in
         run unset RAVENWOOD_LOG_OUT
         ;;
     a) # Set atest options (e.g. "-t")
-        atest_opts="$OPTARG"
+        atest_opts="$atest_opts $OPTARG"
         ;;
-    L) # Exclude large tests
+    t) # Run only, no building (i.e. "atest -t"). Non-ravenwood host tests may not work with this.
+        atest_opts="$atest_opts -t"
+        ;;
+    w) # Enable the debugger (i.e. "atest -w")
+        atest_opts="$atest_opts -w"
+        ;;
+    L) # Exclude large tests (@LargeTest and :large tests in the policy files)
         exclude_large_tests=1
         ;;
     r) # Only run tests under frameworks/base/ravenwood/
@@ -261,9 +267,15 @@ for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
     export RAVENWOOD_ENABLE_EXP_API_${test}=1
 done
 
+if (( $exclude_large_tests )) ; then
+    run export RAVENWOOD_SKIP_LARGE_TESTS=1
+fi
+
+
 echo "RAVENWOOD_RUN_DISABLED_TESTS=$RAVENWOOD_RUN_DISABLED_TESTS"
 echo "RAVENWOOD_FORCE_FILTER_REGEX=$RAVENWOOD_FORCE_FILTER_REGEX"
 echo "RAVENWOOD_HIDE_DISABLED_TESTS=$RAVENWOOD_HIDE_DISABLED_TESTS"
+echo "RAVENWOOD_SKIP_LARGE_TESTS=$RAVENWOOD_SKIP_LARGE_TESTS"
 
 # =========================================================
 

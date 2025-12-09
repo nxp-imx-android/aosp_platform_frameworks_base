@@ -35,11 +35,11 @@ android.view.cts.*Handwriting* never
 ################################################################################
 
 # Class-level stats:
-# Total=106 Ran=69 Passed=30 CannotInit=0 Skipped=37
-# Pass rate: 28.30%
+# Total=109 Ran=70 Passed=31 CannotInit=0 Skipped=39
+# Pass rate: 28.44%
 # Method-level stats:
-# Total=944 Passed=568 Failed=368 Skipped=8
-# Pass rate: 60.68%
+# Total=948 Passed=572 Failed=368 Skipped=8
+# Pass rate: 60.85%
 
 android.view.cts.AbsSavedStateTest#testConstructor disable
 android.view.cts.AbsSavedStateTest#testConstructorNullParcel enable
@@ -80,7 +80,11 @@ android.view.cts.FocusFinderTest#testGetInstance enable
 android.view.cts.FocusFinderTest#testNoClusters enable
 android.view.cts.FrameMetricsListenerTest#testDropCount disable
 android.view.cts.FrameMetricsListenerTest#testMultipleListeners disable
-android.view.cts.FrameMetricsListenerTest#testReceiveData disable
+android.view.cts.FrameMetricsListenerTest#testReceiveData disable :large
+android.view.cts.FrameRateVelocityPointTest#testConstructorAndGetters enable
+android.view.cts.FrameRateVelocityPointTest#testDescribeContents enable
+android.view.cts.FrameRateVelocityPointTest#testEqualsAndHashCode enable
+android.view.cts.FrameRateVelocityPointTest#testParcelable enable
 android.view.cts.GestureDetectorTest#testConstructor enable
 android.view.cts.GestureDetectorTest#testConstructorNullListener enable
 android.view.cts.GestureDetectorTest#testLongpressEnabled enable
@@ -341,12 +345,12 @@ android.view.cts.SoundEffectConstantsTest#testGetConstantForFocusDirectionInvali
 android.view.cts.SoundEffectConstantsTest#testGetContantForFocusDirection enable
 android.view.cts.SoundEffectConstantsTest#testGetContantForFocusDirectionInvalid enable
 android.view.cts.SystemGestureExclusionRectsTest#animatingView disable
-android.view.cts.SystemGestureExclusionRectsTest#ignoreHiddenViewRects disable
-android.view.cts.SystemGestureExclusionRectsTest#removingRects disable
+android.view.cts.SystemGestureExclusionRectsTest#ignoreHiddenViewRects disable :large
+android.view.cts.SystemGestureExclusionRectsTest#removingRects disable :large
 android.view.cts.SystemGestureExclusionRectsTest#rootExclusionRects enable
 android.view.cts.SystemGestureExclusionRectsTest#rootExclusionRectsMultipleCalls enable
 android.view.cts.SystemGestureExclusionRectsTest#rootExclusionRects_doesNotDispatchWhenRectsDidNotChange enable
-android.view.cts.SystemGestureExclusionRectsTest#staticView disable
+android.view.cts.SystemGestureExclusionRectsTest#staticView disable :large
 android.view.cts.TooltipTest#testGetSetTooltip enable
 android.view.cts.TooltipTest#testLongArbitraryKeyPressDoesNotShowTooltip disable
 android.view.cts.TooltipTest#testLongClickTooltipBlockedByContextMenu disable
@@ -387,7 +391,7 @@ android.view.cts.TooltipTest#testMouseHoverTooltipOnClickableView disable
 android.view.cts.TooltipTest#testMouseHoverTooltipOnContextClickableView disable
 android.view.cts.TooltipTest#testMouseHoverTooltipOnLongClickableView disable
 android.view.cts.TooltipTest#testMouseHoverTooltipRemoveWhileShowing disable
-android.view.cts.TooltipTest#testMouseHoverTooltipRemoveWhileWaiting enable
+android.view.cts.TooltipTest#testMouseHoverTooltipRemoveWhileWaiting enable :large
 android.view.cts.TooltipTest#testMouseHoverTooltipStaysOnMouseMove disable
 android.view.cts.TooltipTest#testMouseHoverTooltipUnsetWhileHovering enable
 android.view.cts.TooltipTest#testMouseHoverTooltipWithHoverListener disable
@@ -711,7 +715,7 @@ android.view.cts.ViewTest#testFilterTouchesWhenObscured enable
 android.view.cts.ViewTest#testFindViewById enable
 android.view.cts.ViewTest#testFitSystemWindows enable
 android.view.cts.ViewTest#testForceLayout enable
-android.view.cts.ViewTest#testFrameRateAPIsFlagEnabled disable
+android.view.cts.ViewTest#testFrameRateAPIsFlagEnabled disable :large
 android.view.cts.ViewTest#testGetAnimation enable
 android.view.cts.ViewTest#testGetApplicationWindowToken enable
 android.view.cts.ViewTest#testGetBaseline enable
@@ -722,7 +726,7 @@ android.view.cts.ViewTest#testGetContextMenuInfo enable
 android.view.cts.ViewTest#testGetDefaultSize enable
 android.view.cts.ViewTest#testGetDrawingCache disable
 android.view.cts.ViewTest#testGetDrawingRect enable
-android.view.cts.ViewTest#testGetDrawingTime disable
+android.view.cts.ViewTest#testGetDrawingTime disable :large
 android.view.cts.ViewTest#testGetFadingEdgeStrength enable
 android.view.cts.ViewTest#testGetFocusables enable
 android.view.cts.ViewTest#testGetFocusedRect enable
@@ -767,7 +771,7 @@ android.view.cts.ViewTest#testInputConnection enable
 android.view.cts.ViewTest#testInvalidate1 disable
 android.view.cts.ViewTest#testInvalidate2 disable
 android.view.cts.ViewTest#testInvalidate3 disable
-android.view.cts.ViewTest#testInvalidateDrawable disable
+android.view.cts.ViewTest#testInvalidateDrawable disable :large
 android.view.cts.ViewTest#testIsInEditMode enable
 android.view.cts.ViewTest#testIsInTouchMode enable
 android.view.cts.ViewTest#testIsLayoutRequested enable
@@ -780,7 +784,7 @@ android.view.cts.ViewTest#testLayout enable
 android.view.cts.ViewTest#testMeasure disable
 android.view.cts.ViewTest#testMergeDrawableStates enable
 android.view.cts.ViewTest#testMouseEventCallsGetPointerIcon disable
-android.view.cts.ViewTest#testOnAnimation disable
+android.view.cts.ViewTest#testOnAnimation disable :large
 android.view.cts.ViewTest#testOnAttachedToAndDetachedFromWindow enable
 android.view.cts.ViewTest#testOnFocusChanged disable
 android.view.cts.ViewTest#testOnFocusChanged_callsRequestRectangleOnScreen enable
@@ -814,7 +818,7 @@ android.view.cts.ViewTest#testPostDelayed enable
 android.view.cts.ViewTest#testPostInvalidate1 enable
 android.view.cts.ViewTest#testPostInvalidate2 enable
 android.view.cts.ViewTest#testPostInvalidateDelayed enable
-android.view.cts.ViewTest#testRemoveCallbacks enable
+android.view.cts.ViewTest#testRemoveCallbacks enable :large
 android.view.cts.ViewTest#testRequestFocusFromTouch enable
 android.view.cts.ViewTest#testRequestLayout enable
 android.view.cts.ViewTest#testRequestRectangleOnScreen1 enable
@@ -888,27 +892,27 @@ android.view.cts.ViewTest#testUnscheduleDrawable enable
 android.view.cts.ViewTest#testUpdateDragShadow disable
 android.view.cts.ViewTest#testUpdateDragShadow_detachedView enable
 android.view.cts.ViewTest#testUpdateDragShadow_noActiveDrag enable
-android.view.cts.ViewTest#testVelocityAPIsFlagEnabled disable
+android.view.cts.ViewTest#testVelocityAPIsFlagEnabled disable :large
 android.view.cts.ViewTest#testVerifyDrawable enable
 android.view.cts.ViewTest#testVisibilityAggregated disable
-android.view.cts.ViewTest#testWindowFocusChanged disable
+android.view.cts.ViewTest#testWindowFocusChanged disable :large
 android.view.cts.ViewTest#testWindowVisibilityChanged disable
 android.view.cts.ViewTest#testXYZ enable
-android.view.cts.ViewTreeObserverTest#testAccessOnScrollChangedListener disable
+android.view.cts.ViewTreeObserverTest#testAccessOnScrollChangedListener disable :large
 android.view.cts.ViewTreeObserverTest#testAddOnDrawListener enable
-android.view.cts.ViewTreeObserverTest#testAddOnGlobalFocusChangeListener disable
+android.view.cts.ViewTreeObserverTest#testAddOnGlobalFocusChangeListener disable :large
 android.view.cts.ViewTreeObserverTest#testAddOnGlobalLayoutListener enable
 android.view.cts.ViewTreeObserverTest#testAddOnPreDrawListener enable
 android.view.cts.ViewTreeObserverTest#testAddOnScrollChangedListener enable
 android.view.cts.ViewTreeObserverTest#testAddOnTouchModeChangeListener disable
-android.view.cts.ViewTreeObserverTest#testFrameCommitListener disable
+android.view.cts.ViewTreeObserverTest#testFrameCommitListener disable :large
 android.view.cts.ViewTreeObserverTest#testIsAlive enable
-android.view.cts.ViewTreeObserverTest#testRemoveGlobalOnLayoutListener enable
+android.view.cts.ViewTreeObserverTest#testRemoveGlobalOnLayoutListener enable :large
 android.view.cts.ViewTreeObserverTest#testRemoveOnDrawListenerInDispatch enable
-android.view.cts.ViewTreeObserverTest#testRemoveOnGlobalFocusChangeListener disable
-android.view.cts.ViewTreeObserverTest#testRemoveOnGlobalLayoutListener enable
-android.view.cts.ViewTreeObserverTest#testRemoveOnPreDrawListener enable
-android.view.cts.ViewTreeObserverTest#testRemoveOnScrollChangedListener enable
+android.view.cts.ViewTreeObserverTest#testRemoveOnGlobalFocusChangeListener disable :large
+android.view.cts.ViewTreeObserverTest#testRemoveOnGlobalLayoutListener enable :large
+android.view.cts.ViewTreeObserverTest#testRemoveOnPreDrawListener enable :large
+android.view.cts.ViewTreeObserverTest#testRemoveOnScrollChangedListener enable :large
 android.view.cts.ViewTreeObserverTest#testRemoveOnTouchModeChangeListener disable
 android.view.cts.ViewUnbufferedTest#testNormalTouch disable
 android.view.cts.ViewUnbufferedTest#testUnbufferedHover disable
@@ -924,9 +928,9 @@ android.view.cts.View_BaseSavedStateTest#testConstructorNullParcelable enable
 android.view.cts.View_BaseSavedStateTest#testConstructors enable
 android.view.cts.View_BaseSavedStateTest#testCreator enable
 android.view.cts.View_BaseSavedStateTest#testWriteToParcel enable
-android.view.cts.View_DefaultFocusHighlightTest#testInflating enable
-android.view.cts.View_DefaultFocusHighlightTest#testIsDefaultFocusHighlightNeeded enable
-android.view.cts.View_DefaultFocusHighlightTest#testSettersAndGetters enable
+android.view.cts.View_DefaultFocusHighlightTest#testInflating enable :large
+android.view.cts.View_DefaultFocusHighlightTest#testIsDefaultFocusHighlightNeeded enable :large
+android.view.cts.View_DefaultFocusHighlightTest#testSettersAndGetters enable :large
 android.view.cts.View_DragShadowBuilderTest#testConstructor enable
 android.view.cts.View_DragShadowBuilderTest#testGetView enable
 android.view.cts.View_DragShadowBuilderTest#testOnDrawShadow enable
@@ -945,7 +949,7 @@ android.view.cts.View_ForceLayout#traversal_afterChildRequestLayout_onlyAncestor
 android.view.cts.View_ForceLayout#traversal_afterParentRequestLayout_onlyParentRemeasured enable
 android.view.cts.View_ForceLayout#traversal_differentMeasureSpecsWithoutRequestLayout_everythingRemeasured enable
 android.view.cts.View_ForceLayout#traversal_sameMeasureSpecsWithoutRequestLayout_nothingRemeasured enable
-android.view.cts.View_IdsTest#testIds enable
+android.view.cts.View_IdsTest#testIds enable :large
 android.view.cts.View_InitialFocusTest#testClearFocus disable
 android.view.cts.View_InitialFocusTest#testDefaultFocus disable
 android.view.cts.View_InitialFocusTest#testInitialFocus enable
@@ -956,10 +960,10 @@ android.view.cts.View_MeasureSpecTest#testGetMode enable
 android.view.cts.View_MeasureSpecTest#testGetSize enable
 android.view.cts.View_MeasureSpecTest#testMakeMeasureSpec enable
 android.view.cts.View_MeasureSpecTest#testToString enable
-android.view.cts.View_UsingViewsTest#testSetFocus disable
-android.view.cts.View_UsingViewsTest#testSetProperties disable
-android.view.cts.View_UsingViewsTest#testSetVisibility enable
-android.view.cts.View_UsingViewsTest#testSetupListeners disable
+android.view.cts.View_UsingViewsTest#testSetFocus disable :large
+android.view.cts.View_UsingViewsTest#testSetProperties disable :large
+android.view.cts.View_UsingViewsTest#testSetVisibility enable :large
+android.view.cts.View_UsingViewsTest#testSetupListeners disable :large
 android.view.cts.WindowTest#testFrameRateBoostOnTouchEnabled enable
 android.view.cts.WindowTest#testFrameRatePowerSavingsBalanced enable
 android.view.cts.WindowTest#testSetGetDesiredHdrHeadroom enable
