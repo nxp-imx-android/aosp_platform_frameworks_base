@@ -6632,6 +6632,7 @@ package android.app {
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.ResolvedCompactContent resolveCompactContent(@NonNull android.content.Context);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.app.bridged_notifications") public static final String ACTION_BRIDGED_NOTIFICATION_PREFERENCES = "android.app.action.BRIDGED_NOTIFICATION_PREFERENCES";
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
     field public static final int BADGE_ICON_NONE = 0; // 0x0

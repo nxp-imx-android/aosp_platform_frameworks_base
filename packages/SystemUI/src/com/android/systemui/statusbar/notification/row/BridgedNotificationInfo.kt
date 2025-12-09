@@ -19,7 +19,9 @@ import android.app.INotificationManager
 import android.app.Notification
 import android.app.Notification.BridgedNotificationMetadata
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.UserHandle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.AttributeSet
@@ -42,6 +44,15 @@ class BridgedNotificationInfo(context: Context?, attrs: AttributeSet?) :
 
         val dismissButton = findViewById<TextView>(R.id.inline_dismiss)
         dismissButton.setOnClickListener(mOnCloseClickListener)
+
+        val openAssociatedDeviceSettingsButton =
+            findViewById<TextView>(R.id.bridged_open_associated_device_settings)
+        openAssociatedDeviceSettingsButton.setOnClickListener {
+            var intent =
+                Intent(Notification.ACTION_BRIDGED_NOTIFICATION_PREFERENCES)
+            intent.setPackage(mSbn.getPackageName())
+            context.sendBroadcastAsUser(intent, UserHandle.CURRENT)
+        }
     }
 
     override fun bindNotification(
