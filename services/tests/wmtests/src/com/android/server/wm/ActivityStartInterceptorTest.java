@@ -27,6 +27,8 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -46,6 +48,7 @@ import android.app.TaskInfo;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
@@ -56,6 +59,7 @@ import android.content.pm.UserPackage;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -67,6 +71,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.app.BlockedAppActivity;
 import com.android.internal.app.HarmfulAppWarningActivity;
+import com.android.internal.app.LockedAppActivity;
 import com.android.internal.app.SuspendedAppActivity;
 import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.server.LocalServices;
@@ -113,6 +118,8 @@ public class ActivityStartInterceptorTest {
     @Mock
     private ActivityTaskManagerService mService;
     @Mock
+    private WindowManagerService mWmService;
+    @Mock
     private RootWindowContainer mRootWindowContainer;
     @Mock
     private ActivityTaskSupervisor mSupervisor;
@@ -141,13 +148,15 @@ public class ActivityStartInterceptorTest {
     private SparseArray<ActivityInterceptorCallback> mActivityInterceptorCallbacks =
             new SparseArray<>();
 
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws RemoteException {
         MockitoAnnotations.initMocks(this);
         mService.mAmInternal = mAmInternal;
         mService.mRootWindowContainer = mRootWindowContainer;
+        mService.mWindowManager = mWmService;
         mInterceptor = new ActivityStartInterceptor(mService, mSupervisor, mContext);
         mInterceptor.setStates(TEST_USER_ID, TEST_REAL_CALLING_PID, TEST_REAL_CALLING_UID,
                 TEST_START_FLAGS, TEST_CALLING_PACKAGE, /* callingFeatureId= */ null,
@@ -245,6 +254,153 @@ public class ActivityStartInterceptorTest {
         when(mPackageManagerInternal.getSuspendedDialogInfo(TEST_PACKAGE_NAME, suspender,
                 TEST_USER_ID)).thenReturn(dialogInfo);
         return dialogInfo;
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLock_interceptedByAppLock() {
+        // GIVEN the package is locked by App Lock.
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is intercepted and the intent is replaced with the locked app intent.
+        assertTrue(intercepted);
+        verifyLockedAppIntercepted(TEST_PACKAGE_NAME, TEST_USER_ID);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLock_showWhenLocked_userUnlocked_notIntercepted() {
+        // GIVEN the package is locked, but the activity can be shown over the lockscreen and the
+        // user is unlocked.
+        Intent originalIntent = new Intent();
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
+        when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(true);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(originalIntent, null, mAInfo, null,
+                null, null, 0, 0, null, null);
+
+        // THEN the launch is not intercepted.
+        assertFalse(intercepted);
+        assertEquals(originalIntent, mInterceptor.mIntent);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLock_showWhenLocked_directBootAware_notIntercepted() {
+        // GIVEN the package is locked, but the activity can be shown over the lockscreen and is
+        // direct boot aware.
+        Intent originalIntent = new Intent();
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
+        mAInfo.directBootAware = true;
+        when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(false);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(originalIntent, null, mAInfo, null,
+                null, null, 0, 0, null, null);
+
+        // THEN the launch is not intercepted.
+        assertFalse(intercepted);
+        assertEquals(originalIntent, mInterceptor.mIntent);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLock_showWhenLocked_userLocked_intercepted() {
+        // GIVEN the package is locked and the activity can be shown over the lockscreen, but the
+        // user is locked and the activity is not direct boot aware.
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
+        mAInfo.directBootAware = false;
+        when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(false);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is intercepted.
+        assertTrue(intercepted);
+        verifyLockedAppIntercepted(TEST_PACKAGE_NAME, TEST_USER_ID);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testNotLockedByAppLock_notInterceptedByAppLock() {
+        // GIVEN the package is not locked by App Lock.
+        Intent originalIntent = new Intent();
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(
+                false);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(originalIntent, null, mAInfo, null,
+                null, null, 0, 0, null, null);
+
+        // THEN the launch is not intercepted.
+        assertFalse(intercepted);
+        assertEquals(originalIntent, mInterceptor.mIntent);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLockAndQuietModeEnabled_interceptedByQuietMode() {
+        // GIVEN the package is locked, but the user profile is in quiet mode.
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mUserManager.isQuietModeEnabled(eq(UserHandle.of(TEST_USER_ID)))).thenReturn(true);
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is intercepted by the quiet mode logic, which has higher priority.
+        assertTrue(intercepted);
+        assertTrue(UnlaunchableAppActivity.createInQuietModeDialogIntent(TEST_USER_ID)
+                .filterEquals(mInterceptor.mIntent));
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLockAndSuspended_interceptedByAppLock() {
+        // GIVEN the package is both locked and suspended.
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        suspendPackage("com.test.suspending.package");
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is intercepted by the App Lock logic, which has higher priority.
+        assertTrue(intercepted);
+        verifyLockedAppIntercepted(TEST_PACKAGE_NAME, TEST_USER_ID);
+    }
+
+    @DisableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLockedByAppLock_flagsDisabled_doesNotIntercept() {
+        // GIVEN the package is locked, but the feature flags are disabled.
+        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        Intent originalIntent = new Intent();
+
+        // WHEN the interceptor is run.
+        final boolean intercepted = mInterceptor.intercept(originalIntent, null, mAInfo, null,
+                null, null, 0, 0, null, null);
+
+        // THEN the launch is not intercepted.
+        assertFalse(intercepted);
+        assertEquals(originalIntent, mInterceptor.mIntent);
     }
 
     @Test
@@ -574,5 +730,19 @@ public class ActivityStartInterceptorTest {
         mInterceptor.onActivityLaunched(null, mock(ActivityRecord.class));
 
         verify(callback, times(1)).onActivityLaunched(any(), any(), any());
+    }
+
+    private void verifyLockedAppIntercepted(String expectedPackageName, int expectedUserId) {
+        final Intent expectedIntent = LockedAppActivity.createLockedAppActivityIntent(
+                expectedPackageName, expectedUserId, null);
+        final Intent resultIntent = mInterceptor.mIntent;
+
+        assertThat(resultIntent.getComponent()).isEqualTo(expectedIntent.getComponent());
+        assertThat(resultIntent.getStringExtra(Intent.EXTRA_PACKAGE_NAME)).isEqualTo(
+                expectedPackageName);
+        assertThat(resultIntent.getIntExtra(Intent.EXTRA_USER_ID, -1)).isEqualTo(expectedUserId);
+        assertThat(resultIntent.hasExtra(Intent.EXTRA_INTENT)).isTrue();
+        assertThat(resultIntent.getParcelableExtra(Intent.EXTRA_INTENT, IntentSender.class))
+                .isNotNull();
     }
 }

@@ -71,6 +71,7 @@ import android.view.Display;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppActivity;
 import com.android.internal.app.HarmfulAppWarningActivity;
+import com.android.internal.app.LockedAppActivity;
 import com.android.internal.app.SuspendedAppActivity;
 import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.server.LocalServices;
@@ -245,6 +246,11 @@ class ActivityStartInterceptor {
             // be unlocked when profile's user is running.
             return true;
         }
+        if (interceptLockedByAppLockPackageIfNeeded()) {
+            // If the app is currently locked because of App Lock, ask the user to authenticate to
+            // unlock the app.
+            return true;
+        }
         if (interceptSuspendedPackageIfNeeded()) {
             // Skip the rest of interceptions as the package is suspended by device admin so
             // no user action can undo this.
@@ -370,6 +376,42 @@ class ActivityStartInterceptor {
             mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, 0,
                     mRealCallingUid, mRealCallingPid);
         }
+        mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
+        return true;
+    }
+
+    private boolean interceptLockedByAppLockPackageIfNeeded() {
+        if (!(android.security.Flags.appLockApis() && android.security.Flags.appLockCore())) {
+            return false;
+        }
+        if (mAInfo == null || mAInfo.applicationInfo == null) {
+            return false;
+        }
+        final String launchingPackage = mAInfo.applicationInfo.packageName;
+        if (launchingPackage == null) {
+            return false;
+        }
+        // Do not intercept if the launching package is currently unlocked.
+        if (!mService.mWindowManager.isPackageLockedByAppLock(launchingPackage, mUserId)) {
+            return false;
+        }
+        // Do not intercept if the activity can be shown over the lockscreen.
+        if ((mAInfo.flags & ActivityInfo.FLAG_SHOW_WHEN_LOCKED) != 0
+                && (mUserManager.isUserUnlocked(mUserId) || mAInfo.directBootAware)) {
+            return false;
+        }
+
+        // The launching package is locked. Redirect the user to LockedAppActivity for
+        // authentication, which will unlock the package upon success.
+        final IntentSender target = createIntentSenderForOriginalIntent(mCallingUid,
+                FLAG_IMMUTABLE);
+        mIntent = LockedAppActivity.createLockedAppActivityIntent(launchingPackage, mUserId,
+                target);
+        mCallingPid = mRealCallingPid;
+        mCallingUid = mRealCallingUid;
+        mResolvedType = null;
+        mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, 0, mRealCallingUid,
+                mRealCallingPid);
         mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
         return true;
     }
