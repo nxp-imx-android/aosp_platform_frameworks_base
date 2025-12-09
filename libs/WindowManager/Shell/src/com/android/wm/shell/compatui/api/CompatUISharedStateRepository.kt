@@ -18,6 +18,7 @@ package com.android.wm.shell.compatui.api
 
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.os.Bundle
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
@@ -33,6 +34,7 @@ data class CompatUISharedState(
     val taskConfiguration: Configuration,
     val layoutDirectionFn: () -> Int = { taskConfiguration.layoutDirection },
     val taskBoundsFn: () -> Rect = { taskConfiguration.windowConfiguration.bounds },
+    val paramsBundle: Bundle = Bundle(),
 )
 
 /** [GenericRepository] with information shared with multiple [CompatUIComponent]s. */
