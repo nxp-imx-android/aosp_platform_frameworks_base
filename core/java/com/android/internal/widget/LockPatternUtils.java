@@ -1220,8 +1220,7 @@ public class LockPatternUtils {
      *     Duration#ZERO} if the user is currently allowed.
      */
     public Duration getLockoutEndTime(int userId) {
-        if (android.security.Flags.softwareRatelimiter()
-                && android.security.Flags.manageLockoutEndTimeInService()) {
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
             Duration lockoutEndTime = mLockoutEndTimeCache.query(userId);
             if (!lockoutEndTime.isZero()
                     && lockoutEndTime.compareTo(mTimeSinceBootSupplier.get()) <= 0) {
