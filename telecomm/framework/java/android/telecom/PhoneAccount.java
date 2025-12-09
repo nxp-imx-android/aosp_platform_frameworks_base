@@ -551,8 +551,9 @@ public final class PhoneAccount implements Parcelable {
     /**
      * Flag indicating that this {@link PhoneAccount} is capable of changing an RTT (Real-time text)
      * call to a voice call.
-     * When set, The in-call app will display the change to voice option.
-     * User can chose to change the call to only voice from the in-call app.
+     * <p>
+     * When set, the in-call app will display the "change to voice" option.
+     * <p>
      * Only applicable for a phone account with {@link #CAPABILITY_RTT}.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_CHANGE_RTT_TO_AUDIO)
