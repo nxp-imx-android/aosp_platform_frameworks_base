@@ -54,7 +54,6 @@ public class WindowAnimator {
     /** Is any window animating? */
     private boolean mLastRootAnimating;
 
-    final Choreographer.FrameCallback mAnimationFrameCallback;
     final Choreographer.VsyncCallback mAnimationVsyncCallback;
 
     /** Time of current animation step. Reset on each iteration */
@@ -112,16 +111,6 @@ public class WindowAnimator {
 
         mExecutor = new HandlerExecutor(service.mAnimationHandler);
 
-        mAnimationFrameCallback =
-                frameTimeNs -> {
-                    synchronized (mService.mGlobalLock) {
-                        mAnimationFrameCallbackScheduled = false;
-                        animate(frameTimeNs);
-                        if (mNotifyWhenNoAnimation && !mLastRootAnimating) {
-                            mService.mGlobalLock.notifyAll();
-                        }
-                    }
-                };
         mAnimationVsyncCallback =
                 frameData -> {
                     synchronized (mService.mGlobalLock) {
@@ -273,7 +262,6 @@ public class WindowAnimator {
         if (!mAnimationFrameCallbackScheduled) {
             mAnimationFrameCallbackScheduled = true;
             mChoreographer.postVsyncCallback(mAnimationVsyncCallback);
-
         }
     }
 
@@ -281,7 +269,6 @@ public class WindowAnimator {
         if (mAnimationFrameCallbackScheduled) {
             mAnimationFrameCallbackScheduled = false;
             mChoreographer.removeVsyncCallback(mAnimationVsyncCallback);
-
         }
     }
 
