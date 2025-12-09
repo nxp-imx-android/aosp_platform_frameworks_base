@@ -1880,7 +1880,15 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         mLogger.mAbortTimeNs = SystemClock.elapsedRealtimeNanos();
         mController.mTransitionTracer.logAbortedTransition(this);
         // Syncengine abort will call through to onTransactionReady()
-        mSyncEngine.abort(mSyncId);
+        try {
+            mSyncEngine.abort(mSyncId);
+        } catch (Exception e) {
+            if (mController.isFlushing()) {
+                Slog.wtf(TAG, "SyncEngine state mismatch during flush: #" + mSyncId, e);
+            } else {
+                throw e;
+            }
+        }
         mController.dispatchLegacyAppTransitionCancelled(mTargetDisplays);
         invokeTransitionEndedListeners();
     }

@@ -374,7 +374,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     nextTransition.mReadyTracker.add(wctApplied);
                     nextTransition.calcParallelCollectType(wct);
                     nextTransition.mLogger.mFromPlayer = true;
-                    mTransitionController.startCollectOrQueue(nextTransition,
+                    mTransitionController.startCollectOrQueueExternal(nextTransition,
                             (deferred) -> {
                                 final ActionChain chain = mService.mChainTracker.start(
                                         "startNewTransit", nextTransition);
