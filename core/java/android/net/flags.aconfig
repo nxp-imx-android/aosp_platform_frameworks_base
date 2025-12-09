@@ -86,6 +86,14 @@ flag {
 }
 
 flag {
+  name: "make_app_specific_network_permission_api"
+  namespace: "android_core_networking"
+  is_exported: false
+  description: "Flag for making CREATE_APP_SPECIFIC_NETWORK permission API"
+  bug: "435313135"
+}
+
+flag {
   name: "delete_vpn_profile_when_app_uninstalled"
   namespace: "android_core_networking"
   is_exported: false
