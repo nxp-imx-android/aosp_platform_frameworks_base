@@ -1095,6 +1095,9 @@
     <!-- Permission required for contextual mode tests -->
     <uses-permission android:name="android.permission.MANAGE_CONTEXTUAL_MODES" />
 
+    <!-- Permission required for CTS test - CtsSerialTest -->
+    <uses-permission android:name="android.permission.MANAGE_SERIAL_PORTS" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

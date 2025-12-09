@@ -690,6 +690,8 @@ applications that come with the platform
         <permission name="android.permission.SHOW_POWER_MENU_PRIVILEGED" />
         <!-- Permission required for Health Connect CTS tests -->
         <permission name="android.permission.PROVIDE_HEALTH_CONNECT_DEVICE_DATA" />
+        <!-- Permission required for CTS test - CtsSerialTestCases -->
+        <permission name="android.permission.MANAGE_SERIAL_PORTS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
