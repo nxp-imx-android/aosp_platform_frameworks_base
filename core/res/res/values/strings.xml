@@ -5075,8 +5075,8 @@
     <!-- Label for triple tap shortcut. [CHAR LIMIT=100] -->
     <string name="accessibility_shortcut_label_triple_tap">triple tap</string>
 
-    <!-- DO NOT TRANSLATE -->
-    <string name="accessibility_shortcut_label_top_row_key">top row key</string>
+    <!-- Label for top row accessibility key. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_top_row_key">accessibility key</string>
 
     <!-- Text for showing the warning to user when uncheck the legacy app item in the accessibility
     shortcut menu, user can aware the service to be disabled. [CHAR LIMIT=100] -->
