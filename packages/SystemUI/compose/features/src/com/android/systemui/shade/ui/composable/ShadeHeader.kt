@@ -40,7 +40,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -311,7 +310,6 @@ fun ContentScope.ExpandedShadeHeader(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
                     textColor = textColor,
-                    modifier = Modifier.widthIn(max = 90.dp),
                 )
                 ShadeHighlightChip {
                     val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
