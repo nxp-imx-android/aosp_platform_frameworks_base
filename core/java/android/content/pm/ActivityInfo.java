@@ -39,7 +39,9 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.ArraySet;
+import android.util.DisplayMetrics;
 import android.util.Printer;
+import android.util.TypedValue;
 import android.window.OnBackInvokedCallback;
 
 import com.android.internal.util.Parcelling;
@@ -2497,34 +2499,67 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      * @attr ref android.R.styleable#AndroidManifestLayout_minHeight
      */
     public static final class WindowLayout {
+
+        /**
+         * Creates a new WindowLayout instance with the specified dimensions and constraints.
+         *
+         * @deprecated This constructor initializes the layout with pixel values resolved using the
+         * default device density. It does not reflect the actual constraints on displays with
+         * different densities (e.g. external monitors). The system automatically enforces the
+         * correct constraints at runtime based on the current display context.
+         * Do not use this constructor for manual layout calculations.
+         */
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public WindowLayout(int width, float widthFraction, int height, float heightFraction,
                 int gravity, int minWidth, int minHeight) {
-            this(width, widthFraction, height, heightFraction, gravity, minWidth, minHeight,
-                    null /* windowLayoutAffinity */);
+            this(width, -1 /* complexWidth */, widthFraction, height, -1 /* complexHeight */,
+                    heightFraction, gravity, minWidth, -1 /* complexMinWidth */, minHeight,
+                    -1 /* complexMinHeight */, null /* windowLayoutAffinity */);
         }
 
         /** @hide */
-        public WindowLayout(int width, float widthFraction, int height, float heightFraction,
-                int gravity, int minWidth, int minHeight, String windowLayoutAffinity) {
+        public WindowLayout(int complexWidth, float widthFraction, int complexHeight,
+                float heightFraction, int gravity, int complexMinWidth, int complexMinHeight,
+                @Nullable String windowLayoutAffinity, @Nullable DisplayMetrics metrics) {
+            this(complexToDimensionPixelSize(complexWidth, metrics), complexWidth, widthFraction,
+                    complexToDimensionPixelSize(complexHeight, metrics), complexHeight,
+                    heightFraction, gravity, complexToDimensionPixelSize(complexMinWidth, metrics),
+                    complexMinWidth, complexToDimensionPixelSize(complexMinHeight, metrics),
+                    complexMinHeight, windowLayoutAffinity);
+        }
+
+        private WindowLayout(int width, int complexWidth, float widthFraction, int height,
+                int complexHeight, float heightFraction, int gravity, int minWidth,
+                int complexMinWidth, int minHeight, int complexMinHeight,
+                @Nullable String windowLayoutAffinity) {
             this.width = width;
+            this.complexWidth = complexWidth;
             this.widthFraction = widthFraction;
             this.height = height;
+            this.complexHeight = complexHeight;
             this.heightFraction = heightFraction;
             this.gravity = gravity;
             this.minWidth = minWidth;
+            this.complexMinWidth = complexMinWidth;
             this.minHeight = minHeight;
+            this.complexMinHeight = complexMinHeight;
             this.windowLayoutAffinity = windowLayoutAffinity;
         }
 
         /** @hide */
         public WindowLayout(Parcel source) {
             width = source.readInt();
+            complexWidth = source.readInt();
             widthFraction = source.readFloat();
             height = source.readInt();
+            complexHeight = source.readInt();
             heightFraction = source.readFloat();
             gravity = source.readInt();
             minWidth = source.readInt();
+            complexMinWidth = source.readInt();
             minHeight = source.readInt();
+            complexMinHeight = source.readInt();
             windowLayoutAffinity = source.readString8();
         }
 
@@ -2551,6 +2586,12 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
         public final float widthFraction;
 
         /**
+         * Holds the default width in complex units to support runtime density updates.
+         * The value is resolved to pixels in {@link #getDefaultWidth(DisplayMetrics)}.
+         */
+        private final int complexWidth;
+
+        /**
          * Height of activity in pixels.
          *
          * @attr ref android.R.styleable#AndroidManifestLayout_defaultHeight
@@ -2571,6 +2612,12 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @attr ref android.R.styleable#AndroidManifestLayout_defaultHeight
          */
         public final float heightFraction;
+
+        /**
+         * Holds the default height in complex units to support runtime density updates.
+         * The value is resolved to pixels in {@link #getDefaultHeight(DisplayMetrics)}.
+         */
+        private final int complexHeight;
 
         /**
          * Gravity of activity.
@@ -2601,6 +2648,12 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
         public final int minWidth;
 
         /**
+         * Holds the minimum width in complex units to support runtime density updates.
+         * The value is resolved to pixels in {@link #getMinWidth(DisplayMetrics)}.
+         */
+        private final int complexMinWidth;
+
+        /**
          * Minimal height of activity in pixels to be able to display its content.
          *
          * <p><strong>NOTE:</strong> A task's root activity value is applied to all additional
@@ -2620,6 +2673,12 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
         public final int minHeight;
 
         /**
+         * Holds the minimum height in complex units to support runtime density updates.
+         * The value is resolved to pixels in {@link #getMinHeight(DisplayMetrics)}.
+         */
+        private final int complexMinHeight;
+
+        /**
          * Affinity of window layout parameters. Activities with the same UID and window layout
          * affinity will share the same window dimension record.
          *
@@ -2636,15 +2695,97 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
             return width >= 0 || height >= 0 || widthFraction >= 0 || heightFraction >= 0;
         }
 
+        /**
+         * Returns the default width of the window in pixels.
+         *
+         * @param metrics The display metrics used to resolve the complex dimension.
+         * @return The default width of the window in pixels.
+         * @hide
+         */
+        public int getDefaultWidth(@NonNull DisplayMetrics metrics) {
+            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+                return this.width;
+            }
+
+            return TypedValue.complexToDimensionPixelSize(
+                    this.complexWidth,
+                    metrics
+            );
+        }
+
+        /**
+         * Returns the default height of the window in pixels.
+         *
+         * @param metrics The display metrics used to resolve the complex dimension.
+         * @return The default height of the window in pixels.
+         * @hide
+         */
+        public int getDefaultHeight(@NonNull DisplayMetrics metrics) {
+            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+                return this.height;
+            }
+
+            return TypedValue.complexToDimensionPixelSize(
+                    this.complexHeight,
+                    metrics
+            );
+        }
+
+        /**
+         * Returns the minimum width of the window in pixels.
+         *
+         * @param metrics The display metrics used to resolve the complex dimension.
+         * @return The minimum width of the window in pixels.
+         * @hide
+         */
+        public int getMinWidth(@NonNull DisplayMetrics metrics) {
+            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+                return this.minWidth;
+            }
+
+            return TypedValue.complexToDimensionPixelSize(
+                    this.complexMinWidth,
+                    metrics
+            );
+        }
+
+        /**
+         * Returns the minimum height of the window in pixels.
+         *
+         * @param metrics The display metrics used to resolve the complex dimension.
+         * @return The minimum height of the window in pixels.
+         * @hide
+         */
+        public int getMinHeight(@NonNull DisplayMetrics metrics) {
+            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+                return this.minHeight;
+            }
+
+            return TypedValue.complexToDimensionPixelSize(
+                    this.complexMinHeight,
+                    metrics
+            );
+        }
+
+        private static int complexToDimensionPixelSize(int complex,
+                @Nullable DisplayMetrics metrics) {
+            return complex != -1 && metrics != null
+                    ? TypedValue.complexToDimensionPixelSize(complex, metrics) : -1;
+        }
+
         /** @hide */
         public void writeToParcel(Parcel dest) {
             dest.writeInt(width);
+            dest.writeInt(complexWidth);
             dest.writeFloat(widthFraction);
             dest.writeInt(height);
+            dest.writeInt(complexHeight);
             dest.writeFloat(heightFraction);
             dest.writeInt(gravity);
             dest.writeInt(minWidth);
+            dest.writeInt(complexMinWidth);
             dest.writeInt(minHeight);
+            dest.writeInt(complexMinHeight);
             dest.writeString8(windowLayoutAffinity);
         }
     }
