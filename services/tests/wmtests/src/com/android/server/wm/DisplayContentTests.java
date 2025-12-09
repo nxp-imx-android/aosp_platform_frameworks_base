@@ -3533,7 +3533,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay(displayInfo);
         spyOn(dc.mDisplay);
         doReturn(false).when(dc.mDisplay).isValid();
-        assertTrue(dc.isRemoved());
+        assertTrue(dc.isRemovedOrInvalid());
     }
 
     @Test

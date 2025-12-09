@@ -1293,7 +1293,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
         final DisplayContent displayContent =
                 mRootWindowContainer.getDisplayContentOrCreate(launchDisplayId);
-        if (displayContent == null || displayContent.isRemoved()) {
+        if (displayContent == null || displayContent.isRemovedOrInvalid()) {
             Slog.w(TAG, "Launch on display check: display not found");
             return false;
         }

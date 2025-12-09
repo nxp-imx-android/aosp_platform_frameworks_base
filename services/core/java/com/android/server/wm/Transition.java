@@ -3797,8 +3797,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final ChangeInfo displayChange = mChanges.get(dc);
             final int displayId = dc.mDisplayId;
             if (displayChange.mExistenceChanged) {
-                dc.remove();
-                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+                mController.mAtm.mRootWindowContainer.removeDisplayContent(dc);
                 displayRemoved = true;
             } else if (dc.getDisplay() != null
                     && mDisconnectReparentDisplays.contains(displayId)) {

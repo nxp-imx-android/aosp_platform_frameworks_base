@@ -3366,7 +3366,7 @@ public class DisplayPolicy {
             return;
         }
 
-        if (!mDisplayContent.isRemoved()) {
+        if (!mDisplayContent.isRemovedOrInvalid()) {
             mDisplayContent.unregisterPointerEventListener(mPointerLocationView);
         }
 

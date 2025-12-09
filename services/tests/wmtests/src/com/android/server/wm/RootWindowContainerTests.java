@@ -1851,7 +1851,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
 
         // Case 2: Test that a "removed" display is skipped.
         doReturn(false).when(secondDisplay).isRemoving(); // ensure previous mock is gone
-        doReturn(true).when(secondDisplay).isRemoved();
+        doReturn(true).when(secondDisplay).isRemovedOrInvalid();
 
         // Update focused window again.
         mRootWindowContainer.updateFocusedWindowLocked(
