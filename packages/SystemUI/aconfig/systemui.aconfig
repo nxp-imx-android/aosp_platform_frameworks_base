@@ -1346,6 +1346,16 @@ flag {
 }
 
 flag {
+    name: "qs_delete_uninstalled_tile_service"
+    namespace: "systemui"
+    description: "When a TileService package is uninstalled, remove the tile completely and all associated data."
+    bug: "362234193"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_edit_mode_v2"
     namespace: "systemui"
     description: "Updates the removal process of tiles and improves tiles selection."
