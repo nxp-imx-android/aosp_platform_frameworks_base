@@ -22,6 +22,7 @@ import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.DialogInterface
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Looper
 import android.util.Log
@@ -37,6 +38,11 @@ import com.android.app.animation.Interpolators
 import com.android.internal.jank.Cuj.CujType
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.Flags
+import com.android.systemui.animation.DialogTransitionAnimator.Companion.COLLAPSE_SPRING_PARAMS
+import com.android.systemui.animation.DialogTransitionAnimator.Companion.LAUNCH_SPRING_PARAMS
+import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_INTERPOLATORS
+import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_TIMINGS
+import com.android.systemui.animation.TransitionAnimator.SpringParams
 import com.android.systemui.util.maybeForceFullscreen
 import com.android.systemui.util.registerAnimationOnBackInvoked
 import java.util.concurrent.Executor
@@ -62,11 +68,37 @@ constructor(
     private val callback: Callback,
     private val interactionJankMonitor: InteractionJankMonitor,
     private val transitionAnimator: TransitionAnimator =
-        TransitionAnimator(mainExecutor, TIMINGS, INTERPOLATORS),
+        TransitionAnimator(
+            mainExecutor,
+            TIMINGS,
+            INTERPOLATORS,
+            SPRING_TIMINGS,
+            SPRING_INTERPOLATORS,
+        ),
     private val isForTesting: Boolean = false,
 ) {
-    private companion object {
+    companion object {
         private val TIMINGS = ActivityTransitionAnimator.TIMINGS
+
+        val LAUNCH_SPRING_PARAMS =
+            SpringParams(
+                centerXStiffness = 700f,
+                centerXDampingRatio = 1.1f,
+                centerYStiffness = 700f,
+                centerYDampingRatio = 1.1f,
+                scaleStiffness = 700f,
+                scaleDampingRatio = 1.3f,
+            )
+
+        val COLLAPSE_SPRING_PARAMS =
+            SpringParams(
+                centerXStiffness = 380f,
+                centerXDampingRatio = 0.9f,
+                centerYStiffness = 380f,
+                centerYDampingRatio = 0.87f,
+                scaleStiffness = 380f,
+                scaleDampingRatio = 0.9f,
+            )
 
         // We use the same interpolator for X and Y axis to make sure the dialog does not move out
         // of the screen bounds during the animation.
@@ -1012,6 +1044,14 @@ private class AnimatedDialog(
             controller,
             { endController.createAnimatorState() },
             originalDialogBackgroundColor,
+            startVelocity =
+                if (Flags.enableDialogSpringAnimation()) {
+                    // initial speed would be 0, if flag is set
+                    PointF(0f, 0f)
+                } else {
+                    null
+                },
+            springParams = if (isLaunching) LAUNCH_SPRING_PARAMS else COLLAPSE_SPRING_PARAMS,
         )
     }
 
