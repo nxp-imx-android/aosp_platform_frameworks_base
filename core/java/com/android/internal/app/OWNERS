@@ -27,3 +27,4 @@ per-file *MediaRoute* = file:/packages/SystemUI/src/com/android/systemui/media/d
 
 # App Lock
 per-file *AppLock* = file:/core/java/android/content/pm/APP_LOCK_OWNERS
+per-file LockedAppActivity.java = file:/core/java/android/content/pm/APP_LOCK_OWNERS
