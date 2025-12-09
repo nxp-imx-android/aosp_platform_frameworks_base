@@ -1546,7 +1546,7 @@
          exponential backoff and allows up to 20 guesses in theory, but practically about 10-15
          before the delays get very long. The software rate-limiter also does not count duplicate
          wrong guesses, improving usability. -->
-    <bool name="config_softwareLskfRateLimiterEnforcing">false</bool>
+    <bool name="config_softwareLskfRateLimiterEnforcing">true</bool>
 
     <!-- The shortlink to display when the user is locked out on the lockscreen. -->
     <string name="config_lockscreenLockoutShortlink" translatable="false">g.co/android/unlock</string>
