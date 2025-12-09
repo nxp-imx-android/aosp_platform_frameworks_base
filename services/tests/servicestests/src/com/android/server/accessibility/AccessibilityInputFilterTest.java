@@ -54,7 +54,6 @@ import android.hardware.input.InputManagerGlobal;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.os.test.TestLooper;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -489,7 +488,6 @@ public class AccessibilityInputFilterTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testEnabledFeatures_fullscreenMagnificationMode_expectedPointerMotionFilter() {
         doReturn(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN)
                 .when(mAms)
@@ -504,7 +502,6 @@ public class AccessibilityInputFilterTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void
             testRegisterPointerMotionFilter_fullscreenMagnificationMode_delegatesToInputManager() {
         mA11yInputFilter.registerPointerMotionFilter(true);
@@ -521,7 +518,6 @@ public class AccessibilityInputFilterTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void registerPointerMotionFilter_doesNotHoldAccessibilityManagerServiceLock() {
         doAnswer(invocation -> {
             assertFalse("AccessibilityManagerService lock should not be held",

@@ -28,7 +28,6 @@ import android.app.WindowConfiguration
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.OutcomeReceiver
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
@@ -45,7 +44,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SettingsStateChangerRule
-import com.android.server.accessibility.Flags
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -67,7 +65,6 @@ private fun Float.nearEq(other: Float) = abs(this - other) < EPS
 
 /** End-to-end tests for full screen magnification following mouse cursor. */
 @RunWith(AndroidJUnit4::class)
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
 class FullScreenMagnificationMouseFollowingTest {
     private val TAG = FullScreenMagnificationMouseFollowingTest::class.java.simpleName
 

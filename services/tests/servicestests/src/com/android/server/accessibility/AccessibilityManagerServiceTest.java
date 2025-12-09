@@ -43,6 +43,7 @@ import static com.android.server.accessibility.AccessibilityManagerService.ACTIO
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertFalse;
@@ -631,7 +632,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testCursorFollowing_defaultContinuousAndThenCenter_propagateToA11yInputFilter() {
         final AccessibilityUserState userState = mA11yms.mUserStates.get(
                 mA11yms.getCurrentUserIdLocked());
