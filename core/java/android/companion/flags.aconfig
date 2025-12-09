@@ -145,6 +145,7 @@ flag {
 
 flag {
     name: "expand_app_streaming_role_permissions"
+    is_exported: true
     namespace: "companion"
     description: "Enable storage and notification permissions for the APP_STREAMING role."
     bug: "459812815"
