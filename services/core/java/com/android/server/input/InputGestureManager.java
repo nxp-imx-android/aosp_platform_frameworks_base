@@ -20,17 +20,19 @@ import static android.hardware.input.InputGestureData.createKeyTrigger;
 
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
+import static com.android.hardware.input.Flags.enableNoteTakingKeyboardShortcut;
+import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
 import static com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut;
-import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
+import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
-import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
 import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
@@ -373,6 +375,16 @@ final class InputGestureManager {
                             KeyEvent.META_META_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
                             /* allowCaptureByFocusedWindow= */ true));
+        }
+        if (enableNoteTakingKeyboardShortcut() && mContext.getSystemService(
+                RoleManager.class).isRoleAvailable(RoleManager.ROLE_NOTES)) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_N,
+                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
         }
         synchronized (mGestureLock) {
             for (InputGestureData systemShortcut : systemShortcuts) {
