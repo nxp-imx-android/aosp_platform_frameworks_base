@@ -62,7 +62,6 @@ import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityManagerService;
-import com.android.server.accessibility.Flags;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.concurrent.Executor;
@@ -576,8 +575,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
         final boolean isActivated = isActivated(displayId, mode);
         final int capabilities = mMagnificationCapabilities;
         final boolean showMagnificationUIForFullScreen =
-                Flags.enableMagnificationUiForFullscreenOnlyCapability()
-                && capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN
+                capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN
                 && mLastMotionEventTriggeredByMouse;
         final boolean showModeSwitchButton = isActivated
                 && (capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_ALL
