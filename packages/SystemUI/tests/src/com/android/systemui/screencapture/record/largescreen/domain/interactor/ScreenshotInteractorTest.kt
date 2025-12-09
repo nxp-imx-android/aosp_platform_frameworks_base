@@ -207,4 +207,21 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             assertThat(capturedRequest.userId).isEqualTo(secondaryUser.id)
         }
     }
+
+    @Test
+    fun requestAppWindowScreenshot_logsEvent() =
+        kosmos.runTest {
+            val taskId = 1
+            val displayId = 3
+            whenever(mockImageCapture.captureTask(eq(taskId))).thenReturn(mockBitmap)
+
+            interactor.requestAppWindowScreenshot(taskId, displayId)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_APP_WINDOW_SCREENSHOT_REQUESTED
+                        .id
+                )
+        }
 }
