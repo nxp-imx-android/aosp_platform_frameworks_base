@@ -830,7 +830,12 @@ public class BubbleController implements ConfigurationChangeListener,
             if (mBubbleData.isExpanded()) {
                 // If the IME is visible, hide it first and then collapse.
                 if (mBubblePositioner.isImeVisible()) {
-                    hideCurrentInputMethod(this::collapseStack);
+                    if (Flags.fixBubbleSwipeUpGesture()) {
+                        hideCurrentInputMethod(/* onImeHidden= */ null);
+                        collapseStack();
+                    } else {
+                        hideCurrentInputMethod(this::collapseStack);
+                    }
                 } else {
                     collapseStack();
                 }
