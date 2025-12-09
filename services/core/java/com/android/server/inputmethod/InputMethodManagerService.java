@@ -4928,7 +4928,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void setEnabledSessionLocked(SessionState session, @NonNull UserData userData) {
+    private void setEnabledSessionLocked(SessionState session, @NonNull UserData userData) {
         if (userData.mEnabledSession != session) {
             if (userData.mEnabledSession != null && userData.mEnabledSession.mSession != null) {
                 ProtoLog.v(IMMS_DEBUG, "Disabling: " + userData.mEnabledSession);
@@ -4945,39 +4945,49 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void setEnabledSessionForAccessibilityLocked(
+    private void setEnabledSessionForAccessibilityLocked(
             @NonNull SparseArray<AccessibilitySessionState> accessibilitySessions,
             @NonNull UserData userData) {
-        // mEnabledAccessibilitySessions could the same object as accessibilitySessions.
-        SparseArray<IAccessibilityInputMethodSession> disabledSessions = new SparseArray<>();
-        for (int i = 0; i < userData.mEnabledAccessibilitySessions.size(); i++) {
-            if (!accessibilitySessions.contains(userData.mEnabledAccessibilitySessions.keyAt(i))) {
-                AccessibilitySessionState sessionState =
-                        userData.mEnabledAccessibilitySessions.valueAt(i);
-                if (sessionState != null) {
-                    disabledSessions.append(userData.mEnabledAccessibilitySessions.keyAt(i),
-                            sessionState.mSession);
-                }
-            }
+        if (accessibilitySessions.contentEquals(userData.mEnabledAccessibilitySessions)) {
+            return;
         }
-        if (disabledSessions.size() > 0) {
-            AccessibilityManagerInternal.get().setImeSessionEnabled(disabledSessions,
-                    false);
-        }
-        SparseArray<IAccessibilityInputMethodSession> enabledSessions = new SparseArray<>();
+
+        setEnabledSessionForAccessibilityInternalLocked(
+                /* sessionsToUpdate= */ userData.mEnabledAccessibilitySessions,
+                /* sessionsExcluded= */ accessibilitySessions,
+                /* enabled= */ false);
+        setEnabledSessionForAccessibilityInternalLocked(
+                /* sessionsToUpdate= */ accessibilitySessions,
+                /* sessionsExcluded= */ userData.mEnabledAccessibilitySessions,
+                /* enabled= */ true);
+
+        userData.mEnabledAccessibilitySessions.clear();
         for (int i = 0; i < accessibilitySessions.size(); i++) {
-            if (!userData.mEnabledAccessibilitySessions.contains(accessibilitySessions.keyAt(i))) {
-                AccessibilitySessionState sessionState = accessibilitySessions.valueAt(i);
-                if (sessionState != null) {
-                    enabledSessions.append(accessibilitySessions.keyAt(i), sessionState.mSession);
-                }
+            userData.mEnabledAccessibilitySessions.put(
+                    accessibilitySessions.keyAt(i), accessibilitySessions.valueAt(i));
+        }
+    }
+
+    @GuardedBy("ImfLock.class")
+    private void setEnabledSessionForAccessibilityInternalLocked(
+            @NonNull SparseArray<AccessibilitySessionState> sessionsToUpdate,
+            @NonNull SparseArray<AccessibilitySessionState> sessionsExcluded,
+            boolean enabled) {
+        final int size = sessionsToUpdate.size();
+        final var sessionsToNotify = new SparseArray<IAccessibilityInputMethodSession>(size);
+        for (int i = 0; i < size; i++) {
+            final AccessibilitySessionState sessionState = sessionsToUpdate.valueAt(i);
+            if (sessionState == null) {
+                continue;
+            }
+            final int a11yServiceId = sessionsToUpdate.keyAt(i);
+            if (sessionsExcluded.get(a11yServiceId) != sessionState) {
+                sessionsToNotify.append(a11yServiceId, sessionState.mSession);
             }
         }
-        if (enabledSessions.size() > 0) {
-            AccessibilityManagerInternal.get().setImeSessionEnabled(enabledSessions,
-                    true);
+        if (sessionsToNotify.size() > 0) {
+            AccessibilityManagerInternal.get().setImeSessionEnabled(sessionsToNotify, enabled);
         }
-        userData.mEnabledAccessibilitySessions = accessibilitySessions;
     }
 
     @GuardedBy("ImfLock.class")
@@ -6271,6 +6281,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             p.println("    mVisibilityStateComputer:");
             userData.mVisibilityStateComputer.dump(pw, "      ");
             p.println("    mInFullscreenMode=" + userData.mInFullscreenMode);
+            p.println("    mEnabledA11ySessions=" + userData.mEnabledAccessibilitySessions);
 
             final var settings = InputMethodSettingsRepository.get(userData.mUserId);
             final List<InputMethodInfo> methodList = settings.getMethodList();
