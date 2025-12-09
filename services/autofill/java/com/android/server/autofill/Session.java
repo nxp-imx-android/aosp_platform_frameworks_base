@@ -41,7 +41,6 @@ import static android.service.autofill.FillRequest.FLAG_VIEW_REQUESTS_CREDMAN_SE
 import static android.service.autofill.FillRequest.INVALID_REQUEST_ID;
 import static android.service.autofill.Flags.highlightAutofillSingleField;
 import static android.service.autofill.Flags.improveFillDialogAconfig;
-import static android.service.autofill.Flags.logAugmentedServiceUid;
 import static android.service.autofill.Flags.metricsFixes;
 import static android.view.autofill.AutofillManager.ACTION_RESPONSE_EXPIRED;
 import static android.view.autofill.AutofillManager.ACTION_START_SESSION;
@@ -1509,12 +1508,8 @@ final class Session
             mSessionFlags.mAugmentedAutofillOnly = true;
             mFillRequestEventLogger.maybeSetRequestId(AUGMENTED_AUTOFILL_REQUEST_ID);
             mFillRequestEventLogger.maybeSetIsAugmented(true);
-            if (logAugmentedServiceUid()) {
-                mFillRequestEventLogger.maybeSetAutofillServiceUid(
+            mFillRequestEventLogger.maybeSetAutofillServiceUid(
                     mService.getAugmentedAutofillServiceUidLocked());
-            } else {
-                mFillRequestEventLogger.logAndEndEvent();
-            }
             triggerAugmentedAutofillLocked(flags);
             return Optional.empty();
         }
@@ -6538,10 +6533,8 @@ final class Session
         mFillRequestEventLogger.maybeSetFlags(mFlags);
         mFillRequestEventLogger.maybeSetRequestId(AUGMENTED_AUTOFILL_REQUEST_ID);
         mFillRequestEventLogger.maybeSetIsAugmented(true);
-        if (logAugmentedServiceUid()) {
-            mFillRequestEventLogger.maybeSetAutofillServiceUid(
-                    mService.getAugmentedAutofillServiceUidLocked());
-        }
+        mFillRequestEventLogger.maybeSetAutofillServiceUid(
+                mService.getAugmentedAutofillServiceUidLocked());
         mFillRequestEventLogger.logAndEndEvent();
 
         final ViewState viewState = mViewStates.get(mCurrentViewId);
