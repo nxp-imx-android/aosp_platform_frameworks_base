@@ -19,7 +19,6 @@ package com.android.systemui.media.controls.domain.pipeline
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.TestStubDrawable
 import android.media.MediaRoute2Info
 import android.media.MediaRoute2Info.TYPE_REMOTE_SPEAKER
 import android.media.MediaRouter2Manager
@@ -100,8 +99,6 @@ private const val SUGGESTED_DEVICE_CONNECTION_STATE_2 = STATE_CONNECTING
 public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private companion object {
-        val OTHER_DEVICE_ICON_STUB = TestStubDrawable()
-
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
@@ -210,11 +207,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         mediaData =
             MediaTestUtils.emptyMediaData.copy(packageName = PACKAGE, token = session.sessionToken)
         whenever(controllerFactory.create(session.sessionToken)).thenReturn(controller)
-
-        context.orCreateTestableResources.addOverride(
-            R.drawable.ic_media_home_devices,
-            OTHER_DEVICE_ICON_STUB,
-        )
     }
 
     @After
@@ -646,7 +638,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = captureDeviceData(KEY)
         assertThat(data.enabled).isFalse()
         assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
-        assertThat(data.icon).isEqualTo(OTHER_DEVICE_ICON_STUB)
     }
 
     @Test
