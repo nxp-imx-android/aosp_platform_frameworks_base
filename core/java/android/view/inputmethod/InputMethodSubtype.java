@@ -218,9 +218,9 @@ public final class InputMethodSubtype implements Parcelable {
          * the full display name is too long. It may be used in place of an icon in some UI surfaces
          * if a subtype icon is not specified.
          *
-         * It is recommended that the short label contains up to two glyphs to avoid visual
-         * truncation in limited-space UI surfaces. Examples include an abbreviation, a locale code,
-         * a symbol, or an emoji.
+         * It is recommended that the short label is visually compact, around the size of two or
+         * three Latin letters to avoid visual truncation in limited-space UI surfaces. Examples
+         * include an abbreviation, a locale code, a symbol, or an emoji.
          *
          * @param subtypeShortLabel the short label.
          */
