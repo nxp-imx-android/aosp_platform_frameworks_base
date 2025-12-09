@@ -217,7 +217,9 @@ class BridgedNotificationInfoTest : SysuiTestCase() {
     fun testSummaryText() {
         bindNotification()
         assertThat((underTest.findViewById(R.id.bridged_summary) as TextView).text)
-            .isEqualTo("Synced notification priority and settings can be adjusted on your phone")
+            .isEqualTo(
+                "Synced notification priority and settings can be adjusted on your test_display_name"
+            )
     }
 
     private fun bindNotification(
