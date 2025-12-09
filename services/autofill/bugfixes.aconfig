@@ -117,12 +117,6 @@ flag {
   }
 }
 
-flag {
-  name: "log_augmented_service_uid"
-  namespace: "autofill"
-  description: "Log the UID of the augmented autofill service in FillRequest events"
-  bug: "411232512"
-}
 
 flag {
   name: "disable_fill_dialog_on_automotive_multi_window"
