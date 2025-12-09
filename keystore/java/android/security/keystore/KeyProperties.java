@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringDef;
 import android.annotation.SystemApi;
+import android.hardware.security.keymint.TagType;
 import android.os.Process;
 import android.security.keymaster.KeymasterDefs;
 import java.lang.annotation.Retention;
@@ -1072,4 +1073,36 @@ public abstract class KeyProperties {
      * This value indicates that there is no restriction on the number of times the key can be used.
      */
     public static final int UNRESTRICTED_USAGE_COUNT = -1;
+
+    /**
+     * Placeholder for the KeyMint Tag.ML_DSA_VARIANT AIDL enum value.
+     * @hide
+     */
+    // TODO(b/462036047): Delete when KeyMint V5 is frozen.
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final int KM_TAG_ML_DSA_VARIANT = TagType.ENUM | 11;
+
+    /**
+     * Placeholder for the KeyMint Algorithm.ML_DSA AIDL enum value.
+     * @hide
+     */
+    // TODO(b/462036047): Delete when KeyMint V5 is frozen.
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final int KM_ALGORITHM_ML_DSA = 4;
+
+    /**
+     * Placeholder for the KeyMint MlDsaVariant.ML_DSA_65 AIDL enum value.
+     * @hide
+     */
+    // TODO(b/462036047): Delete when KeyMint V5 is frozen.
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final int KM_ML_DSA_VARIANT_65 = 1;
+
+    /**
+     * Placeholder for the KeyMint MlDsaVariant.ML_DSA_87 AIDL enum value.
+     * @hide
+     */
+    // TODO(b/462036047): Delete when KeyMint V5 is frozen.
+    @FlaggedApi(android.security.keystore2.Flags.FLAG_MLDSA_SUPPORT)
+    public static final int KM_ML_DSA_VARIANT_87 = 2;
 }
