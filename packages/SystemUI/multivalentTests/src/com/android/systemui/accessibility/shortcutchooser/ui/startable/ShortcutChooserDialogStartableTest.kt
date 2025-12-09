@@ -239,7 +239,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickTargetRow() =
+    fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickToggleableTargetRow_enablesFeatureAndLeavesDialogOpen() =
         kosmos.runTest {
             setTalkbackAndMagnificationSelected()
 
@@ -251,12 +251,34 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             // dialog.
             assertCurrentDialog(DialogType.TOGGLE_TARGETS)
 
-            // Click on the one target row, e.g. Talkback.
+            // Click on a toggleable target row, e.g. Talkback.
             composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
 
-            // Will toggle Talkback feature on/off and dismiss the dialog.
+            // Will toggle Talkback feature on/off and leave the dialog open.
             assertThat(getEnabledTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
+            assertCurrentDialog(DialogType.TOGGLE_TARGETS)
+        }
+
+    @Test
+    fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickNonToggleableTargetRow_enablesFeatureAndClosesDialog() =
+        kosmos.runTest {
+            setTalkbackAndMagnificationSelected()
+
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle()
+
+            // Verify when there are two selected targets, the dialog type should be Toggle targets
+            // dialog.
+            assertCurrentDialog(DialogType.TOGGLE_TARGETS)
+
+            // Click on a non-toggleable target row, e.g. Magnification.
+            composeTestRule.onNodeWithTag(MAGNIFICATION_TARGET_NAME).performClick()
+            composeTestRule.waitForIdle()
+
+            // Will toggle Magnification feature on/off and dismiss the dialog.
+            assertThat(getEnabledTargetNames()).isEqualTo(setOf(MAGNIFICATION_TARGET_NAME))
             assertCurrentDialog(DialogType.NONE)
         }
 
