@@ -89,9 +89,9 @@ import com.android.internal.app.IVoiceActionCheckCallback;
 import com.android.internal.app.IVoiceInteractionAccessibilitySettingsListener;
 import com.android.internal.app.IVoiceInteractionSessionShowCallback;
 import com.android.internal.app.IVoiceInteractor;
+import com.android.internal.compat.IPlatformCompat;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
-import com.android.server.compat.PlatformCompat;
 import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal.ActivityTokens;
@@ -151,7 +151,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     final IWindowManager mIWindowManager;
     final ComponentName mHotwordDetectionComponentName;
     final ComponentName mVisualQueryDetectionComponentName;
-    final PlatformCompat mPlatformCompat;
+    final IPlatformCompat mPlatformCompat;
     boolean mEnableAssistStructure = true;
     boolean mBound = false;
     long mLastHotwordDetectionTimestamp = 0L;
@@ -257,7 +257,9 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         mAtm = ActivityTaskManager.getService();
         mPackageManagerInternal =
                 Objects.requireNonNull(LocalServices.getService(PackageManagerInternal.class));
-        mPlatformCompat = new PlatformCompat(context);
+        mPlatformCompat =
+                IPlatformCompat.Stub.asInterface(
+                        ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
         VoiceInteractionServiceInfo info;
         try {
             info = new VoiceInteractionServiceInfo(context.getPackageManager(), service, mUser);
@@ -342,10 +344,16 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
 
         if (mActiveSession == null) {
 
-            final boolean shouldRestrictAssistStructureScreenContent =
-                    mPlatformCompat.isChangeEnabled(
-                            VoiceInteractionManagerService.ENABLE_RESTRICT_ASSIST_STRUCTURE,
-                            getApplicationInfo());
+            boolean shouldRestrictAssistStructureScreenContent = false;
+
+            try {
+                shouldRestrictAssistStructureScreenContent =
+                        mPlatformCompat.isChangeEnabled(
+                                VoiceInteractionManagerService.ENABLE_RESTRICT_ASSIST_STRUCTURE,
+                                getApplicationInfo());
+            } catch (RemoteException e) {
+                Slog.w(TAG, "RemoteException while calling isChangeEnabled", e);
+            }
 
             mActiveSession =
                     new VoiceInteractionSessionConnection(
