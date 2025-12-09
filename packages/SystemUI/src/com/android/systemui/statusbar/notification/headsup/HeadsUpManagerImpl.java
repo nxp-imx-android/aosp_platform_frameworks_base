@@ -895,8 +895,16 @@ public class HeadsUpManagerImpl
             int minX = tmpArray[0];
             int maxX = tmpArray[0] + topRow.getWidth();
             int height = topRow.getIntrinsicHeight();
-            final boolean stretchToTop = tmpArray[1] <= mHeadsUpInset;
-            mTouchableRegion.set(minX, stretchToTop ? 0 : tmpArray[1], maxX, tmpArray[1] + height);
+            if (SceneContainerFlag.isEnabled()) {
+                // Don't stretch touchable region of HUN to screen top, because in flexi, the
+                // touchable region is the key to avoid the Notification to consume touches that's
+                // supposed to be dispatched to the StatusBar.
+                mTouchableRegion.set(minX, tmpArray[1], maxX, tmpArray[1] + height);
+            } else {
+                final boolean stretchToTop = tmpArray[1] <= mHeadsUpInset;
+                mTouchableRegion.set(
+                        minX, stretchToTop ? 0 : tmpArray[1], maxX, tmpArray[1] + height);
+            }
             return mTouchableRegion;
         }
     }
