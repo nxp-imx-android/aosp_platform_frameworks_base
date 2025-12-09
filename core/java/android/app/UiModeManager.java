@@ -16,7 +16,6 @@
 
 package android.app;
 
-import static android.app.Flags.enableCurrentModeTypeBinderCache;
 import static android.app.Flags.enableNightModeBinderCache;
 import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 
@@ -1122,7 +1121,6 @@ public class UiModeManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_CURRENT_MODE_TYPE_BINDER_CACHE)
     public static void invalidateCurrentModeTypeCache() {
         IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM,
                 CURRENT_MODE_TYPE_API);
@@ -1140,11 +1138,7 @@ public class UiModeManager {
      * {@link Configuration#UI_MODE_TYPE_VR_HEADSET Configuration.UI_MODE_TYPE_VR_HEADSET}.
      */
     public int getCurrentModeType() {
-        if (enableCurrentModeTypeBinderCache()) {
-            return mCurrentModeTypeCache.query(getDisplayId());
-        } else {
-            return getCurrentModeTypeFromServer(getDisplayId());
-        }
+        return mCurrentModeTypeCache.query(getDisplayId());
     }
 
     /**
