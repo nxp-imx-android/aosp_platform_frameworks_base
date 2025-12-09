@@ -28,6 +28,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.core.LogLevel
+import com.android.systemui.scene.data.model.contains
+import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
@@ -58,10 +60,10 @@ constructor(
     transitionInteractor: KeyguardTransitionInteractor,
     val dismissInteractor: KeyguardDismissInteractor,
     @Application private val applicationScope: CoroutineScope,
-    deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
+    val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     shadeInteractor: Lazy<ShadeInteractor>,
-    keyguardInteractor: Lazy<KeyguardInteractor>,
     sceneInteractor: Lazy<SceneInteractor>,
+    sceneBackInteractor: SceneBackInteractor,
     private val keyguardLogger: KeyguardLogger,
     private val primaryBouncerInteractor: PrimaryBouncerInteractor,
 ) : ExclusiveActivatable() {
@@ -105,26 +107,26 @@ constructor(
                 .map {}
         }
 
-    /**
-     * True if the any variation of the notification shade or quick settings is showing AND the
-     * device is unlocked. Else, false.
-     */
-    private val isOnShadeWhileUnlocked: Flow<Boolean> =
+    /** Emits when the keyguard is dismissed behind the shade. */
+    private val unlockedWhileShadeOpen: Flow<Unit> =
         if (SceneContainerFlag.isEnabled) {
             combine(
                     shadeInteractor.get().isAnyExpanded,
-                    deviceUnlockedInteractor.get().deviceUnlockStatus,
-                ) { isAnyExpanded, unlockStatus ->
-                    isAnyExpanded && unlockStatus.isUnlocked
+                    deviceUnlockedInteractor
+                        .get()
+                        .deviceUnlockStatus
+                        .map { it.isUnlocked }
+                        .distinctUntilChanged(),
+                    sceneBackInteractor.backStack
+                        .map { !it.contains(Scenes.Lockscreen) }
+                        .distinctUntilChanged(),
+                ) { isShadeOpen, isUnlocked, lockscreenGoneFromBackStack ->
+                    isShadeOpen && isUnlocked && lockscreenGoneFromBackStack
                 }
-                .distinctUntilChanged()
+                .filter { it }
+                .map {}
         } else {
-            flow {
-                error(
-                    "This should not be used when both SceneContainerFlag " +
-                        "and ComposeBouncerFlag are disabled"
-                )
-            }
+            flow { error("This should not be used when SceneContainerFlag is disabled") }
         }
 
     fun runDismissAnimationOnKeyguard(): Boolean {
@@ -153,11 +155,17 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
-                merge(finishedTransitionToGone, isOnShadeWhileUnlocked.filter { it }.map {})
-                    .collect {
-                        log("finishedTransitionToGone")
-                        runDismissAction()
-                    }
+                merge(finishedTransitionToGone).collect {
+                    log("finishedTransitionToGone")
+                    runDismissAction()
+                }
+            }
+
+            launch {
+                unlockedWhileShadeOpen.collect {
+                    log("unlockedWhileShadeOpen")
+                    runDismissAction()
+                }
             }
 
             launch {
