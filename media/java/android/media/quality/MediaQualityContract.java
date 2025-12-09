@@ -88,25 +88,111 @@ public class MediaQualityContract {
     })
     public @interface ColorTempValue {}
 
-    /** @hide */
+    /**
+     * Key for the "User" color temperature preset.
+     * <p>
+     * Represents a custom color temperature configuration defined by the user.
+     * Unlike the fixed presets (Cool, Standard, Warm), this mode typically
+     * allows for manual adjustment of RGB gain and offset values to achieve
+     * a specific white point.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_USER = "color_temp_user";
-    /** @hide */
+
+    /**
+     * Key for the "Cool" color temperature preset.
+     * <p>
+     * Represents a cooler, bluish white point, typically with a color temperature
+     * higher than 7000K (often 9000K-11000K). This makes white appear crisp and bright,
+     * which can be desirable for sports content or viewing in brightly lit environments.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_COOL = "color_temp_cool";
-    /** @hide */
+
+    /**
+     * Key for the "Standard" color temperature preset.
+     * <p>
+     * Represents a balanced white point, typically positioned between Cool and Warm.
+     * This is often the default factory setting, offering a compromise between brightness
+     * and color accuracy suitable for general daytime viewing.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_STANDARD = "color_temp_standard";
-    /** @hide */
+
+    /**
+     * Key for the "Warm" color temperature preset.
+     * <p>
+     * Represents a warmer, yellowish/reddish white point, typically targeted at
+     * the D65 standard (6500K). This is the industry standard for cinema and
+     * high-end video production. It is the recommended setting for movie watching
+     * in dim environments to ensure colors are seen as the director intended.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_WARM = "color_temp_warm";
-    /** @hide */
+
+    /**
+     * Key for the "User" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Stores custom user adjustments for white balance that are applied only when
+     * the display is in HDR10+ mode. This ensures that manual calibrations for
+     * High Dynamic Range content do not affect SDR viewing.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_USER_HDR10PLUS = "color_temp_user_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Cool" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a high-Kelvin (bluish) white point optimized for the higher
+     * brightness levels of HDR10+ content.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_COOL_HDR10PLUS = "color_temp_cool_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Standard" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a balanced white point optimized for the higher brightness levels
+     * of HDR10+ content.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_STANDARD_HDR10PLUS = "color_temp_standard_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Warm" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a D65-targeted (6500K) white point optimized for HDR10+ content.
+     * Maintaining D65 accuracy is critical in HDR to prevent bright highlights
+     * from appearing tinted.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_WARM_HDR10PLUS = "color_temp_warm_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the color temperature used in Filmmaker Mode (FMM) during
+     * Standard Dynamic Range (SDR) playback.
+     * <p>
+     * Filmmaker Mode is designed to preserve the creative intent of the content creator.
+     * Consequently, this parameter is typically locked to the industry standard D65
+     * (6500K) white point to ensure accurate color reproduction for SDR movies.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_FMMSDR = "color_temp_fmmsdr";
-    /** @hide */
+
+    /**
+     * Key for the color temperature used in Filmmaker Mode (FMM) during
+     * High Dynamic Range (HDR) playback.
+     * <p>
+     * Similar to {@link #COLOR_TEMP_FMMSDR}, this parameter enforces the creative
+     * intent for HDR content. It targets the D65 (6500K) white point, calibrated
+     * specifically for the HDR tone mapping curve to ensure accurate highlights
+     * and shadow detail.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
 
     /** @hide */
@@ -753,9 +839,7 @@ public class MediaQualityContract {
     public static final String DOLBY_SOUND_MODE_USER = "USER";
 
 
-    /**
-     * @hide
-     */
+    /** @hide */
     public interface BaseParameters {
         String PARAMETER_ID = "_id";
         String PARAMETER_TYPE = "_type";
@@ -1022,8 +1106,9 @@ public class MediaQualityContract {
         /**
          * Enable/disable black color auto stretch
          *
-         * @hide
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_BLACK_STRETCH = "black_stretch";
 
         /**
@@ -1072,342 +1157,859 @@ public class MediaQualityContract {
                 "auto_super_resolution_enabled";
 
         /**
-         * @hide
+         * The quantization level range for the video signal, which specifies
+         * the mapping of digital code values to black and white levels.
+         * <p>Must be one of the following values:
+         * <ul>
+         * <li><b>Auto:</b> The system determines the appropriate level range
+         * automatically.</li>
+         * <li><b>Limited:</b> Represents the limited range where black is 16 and
+         * white is 235 (for 8-bit color). Standard for broadcast video.</li>
+         * <li><b>Full:</b> Represents the full range where black is 0 and white
+         * is 255 (for 8-bit color). Common for PC content and graphics.</li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LEVEL_RANGE = "level_range";
 
         /**
-         * @hide
+         * If {@code true}, enables gamut mapping to translate colors
+         * from the source's color space to the display's gamut. This is used to
+         * prevent color clipping when the source gamut is wider than the display's.
+         * If {@code false}, out-of-gamut colors may be clipped.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_GAMUT_MAPPING = "gamut_mapping";
 
         /**
-         * @hide
+         * Set to {@code true} to enable PC Mode. This ensures a "dot by dot"
+         * or 1:1 pixel mapping from the source signal to the display panel. When
+         * enabled, this mode disables overscan, preventing the edges of the picture
+         * from being cut off. This is ideal for sources like a personal computer
+         * where sharp text and precise pixel representation are critical. If
+         * {@code false}, standard TV processing, including potential overscan, will
+         * be applied.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PC_MODE = "pc_mode";
 
         /**
-         * @hide
+         * Set to {@code true} to enable a low latency mode (e.g., "Game Mode").
+         * This mode minimizes video processing latency (input lag) by reducing or
+         * bypassing non-essential image enhancement features. This is ideal for
+         * interactive content like video games where responsiveness is critical.
+         * Set to {@code false} for standard processing.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LOW_LATENCY = "low_latency";
 
         /**
-         * @hide
+         * Set to {@code true} to enable Variable Refresh Rate (VRR). VRR synchronizes
+         * the display's refresh rate in real-time with the frame rate of the source device
+         * (e.g., a game console or PC). This eliminates screen tearing and reduces stutter,
+         * providing a smoother visual experience, especially in video games. Set to {@code false}
+         * to use a standard fixed refresh rate.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_VRR = "vrr";
 
         /**
-         * @hide
+         * Set to {@code true} to enable Cinema Variable Refresh Rate (CVRR).
+         * This mode synchronizes the display's refresh rate with the cadence of
+         * cinematic content, which often has a frame rate (e.g., 24fps) that does
+         * not divide evenly into standard display refresh rates (e.g., 60Hz).
+         * Enabling CVRR eliminates the motion "judder" that can result from this
+         * mismatch, ensuring smooth playback as the director intended.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_CVRR = "cvrr";
 
         /**
-         * @hide
+         * Specifies the RGB color range for the HDMI signal to ensure
+         * correct black and white levels.
+         * <ul>
+         * <li><b>Auto:</b> Allows the source and display to automatically negotiate the
+         * correct range.</li>
+         * <li><b>Limited:</b> Sets the range to 16-235 (for 8-bit color). This is the
+         * standard for most broadcast, Blu-ray, and streaming video content.</li>
+         * <li><b>Full:</b> Sets the range to 0-255 (for 8-bit color). This is the
+         * standard for PC graphics, game consoles, and digital photography.</li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_HDMI_RGB_RANGE = "hdmi_rgb_range";
 
         /**
-         * @hide
+         * Sets the color space of the video signal, which defines the
+         * range of colors (gamut) it can represent. This must be set correctly
+         * to ensure accurate color reproduction.
+         * <ul>
+         * <li> {@link #COLOR_SPACE_S_RGB_BT_709} Standard for web and High Definition (HD) content.
+         * </li>
+         * <li> {@link #COLOR_SPACE_DCI} Wide color gamut (WCG) common in digital cinema and on
+         * premium displays.</li>
+         * <li> {@link #COLOR_SPACE_BT2020} Wide color gamut (WCG) standard for Ultra High
+         * Definition (UHD, 4K/8K) and HDR content.</li>
+         * <li> {@link #COLOR_SPACE_ADOBE_RGB} RGB created by adobe system. </li>
+         * <li> {@link #COLOR_SPACE_AUTO} </li>
+         * <li> {@link #COLOR_SPACE_ON} </li>
+         * <li> {@link #COLOR_SPACE_OFF} </li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_SPACE = "color_space";
 
         /**
-         * @hide
+         * Specifies the initial maximum luminance of the display panel, in nits.
+         * <p>
+         * This value typically represents the factory-calibrated peak brightness
+         * of the panel and is used by the system as a baseline for brightness
+         * control and HDR tone mapping calculations.
          *
+         * The value range is from 0 - 10000
+         *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS =
                 "panel_init_max_lumince_nits";
 
         /**
-         * @hide
+         * A flag indicating if the
+         * {@code panelInitMaxLuminceNits} value is valid and can be trusted.
+         * <p>
+         * If {@code false}, the panel was unable to report a valid maximum
+         * luminance (e.g., a read error occurred), and the associated
+         * {@code panelInitMaxLuminceNits} value should be ignored.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID =
                 "panel_init_max_lumince_valid";
 
         /**
-         * @hide
+         * Sets the electro-optical transfer function (EOTF), or "gamma,"
+         * to be used. This non-linear curve dictates the display's brightness
+         * response to the video signal, ensuring correct contrast and shadow detail.
+         * <p>
          *
+         * <p>Possible values:
+         * <ul>
+         *     <li> {@link #GAMMA_DARK} </li>
+         *     <li> {@link #GAMMA_MIDDLE} </li>
+         *     <li> {@link #GAMMA_BRIGHT} </li>
+         * </ul>
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_GAMMA = "gamma";
 
         /**
-         * @hide
+         * The color red gain value for color temperature adjustment.
+         * The value adjusts the intensity of red in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate red color
+         * and 100 would significantly boost red color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to red color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_RED_GAIN =
                 "color_temperature_red_gain";
 
         /**
-         * @hide
+         * The color green gain value for color temperature adjustment.
+         * The value adjusts the intensity of green in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate green color
+         * and 100 would significantly boost green color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to green color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN =
                 "color_temperature_green_gain";
 
         /**
-         * @hide
+         * The color blue gain value for color temperature adjustment.
+         * The value adjusts the intensity of blue in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate blue color
+         * and 100 would significantly boost blue color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to blue color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN =
                 "color_temperature_blue_gain";
 
         /**
-         * @hide
+         * The color red offset value for color temperature adjustment.
+         * This value adjusts the intensity of red color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate red color
+         * and 100 would significantly boost red color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to red color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_RED_OFFSET =
                 "color_temperature_red_offset";
 
         /**
-         * @hide
+         * The color green offset value for color temperature adjustment.
+         * This value adjusts the intensity of green color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate green color
+         * and 100 would significantly boost green color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to green color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET =
                 "color_temperature_green_offset";
 
         /**
-         * @hide
+         * The color blue offset value for color temperature adjustment.
+         * This value adjusts the intensity of blue color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate blue color
+         * and 100 would significantly boost blue color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to blue color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET =
                 "color_temperature_blue_offset";
 
         /**
-         * @hide
+         * The parameters in this section is for 11-point white balance in advanced TV picture
+         * setting. 11-Point White Balance allows for very precise adjustment of the color
+         * temperature of the TV. It aims to make sure white looks truly white, without any unwanted
+         * color tints, across the entire range of brightness levels.
+         * <p>
+         * The "11 points" refer to 11 different brightness levels from 0 (black) to 10 (white).
+         * At each of these points, we can fine-tune the mixture of red, green and blue to achieve
+         * neutral white.
+         * <p>
+         * Control the amount of red at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointRed[0] adjusts the red level at the darkest black level.
+         * elevenPointRed[1] adjusts red at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * red at a specific brightness point and 100 is the maximum intensity of red at that point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_RED = "eleven_point_red";
 
         /**
-         * @hide
+         * Control the amount of green at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointGreen[0] adjust the green level at the darkest black level.
+         * elevenPointGreen[1] adjust green at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * green at a specific brightness point and 100 is the maximum intensity of green at that
+         * point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_GREEN = "eleven_point_green";
 
         /**
-         * @hide
+         * Control the amount of blue at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointBlue[0] adjust the blue level at the darkest black level.
+         * elevenPointBlue[1] adjust blue at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * blue at a specific brightness point and 100 is the maximum intensity of blue at that
+         * point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_BLUE = "eleven_point_blue";
 
         /**
-         * @hide
+         * Adjust gamma blue gain/offset.
          *
+         * <p>Possible values:
+         *
+         * <ul>
+         *   <li>{@link #LEVEL_LOW}
+         *   <li>{@link #LEVEL_MEDIUM}
+         *   <li>{@link #LEVEL_HIGH}
+         *   <li>{@link #LEVEL_OFF}
+         * </ul>
+         * The default value is {@link #LEVEL_MEDIUM}. Can be different depends on different TVs.
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LOW_BLUE_LIGHT = "low_blue_light";
 
         /**
-         * @hide
+         * Advance setting for local dimming level.
          *
+         * <p>Possible values:
+         *
+         * <ul>
+         *   <li>{@link #LEVEL_LOW}
+         *   <li>{@link #LEVEL_MEDIUM}
+         *   <li>{@link #LEVEL_HIGH}
+         *   <li>{@link #LEVEL_OFF}
+         * </ul>
+         * The default value is {@link #LEVEL_OFF}. Can be different depends on different TVs.
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LD_MODE = "ld_mode";
 
         /**
-         * @hide
+         * The parameters in this section are for on-screen display color gain and offset.
+         * <p>
+         * Color gain is to adjust the intensity of that color (red, blue, green) in the brighter
+         * part of the image.
+         * Color offset is to adjust the intensity of that color in the darker part of the image.
+         * <p>
+         * Increasing OSD (on-screen display) red gain will make brighter reds even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_RED_GAIN = "osd_red_gain";
 
         /**
-         * @hide
+         * Increasing OSD (on-screen display) green gain will make brighter greens even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_GREEN_GAIN = "osd_green_gain";
 
         /**
-         * @hide
+         * Increasing OSD (on-screen display) blue gain will make brighter blues even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_BLUE_GAIN = "osd_blue_gain";
 
         /**
-         * @hide
+         * Increasing OSD red offset will add more red to the darker areas, while decreasing it will
+         * reduce the red in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_RED_OFFSET = "osd_red_offset";
 
         /**
-         * @hide
+         * Increasing OSD green offset will add more green to the darker areas, while decreasing it
+         * will reduce the green in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_GREEN_OFFSET = "osd_green_offset";
 
         /**
-         * @hide
+         * Increasing OSD blue offset will add more blue to the darker areas, while decreasing it
+         * will reduce the blue in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_BLUE_OFFSET = "osd_blue_offset";
 
         /**
-         * @hide
+         * Key for adjusting the Hue (color tint) of the On-Screen Display (OSD).
+         * <p>
+         * This parameter affects only the graphical user interface layer (e.g., system menus,
+         * volume bars, channel information) and does not alter the underlying video content.
+         * <p>
+         * Adjusting the OSD Hue rotates the color phase of the UI elements. While rarely
+         * changed for standard usage, it can be used for accessibility purposes or specific
+         * stylistic themes.
+         * <p>
+         * The value range is from 0 - 100.
+         * The default value is 50.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_HUE = "osd_hue";
 
         /**
-         * @hide
+         * Key for adjusting the Saturation (color intensity) of the On-Screen Display (OSD).
+         * <p>
+         * Controls the vividness of the colors in the UI layer.
+         * <ul>
+         * <li><b>Lower values:</b> Reduce color intensity, moving towards grayscale. This is
+         * often used to prevent screen burn-in on OLED panels for static UI elements or
+         * to make the menu less distracting during movie playback.</li>
+         * <li><b>Higher values:</b> Increase color intensity, making the UI appear more
+         * vivid and punchy.</li>
+         * </ul>
          *
+         * The value range is 0 - 255.
+         * The default value depends on different TVs.
+         *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_SATURATION = "osd_saturation";
 
         /**
-         * @hide
+         * Key for adjusting the Contrast of the On-Screen Display (OSD).
+         * <p>
+         * Controls the difference in luminance between the brightest and darkest parts
+         * of the UI layer.
+         * <p>
+         * Unlike the "Brightness" setting which lifts the overall backlight, OSD Contrast
+         * specifically affects the digital signal values of the graphics plane.
+         * Increasing this value can make text and icons stand out more sharply against
+         * their background, improving legibility, while decreasing it can soften the UI
+         * to reduce eye strain in dark viewing environments.
+         * <p>
+         * The value range is 0 - 100.
+         * The default value is 50.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_CONTRAST = "osd_contrast";
 
         /**
-         * @hide
-         *
+         * Key for the master switch to enable or disable the Color Tuner feature.
+         * <p>
+         * The Color Tuner allows for advanced calibration of the display's color reproduction,
+         * including 6-axis adjustment of Hue, Saturation, and Luminance, as well as
+         * detailed White Balance (Color Temperature) controls.
+         * <ul>
+         * <li><b>{@code true}:</b> Enables the Color Tuner. Custom values for hue,
+         * saturation, luminance, and gain/offset are applied.</li>
+         * <li><b>{@code false}:</b> Disables the Color Tuner. The display reverts to
+         * its factory default color calibration.</li>
+         * </ul>
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SWITCH = "color_tuner_switch";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of red pixels. Moving the value away from
+         * default shifts red towards **Magenta** (purplish-red) or **Yellow** (orange-red).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_RED = "color_tuner_hue_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of green pixels. Moving the value away from
+         * default shifts green towards yellow (lime-green) or cyan (teal-green).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_GREEN = "color_tuner_hue_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of blue pixels. Moving the value away from
+         * default shifts blue towards cyan (sky blue) or magenta (purplish-blue).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_BLUE = "color_tuner_hue_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of cyan pixels. Moving the value away from
+         * default shifts cyan towards green or blue.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_CYAN = "color_tuner_hue_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of magenta pixels. Moving the value away from
+         * default shifts magenta towards blue (violet) or red (rose).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_MAGENTA = "color_tuner_hue_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of yellow pixels. Moving the value away from
+         * default shifts yellow towards red (orange) or green (lime).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_YELLOW = "color_tuner_hue_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the flesh (Skin Tone) color component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning skin tones.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the complexion of human subjects. Moving the value
+         * away from default shifts skin tones towards Reddish/Rosy or
+         * Yellowish/Golden.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_FLESH = "color_tuner_hue_flesh";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of red colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the red phase. Moving away from the default value
+         * will shift red pixels towards magenta (purplish-red) or yellow
+         * (orange-red).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_RED =
                 "color_tuner_saturation_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the Green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of green colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the green phase. Moving away from the default value
+         * will shift green pixels towards Yellow (lime-green) or Cyan (teal-green).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_GREEN =
                 "color_tuner_saturation_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of blue colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the blue phase. Moving away from the default value
+         * will shift blue pixels towards Cyan (sky blue) or Magenta (purplish-blue).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_BLUE =
                 "color_tuner_saturation_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of cyan colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the cyan phase. Moving away from the default value
+         * will shift cyan pixels towards Green or Blue.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_CYAN =
                 "color_tuner_saturation_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of magenta colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the magenta phase. Moving away from the default value
+         * will shift magenta pixels towards blue (violet) or red (rose).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_MAGENTA =
                 "color_tuner_saturation_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of yellow colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the yellow phase. Moving away from the default value
+         * will shift yellow pixels towards red (orange) or green (lime).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_YELLOW =
                 "color_tuner_saturation_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the flesh (Skin Tone) color component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning skin tones, which typically reside
+         * in the orange/red region of the color spectrum.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the complexion of human subjects. Moving away from
+         * the default value typically shifts skin tones towards Reddish/Rosy or
+         * Yellowish/Golden, helping to correct "sunburned" or "greenish" looks.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_FLESH =
                 "color_tuner_saturation_flesh";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of red areas to be adjusted independently without affecting
+         * the saturation or hue.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of red pixels. Values higher
+         * than default make red colors appear brighter and more vibrant, while lower
+         * values make them appear darker and deeper.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_RED =
                 "color_tuner_luminance_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of green areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of green pixels. Values higher
+         * than default make green colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_GREEN =
                 "color_tuner_luminance_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of blue areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of blue pixels. Values higher
+         * than default make blue colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_BLUE =
                 "color_tuner_luminance_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of cyan areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of cyan pixels. Values higher
+         * than default make cyan colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_CYAN =
                 "color_tuner_luminance_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of magenta areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of magenta pixels. Values higher
+         * than default make magenta colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA =
                 "color_tuner_luminance_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of yellow areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of yellow pixels. Values higher
+         * than default make yellow colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW =
                 "color_tuner_luminance_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the flesh (Skin Tone) component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning the brightness of skin tones.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the exposure of human subjects. Increasing this value
+         * can help brighten faces in shadow or dark scenes, while decreasing it can
+         * help recover detail in bright, washed-out highlights on faces.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_FLESH =
                 "color_tuner_luminance_flesh";
 
