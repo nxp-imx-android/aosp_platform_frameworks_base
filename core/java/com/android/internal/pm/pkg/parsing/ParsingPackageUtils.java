@@ -207,6 +207,7 @@ public class ParsingPackageUtils {
     public static final String TAG_USES_PERMISSION_SDK_M = "uses-permission-sdk-m";
     public static final String TAG_USES_SDK = "uses-sdk";
     public static final String TAG_USES_SPLIT = "uses-split";
+    public static final String TAG_ALLOW_COMPONENT_ACCESS = "allow-component-access";
 
     public static final String METADATA_MAX_ASPECT_RATIO = "android.max_aspect";
     public static final String METADATA_SUPPORTS_SIZE_CHANGES = "android.supports_size_changes";
@@ -1103,6 +1104,10 @@ public class ParsingPackageUtils {
                         mCallback.getInstallConstraintsAllowlist());
             case TAG_QUERIES:
                 return parseQueries(input, pkg, res, parser);
+            case TAG_ALLOW_COMPONENT_ACCESS:
+                // TODO(b/454054660): Implement parsing logic in a follow-up CL.
+                XmlUtils.skipCurrentTag(parser);
+                return input.success(pkg);
             default:
                 return ParsingUtils.unknownTag("<manifest>", pkg, parser, input);
         }

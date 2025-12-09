@@ -2098,7 +2098,8 @@
          {@link #AndroidManifestUsesConfiguration uses-configuration},
          {@link #AndroidManifestApplication application},
          {@link #AndroidManifestInstrumentation instrumentation},
-         {@link #AndroidManifestUsesFeature uses-feature}.  -->
+         {@link #AndroidManifestUsesFeature uses-feature},
+         {@link #AndroidManifestAllowComponentAccess allow-component-access}.  -->
     <declare-styleable name="AndroidManifest">
         <attr name="versionCode" />
         <attr name="versionCodeMajor" />
@@ -4376,5 +4377,38 @@
     <declare-styleable name="AndroidManifestInstallConstraintsFingerprintPrefix"
                        parent="AndroidManifestInstallConstraints">
         <attr name="value" />
+    </declare-styleable>
+
+    <!-- The {@code <allow-component-access>} tag allows an application to explicitly define
+    the set of other applications (and their components) it is permitted to associate with.
+
+    <p>"Association" in this context refers to specific inter-app interactions initiated
+    by this application, specifically:
+    <ul>
+      <li>Binding to a service ({@link android.content.Context#bindService}).</li>
+      <li>Accessing a Content Provider (via {@link android.content.ContentResolver}).</li>
+      <li>Sending a broadcast ({@link android.content.Context#sendBroadcast}).</li>
+    </ul>
+
+    <p>If this tag isn't present, associations can be established with all components
+    visible and accessible to the application.
+
+    <p>If this tag is present, the system enforces a "deny-by-default" policy:
+    associations are only permitted per rules defined in this tag.
+
+    <p>If this tag is present but contains no child {@code <package>} tags, the
+    application is restricted to intra-application communication and essential system
+    services (e.g., System Server). -->
+
+    <declare-styleable name="AndroidManifestAllowComponentAccess" parent="AndroidManifest" />
+
+    <declare-styleable name="AndroidManifestAllowComponentAccessPackage"
+        parent="AndroidManifestAllowComponentAccess">
+        <!-- The package name of the app to allow association with. -->
+        <attr name="name" />
+        <!-- Optional SHA-256 digest of the package signing certificate. If present, the system
+        validates that the target package matches this certificate. If omitted, only the package
+        name is verified. -->
+        <attr name="certDigest" format="string" />
     </declare-styleable>
 </resources>

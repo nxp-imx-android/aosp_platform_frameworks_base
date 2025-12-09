@@ -57,6 +57,8 @@ import com.android.internal.pm.pkg.SEInfoUtil;
 import com.android.internal.pm.pkg.component.ComponentMutateUtils;
 import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.internal.pm.pkg.component.ParsedActivityImpl;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyImpl;
 import com.android.internal.pm.pkg.component.ParsedApexSystemService;
 import com.android.internal.pm.pkg.component.ParsedApexSystemServiceImpl;
 import com.android.internal.pm.pkg.component.ParsedAttribution;
@@ -427,6 +429,9 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     private Map<String, Boolean> mFeatureFlagState = new ArrayMap<>();
 
     private int mIntentMatchingFlags;
+
+    @Nullable
+    private ParsedAllowComponentAccessPolicy mParsedAllowComponentAccessPolicy;
 
     @NonNull
     public static PackageImpl forParsing(@NonNull String packageName, @NonNull String baseCodePath,
@@ -3337,6 +3342,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeBoolean(this.mAllowCrossUidActivitySwitchFromBelow);
         dest.writeInt(this.mIntentMatchingFlags);
         dest.writeInt(this.mPageSizeAppCompatFlags);
+        dest.writeTypedObject(
+                (ParsedAllowComponentAccessPolicyImpl) mParsedAllowComponentAccessPolicy, flags);
     }
 
     private void writeUsesPermissionMapping(@NonNull Parcel dest) {
@@ -3539,7 +3546,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.mAllowCrossUidActivitySwitchFromBelow = in.readBoolean();
         this.mIntentMatchingFlags = in.readInt();
         this.mPageSizeAppCompatFlags = in.readInt();
-
+        this.mParsedAllowComponentAccessPolicy = in.readTypedObject(
+                ParsedAllowComponentAccessPolicyImpl.CREATOR);
         assignDerivedFields();
         assignDerivedFields2();
 
@@ -3826,6 +3834,24 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
 
     public Map<String, Boolean> getFeatureFlagState() {
         return mFeatureFlagState;
+    }
+
+    /**
+     * Sets the policy parsed from the allow-component-access manifest tag.
+     */
+    public PackageImpl setParsedAllowComponentAccessPolicy(
+            ParsedAllowComponentAccessPolicy policy) {
+        this.mParsedAllowComponentAccessPolicy = policy;
+        return this;
+    }
+
+    /**
+     * Gets the policy parsed from the allow-component-access manifest tag.
+     */
+    @Nullable
+    @Override
+    public ParsedAllowComponentAccessPolicy getParsedAllowComponentAccessPolicy() {
+        return mParsedAllowComponentAccessPolicy;
     }
 
     /**
