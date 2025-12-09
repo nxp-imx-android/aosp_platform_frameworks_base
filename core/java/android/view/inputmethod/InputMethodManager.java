@@ -18,7 +18,6 @@ package android.view.inputmethod;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.ViewProtoLogGroups.INPUT_METHOD_MANAGER_DEBUG;
-import static android.view.inputmethod.Flags.FLAG_GUARD_INPUT_METHOD_LIST_APIS;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
 import static android.view.ViewProtoLogGroups.INPUT_METHOD_MANAGER_WITH_LOGCAT;
 import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
@@ -1772,14 +1771,9 @@ public final class InputMethodManager {
      *
      * <p>On multi user environment, this API returns a result for the calling process user.</p>
      *
-     * <p>Starting with targetSdkVersion 37, requires {@code android.permission.QUERY_INPUT_METHOD}
-     * to use this API.</p>
-     *
      * @return {@link List} of {@link InputMethodInfo}.
      */
     @NonNull
-    @FlaggedApi(FLAG_GUARD_INPUT_METHOD_LIST_APIS)
-    @RequiresPermission(value = Manifest.permission.QUERY_INPUT_METHOD, conditional = true)
     public List<InputMethodInfo> getInputMethodList() {
         // We intentionally do not use UserHandle.getCallingUserId() here because for system
         // services InputMethodManagerInternal.getInputMethodListAsUser() should be used
@@ -1936,14 +1930,9 @@ public final class InputMethodManager {
      *
      * <p>On multi user environment, this API returns a result for the calling process user.</p>
      *
-     * <p>Starting with targetSdkVersion 37, requires {@code android.permission.QUERY_INPUT_METHOD}
-     * to use this API.</p>
-     *
      * @return {@link List} of {@link InputMethodInfo}.
      */
     @NonNull
-    @FlaggedApi(FLAG_GUARD_INPUT_METHOD_LIST_APIS)
-    @RequiresPermission(value = Manifest.permission.QUERY_INPUT_METHOD, conditional = true)
     public List<InputMethodInfo> getEnabledInputMethodList() {
         // We intentionally do not use UserHandle.getCallingUserId() here because for system
         // services InputMethodManagerInternal.getEnabledInputMethodListAsUser() should be used
@@ -1975,9 +1964,6 @@ public final class InputMethodManager {
      *
      * <p>On multi user environment, this API returns a result for the calling process user.</p>
      *
-     * <p>Starting with targetSdkVersion 37, requires {@code android.permission.QUERY_INPUT_METHOD}
-     * to use this API.</p>
-     *
      * @param imi The {@link InputMethodInfo} whose subtypes list will be returned. If {@code null},
      * returns enabled subtypes for the currently selected {@link InputMethodInfo}.
      * @param allowsImplicitlyEnabledSubtypes A boolean flag to allow to return the implicitly
@@ -1985,8 +1971,6 @@ public final class InputMethodManager {
      * will implicitly enable subtypes according to the current system language.
      */
     @NonNull
-    @FlaggedApi(FLAG_GUARD_INPUT_METHOD_LIST_APIS)
-    @RequiresPermission(value = Manifest.permission.QUERY_INPUT_METHOD, conditional = true)
     public List<InputMethodSubtype> getEnabledInputMethodSubtypeList(@Nullable InputMethodInfo imi,
             boolean allowsImplicitlyEnabledSubtypes) {
         return IInputMethodManagerGlobalInvoker.getEnabledInputMethodSubtypeList(
