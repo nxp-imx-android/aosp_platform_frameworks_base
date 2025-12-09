@@ -37,7 +37,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.util.settings.SecureSettings;
 
@@ -128,7 +127,6 @@ public class MenuInfoRepositoryTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FLOATING_MENU_UPDATE_ON_FEATURE_ENABLED)
     public void registerObservers_includesSystemFeatures() {
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
         String[] expected = getFrameworkFeatures();
