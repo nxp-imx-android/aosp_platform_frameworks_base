@@ -130,7 +130,10 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                         color = colors.onSurface,
                     )
                     IconButton(
-                        onClick = { tileDetailedViewModel.clickOnSettingsButton() },
+                        onClick = {
+                            tileDetailedViewModel.clickOnSettingsButton()
+                            detailsViewModel.logOnSettingsClicked()
+                        },
                         colors =
                             IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
                         modifier =
