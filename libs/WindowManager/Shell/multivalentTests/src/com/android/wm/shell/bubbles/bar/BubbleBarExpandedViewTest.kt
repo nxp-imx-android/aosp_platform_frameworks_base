@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.bar
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Insets
@@ -40,6 +41,7 @@ import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.bubbles.logging.BubbleLogger
+import com.android.wm.shell.bubbles.util.BubblePolicyHelper
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.google.common.truth.Truth.assertThat
@@ -48,6 +50,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
 
 /** Tests for [BubbleBarExpandedViewTest] */
 @SmallTest
@@ -71,6 +78,7 @@ class BubbleBarExpandedViewTest {
     private lateinit var bubbleTaskViewFactory: FakeBubbleTaskViewFactory
 
     private lateinit var bubbleExpandedView: BubbleBarExpandedView
+    private lateinit var bubblePolicyHelper: BubblePolicyHelper
 
     private val uiEventLoggerFake = UiEventLoggerFake()
 
@@ -98,12 +106,14 @@ class BubbleBarExpandedViewTest {
 
         bubble = FakeBubbleFactory.createChatBubble(context)
         bubbleTaskView = bubbleTaskViewFactory.create()
+        bubblePolicyHelper = mock<BubblePolicyHelper>()
 
         bubbleExpandedView =
             LayoutInflater.from(context)
                 .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
                 as BubbleBarExpandedView
         bubbleExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        bubbleExpandedView.mBubblePolicyHelper = bubblePolicyHelper
         bubbleExpandedView.initialize(
             expandedViewManager,
             positioner,
@@ -318,6 +328,30 @@ class BubbleBarExpandedViewTest {
         val captionView = overflowExpandedView.findViewById<View>(R.id.bubble_bar_caption_view)
         assertThat(captionView.visibility).isEqualTo(View.GONE)
         assertThat(overflowExpandedView.handleView.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    fun onTaskInfoChanged_invalidTask_showsToastAndMovesOutOfBubble() {
+        val taskInfo = RunningTaskInfo()
+        taskInfo.supportsMultiWindow = false
+        bubblePolicyHelper.stub { on { isValidToBubble(taskInfo) } doReturn false }
+
+        bubbleExpandedView.onTaskInfoChanged(taskInfo)
+
+        verify(bubblePolicyHelper).showBubbleNotSupportedErrorToast(context)
+        verify(bubblePolicyHelper).moveExistingTaskOutOfBubble(bubble, taskInfo)
+    }
+
+    @Test
+    fun onTaskInfoChanged_validTask_doesNotShowToastOrMovesOutOfBubble() {
+        val taskInfo = RunningTaskInfo()
+        taskInfo.supportsMultiWindow = true
+        bubblePolicyHelper.stub { on { isValidToBubble(taskInfo) } doReturn true }
+
+        bubbleExpandedView.onTaskInfoChanged(taskInfo)
+
+        verify(bubblePolicyHelper, never()).showBubbleNotSupportedErrorToast(context)
+        verify(bubblePolicyHelper, never()).moveExistingTaskOutOfBubble(bubble, taskInfo)
     }
 
     private fun BubbleBarExpandedView.menuView(): BubbleBarMenuView {

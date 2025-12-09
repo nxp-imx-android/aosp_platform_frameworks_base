@@ -50,7 +50,6 @@ class BubblesUnfoldListenerTest {
 
     private var isStayAwakeOnFold = false
     private var barToFloatingTransitionStarted = false
-    private var barToFullscreenTransitionStarted = false
 
     @Before
     fun setUp() {
@@ -78,13 +77,8 @@ class BubblesUnfoldListenerTest {
             )
         foldLockSettingsObserver = BubblesFoldLockSettingsObserver { isStayAwakeOnFold }
         unfoldListener =
-            BubblesUnfoldListener(bubbleData, foldLockSettingsObserver) { bubble, moveToFullscreen
-                ->
-                if (moveToFullscreen) {
-                    barToFullscreenTransitionStarted = true
-                } else {
-                    barToFloatingTransitionStarted = true
-                }
+            BubblesUnfoldListener(bubbleData, foldLockSettingsObserver) { bubble ->
+                barToFloatingTransitionStarted = true
             }
     }
 
@@ -156,35 +150,5 @@ class BubblesUnfoldListenerTest {
 
         unfoldListener.onFoldStateChanged(isFolded = false)
         assertThat(barToFloatingTransitionStarted).isFalse()
-    }
-
-    @Test
-    fun fold_expandedTaskValidToBubble_staysAwakeOnFold_shouldStartFullscreenTransition() {
-        isStayAwakeOnFold = true
-        val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTaskValidToBubble(false)
-        bubbleData.notificationEntryUpdated(bubble, true, false)
-        assertThat(bubbleData.hasBubbles()).isTrue()
-        bubbleData.setSelectedBubbleAndExpandStack(bubble)
-        assertThat(bubbleData.isExpanded).isTrue()
-
-        unfoldListener.onFoldStateChanged(isFolded = true)
-        assertThat(barToFloatingTransitionStarted).isFalse()
-        assertThat(barToFullscreenTransitionStarted).isTrue()
-    }
-
-    @Test
-    fun fold_expandedTaskInValidToBubble_staysAwakeOnFold_shouldStartFloatingTransition() {
-        isStayAwakeOnFold = true
-        val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTaskValidToBubble(true)
-        bubbleData.notificationEntryUpdated(bubble, true, false)
-        assertThat(bubbleData.hasBubbles()).isTrue()
-        bubbleData.setSelectedBubbleAndExpandStack(bubble)
-        assertThat(bubbleData.isExpanded).isTrue()
-
-        unfoldListener.onFoldStateChanged(isFolded = true)
-        assertThat(barToFloatingTransitionStarted).isTrue()
-        assertThat(barToFullscreenTransitionStarted).isFalse()
     }
 }
