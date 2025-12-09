@@ -70,6 +70,7 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.SystemClock;
+import android.os.HandlerThread;
 
 import android.security.Flags;
 import android.security.advancedprotection.AdvancedProtectionManager;
@@ -78,6 +79,7 @@ import android.content.pm.PackageManager;
 
 import com.android.server.LocalServices;
 import java.lang.Runnable;
+import java.lang.Thread;
 import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 
@@ -132,6 +134,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final int DELAY_DISABLE_MILLIS_AUTO = 15000;
     private static final int DELAY_DISABLE_MILLIS_DEFAULT = 1000;
     private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS = 3;
+    private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS_FLAGGED = 30;
+    private static final int USB_DATA_CHANGE_RETRY_DELAY_MILLIS = 100;
     private static final long USB_PORT_POWER_BRICK_CONNECTION_CHECK_TIMEOUT_DEFAULT_MILLIS = 3000;
     private static final long USB_PD_COMPLIANCE_CHECK_TIMEOUT_DEFAULT_MILLIS = 1000;
 
@@ -172,6 +176,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     NOTIFICATION_DATA,
                     R.string.usb_apm_usb_plugged_in_when_locked_data_notification_text);
 
+    private final Object mLastUsbPortStatusLock = new Object();
     private final ReentrantLock mDisableLock = new ReentrantLock();
     private final Context mContext;
 
@@ -180,9 +185,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     // mode until the USB connection is removed.
     private AtomicBoolean mLastUsbKnownConnectionIncludesCarMode = new AtomicBoolean(false);
 
+    private HandlerThread mHandlerThread = new HandlerThread("UsbDataAdvancedProtectionHook");
     // We use handlers for tasks that may need to be updated by broadcasts events.
-    private Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
-    private Handler mDelayedNotificationHandler = new Handler(Looper.getMainLooper());
+    private Handler mDelayedDisableHandler;
+    private Handler mDelayedNotificationHandler;
 
     private UsbManager mUsbManager;
     private UserManager mUserManager;
@@ -192,7 +198,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private NotificationManager mNotificationManager;
     private NotificationChannel mNotificationChannel;
     private AdvancedProtectionService mAdvancedProtectionService;
-    private ExecutorService mUsbDataSignalUpdateExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService mKeyguardListenerExecutor = Executors.newSingleThreadExecutor();
     private KeyguardLockedStateListener mKeyguardLockedStateListener;
     private UsbPortStatus mLastUsbPortStatus;
     private UiModeManager mUiModeManager;
@@ -217,6 +223,14 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 && !mContext.getPackageManager()
                         .hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY)) {
             return;
+        }
+        mHandlerThread.start();
+        if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+            mDelayedDisableHandler = new Handler(mHandlerThread.getLooper());
+            mDelayedNotificationHandler = new Handler(mHandlerThread.getLooper());
+        } else {
+            mDelayedDisableHandler = new Handler(Looper.getMainLooper());
+            mDelayedNotificationHandler = new Handler(Looper.getMainLooper());
         }
         mUsbManager = Objects.requireNonNull(mContext.getSystemService(UsbManager.class));
         mNotificationManager =
@@ -245,6 +259,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             Handler delayDisableHandler,
             Handler delayedNotificationHandler,
             AtomicBoolean apmRequestedUsbDataStatus,
+            UiModeManager uiModeManager,
             boolean canSetUsbDataSignal,
             boolean afterFirstUnlock) {
         super(context, false);
@@ -256,6 +271,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mNotificationManager = notificationManager;
         mDelayedNotificationHandler = delayedNotificationHandler;
         mDelayedDisableHandler = delayDisableHandler;
+        mUiModeManager = uiModeManager;
         mCanSetUsbDataSignal = canSetUsbDataSignal;
         mIsAfterFirstUnlock = afterFirstUnlock;
         mUserManager = userManager;
@@ -290,6 +306,16 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             return;
         }
         Slog.i(TAG, "onAdvancedProtectionChanged: " + enabled);
+        if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+            mDelayedDisableHandler.post(() -> {
+                handleAdvancedProtectionChanged(enabled);
+            });
+        } else {
+            handleAdvancedProtectionChanged(enabled);
+        }
+    }
+
+    private void handleAdvancedProtectionChanged(boolean enabled) {
         if (enabled) {
             if (mUsbProtectionBroadcastReceiver == null) {
                 initialize();
@@ -310,6 +336,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             }
             setUsbDataSignalIfPossible(true);
         }
+        Slog.i(TAG, "handleAdvancedProtectionChanged: " + enabled + " handling done");
     }
 
     private void initialize() {
@@ -347,7 +374,14 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                                     + " retrieve port status");
                                     return;
                                 }
-                                mLastUsbPortStatus = portStatus;
+                                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                                    synchronized (mLastUsbPortStatusLock) {
+                                        mLastUsbPortStatus = portStatus;
+                                    }
+                                } else {
+                                    mLastUsbPortStatus = portStatus;
+                                }
+
 
                                 if (Build.IS_DEBUGGABLE) {
                                     dumpUsbDevices();
@@ -401,7 +435,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             // having
                             // request dropped due to USB stack not being ready.
                             else if (ACTION_LOCKED_BOOT_COMPLETED.equals(intent.getAction())) {
-                                setUsbDataSignalIfPossible(false);
+                                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                                    mDelayedDisableHandler.post(() -> {
+                                        setUsbDataSignalIfPossible(false);
+                                    });
+                                } else {
+                                    setUsbDataSignalIfPossible(false);
+                                }
                             } else if (Set.of(
                                             ACTION_USB_ACCESSORY_ATTACHED,
                                             ACTION_USB_DEVICE_ATTACHED,
@@ -457,8 +497,15 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             boolean taskPosted =
                                     mDelayedNotificationHandler.postDelayed(
                                             () -> {
-                                                determineUsbChargeStateAndSendNotification(
-                                                        mLastUsbPortStatus);
+                                                if(Flags.aapmFeatureUsbDataProtectionDelayDisableAutoOnly()) {
+                                                    synchronized (mLastUsbPortStatusLock) {
+                                                        determineUsbChargeStateAndSendNotification(
+                                                                mLastUsbPortStatus);
+                                                    }
+                                                } else {
+                                                    determineUsbChargeStateAndSendNotification(
+                                                            mLastUsbPortStatus);
+                                                }
                                             },
                                             delayTimeMillis);
                             if (!taskPosted) {
@@ -723,7 +770,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             }
 
             int usbChangeStateReattempts = 0;
-            while (usbChangeStateReattempts < USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS) {
+            int maxRetryAttempts = USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS;
+            if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                maxRetryAttempts = USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS_FLAGGED;
+            }
+            while (usbChangeStateReattempts < maxRetryAttempts) {
                 try {
                     Slog.d(TAG, "Setting USB data: " + status);
                     if (mUsbManagerInternal.enableUsbDataSignal(status, USB_DISABLE_REASON_APM)) {
@@ -743,10 +794,32 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     Slog.e(TAG, "RemoteException thrown when calling enableUsbDataSignal", e);
                 }
                 usbChangeStateReattempts += 1;
+                // We wait for a short period of time to allow the USB HAL to process the request
+                // before we retry. This is to avoid overwhelming the USB HAL with retry requests as
+                // sometimes the UDC is not in a ready state and rapid retry could only slow things
+                // down.
+
+                // We are moving towards a delay because relying on a scheduler adds
+                // additional risks, where scheduler ordering or reliability is not guaranteed and
+                // may lead inconsistent states and a deadlock.
+                // Given this is a security focused feature where functionality is critical over
+                // slight additional resource costs, we opted to move towards a delay that
+                // is more deterministic.
+                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                    try {
+                        Thread.sleep(USB_DATA_CHANGE_RETRY_DELAY_MILLIS);
+                    } catch (InterruptedException e) {
+                        Slog.e(TAG,
+                                "InterruptedException thrown when waiting for USB change state", e);
+                    }
+                }
             }
 
-            // Log the error if the USB change state failed at least once.
-            if (usbChangeStateReattempts > 0) {
+            // Log the error if the USB change state failed at least once, we do not want to mix
+            // post-boot change state errors with boot state errors (since we do expect there is a
+            // chance of change state errors on boot as USB stack my not be ready.)
+            // TODO: georgechan - Amend metrics to include boot state
+            if (SystemProperties.getBoolean("sys.boot_completed", false)) {
                 FrameworkStatsLog.write(
                         FrameworkStatsLog.ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
                         /* desired_signal_state */ status,
@@ -825,7 +898,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     }
                 };
         mKeyguardManager.addKeyguardLockedStateListener(
-                mUsbDataSignalUpdateExecutor, keyguardListener);
+                mKeyguardListenerExecutor, keyguardListener);
     }
 
     // TODO:(b/449783386) If finalized and planned for launch, add supporting tests.
@@ -855,12 +928,12 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     }
                 };
         mUiModeManager.addOnProjectionStateChangedListener(
-                // We don't track PROJECTION_TYPE_NONE because if the current USB connection is Auto
-                // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
-                // anytime. We reset value upon USB disconnect instead
-                UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
-                mContext.getMainExecutor(),
-                projectionModeListener);
+            // We don't track PROJECTION_TYPE_NONE because if the current USB connection is Auto
+            // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
+            // anytime. We reset value upon USB disconnect instead
+            UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
+            mContext.getMainExecutor(),
+            projectionModeListener);
         Slog.d(TAG, "Registered projection mode listener");
     }
 
