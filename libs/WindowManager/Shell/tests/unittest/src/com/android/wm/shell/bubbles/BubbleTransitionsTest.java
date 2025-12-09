@@ -1146,9 +1146,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(
-                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transition, transitionHandler -> {});
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mStackView,
+                                mLayerView, mIconFactory, false /* inflateSync */, transition,
+                                transitionHandler -> {});
 
         verify(mBubble).setCurrentTransition(bt);
 
@@ -1238,9 +1238,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
                 (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
                         .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         verify(mBubble).setCurrentTransition(bt);
         verify(closingBubble).setCurrentTransition(bt);
@@ -1322,9 +1322,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
                 (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
                         .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         bt.onInflated(mBubble);
         bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
@@ -1365,9 +1365,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(
-                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transition, transitionHandler -> {});
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mStackView,
+                                mLayerView, mIconFactory, false /* inflateSync */, transition,
+                                transitionHandler -> {});
 
         verify(mBubble).setCurrentTransition(bt);
 
@@ -1448,9 +1448,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(mBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         verify(mBubble).setCurrentTransition(bt);
 
