@@ -398,7 +398,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     /**
      * The MemoryLimiter associated with this process.  The limiter may be null.
      */
-    private final MemoryLimiter.Limiter mMemoryLimiter;
+    private final MemoryLimiter mMemoryLimiter;
 
     /**
      * The preceding instance of the process, which would exist when the previous process is killed
@@ -624,7 +624,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mMemoryLimiter = mService.newMemoryLimiter();
+        mMemoryLimiter = new MemoryLimiter();
 
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
