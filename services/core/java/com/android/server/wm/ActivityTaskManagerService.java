@@ -7245,7 +7245,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mWindowManager.mSnapshotController.mTaskSnapshotController.prepareShutdown();
             synchronized (mGlobalLock) {
                 updateEventDispatchingLocked(booted);
-                notifyTaskPersisterLocked(null, true);
                 return mTaskSupervisor.shutdownLocked(timeout);
             }
         }

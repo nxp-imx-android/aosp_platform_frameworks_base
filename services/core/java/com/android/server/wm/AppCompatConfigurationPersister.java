@@ -22,7 +22,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.content.Context;
 import android.os.Environment;
 import android.util.AtomicFile;
 import android.util.Slog;
@@ -130,9 +129,6 @@ class AppCompatConfigurationPersister {
         mPersisterQueue.startPersisting();
     }
 
-    void onSystemReady(Context context) {
-        mPersisterQueue.onSystemReady(context);
-    }
 
     /*
      * Gets the horizontal position of the letterboxed app window when horizontal reachability is
