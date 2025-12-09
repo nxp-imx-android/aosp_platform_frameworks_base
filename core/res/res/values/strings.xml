@@ -1893,7 +1893,7 @@
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
     <string name="permlab_force_use_loopback_interface">force use loopback interface</string>
-    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=175]-->
     <string name="permdesc_force_use_loopback_interface">Allows the app to interact with other apps over loopback interface without requiring the other app to hold loopback permissions</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
