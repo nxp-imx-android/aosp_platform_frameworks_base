@@ -47,6 +47,8 @@
 
   <!-- String defining the settings name -->
   <string name="accessibility_menu_settings_name">Accessibility Menu Settings</string>
+  <!-- String describing the general purpose of the top level settings screen. This string is read by AI only, not visible to human. It doesn't need to be translated, or grammatically correct. -->
+  <string name="accessibility_menu_top_level_settings_purpose" translatable="false">Configures the settings of the Accessibility Menu</string>
 
   <!-- String defining the title of Large button setting -->
   <string name="accessibility_menu_large_buttons_title">Large buttons</string>

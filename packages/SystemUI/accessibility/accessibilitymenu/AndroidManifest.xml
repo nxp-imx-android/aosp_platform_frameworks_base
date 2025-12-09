@@ -21,8 +21,10 @@
     <uses-permission android:name="android.permission.MANAGE_USERS"/>
 
     <application
+        android:name=".A11yMenuApplication"
         android:supportsRtl="true"
         android:allowBackup="true"
+        android:label="@string/accessibility_menu_service_name"
         android:restoreAnyVersion="true">
         <service
             android:name="com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuService"
