@@ -72,14 +72,36 @@ public final class DataStoreUtils {
      */
     @NonNull
     public static AtomicFile createStorageFileForUser(@UserIdInt int userId, String fileName) {
-        return new AtomicFile(getBaseStorageFileForUser(userId, fileName));
+        return createStorageFileForUser(userId, fileName, false);
+    }
+
+    /**
+     * Creates {@link AtomicFile} object that represents the back-up for the given user. If user is
+     * {@link UserHandle#USER_ALL}, then the system-wide storage file is returned.
+     *
+     * IMPORTANT: the method will ALWAYS return the same {@link AtomicFile} object, which makes it
+     * possible to synchronize reads and writes to the file using the returned object.
+     *
+     * @param userId the userId to retrieve the storage file
+     * @param fileName the storage file name
+     * @param legacy uses device-encrypted system directory if true. Uses credentials-based system
+     *               directory otherwise.
+     * @return an AtomicFile for the user
+     */
+    @NonNull
+    public static AtomicFile createStorageFileForUser(@UserIdInt int userId, String fileName,
+            boolean legacy) {
+        return new AtomicFile(getBaseStorageFileForUser(userId, fileName, legacy));
     }
 
     @NonNull
-    private static File getBaseStorageFileForUser(@UserIdInt int userId, String fileName) {
+    private static File getBaseStorageFileForUser(@UserIdInt int userId, String fileName,
+            boolean legacy) {
         File dataSystemDirectory = userId == UserHandle.USER_ALL
                 ? Environment.getDataSystemDirectory()
-                : Environment.getDataSystemDeDirectory(userId);
+                : legacy
+                        ? Environment.getDataSystemDeDirectory(userId)
+                        : Environment.getDataSystemCeDirectory(userId);
         return new File(dataSystemDirectory, fileName);
     }
 

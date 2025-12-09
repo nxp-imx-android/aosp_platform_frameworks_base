@@ -32,6 +32,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,7 +46,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * This store manages the cache and disk data for data sync.
@@ -194,6 +195,6 @@ public class LocalMetadataStore {
     @NonNull
     private AtomicFile getStorageFileForUser(@UserIdInt int userId) {
         return mUserIdToStorageFile.computeIfAbsent(userId,
-                u -> createStorageFileForUser(userId, FILE_NAME));
+                u -> createStorageFileForUser(userId, FILE_NAME, true));
     }
 }

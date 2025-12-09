@@ -270,7 +270,7 @@ public class ObservableUuidStore {
     @NonNull
     private AtomicFile getStorageFileForUser(@UserIdInt int userId) {
         return mUserIdToStorageFile.computeIfAbsent(userId,
-                u -> createStorageFileForUser(userId, FILE_NAME));
+                u -> createStorageFileForUser(userId, FILE_NAME, true));
     }
 
     /**
