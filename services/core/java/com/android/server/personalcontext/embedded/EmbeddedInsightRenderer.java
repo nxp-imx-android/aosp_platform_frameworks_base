@@ -30,6 +30,7 @@ import com.android.server.personalcontext.component.Renderer;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /** @hide */
 public class EmbeddedInsightRenderer implements Renderer {
@@ -76,6 +77,11 @@ public class EmbeddedInsightRenderer implements Renderer {
     public void unregisterInsightSurfaceClient(UUID id) {
         logDebug("unregistering insight surface client, id=" + id);
         mClientRegistry.removeClient(id);
+    }
+
+    /** Perform the given action on all clients. */
+    public void performActionOnClients(Consumer<InsightSurfaceClientInfo> action) {
+        mClientRegistry.getClients().forEach(action);
     }
 
     /** Gets the {@link RenderToken} for the given {@link InsightSurfaceClientInfo}. */
