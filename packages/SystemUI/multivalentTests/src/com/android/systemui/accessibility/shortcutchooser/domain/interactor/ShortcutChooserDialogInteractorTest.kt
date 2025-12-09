@@ -313,6 +313,6 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
             icon = ColorDrawable(Color.RED),
             isAssigned = isAssigned,
             isToggleable = true,
-            isToggleOn = false,
+            isStateOn = false,
         )
 }

@@ -148,6 +148,9 @@ constructor(
                                         shortcutType,
                                         it.targetName,
                                     )
+                                    if (!it.isToggleable) {
+                                        viewModel.dismissDialog()
+                                    }
                                 },
                                 targets = allTargets,
                             )

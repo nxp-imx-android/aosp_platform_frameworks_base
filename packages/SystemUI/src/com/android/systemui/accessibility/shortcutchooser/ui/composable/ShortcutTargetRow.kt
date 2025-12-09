@@ -140,7 +140,7 @@ private fun ShortcutTargetRow(
         )
 
         if (rowType == RowType.TOGGLE && target.isToggleable) {
-            PickerSwitch(checked = target.isToggleOn)
+            PickerSwitch(checked = target.isStateOn)
         }
     }
 }
@@ -166,7 +166,7 @@ private fun Modifier.interactable(
         RowType.TOGGLE ->
             if (target.isToggleable) {
                 toggleable(
-                    value = target.isToggleOn,
+                    value = target.isStateOn,
                     role = Role.Switch,
                     onValueChange = { onClick() },
                 )
