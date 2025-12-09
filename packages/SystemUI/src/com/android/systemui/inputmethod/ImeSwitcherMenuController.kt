@@ -20,14 +20,10 @@ import android.annotation.BinderThread
 import android.annotation.IntRange
 import android.annotation.RequiresPermission
 import android.annotation.UserIdInt
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.display.DisplayManager
-import android.os.Handler
 import android.os.RemoteException
-import android.os.UserHandle
 import android.util.Log
 import android.util.Slog
 import android.view.ContextThemeWrapper
@@ -40,6 +36,8 @@ import com.android.internal.inputmethod.IImeSwitcherMenuListener
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.inputmethod.ImeSwitcherMenuController.Companion.NOT_A_SUBTYPE_INDEX
+import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -52,19 +50,13 @@ constructor(
     private val context: Context,
     private val displayManager: DisplayManager,
     private val inputMethodManager: InputMethodManager,
+    private val sysuiDialogFactory: SystemUIDialogFactory,
     @param:Main private val mainExecutor: Executor,
-    @param:Main private val mMainHandler: Handler,
 ) : CoreStartable {
 
     private val impl = IImeSwitcherMenuImpl()
 
     private val mDialogListener = DialogListener()
-
-    /**
-     * Broadcast receiver for the [Intent.ACTION_CLOSE_SYSTEM_DIALOGS] intent, used to hide the IME
-     * Switcher Menu.
-     */
-    private val broadcastReceiver = CloseSystemDialogsBroadcastReceiver()
 
     /** The interface to receive callbacks from this controller. */
     private var listener: IImeSwitcherMenuListener? = null
@@ -79,7 +71,7 @@ constructor(
      * Mapping between user IDs and the currently showing IME Switcher Menu dialog for that user. If
      * no menu is showing, the user ID has no entry in the mapping.
      */
-    private var dialogs: MutableMap<Int, ImeSwitcherMenuDialog> = mutableMapOf()
+    private var dialogs: MutableMap<Int, ImeSwitcherMenuDialogDelegate> = mutableMapOf()
 
     @RequiresPermission(
         allOf =
@@ -94,13 +86,6 @@ constructor(
             return
         }
         inputMethodManager.registerImeSwitcherMenu(impl)
-        context.registerReceiverForAllUsers(
-            broadcastReceiver,
-            IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS),
-            null /* broadcastPermission */,
-            mMainHandler,
-            Context.RECEIVER_EXPORTED,
-        )
     }
 
     /**
@@ -131,9 +116,15 @@ constructor(
             return
         }
         val dialog =
-            ImeSwitcherMenuDialog(getContext(displayId), displayId, userId, mDialogListener)
+            ImeSwitcherMenuDialogDelegate(
+                getContext(displayId),
+                sysuiDialogFactory,
+                displayId,
+                userId,
+                mDialogListener,
+            )
         val oldDialog = dialogs.put(userId, dialog)
-        oldDialog?.hide()
+        oldDialog?.dismiss()
         dialog.show(
             items,
             selectedImeId,
@@ -154,7 +145,7 @@ constructor(
         }
         if (DEBUG) Slog.v(TAG, "Hide IME switcher menu.")
 
-        dialogs.remove(userId)?.hide()
+        dialogs.remove(userId)?.dismiss()
     }
 
     /**
@@ -205,7 +196,8 @@ constructor(
         return newContext
     }
 
-    private inner class DialogListener : ImeSwitcherMenuDialog.ImeSwitcherMenuDialogListener {
+    private inner class DialogListener :
+        ImeSwitcherMenuDialogDelegate.ImeSwitcherMenuDialogListener {
 
         override fun onVisibilityChanged(visible: Boolean, displayId: Int, @UserIdInt userId: Int) {
             try {
@@ -234,28 +226,6 @@ constructor(
                         " index: $subtypeIndex for user: $userId",
                     e,
                 )
-            }
-        }
-    }
-
-    private inner class CloseSystemDialogsBroadcastReceiver : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            val userId = sendingUserId
-            if (userId == UserHandle.USER_ALL) {
-                dialogs.values.forEach { it.hide() }
-                dialogs.clear()
-            } else {
-                val dialog = dialogs.remove(userId)
-                if (dialog != null) {
-                    dialog.hide()
-                } else {
-                    Log.e(
-                        TAG,
-                        "Failed to hide IME Switcher Menu from ACTION_CLOSE_SYSTEM_DIALOGS" +
-                            " for user:$userId, no dialog found.",
-                    )
-                }
             }
         }
     }

@@ -17,7 +17,6 @@ package com.android.systemui.inputmethod
 
 import android.annotation.IntRange
 import android.annotation.UserIdInt
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.UserHandle
@@ -28,28 +27,36 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.internal.widget.RecyclerView
+import com.android.systemui.inputmethod.ImeSwitcherMenuDialogDelegate.Companion.NOT_A_SUBTYPE_INDEX
+import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialogFactory
+import com.android.systemui.util.Assert
 import java.io.PrintWriter
 
-internal class ImeSwitcherMenuDialog(
+internal class ImeSwitcherMenuDialogDelegate(
     private val context: Context,
+    private val sysuiDialogFactory: SystemUIDialogFactory,
     /** The ID of the display where the menu was requested. */
     private val displayId: Int,
     /** The ID of the user that requested the menu. */
     @param:UserIdInt private val userId: Int,
     /** The interface to callback into on specific events. */
     private val listener: ImeSwitcherMenuDialogListener,
-) {
+) : SystemUIDialog.Delegate {
 
     /** The currently showing IME Switcher Menu dialog, or `null` if no menu is showing. */
-    private var dialog: AlertDialog? = null
+    private var currentDialog: SystemUIDialog? = null
 
     private var menuItems: List<MenuItem>? = null
 
@@ -85,6 +92,73 @@ internal class ImeSwitcherMenuDialog(
         )
     }
 
+    override fun createDialog(): SystemUIDialog {
+        Assert.isMainThread()
+        currentDialog?.let {
+            Slog.w(TAG, "Dialog is already open, dismissing it and creating a new one")
+            it.dismiss()
+        }
+        val dialog =
+            sysuiDialogFactory.create(
+                context,
+                R.style.Theme_DeviceDefault_InputMethodSwitcherDialog,
+                true,
+                this,
+            )
+
+        dialog.create()
+
+        val context = dialog.context
+        LayoutInflater.from(context).inflate(R.layout.input_method_switch_dialog, null).apply {
+            accessibilityPaneTitle = context.getText(R.string.select_input_method)
+            dialog.setContentView(this)
+        }
+
+        dialog.setOnShowListener { listener.onVisibilityChanged(true, displayId, userId) }
+        dialog.setOnDismissListener { listener.onVisibilityChanged(false, displayId, userId) }
+        dialog.setCanceledOnTouchOutside(true)
+        dialog.window?.let {
+            it.attributes.apply {
+                // Use an alternate token for the dialog for that window manager can group the
+                // token
+                // with other IME windows based on type vs. grouping based on whichever token
+                // happens to get selected by the system later on.
+                token = context.windowContextToken
+                gravity =
+                    Gravity.getAbsoluteGravity(
+                        Gravity.BOTTOM or Gravity.END,
+                        context.resources.configuration.layoutDirection,
+                    )
+                x = HORIZONTAL_OFFSET
+                privateFlags =
+                    privateFlags or WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
+                type = WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG
+                // Used for debugging only, not user visible.
+                title = WINDOW_TITLE
+                fitInsetsTypes =
+                    fitInsetsTypes or
+                        WindowInsets.Type.statusBars() or
+                        WindowInsets.Type.navigationBars() or
+                        WindowInsets.Type.displayCutout()
+            }
+            it.setHideOverlayWindows(true)
+        }
+        dialog.lifecycle.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onStop(owner: LifecycleOwner) {
+                    Assert.isMainThread()
+                    currentDialog = null
+                    menuItems = null
+                }
+            }
+        )
+
+        currentDialog = dialog
+        return dialog
+    }
+
+    override fun getWidth(dialog: SystemUIDialog): Int = WindowManager.LayoutParams.WRAP_CONTENT
+
     /**
      * Shows the Input Method Switcher Menu, with a list of IMEs and their subtypes.
      *
@@ -103,10 +177,10 @@ internal class ImeSwitcherMenuDialog(
         selectedImeSettingsIntent: Intent?,
         isScreenLocked: Boolean,
     ) {
-        // Hide the menu in case it was already showing.
-        hide()
+        val dialog = createDialog()
 
         val menuItems = getMenuItems(items)
+        this.menuItems = menuItems
         val selectedIndex = getSelectedIndex(menuItems, selectedImeId, selectedSubtypeIndex)
         if (selectedIndex == -1) {
             Slog.w(
@@ -116,80 +190,35 @@ internal class ImeSwitcherMenuDialog(
             )
         }
 
-        val builder =
-            AlertDialog.Builder(context, R.style.Theme_DeviceDefault_InputMethodSwitcherDialog)
-        val inflater = LayoutInflater.from(builder.context)
-
-        // Create the content view.
-        val contentView = inflater.inflate(R.layout.input_method_switch_dialog, null)
-        contentView.accessibilityPaneTitle = context.getText(R.string.select_input_method)
-        builder.setView(contentView)
+        val inflater = LayoutInflater.from(dialog.context)
 
         val onItemClick = { item: SubtypeItem, isSelected: Boolean ->
             if (!isSelected) {
                 listener.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex, userId)
             }
-            hide()
+            dialog.dismiss()
         }
 
         // Create the current IME subtypes list.
-        val recyclerView: RecyclerView = contentView.requireViewById(R.id.list)
+        val recyclerView: RecyclerView = dialog.requireViewById(R.id.list)
         recyclerView.setAdapter(Adapter(menuItems, selectedIndex, inflater, onItemClick))
         // Scroll to the currently selected IME. This must run after the recycler view is laid out.
         recyclerView.post { recyclerView.scrollToPosition(selectedIndex) }
         // Request focus to enable rotary scrolling on watches.
         recyclerView.requestFocus()
 
-        updateLanguageSettingsButton(selectedImeSettingsIntent, contentView, isScreenLocked)
+        updateLanguageSettingsButton(selectedImeSettingsIntent, dialog, isScreenLocked)
 
-        builder.setOnCancelListener { hide() }
-        this.menuItems = menuItems
-        dialog =
-            builder.create().apply {
-                setCanceledOnTouchOutside(true)
-                window?.let {
-                    it.setHideOverlayWindows(true)
-                    it.attributes =
-                        it.attributes.apply {
-                            // Use an alternate token for the dialog for that window manager can
-                            // group the
-                            // token  with other IME windows based on type vs. grouping based on
-                            // whichever
-                            // token happens  to get selected by the system later on.
-                            token = context.windowContextToken
-                            gravity =
-                                Gravity.getAbsoluteGravity(
-                                    Gravity.BOTTOM or Gravity.END,
-                                    context.resources.configuration.layoutDirection,
-                                )
-                            x = HORIZONTAL_OFFSET
-                            privateFlags =
-                                privateFlags or
-                                    WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
-                            type = WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG
-                            // Used for debugging only, not user visible.
-                            title = WINDOW_TITLE
-                        }
-                }
-                show()
-            }
-        listener.onVisibilityChanged(true /* visible */, displayId, userId)
+        dialog.show()
     }
 
-    /** Hides the Input Method Switcher Menu. */
-    fun hide() {
-        menuItems = null
-        // Cannot use dialog.isShowing() here, as the cancel listener flow already resets mShowing.
-        dialog?.let {
-            it.dismiss()
-            dialog = null
-            listener.onVisibilityChanged(false /* visible */, displayId, userId)
-        }
+    fun dismiss() {
+        currentDialog?.dismiss()
     }
 
     /** Whether the Input Method Switcher Menu is showing. */
     val isShowing: Boolean
-        get() = dialog?.isShowing ?: false
+        get() = currentDialog?.isShowing == true
 
     fun dump(pw: PrintWriter, prefix: String) {
         pw.println("${prefix}$TAG$ u$userId")
@@ -209,30 +238,30 @@ internal class ImeSwitcherMenuDialog(
      *
      * @param settingsIntent the intent for the settings activity of the selected IME, or `null` if
      *   no IME is selected, or the selected IME does not have a settings activity.
-     * @param view the menu dialog view.
+     * @param dialog the dialog.
      * @param isScreenLocked whether the screen is currently locked.
      */
     private fun updateLanguageSettingsButton(
         settingsIntent: Intent?,
-        view: View,
+        dialog: SystemUIDialog,
         isScreenLocked: Boolean,
     ) {
         val isDeviceProvisioned =
             Settings.Global.getInt(
-                view.context.contentResolver,
+                dialog.context.contentResolver,
                 Settings.Global.DEVICE_PROVISIONED,
                 0,
             ) != 0
         val hasButton = settingsIntent != null && !isScreenLocked && isDeviceProvisioned
-        val buttonBar: View = view.requireViewById(R.id.button_bar)
-        val button: Button = view.requireViewById(R.id.button1)
-        val recyclerView: RecyclerView = view.requireViewById(R.id.list)
+        val buttonBar: View = dialog.requireViewById(R.id.button_bar)
+        val button: Button = dialog.requireViewById(R.id.button1)
+        val recyclerView: RecyclerView = dialog.requireViewById(R.id.list)
         if (hasButton) {
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             buttonBar.visibility = View.VISIBLE
             button.setOnClickListener {
-                it.context.startActivityAsUser(settingsIntent, UserHandle.of(userId))
-                hide()
+                dialog.context.startActivityAsUser(settingsIntent, UserHandle.of(userId))
+                dialog.dismiss()
             }
             // Indicate that the list can be scrolled.
             recyclerView.scrollIndicators = View.SCROLL_INDICATOR_BOTTOM
