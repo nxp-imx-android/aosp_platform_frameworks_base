@@ -743,8 +743,6 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public final IntentFirewall mIntentFirewall;
 
-    private final MemoryLimiter mMemoryLimiter = new MemoryLimiter();
-
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
      */
@@ -2496,6 +2494,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
+        MemoryLimiter.init();
 
         mIntentFirewall = injector.getIntentFirewall();
         mProcessStats = new ProcessStatsService(this, mContext.getCacheDir());
@@ -2574,6 +2573,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .setProcessLruUpdater(mProcessList)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
+        MemoryLimiter.init();
 
         mBroadcastQueue = mInjector.getBroadcastQueue(this);
         mBroadcastController = new BroadcastController(mContext, this, mBroadcastQueue);
@@ -2675,10 +2675,6 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public void setInstaller(Installer installer) {
         mInstaller = installer;
-    }
-
-    MemoryLimiter.Limiter newMemoryLimiter() {
-        return mMemoryLimiter.newLimiter();
     }
 
     private void start() {
