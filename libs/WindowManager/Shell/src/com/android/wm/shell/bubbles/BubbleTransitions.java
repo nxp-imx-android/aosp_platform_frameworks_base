@@ -2193,12 +2193,10 @@ public class BubbleTransitions {
             }
             BubbleLog.d("FloatingToBarConversion.startAnimation()");
 
-            // startTransaction must be applied by the handler.
-            startTransaction.apply();
-
             final TaskViewTaskController taskViewTaskController =
                     mBubble.getTaskView().getController();
             if (taskViewTaskController == null) {
+                startTransaction.apply();
                 cleanup();
                 finishCallback.onTransitionFinished(null);
                 return true;
@@ -2206,6 +2204,7 @@ public class BubbleTransitions {
 
             TransitionInfo.Change change = findTransitionChange(info);
             if (change == null) {
+                startTransaction.apply();
                 Slog.w(TAG, "Expected a TaskView transition to front but didn't find "
                         + "one, cleaning up the task view");
                 taskViewTaskController.setTaskNotFound();
@@ -2215,6 +2214,8 @@ public class BubbleTransitions {
             }
 
             mTaskLeash = change.getLeash();
+            startTransaction.setAlpha(mTaskLeash, 0);
+            startTransaction.apply();
             mFinishTransaction = finishTransaction;
             updateBubbleTask();
             cleanup();
@@ -2313,6 +2314,7 @@ public class BubbleTransitions {
             startT.setCornerRadius(mTaskLeash,
                     mBubble.getBubbleBarExpandedView().getRestingCornerRadius());
             startT.setWindowCrop(mTaskLeash, mBounds.width(), mBounds.height());
+            startT.setAlpha(mTaskLeash, 1);
             startT.apply();
             mFinishTransaction.reparent(mTaskLeash, taskViewSurface);
             mFinishTransaction.setPosition(mTaskLeash, 0, 0);

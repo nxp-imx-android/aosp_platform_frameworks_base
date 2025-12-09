@@ -2524,7 +2524,8 @@ public class BubbleController implements ConfigurationChangeListener,
             @NonNull TransitionInfo.Change change,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
-        if (!mBubbleTransitions.mTaskViewTransitions.isTaskViewTask(taskInfo)) {
+        if (!mBubbleTransitions.mTaskViewTransitions.isTaskViewTask(taskInfo)
+                && !mBubbleHelper.isAppBubbleRootTask(taskInfo)) {
             // if this task isn't managed by bubble transitions just bail.
             return false;
         }
