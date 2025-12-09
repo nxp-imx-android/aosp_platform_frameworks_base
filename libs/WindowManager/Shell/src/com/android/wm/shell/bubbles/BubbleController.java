@@ -1484,6 +1484,18 @@ public class BubbleController implements ConfigurationChangeListener,
         return bubble != null && bubble.getCurrentTransition() == null;
     }
 
+    /**
+     * Returns the current corner radius of a bubbled task, or -1 if the task is not bubbled
+     * or the view is not inflated.
+     */
+    public float getBubbleCornerRadius(int taskId) {
+        final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
+        if (bubble != null) {
+            return mBubblePositioner.getCornerRadius();
+        }
+        return -1;
+    }
+
     /** @deprecated User {@link BubbleHelper#isAppBubbleTask} instead. */
     @Deprecated
     public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {

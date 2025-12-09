@@ -524,7 +524,8 @@ public abstract class WMShellBaseModule {
             Optional<ShellBackAnimationRegistry> shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @ShellMainThread Handler handler
+            @ShellMainThread Handler handler,
+            Optional<BubbleController> bubbleController
     ) {
             return shellBackAnimationRegistry.map(
                     (animations) ->
@@ -537,7 +538,8 @@ public abstract class WMShellBaseModule {
                                     animations,
                                     shellCommandHandler,
                                     transitions,
-                                    handler));
+                                    handler,
+                                    bubbleController));
     }
 
     @BindsOptionalOf

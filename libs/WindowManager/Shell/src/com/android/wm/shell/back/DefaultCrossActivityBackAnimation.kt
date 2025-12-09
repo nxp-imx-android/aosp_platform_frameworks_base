@@ -19,12 +19,14 @@ import android.content.Context
 import android.os.Handler
 import android.view.SurfaceControl
 import android.window.BackEvent
+import com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import javax.inject.Inject
 import kotlin.math.max
+import kotlin.math.min
 
 /** Class that defines cross-activity animation. */
 class DefaultCrossActivityBackAnimation
@@ -65,6 +67,12 @@ constructor(
     override fun preparePreCommitEnteringRectMovement() {
         // the entering target starts 96dp to the left of the screen edge...
         startEnteringRect.set(startClosingRect)
+        if (fixCrossActivityBackAnimationInBubbles()) {
+            val nonRoundedHeight = startClosingRect.height() - 2 * cornerRadius
+            val startScale =
+                min(INITIAL_ENTERING_SCALE, nonRoundedHeight / startEnteringRect.height())
+            startEnteringRect.scaleCentered(startScale)
+        }
         startEnteringRect.offset(-enteringStartOffset, 0f)
         // ...and gets scaled in sync with the closing target
         targetEnteringRect.set(startEnteringRect)

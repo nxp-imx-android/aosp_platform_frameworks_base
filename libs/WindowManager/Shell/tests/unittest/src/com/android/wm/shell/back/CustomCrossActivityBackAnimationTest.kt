@@ -200,7 +200,8 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
                 .build()
         customCrossActivityBackAnimation.prepareNextAnimation(
             backNavigationInfo.customAnimationInfo,
-            0
+            0,
+            -1f
         )
         val finishCalled = CountDownLatch(1)
         val finishCallback = Runnable { finishCalled.countDown() }
