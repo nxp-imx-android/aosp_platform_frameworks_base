@@ -56,6 +56,8 @@ import android.app.KeyguardManager.KeyguardLockedStateListener;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.UiModeManager;
+import android.app.UiModeManager.OnProjectionStateChangedListener;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -101,6 +103,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import java.lang.Thread;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 
@@ -131,6 +135,7 @@ public class UsbDataAdvancedProtectionHookTest {
                     .mockStatic(SystemProperties.class)
                     .mockStatic(Settings.Secure.class)
                     .mockStatic(FrameworkStatsLog.class)
+                    .mockStatic(Thread.class)
                     .mockStatic(Intent.class)
                     .build();
 
@@ -147,6 +152,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Mock private Handler mDelayedNotificationHandler;
     @Mock private UsbManager mUsbManager;
     @Mock private UserManager mUserManager;
+    @Mock private UiModeManager mUiModeManager;
 
     @Captor private ArgumentCaptor<BroadcastReceiver> mBroadcastReceiverCaptor;
     @Captor private ArgumentCaptor<Runnable> mRunnableCaptor;
@@ -180,6 +186,7 @@ public class UsbDataAdvancedProtectionHookTest {
                         mDelayDisableHandler,
                         mDelayedNotificationHandler,
                         mApmRequestedUsbDataStatusBoolean,
+                        mUiModeManager,
                         true, // canSetUsbDataSignal
                         afterFirstUnlock); // afterFirstUnlock
         when(mUsbManager.getUsbHalVersion()).thenReturn(UsbManager.USB_HAL_V2_0);
@@ -321,6 +328,48 @@ public class UsbDataAdvancedProtectionHookTest {
         verify(mUsbManagerInternal, never()).enableUsbDataSignal(anyBoolean(), anyInt());
     }
 
+    // For bootup of Advanced Protection mode and enablement of Advanced Protection mode through ADB
+    // with delegation of initialization to handler.
+    @Test
+    @EnableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
+    public void onAdvancedProtectionChanged_whenEnabled_registersReceiverAndDisablesUsb_AndDelegatesToHandler()
+            throws RemoteException {
+        clearAllUsbConnections();
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+        when(mDelayDisableHandler.post(any(Runnable.class))).thenReturn(true);
+        setupAndEnableFeature(false, false, true);
+
+        verify(mDelayDisableHandler).post(mRunnableCaptor.capture());
+        mRunnableCaptor.getValue().run();
+
+        verifyAdvancedProtectionChanged_registersReceiverRegisterReceiverBehavior();
+        verify(mKeyguardManager)
+                .addKeyguardLockedStateListener(
+                        any(ExecutorService.class), any(KeyguardLockedStateListener.class));
+        verify(mUsbManagerInternal).enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
+    }
+
+    // For enablement of Advanced Protection mode through Settings page with delegation of
+    // initialization to handler.
+    @Test
+    @EnableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
+    public void
+            onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndNotDisableUsb_AndDelegatesToHandler()
+                    throws RemoteException {
+        clearAllUsbConnections();
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(false);
+        when(mDelayDisableHandler.post(any(Runnable.class))).thenReturn(true);
+        setupAndEnableFeature(false, false, true);
+
+        verify(mDelayDisableHandler).post(mRunnableCaptor.capture());
+        mRunnableCaptor.getValue().run();
+
+        verifyAdvancedProtectionChanged_registersReceiverRegisterReceiverBehavior();
+        verify(mUsbManagerInternal, never()).enableUsbDataSignal(anyBoolean(), anyInt());
+    }
+
     private void verifyAdvancedProtectionChanged_registersReceiverRegisterReceiverBehavior()
             throws RemoteException {
         // Verify receiver is registered for the correct user and with the correct intent filters
@@ -394,6 +443,23 @@ public class UsbDataAdvancedProtectionHookTest {
                 UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.POWER_BRICK_STATUS_DISCONNECTED);
 
         receiver.onReceive(mContext, new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED));
+
+        verify(mUsbManagerInternal).enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
+    }
+
+    @Test
+    @EnableFlags({ Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
+    public void onFirstBoot_disablesUsbRegardlessOfConnectionState_AndDelegatesToHandler() throws RemoteException {
+        setupAndEnableFeature(false, false, false);
+        when(mUsbManagerInternal.enableUsbDataSignal(anyBoolean(), anyInt())).thenReturn(true);
+        BroadcastReceiver receiver = getAndCaptureReceiver();
+        addUsbConnection(
+                UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.POWER_BRICK_STATUS_DISCONNECTED);
+
+        receiver.onReceive(mContext, new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED));
+        verify(mDelayDisableHandler).post(mRunnableCaptor.capture());
+        mRunnableCaptor.getValue().run();
 
         verify(mUsbManagerInternal).enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
     }
@@ -743,6 +809,36 @@ public class UsbDataAdvancedProtectionHookTest {
                                 2,
                                 AdvancedProtectionProtoEnums
                                         .USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
+    }
+
+    @Test
+    @EnableFlags({ Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
+    public void setUsbDataSignal_retriesOnFailureWithDelayAndIncreasedRetries() throws Exception {
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+        setupAndEnableFeature(false, false, true);
+        when(mUsbManagerInternal.enableUsbDataSignal(anyBoolean(), anyInt()))
+                .thenReturn(false) // Fail first
+                .thenReturn(false) // Fail second
+                .thenReturn(false) // Fail third
+                .thenReturn(false) // Fail forth
+                .thenReturn(false) // Fail fifth
+                .thenReturn(true); // Succeed sixth
+
+        verify(mDelayDisableHandler).post(mRunnableCaptor.capture());
+        mRunnableCaptor.getValue().run();
+
+        verify(mUsbManagerInternal, times(6)).enableUsbDataSignal(eq(false), eq(1));
+        verify(
+                () ->
+                        FrameworkStatsLog.write(
+                                FrameworkStatsLog
+                                        .ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                                false,
+                                5,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
+        verify(() -> Thread.sleep(100), times(5));
     }
 
     @Test

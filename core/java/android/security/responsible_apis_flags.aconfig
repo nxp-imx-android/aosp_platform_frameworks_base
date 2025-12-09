@@ -42,6 +42,16 @@ flag {
 }
 
 flag {
+    name: "aapm_feature_usb_data_protection_delay_retry"
+    namespace: "preload_safety"
+    description: "Using a retry delay for USB data protection"
+    bug: "444044714"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "aapm_feature_usb_data_protection_disable_data_for_charger_upon_lock"
     namespace: "preload_safety"
     description: "Disable USB data upon lock if existing connection is power brick"
