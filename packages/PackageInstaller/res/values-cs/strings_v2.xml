@@ -51,7 +51,7 @@
     <string name="title_restore" msgid="8934911753892124574">"Obnovit tuto aplikaci?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Je vyžadována akce"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nedostatek úložného prostoru"</string>
-    <string name="title_restore_error_offline" msgid="4611160277876184886">"Nejste připojeni k internetu"</string>
+    <string name="title_restore_error_offline" msgid="4611160277876184886">"Nemáte připojení k internetu"</string>
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> je zakázán"</string>
     <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"Aplikace <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> není nainstalována"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Něco se pokazilo"</string>
