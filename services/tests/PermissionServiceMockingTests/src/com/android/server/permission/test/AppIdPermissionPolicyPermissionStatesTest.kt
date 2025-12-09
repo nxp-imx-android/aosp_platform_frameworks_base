@@ -16,8 +16,11 @@
 
 package com.android.server.permission.test
 
+import android.Manifest
 import android.content.pm.PermissionInfo
 import android.os.Build
+import android.permission.flags.Flags
+import android.platform.test.annotations.RequiresFlagsEnabled
 import com.android.server.permission.access.MutableAccessState
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.immutable.IndexedListSet
@@ -975,6 +978,77 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun testUpgradePackageState_nearbyDevicesPermissionsRevoked_userFlagsCleared() {
+        val packageState = mockPackageState(
+            APP_ID_0, mockAndroidPackage(
+                PACKAGE_NAME_0,
+                requestedPermissions = NEARBY_DEVICES_PERMISSIONS
+            )
+        )
+        addPackageState(packageState)
+        NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName ->
+            setPermissionFlags(
+                APP_ID_0,
+                USER_ID_0,
+                permissionName,
+                PermissionFlags.USER_SET or PermissionFlags.USER_FIXED
+            )
+        }
+
+        mutateState {
+            with(appIdPermissionPolicy) {
+                upgradePackageState(packageState, USER_ID_0, 18)
+            }
+        }
+
+        NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName ->
+            val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, permissionName)
+            val userFlags = actualFlags and (PermissionFlags.USER_SET or PermissionFlags.USER_FIXED)
+            assertWithMessage("User flags for $permissionName should be cleared")
+                .that(userFlags).isEqualTo(0)
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun testOnPackageAdded_nearbyDevicesPermissionsRevoked_userFlagsCleared() {
+        val oldPackage = mockAndroidPackage(
+            PACKAGE_NAME_0,
+            requestedPermissions = NEARBY_DEVICES_PERMISSIONS
+        )
+        addPackageState(mockPackageState(APP_ID_0, oldPackage), oldState)
+
+        NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName ->
+            val permissionFlags = if (permissionName == Manifest.permission.ACCESS_LOCAL_NETWORK) {
+                PermissionFlags.IMPLICIT or PermissionFlags.USER_SET or PermissionFlags.USER_FIXED
+            } else {
+                PermissionFlags.USER_SET or PermissionFlags.USER_FIXED
+            }
+            setPermissionFlags(APP_ID_0, USER_ID_0, permissionName, permissionFlags, oldState)
+        }
+
+        val newPackage = mockAndroidPackage(
+            PACKAGE_NAME_0,
+            requestedPermissions = NEARBY_DEVICES_PERMISSIONS
+        )
+        val newPackageState = mockPackageState(APP_ID_0, newPackage)
+
+        mutateState {
+            with(appIdPermissionPolicy) {
+                onPackageAdded(newPackageState)
+            }
+        }
+
+        NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName ->
+            val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, permissionName)
+            val userFlags = actualFlags and (PermissionFlags.USER_SET or PermissionFlags.USER_FIXED)
+            assertWithMessage("User flags for $permissionName should be cleared")
+                .that(userFlags).isEqualTo(0)
+        }
+    }
+
+    @Test
     fun testEvaluatePermissionState_noLongerImplicitSystemOrPolicyFixedWasGranted_runtimeGranted() {
         val oldFlags =
             PermissionFlags.IMPLICIT_GRANTED or
@@ -1335,5 +1409,19 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun data(): Array<Action> = Action.values()
+
+        private val NEARBY_DEVICES_PERMISSIONS =
+            setOf(
+                Manifest.permission.BLUETOOTH_ADVERTISE,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.NEARBY_WIFI_DEVICES,
+            ).let {
+                if (Flags.accessLocalNetworkPermissionEnabled()) {
+                    it + Manifest.permission.ACCESS_LOCAL_NETWORK
+                } else {
+                    it
+                }
+            }
     }
 }
