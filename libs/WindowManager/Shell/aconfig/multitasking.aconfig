@@ -181,16 +181,6 @@ flag {
     }
 }
 
-flag {
-    name: "fix_bubbles_ime_focus_flicker"
-    namespace: "multitasking"
-    description: "Fixes an ime flicker due to non-bubbled activity gaining focus when switching bubbles"
-    bug: "416347012"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
 
 flag {
     name: "fix_bubble_stack_view_expanded_when_added"
