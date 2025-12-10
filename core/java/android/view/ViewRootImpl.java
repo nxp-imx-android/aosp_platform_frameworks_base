@@ -142,7 +142,6 @@ import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
-import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -3994,20 +3993,18 @@ public final class ViewRootImpl implements ViewParent,
                             Surface.FRAME_RATE_COMPATIBILITY_NO_VOTE).apply();
                     }
 
-                    if (setScPropertiesInClient()) {
-                        if (surfaceControlChanged) {
-                            // Reset to default for a new SurfaceControl.
-                            mIsSurfaceColorSpaceAgnostic = false;
-                        }
-                        if (surfaceControlChanged || windowAttributesChanged) {
-                            boolean colorSpaceAgnostic = (lp.privateFlags
-                                    & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
-                                    != 0;
-                            if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
-                                mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
-                                mTransaction.setColorSpaceAgnostic(
-                                        mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
-                            }
+                    if (surfaceControlChanged) {
+                        // Reset to default for a new SurfaceControl.
+                        mIsSurfaceColorSpaceAgnostic = false;
+                    }
+                    if (surfaceControlChanged || windowAttributesChanged) {
+                        boolean colorSpaceAgnostic = (lp.privateFlags
+                                & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
+                                != 0;
+                        if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
+                            mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
+                            mTransaction.setColorSpaceAgnostic(
+                                    mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
                         }
                     }
                 }

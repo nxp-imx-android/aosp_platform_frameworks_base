@@ -32,14 +32,6 @@ flag {
 }
 
 flag {
-    namespace: "window_surfaces"
-    name: "set_sc_properties_in_client"
-    description: "Set VRI SC properties in the client instead of system server"
-    is_fixed_read_only: true
-    bug: "308662081"
-}
-
-flag {
   name: "ignore_corner_radius_and_shadows"
   namespace: "window_surfaces"
   description: "Ignore the corner radius and shadows of a SurfaceControl"
