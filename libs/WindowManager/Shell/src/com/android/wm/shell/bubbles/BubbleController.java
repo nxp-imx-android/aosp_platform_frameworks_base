@@ -1843,9 +1843,8 @@ public class BubbleController implements ConfigurationChangeListener,
         // Lazy init stack view when a bubble is created
         ensureBubbleViewsAndWindowCreated();
         return mBubbleTransitions.startLaunchNewTaskBubbleForExistingTransition(b,
-                mExpandedViewManager, mBubbleTaskViewFactory, mBubblePositioner, mStackView,
-                mLayerView, mBubbleIconFactory, mInflateSynchronously, transition,
-                onInflatedCallback);
+                mExpandedViewManager, mBubbleTaskViewFactory, mStackView, mLayerView,
+                mBubbleIconFactory, mInflateSynchronously, transition, onInflatedCallback);
     }
 
     /**
@@ -1887,9 +1886,8 @@ public class BubbleController implements ConfigurationChangeListener,
         newBubble.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
 
         return mBubbleTransitions.startJumpcutBubbleSwitchTransition(newBubble, existingBubble,
-                mExpandedViewManager, mBubbleTaskViewFactory, mBubblePositioner, mStackView,
-                mLayerView, mBubbleIconFactory, mInflateSynchronously, transition,
-                onInflatedCallback);
+                mExpandedViewManager, mBubbleTaskViewFactory, mStackView, mLayerView,
+                mBubbleIconFactory, mInflateSynchronously, transition, onInflatedCallback);
     }
 
     /**

@@ -287,12 +287,11 @@ public class BubbleTransitions {
      */
     public TransitionHandler startLaunchNewTaskBubbleForExistingTransition(Bubble bubble,
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
-            BubblePositioner positioner, BubbleStackView stackView,
-            BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
+            BubbleStackView stackView, BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
             boolean inflateSync, IBinder transition,
             Consumer<TransitionHandler> onInflatedCallback) {
         return new LaunchNewTaskBubbleForExistingTransition(bubble, mContext, expandedViewManager,
-                factory, positioner, stackView, layerView, iconFactory, inflateSync, transition,
+                factory, stackView, layerView, iconFactory, inflateSync, transition,
                 onInflatedCallback);
     }
 
@@ -301,12 +300,12 @@ public class BubbleTransitions {
      */
     public TransitionHandler startJumpcutBubbleSwitchTransition(Bubble openingBubble,
             Bubble closingBubble, BubbleExpandedViewManager expandedViewManager,
-            BubbleTaskViewFactory factory, BubblePositioner positioner, BubbleStackView stackView,
+            BubbleTaskViewFactory factory, BubbleStackView stackView,
             BubbleBarLayerView layerView, BubbleIconFactory iconFactory, boolean inflateSync,
             IBinder transition, Consumer<TransitionHandler> onInflatedCallback) {
         return new JumpcutBubbleSwitchTransition(openingBubble, closingBubble, mContext,
-                expandedViewManager, factory, positioner, stackView, layerView, iconFactory,
-                inflateSync, transition, onInflatedCallback);
+                expandedViewManager, factory, stackView, layerView, iconFactory, inflateSync,
+                transition, onInflatedCallback);
     }
 
     /**
@@ -537,7 +536,6 @@ public class BubbleTransitions {
      */
     @VisibleForTesting
     class LaunchNewTaskBubbleForExistingTransition implements TransitionHandler, BubbleTransition {
-        final BubblePositioner mPositioner;
         final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
         private final TransitionProgress mTransitionProgress;
         Bubble mBubble;
@@ -559,9 +557,8 @@ public class BubbleTransitions {
 
         LaunchNewTaskBubbleForExistingTransition(Bubble bubble, Context context,
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
-                BubblePositioner positioner, BubbleStackView stackView,
-                BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-                boolean inflateSync, IBinder transition,
+                BubbleStackView stackView, BubbleBarLayerView layerView,
+                BubbleIconFactory iconFactory, boolean inflateSync, IBinder transition,
                 Consumer<TransitionHandler> onInflatedCallback) {
             if (layerView != null) {
                 mExpandedViewAnimator = layerView;
@@ -573,7 +570,6 @@ public class BubbleTransitions {
             mBubble = bubble;
             mTransition = transition;
             mTransitionProgress = new TransitionProgress();
-            mPositioner = positioner;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setCurrentTransition(this);
             mBubble.inflate(
@@ -855,9 +851,8 @@ public class BubbleTransitions {
 
         JumpcutBubbleSwitchTransition(Bubble openingBubble, Bubble closingBubble, Context context,
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
-                BubblePositioner positioner, BubbleStackView stackView,
-                BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-                boolean inflateSync, IBinder transition,
+                BubbleStackView stackView, BubbleBarLayerView layerView,
+                BubbleIconFactory iconFactory, boolean inflateSync, IBinder transition,
                 Consumer<TransitionHandler> onInflatedCallback) {
             if (layerView != null) {
                 mExpandedViewAnimator = layerView;
