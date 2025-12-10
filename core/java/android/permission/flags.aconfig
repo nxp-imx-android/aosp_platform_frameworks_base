@@ -646,6 +646,14 @@ flag {
     is_exported: true
 }
 
+flag {
+    name: "skin_temp_oxygen_saturation_health_services_pregrant_enabled"
+    namespace: "android_health_services"
+    description: "This flag enables adding skin temp and SPO2 permission pregrants to health services."
+    bug: "463449714"
+    is_exported: true
+}
+
 flag{
     name: "content_restriction_role_enabled"
     is_exported: true
