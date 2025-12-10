@@ -218,7 +218,8 @@ public class DisplayModeDirector {
                 mVotesStatsReporter);
         mDisplayObserver = new DisplayObserver(context, handler, mVotesStorage, injector);
         mSensorObserver = new ProximitySensorObserver(mVotesStorage, injector);
-        mSkinThermalStatusObserver = new SkinThermalStatusObserver(injector, mVotesStorage);
+        mSkinThermalStatusObserver = new SkinThermalStatusObserver(injector, mVotesStorage,
+                mDisplayDeviceConfigProvider);
         mModeChangeObserver = mInjector.getModeChangeObserver(mVotesStorage, handler.getLooper());
         mHbmObserver = new HbmObserver(injector, mVotesStorage, BackgroundThread.getHandler(),
                 mDeviceConfigDisplaySettings);

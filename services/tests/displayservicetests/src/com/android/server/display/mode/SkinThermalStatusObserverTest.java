@@ -26,6 +26,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.IThermalEventListener;
 import android.os.Temperature;
+import android.platform.test.annotations.EnableFlags;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -34,11 +35,16 @@ import android.view.SurfaceControl;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.testutils.TestHandler;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -60,9 +66,13 @@ public class SkinThermalStatusObserverTest {
     private final TestHandler mHandler = new TestHandler(null);
     private final VotesStorage mStorage = new VotesStorage(() -> {}, null);
 
+    @Mock
+    private DisplayModeDirector.DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
+
     @Before
     public void setUp() {
-        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mHandler);
+        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mDisplayDeviceConfigProvider,
+                mHandler);
     }
 
     @Test
@@ -81,7 +91,8 @@ public class SkinThermalStatusObserverTest {
     public void testFailToRegisterThermalListenerOnObserve() {
         // GIVEN thermal sensor is not available
         mInjector = new RegisteringFakesInjector(false);
-        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mHandler);
+        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mDisplayDeviceConfigProvider,
+                mHandler);
         // WHEN observe is called
         mObserver.observe();
         // THEN nothing is registered
@@ -90,6 +101,7 @@ public class SkinThermalStatusObserverTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     public void testNotifyWithDefaultVotesForCritical() {
         // GIVEN 2 displays with no thermalThrottling config
         mObserver.observe();
@@ -106,19 +118,17 @@ public class SkinThermalStatusObserverTest {
 
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
 
-        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
-        RefreshRateVote.RenderVote renderVote = (RefreshRateVote.RenderVote) vote;
-        assertEquals(0, renderVote.mMinRefreshRate, FLOAT_TOLERANCE);
-        assertEquals(60, renderVote.mMaxRefreshRate, FLOAT_TOLERANCE);
+        assertThat(vote).isInstanceOf(CombinedVote.class);
+        CombinedVote expectedVote = new CombinedVote(Arrays.asList(
+                new RefreshRateVote.RenderVote(0, 60)));
+        assertEquals(expectedVote, vote);
 
         SparseArray<Vote> otherDisplayVotes = mStorage.getVotes(DISPLAY_ID_OTHER);
         assertEquals(1, otherDisplayVotes.size());
 
         vote = otherDisplayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
-        renderVote = (RefreshRateVote.RenderVote) vote;
-        assertEquals(0, renderVote.mMinRefreshRate, FLOAT_TOLERANCE);
-        assertEquals(60, renderVote.mMaxRefreshRate, FLOAT_TOLERANCE);
+        assertThat(vote).isInstanceOf(CombinedVote.class);
+        assertEquals(expectedVote, vote);
     }
 
     @Test
@@ -159,7 +169,8 @@ public class SkinThermalStatusObserverTest {
         SparseArray<SparseArray<SurfaceControl.RefreshRateRange>> config = new SparseArray<>();
         config.put(DISPLAY_ID, displayConfig);
         mInjector = new RegisteringFakesInjector(true, config);
-        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mHandler);
+        mObserver = new SkinThermalStatusObserver(mInjector, mStorage, mDisplayDeviceConfigProvider,
+                mHandler);
         mObserver.observe();
         mObserver.onDisplayChanged(DISPLAY_ID);
         assertEquals(0, mStorage.getVotes(DISPLAY_ID).size());
@@ -173,14 +184,13 @@ public class SkinThermalStatusObserverTest {
         SparseArray<Vote> displayVotes = mStorage.getVotes(DISPLAY_ID);
         assertEquals(1, displayVotes.size());
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
-        RefreshRateVote.RenderVote renderVote = (RefreshRateVote.RenderVote) vote;
-        assertEquals(90, renderVote.mMinRefreshRate, FLOAT_TOLERANCE);
-        assertEquals(120, renderVote.mMaxRefreshRate, FLOAT_TOLERANCE);
+        Vote expectedVote = new CombinedVote(List.of(new RefreshRateVote.RenderVote(90, 120)));
+        assertEquals(expectedVote, vote);
         assertEquals(0, mStorage.getVotes(DISPLAY_ID_OTHER).size());
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     public void testDisplayAdded() {
         // GIVEN 2 displays with no thermalThrottling config AND temperature level CRITICAL
         mObserver.observe();
@@ -196,10 +206,10 @@ public class SkinThermalStatusObserverTest {
         SparseArray<Vote> displayVotes = mStorage.getVotes(DISPLAY_ID_ADDED);
 
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
-        RefreshRateVote.RenderVote renderVote = (RefreshRateVote.RenderVote) vote;
-        assertEquals(0, renderVote.mMinRefreshRate, FLOAT_TOLERANCE);
-        assertEquals(60, renderVote.mMaxRefreshRate, FLOAT_TOLERANCE);
+        assertThat(vote).isInstanceOf(CombinedVote.class);
+        CombinedVote expectedVote = new CombinedVote(Arrays.asList(
+                new RefreshRateVote.RenderVote(0, 60)));
+        assertEquals(expectedVote, vote);
     }
 
     @Test

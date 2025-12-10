@@ -18,9 +18,12 @@ package com.android.server.display.mode;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.view.SurfaceControl;
 import android.view.SurfaceControl.WorkDuration;
 
 import com.android.server.display.config.SupportedModeData;
+import com.android.server.display.feature.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -211,6 +214,10 @@ interface Vote {
         return new RefreshRateVote.RenderVote(minFrameRate, maxFrameRate);
     }
 
+    static Vote forRenderFrameRates(@Nullable SurfaceControl.RefreshRateRange range) {
+        return range == null ? null : forRenderFrameRates(range.min, range.max);
+    }
+
     static Vote forSize(int width, int height) {
         return new SizeVote(width, height, width, height);
     }
@@ -249,8 +256,9 @@ interface Vote {
         return new SupportedRefreshRatesVote(rates);
     }
 
-    static Vote forWorkDurations(WorkDuration workDurationsData) {
-        return new WorkDurationsVote(workDurationsData);
+    static Vote forWorkDurations(@Nullable WorkDuration workDurationsData) {
+        return (!Flags.enableWorkDurations() || workDurationsData == null) ? null
+                : new WorkDurationsVote(workDurationsData);
     }
 
     static Vote forSupportedModes(List<Integer> modeIds) {
@@ -267,6 +275,9 @@ interface Vote {
             if (vote != null) {
                 combinedVotes.add(vote);
             }
+        }
+        if (combinedVotes.isEmpty()) {
+            return null;
         }
         return new CombinedVote(combinedVotes);
     }

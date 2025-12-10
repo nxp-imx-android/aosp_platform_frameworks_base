@@ -176,8 +176,8 @@ public final class DisplayDeviceConfigTest {
         assertEquals(0, mDisplayDeviceConfig.getIdleStylusTimeoutMillis());
         assertNull(mDisplayDeviceConfig.getRefreshRateData().defaultWorkDurations);
         assertNull(mDisplayDeviceConfig.getRefreshRateData().lowPowerWorkDurations);
-        assertTrue(mDisplayDeviceConfig.getThermalThrottlingData()
-                .getThermalThrottlingWorkDurations().isEmpty());
+        assertThat(mDisplayDeviceConfig.getThermalThrottlingData()
+                .getThermalThrottlingWorkDurations()).isEmpty();
     }
 
     @Test
