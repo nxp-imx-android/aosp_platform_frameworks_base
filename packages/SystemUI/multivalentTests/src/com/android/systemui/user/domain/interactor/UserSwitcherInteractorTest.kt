@@ -58,7 +58,7 @@ import com.android.systemui.telephony.data.repository.fakeTelephonyRepository
 import com.android.systemui.telephony.domain.interactor.telephonyInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.UserSwitcherSettingsModel
-import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.data.source.UserRecord
 import com.android.systemui.user.domain.model.ShowDialogRequestModel
 import com.android.systemui.user.shared.model.UserActionModel
@@ -112,7 +112,7 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private lateinit var spyContext: Context
 
-    private lateinit var userRepository: FakeUserRepository
+    private val userRepository = kosmos.fakeUserRepository
     private lateinit var keyguardReply: KeyguardInteractorFactory.WithDependencies
     private lateinit var keyguardRepository: FakeKeyguardRepository
     private lateinit var refreshUsersScheduler: RefreshUsersScheduler
@@ -144,7 +144,6 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
                 featureFlags = kosmos.fakeFeatureFlagsClassic,
             )
         keyguardRepository = keyguardReply.repository
-        userRepository = FakeUserRepository()
         refreshUsersScheduler =
             RefreshUsersScheduler(
                 applicationScope = testScope.backgroundScope,

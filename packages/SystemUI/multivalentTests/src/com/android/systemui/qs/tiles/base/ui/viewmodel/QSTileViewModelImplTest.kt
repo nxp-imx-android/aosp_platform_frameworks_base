@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.tiles.base.ui.viewmodel
 
+import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -37,6 +38,7 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileState
 import com.android.systemui.qs.tiles.base.ui.analytics.QSTileAnalytics
 import com.android.systemui.qs.tiles.base.ui.model.QSTileDataToStateMapper
 import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.UserIconProvider
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
@@ -47,6 +49,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,8 +66,8 @@ class QSTileViewModelImplTest : SysuiTestCase() {
 
     @Mock private lateinit var qsTileLogger: QSTileLogger
     @Mock private lateinit var qsTileAnalytics: QSTileAnalytics
+    @Mock private lateinit var userManager: UserManager
 
-    private val userRepository = FakeUserRepository()
     private val tileDataInteractor = FakeQSTileDataInteractor<Any>()
     private val tileUserActionInteractor = FakeQSTileUserActionInteractor<Any>()
     private val disabledByPolicyInteractor = FakeDisabledByPolicyInteractor()
@@ -73,7 +76,14 @@ class QSTileViewModelImplTest : SysuiTestCase() {
     private val testCoroutineDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testCoroutineDispatcher)
 
+    private lateinit var userRepository: FakeUserRepository
     private lateinit var underTest: QSTileViewModelImpl<Any>
+
+    @Before
+    fun setup() {
+        userRepository =
+            FakeUserRepository(UserIconProvider(context, userManager, testCoroutineDispatcher))
+    }
 
     @Test
     fun dumpWritesState() =

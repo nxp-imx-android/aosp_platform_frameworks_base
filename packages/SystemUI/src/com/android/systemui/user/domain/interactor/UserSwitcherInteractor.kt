@@ -17,16 +17,13 @@
 
 package com.android.systemui.user.domain.interactor
 
-import android.annotation.SuppressLint
 import android.annotation.UserIdInt
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.UserInfo
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
 import android.os.RemoteException
 import android.os.UserHandle
 import android.os.UserManager
@@ -34,7 +31,6 @@ import android.provider.Settings
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
-import com.android.internal.util.UserIcons
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Flags.switchUserOnBg
@@ -638,7 +634,15 @@ constructor(
                     }
                     true
                 }
-                Intent.ACTION_USER_INFO_CHANGED -> true
+                Intent.ACTION_USER_INFO_CHANGED,
+                Intent.ACTION_USER_REMOVED -> {
+                    val changedUserId =
+                        intent.getIntExtra(Intent.EXTRA_USER_HANDLE, UserHandle.USER_NULL)
+                    if (changedUserId != UserHandle.USER_NULL) {
+                        repository.clearUserImageCacheForUser(changedUserId)
+                    }
+                    true
+                }
                 Intent.ACTION_USER_UNLOCKED -> {
                     // If we unlocked the system user, we should refresh all users.
                     intent.getIntExtra(Intent.EXTRA_USER_HANDLE, UserHandle.USER_NULL) ==
@@ -764,7 +768,6 @@ constructor(
         }
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private suspend fun getUserImage(isGuest: Boolean, userId: Int): Drawable {
         if (isGuest) {
             return checkNotNull(
@@ -772,27 +775,12 @@ constructor(
             )
         }
 
-        // TODO(b/246631653): cache the bitmaps to avoid the background work to fetch them.
-        val userIcon =
-            withContext(backgroundDispatcher) {
-                manager.getUserIcon(userId)?.let { bitmap ->
-                    val iconSize =
-                        applicationContext.resources.getDimensionPixelSize(
-                            R.dimen.bouncer_user_switcher_icon_size
-                        )
-                    Icon.scaleDownIfNecessary(bitmap, iconSize, iconSize)
-                }
-            }
+        val iconSize =
+            applicationContext.resources.getDimensionPixelSize(
+                R.dimen.bouncer_user_switcher_icon_size
+            )
 
-        if (userIcon != null) {
-            return BitmapDrawable(userIcon)
-        }
-
-        return UserIcons.getDefaultUserIcon(
-            applicationContext.resources,
-            userId,
-            /* light= */ false,
-        )
+        return repository.getUserImage(userId, iconSize)
     }
 
     private fun canCreateGuestUser(

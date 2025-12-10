@@ -17,7 +17,9 @@
 
 package com.android.systemui.user.data.repository
 
+import android.annotation.UserIdInt
 import android.content.pm.UserInfo
+import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.user.data.model.SelectedUserModel
@@ -36,7 +38,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.yield
 
 @SysUISingleton
-class FakeUserRepository @Inject constructor() : UserRepository {
+class FakeUserRepository @Inject constructor(private val userIconProvider: UserIconProvider) :
+    UserRepository {
     companion object {
         // User id to represent a non system (human) user id. We presume this is the main user.
         const val MAIN_USER_ID = 10
@@ -146,6 +149,14 @@ class FakeUserRepository @Inject constructor() : UserRepository {
 
     override suspend fun logOutWithUserManager() {
         logOutWithUserManagerCallCount++
+    }
+
+    override suspend fun getUserImage(@UserIdInt userId: Int, iconSize: Int): Drawable {
+        return userIconProvider.getUserImage(userId, iconSize)
+    }
+
+    override fun clearUserImageCacheForUser(@UserIdInt userId: Int) {
+        userIconProvider.clearCacheForUser(userId)
     }
 
     fun setUserInfos(infos: List<UserInfo>) {
