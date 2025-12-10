@@ -1614,6 +1614,7 @@ public final class StreamConfigurationMap {
             case ImageFormat.RAW_PRIVATE:
             case ImageFormat.RAW10:
             case ImageFormat.RAW12:
+            case ImageFormat.RAW14:
                 return HAL_DATASPACE_ARBITRARY;
             default:
                 return HAL_DATASPACE_UNKNOWN;

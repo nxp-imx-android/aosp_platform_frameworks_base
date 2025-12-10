@@ -3231,7 +3231,8 @@ public class CameraDeviceImpl extends CameraDevice
 
     private boolean isRawFormat(int format) {
         return (format == ImageFormat.RAW_PRIVATE || format == ImageFormat.RAW10
-                || format == ImageFormat.RAW12 || format == ImageFormat.RAW_SENSOR);
+                || format == ImageFormat.RAW12 || format == ImageFormat.RAW_SENSOR
+                || format == ImageFormat.RAW14);
     }
 
     /**
