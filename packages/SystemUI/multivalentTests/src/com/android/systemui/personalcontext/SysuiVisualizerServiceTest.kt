@@ -16,8 +16,13 @@
 
 package com.android.systemui.personalcontext
 
+import android.content.Context
+import android.content.res.Resources
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo
 import android.service.personalcontext.insight.ContextInsight
+import android.util.DisplayMetrics
+import androidx.compose.ui.platform.ComposeView
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
@@ -30,6 +35,7 @@ import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -37,28 +43,50 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
+@RunWith(AndroidJUnit4::class)
 class SysuiVisualizerServiceTest : SysuiTestCase() {
     val kosmos = testKosmosNew()
 
-    private val Kosmos.session: VisualizerSession by Kosmos.Fixture { mock<VisualizerSession>() }
-
-    private val Kosmos.sessionFactory: VisualizerSessionFactory by
-        Kosmos.Fixture { mock { on { createSession(any()) } doReturn (session) } }
-
-    private val Kosmos.template: VisualizerTemplate by Kosmos.Fixture { mock<VisualizerTemplate>() }
-
+    private val displayMetrics: DisplayMetrics = mock()
+    private var resources: Resources = mock { on { displayMetrics } doReturn (displayMetrics) }
+    private var context: Context = mock { on { resources } doReturn (resources) }
+    private var session: VisualizerSession = mock()
+    private var sessionFactory: VisualizerSessionFactory = mock {
+        on { createSession(any(), any()) } doReturn (session)
+    }
+    private var template: VisualizerTemplate = mock()
     private val Kosmos.templateFactory: VisualizerTemplateFactory by
         Kosmos.Fixture { mock { on { createTemplate(any(), any()) } doReturn (template) } }
+    private var composeView: ComposeView = mock()
+    private val Kosmos.composeViewFactory: ComposeViewFactory by
+        Kosmos.Fixture { mock { on { createComposeView(any()) } doReturn (composeView) } }
 
     private val Kosmos.underTest: SysuiVisualizerService by
-        Kosmos.Fixture { SysuiVisualizerService(templateFactory, sessionFactory) }
+        Kosmos.Fixture {
+            SysuiVisualizerService(templateFactory, sessionFactory, composeViewFactory)
+        }
 
     @Test
-    fun testClientConnected() {
+    fun testOnCreateEmbeddedView() {
         kosmos.runTest {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
+            val insights = emptyList<ContextInsight>()
 
+            val view = underTest.onCreateEmbeddedView(context, insights, clientInfo)
+            assertThat(view).isEqualTo(composeView)
+        }
+    }
+
+    @Test
+    fun testOnClientConnected() {
+        kosmos.runTest {
+            val clientId = UUID.randomUUID()
+            val clientInfo = createClient(clientId)
+            val insights = emptyList<ContextInsight>()
+
+            underTest.onCreateEmbeddedView(context, insights, clientInfo)
+            assertThat(underTest.sessions.size).isEqualTo(0)
             underTest.onClientConnected(clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(1)
             assertThat(underTest.sessions.keys.contains(clientId)).isTrue()
@@ -66,38 +94,18 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
     }
 
     @Test
-    fun testClientDisconnected() {
+    fun testOnClientDisconnected() {
         kosmos.runTest {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
+            val insights = emptyList<ContextInsight>()
 
+            underTest.onCreateEmbeddedView(context, insights, clientInfo)
             underTest.onClientConnected(clientInfo)
+            assertThat(underTest.sessions.size).isEqualTo(1)
             underTest.onClientDisconnected(clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(0)
             verify(session).destroy()
-        }
-    }
-
-    @Test
-    fun testCreateTemplate_clientNotConnected() {
-        kosmos.runTest {
-            val insights = emptyList<ContextInsight>()
-            val clientInfo = mock<InsightSurfaceClientInfo>()
-
-            assertThat(underTest.onCreateEmbeddedView(context, insights, clientInfo)).isNull()
-        }
-    }
-
-    @Test
-    fun testCreateTemplate_clientConnected() {
-        kosmos.runTest {
-            val insights = emptyList<ContextInsight>()
-            val clientId = UUID.randomUUID()
-            val clientInfo = createClient(clientId)
-
-            underTest.onClientConnected(clientInfo)
-            assertThat(underTest.onCreateEmbeddedView(context, insights, clientInfo)).isNotNull()
-            verify(session).attachToView(any())
         }
     }
 

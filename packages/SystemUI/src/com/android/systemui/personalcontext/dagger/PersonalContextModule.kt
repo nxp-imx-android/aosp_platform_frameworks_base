@@ -16,6 +16,8 @@
 
 package com.android.systemui.personalcontext.dagger
 
+import com.android.systemui.personalcontext.ComposeViewFactory
+import com.android.systemui.personalcontext.ComposeViewFactoryImpl
 import com.android.systemui.personalcontext.visualizer.session.VisualizerSessionFactory
 import com.android.systemui.personalcontext.visualizer.session.VisualizerSessionFactoryImpl
 import com.android.systemui.personalcontext.visualizer.templates.VisualizerTemplateFactory
@@ -38,6 +40,11 @@ interface PersonalContextModule {
         fun provideVisualizerSessionFactory(
             impl: Lazy<VisualizerSessionFactoryImpl>
         ): VisualizerSessionFactory {
+            return impl.get()
+        }
+
+        @Provides
+        fun provideComposeViewFactory(impl: Lazy<ComposeViewFactoryImpl>): ComposeViewFactory {
             return impl.get()
         }
     }
