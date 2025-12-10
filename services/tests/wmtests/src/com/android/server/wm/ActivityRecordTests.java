@@ -161,6 +161,7 @@ import androidx.test.filters.MediumTest;
 
 import com.android.internal.R;
 import com.android.server.wm.ActivityRecord.State;
+import com.android.server.wm.LockTaskController;
 import com.android.window.flags.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -2504,6 +2505,19 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertNull(activity1.mLaunchCookie);
         activity2.makeFinishingLocked();
         assertTrue(activity1.getTask().getTaskInfo().launchCookies.contains(launchCookie));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CLEAR_LOCK_TASK_WHEN_TASK_END)
+    public void testMakeFinishingLocked_clearsLockTask() {
+        final ActivityRecord activity = createActivityWithTask();
+        final Task task = activity.getTask();
+        final LockTaskController lockTaskController = mAtm.getLockTaskController();
+        spyOn(lockTaskController);
+
+        activity.makeFinishingLocked();
+
+        verify(lockTaskController).clearLockedTask(task);
     }
 
     @Test
