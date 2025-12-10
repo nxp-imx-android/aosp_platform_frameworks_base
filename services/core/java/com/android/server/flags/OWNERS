@@ -1,2 +1,3 @@
 per-file pinner.aconfig = edgararriaga@google.com
 per-file compaction.aconfig = edgararriaga@google.com
+per-file services.aconfig = file:/BATTERY_STATS_OWNERS
