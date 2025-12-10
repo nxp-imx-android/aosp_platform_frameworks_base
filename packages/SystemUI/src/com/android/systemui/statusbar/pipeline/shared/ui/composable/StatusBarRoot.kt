@@ -147,7 +147,6 @@ constructor(
     private val iconController: StatusBarIconController,
     @DisplayAware private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
-    private val avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
     @Named(MediaModule.POPUP) private val mediaHost: MediaHost,
     private val mediaViewModelFactory: MediaViewModel.Factory,
     @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
@@ -180,7 +179,6 @@ constructor(
                         statusBarRegionSamplingViewModelFactory =
                             statusBarRegionSamplingViewModelFactory,
                         onViewCreated = andThen,
-                        avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
                         modifier = Modifier.sysUiResTagContainer(),
                     )
                 }
@@ -263,7 +261,6 @@ fun StatusBarRoot(
             mediaHierarchyManager = mediaHierarchyManager,
             mediaViewModelFactory = mediaViewModelFactory,
             mediaHost = mediaHost,
-            avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
             iconViewStore = iconViewStore,
             modifier =
                 modifier.forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
@@ -346,8 +343,6 @@ fun StatusBarRoot(
                                         mediaHierarchyManager.isMediaControlPopupShowing =
                                             popupShowing
                                     },
-                                    avControlsPopupViewModelFactory =
-                                        avControlsPopupViewModelFactory,
                                 )
                             }
                         }

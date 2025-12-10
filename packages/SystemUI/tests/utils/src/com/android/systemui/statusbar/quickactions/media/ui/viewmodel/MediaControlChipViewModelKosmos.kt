@@ -20,11 +20,19 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 
+private val Kosmos.mediaControlPopupViewModelFactory by
+    Kosmos.Fixture {
+        object : MediaControlPopupViewModel.Factory {
+            override fun create() = MediaControlPopupViewModel()
+        }
+    }
+
 private val Kosmos.mediaControlChipViewModel: MediaControlChipViewModel by
     Kosmos.Fixture {
         MediaControlChipViewModel(
             applicationContext = applicationContext,
             mediaControlChipInteractor = mediaControlChipInteractor,
+            popupViewModelFactory = mediaControlPopupViewModelFactory,
         )
     }
 
