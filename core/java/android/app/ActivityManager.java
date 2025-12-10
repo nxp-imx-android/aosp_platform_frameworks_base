@@ -1077,7 +1077,9 @@ public class ActivityManager {
      */
     @TestApi
     public static final int PROCESS_CAPABILITY_ALL_IMPLICIT = PROCESS_CAPABILITY_FOREGROUND_CAMERA
-            | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+            // TODO: b/467684465 - CTS tests should gain capabilities explicitly where necessary
+            | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE
+            | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 
     /**
      * Print capability bits in human-readable form.
