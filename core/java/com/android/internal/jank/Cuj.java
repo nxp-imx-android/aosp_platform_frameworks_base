@@ -590,9 +590,18 @@ public class Cuj {
      */
     public static final int CUJ_WEAR_BOUNCER_PATTERN_ENTRY = 157;
 
+    /**
+     * Tracks the Wear Alert Notification Dialog open animation.
+     *
+     * <p>Tracking starts when the alert notification dialog starts to open and ends when the dialog
+     * is fully expanded. This CUJ is triggered when receiving a notification on the watch and
+     * glancing at it to display it full screen.
+     */
+    public static final int CUJ_WEAR_ALERT_NOTIFICATION_DIALOG = 158;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
     @VisibleForTesting static final int LAST_CUJ =
-            CUJ_WEAR_BOUNCER_PATTERN_ENTRY;
+            CUJ_WEAR_ALERT_NOTIFICATION_DIALOG;
 
     /** @hide */
     @IntDef({
@@ -741,7 +750,9 @@ public class Cuj {
             CUJ_WEAR_BOUNCER_EXIT_ANIMATION,
             CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY,
             CUJ_WEAR_BOUNCER_PIN_DOT_ADDED,
-            CUJ_WEAR_BOUNCER_PATTERN_ENTRY
+            CUJ_WEAR_BOUNCER_PATTERN_ENTRY,
+            CUJ_WEAR_ALERT_NOTIFICATION_DIALOG
+
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -901,6 +912,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PIN_PAD_ENTRY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PIN_PAD_ENTRY;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PIN_DOT_ADDED] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PIN_DOT_ADDED;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_BOUNCER_PATTERN_ENTRY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_BOUNCER_PATTERN_ENTRY;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_ALERT_NOTIFICATION_DIALOG] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_ALERT_NOTIFICATION_DIALOG;
     }
 
     private Cuj() {
@@ -1211,6 +1223,8 @@ public class Cuj {
                 return "WEAR_BOUNCER_PIN_DOT_ADDED";
             case CUJ_WEAR_BOUNCER_PATTERN_ENTRY:
                 return "WEAR_BOUNCER_PATTERN_ENTRY";
+           case CUJ_WEAR_ALERT_NOTIFICATION_DIALOG:
+                return "WEAR_ALERT_NOTIFICATION_DIALOG";
         }
         return "UNKNOWN";
     }
