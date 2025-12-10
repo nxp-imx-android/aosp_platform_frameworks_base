@@ -23,6 +23,7 @@ import static com.android.server.wm.ActivityTaskManagerService.getInputDispatchi
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
+import android.app.AnrTypes;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
@@ -132,6 +133,49 @@ class AnrController {
         }
     }
 
+    /**
+     * Notify about a potential "No Focused Window" ANR due to slow input dispatching.
+     *
+     * @param applicationHandle The handle of the application that is potentially unresponsive.
+     * @param eventId The ID of the input event that is being slow to process.
+     * @param elapsedDurationMs The time in milliseconds that has elapsed since the input event was
+     *     first sent.
+     * @param timeoutDurationMs The total time in milliseconds after which an ANR would be declared.
+     */
+    void notifyAppUnresponsiveWarning(
+            @NonNull InputApplicationHandle applicationHandle,
+            int eventId,
+            long elapsedDurationMs,
+            long timeoutDurationMs) {
+        final ActivityRecord activity;
+        synchronized (mService.mGlobalLock) {
+            activity = ActivityRecord.forTokenLocked(applicationHandle.token);
+            if (activity == null) {
+                Slog.e(
+                        TAG_WM,
+                        "Unknown app appToken:"
+                                + applicationHandle.name
+                                + ". Dropping notifyAppUnresponsiveWarning request");
+                return;
+            } else if (activity.mAppStopped) {
+                Slog.d(
+                        TAG_WM,
+                        "App is in stopped state: "
+                                + applicationHandle.name
+                                + ". Dropping notifyAppUnresponsiveWarning request");
+                return;
+            }
+        }
+
+        if (activity.hasProcess()) {
+            mService.mAmInternal.inputDispatchingTimedOutWarning(
+                    activity.getUid(),
+                    eventId,
+                    AnrTypes.ANR_TYPE_INPUT_DISPATCH_NO_FOCUSED_WINDOW,
+                    elapsedDurationMs,
+                    timeoutDurationMs);
+        }
+    }
 
     /**
      * Notify a window was unresponsive.

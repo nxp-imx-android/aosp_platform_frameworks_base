@@ -29,6 +29,7 @@ import android.annotation.SpecialUsers.CanBeCURRENT_OR_SELF;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.RestrictionLevel;
+import android.app.AnrTypes.AnrType;
 import android.app.assist.ActivityId;
 import android.content.ComponentName;
 import android.content.IIntentReceiver;
@@ -706,6 +707,25 @@ public abstract class ActivityManagerInternal {
 
     /** @see com.android.server.am.ActivityManagerService#monitor */
     public abstract void monitor();
+
+    /**
+     * Input dispatch ANR warning to notify apps about the imminent ANR before the official ANR
+     * timeout. *
+     *
+     * @param uid The uid of the application.
+     * @param eventId The id of the input event.
+     * @param anrType The type of ANR.
+     * @param elapsedDurationMs The duration in milliseconds that has elapsed since the input
+     *     dispatching became unresponsive.
+     * @param timeoutDurationMs The total duration in milliseconds after which an ANR will be
+     *     triggered.
+     */
+    public abstract void inputDispatchingTimedOutWarning(
+            int uid,
+            int eventId,
+            @AnrType int anrType,
+            long elapsedDurationMs,
+            long timeoutDurationMs);
 
     /** Input dispatch timeout to a window, start the ANR process. Return the timeout extension,
      * in milliseconds, or 0 to abort dispatch. */

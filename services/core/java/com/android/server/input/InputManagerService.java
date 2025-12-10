@@ -2661,6 +2661,17 @@ public class InputManagerService extends IInputManager.Stub
                 isPidValid ? OptionalInt.of(pid) : OptionalInt.empty());
     }
 
+    // Native callback
+    @SuppressWarnings("unused")
+    private void warnNoFocusedWindowAnr(
+            InputApplicationHandle inputApplicationHandle,
+            int eventId,
+            long elapsedDurationMs,
+            long timeoutDurationMs) {
+        mWindowManagerCallbacks.warnNoFocusedWindowAnr(
+                inputApplicationHandle, eventId, elapsedDurationMs, timeoutDurationMs);
+    }
+
     // Native callback.
     @SuppressWarnings("unused")
     private void notifySensorEvent(int deviceId, int sensorType, int accuracy, long timestamp,
@@ -3579,6 +3590,23 @@ public class InputManagerService extends IInputManager.Stub
          * @param pid the pid of the window owner, if known
          */
         void notifyWindowResponsive(@NonNull IBinder token, @NonNull OptionalInt pid);
+
+        /**
+         * Warns the window manager that a "No Focused Window" ANR is imminent before the ANR
+         * timeout.
+         *
+         * @param inputApplicationHandle The application that is being considered for the ANR.
+         * @param eventId The ID of the input event that could not be dispatched.
+         * @param elapsedDurationMs The time elapsed since the input event was first considered for
+         *     dispatch.
+         * @param timeoutDurationMs The total time after which a "No Focused Window" ANR will be
+         *     declared.
+         */
+        void warnNoFocusedWindowAnr(
+                @NonNull InputApplicationHandle inputApplicationHandle,
+                int eventId,
+                long elapsedDurationMs,
+                long timeoutDurationMs);
 
         /**
          * This callback is invoked when an event first arrives to InputDispatcher and before it is
