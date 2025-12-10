@@ -19,6 +19,7 @@ package android.view;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
 import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
+import static android.view.accessibility.Flags.restrictViewgroupAccessibilityEventPopulation;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
@@ -457,6 +458,9 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
     private static boolean sToolkitViewGroupFrameRateApiFlagValue =
             toolkitViewgroupSetRequestedFrameRateApi();
+
+    private static boolean sRestrictViewGroupAccessibilityEventPopulation =
+            restrictViewgroupAccessibilityEventPopulation();
 
     /**
      * Indicates which types of drawing caches are to be kept in memory.
@@ -3571,7 +3575,18 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             for (int i = 0; i < childCount; i++) {
                 View child = children.getChildAt(i);
                 if ((child.mViewFlags & VISIBILITY_MASK) == VISIBLE) {
-                    handled = child.dispatchPopulateAccessibilityEvent(event);
+                    if (sRestrictViewGroupAccessibilityEventPopulation) {
+                        // Further restrict population of events to children based on accessibility
+                        // importance and data sensitivity.  We intentionally consider the
+                        // isAccessibilityDataSensitive property here since each child is not the
+                        // source of the event, and therefore is not subject to filtering performed
+                        // by AccessibilityManagerService.
+                        if (child.includeForAccessibility(true)) {
+                            handled = child.dispatchPopulateAccessibilityEvent(event);
+                        }
+                    } else {
+                        handled = child.dispatchPopulateAccessibilityEvent(event);
+                    }
                     if (handled) {
                         return handled;
                     }

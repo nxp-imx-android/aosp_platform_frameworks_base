@@ -312,6 +312,16 @@ flag {
 }
 
 flag {
+    name: "restrict_viewgroup_accessibility_event_population"
+    namespace: "accessibility"
+    description: "Impose additional restrictions on which ViewGroup children may populate AccessibilityEvents based on accessibility importance and data sensitivity"
+    bug: "455971973"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "supplemental_description"
     namespace: "accessibility"
     description: "Feature flag for supplemental description api"

@@ -16043,33 +16043,37 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     /**
      * Whether to regard this view for accessibility.
      *
-     * <p>
-     * If this decision is used for generating the accessibility node tree then this returns false
-     * for {@link #isAccessibilityDataPrivate()} views queried by non-accessibility tools.
-     * </p>
-     * <p>
-     * Otherwise, a view is regarded for accessibility if:
-     * <li>the view returns true for {@link #isImportantForAccessibility()}, or</li>
+     * <p>A view is regarded for accessibility if:
+     * <li>the view returns {@code true} for {@link #isImportantForAccessibility()}, or</li>
      * <li>the querying accessibility service has explicitly requested that views not important for
      * accessibility are regarded by setting
      * {@link android.accessibilityservice.AccessibilityServiceInfo#FLAG_INCLUDE_NOT_IMPORTANT_VIEWS}</li>
-     * </p>
      *
-     * @param forNodeTree True if the result of this function will be used for generating a node
-     *                    tree, otherwise false (like when sending {@link AccessibilityEvent}s).
-     * @return Whether to regard the view for accessibility.
+     * <p>In certain cases, e.g. when this decision is used for generating the accessibility node
+     * tree or used to control dispatch of accessibility events originating from views other than
+     * this one, the {@link #isAccessibilityDataSensitive()} property should also be taken into
+     * account by using the {@code considerDataSensitivity} param. When {@code true}, this method
+     * will only regard a view for accessibility if it is not considered sensitive or if queried by
+     * an accessibility service known to be an accessibility tool.
+     *
+     * @param considerDataSensitivity {@code true} if the {@code isAccessibilityDataSensitive()}
+     *                                property should be taken into account when determining if the
+     *                                view should be regarded for accessibility
+     * @return {@code true} if the view should be regarded for accessibility, {@code false}
+     *         otherwise
      * @hide
      */
-    public boolean includeForAccessibility(boolean forNodeTree) {
+    public boolean includeForAccessibility(boolean considerDataSensitivity) {
         if (mAttachInfo == null) {
             return false;
         }
 
-        if (forNodeTree) {
-            // The AccessibilityDataPrivate property should not effect whether this View is
-            // included for consideration when sending AccessibilityEvents. Events copy their
-            // source View's AccessibilityDataPrivate value, and then filtering is done when
-            // AccessibilityManagerService propagates events to each recipient AccessibilityService.
+        if (considerDataSensitivity) {
+            // The isAccessibilityDataSensitive property should not effect whether this View is
+            // included for consideration when sending AccessibilityEvents that originate directly
+            // from itself. Events copy their source View's isAccessibilityDataSensitive value, and
+            // then filtering is done when AccessibilityManagerService propagates events to each
+            // recipient AccessibilityService.
             if (!AccessibilityManager.getInstance(mContext).isRequestFromAccessibilityTool()
                     && isAccessibilityDataSensitive()) {
                 return false;
