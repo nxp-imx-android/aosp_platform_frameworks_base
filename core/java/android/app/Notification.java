@@ -4693,23 +4693,6 @@ public class Notification implements Parcelable
         return (flags & FLAG_ONGOING_EVENT) != 0;
     }
 
-    /**
-     * @hide
-     */
-    // TODO: b/425364383 - Remove when inlining
-    public boolean hasCompletedProgress() {
-        // not a progress notification; can't be complete
-        if (!extras.containsKey(EXTRA_PROGRESS)
-                || !extras.containsKey(EXTRA_PROGRESS_MAX)) {
-            return false;
-        }
-        // many apps use max 0 for 'indeterminate'; not complete
-        if (extras.getInt(EXTRA_PROGRESS_MAX) == 0) {
-            return false;
-        }
-        return extras.getInt(EXTRA_PROGRESS) == extras.getInt(EXTRA_PROGRESS_MAX);
-    }
-
     /** @hide */
     public static final int PROGRESS_STATE_NONE = 0;
     /** @hide */
@@ -4718,7 +4701,6 @@ public class Notification implements Parcelable
     public static final int PROGRESS_STATE_COMPLETE = 2;
 
     /** @hide */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
     public int getProgressState() {
         final int progress = extras.getInt(EXTRA_PROGRESS, 0);
         final int max = extras.getInt(EXTRA_PROGRESS_MAX, 0);

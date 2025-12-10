@@ -19,7 +19,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -116,20 +115,8 @@ public final class NotificationListenerWrapperTest {
     public void onNotificationPostedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
-        final IStatusBarNotificationHolder mockSbnHolder = mock(IStatusBarNotificationHolder.class);
-        when(mockSbnHolder.get()).thenReturn(mock(StatusBarNotification.class));
-        mWrapper.onNotificationPosted(mockSbnHolder, mock(NotificationRankingUpdate.class), token);
-        waitUntilHandlerIdle();
-        assertThat(mLastCompletedToken).isEqualTo(token);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
-    public void onNotificationPostedFullCallsDispatchCompletion() throws Exception {
-        connectAndVerifyListener();
-        final long token = generateToken();
-        mWrapper.onNotificationPostedFull(mock(StatusBarNotification.class),
-                mock(NotificationRankingUpdate.class), token);
+        final StatusBarNotification mockSbn = mock(StatusBarNotification.class);
+        mWrapper.onNotificationPosted(mockSbn, mock(NotificationRankingUpdate.class), token);
         waitUntilHandlerIdle();
         assertThat(mLastCompletedToken).isEqualTo(token);
     }
@@ -149,21 +136,9 @@ public final class NotificationListenerWrapperTest {
     public void onNotificationRemovedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
-        final IStatusBarNotificationHolder mockSbnHolder = mock(IStatusBarNotificationHolder.class);
-        when(mockSbnHolder.get()).thenReturn(mock(StatusBarNotification.class));
-        mWrapper.onNotificationRemoved(mockSbnHolder, mock(NotificationRankingUpdate.class),
+        final StatusBarNotification mockSbn = mock(StatusBarNotification.class);
+        mWrapper.onNotificationRemoved(mockSbn, mock(NotificationRankingUpdate.class),
                 mock(NotificationStats.class), 0, token);
-        waitUntilHandlerIdle();
-        assertThat(mLastCompletedToken).isEqualTo(token);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
-    public void onNotificationRemovedFullCallsDispatchCompletion() throws Exception {
-        connectAndVerifyListener();
-        final long token = generateToken();
-        mWrapper.onNotificationRemovedFull(mock(StatusBarNotification.class),
-                mock(NotificationRankingUpdate.class), mock(NotificationStats.class), 0, token);
         waitUntilHandlerIdle();
         assertThat(mLastCompletedToken).isEqualTo(token);
     }

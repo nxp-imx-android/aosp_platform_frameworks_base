@@ -120,26 +120,6 @@ flag {
 }
 
 flag {
-  name: "nm_binder_perf_reduce_zen_broadcasts"
-  namespace: "systemui"
-  description: "Don't send duplicate zen-related (policy changed, etc) broadcasts"
-  bug: "324376849"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "nm_binder_perf_throttle_effects_suppressor_broadcast"
-  namespace: "systemui"
-  description: "Delay sending the ACTION_EFFECTS_SUPPRESSOR_CHANGED broadcast if it changes too often"
-  bug: "371776935"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "prevent_zen_device_effects_while_driving"
   namespace: "systemui"
   description: "Don't apply certain device effects (such as grayscale) from active zen rules, if a rule of TYPE_DRIVING is active"

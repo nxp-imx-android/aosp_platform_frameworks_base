@@ -326,7 +326,6 @@ import android.service.notification.DynamicBundle;
 import android.service.notification.IConditionProvider;
 import android.service.notification.IDispatchCompletionListener;
 import android.service.notification.INotificationListener;
-import android.service.notification.IStatusBarNotificationHolder;
 import android.service.notification.ListenersDisablingEffectsProto;
 import android.service.notification.NotificationAssistantService;
 import android.service.notification.NotificationListenerFilter;
@@ -724,7 +723,6 @@ public class NotificationManagerService extends SystemService {
     WorkerHandler mHandler;
     private final HandlerThread mRankingThread = new HandlerThread("ranker",
             Process.THREAD_PRIORITY_BACKGROUND);
-    @FlaggedApi(Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST)
     private Handler mBroadcastsHandler;
 
     private final SparseArray<ArraySet<ComponentName>> mListenersDisablingEffects =
@@ -2800,9 +2798,7 @@ public class NotificationManagerService extends SystemService {
             UiEventLogger uiEventLogger, BitmapOffloadInternal bitmapOffloader,
             NotificationListenerStats notificationListenerStats) {
         mHandler = handler;
-        if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
-            mBroadcastsHandler = broadcastsHandler;
-        }
+        mBroadcastsHandler = broadcastsHandler;
         Resources resources = getContext().getResources();
         mMaxPackageEnqueueRate = Settings.Global.getFloat(getContext().getContentResolver(),
                 Settings.Global.MAX_NOTIFICATION_ENQUEUE_RATE,
@@ -3133,14 +3129,9 @@ public class NotificationManagerService extends SystemService {
 
         WorkerHandler handler = new WorkerHandler(Looper.myLooper());
 
-        Handler broadcastsHandler;
-        if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
-            HandlerThread broadcastsThread = new HandlerThread("NMS Broadcasts");
-            broadcastsThread.start();
-            broadcastsHandler = new Handler(broadcastsThread.getLooper());
-        } else {
-            broadcastsHandler = null;
-        }
+        HandlerThread broadcastsThread = new HandlerThread("NMS Broadcasts");
+        broadcastsThread.start();
+        Handler broadcastsHandler = new Handler(broadcastsThread.getLooper());
 
         mShowReviewPermissionsNotification = getContext().getResources().getBoolean(
                 R.bool.config_notificationReviewPermissions);
@@ -3425,7 +3416,6 @@ public class NotificationManagerService extends SystemService {
      * so that e.g. rapidly changing some value A -> B -> C will only produce a broadcast for C
      * (instead of every time because the extras are different).
      */
-    @FlaggedApi(Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST)
     private void sendZenBroadcastWithDelay(Intent intent) {
         String token = "zen_broadcast:" + intent.getAction();
         mBroadcastsHandler.removeCallbacksAndEqualMessages(token);
@@ -3435,42 +3425,25 @@ public class NotificationManagerService extends SystemService {
 
     private void sendRegisteredOnlyBroadcast(Intent baseIntent) {
         int[] userIds = mUmInternal.getProfileIds(mAmi.getCurrentUserId(), true);
-        if (Flags.nmBinderPerfReduceZenBroadcasts()) {
-            for (int userId : userIds) {
-                Context userContext = getContext().createContextAsUser(UserHandle.of(userId), 0);
-                String[] dndPackages = mConditionProviders.getAllowedPackages(userId)
-                        .toArray(new String[0]);
+        for (int userId : userIds) {
+            Context userContext = getContext().createContextAsUser(UserHandle.of(userId), 0);
+            String[] dndPackages = mConditionProviders.getAllowedPackages(userId)
+                    .toArray(new String[0]);
 
-                // We send the broadcast to all DND packages in the second step, so leave them out
-                // of this first broadcast for *running* receivers. That ensures each package only
-                // receives it once.
-                Intent registeredOnlyIntent = new Intent(baseIntent)
-                        .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-                userContext.sendBroadcastMultiplePermissions(registeredOnlyIntent,
-                        /* receiverPermissions= */ new String[0],
-                        /* excludedPermissions= */ new String[0],
-                        /* excludedPackages= */ dndPackages);
+            // We send the broadcast to all DND packages in the second step, so leave them out
+            // of this first broadcast for *running* receivers. That ensures each package only
+            // receives it once.
+            Intent registeredOnlyIntent = new Intent(baseIntent)
+                    .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+            userContext.sendBroadcastMultiplePermissions(registeredOnlyIntent,
+                    /* receiverPermissions= */ new String[0],
+                    /* excludedPermissions= */ new String[0],
+                    /* excludedPackages= */ dndPackages);
 
-                for (String pkg : dndPackages) {
-                    Intent pkgIntent = new Intent(baseIntent).setPackage(pkg)
-                            .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
-                    userContext.sendBroadcast(pkgIntent);
-                }
-            }
-        } else {
-            Intent intent = new Intent(baseIntent).addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-            for (int userId : userIds) {
-                getContext().sendBroadcastAsUser(intent, UserHandle.of(userId), null);
-            }
-
-            // explicitly send the broadcast to all DND packages, even if they aren't currently
-            // running
-            for (int userId : userIds) {
-                for (String pkg : mConditionProviders.getAllowedPackages(userId)) {
-                    Intent pkgIntent = new Intent(baseIntent).setPackage(pkg).setFlags(
-                            Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
-                    getContext().sendBroadcastAsUser(pkgIntent, UserHandle.of(userId));
-                }
+            for (String pkg : dndPackages) {
+                Intent pkgIntent = new Intent(baseIntent).setPackage(pkg)
+                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+                userContext.sendBroadcast(pkgIntent);
             }
         }
     }
@@ -3632,15 +3605,10 @@ public class NotificationManagerService extends SystemService {
                 mEffectsSuppressors, suppressors, oldSuppressedEffects, updatedSuppressedEffects);
         mZenModeHelper.setSuppressedEffects(updatedSuppressedEffects);
 
-        if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
-            if (!suppressors.equals(mEffectsSuppressors)) {
-                mEffectsSuppressors = suppressors;
-                sendZenBroadcastWithDelay(
-                        new Intent(NotificationManager.ACTION_EFFECTS_SUPPRESSOR_CHANGED));
-            }
-        } else {
+        if (!suppressors.equals(mEffectsSuppressors)) {
             mEffectsSuppressors = suppressors;
-            sendRegisteredOnlyBroadcast(NotificationManager.ACTION_EFFECTS_SUPPRESSOR_CHANGED);
+            sendZenBroadcastWithDelay(
+                    new Intent(NotificationManager.ACTION_EFFECTS_SUPPRESSOR_CHANGED));
         }
     }
 
@@ -3767,11 +3735,7 @@ public class NotificationManagerService extends SystemService {
             ArraySet<ComponentName> serviceInfoList = mListenersDisablingEffects.valueAt(i);
 
             for (ComponentName info : serviceInfoList) {
-                if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
-                    if (!names.contains(info)) {
-                        names.add(info);
-                    }
-                } else {
+                if (!names.contains(info)) {
                     names.add(info);
                 }
             }
@@ -4487,14 +4451,6 @@ public class NotificationManagerService extends SystemService {
         public void setNotificationsEnabledWithImportanceLockForPackage(
                 String pkg, int uid, boolean enabled) {
             setNotificationsEnabledForPackage(pkg, uid, enabled);
-        }
-
-        /**
-         * Use this when you just want to know if notifications are OK for this package.
-         */
-        @Override
-        public boolean areNotificationsEnabled(String pkg) {
-            return areNotificationsEnabledForPackage(pkg, Binder.getCallingUid());
         }
 
         /**
@@ -5492,7 +5448,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(android.app.Flags.FLAG_NM_BINDER_PERF_GET_APPS_WITH_CHANNELS)
         public List<String> getPackagesWithAnyChannels(int userId) throws RemoteException {
             checkCallerIsSystem();
             UserHandle user = UserHandle.of(userId);
@@ -9712,40 +9667,21 @@ public class NotificationManagerService extends SystemService {
                 // Rate limit updates. Because this triggers often for progress notifications,
                 // explicitly let through "important" progress updates (e.g. progress completed).
                 // Search for the original one in the posted and not-yet-posted (enqueued) lists.
-                if (android.app.Flags.notificationUpdateSheddingAllowProgressCompletion()) {
-                    NotificationRecord previous = findPreviousNotificationLocked(r.getKey());
-                    if (previous != null
-                            && previous.getNotification().getProgressState()
-                                    == r.getNotification().getProgressState()
-                            && !isAutogroup) {
-                        final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
-                        if (appEnqueueRate > mMaxPackageEnqueueRate) {
-                            mUsageStats.registerOverRateQuota(pkg);
-                            final long now = SystemClock.elapsedRealtime();
-                            if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
-                                Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
-                                        + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
-                                mLastOverRateLogTime = now;
-                            }
-                            return false;
+                NotificationRecord previous = findPreviousNotificationLocked(r.getKey());
+                if (previous != null
+                        && previous.getNotification().getProgressState()
+                                == r.getNotification().getProgressState()
+                        && !isAutogroup) {
+                    final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
+                    if (appEnqueueRate > mMaxPackageEnqueueRate) {
+                        mUsageStats.registerOverRateQuota(pkg);
+                        final long now = SystemClock.elapsedRealtime();
+                        if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
+                            Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
+                                    + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
+                            mLastOverRateLogTime = now;
                         }
-                    }
-                } else {
-                    boolean isUpdate = mNotificationsByKey.get(r.getSbn().getKey()) != null
-                            || findNotificationByListLocked(mEnqueuedNotifications,
-                                    r.getSbn().getKey()) != null;
-                    if (isUpdate && !r.getNotification().hasCompletedProgress() && !isAutogroup) {
-                        final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
-                        if (appEnqueueRate > mMaxPackageEnqueueRate) {
-                            mUsageStats.registerOverRateQuota(pkg);
-                            final long now = SystemClock.elapsedRealtime();
-                            if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
-                                Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
-                                        + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
-                                mLastOverRateLogTime = now;
-                            }
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
@@ -10716,22 +10652,12 @@ public class NotificationManagerService extends SystemService {
             return true;
         }
 
-        if (android.app.Flags.notificationUpdateSheddingAllowProgressCompletion()) {
-            if (oldN.getProgressState() != newN.getProgressState()) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is interruptive: significantly changed progress");
-                }
-                return true;
+        if (oldN.getProgressState() != newN.getProgressState()) {
+            if (DEBUG_INTERRUPTIVENESS) {
+                Slog.v(TAG, "INTERRUPTIVENESS: "
+                        + r.getKey() + " is interruptive: significantly changed progress");
             }
-        } else {
-            if (oldN.hasCompletedProgress() != newN.hasCompletedProgress()) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is interruptive: completed progress");
-                }
-                return true;
-            }
+            return true;
         }
 
         if (Notification.areIconsDifferent(oldN, newN)) {
@@ -13284,16 +13210,8 @@ public class NotificationManagerService extends SystemService {
                     final NotificationRankingUpdate update = makeRankingUpdateLocked(info);
 
                     try {
-                        if (android.app.Flags.noSbnholder()) {
-                            assistant.onNotificationEnqueuedWithChannelFull(sbnToPost,
-                                    r.getChannel(), update);
-                        } else {
-                            final StatusBarNotificationHolder sbnHolder =
-                                    new StatusBarNotificationHolder(sbnToPost);
-
-                            assistant.onNotificationEnqueuedWithChannel(sbnHolder, r.getChannel(),
-                                    update);
-                        }
+                        assistant.onNotificationEnqueuedWithChannel(sbnToPost, r.getChannel(),
+                                update);
                     } catch (DeadObjectException ex) {
                         Slog.wtf(TAG, "unable to notify assistant (enqueued): " + info, ex);
                     } catch (RemoteException ex) {
@@ -13450,15 +13368,7 @@ public class NotificationManagerService extends SystemService {
                     true /* sameUserOnly */,
                     (info, sbnToPost) -> {
                         try {
-                            if (android.app.Flags.noSbnholder()) {
-                                info.onNotificationSnoozedUntilContextFull(
-                                        sbnToPost, snoozeCriterionId);
-                            } else {
-                                final StatusBarNotificationHolder sbnHolder =
-                                        new StatusBarNotificationHolder(sbnToPost);
-                                info.onNotificationSnoozedUntilContext(
-                                        sbnHolder, snoozeCriterionId);
-                            }
+                            info.onNotificationSnoozedUntilContext(sbnToPost, snoozeCriterionId);
                         } catch (DeadObjectException ex) {
                             Slog.wtf(TAG, "unable to notify assistant (snoozed): " + info, ex);
                         } catch (RemoteException ex) {
@@ -15028,12 +14938,7 @@ public class NotificationManagerService extends SystemService {
             final INotificationListener listener = (INotificationListener) info.service;
             final long token = getDispatchReportingToken(info, BINDER_TAG_ON_NOTIFICATION_POSTED);
             try {
-                if (android.app.Flags.noSbnholder()) {
-                    listener.onNotificationPostedFull(sbn, rankingUpdate, token);
-                } else {
-                    StatusBarNotificationHolder sbnHolder = new StatusBarNotificationHolder(sbn);
-                    listener.onNotificationPosted(sbnHolder, rankingUpdate, token);
-                }
+                listener.onNotificationPosted(sbn, rankingUpdate, token);
             } catch (DeadObjectException ex) {
                 Slog.wtf(TAG, "unable to notify listener (posted): " + info, ex);
             } catch (RemoteException ex) {
@@ -15058,12 +14963,7 @@ public class NotificationManagerService extends SystemService {
                 }
                 final long token = getDispatchReportingToken(info,
                         BINDER_TAG_ON_NOTIFICATION_REMOVED);
-                if (android.app.Flags.noSbnholder()) {
-                    listener.onNotificationRemovedFull(sbn, rankingUpdate, stats, reason, token);
-                } else {
-                    StatusBarNotificationHolder sbnHolder = new StatusBarNotificationHolder(sbn);
-                    listener.onNotificationRemoved(sbnHolder, rankingUpdate, stats, reason, token);
-                }
+                listener.onNotificationRemoved(sbn, rankingUpdate, stats, reason, token);
             } catch (DeadObjectException ex) {
                 Slog.wtf(TAG, "unable to notify listener (removed): " + info, ex);
             } catch (RemoteException ex) {
@@ -15551,27 +15451,6 @@ public class NotificationManagerService extends SystemService {
         checkCallerIsSystemOrShell();
         List<ComponentName> allowedComponents = mAssistants.getAllowedComponents(userId);
         return CollectionUtils.firstOrNull(allowedComponents);
-    }
-
-    /**
-     * Wrapper for a StatusBarNotification object that allows transfer across a oneway
-     * binder without sending large amounts of data over a oneway transaction.
-     */
-    private static final class StatusBarNotificationHolder
-            extends IStatusBarNotificationHolder.Stub {
-        private StatusBarNotification mValue;
-
-        public StatusBarNotificationHolder(StatusBarNotification value) {
-            mValue = value;
-        }
-
-        /** Get the held value and clear it. This function should only be called once per holder */
-        @Override
-        public StatusBarNotification get() {
-            StatusBarNotification value = mValue;
-            mValue = null;
-            return value;
-        }
     }
 
     private void writeSecureNotificationsPolicy(TypedXmlSerializer out) throws IOException {

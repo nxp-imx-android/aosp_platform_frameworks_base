@@ -106,44 +106,6 @@ flag {
 }
 
 flag {
-  name: "nm_binder_perf_permission_check"
-  namespace: "systemui"
-  description: "Use PermissionManager for areNotificationsEnabled() instead of NMS"
-  bug: "362981561"
-}
-
-flag {
-  name: "nm_binder_perf_cache_channels"
-  namespace: "systemui"
-  description: "Use IpcDataCache for notification channel/group lookups"
-  bug: "362981561"
-}
-
-flag {
-  name: "nm_binder_perf_throttle_notify"
-  namespace: "systemui"
-  description: "Rate-limit calls to enqueueNotificationWithTag client-side"
-  bug: "362981561"
-}
-
-flag {
-  name: "nm_binder_perf_get_apps_with_channels"
-  namespace: "systemui"
-  description: "Use a single binder call to get the set of apps with channels for a user"
-  bug: "362981561"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "no_sbnholder"
-  namespace: "systemui"
-  description: "removes sbnholder from NLS"
-  bug: "378128805"
-}
-
-flag {
   name: "nm_summarization_ui"
   namespace: "systemui"
   description: "Shows summarized notifications in the UI"
@@ -165,16 +127,6 @@ flag {
   namespace: "systemui"
   description: "Shows summarizatino onboarding UI"
   bug: "391568054"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "notification_update_shedding_allow_progress_completion"
-  namespace: "systemui"
-  description: "When throttling notification updates, specifically allow the progress -> no_progress transition"
-  bug: "425364383"
   metadata {
     purpose: PURPOSE_BUGFIX
   }

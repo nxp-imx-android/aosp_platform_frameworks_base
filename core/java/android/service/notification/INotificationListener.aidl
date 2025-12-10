@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.IDispatchCompletionListener;
-import android.service.notification.IStatusBarNotificationHolder;
 import android.service.notification.NotificationRankingUpdate;
 import android.service.notification.NotificationStats;
 import android.service.notification.StatusBarNotification;
@@ -35,16 +34,11 @@ oneway interface INotificationListener
     // listeners and assistant
     void onListenerConnected(in NotificationRankingUpdate update,
             in IDispatchCompletionListener completionCallback, in long dispatchToken);
-    void onNotificationPosted(in IStatusBarNotificationHolder notificationHolder,
-            in NotificationRankingUpdate update, in long dispatchToken);
-    void onNotificationPostedFull(in StatusBarNotification sbn,
+    void onNotificationPosted(in StatusBarNotification sbn,
             in NotificationRankingUpdate update, in long dispatchToken);
     void onStatusBarIconsBehaviorChanged(boolean hideSilentStatusIcons, in long dispatchToken);
     // stats only for assistant
-    void onNotificationRemoved(in IStatusBarNotificationHolder notificationHolder,
-            in NotificationRankingUpdate update, in NotificationStats stats, int reason,
-            in long dispatchToken);
-    void onNotificationRemovedFull(in StatusBarNotification sbn,
+    void onNotificationRemoved(in StatusBarNotification sbn,
             in NotificationRankingUpdate update, in NotificationStats stats, int reason,
             in long dispatchToken);
     void onNotificationRankingUpdate(in NotificationRankingUpdate update, in long dispatchToken);
@@ -56,10 +50,8 @@ oneway interface INotificationListener
     void onNotificationChannelGroupModification(String pkgName, in UserHandle user, in NotificationChannelGroup group, int modificationType, in long dispatchToken);
 
     // assistants only
-    void onNotificationEnqueuedWithChannel(in IStatusBarNotificationHolder notificationHolder, in NotificationChannel channel, in NotificationRankingUpdate update);
-    void onNotificationEnqueuedWithChannelFull(in StatusBarNotification sbn, in NotificationChannel channel, in NotificationRankingUpdate update);
-    void onNotificationSnoozedUntilContext(in IStatusBarNotificationHolder notificationHolder, String snoozeCriterionId);
-    void onNotificationSnoozedUntilContextFull(in StatusBarNotification sbn, String snoozeCriterionId);
+    void onNotificationEnqueuedWithChannel(in StatusBarNotification sbn, in NotificationChannel channel, in NotificationRankingUpdate update);
+    void onNotificationSnoozedUntilContext(in StatusBarNotification sbn, String snoozeCriterionId);
     void onNotificationsSeen(in List<String> keys);
     void onPanelRevealed(int items);
     void onPanelHidden();

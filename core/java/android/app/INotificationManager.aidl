@@ -80,7 +80,6 @@ interface INotificationManager
 
     @UnsupportedAppUsage
     boolean areNotificationsEnabledForPackage(String pkg, int uid);
-    boolean areNotificationsEnabled(String pkg);
     int getPackageImportance(String pkg);
     boolean isImportanceLocked(String pkg, int uid);
 

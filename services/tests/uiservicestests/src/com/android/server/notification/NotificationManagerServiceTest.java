@@ -12626,61 +12626,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS)
-    public void onZenModeChanged_sendsBroadcasts_oldBehavior() throws Exception {
-        when(mAmi.getCurrentUserId()).thenReturn(100);
-        when(mUmInternal.getProfileIds(eq(100), anyBoolean())).thenReturn(new int[]{100, 101, 102});
-        when(mConditionProviders.getAllowedPackages(anyInt())).then(new Answer<List<String>>() {
-            @Override
-            public List<String> answer(InvocationOnMock invocation) {
-                int userId = invocation.getArgument(0);
-                switch (userId) {
-                    case 100:
-                        return Lists.newArrayList("a", "b", "c");
-                    case 101:
-                        return Lists.newArrayList();
-                    case 102:
-                        return Lists.newArrayList("b");
-                    default:
-                        throw new IllegalArgumentException(
-                                "Why would you ask for packages of userId " + userId + "?");
-                }
-            }
-        });
-
-        mService.getBinderService().setZenMode(Settings.Global.ZEN_MODE_NO_INTERRUPTIONS, null,
-                "testing!", false);
-        waitForIdle();
-
-        InOrder inOrder = inOrder(mContext);
-        // Verify broadcasts for registered receivers
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(
-                new Intent(ACTION_INTERRUPTION_FILTER_CHANGED).setFlags(
-                        Intent.FLAG_RECEIVER_REGISTERED_ONLY)), eq(UserHandle.of(100)), eq(null));
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(
-                new Intent(ACTION_INTERRUPTION_FILTER_CHANGED).setFlags(
-                        Intent.FLAG_RECEIVER_REGISTERED_ONLY)), eq(UserHandle.of(101)), eq(null));
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(
-                new Intent(ACTION_INTERRUPTION_FILTER_CHANGED).setFlags(
-                        Intent.FLAG_RECEIVER_REGISTERED_ONLY)), eq(UserHandle.of(102)), eq(null));
-
-        // Verify broadcast for packages that manage DND.
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(new Intent(
-                ACTION_INTERRUPTION_FILTER_CHANGED).setPackage("a").setFlags(
-                Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)), eq(UserHandle.of(100)));
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(new Intent(
-                ACTION_INTERRUPTION_FILTER_CHANGED).setPackage("b").setFlags(
-                Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)), eq(UserHandle.of(100)));
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(new Intent(
-                ACTION_INTERRUPTION_FILTER_CHANGED).setPackage("c").setFlags(
-                Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)), eq(UserHandle.of(100)));
-        inOrder.verify(mContext).sendBroadcastAsUser(eqIntent(new Intent(
-                ACTION_INTERRUPTION_FILTER_CHANGED).setPackage("b").setFlags(
-                Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)), eq(UserHandle.of(102)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS)
     public void onZenModeChanged_sendsBroadcasts() throws Exception {
         when(mAmi.getCurrentUserId()).thenReturn(100);
         when(mUmInternal.getProfileIds(eq(100), anyBoolean())).thenReturn(new int[]{100, 101, 102});
@@ -17358,7 +17303,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
     public void enqueueUpdate_aboveMaxRate_stillAcceptsProgressCompletion() throws Exception {
         // Post a notification with ongoing progress
         long now = System.currentTimeMillis();
@@ -19094,12 +19038,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST,
-            Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS})
     public void requestHintsFromListener_changingEffectsButNotSuppressor_noBroadcast()
             throws Exception {
-        // Note that NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS is not strictly necessary; however each
-        // path will do slightly different calls so we force one of them to simplify the test.
         when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
         when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
         INotificationListener token = mock(INotificationListener.class);
@@ -19121,11 +19061,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST,
-            Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS})
     public void requestHintsFromListener_changingSuppressor_throttlesBroadcast() throws Exception {
-        // Note that NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS is not strictly necessary; however each
-        // path will do slightly different calls so we force one of them to simplify the test.
         when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
         when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
         INotificationListener token = mock(INotificationListener.class);
