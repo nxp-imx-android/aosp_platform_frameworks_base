@@ -2138,6 +2138,7 @@ constructor(
             if (controller.windowAnimatorState == null) {
                 startAnimation(
                     window,
+                    useSpring = !controller.isLaunching,
                     startTransaction = startTransaction,
                     onAnimationFinished = onAnimationFinished,
                 )

@@ -1052,6 +1052,7 @@ private class AnimatedDialog(
                     null
                 },
             springParams = if (isLaunching) LAUNCH_SPRING_PARAMS else COLLAPSE_SPRING_PARAMS,
+            useDynamicPivot = true,
         )
     }
 
