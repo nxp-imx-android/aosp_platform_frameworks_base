@@ -111,6 +111,7 @@ fun ContentScope.QuickSettingsContent(
                             presentationStyle = MediaPresentationStyle.Default,
                             behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
                             onDismissed = viewModel::onMediaSwipeToDismiss,
+                            location = Media.Location.QS,
                         )
                     }
                 } else {

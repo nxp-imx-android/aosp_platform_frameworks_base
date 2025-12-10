@@ -370,6 +370,7 @@ private fun ContentScope.QuickSettingsLayout(
                 behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
                 onDismissed = qsContainerViewModel::onMediaSwipeToDismiss,
                 modifier = Modifier,
+                location = Media.Location.QS,
             )
 
             if (qsContainerViewModel.showMedia) {
@@ -427,9 +428,10 @@ private fun ContentScope.QuickSettingsLayout(
                         )
                         Spacer(Modifier.width(8.dp))
                         IconButton(
-                            modifier = Modifier.size(
-                                QuickSettingsShade.Dimensions.VolumeSliderDimensions.trackHeight
-                            ),
+                            modifier =
+                                Modifier.size(
+                                    QuickSettingsShade.Dimensions.VolumeSliderDimensions.trackHeight
+                                ),
                             colors =
                                 IconButtonDefaults.iconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,

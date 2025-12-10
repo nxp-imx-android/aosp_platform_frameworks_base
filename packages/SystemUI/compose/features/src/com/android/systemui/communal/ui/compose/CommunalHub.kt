@@ -1891,6 +1891,7 @@ private fun Umo(
                         RoundedCornerShape(dimensionResource(R.dimen.notification_corner_radius)),
                     ),
                 onDismissed = { viewModel.mediaCarouselInteractorLazy.get().onSwipeToDismiss() },
+                location = Media.Location.COMMUNAL_HUB,
             )
         } else {
             UmoLegacy(viewModel, modifier)

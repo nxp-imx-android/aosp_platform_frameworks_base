@@ -63,6 +63,7 @@ fun MediaControlPopup(
                                 dimensionResource(R.dimen.notification_corner_radius)
                             )
                     ),
+            location = Media.Location.STATUS_BAR_POPUP,
         )
     } else {
         AndroidView(

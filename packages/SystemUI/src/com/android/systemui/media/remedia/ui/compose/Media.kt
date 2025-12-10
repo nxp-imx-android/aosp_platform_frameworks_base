@@ -188,6 +188,7 @@ fun Media(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
     visible: () -> Boolean = { true },
+    location: Media.Location,
 ) {
     val context = LocalContext.current
     val viewModel: MediaViewModel =
@@ -199,6 +200,8 @@ fun Media(
         }
 
     LaunchedEffect(visible) { viewModel.setVisibility(visible) }
+
+    viewModel.mediaUiEventLogger.logCarouselLocation(location)
 
     CardCarousel(
         viewModel = viewModel,
@@ -1680,6 +1683,14 @@ object Media {
         CardForeground,
         CardGuts,
         CardRevealedContent,
+    }
+
+    enum class Location {
+        QS,
+        SHADE,
+        LOCKSCREEN,
+        COMMUNAL_HUB,
+        STATUS_BAR_POPUP,
     }
 
     const val TAG = "Media"

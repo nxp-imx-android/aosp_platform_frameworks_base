@@ -351,6 +351,7 @@ private fun ContentScope.SingleShade(
                                             },
                                         behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
                                         onDismissed = viewModel::onMediaSwipeToDismiss,
+                                        location = Media.Location.SHADE,
                                     )
                                 }
                             }
