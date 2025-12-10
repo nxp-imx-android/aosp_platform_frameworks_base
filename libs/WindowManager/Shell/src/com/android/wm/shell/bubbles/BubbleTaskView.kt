@@ -21,7 +21,6 @@ import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
-import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
@@ -72,6 +71,9 @@ constructor(
 
     /** [TaskView.Listener] for users of this class. */
     var delegateListener: TaskView.Listener? = null
+
+    /** Whether the task should be removed during [cleanup] or not. */
+    var taskShouldBeRemoved = false
 
     /** A [TaskView.Listener] that delegates to [delegateListener]. */
     @get:VisibleForTesting
@@ -140,9 +142,12 @@ constructor(
                     ) {
                         taskView.unregisterTask()
                     } else if (Flags.bugDontRemoveTaskBubble()) {
-                        taskView.unregisterTask()
-                        taskView.release()
-                        processExitBubbleTransaction(taskView)
+                        if (taskShouldBeRemoved) {
+                            taskView.removeTask()
+                        } else {
+                            taskView.unregisterTask()
+                            taskView.release()
+                        }
                     } else {
                         taskView.removeTask()
                     }
@@ -154,21 +159,8 @@ constructor(
             }
         } else if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
             taskView.unregisterTask()
-        } else if (Flags.bugDontRemoveTaskBubble()) {
-            taskView.unregisterTask()
-            taskView.release()
-            processExitBubbleTransaction(taskView)
         } else {
             taskView.removeTask()
-        }
-    }
-
-    private fun processExitBubbleTransaction(taskView: TaskView) {
-        val taskViewController = taskView.controller
-        val taskInfo: RunningTaskInfo = taskViewController.taskInfo ?: return
-        if (taskInfo.isRunning) {
-            val wct = getExitBubbleTransaction(taskInfo.token, taskView.captionInsetsOwner)
-            taskViewController.taskOrganizer.applyTransaction(wct)
         }
     }
 }

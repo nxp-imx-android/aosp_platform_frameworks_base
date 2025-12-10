@@ -26,7 +26,9 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags as WindowFlags
 import com.android.wm.shell.Flags
+import com.android.wm.shell.Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -102,7 +104,6 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         assertThat(actualComponentName).isEqualTo(componentName)
     }
 
-    @DisableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
     @Test
     fun cleanup_noTaskCreated_removesTask() {
         bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
@@ -110,15 +111,6 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
         verify(taskView, never()).unregisterTask()
         verify(taskView).removeTask()
-    }
-
-    @EnableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
-    @Test
-    fun cleanup_noTaskCreated_unregistersTask() {
-        bubbleTaskView.cleanup()
-
-        verify(taskView, never()).removeTask()
-        verify(taskView).unregisterTask()
     }
 
     @DisableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
@@ -133,9 +125,13 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         verify(taskView).removeTask()
     }
 
-    @EnableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        WindowFlags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+        FLAG_BUG_DONT_REMOVE_TASK_BUBBLE,
+    )
     @Test
-    fun cleanup_regularBubbleTask_unregistersTask() {
+    fun cleanup_regularBubbleTask_unregistersTask_bubbleAnythingEnabled() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
         bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
 
@@ -144,6 +140,18 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         verify(taskView).unregisterTask()
         verify(taskView).release()
         verify(taskView, never()).removeTask()
+    }
+
+    @DisableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun cleanup_regularBubbleTask_unregistersTask_bubbleAnythingDisabled() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
+
+        bubbleTaskView.cleanup()
+
+        verify(taskView).removeTask()
+        verify(taskView, never()).unregisterTask()
     }
 
     @Test
@@ -177,6 +185,41 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
             verify(taskView, never()).unregisterTask()
             verify(taskView).removeTask()
         }
+    }
+
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        WindowFlags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+        FLAG_BUG_DONT_REMOVE_TASK_BUBBLE,
+    )
+    @Test
+    fun cleanup_taskMarkedForRemoval_taskRemoved() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
+
+        bubbleTaskView.taskShouldBeRemoved = true
+        bubbleTaskView.cleanup()
+
+        verify(taskView).removeTask()
+        verify(taskView, never()).unregisterTask()
+    }
+
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        WindowFlags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+        FLAG_BUG_DONT_REMOVE_TASK_BUBBLE,
+    )
+    @Test
+    fun cleanup_taskNotMarkedForRemoval_taskNotRemoved() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+        bubbleHelper.stub { on { isAppBubbleTask(any()) } doReturn true }
+
+        bubbleTaskView.taskShouldBeRemoved = false
+        bubbleTaskView.cleanup()
+
+        verify(taskView).unregisterTask()
+        verify(taskView).release()
+        verify(taskView, never()).removeTask()
     }
 
     companion object {
