@@ -33,12 +33,26 @@ import com.android.systemui.kairos.awaitClose
 import com.android.systemui.screencapture.common.ScreenCaptureUi
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+
+/** Data class representing the app content available for screen capture. */
+data class RawAppContent(
+    /** The list of the app content that can be shared. */
+    val contents: List<MediaProjectionAppContent>,
+    /**
+     * The projection callback that can start the session. This is a [WeakReference] because the
+     * callback is a Binder object tied to a service connection. Using a weak reference prevents
+     * consumers of this data class from accidentally causing a memory leak by holding a strong
+     * reference to the Binder proxy after the connection has been torn down.
+     */
+    val projectionCallback: WeakReference<IAppContentProjectionCallback>,
+)
 
 /** Repository storing information about app content available for Screen Capture sessions. */
 interface ScreenCaptureAppContentRepository {
@@ -52,7 +66,7 @@ interface ScreenCaptureAppContentRepository {
         user: UserHandle,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
-    ): Flow<Result<List<MediaProjectionAppContent>>>
+    ): Flow<Result<RawAppContent>>
 }
 
 /**
@@ -74,7 +88,7 @@ constructor(
         user: UserHandle,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
-    ): Flow<Result<List<MediaProjectionAppContent>>> =
+    ): Flow<Result<RawAppContent>> =
         conflatedCallbackFlow {
                 val serviceConnection =
                     makeServiceConnection(thumbnailWidthPx, thumbnailHeightPx) { trySend(it) }
@@ -104,53 +118,63 @@ constructor(
     private fun makeServiceConnection(
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
-        onAppContents: (Result<List<MediaProjectionAppContent>>) -> Unit,
+        onResult: (Result<RawAppContent>) -> Unit,
     ): ServiceConnection =
         object : ServiceConnection {
-            private val listener = RemoteCallback { bundle ->
-                if (bundle == null) return@RemoteCallback
-
-                val appContents =
-                    bundle
-                        .getParcelableArray(
-                            AppContentProjectionService.EXTRA_APP_CONTENT,
-                            MediaProjectionAppContent::class.java,
-                        )
-                        ?.toList()
-
-                if (appContents == null) return@RemoteCallback
-
-                onAppContents(Result.success(appContents))
-            }
-
             private var callback: IAppContentProjectionCallback? = null
 
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                callback =
-                    IAppContentProjectionCallback.Stub.asInterface(service).also {
-                        if (it == null) {
-                            val errMsg = "Invalid service IBinder: $service"
-                            Log.w(TAG, errMsg)
-                            context.unbindService(this)
-                            onAppContents(Result.failure(IllegalArgumentException(errMsg)))
-                            return
-                        }
+                val projectionCallback = IAppContentProjectionCallback.Stub.asInterface(service)
+                if (projectionCallback == null) {
+                    val errMsg = "Invalid service IBinder: $service"
+                    Log.w(TAG, errMsg)
+                    context.unbindService(this)
+                    onResult(Result.failure(IllegalArgumentException(errMsg)))
+                    return
+                }
+                callback = projectionCallback
 
-                        scope.launch(bgContext) {
-                            try {
-                                it.onContentRequest(listener, thumbnailWidthPx, thumbnailHeightPx)
-                            } catch (e: RemoteException) {
-                                Log.e(TAG, "App content request failed", e)
-                                onAppContents(Result.failure(e))
-                            }
-                        }
+                val listener = RemoteCallback { bundle ->
+                    if (bundle == null) return@RemoteCallback
+
+                    val appContents =
+                        bundle
+                            .getParcelableArray(
+                                AppContentProjectionService.EXTRA_APP_CONTENT,
+                                MediaProjectionAppContent::class.java,
+                            )
+                            ?.toList()
+
+                    if (appContents == null) return@RemoteCallback
+
+                    onResult(
+                        Result.success(
+                            RawAppContent(
+                                contents = appContents,
+                                projectionCallback = WeakReference(projectionCallback),
+                            )
+                        )
+                    )
+                }
+
+                scope.launch(bgContext) {
+                    try {
+                        projectionCallback.onContentRequest(
+                            listener,
+                            thumbnailWidthPx,
+                            thumbnailHeightPx,
+                        )
+                    } catch (e: RemoteException) {
+                        Log.e(TAG, "App content request failed", e)
+                        onResult(Result.failure(e))
                     }
+                }
             }
 
             override fun onBindingDied(name: ComponentName?) {
                 val errMsg = "Binding died for $name"
                 Log.w(TAG, errMsg)
-                onAppContents(Result.failure(IllegalStateException(errMsg)))
+                onResult(Result.failure(IllegalStateException(errMsg)))
                 context.unbindService(this)
             }
 

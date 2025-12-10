@@ -18,11 +18,14 @@ package com.android.systemui.screencapture.sharescreen.domain.interactor
 
 import android.app.ActivityManager
 import android.app.ActivityOptions
+import android.media.projection.IAppContentProjectionCallback
+import android.media.projection.IAppContentProjectionSession
 import android.media.projection.IMediaProjection
 import android.media.projection.ReviewGrantedConsentResult
+import android.media.projection.StopReason
+import android.os.RemoteException
 import android.os.UserHandle
 import android.util.Log
-import com.android.systemui.mediaprojection.MediaProjectionServiceHelper
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.util.AsyncActivityLauncher
@@ -37,6 +40,7 @@ class ShareScreenUiInteractor
 constructor(
     private val recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val asyncActivityLauncher: AsyncActivityLauncher,
+    private val mediaProjectionHelper: MediaProjectionServiceHelperWrapper,
 ) {
 
     sealed class SharingState {
@@ -70,14 +74,57 @@ constructor(
         this.initialDisplayId = initialDisplayId
     }
 
-    fun onAppContentSharingApproved(contentId: Int) {
-        // TODO(b/423708479) Finish the flow to support app content sharing.
+    /**
+     * Called when the user approves sharing of a specific piece of app content (e.g. a browser
+     * tab).
+     */
+    fun onAppContentSharingApproved(contentId: Int, callback: IAppContentProjectionCallback) {
+        try {
+            val projection =
+                mediaProjectionHelper.createOrReuseProjection(
+                    uid,
+                    packageName,
+                    reviewGrantedConsentRequired,
+                    initialDisplayId,
+                )
+
+            val session =
+                object : IAppContentProjectionSession.Stub() {
+                    // This is an anonymous implementation of IAppContentProjectionSession.Stub.
+                    // It serves as the local Binder object for the projection session, allowing
+                    // the remote app (the app being projected) to notify the SystemUI service
+                    // when the projection session stops.
+                    override fun notifySessionStop() {
+                        Log.d(TAG, "App content projection session stopped by remote app.")
+                        try {
+                            projection.stop(StopReason.STOP_HOST_APP)
+                        } catch (e: RemoteException) {
+                            Log.e(TAG, "Failed to stop projection on session stop", e)
+                        }
+                        _sharingState.value = SharingState.Denied
+                    }
+                }
+
+            // TODO(b/460506436) Hook up the audio with the user's selection.
+            callback.onLoopbackProjectionStarted(session, contentId, /* isAudioRequested= */ false)
+
+            mediaProjectionHelper.setReviewedConsentIfNeeded(
+                ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
+                reviewGrantedConsentRequired,
+                projection,
+            )
+            _sharingState.value = SharingState.Approved(projection)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error granting projection permission for app content", e)
+            _sharingState.value = SharingState.Denied
+        }
     }
 
+    /** Called when the user approves sharing of a single application, identified by its task ID. */
     suspend fun onAppSharingApproved(taskId: Int) {
         try {
             val projection =
-                MediaProjectionServiceHelper.createOrReuseProjection(
+                mediaProjectionHelper.createOrReuseProjection(
                     uid,
                     packageName,
                     reviewGrantedConsentRequired,
@@ -115,7 +162,7 @@ constructor(
                         // cookie.
                         projection.setLaunchCookie(launchCookie)
                         projection.taskId = taskId
-                        MediaProjectionServiceHelper.setReviewedConsentIfNeeded(
+                        mediaProjectionHelper.setReviewedConsentIfNeeded(
                             ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
                             reviewGrantedConsentRequired,
                             projection,
@@ -140,9 +187,10 @@ constructor(
         }
     }
 
+    /** Called when the user approves sharing of an entire display. */
     fun onDisplaySharingApproved(displayId: Int) {
         val projection =
-            MediaProjectionServiceHelper.createOrReuseProjection(
+            mediaProjectionHelper.createOrReuseProjection(
                 uid,
                 packageName,
                 reviewGrantedConsentRequired,

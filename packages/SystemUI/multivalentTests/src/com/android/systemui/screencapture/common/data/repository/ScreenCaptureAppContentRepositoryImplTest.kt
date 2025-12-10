@@ -16,20 +16,13 @@
 
 package com.android.systemui.screencapture.common.data.repository
 
-import android.Manifest
-import android.annotation.EnforcePermission
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.mockedContext
 import android.media.projection.AppContentProjectionService
-import android.media.projection.IAppContentProjectionCallback
-import android.media.projection.IAppContentProjectionSession
 import android.media.projection.MediaProjectionAppContent
 import android.os.Bundle
-import android.os.PermissionEnforcer
-import android.os.RemoteCallback
-import android.os.RemoteException
 import android.os.UserHandle
 import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -40,6 +33,7 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Job
@@ -78,7 +72,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
     private val fakeUserHandle = UserHandle.of(123)
     private val serviceConnectionCaptor = argumentCaptor<ServiceConnection>()
 
-    private var result: Result<List<MediaProjectionAppContent>>? = null
+    private var result: Result<RawAppContent>? = null
 
     @Test
     fun appContentFor_whenCollectionStarts_bindsToService() =
@@ -395,15 +389,18 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 /* service= */ fakeAppContentProjectionCallback.asBinder(),
             )
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
-            val callback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
+            val remoteCallback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
             assertThat(result).isNull()
 
             // Act
-            callback.sendResult(fakeResultBundle)
+            remoteCallback.sendResult(fakeResultBundle)
 
             // Assert
             assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()).containsExactly(fakeAppContent)
+            val rawAppContent = result!!.getOrThrow()
+            assertThat(rawAppContent.contents).containsExactly(fakeAppContent)
+            assertThat(rawAppContent.projectionCallback.get())
+                .isEqualTo(fakeAppContentProjectionCallback)
 
             // Cleanup
             job.cancel()
@@ -473,11 +470,11 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 /* service= */ fakeAppContentProjectionCallback.asBinder(),
             )
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
-            val callback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
+            val remoteCallback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
             assertThat(result).isNull()
 
             // Act
-            callback.sendResult(null)
+            remoteCallback.sendResult(null)
 
             // Assert
             assertThat(result).isNull()
@@ -503,45 +500,4 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 )
                 .collect { result = it }
         }
-}
-
-private class FakeAppContentProjectionCallback(context: Context) :
-    IAppContentProjectionCallback.Stub(PermissionEnforcer(context)) {
-    val onContentRequestCalls = mutableListOf<Triple<RemoteCallback, Int, Int>>()
-
-    @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
-    @Throws(RemoteException::class)
-    override fun onContentRequest(
-        newContentConsumer: RemoteCallback,
-        thumbnailWidth: Int,
-        thumbnailHeight: Int,
-    ) {
-        onContentRequest_enforcePermission()
-        onContentRequestCalls.add(Triple(newContentConsumer, thumbnailWidth, thumbnailHeight))
-    }
-
-    @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
-    @Throws(RemoteException::class)
-    override fun onLoopbackProjectionStarted(
-        session: IAppContentProjectionSession?,
-        contentId: Int,
-        isAudioRequested: Boolean,
-    ) {
-        onLoopbackProjectionStarted_enforcePermission()
-    }
-
-    var onSessionStoppedCallCount: Int = 0
-
-    @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
-    @Throws(RemoteException::class)
-    override fun onSessionStopped() {
-        onSessionStopped_enforcePermission()
-        onSessionStoppedCallCount++
-    }
-
-    @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
-    @Throws(RemoteException::class)
-    override fun onContentRequestCanceled() {
-        onContentRequestCanceled_enforcePermission()
-    }
 }

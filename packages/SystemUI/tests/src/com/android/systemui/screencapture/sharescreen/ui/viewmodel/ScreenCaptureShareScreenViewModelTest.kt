@@ -20,32 +20,41 @@ import android.app.WaitResult
 import android.content.ComponentName
 import android.content.Intent
 import android.content.testableContext
+import android.media.projection.MediaProjectionAppContent
+import android.os.UserHandle
 import android.view.Display
+import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureRecentTaskRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.appContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.displayViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.displaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTaskViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
+import com.android.systemui.screencapture.sharescreen.domain.interactor.fakeMediaProjectionServiceHelperWrapper
 import com.android.systemui.screencapture.sharescreen.domain.interactor.mockAsyncActivityLauncher
 import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -64,6 +73,22 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             testableContext.orCreateTestableResources.addOverride(
                 R.bool.config_largeScreenPrivacyIndicator,
                 true,
+            )
+        }
+
+    private val Kosmos.fakeRecentTask by
+        Kosmos.Fixture {
+            RecentTask(
+                taskId = 1,
+                displayId = 2,
+                userId = 3,
+                topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
+                baseIntentComponent = ComponentName("FakeBasePackage", "FakeClass"),
+                baseIntent = Intent(),
+                colorBackground = 0x12345699,
+                isForegroundTask = true,
+                userType = RecentTask.UserType.STANDARD,
+                splitBounds = null,
             )
         }
 
@@ -112,24 +137,13 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             assertThat(isChipVisible).isFalse()
             val target = ScreenCaptureTarget.App(displayId = 1, taskId = 42)
-            val fakeRecentTask =
-                RecentTask(
-                    taskId = target.taskId,
-                    displayId = target.displayId,
-                    userId = 3,
-                    topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
-                    baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
-                    baseIntent = Intent(),
-                    colorBackground = 0x12345699,
-                    isForegroundTask = true,
-                    userType = RecentTask.UserType.STANDARD,
-                    splitBounds = null,
-                )
             val fakeRecentTaskViewModel =
-                kosmos.recentTaskViewModelFactory.create(ScreenCaptureRecentTask(fakeRecentTask))
+                kosmos.recentTaskViewModelFactory.create(
+                    ScreenCaptureRecentTask(kosmos.fakeRecentTask)
+                )
 
             // Setup the interactor's dependencies for this specific test.
-            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(fakeRecentTask)
+            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(kosmos.fakeRecentTask)
             whenever(
                     kosmos.mockAsyncActivityLauncher.startActivityAsUser(any(), any(), any(), any())
                 )
@@ -138,6 +152,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                     it.getArgument<(WaitResult) -> Unit>(3).invoke(WaitResult())
                     true
                 }
+            kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
 
             kosmos.recentTasksViewModel.setSelectedTarget(fakeRecentTaskViewModel)
             viewModel.setTargetViewModel(target)
@@ -151,6 +166,10 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Verify the sharing state is updated to [Approved].
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+            assertThat(
+                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
+                )
+                .isEqualTo(1)
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -169,12 +188,17 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             val display = kosmos.displaysViewModel.targets.value!!.first()
             val fakeDisplayViewModel = displayViewModelFactory.create(display)
             kosmos.displaysViewModel.setSelectedTarget(fakeDisplayViewModel)
+            kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
 
             viewModel.onShareClicked()
 
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+            assertThat(
+                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
+                )
+                .isEqualTo(1)
         }
 
     @Test
@@ -183,5 +207,57 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             viewModel.onCloseClicked()
             assertThat(sharingState).isEqualTo(ShareScreenUiInteractor.SharingState.Denied)
+        }
+
+    @Test
+    fun onShareClicked_appContentTarget_sharingApproved() =
+        kosmos.runTest {
+            val isChipVisible by
+                collectLastValue(kosmos.shareScreenPrivacyIndicatorInteractor.isChipVisible)
+            val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
+            assertThat(isChipVisible).isFalse()
+
+            val target = ScreenCaptureTarget.AppContent(contentId = 123)
+
+            // The view model starts in the App Contents tab.
+            val appContentsViewModel = viewModel.currentTargetsModel as AppContentsViewModel
+
+            // Create a fake app content target and its view model.
+            val fakeMediaProjectionAppContent =
+                MediaProjectionAppContent.Builder(123)
+                    .setThumbnail(createBitmap(200, 100))
+                    .setTitle("FakeLabel")
+                    .build()
+            val fakeCallback = FakeAppContentProjectionCallback(context)
+
+            // Populate the view model with the fake target.
+            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(kosmos.fakeRecentTask)
+            kosmos.fakeScreenCaptureAppContentRepository.setAppContentSuccess(
+                packageName = "FakeBasePackage",
+                user = UserHandle.CURRENT,
+                listOf(fakeMediaProjectionAppContent),
+                WeakReference(fakeCallback),
+            )
+
+            // Select the fake target.
+            val appContentTarget = appContentsViewModel.targets.value?.first()
+            val appContentTargetViewModel =
+                appContentTarget?.let { appContentsViewModel.createViewModelFor(it) }
+            appContentsViewModel.setSelectedTarget(appContentTargetViewModel)
+            viewModel.setTargetViewModel(target)
+            kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
+
+            // Act
+            viewModel.onShareClicked()
+
+            // Assert
+            assertThat(viewModel.isUiVisible).isFalse()
+            assertThat(isChipVisible).isTrue()
+            assertThat(sharingState)
+                .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+            assertThat(
+                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
+                )
+                .isEqualTo(1)
         }
 }

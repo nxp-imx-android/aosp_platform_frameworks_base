@@ -16,10 +16,13 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import android.media.projection.IAppContentProjectionCallback
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import com.android.systemui.screencapture.common.domain.model.TargetModel
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.awaitCancellation
 
 class FakeAppContentsViewModel(
@@ -32,11 +35,18 @@ class FakeAppContentsViewModel(
     AudioSwitchViewModel by fakeAudioSwitchViewModel {
 
     private val fakeAppContents = mutableStateOf<List<ScreenCaptureAppContent>?>(null)
+    val fakeProjectionCallbacks =
+        mutableMapOf<String, WeakReference<IAppContentProjectionCallback>>()
 
     override val targets: State<List<ScreenCaptureAppContent>?> = fakeAppContents
 
     private val _selectedTarget = mutableStateOf<AppContentViewModel?>(null)
     override val selectedTarget: State<AppContentViewModel?> = _selectedTarget
+
+    override val projectionCallback: State<WeakReference<IAppContentProjectionCallback>?> =
+        derivedStateOf {
+            selectedTarget.value?.let { fakeProjectionCallbacks[it.model.packageName] }
+        }
 
     override fun setSelectedTarget(target: TargetViewModel?) {
         _selectedTarget.value = target as AppContentViewModel?

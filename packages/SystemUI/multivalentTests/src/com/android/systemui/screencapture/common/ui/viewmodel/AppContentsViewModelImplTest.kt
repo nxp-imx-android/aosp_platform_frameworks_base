@@ -35,8 +35,10 @@ import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptu
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureAppContentInteractor
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
+import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import java.lang.ref.WeakReference
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -88,9 +90,10 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
         Kosmos.Fixture { appContentViewModelFactory.create(fakeAppContent) }
 
     @Test
-    fun targets_returnsAppContentsFromRepository() =
+    fun targets_returnsAppContentsFromRepository_andSetsCallbacks() =
         kosmos.runTest {
             // Arrange
+            val fakeCallback = FakeAppContentProjectionCallback(context)
             viewModel.activateIn(testScope)
 
             // Act
@@ -99,11 +102,14 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
             fakeScreenCaptureAppContentRepository.setAppContentSuccess(
                 packageName = "FakeBasePackage",
                 user = UserHandle.CURRENT,
-                fakeMediaProjectionAppContent,
+                listOf(fakeMediaProjectionAppContent),
+                WeakReference(fakeCallback),
             )
 
             // Assert
             assertThat(result.value).containsExactly(fakeAppContent)
+            viewModel.setSelectedTarget(fakeAppContentViewModel)
+            assertThat(viewModel.projectionCallback.value?.get()).isEqualTo(fakeCallback)
         }
 
     @Test
@@ -139,5 +145,55 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
                 assertThat(thumbnail?.getOrNull()?.sameAs(fakeThumbnail)).isTrue()
                 assertThat(backgroundColorOpaque).isEqualTo(Color.Black)
             }
+        }
+
+    @Test
+    fun projectionCallback_returnsCallbackForSelectedTarget() =
+        kosmos.runTest {
+            // Arrange
+            val fakeCallback1 = FakeAppContentProjectionCallback(context)
+            val fakeCallback2 = FakeAppContentProjectionCallback(context)
+
+            val recentTask1 =
+                fakeRecentTask.copy(baseIntentComponent = ComponentName("pkg1", "cls1"))
+            val appContent1 = ScreenCaptureAppContent("pkg1", fakeMediaProjectionAppContent)
+            val appContentViewModel1 = appContentViewModelFactory.create(appContent1)
+
+            val recentTask2 =
+                fakeRecentTask.copy(baseIntentComponent = ComponentName("pkg2", "cls2"))
+            val appContent2 = ScreenCaptureAppContent("pkg2", fakeMediaProjectionAppContent)
+            val appContentViewModel2 = appContentViewModelFactory.create(appContent2)
+
+            viewModel.activateIn(testScope)
+
+            // 1. Initial state
+            assertThat(viewModel.projectionCallback.value).isNull()
+
+            // 2. Populate the targets
+            fakeScreenCaptureRecentTaskRepository.setRecentTasks(recentTask1, recentTask2)
+            fakeScreenCaptureAppContentRepository.setAppContentSuccess(
+                packageName = "pkg1",
+                user = UserHandle.CURRENT,
+                listOf(fakeMediaProjectionAppContent),
+                WeakReference(fakeCallback1),
+            )
+            fakeScreenCaptureAppContentRepository.setAppContentSuccess(
+                packageName = "pkg2",
+                user = UserHandle.CURRENT,
+                listOf(fakeMediaProjectionAppContent),
+                WeakReference(fakeCallback2),
+            )
+
+            // 3. Select the first target
+            viewModel.setSelectedTarget(appContentViewModel1)
+            assertThat(viewModel.projectionCallback.value?.get()).isEqualTo(fakeCallback1)
+
+            // 4. Select the second target
+            viewModel.setSelectedTarget(appContentViewModel2)
+            assertThat(viewModel.projectionCallback.value?.get()).isEqualTo(fakeCallback2)
+
+            // 5. Deselect the target
+            viewModel.setSelectedTarget(null)
+            assertThat(viewModel.projectionCallback.value).isNull()
         }
 }
