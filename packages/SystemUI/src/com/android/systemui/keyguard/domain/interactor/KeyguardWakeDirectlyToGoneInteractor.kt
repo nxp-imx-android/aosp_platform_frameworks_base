@@ -26,26 +26,27 @@ import android.content.IntentFilter
 import android.provider.Settings
 import android.provider.Settings.Secure
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.SceneKey
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.BiometricUnlockModel
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAsleepInState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAwakeInState
-import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Scenes.Gone
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SystemSettings
 import com.android.systemui.util.time.SystemClock
@@ -97,8 +98,8 @@ constructor(
     private val selectedUserInteractor: SelectedUserInteractor,
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
-    keyguardInteractor: KeyguardInteractor,
     private val sceneInteractor: Lazy<SceneInteractor>,
+    private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
 ) {
 
     /**
@@ -132,34 +133,40 @@ constructor(
      * - We're wake and unlocking (fingerprint auth occurred while asleep).
      * - We're allowed to ignore auth and return to GONE, due to timeouts not elapsing.
      * - We're DREAMING and dismissible.
-     * - We're already GONE and not transitioning out of GONE. Technically you're already awake when
-     *   GONE, but this makes it easier to reason about this state (for example, if
-     *   canWakeDirectlyToGone, don't tell WM to pause the top activity - something you should never
-     *   do while GONE as well).
      */
-    val canWakeDirectlyToGone =
+    val canWakeDirectlyToGone by lazy {
         combine(
                 repository.isKeyguardEnabled,
                 shouldSuppressKeyguard,
                 repository.biometricUnlockState,
                 repository.canIgnoreAuthAndReturnToGone,
-                transitionInteractor.currentKeyguardState,
-                transitionInteractor.startedKeyguardTransitionStep,
+                deviceUnlockedInteractor.get().deviceUnlockStatus,
+                sceneInteractor.get().currentScene,
             ) { values ->
                 val keyguardEnabled = values[0] as Boolean
                 val shouldSuppressKeyguard = values[1] as Boolean
                 val biometricUnlockState = values[2] as BiometricUnlockModel
                 val canIgnoreAuthAndReturnToGone = values[3] as Boolean
-                val currentState = values[4] as KeyguardState
-                val startedStep = values[5] as TransitionStep
-                (!keyguardEnabled || shouldSuppressKeyguard) ||
-                    BiometricUnlockMode.isWakeAndDismiss(biometricUnlockState.mode) ||
-                    canIgnoreAuthAndReturnToGone ||
-                    (currentState == KeyguardState.DREAMING &&
-                        keyguardInteractor.isKeyguardDismissible.value) ||
-                    (currentState == KeyguardState.GONE && startedStep.to == KeyguardState.GONE)
+                val deviceUnlockStatus = values[4] as DeviceUnlockStatus
+                val currentScene = values[5] as SceneKey
+
+                val isWakeAndDismiss =
+                    BiometricUnlockMode.isWakeAndDismiss(biometricUnlockState.mode)
+
+                val isDreamingAndDismissible =
+                    currentScene == Scenes.Dream && deviceUnlockStatus.isUnlocked
+
+                // make sure device is always unlocked. Even when keyguard is not enabled, SIM can
+                // be locked and force keyguard/bouncer to be shown.
+                deviceUnlockStatus.isUnlocked &&
+                    (!keyguardEnabled ||
+                        shouldSuppressKeyguard ||
+                        isWakeAndDismiss ||
+                        canIgnoreAuthAndReturnToGone ||
+                        isDreamingAndDismissible)
             }
             .stateIn(scope, SharingStarted.Eagerly, false)
+    }
 
     /**
      * Counter that is incremented every time we wake up or stop dreaming. Upon sleeping/dreaming,
@@ -216,20 +223,13 @@ constructor(
         scope.launch {
             powerInteractor.detailedWakefulness
                 .distinctUntilChangedBy { it.isAwake() }
-                .sample(
-                    transitionInteractor.isCurrentlyIn(
-                        Scenes.Gone,
-                        stateWithoutSceneContainer = KeyguardState.GONE,
-                    ),
-                    ::Pair,
-                )
-                .collect { (wakefulness, finishedInGone) ->
+                .collect { wakefulness ->
                     // Save isAwake for use in onDreamingStarted/onDreamingStopped.
                     this@KeyguardWakeDirectlyToGoneInteractor.isAwake = wakefulness.isAwake()
 
                     // If we're sleeping from GONE, check the timeout and lock instantly settings.
                     // These are not relevant if we're coming from non-GONE states.
-                    if (!isAwake && finishedInGone) {
+                    if (!isAwake && currentScene() == Gone) {
                         val lockTimeoutDuration = getCanIgnoreAuthAndReturnToGoneDuration()
 
                         // If the screen timed out and went to sleep, and the lock timeout is > 0ms,
@@ -266,17 +266,13 @@ constructor(
                     fromStatePredicate = {
                         deviceIsAsleepInState(
                             it,
-                            if (SceneContainerFlag.isEnabled)
-                                sceneInteractor.get().currentScene.value
-                            else null,
+                            if (SceneContainerFlag.isEnabled) currentScene() else null,
                         )
                     },
                     toStatePredicate = {
                         deviceIsAwakeInState(
                             it,
-                            if (SceneContainerFlag.isEnabled)
-                                sceneInteractor.get().currentScene.value
-                            else null,
+                            if (SceneContainerFlag.isEnabled) currentScene() else null,
                         )
                     },
                 )
@@ -290,6 +286,8 @@ constructor(
                 }
         }
     }
+
+    private fun currentScene() = sceneInteractor.get().currentScene.value
 
     /**
      * Registers the broadcast receiver to receive the alarm intent.
@@ -316,6 +314,7 @@ constructor(
     }
 
     /** Set an alarm for */
+    @SuppressLint("MissingPermission")
     private fun setResetCanIgnoreAuthAlarm() {
         if (!KeyguardWmStateRefactor.isEnabled) {
             return
