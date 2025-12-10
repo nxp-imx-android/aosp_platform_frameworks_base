@@ -551,19 +551,25 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
             if (missedFrame) {
                 missedFramesCount++;
                 successiveMissedFramesCount++;
-                totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
-
-                float weightedJank = computeWeightedJank(info);
-                if ((info.jankTypeLegacy & JANK_APPLICATION) != 0) {
-                    appWeightedJank += weightedJank;
-                }
-                if ((info.jankTypeLegacy & JANK_COMPOSER) != 0) {
-                    sfWeightedJank += weightedJank;
-                }
             } else {
                 maxSuccessiveMissedFramesCount = Math.max(
                         maxSuccessiveMissedFramesCount, successiveMissedFramesCount);
                 successiveMissedFramesCount = 0;
+            }
+
+            // Weighted jank metric see go/refined-jank-metric.
+            int jankType = Flags.useNewJankClassificationForJps()
+                    ? info.jankTypeExperimental : info.jankTypeLegacy;
+            if ((jankType & (JANK_APPLICATION | JANK_COMPOSER)) != 0) {
+                totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
+                float weightedJank = computeWeightedJank(info);
+                if ((jankType & JANK_APPLICATION) != 0) {
+                    appWeightedJank += weightedJank;
+                }
+                if ((jankType & JANK_COMPOSER) != 0) {
+                    sfWeightedJank += weightedJank;
+                }
+            } else {
                 totalAnimationTime += info.frameInterval;
             }
 

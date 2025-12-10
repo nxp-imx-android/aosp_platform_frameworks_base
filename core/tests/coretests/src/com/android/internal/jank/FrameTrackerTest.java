@@ -41,6 +41,9 @@ import static org.mockito.Mockito.when;
 import android.animation.AnimationHandler;
 import android.os.ConditionVariable;
 import android.os.Handler;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.JankData;
@@ -82,6 +85,10 @@ public class FrameTrackerTest {
     @Rule
     public ActivityScenarioRule<ViewAttachTestActivity> mRule =
             new ActivityScenarioRule<>(ViewAttachTestActivity.class);
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private SurfaceControlWrapper mSurfaceControlWrapper;
     private ViewRootWrapper mViewRootWrapper;
@@ -784,6 +791,51 @@ public class FrameTrackerTest {
                 eq(1.0f) /* appWeightedJank */);
     }
 
+    /**
+     * This test will send frames with different jank types for legacy vs experimental to test that
+     * if the flag is set, we do actually use the experimental one.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_USE_NEW_JANK_CLASSIFICATION_FOR_JPS)
+    public void testNewJankClassification() {
+        FrameTracker tracker = spyFrameTracker(/* surfaceOnly= */ false);
+
+        when(mChoreographer.getVsyncId()).thenReturn(100L);
+        tracker.begin();
+        mRunnableArgumentCaptor.getValue().run();
+
+        // On time frame - legacy is janky, experimental is on time.
+        sendFrame(tracker, REGULAR_FT, 0, 100, JANK_APPLICATION, JANK_NONE, FRAME_TIME_120Hz);
+        // Janky frame - legacy is sf jank, experimental is app jank.
+        sendFrame(tracker, SEVERE_JANK_FT, 3 * FRAME_TIME_120Hz, 101, JANK_COMPOSER,
+                JANK_APPLICATION, FRAME_TIME_120Hz);
+
+        // end the trace session
+        when(mChoreographer.getVsyncId()).thenReturn(102L);
+        tracker.end(FrameTracker.REASON_END_NORMAL);
+        // On time frame - legacy is janky, experimental is on time.
+        sendFrame(tracker, REGULAR_FT, 0, 102, JANK_APPLICATION, JANK_NONE, FRAME_TIME_120Hz);
+
+        verify(tracker).removeObservers();
+
+        // We detected a janky frame - trigger Perfetto
+        verify(mTrackerListener).triggerPerfetto(any());
+
+        verify(mStatsLog).write(eq(UI_INTERACTION_FRAME_INFO_REPORTED),
+                eq(42), /* displayId */
+                eq(DisplayRefreshRate.REFRESH_RATE_120_HZ),
+                eq(Cuj.getStatsdInteractionType(CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE)),
+                eq(2L) /* totalFrames */,
+                eq(2L) /* missedFrames (using legacy) */,
+                eq(SEVERE_JANK_FT) /* maxFrameTimeNanos */,
+                eq(1L) /* missedSfFramesCount (using legacy) */,
+                eq(1L) /* missedAppFramesCount (using legacy) */,
+                eq(2L) /* maxSuccessiveMissedFramesCount (using legacy) */,
+                eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* sfWeightedJank (using exp) */,
+                eq(2.0f) /* appWeightedJank (using exp) */);
+    }
+
     private void sendJankyFirstWindowFrame(FrameTracker tracker, long vsyncId) {
         sendFrame(tracker, JANK_FT, FRAME_TIME_120Hz, vsyncId, JANK_APPLICATION, FRAME_TIME_120Hz);
     }
@@ -827,11 +879,20 @@ public class FrameTrackerTest {
 
     private void sendFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
             @JankType int jankType, long frameIntervalNanos) {
+        // Always send 0 for experimental jank type if flag is not set to test that we don't use
+        // the experimental version when the flag is disabled.
+        int expJankType = Flags.useNewJankClassificationForJps() ? jankType : 0;
+        sendFrame(tracker, durationNs, delayNs, vsyncId, jankType, expJankType, frameIntervalNanos);
+    }
+
+    private void sendFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
+            @JankType int jankTypeLegacy, @JankType int jankTypeExperimental,
+            long frameIntervalNanos) {
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
         doNothing().when(tracker).postCallback(captor.capture());
         mListenerCapture.getValue().onJankDataAvailable(Arrays.asList(
-            new JankData(vsyncId, jankType, jankType, frameIntervalNanos, frameIntervalNanos,
-                    durationNs, delayNs)));
+            new JankData(vsyncId, jankTypeLegacy, jankTypeExperimental, frameIntervalNanos,
+                    frameIntervalNanos, durationNs, delayNs)));
         captor.getValue().run();
     }
 }
