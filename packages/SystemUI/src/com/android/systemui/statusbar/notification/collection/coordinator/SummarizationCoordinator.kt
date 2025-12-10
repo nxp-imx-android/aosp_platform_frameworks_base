@@ -59,6 +59,12 @@ constructor(
                     override fun onEntryUpdated(entry: NotificationEntry) {
                         decorateSummarization(entry)
                     }
+
+                    override fun onRankingApplied() {
+                        for (entry in pipeline.allNotifs) {
+                            decorateSummarization(entry)
+                        }
+                    }
                 }
             )
         }

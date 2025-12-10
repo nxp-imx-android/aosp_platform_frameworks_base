@@ -40,6 +40,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -130,5 +131,35 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
         notifCollectionListener.onEntryAdded(entry)
 
         assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
+    }
+
+    @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    fun onBeforeRenderList_messagingStyleWithSummarization_summarizationAddedAfterPost() {
+        val summarization = "hello"
+        val entry = kosmos.makeEntryOfPeopleType()
+
+        notifCollectionListener.onEntryAdded(entry)
+        assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
+
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+
+        whenever(pipeline.allNotifs).thenReturn(listOf(entry))
+
+        notifCollectionListener.onRankingApplied();
+
+        val processedSummary =
+            entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
+        assertThat(processedSummary.toString()).isEqualTo("   $summarization")
+
+        val checkSpans = SpannableStringBuilder(processedSummary)
+        assertThat(
+            checkSpans.getSpans(
+                /* queryStart = */ 0,
+                /* queryEnd = */ 2,
+                /* kind = */ ImageSpan::class.java,
+            )
+        )
+            .isNotNull()
     }
 }
