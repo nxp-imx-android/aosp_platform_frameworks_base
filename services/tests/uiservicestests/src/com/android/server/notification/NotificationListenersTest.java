@@ -18,6 +18,7 @@ package com.android.server.notification;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 import static android.content.Context.BIND_ALLOW_FREEZE;
 import static android.content.Context.BIND_SIMULATE_ALLOW_FREEZE;
+import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.PackageManager.MATCH_ANY_USER;
 import static android.permission.PermissionManager.PERMISSION_GRANTED;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
@@ -65,20 +66,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
+import android.app.AppLockInternal;
 import android.app.IBinderSession;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Person;
 import android.companion.AssociationInfo;
 import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.VersionedPackage;
 import android.content.res.Resources;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -97,10 +106,12 @@ import android.service.notification.StatusBarNotification;
 import android.testing.TestableContext;
 import android.util.ArraySet;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.util.Xml;
 
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.LocalServices;
 import com.android.server.UiServiceTestCase;
 import com.android.server.pm.pkg.PackageStateInternal;
 
@@ -122,6 +133,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 @SuppressLint("GuardedBy")
@@ -129,6 +141,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
     private static final int TEST_UID = 548931;
     private static final int TEST_USER_ID = UserHandle.getUserId(TEST_UID);
     private static final int TARGET_SDK_VERSION = Build.VERSION.SDK_INT;
+    private static final String TEST_LOCKED_PACKAGE = "com.test.package.locked";
+    private static final String TEST_UNLOCKED_PACKAGE = "com.test.package.unlocked";
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -137,6 +151,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
     private PackageManager mPm;
     @Mock
     private IPackageManager miPm;
+    @Mock
+    private AppLockInternal mAppLockInternal;
     @Mock
     private Resources mResources;
 
@@ -157,8 +173,18 @@ public class NotificationListenersTest extends UiServiceTestCase {
 
     @Before
     public void setUp() throws Exception {
-        mNm = spy(new NotificationManagerService(mContext));
         MockitoAnnotations.initMocks(this);
+        SparseArray<Set<String>> appLockedPackages = new SparseArray<>();
+        Set<String> lockedPackages = new ArraySet<>(1);
+        lockedPackages.add(TEST_LOCKED_PACKAGE);
+        appLockedPackages.put(TEST_USER_ID, lockedPackages);
+        when(mAppLockInternal.getAppLockEnabledPackages()).thenReturn(appLockedPackages);
+
+        LocalServices.removeServiceForTest(AppLockInternal.class);
+        LocalServices.addService(AppLockInternal.class, mAppLockInternal);
+
+        mNm = spy(new NotificationManagerService(mContext));
+
         getContext().setMockPackageManager(mPm);
         doNothing().when(mContext).sendBroadcastAsUser(any(), any(), any());
 
@@ -170,6 +196,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         mNm.mPackageManager = mock(IPackageManager.class);
         PackageStateInternal psi = mock(PackageStateInternal.class);
         mNm.mPackageManagerInternal = mPmi;
+        mNm.mPackageManagerClient = mPm;
         when(psi.getAppId()).thenReturn(mUid1);
         when(mNm.mPackageManagerInternal.getPackageStateInternal(any())).thenReturn(psi);
         mNm.mCompanionManager = mock(ICompanionDeviceManager.class);
@@ -746,6 +773,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         UserHandle uh1 = mock(UserHandle.class);
 
         StatusBarNotification sbn = mock(StatusBarNotification.class);
+        when(sbn.getPackageName()).thenReturn("com.android.test");
         FieldSetter.setField(mNm,
                 NotificationManagerService.class.getDeclaredField("mHandler"),
                 mock(NotificationManagerService.WorkerHandler.class));
@@ -914,7 +942,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         infos.add(getMockServiceInfo());
         doReturn(infos).when(mListeners).getServices();
         doReturn(mock(StatusBarNotification.class))
-                .when(mListeners).redactStatusBarNotification(any());
+                .when(mListeners).redactSbnForOtp(any());
         doReturn(false).when(mNm).isInLockDownMode(anyInt());
         doReturn(true).when(mNm).isVisibleToListener(any(), anyInt(), any());
         NotificationRecord r = mock(NotificationRecord.class);
@@ -929,8 +957,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
         when(old.hasSensitiveContent()).thenReturn(true);
 
         mListeners.notifyPostedLocked(r, old);
-        verify(mListeners, atLeast(1)).redactStatusBarNotification(eq(sbn));
-        verify(mListeners, never()).redactStatusBarNotification(eq(oldSbn));
+        verify(mListeners, atLeast(1)).redactSbnForOtp(eq(sbn));
+        verify(mListeners, never()).redactSbnForOtp(eq(oldSbn));
     }
 
     @Test
@@ -940,7 +968,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         infos.add(getMockServiceInfo());
         doReturn(infos).when(mListeners).getServices();
         doReturn(mock(StatusBarNotification.class))
-                .when(mListeners).redactStatusBarNotification(any());
+                .when(mListeners).redactSbnForOtp(any());
         doReturn(false).when(mNm).isInLockDownMode(anyInt());
         doReturn(true).when(mNm).isVisibleToListener(any(), anyInt(), any());
         NotificationRecord r = mock(NotificationRecord.class);
@@ -958,14 +986,14 @@ public class NotificationListenersTest extends UiServiceTestCase {
         doReturn(false).when(mNm).isVisibleToListener(eq(sbn), anyInt(), any());
         mListeners.notifyPostedLocked(r, old);
         // When the old sbn is removed, the old should be redacted
-        verify(mListeners, atLeast(1)).redactStatusBarNotification(eq(oldSbn));
+        verify(mListeners, atLeast(1)).redactSbnForOtp(eq(oldSbn));
     }
 
     @Test
     public void testRedaction_whenRemoved() {
         mSetFlagsRule.enableFlags(FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS);
         doReturn(mock(StatusBarNotification.class))
-                .when(mListeners).redactStatusBarNotification(any());
+                .when(mListeners).redactSbnForOtp(any());
         ArrayList<ManagedServices.ManagedServiceInfo> infos = new ArrayList<>();
         infos.add(getMockServiceInfo());
         doReturn(infos).when(mListeners).getServices();
@@ -979,7 +1007,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         mNm.mAssistants = mock(NotificationManagerService.NotificationAssistants.class);
 
         mListeners.notifyRemovedLocked(r, 0, mock(NotificationStats.class));
-        verify(mListeners, atLeast(1)).redactStatusBarNotification(any());
+        verify(mListeners, atLeast(1)).redactSbnForOtp(any());
     }
 
     @Test
@@ -996,7 +1024,99 @@ public class NotificationListenersTest extends UiServiceTestCase {
         when(r.getSbn()).thenReturn(sbn);
         when(r.hasSensitiveContent()).thenReturn(true);
         mListeners.notifyRemovedLocked(r, 0, mock(NotificationStats.class));
-        verify(mListeners, never()).redactStatusBarNotification(eq(sbn));
+        verify(mListeners, never()).redactSbnForOtp(eq(sbn));
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testAppLockRedaction_standardNotification() throws Exception {
+        final String appLabel = "Test App";
+
+        ApplicationInfo appInfo = spy(new ApplicationInfo());
+        appInfo.packageName = TEST_LOCKED_PACKAGE;
+        when(mPm.getApplicationInfo(any(), anyInt())).thenReturn(appInfo);
+        when(appInfo.loadLabel(any())).thenReturn(appLabel);
+        when(mPm.getApplicationLabel(any())).thenReturn(appLabel);
+
+        Notification.Builder nb = new Notification.Builder(mContext, "test_channel_id")
+                .setContentTitle("Original Title")
+                .setContentText("Original Text")
+                .setSubText("Original SubText")
+                .addAction(new Notification.Action.Builder(null, "Action", null).build());
+        nb.getExtras().putParcelable(Notification.EXTRA_BUILDER_APPLICATION_INFO, appInfo);
+        StatusBarNotification sbn = getSbn(TEST_USER_ID, TEST_LOCKED_PACKAGE, nb.build());
+
+        StatusBarNotification redactedSbn = mListeners.redactSbnForAppLock(sbn);
+
+        assertThat(redactedSbn).isNotNull();
+        Notification redactedNotif = redactedSbn.getNotification();
+        assertThat(redactedNotif.extras.getString(Notification.EXTRA_TEXT)).isEqualTo(
+                "New notification");
+        assertThat(redactedNotif.extras.getString(Notification.EXTRA_SUB_TEXT)).isNull();
+        assertThat(redactedNotif.actions).isNull();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testAppLockRedaction_bubbledMessagingStyle() throws Exception {
+        final String appLabel = "Test App";
+        final Person sender = new Person.Builder().setName("sender")
+                .setIcon(Icon.createWithContentUri("content://messenger")).build();
+
+        ApplicationInfo appInfo = spy(new ApplicationInfo());
+        appInfo.packageName = TEST_LOCKED_PACKAGE;
+        when(mPm.getApplicationInfo(any(), anyInt())).thenReturn(appInfo);
+        when(mPm.getApplicationLabel(any())).thenReturn(appLabel);
+
+        Notification.MessagingStyle.Message message = new Notification.MessagingStyle.Message(
+                "Message text", System.currentTimeMillis() - 100, sender);
+        Notification.MessagingStyle style = new Notification.MessagingStyle(sender)
+                .addMessage(message)
+                .setShortcutIcon(Icon.createWithContentUri("content://media/shortcut"));
+        Notification.Builder nb = new Notification.Builder(mContext, "test_channel_id")
+                .setStyle(style)
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setBubbleMetadata(getBubbleMetadata());
+        Bundle messagingExtras = new Bundle();
+        messagingExtras.putParcelable(Notification.EXTRA_MESSAGING_PERSON, sender);
+        messagingExtras.putParcelableArray(Notification.EXTRA_MESSAGES,
+                new Bundle[] { message.toBundle() });
+        nb.addExtras(messagingExtras);
+        nb.setFlag(Notification.FLAG_BUBBLE, true);
+        StatusBarNotification sbn = getSbn(TEST_USER_ID, TEST_LOCKED_PACKAGE, nb.build());
+
+        StatusBarNotification redactedSbn = mListeners.redactSbnForAppLock(sbn);
+
+        assertThat(redactedSbn).isNotNull();
+        Notification redactedNotif = redactedSbn.getNotification();
+        assertThat(redactedNotif.extras.getString(Notification.EXTRA_TEXT)).isEqualTo(
+                "New message");
+
+        Notification.MessagingStyle redactedStyle = (Notification.MessagingStyle)
+                Notification.Builder.recoverBuilder(mContext, redactedNotif).getStyle();
+        assertThat(redactedStyle).isNotNull();
+        //TODO(b/467156022): assert that the sender is who we expect it to be.
+    }
+
+    private StatusBarNotification getSbn(int id, String pkg, Notification notif) {
+        return new StatusBarNotification(pkg, pkg, 0, "", mUid1, 0,
+                notif, UserHandle.of(id), "", 0);
+    }
+
+    private Notification.BubbleMetadata getBubbleMetadata() {
+        ActivityInfo info = new ActivityInfo();
+        info.resizeMode = RESIZE_MODE_RESIZEABLE;
+        ResolveInfo ri = new ResolveInfo();
+        ri.activityInfo = info;
+        when(mPm.resolveActivityAsUser(any(), anyInt(), anyInt())).thenReturn(ri);
+
+        Notification.BubbleMetadata metadata = new Notification.BubbleMetadata.Builder(
+                spy(PendingIntent.getActivity(mContext, 0,
+                        new Intent().setPackage(mPkg), PendingIntent.FLAG_MUTABLE)),
+                Icon.createWithResource(mContext, android.R.drawable.sym_def_app_icon))
+                .build();
+        metadata.setFlags(Notification.FLAG_BUBBLE);
+        return metadata;
     }
 
     @Test
@@ -1058,8 +1178,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 .makeRankingUpdateLocked(otherInfo2);
         doReturn(false).when(mNm).isInLockDownMode(anyInt());
         doNothing().when(mNm).updateUriPermissions(any(), any(), any(), anyInt());
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(sbn2);
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(any());
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(sbn2);
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(any());
 
         // Post notification change to the service listeners.
         mListeners.notifyPostedLocked(toPost, old);
@@ -1149,8 +1269,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 .makeRankingUpdateLocked(otherInfo2);
         doReturn(false).when(mNm).isInLockDownMode(anyInt());
         doNothing().when(mNm).updateUriPermissions(any(), any(), any(), anyInt());
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(sbn2);
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(any());
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(sbn2);
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(any());
 
         // The notification change is posted to the service listener.
         // NonLE to LE should never happen, as LE can't be set in an update by the app.
@@ -1249,8 +1369,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 .makeRankingUpdateLocked(otherInfo2);
         doReturn(false).when(mNm).isInLockDownMode(anyInt());
         doNothing().when(mNm).updateUriPermissions(any(), any(), any(), anyInt());
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(sbn2);
-        doReturn(sbn2).when(mListeners).redactStatusBarNotification(any());
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(sbn2);
+        doReturn(sbn2).when(mListeners).redactSbnForOtp(any());
 
         // The notification change is posted to the service listeners.
         mListeners.notifyPostedLocked(newRecord, oldRecord);

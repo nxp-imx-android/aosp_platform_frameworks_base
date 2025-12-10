@@ -219,6 +219,7 @@ import android.app.ActivityManagerInternal.ServiceNotificationPolicy;
 import android.app.ActivityTaskManager;
 import android.app.AlarmManager;
 import android.app.AppGlobals;
+import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.AutomaticZenRule;
 import android.app.IActivityManager;
@@ -688,7 +689,8 @@ public class NotificationManagerService extends SystemService {
     private ActivityManagerInternal mAmi;
     @VisibleForTesting
     IPackageManager mPackageManager;
-    private PackageManager mPackageManagerClient;
+    @VisibleForTesting
+    PackageManager mPackageManagerClient;
     PackageManagerInternal mPackageManagerInternal;
     private PermissionManager mPermissionManager;
     private PermissionPolicyInternal mPermissionPolicyInternal;
@@ -718,6 +720,42 @@ public class NotificationManagerService extends SystemService {
     private PostNotificationTrackerFactory mPostNotificationTrackerFactory;
 
     private LockPatternUtils mLockUtils;
+    private AppLockInternal mAppLockInternal;
+    final AppLockInternal.PackageLockedStateListener mPackageLockedStateListener =
+            new AppLockInternal.PackageLockedStateListener() {
+                @Override
+                public void onPackageLockedStateChanged(@NonNull String packageName, int userId,
+                        boolean locked) {
+                    synchronized (mNotificationLock) {
+                        if (locked == isPackageLockedByAppLockLocked(packageName, userId)) {
+                            // Shouldn't happen, but this means it didn't change.
+                            Slog.w(TAG,
+                                    "onPackageLockedStateChanged called when the lock state "
+                                            + "didn't change");
+                            return;
+                        }
+                        // Cache the new value
+                        updateAppLockLockedPackagesLocked(packageName, userId, locked);
+
+                        mListeners.notifyPackageAppLockStatedChanged(
+                                findAppNotificationByListLocked(mNotificationList, packageName,
+                                        userId));
+                    }
+                }
+            };
+
+    /**
+     * Tracks packages that are currently in a locked state from App Lock.
+     *
+     * <p>The outer {@link SparseArray} is keyed by userId, and the inner {@link ArraySet} contains
+     * the package names of the locked packages for that user. This information is queried by
+     * {@link #isPackageLockedByAppLockLocked(String, int)}.
+     *
+     * <p>This is initially populated when system services are ready (i.e. ActivityManager), and is
+     * kept up to date with {@link #mPackageLockedStateListener}.
+     */
+    @GuardedBy("mNotificationLock")
+    private final SparseArray<ArraySet<String>> mAppLockLockedPackages = new SparseArray<>();
 
     final IBinder mForegroundToken = new Binder();
     @VisibleForTesting
@@ -2109,6 +2147,47 @@ public class NotificationManagerService extends SystemService {
                 if (filter.test(r)) {
                     notificationUpdate.apply(r, true);
                 }
+            }
+        }
+    }
+
+    /**
+     * Returns {@code true} if the given package is currently in a locked state by App Lock.
+     *
+     * <p>This method checks the internal state of packages that are locked by App Lock, which is
+     * stored in {@link #mAppLockLockedPackages}.
+     *
+     * @param packageName the package name to check for the App Lock locked state
+     * @param userId the user for whom to check the locked state
+     * @return {@code true} if the package is locked for the given user, {@code false} otherwise
+     */
+    @GuardedBy("mNotificationLock")
+    public boolean isPackageLockedByAppLockLocked(@NonNull String packageName, int userId) {
+        Objects.requireNonNull(packageName);
+
+        return mAppLockLockedPackages.contains(userId) && mAppLockLockedPackages.get(
+                userId).contains(packageName);
+    }
+
+    @GuardedBy("mNotificationLock")
+    private void updateAppLockLockedPackagesLocked(String packageName, int userId, boolean locked) {
+        Objects.requireNonNull(packageName);
+
+        ArraySet<String> lockedPackages = mAppLockLockedPackages.get(userId);
+        if (locked) {
+            if (lockedPackages == null) {
+                lockedPackages = new ArraySet<>();
+                mAppLockLockedPackages.put(userId, lockedPackages);
+            }
+            lockedPackages.add(packageName);
+        } else {
+            if (lockedPackages == null) {
+                // The package is not locked, so there is nothing to do.
+                return;
+            }
+            lockedPackages.remove(packageName);
+            if (lockedPackages.isEmpty()) {
+                mAppLockLockedPackages.remove(userId);
             }
         }
     }
@@ -3543,6 +3622,24 @@ public class NotificationManagerService extends SystemService {
             }
         } else if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
             mSnoozeHelper.scheduleRepostsForPersistedNotifications(System.currentTimeMillis());
+            if (android.security.Flags.appLockCore()) {
+                // App Lock services gets registered by the ActivityManagerService, and then needs
+                // to initialize the map of App Lock locked states. Wait until it's ready.
+                mAppLockInternal = LocalServices.getService(AppLockInternal.class);
+                synchronized (mNotificationLock) {
+                    final SparseArray<Set<String>> appLockEnabledPackages =
+                            mAppLockInternal.getAppLockEnabledPackages();
+                    mAppLockLockedPackages.clear();
+                    for (int i = 0; i < appLockEnabledPackages.size(); i++) {
+                        final int userId = appLockEnabledPackages.keyAt(i);
+                        final Set<String> packages = appLockEnabledPackages.valueAt(i);
+                        if (packages != null) {
+                            mAppLockLockedPackages.put(userId, new ArraySet<>(packages));
+                        }
+                    }
+                }
+                mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
+            }
         } else if (phase == SystemService.PHASE_DEVICE_SPECIFIC_SERVICES_READY) {
             mPreferencesHelper.updateFixedImportance(mUm.getUsers());
             mPreferencesHelper.migrateNotificationPermissions(mUm.getUsers());
@@ -6274,7 +6371,7 @@ public class NotificationManagerService extends SystemService {
             StatusBarNotification sbn = r.getSbn();
             if (!isVisibleToListener(sbn, r.getNotificationType(), info)) return;
             if (mListeners.hasSensitiveContent(r) && !mListeners.isUidTrusted(info.uid)) {
-                notifications.add(mListeners.redactStatusBarNotification(sbn));
+                notifications.add(mListeners.redactSbnForOtp(sbn));
             } else {
                 notifications.add((trim == TRIM_FULL) ? sbn : sbn.cloneLight());
             }
@@ -12574,6 +12671,20 @@ public class NotificationManagerService extends SystemService {
                     }
                 }
             }
+
+            String summarization = record.getSummarization();
+            if (android.security.Flags.appLockCore()) {
+                StatusBarNotification sbn = record.getSbn();
+                // remove Smart actions/replies if the package is locked and it's not the NAS
+                if (isPackageLockedByAppLockLocked(sbn.getPackageName(), sbn.getNormalizedUserId())
+                        && !(info != null && mAssistants.isServiceTokenValidLocked(
+                        info.getService()))) {
+                    smartActions = null;
+                    smartReplies = null;
+                    summarization = null;
+                }
+            }
+
             ranking.populate(
                     key,
                     rankings.size(),
@@ -12598,7 +12709,7 @@ public class NotificationManagerService extends SystemService {
                     record.getNotification().isBubbleNotification(),
                     record.getProposedImportance(),
                     hasSensitiveContent,
-                    record.getSummarization()
+                    summarization
             );
             rankings.add(ranking);
         }
@@ -14566,10 +14677,15 @@ public class NotificationManagerService extends SystemService {
                 boolean isOldSensitive = hasSensitiveContent(old);
                 boolean redactionEnabled = redactSensitiveNotificationsFromUntrustedListeners()
                         && mRedactOtpNotifications;
+                boolean appLockRedactionEnabled = shouldCreateAppLockRedactedSbn(sbn);
 
                 for (final ManagedServiceInfo info : getServices()) {
                     boolean isTrusted = isUidTrusted(info.uid);
                     boolean sendRedacted = redactionEnabled && isNewSensitive && !isTrusted;
+                    // Send App Lock redacted notification to all listeners except for the NAS
+                    // which gets the full notification
+                    boolean sendAppLockRedacted = appLockRedactionEnabled
+                            && !mAssistants.isServiceTokenValidLocked(info.getService());
                     boolean sendOldRedacted = redactionEnabled && isOldSensitive && !isTrusted;
                     boolean sbnVisible = isVisibleToListener(sbn, r.getNotificationType(), info);
                     boolean oldSbnVisible = (oldSbn != null)
@@ -14585,11 +14701,19 @@ public class NotificationManagerService extends SystemService {
                         continue;
                     }
 
-                    if (sendRedacted && redactedSbn == null) {
-                        redactedSbn = redactStatusBarNotification(sbn);
-                        redactedCache = new TrimCache(redactedSbn);
+                    if (redactedSbn == null) {
+                        // Only create one redacted SBN
+                        if (sendAppLockRedacted) {
+                            redactedSbn = redactSbnForAppLock(sbn);
+                        } else if (sendRedacted) {
+                            redactedSbn = redactSbnForOtp(sbn);
+                        }
+                        if (redactedSbn != null) {
+                            redactedCache = new TrimCache(redactedSbn);
+                        }
                     }
-                    final StatusBarNotification sbnToPost = sendRedacted
+
+                    final StatusBarNotification sbnToPost = sendRedacted || sendAppLockRedacted
                             ? redactedCache.ForListener(info) : trimCache.ForListener(info);
 
                     // Checks if this is a request to notify system UI about a notification that
@@ -14633,7 +14757,7 @@ public class NotificationManagerService extends SystemService {
                     // This notification became invisible -> remove the old one.
                     if (oldSbnVisible && !sbnVisible) {
                         if (sendOldRedacted && oldRedactedSbn == null) {
-                            oldRedactedSbn = redactStatusBarNotification(oldSbn);
+                            oldRedactedSbn = redactSbnForOtp(oldSbn);
                         }
                         final StatusBarNotification oldSbnLightClone =
                                 sendOldRedacted ? oldRedactedSbn.cloneLight() : oldSbn.cloneLight();
@@ -14702,49 +14826,92 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        StatusBarNotification redactStatusBarNotification(StatusBarNotification sbn) {
-            if (!redactSensitiveNotificationsFromUntrustedListeners()) {
-                throw new RuntimeException("redactStatusBarNotification called while flag is off");
+        @GuardedBy("mNotificationLock")
+        void notifyPackageAppLockStatedChanged(List<NotificationRecord> changedNotifications) {
+            if (changedNotifications == null || changedNotifications.size() == 0) {
+                return;
             }
 
-            ApplicationInfo appInfo = sbn.getNotification().extras.getParcelable(
-                    EXTRA_BUILDER_APPLICATION_INFO, ApplicationInfo.class);
-            String pkgLabel;
-            if (appInfo != null) {
-                pkgLabel = appInfo.loadLabel(mPackageManagerClient).toString();
-            } else {
-                Slog.w(TAG, "StatusBarNotification " + sbn + " does not have ApplicationInfo."
-                        + " Did you pass in a 'cloneLight' notification?");
-                pkgLabel = sbn.getPackageName();
+            int numChangedNotifications = changedNotifications.size();
+            for (int i = 0; i < numChangedNotifications; i++) {
+                NotificationRecord rec = changedNotifications.get(i);
+                rec.getNotification().flags |= Notification.FLAG_SILENT;
+                // Remove old notification, and send the new "redacted ish" one
+                notifyPostedLocked(rec, rec, true);
             }
+        }
+
+        /**
+         * Creates a redacted version of a {@link StatusBarNotification} for an app that is locked.
+         *
+         * <p>This redaction process replaces the notification's title with the application's label
+         * and the content text with a generic message, while removing all actions.
+         *
+         * <p>Special handling is applied to bubbled {@link MessagingStyle} notifications to
+         * preserve the sender's identity, which maintains the context of the conversation while
+         * hiding the message content. For all other notification styles, the style is removed
+         * entirely.
+         *
+         * @param sbn The original {@link StatusBarNotification} to redact.
+         * @return A new, redacted {@link StatusBarNotification}.
+         */
+        StatusBarNotification redactSbnForAppLock(StatusBarNotification sbn) {
+            if (!android.security.Flags.appLockCore()) {
+                Slog.wtf(TAG, "redactSbnForAppLock called while flag is off");
+                return sbn;
+            }
+
+            String redactedText = sbn.getNotification().isStyle(MessagingStyle.class)
+                    ? mContext.getString(R.string.app_locked_notification_message)
+                    : mContext.getString(R.string.app_locked_new_notification);
+            Notification.Builder redactedNotifBuilder = createBaseRedactedNotification(sbn,
+                    redactedText, /* isAppLocked= */ true);
+
+            Notification redacted = redactedNotifBuilder.build();
+            return sbn.cloneShallow(redacted);
+        }
+
+        /**
+         * Creates a redacted copy of a {@link StatusBarNotification} for listeners that are not
+         * trusted to receive sensitive information such as OTPs.
+         *
+         * <p>This redaction process involves:
+         * <ul>
+         *     <li>Replacing the notification's title with the application's label.</li>
+         *     <li>Replacing the content text, big text, and sub-text with a generic
+         *     "Redacted message" string.</li>
+         *     <li>Preserving notification actions but redacting their titles.</li>
+         *     <li>For {@link android.app.Notification.MessagingStyle} notifications, replacing the
+         *     messages with a single redacted message.</li>
+         *     <li>For {@link android.app.Notification.BigTextStyle} notifications, redacting the
+         *     big text content.</li>
+         *     <li>Removing other potentially sensitive information from the notification's
+         *     extras.</li>
+         * </ul>
+         *
+         * @param sbn The original {@link StatusBarNotification} to redact.
+         * @return A new, redacted {@link StatusBarNotification}.
+         */
+        StatusBarNotification redactSbnForOtp(StatusBarNotification sbn) {
+            if (!redactSensitiveNotificationsFromUntrustedListeners()) {
+                throw new RuntimeException("redactSbnForOtp called while flag is off");
+            }
+
             String redactedText = mContext.getString(R.string.redacted_notification_message);
-            Notification oldNotif = sbn.getNotification();
-            Notification oldClone = new Notification();
-            oldNotif.cloneInto(oldClone, false);
-            Notification.Builder redactedNotifBuilder =
-                    new Notification.Builder(getContext(), oldClone);
-            redactedNotifBuilder.setContentTitle(pkgLabel);
-            redactedNotifBuilder.setContentText(redactedText);
-            redactedNotifBuilder.setSubText(null);
-            redactedNotifBuilder.setActions();
-            if (oldNotif.actions != null) {
-                for (int i = 0; i < oldNotif.actions.length; i++) {
-                    Notification.Action act =
-                            new Notification.Action.Builder(oldNotif.actions[i]).build();
+            final Notification originalNotification = sbn.getNotification();
+            Notification.Builder redactedNotifBuilder = createBaseRedactedNotification(sbn,
+                    redactedText, /* isAppLocked= */ false);
+            if (originalNotification.actions != null) {
+                for (int i = 0; i < originalNotification.actions.length; i++) {
+                    Notification.Action act = new Notification.Action.Builder(
+                            originalNotification.actions[i]).build();
                     act.title = mContext.getString(R.string.redacted_notification_action_title);
                     redactedNotifBuilder.addAction(act);
                 }
             }
 
-            if (oldNotif.isStyle(MessagingStyle.class)) {
-                Person empty = new Person.Builder().setName("").build();
-                MessagingStyle messageStyle = new MessagingStyle(empty);
-                messageStyle.addMessage(new MessagingStyle.Message(
-                        redactedText, System.currentTimeMillis(), empty));
-                redactedNotifBuilder.setStyle(messageStyle);
-            }
             if (redactSensitiveNotificationsBigTextStyle()
-                    && oldNotif.isStyle(Notification.BigTextStyle.class)) {
+                    && originalNotification.isStyle(Notification.BigTextStyle.class)) {
                 Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
                 bigTextStyle.bigText(mContext.getString(R.string.redacted_notification_message));
                 bigTextStyle.setBigContentTitle("");
@@ -14753,15 +14920,75 @@ public class NotificationManagerService extends SystemService {
             }
 
             Notification redacted = redactedNotifBuilder.build();
-            // Notification extras can't always be overridden by a builder (configured by a system
-            // property), so set them after building
             if (redacted.extras.containsKey(EXTRA_TITLE_BIG)) {
-                redacted.extras.putString(EXTRA_TITLE_BIG, pkgLabel);
+                // EXTRA_TITLE is set to the package label with setContentTitle earlier
+                redacted.extras.putString(EXTRA_TITLE_BIG, redacted.extras.getString(EXTRA_TITLE));
             }
             redacted.extras.remove(EXTRA_SUB_TEXT);
             redacted.extras.remove(EXTRA_TEXT_LINES);
             redacted.extras.remove(EXTRA_LARGE_ICON_BIG);
             return sbn.cloneShallow(redacted);
+        }
+
+        private String getPkgLabelFromSbn(StatusBarNotification sbn) {
+            ApplicationInfo appInfo = sbn.getNotification().extras.getParcelable(
+                    EXTRA_BUILDER_APPLICATION_INFO, ApplicationInfo.class);
+            if (appInfo != null) {
+                return appInfo.loadLabel(mPackageManagerClient).toString();
+            } else {
+                Slog.w(TAG, "StatusBarNotification " + sbn + " does not have ApplicationInfo."
+                        + " Did you pass in a 'cloneLight' notification?");
+                return sbn.getPackageName();
+            }
+        }
+
+        private Notification.Builder createBaseRedactedNotification(StatusBarNotification sbn,
+                String redactedText, boolean isAppLocked) {
+            Notification originalNotification = sbn.getNotification();
+            Notification oldClone = new Notification();
+            originalNotification.cloneInto(oldClone, /* heavy= */ false);
+            String pkgLabel = getPkgLabelFromSbn(sbn);
+            if (isAppLocked) {
+                oldClone.actions = null;
+            }
+            Notification.Builder redactedNotifBuilder =
+                    new Notification.Builder(getContext(), oldClone)
+                        .setContentTitle(pkgLabel)
+                        .setContentText(redactedText)
+                        .setSubText(null)
+                        .setActions();
+
+            if (originalNotification.isStyle(MessagingStyle.class) && (
+                    (originalNotification.isBubbleNotification() && isAppLocked) || !isAppLocked)) {
+                Person sender;
+                if (isAppLocked) {
+                    // Once an locked notification has been bubbled, keep the sender.
+                    MessagingStyle.Message latestMessage = MessagingStyle.findLatestIncomingMessage(
+                            ((MessagingStyle) redactedNotifBuilder.getStyle()).getMessages());
+
+                    sender = (latestMessage != null) ? latestMessage.getSenderPerson()
+                            : new Person.Builder().setName("").build();
+                } else {
+                    sender = new Person.Builder().setName("").build();
+                }
+
+                MessagingStyle messageStyle = new MessagingStyle(sender);
+                messageStyle.addMessage(
+                        new MessagingStyle.Message(redactedText, System.currentTimeMillis(),
+                                sender));
+                redactedNotifBuilder.setStyle(messageStyle);
+            } else if (isAppLocked) {
+                redactedNotifBuilder.setStyle(null);
+            }
+
+            return redactedNotifBuilder;
+        }
+
+        boolean shouldCreateAppLockRedactedSbn(StatusBarNotification sbn) {
+            return android.security.Flags.appLockCore()
+                    && NotificationManagerService.this.isPackageLockedByAppLockLocked(
+                    sbn.getPackageName(), sbn.getNormalizedUserId())
+                    && !sbn.getNotification().isStyle(Notification.CallStyle.class);
         }
 
         boolean hasSensitiveContent(NotificationRecord r) {
@@ -14836,6 +15063,8 @@ public class NotificationManagerService extends SystemService {
             final StatusBarNotification sbnLight = sbn.cloneLight();
             StatusBarNotification redactedSbn = null;
             boolean hasSensitiveContent = hasSensitiveContent(r);
+            final boolean appLockRedactionEnabled = shouldCreateAppLockRedactedSbn(sbn);
+
             for (final ManagedServiceInfo info : getServices()) {
                 if (!isVisibleToListener(sbn, r.getNotificationType(), info)) {
                     continue;
@@ -14854,17 +15083,29 @@ public class NotificationManagerService extends SystemService {
                         && info.targetSdkVersion >= Build.VERSION_CODES.P) {
                     continue;
                 }
+                // Send App Lock redacted notification to all listeners except for the NAS
+                // which gets the full notification
+                boolean sendAppLockRedacted = appLockRedactionEnabled
+                        && !mAssistants.isServiceTokenValidLocked(info.getService());
 
                 boolean sendRedacted = redactSensitiveNotificationsFromUntrustedListeners()
                         && hasSensitiveContent && !isUidTrusted(info.uid);
-                if (sendRedacted && redactedSbn == null) {
-                    redactedSbn = redactStatusBarNotification(sbn);
+
+                if (redactedSbn == null) {
+                    // No need to create the OTP redacted SBN if we're using the package locked SBN
+                    if (appLockRedactionEnabled) {
+                        redactedSbn = redactSbnForAppLock(sbn);
+                    } else if (sendRedacted) {
+                        redactedSbn = redactSbnForOtp(sbn);
+                    }
                 }
 
                 // Only assistants can get stats
-                final NotificationStats stats = mAssistants.isServiceTokenValidLocked(info.service)
+                final NotificationStats stats = mAssistants.isServiceTokenValidLocked(
+                        info.service)
                         ? notificationStats : null;
-                final StatusBarNotification sbnToSend = sendRedacted ? redactedSbn : sbnLight;
+                final StatusBarNotification sbnToSend =
+                        (sendAppLockRedacted || sendRedacted) ? redactedSbn : sbnLight;
                 final NotificationRankingUpdate update = makeRankingUpdateLocked(info);
                 mHandler.post(() -> notifyRemoved(info, sbnToSend, update, stats, reason));
             }

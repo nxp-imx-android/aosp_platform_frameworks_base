@@ -2290,6 +2290,9 @@ public class ActivityManagerService extends IActivityManager.Stub
             if (phase == PHASE_SYSTEM_SERVICES_READY) {
                 mService.mBatteryStatsService.systemServicesReady();
                 mService.mServices.systemServicesReady();
+                if (mService.mAppLockLocalService != null) {
+                    mService.mAppLockLocalService.systemServicesReady();
+                }
             } else if (phase == PHASE_ACTIVITY_MANAGER_READY) {
                 mService.mBroadcastController.startBroadcastObservers();
             } else if (phase == PHASE_THIRD_PARTY_APPS_CAN_START) {
@@ -15631,6 +15634,9 @@ public class ActivityManagerService extends IActivityManager.Stub
             } else if ((enqueuedChange & UidRecord.CHANGE_PROCSTATE) != 0) {
                 mLocalPowerManager.updateUidProcState(uid, procState);
             }
+        }
+        if (mAppLockLocalService != null) {
+            mAppLockLocalService.handleUidChangeLocked(uidRec, uid, enqueuedChange, procState);
         }
     }
 
