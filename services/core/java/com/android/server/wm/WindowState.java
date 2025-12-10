@@ -3355,8 +3355,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     // various indicators of whether the client has released the surface.
     // This is in general unsafe, and most callers should use {@link #destroySurface}
     void destroySurfaceUnchecked() {
-        mWinAnimator.destroySurfaceLocked(mTmpTransaction);
-        mTmpTransaction.apply();
+        if (WindowManager.useClientSurface()
+                && (mInRelayout || mWmService.mAnimator.isAnimationScheduled())) {
+            // Use pending transaction if it will be applied with next vsync. This prevents the
+            // same surface from being attached again due to pending reparent operations.
+            mWinAnimator.destroySurfaceLocked(getPendingTransaction());
+        } else {
+            mWinAnimator.destroySurfaceLocked(mTmpTransaction);
+            mTmpTransaction.apply();
+        }
 
         // Clear animating flags now, since the surface is now gone. (Note this is true even
         // if the surface is saved, to outside world the surface is still NO_SURFACE.)
