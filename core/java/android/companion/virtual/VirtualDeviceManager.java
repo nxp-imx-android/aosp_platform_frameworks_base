@@ -258,7 +258,8 @@ public final class VirtualDeviceManager {
             IComputerControlSessionCallback callbackProxy =
                     new ComputerControlSession.CallbackProxy(mContext, executor, callback);
             mService.requestComputerControlSession(
-                    mContext.getAttributionSource(), params, callbackProxy);
+                    mContext.getIApplicationThread(), mContext.getAttributionSource(), params,
+                    callbackProxy);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
