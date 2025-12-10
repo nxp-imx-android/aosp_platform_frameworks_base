@@ -39,7 +39,6 @@ import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_CANCELL
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_STOPPED;
 import static com.android.keyguard.KeyguardUpdateMonitor.HAL_POWER_PRESS_TIMEOUT;
 import static com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2;
-import static com.android.systemui.Flags.FLAG_SIM_NEXT_SUB_ID;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_UNKNOWN;
 
@@ -2477,7 +2476,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
     public void getNextSubIdForState_noSimData() {
         var subId = mKeyguardUpdateMonitor.getNextSubIdForState(
                 TelephonyManager.SIM_STATE_PIN_REQUIRED);
@@ -2485,7 +2483,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
     public void getNextSubIdForState_noSimDataThatMatchesState() {
         int subId = 1;
         int slotId = 0;
@@ -2498,7 +2495,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
     public void getNextSubIdForState_oneSimDataThatMatchesState() {
         int subId = 1;
         int slotId = 0;
@@ -2511,7 +2507,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
     public void getNextSubIdForState_twoSimDataThatMatchesState_returnsLowestSlotId() {
         int subId1 = 10;
         int slotId1 = 0;

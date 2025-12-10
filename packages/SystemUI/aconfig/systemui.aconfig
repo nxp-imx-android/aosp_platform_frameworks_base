@@ -1632,16 +1632,6 @@ flag {
 }
 
 flag {
-   name: "sim_next_sub_id"
-   namespace: "systemui"
-   description: "Update for determining the next SIM subscription ID for a given state"
-   bug: "410750970"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "sim_pin_bouncer_reset"
    namespace: "systemui"
    description: "The SIM PIN bouncer does not close after unlocking"
