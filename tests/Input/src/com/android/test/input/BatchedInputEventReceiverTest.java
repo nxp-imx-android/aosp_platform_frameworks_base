@@ -108,11 +108,11 @@ public class BatchedInputEventReceiverTest {
     public final CheckFlagsRule mCheckFlagsRule =
             DeviceFlagsValueProvider.createCheckFlagsRule();
 
-    private final InputChannel[] mChannels = InputChannel.openInputChannelPair("TestChannel");
+    private InputChannel[] mChannels;
 
     // Use the custom class that exposes the Handler for posting Runnables
-    private final HandlerThread mReceiverThread = new HandlerThread("Process input events");
-    private final HandlerThread mSenderThread = new HandlerThread("Send input events");
+    private HandlerThread mReceiverThread;
+    private HandlerThread mSenderThread;
     private SpyInputEventSender mSender;
     private TestBatchedInputEventReceiver mBatchedReceiver;
 
@@ -120,7 +120,7 @@ public class BatchedInputEventReceiverTest {
     private Choreographer mMockChoreographer;
 
     // Changed to a public field to match Kotlin's 'var' behavior for easy access/modification
-    public long lastChoreographerFrameTimeMs = 995;
+    public long lastChoreographerFrameTimeMs;
 
     private MotionEvent getTestMouseMotionEvent(int action, long eventTime) {
         // The MotionEventBuilder and PointerBuilder classes are assumed to exist
@@ -151,6 +151,12 @@ public class BatchedInputEventReceiverTest {
             return lastChoreographerFrameTimeMs * 1000000L;
         });
 
+        mChannels = InputChannel.openInputChannelPair("TestChannel");
+        mReceiverThread = new HandlerThread("Process input events");
+        mSenderThread = new HandlerThread("Send input events");
+
+        lastChoreographerFrameTimeMs  = 995;
+
         mReceiverThread.start();
         mSenderThread.start();
 
@@ -167,6 +173,12 @@ public class BatchedInputEventReceiverTest {
 
     @After
     public void tearDown() throws Exception {
+        mSender.dispose();
+        CountDownLatch disposeLatch = new CountDownLatch(1);
+        mReceiverThread.getThreadHandler().post(() -> {
+            mBatchedReceiver.dispose();
+            disposeLatch.countDown();
+        });
         mReceiverThread.quitSafely();
         mSenderThread.quitSafely();
     }
@@ -214,8 +226,6 @@ public class BatchedInputEventReceiverTest {
         mBatchedReceiver.assertReceivedMotion(withMotionAction(MotionEvent.ACTION_MOVE));
 
         mSender.assertReceivedFinishedSignal(seq + 3, true);
-
-        mSender.dispose();
     }
 
     // Simulates the situation where the socket is filled (e.g. when under high load) on the
@@ -272,7 +282,5 @@ public class BatchedInputEventReceiverTest {
             assertTrue(finishableSeqs.remove(signal.getSeq()));
         }
         mSender.assertNoEvents();
-
-        mSender.dispose();
     }
 }
