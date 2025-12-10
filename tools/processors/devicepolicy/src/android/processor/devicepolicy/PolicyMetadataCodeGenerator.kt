@@ -70,7 +70,8 @@ object PolicyMetadataCodeGenerator {
              * See the License for the specific language governing permissions and
              * limitations under the License.
              */
-            """.trimIndent()
+            """
+                .trimIndent()
         )
         writer.append("\n\n")
     }
@@ -80,9 +81,7 @@ object PolicyMetadataCodeGenerator {
             TypeSpec.classBuilder("Policies")
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(generateLoadPolicyMetadata(policies))
-                .addJavadoc(
-                    "Generated class to load policy metadata"
-                )
+                .addJavadoc("Generated class to load policy metadata")
                 .build()
 
         val javaFile =
@@ -94,13 +93,15 @@ object PolicyMetadataCodeGenerator {
         return javaFile
     }
 
-    private fun JavaFile.Builder.addPolicyIdentifierImports(policies: PolicyMetadataList): JavaFile.Builder {
-        policies.policyMetadataList.map {
-            ClassName.get(
-                it.identifier.packageName,
-                it.identifier.className
-            ) to it.identifier.fieldName
-        }.groupBy({ it.first }, { it.second })
+    private fun JavaFile.Builder.addPolicyIdentifierImports(
+        policies: PolicyMetadataList
+    ): JavaFile.Builder {
+        policies.policyMetadataList
+            .map {
+                ClassName.get(it.identifier.packageName, it.identifier.className) to
+                    it.identifier.fieldName
+            }
+            .groupBy({ it.first }, { it.second })
             .forEach { (className, fieldNames) ->
                 addStaticImport(className, *fieldNames.toTypedArray())
             }
@@ -116,10 +117,9 @@ object PolicyMetadataCodeGenerator {
                 .addStatement(
                     "\$T policies = new \$T()",
                     listOfPolicyMetadataType,
-                    arrayListOfPolicyMetadataType
-                ).addJavadoc(
-                    "Generated method that returns a list of all policy metadata"
+                    arrayListOfPolicyMetadataType,
                 )
+                .addJavadoc("Generated method that returns a list of all policy metadata")
 
         for (policy in policies.policyMetadataList) {
             loadPolicyMetadataMethod.addCode(generatePolicyAdder(policy))
@@ -130,45 +130,34 @@ object PolicyMetadataCodeGenerator {
         return loadPolicyMetadataMethod.build()
     }
 
-    private fun generatePolicyAdder(
-        policy: PolicyMetadata
-    ): CodeBlock = when (policy.typeSpecificMetadata.typeMetadataCase) {
-        TypeSpecificPolicyMetadata.TypeMetadataCase.ENUM_METADATA -> generateEnumPolicyAdder(
-            policy
-        )
+    private fun generatePolicyAdder(policy: PolicyMetadata): CodeBlock =
+        when (policy.typeSpecificMetadata.typeMetadataCase) {
+            TypeSpecificPolicyMetadata.TypeMetadataCase.ENUM_METADATA ->
+                generateEnumPolicyAdder(policy)
 
-        TypeSpecificPolicyMetadata.TypeMetadataCase.BOOLEAN_METADATA -> generateBooleanPolicyAdder(
-            policy
-        )
+            TypeSpecificPolicyMetadata.TypeMetadataCase.BOOLEAN_METADATA ->
+                generateBooleanPolicyAdder(policy)
 
-        TypeSpecificPolicyMetadata.TypeMetadataCase.INTEGER_METADATA -> generateIntegerPolicyAdder(
-            policy
-        )
+            TypeSpecificPolicyMetadata.TypeMetadataCase.INTEGER_METADATA ->
+                generateIntegerPolicyAdder(policy)
 
-        TypeSpecificPolicyMetadata.TypeMetadataCase.STRING_METADATA -> generateStringPolicyAdder(
-            policy
-        )
+            TypeSpecificPolicyMetadata.TypeMetadataCase.STRING_METADATA ->
+                generateStringPolicyAdder(policy)
 
-        TypeSpecificPolicyMetadata.TypeMetadataCase.LIST_OF_STRING_METADATA -> generateListOfStringPolicyAdder(
-            policy
-        )
+            TypeSpecificPolicyMetadata.TypeMetadataCase.LIST_OF_STRING_METADATA ->
+                generateListOfStringPolicyAdder(policy)
 
-        TypeSpecificPolicyMetadata.TypeMetadataCase.TYPEMETADATA_NOT_SET -> throw IllegalArgumentException(
-            "Type specific metadata unset"
-        )
-    }
+            TypeSpecificPolicyMetadata.TypeMetadataCase.TYPEMETADATA_NOT_SET ->
+                throw IllegalArgumentException("Type specific metadata unset")
+        }
 
     private fun generateSetBuilder(values: List<Int>): CodeBlock {
         if (values.isEmpty()) {
-            return CodeBlock.builder().add(
-                "\$T.of()", setType
-            ).build()
+            return CodeBlock.builder().add("\$T.of()", setType).build()
         }
         val builder = CodeBlock.builder()
 
-        builder.add(
-            "\$T.of(\n", setType
-        ).indent()
+        builder.add("\$T.of(\n", setType).indent()
 
         for (value in values.dropLast(1)) {
             builder.add("\$L,\n", value)
@@ -182,15 +171,11 @@ object PolicyMetadataCodeGenerator {
 
     private fun generateTaggedSetBuilder(values: List<Pair<Int, String>>): CodeBlock {
         if (values.isEmpty()) {
-            return CodeBlock.builder().add(
-                "\$T.of()", setType
-            ).build()
+            return CodeBlock.builder().add("\$T.of()", setType).build()
         }
         val builder = CodeBlock.builder()
 
-        builder.add(
-            "\$T.of(\n", setType
-        ).indent()
+        builder.add("\$T.of(\n", setType).indent()
 
         for ((value, tag) in values.dropLast(1)) {
             builder.add("\$L, // \$L\n", value, tag)
@@ -211,7 +196,7 @@ object PolicyMetadataCodeGenerator {
     private fun CodeBlock.Builder.addPolicyInformation(policy: PolicyMetadata): CodeBlock.Builder {
         add(
             "/* allowedScopes= */ \$L,\n",
-            generateSetBuilder(policy.allowedScopesList.map { it.number })
+            generateSetBuilder(policy.allowedScopesList.map { it.number }),
         )
         add("/* affectedResource= */ \$L,\n", policy.affectedResource.number)
 
@@ -228,19 +213,20 @@ object PolicyMetadataCodeGenerator {
         }
         add(
             "/* allowedDpcTypes= */ \$L",
-            generateTaggedSetBuilder(policy.allowedDpcTypesList.map {
-                // Remove the DPC_TYPE_ prefix that is present in the proto but
-                // not in the IntDef.
-                it.number to it.name.removePrefix("DPC_TYPE_") })
+            generateTaggedSetBuilder(
+                policy.allowedDpcTypesList.map {
+                    // Remove the DPC_TYPE_ prefix that is present in the proto but
+                    // not in the IntDef.
+                    it.number to it.name.removePrefix("DPC_TYPE_")
+                }
+            ),
         )
 
         return this
     }
 
     private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata): CodeBlock.Builder =
-        this
-            .addPolicyId(policy.identifier.fieldName)
-            .addPolicyInformation(policy)
+        this.addPolicyId(policy.identifier.fieldName).addPolicyInformation(policy)
 
     private fun genericPolicyAdder(policy: PolicyMetadata, type: ClassName) =
         CodeBlock.builder()
@@ -265,30 +251,25 @@ object PolicyMetadataCodeGenerator {
                 "/* allowedValues= */ \$L\n",
                 generateSetBuilder(
                     policy.typeSpecificMetadata.enumMetadata.valuesList.map { it.intValue }
-                )
+                ),
             )
             .unindent()
             .addStatement("))")
             .build()
 
-    private val booleanPolicyMetadataType =
-        ClassName.get(METADATA_PACKAGE, "BooleanPolicyMetadata")
+    private val booleanPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "BooleanPolicyMetadata")
 
     private fun generateBooleanPolicyAdder(policy: PolicyMetadata): CodeBlock =
         genericPolicyAdder(policy, booleanPolicyMetadataType)
 
-    private val integerPolicyMetadataType =
-        ClassName.get(METADATA_PACKAGE, "IntegerPolicyMetadata")
+    private val integerPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "IntegerPolicyMetadata")
 
     private fun generateIntegerPolicyAdder(policy: PolicyMetadata) =
         genericPolicyAdder(policy, integerPolicyMetadataType)
 
-    private val stringPolicyMetadataType =
-        ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
+    private val stringPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
 
-    private fun CodeBlock.Builder.addStringMetadataInformation(
-        emptyStringAllowed: Boolean
-    ) =
+    private fun CodeBlock.Builder.addStringMetadataInformation(emptyStringAllowed: Boolean) =
         this.add("/* emptyStringAllowed= */ \$L", emptyStringAllowed)
 
     private fun generateStringPolicyAdder(policy: PolicyMetadata) =
@@ -305,8 +286,7 @@ object PolicyMetadataCodeGenerator {
             .addStatement("))")
             .build()
 
-    private val listPolicyMetadataType =
-        ClassName.get(METADATA_PACKAGE, "ListPolicyMetadata")
+    private val listPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "ListPolicyMetadata")
 
     private fun generateListPolicyAdder(
         policy: PolicyMetadata,
@@ -316,43 +296,32 @@ object PolicyMetadataCodeGenerator {
         CodeBlock.builder()
             .add(
                 "policies.add(new \$T(\n",
-                ParameterizedTypeName.get(
-                    listPolicyMetadataType,
-                    elementType,
-                )
+                ParameterizedTypeName.get(listPolicyMetadataType, elementType),
             )
             .indent()
             .addPolicyId(policy.identifier.fieldName)
             .add("/* elementMetadata= */ new \$T(\n", elementMetadataType)
             .indent()
             .addPolicyId(
-                CodeBlock
-                    .builder()
+                CodeBlock.builder()
                     .add(
                         "new \$T(\$L.getId() + \$S)",
-                        ParameterizedTypeName.get(
-                            policyIdentifierType,
-                            elementType
-                        ),
+                        ParameterizedTypeName.get(policyIdentifierType, elementType),
                         policy.identifier.fieldName,
-                        "#elements"
+                        "#elements",
                     )
                     .build()
             )
             .addPolicyInformation(policy)
             .add(",\n")
             .addStringMetadataInformation(
-                policy
-                    .typeSpecificMetadata
-                    .listOfStringMetadata
-                    .elementMetadata
-                    .emptyStringAllowed
+                policy.typeSpecificMetadata.listOfStringMetadata.elementMetadata.emptyStringAllowed
             )
             .unindent()
             .add("\n),\n")
             .add(
                 "/* emptyListAllowed= */ \$L\n",
-                policy.typeSpecificMetadata.listOfStringMetadata.emptyListAllowed
+                policy.typeSpecificMetadata.listOfStringMetadata.emptyListAllowed,
             )
             .unindent()
             .addStatement("))")
@@ -365,17 +334,14 @@ object PolicyMetadataCodeGenerator {
     private val setType = ClassName.get(Set::class.java)
     private val listType = ClassName.get(List::class.java)
     private val arrayListType = ClassName.get(ArrayList::class.java)
-    private val policyMetadataType = ParameterizedTypeName.get(
-        ClassName.get(METADATA_PACKAGE, "PolicyMetadata"),
-        WildcardTypeName.subtypeOf(ClassName.get(Object::class.java))
-    )
-    private val listOfPolicyMetadataType = ParameterizedTypeName.get(
-        listType, policyMetadataType
-    )
-    private val arrayListOfPolicyMetadataType = ParameterizedTypeName.get(
-        arrayListType, policyMetadataType
-    )
+    private val policyMetadataType =
+        ParameterizedTypeName.get(
+            ClassName.get(METADATA_PACKAGE, "PolicyMetadata"),
+            WildcardTypeName.subtypeOf(ClassName.get(Object::class.java)),
+        )
+    private val listOfPolicyMetadataType = ParameterizedTypeName.get(listType, policyMetadataType)
+    private val arrayListOfPolicyMetadataType =
+        ParameterizedTypeName.get(arrayListType, policyMetadataType)
 
-    private val policyIdentifierType =
-        ClassName.get("android.app.admin", "PolicyIdentifier")
+    private val policyIdentifierType = ClassName.get("android.app.admin", "PolicyIdentifier")
 }

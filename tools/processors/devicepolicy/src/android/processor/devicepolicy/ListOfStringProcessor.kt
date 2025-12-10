@@ -1,18 +1,18 @@
 /*
-* Copyright (C) 2025 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package android.processor.devicepolicy
 
@@ -40,46 +40,46 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
         processingEnv.elementUtils.getTypeElement(SIMPLE_TYPE_STRING).asType()
 
     /** Represents a built-in List */
-    val listType: TypeElement =
-        processingEnv.elementUtils.getTypeElement(LIST_TYPE)
+    val listType: TypeElement = processingEnv.elementUtils.getTypeElement(LIST_TYPE)
 
     /** Represents a List<String> */
-    val listOfStringType: TypeMirror =
-        processingEnv.typeUtils.getDeclaredType(listType, stringType)
+    val listOfStringType: TypeMirror = processingEnv.typeUtils.getDeclaredType(listType, stringType)
 
     val stringProcessor = StringProcessor(processingEnv)
 
     /**
-     * Process an {@link Element} representing a {@link android.app.admin.PolicyIdentifier} into useful data.
+     * Process an {@link Element} representing a {@link android.app.admin.PolicyIdentifier} into
+     * useful data.
      *
-     * @return null if the element does not have a @ListOfStringPolicyDefinition or on error, {@link ListOfStringPolicyMetadata} otherwise.
+     * @return null if the element does not have a @ListOfStringPolicyDefinition or on error, {@link
+     *   ListOfStringPolicyMetadata} otherwise.
      */
-    override fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
-        val listOfStringDefinition = element.getAnnotation(ListOfStringPolicyDefinition::class.java)
-            ?: throw IllegalStateException("Processor should only be called on elements with @ListOfStringPolicyMetadata")
+    override fun processMetadata(
+        element: Element
+    ): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
+        val listOfStringDefinition =
+            element.getAnnotation(ListOfStringPolicyDefinition::class.java)
+                ?: throw IllegalStateException(
+                    "Processor should only be called on elements with @ListOfStringPolicyMetadata"
+                )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), listOfStringType)) {
             printError(
                 element,
-                "@ListOfStringPolicyDefinition can only be applied to policies of type $listOfStringType."
+                "@ListOfStringPolicyDefinition can only be applied to policies of type $listOfStringType.",
             )
         }
 
         val typeSpecificMetadata =
-            TypeSpecificPolicyMetadata
-                .newBuilder()
+            TypeSpecificPolicyMetadata.newBuilder()
                 .setListOfStringMetadata(
                     TypeSpecificPolicyMetadata.ListOfStringPolicyMetadata.newBuilder()
-                        .setElementMetadata (
-                            stringProcessor
-                                .extractTypeSpecificMetadata(
-                                    listOfStringDefinition.base
-                                )
+                        .setElementMetadata(
+                            stringProcessor.extractTypeSpecificMetadata(listOfStringDefinition.base)
                         )
-                        .setEmptyListAllowed(
-                            listOfStringDefinition.emptyListAllowed
-                        )
-                ).build()
+                        .setEmptyListAllowed(listOfStringDefinition.emptyListAllowed)
+                )
+                .build()
 
         return Pair(typeSpecificMetadata, listOfStringDefinition.base.base)
     }
