@@ -1336,7 +1336,8 @@ public class BubbleTransitions {
                     mSnapshot = chg.getSnapshot();
                     mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
                     found = true;
-                    if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                    if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
+                            && chg.getMode() != TRANSIT_CHANGE) {
                         // Prepare to animate in. This is normally pre-set in
                         // Transitions#setupStartState, but after root Task for Bubble, the opening
                         // leaf Task can be considered as dependent.
