@@ -35,7 +35,6 @@
         android:layout_height="wrap_content"
         android:minHeight="@dimen/settingslib_expressive_space_large3"
         android:gravity="center_vertical"
-        android:paddingVertical="@dimen/settingslib_expressive_space_small1"
         android:clipToPadding="false"
         android:baselineAligned="false"
         android:filterTouchesWhenObscured="false">
