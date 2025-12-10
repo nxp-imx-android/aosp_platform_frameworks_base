@@ -4950,6 +4950,10 @@ public class PackageParser {
         info.requestedVrComponent = target.info.requestedVrComponent;
 
         info.directBootAware = target.info.directBootAware;
+        if (com.android.internal.pm.pkg.component.flags.Flags
+                .enableActivityAliasPersistableMode()) {
+            info.persistableMode = target.info.persistableMode;
+        }
 
         Activity a = new Activity(cachedArgs.mActivityAliasArgs, info);
         if (outError[0] != null) {

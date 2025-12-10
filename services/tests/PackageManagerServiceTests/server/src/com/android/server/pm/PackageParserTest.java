@@ -1697,4 +1697,49 @@ public class PackageParserTest {
             }
         }
     }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.internal.pm.pkg.component.flags.Flags
+            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE)
+    public void testParseActivityAlias_inheritPersistableMode() throws Exception {
+        final File testFile = extractFile("PackageParserTestActivityAlias.apk");
+        try {
+            final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+            final List<ParsedActivity> activities = pkg.getActivities();
+            ParsedActivity activity = null;
+            for (ParsedActivity act : activities) {
+                if ((PACKAGE_NAME + ".AliasActivity").equals(act.getName())) {
+                    activity = act;
+                    break;
+                }
+            }
+            assertNotNull(activity);
+            assertEquals(ActivityInfo.PERSIST_ACROSS_REBOOTS, activity.getPersistableMode());
+        } finally {
+            testFile.delete();
+        }
+    }
+
+    @Test
+    @RequiresFlagsDisabled(com.android.internal.pm.pkg.component.flags.Flags
+            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE)
+    public void testParseActivityAlias_inheritPersistableMode_flagDisabled() throws Exception {
+        final File testFile = extractFile("PackageParserTestActivityAlias.apk");
+        try {
+            final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+            final List<ParsedActivity> activities = pkg.getActivities();
+            ParsedActivity activity = null;
+            for (ParsedActivity act : activities) {
+                if ((PACKAGE_NAME + ".AliasActivity").equals(act.getName())) {
+                    activity = act;
+                    break;
+                }
+            }
+            assertNotNull(activity);
+            // PERSIST_NEVER is 1, PERSIST_ACROSS_REBOOTS is 2. The default value is 0.
+            assertEquals(0, activity.getPersistableMode());
+        } finally {
+            testFile.delete();
+        }
+    }
 }
