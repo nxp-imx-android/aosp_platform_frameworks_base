@@ -45,13 +45,13 @@
     <string name="automated_app_launch_warning_dialog_title"><xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> is using <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g></string>
 
     <!-- Label for the description of automated app launch warning dialog [CHAR LIMIT=NONE] -->
-    <string name="automated_app_launch_warning_dialog_description">You can use <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g> when <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> is done, or you can stop <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> to open <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g> now</string>
+    <string name="automated_app_launch_warning_dialog_description">To view task progress, open the <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> app.<xliff:g id="empty_line">\n\n</xliff:g>If you stop the task now, you may lose your progress. To restart, open the <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> app.</string>
 
     <!-- Label for the stop button for automated app launch warning dialog. [CHAR LIMIT=40] -->
-    <string name="automated_app_launch_warning_dialog_stop">Stop task</string>
+    <string name="automated_app_launch_warning_dialog_stop">Stop task &amp; open app</string>
 
     <!-- Label for the wait button for automated app launch warning dialog. [CHAR LIMIT=40] -->
-    <string name="automated_app_launch_warning_dialog_wait">I\u2019ll wait</string>
+    <string name="automated_app_launch_warning_dialog_wait">Close</string>
 
     <!-- END AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
 
