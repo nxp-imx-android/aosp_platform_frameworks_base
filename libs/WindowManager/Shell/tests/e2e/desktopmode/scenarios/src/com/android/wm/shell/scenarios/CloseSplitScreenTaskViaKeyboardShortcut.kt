@@ -17,10 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.NavBar
-import android.tools.PlatformConsts.DEFAULT_DISPLAY
-import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_META_RIGHT
@@ -32,13 +28,8 @@ import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
-import org.junit.Assume
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 /** Base scenario test for closing a split screen task via the keyboard shortcut. */
@@ -46,7 +37,7 @@ import org.junit.Test
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT,
 )
-abstract class CloseSplitScreenTaskViaKeyboardShortcut {
+abstract class CloseSplitScreenTaskViaKeyboardShortcut : TestScenarioBase() {
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
@@ -54,18 +45,6 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
     private val immersiveAppHelper = ImmersiveAppHelper(getInstrumentation())
     private val secondaryApp = DesktopModeAppHelper(immersiveAppHelper)
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
-
-    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-
-    @Before
-    fun setup() {
-        Assume.assumeTrue(
-            DesktopState.fromContext(getInstrumentation().context)
-                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
-        )
-    }
 
     @Test
     open fun closeTaskViaKeyboardShortcut() {
@@ -75,9 +54,7 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
         primaryApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
-        tapl.allApps
-            .getAppIcon(immersiveAppHelper.appName)
-            .launch(immersiveAppHelper.packageName)
+        tapl.allApps.getAppIcon(immersiveAppHelper.appName).launch(immersiveAppHelper.packageName)
         SplitScreenUtils.waitForSplitComplete(wmHelper, primaryApp, secondaryApp)
 
         // Focus on the primary app.
