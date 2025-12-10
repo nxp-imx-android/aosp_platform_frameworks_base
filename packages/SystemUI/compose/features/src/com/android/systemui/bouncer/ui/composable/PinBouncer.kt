@@ -115,6 +115,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         columns = columns,
         verticalSpacing = verticalSpacing,
         horizontalSpacing = calculateHorizontalSpacingBetweenColumns(gridWidth = 300.dp),
+        placeRelative = false,
         modifier =
             modifier.focusRequester(focusRequester).sysuiResTag("pin_pad_grid").semantics {
                 isTraversalGroup = true
