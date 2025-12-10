@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onPlaced
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.keyguard.shared.model.BurnInModel.Companion.MAX_LARGE_CLOCK_SCALE
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
 import com.android.systemui.keyguard.ui.viewmodel.BurnInScaleViewModel
@@ -40,7 +41,7 @@ import kotlinx.coroutines.flow.map
 fun Modifier.burnInAware(
     viewModel: AodBurnInViewModel,
     params: BurnInParameters,
-    isClock: Boolean = false,
+    isClock: Boolean,
 ): Modifier {
     val cachedYTranslation = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
@@ -59,10 +60,15 @@ fun Modifier.burnInAware(
             .collectAsStateWithLifecycle(initialValue = BurnInScaleViewModel())
 
     return this.graphicsLayer {
-        this.translationX = if (isClock) 0F else translationX
+        this.translationX = if (isClock) 0f else translationX
         this.translationY = translationY
 
-        val scale = if (scaleViewModel.scaleClockOnly) scaleViewModel.scale else 1f
+        val scale =
+            when {
+                !isClock -> 1f
+                scaleViewModel.scaleClockOnly -> scaleViewModel.scale
+                else -> MAX_LARGE_CLOCK_SCALE
+            }
         this.scaleX = scale
         this.scaleY = scale
     }

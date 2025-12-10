@@ -280,6 +280,7 @@ fun SceneContainer(
                         .burnInAware(
                             viewModel = viewModel.burnIn,
                             params = rememberBurnIn(viewModel.clock).parameters,
+                            isClock = false,
                         ),
             )
         }
