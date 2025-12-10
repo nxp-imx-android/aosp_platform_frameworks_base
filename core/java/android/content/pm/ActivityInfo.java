@@ -1759,6 +1759,17 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_ENABLE_VIRTUAL_GAMEPAD = 447093535L;
 
     /**
+     * This change id enables fluid resizing experience on desktop for listed apps.
+     * This is an experimental feature and we only enable it for well tested apps for now. The value
+     * is disabled by default. Further decision may be made based on the result.
+     * @hide
+     */
+    @ChangeId
+    @Disabled
+    @Overridable
+    public static final long ENABLE_FLUID_RESIZING = 460405642L;
+
+    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */

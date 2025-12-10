@@ -20,6 +20,7 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
+import static android.content.pm.ActivityInfo.ENABLE_FLUID_RESIZING;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
@@ -48,6 +49,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
+import android.app.compat.CompatChanges;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -2254,7 +2256,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 DesktopConfig desktopConfig,
                 DesktopTasksController desktopTasksController,
                 DesktopUserRepositories desktopUserRepositories) {
-            final TaskPositioner taskPositioner = desktopConfig.isVeiledResizeEnabled()
+            final RunningTaskInfo taskInfo = windowDecoration.getTaskInfo();
+            final String packageName = ComponentUtils.getPackageName(taskInfo);
+            final UserHandle user = windowDecoration.getUser();
+            final boolean isFluidResizeEnabledPerApp = packageName != null
+                    && Flags.enableFluidResizingForListedApps()
+                    && CompatChanges.isChangeEnabled(ENABLE_FLUID_RESIZING, packageName, user);
+            final boolean veiledResizing =
+                    desktopConfig.isVeiledResizeEnabled() && !isFluidResizeEnabledPerApp;
+            final TaskPositioner taskPositioner = veiledResizing
                     // TODO(b/383632995): Update when the flag is launched.
                     ? (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                         ? new MultiDisplayVeiledResizeTaskPositioner(
