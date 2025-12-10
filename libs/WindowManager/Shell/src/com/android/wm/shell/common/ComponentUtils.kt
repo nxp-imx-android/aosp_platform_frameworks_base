@@ -20,6 +20,7 @@ import android.app.TaskInfo
 import android.content.ComponentName
 import android.content.Intent
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.recents.RecentTasksController
 
 /** Utils to obtain [ComponentName]s. */
 object ComponentUtils {
@@ -38,6 +39,11 @@ object ComponentUtils {
     fun getPackageName(taskId: Int, taskOrganizer: ShellTaskOrganizer): String? {
         return getPackageName(taskOrganizer.getRunningTaskInfo(taskId))
     }
+
+    /** Retrieves the package name from a [taskId]. */
+    @JvmStatic
+    fun getPackageName(taskId: Int, recentTasksController: RecentTasksController?): String? =
+        getPackageName(recentTasksController?.findTaskInBackground(taskId))
 
     /** Retrieves the package name from a [TaskInfo]. */
     @JvmStatic

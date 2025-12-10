@@ -771,19 +771,21 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         final ActivityOptions activityOptions = ActivityOptions.fromBundle(options1);
         final String shortcutPackageName = shortcutInfo.getPackage();
         final int userId1 = shortcutInfo.getUserId();
-        // NOTE: This doesn't correctly pull out packageName2 if taskId is referring to a task in
-        //       recents that hasn't launched and is not being organized
-        final int userId2 = SplitScreenUtils.getUserId(taskId, mTaskOrganizer);
+        if (mRecentTasksOptional.isEmpty()) {
+            Log.w(TAG, splitFailureMessage("startShortcutAndTask",
+                    "Recent tasks controller not initialized"));
+            return;
+        }
+        RecentTasksController recentTasksController = mRecentTasksOptional.get();
+        final int userId2 = SplitScreenUtils.getUserId(taskId, recentTasksController);
         if (matchPackageAndUser(shortcutPackageName, userId1,
-                    ComponentUtils.getPackageName(taskId, mTaskOrganizer), userId2)) {
+                    ComponentUtils.getPackageName(taskId, recentTasksController), userId2)) {
             if (mMultiInstanceHelpher.supportsMultiInstanceSplit(shortcutInfo.getActivity(),
                     userId1)) {
                 activityOptions.setApplyMultipleTaskFlagForShortcut(true);
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "Adding MULTIPLE_TASK");
             } else {
-                if (mRecentTasksOptional.isPresent()) {
-                    mRecentTasksOptional.get().removeSplitPair(taskId);
-                }
+                mRecentTasksOptional.get().removeSplitPair(taskId);
                 taskId = INVALID_TASK_ID;
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
                         "Cancel entering split as not supporting multi-instances");
@@ -820,21 +822,23 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             @SplitPosition int splitPosition, @PersistentSnapPosition int snapPosition,
             @Nullable RemoteTransition remoteTransition, InstanceId instanceId) {
         Intent fillInIntent = null;
+        if (mRecentTasksOptional.isEmpty()) {
+            Log.w(TAG, splitFailureMessage("startIntentAndTask",
+                    "Recent tasks controller not initialized"));
+            return;
+        }
+        RecentTasksController recentTasksController = mRecentTasksOptional.get();
         final String packageName = ComponentUtils.getPackageName(pendingIntent);
-        // NOTE: This doesn't correctly pull out packageName2 if taskId is referring to a task in
-        //       recents that hasn't launched and is not being organized
-        final String packageName2 = ComponentUtils.getPackageName(taskId, mTaskOrganizer);
-        final int userId2 = SplitScreenUtils.getUserId(taskId, mTaskOrganizer);
+        final String packageName2 = ComponentUtils.getPackageName(taskId, recentTasksController);
+        final int userId2 = SplitScreenUtils.getUserId(taskId, recentTasksController);
         boolean setSecondIntentMultipleTask = false;
-        if (matchPackageAndUser(packageName, userId1, packageName2, userId1)) {
+        if (matchPackageAndUser(packageName, userId1, packageName2, userId2)) {
             if (mMultiInstanceHelpher.supportsMultiInstanceSplit(getComponent(pendingIntent),
                     userId1)) {
                 setSecondIntentMultipleTask = true;
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "Adding MULTIPLE_TASK");
             } else {
-                if (mRecentTasksOptional.isPresent()) {
-                    mRecentTasksOptional.get().removeSplitPair(taskId);
-                }
+                mRecentTasksOptional.get().removeSplitPair(taskId);
                 taskId = INVALID_TASK_ID;
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
                         "Cancel entering split as not supporting multi-instances");
