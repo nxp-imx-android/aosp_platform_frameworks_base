@@ -361,6 +361,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean mLegacyPolicyVisibilityAfterAnim = true;
     // overlay window is hidden because the owning app is suspended
     private boolean mHiddenWhileSuspended;
+    private boolean mHiddenWhileLockedByAppLock;
     private boolean mAppOpVisibility = true;
 
     boolean mPermanentlyHidden; // the window should never be shown again
@@ -3006,6 +3007,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Being hidden due to owner package being suspended.
             return false;
         }
+        if (mHiddenWhileLockedByAppLock) {
+            // Being hidden due to owner package being locked by App Lock.
+            return false;
+        }
         if (mIsForceHiddenNonSystemOverlayWindow) {
             // This is an alert window that is currently force hidden.
             return false;
@@ -3127,6 +3132,25 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mHiddenWhileSuspended = hide;
         if (hide) {
             hide(true /* doAnimation */, true /* requestAnim */);
+        } else {
+            show(true /* doAnimation */, true /* requestAnim */);
+        }
+    }
+
+    void setHiddenWhileLockedByAppLock(boolean hide) {
+        if (!android.security.Flags.appLockCore()) {
+            return;
+        }
+        if (mOwnerCanAddInternalSystemWindow
+                || (!isSystemAlertWindowType(mAttrs.type) && mAttrs.type != TYPE_TOAST)) {
+            return;
+        }
+        if (mHiddenWhileLockedByAppLock == hide) {
+            return;
+        }
+        mHiddenWhileLockedByAppLock = hide;
+        if (hide) {
+            hide(false /* doAnimation */, true /* requestAnim */);
         } else {
             show(true /* doAnimation */, true /* requestAnim */);
         }
@@ -4216,13 +4240,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (!isVisibleByPolicy() || !mLegacyPolicyVisibilityAfterAnim || !mAppOpVisibility
                 || isParentWindowHidden() || mPermanentlyHidden
                 || mIsForceHiddenNonSystemOverlayWindow
-                || mHiddenWhileSuspended) {
+                || mHiddenWhileSuspended || mHiddenWhileLockedByAppLock) {
             pw.println(prefix + "mPolicyVisibility=" + isVisibleByPolicy()
                     + " mLegacyPolicyVisibilityAfterAnim=" + mLegacyPolicyVisibilityAfterAnim
                     + " mAppOpVisibility=" + mAppOpVisibility
                     + " parentHidden=" + isParentWindowHidden()
                     + " mPermanentlyHidden=" + mPermanentlyHidden
                     + " mHiddenWhileSuspended=" + mHiddenWhileSuspended
+                    + " mHiddenWhileLockedByAppLock=" + mHiddenWhileLockedByAppLock
                     + " mIsForceHiddenNonSystemOverlayWindow="
                     + mIsForceHiddenNonSystemOverlayWindow);
         }

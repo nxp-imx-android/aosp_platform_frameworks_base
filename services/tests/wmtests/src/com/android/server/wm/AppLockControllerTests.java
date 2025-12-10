@@ -16,6 +16,9 @@
 
 package com.android.server.wm;
 
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -210,6 +213,43 @@ public class AppLockControllerTests extends WindowTestsBase {
 
         verify(appLockOverlayController, never()).lockActivitiesTasksForAppLockLocked(anyString(),
                 anyInt());
+    }
+
+    @Test
+    public void testOnPackageLockedStateChanged_updatesAllPackageWindowsHiddenState() {
+        final int testUserId = 0;
+        final WindowState win1 = newWindowBuilder("overlayWindow1", TYPE_APPLICATION_OVERLAY)
+                .setOwningPackage(TEST_PACKAGE_1)
+                .setOwnerId(10123)
+                .build();
+        final WindowState win2 = newWindowBuilder("overlayWindow2", TYPE_APPLICATION)
+                .setOwningPackage(TEST_PACKAGE_1)
+                .setOwnerId(10123)
+                .build();
+        final WindowState win3 = newWindowBuilder("overlayWindow3", TYPE_APPLICATION_OVERLAY)
+                .setOwningPackage(TEST_PACKAGE_2)
+                .setOwnerId(10456)
+                .build();
+
+        assertThat(win1).isNotNull();
+        assertThat(win2).isNotNull();
+        assertThat(win3).isNotNull();
+        spyOn(win1);
+        spyOn(win2);
+        spyOn(win3);
+
+        // Simulate package being locked by App Lock and expect package's windows' state updated.
+        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        listener.onPackageLockedStateChanged(TEST_PACKAGE_1, testUserId, true);
+        verify(win1).setHiddenWhileLockedByAppLock(true);
+        verify(win2).setHiddenWhileLockedByAppLock(true);
+        verify(win3, never()).setHiddenWhileLockedByAppLock(true);
+
+        // Simulate package being unlocked by App Lock and expect package's windows' state updated.
+        listener.onPackageLockedStateChanged(TEST_PACKAGE_1, testUserId, false);
+        verify(win1).setHiddenWhileLockedByAppLock(false);
+        verify(win2).setHiddenWhileLockedByAppLock(false);
+        verify(win3, never()).setHiddenWhileLockedByAppLock(false);
     }
 
     @Test

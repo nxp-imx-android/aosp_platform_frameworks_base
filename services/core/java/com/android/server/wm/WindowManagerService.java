@@ -1940,6 +1940,12 @@ public class WindowManagerService extends IWindowManager.Stub
                     UserHandle.getUserId(win.getOwningUid()));
             win.setHiddenWhileSuspended(suspended);
 
+            if (android.security.Flags.appLockCore() && win.getOwningPackage() != null) {
+                final boolean lockedByAppLock = isPackageLockedByAppLockLocked(
+                        win.getOwningPackage(), UserHandle.getUserId(win.getOwningUid()));
+                win.setHiddenWhileLockedByAppLock(lockedByAppLock);
+            }
+
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 

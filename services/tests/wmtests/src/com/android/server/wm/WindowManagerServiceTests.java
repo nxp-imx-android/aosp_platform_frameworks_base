@@ -2128,6 +2128,77 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertThat(mWm.isPackageLockedByAppLockLocked(TEST_PACKAGE_3, TEST_USER_ID_1)).isFalse();
     }
 
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowBySystem_packageIsLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(true /* isPackageLockedByAppLock */,
+                true /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowBySystem_packageIsNotLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(false /* isPackageLockedByAppLock */,
+                true /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowByApp_packageIsLockedByAppLock_showOnWindowReturnsFalse() {
+        internalTestAddOverlayWindowForAppLock(true /* isPackageLockedByAppLock */,
+                false /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowByApp_packageIsNotLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(false /* isPackageLockedByAppLock */,
+                false /* isWindowCreatedBySystem */);
+    }
+
+    private void internalTestAddOverlayWindowForAppLock(boolean isPackageLockedByAppLock,
+            boolean isWindowCreatedBySystem) {
+        spyOn(mWm.mContext);
+        doReturn(isWindowCreatedBySystem ? PackageManager.PERMISSION_GRANTED
+                : PackageManager.PERMISSION_DENIED).when(mWm.mContext).checkCallingOrSelfPermission(
+                eq(android.Manifest.permission.INTERNAL_SYSTEM_WINDOW));
+
+        final Session session = createTestSession(mAtm, 1234 /* pid */, 10123 /* uid */);
+        final IWindow client = new TestIWindow();
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                TYPE_APPLICATION_OVERLAY);
+        params.setTitle("overlayWindowLockedByAppLock: " + isPackageLockedByAppLock);
+        params.packageName = DEFAULT_COMPONENT_PACKAGE_NAME;
+        // Simulate package's locked by App Lock state.
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(isPackageLockedByAppLock).when(appLockController).isPackageLockedByAppLockLocked(
+                DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1);
+
+        final int addWindowRes = mWm.addWindow(session, client, params, View.VISIBLE,
+                DEFAULT_DISPLAY, TEST_USER_ID_1, WindowInsets.Type.defaultVisible(),
+                null /* outInputChannel */, new WindowRelayoutResult());
+
+        assertThat(addWindowRes).isAtLeast(WindowManagerGlobal.ADD_OKAY);
+        final WindowState win = mWm.mWindowMap.get(client.asBinder());
+        assertThat(win).isNotNull();
+        final boolean hideRes = win.hide(true /* doAnimation */, true /* requestAnim */);
+        final boolean showRes = win.show(true /* doAnimation */, true /* requestAnim */);
+        if (isWindowCreatedBySystem || !isPackageLockedByAppLock) {
+            assertThat(hideRes).isTrue();
+            assertThat(showRes).isTrue();
+        } else {
+            // Hiding and showing the window should not work if the package is locked by App Lock
+            // because the window is already hidden and can't be shown.
+            assertThat(hideRes).isFalse();
+            assertThat(showRes).isFalse();
+        }
+    }
+
     @Test
     public void testAddTrustedTaskOverlay_nullOverlay_throwsException() {
         WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);

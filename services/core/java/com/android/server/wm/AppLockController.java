@@ -68,7 +68,18 @@ final class AppLockController {
 
     /**
      * Listener for changes in the App Lock locked state of packages from {@link AppLockInternal}.
-     * This is used to keep {@link #mAppLockLockedPackages} in sync.
+     *
+     * <p>This listener is responsible for keeping the internal state of locked packages
+     * ({@link #mAppLockLockedPackages}) in sync. When a package's locked state changes, this
+     * listener also performs the necessary window management tasks:
+     * <ul>
+     *     <li>When a package becomes locked, it calls the {@link AppLockOverlayController} to
+     *     display a lock screen over the relevant activities and tasks. It also updates all
+     *     associated {@link WindowState}s to set their hidden state via
+     *     {@link WindowState#setHiddenWhileLockedByAppLock(boolean)}.</li>
+     *     <li>When a package is unlocked, it updates the hidden state of the associated
+     *     {@link WindowState}s to make them visible again.</li>
+     * </ul>
      */
     private final AppLockInternal.PackageLockedStateListener mAppLockLockedPackageStateListener =
             new AppLockInternal.PackageLockedStateListener() {
@@ -106,6 +117,12 @@ final class AppLockController {
                             // overlays. The LockedAppActivity is responsible for finishing itself
                             // when it detects that the package is no longer locked.
                         }
+
+                        mWmService.mRoot.forAllWindows(w -> {
+                            if (packageName.equals(w.getOwningPackage())) {
+                                w.setHiddenWhileLockedByAppLock(locked);
+                            }
+                        }, false);
                     }
                 }
             };
