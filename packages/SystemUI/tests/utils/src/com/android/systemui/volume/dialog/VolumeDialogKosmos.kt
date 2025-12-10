@@ -22,12 +22,23 @@ import com.android.systemui.volume.dialog.dagger.volumeDialogComponentFactory
 import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.domain.interactor.volumeDialogVisibilityInteractor
 
+val Kosmos.volumeDialogFactory by
+    Kosmos.Fixture {
+        object : VolumeDialog.Factory {
+            override fun create(isVolumeDialogVertical: Boolean): VolumeDialog {
+                return VolumeDialog(
+                    context = applicationContext,
+                    componentFactory = volumeDialogComponentFactory,
+                    visibilityInteractor = volumeDialogVisibilityInteractor,
+                    isVolumeDialogVertical = isVolumeDialogVertical,
+                )
+            }
+        }
+    }
+
 val Kosmos.volumeDialog by
     Kosmos.Fixture {
-        VolumeDialog(
-            context = applicationContext,
-            visibilityInteractor = volumeDialogVisibilityInteractor,
-            componentFactory = volumeDialogComponentFactory,
-            expandedAudioTileDetailsFeatureInteractor = expandedAudioTileDetailsFeatureInteractor,
+        volumeDialogFactory.create(
+            isVolumeDialogVertical = !expandedAudioTileDetailsFeatureInteractor.isEnabled()
         )
     }

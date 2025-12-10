@@ -24,10 +24,12 @@ import static android.view.WindowManagerPolicyConstants.EXTRA_FROM_BRIGHTNESS_KE
 
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -45,11 +47,13 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel;
+import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor;
 
 import java.util.List;
 
@@ -65,6 +69,10 @@ import javax.inject.Inject;
  */
 public class BrightnessDialog extends ComponentActivity {
 
+    public static final String ACTION_BRIGHTNESS_DIALOG_SHOWING =
+            "com.android.systemui.settings.brightness.BRIGHTNESS_DIALOG_SHOWING";
+    public static final String PERMISSION_SELF = "com.android.systemui.permission.SELF";
+
     @VisibleForTesting
     static final int DIALOG_TIMEOUT_MILLIS = 3000;
 
@@ -73,18 +81,24 @@ public class BrightnessDialog extends ComponentActivity {
     private Runnable mCancelTimeoutRunnable;
     private final ShadeInteractor mShadeInteractor;
     private final BrightnessSliderViewModel.Factory mBrightnessSliderViewModelFactory;
+    private final BroadcastSender mBroadcastSender;
+    private final boolean mIsExpandedAudioTileDetailsEnabled;
 
     @Inject
     public BrightnessDialog(
             @Main DelayableExecutor mainExecutor,
             AccessibilityManagerWrapper accessibilityMgr,
             ShadeInteractor shadeInteractor,
-            BrightnessSliderViewModel.Factory brightnessSliderViewModelFactory
+            BrightnessSliderViewModel.Factory brightnessSliderViewModelFactory,
+            BroadcastSender broadcastSender,
+            ExpandedAudioTileDetailsFeatureInteractor expandedAudioTileDetailsFeatureInteractor
     ) {
         mMainExecutor = mainExecutor;
         mAccessibilityMgr = accessibilityMgr;
         mShadeInteractor = shadeInteractor;
         mBrightnessSliderViewModelFactory = brightnessSliderViewModelFactory;
+        mBroadcastSender = broadcastSender;
+        mIsExpandedAudioTileDetailsEnabled = expandedAudioTileDetailsFeatureInteractor.isEnabled();
     }
 
 
@@ -190,7 +204,13 @@ public class BrightnessDialog extends ComponentActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        MetricsLogger.visible(this, MetricsEvent.BRIGHTNESS_DIALOG);
+        if (mIsExpandedAudioTileDetailsEnabled) {
+            mBroadcastSender.sendBroadcastAsUser(
+                    new Intent(ACTION_BRIGHTNESS_DIALOG_SHOWING),
+                    UserHandle.SYSTEM,
+                    PERMISSION_SELF);
+            MetricsLogger.visible(this, MetricsEvent.BRIGHTNESS_DIALOG);
+        }
     }
 
     @Override

@@ -30,6 +30,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.SingleActivityFactory
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFactory
+import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
@@ -38,6 +39,8 @@ import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
+import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
 import kotlin.time.Duration.Companion.milliseconds
@@ -66,6 +69,7 @@ class BrightnessDialogTest : SysuiTestCase() {
 
     @Mock private lateinit var accessibilityMgr: AccessibilityManagerWrapper
     @Mock private lateinit var shadeInteractor: ShadeInteractor
+    @Mock private lateinit var broadcastSender: BroadcastSender
 
     private val kosmos = testKosmos()
 
@@ -83,6 +87,8 @@ class BrightnessDialogTest : SysuiTestCase() {
                     mainExecutor,
                     accessibilityMgr,
                     shadeInteractor,
+                    broadcastSender,
+                    kosmos.expandedAudioTileDetailsFeatureInteractor,
                     kosmos.brightnessSliderViewModelFactory,
                     onDestroyLatch,
                 )
@@ -203,6 +209,8 @@ class BrightnessDialogTest : SysuiTestCase() {
         mainExecutor: DelayableExecutor,
         accessibilityMgr: AccessibilityManagerWrapper,
         shadeInteractor: ShadeInteractor,
+        broadcastSender: BroadcastSender,
+        expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
         brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory,
         private val countdownLatch: CountDownLatch,
     ) :
@@ -211,6 +219,8 @@ class BrightnessDialogTest : SysuiTestCase() {
             accessibilityMgr,
             shadeInteractor,
             brightnessSliderViewModelFactory,
+            broadcastSender,
+            expandedAudioTileDetailsFeatureInteractor,
         ) {
         var finishing = MutableStateFlow(false)
 
