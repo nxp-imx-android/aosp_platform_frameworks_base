@@ -14548,9 +14548,10 @@ public final class Settings {
         public static final String CUSTOM_BUGREPORT_HANDLER_USER = "custom_bugreport_handler_user";
 
         /**
-         * Whether ADB over USB is enabled.
+         * Whether ADB over USB is enabled (0 = false, 1 = true).
+         * This will always return 0 for all third-party apps.
          */
-        @Readable
+        @Readable(redactedValue = "0")
         public static final String ADB_ENABLED = "adb_enabled";
 
         /**
@@ -14833,9 +14834,10 @@ public final class Settings {
                 "wm_display_settings_path";
 
         /**
-        * Whether user has enabled development settings.
+        * Whether user has enabled development settings (0 = false, 1 = true).
+        * This will always return 0 for all third-party apps.
         */
-        @Readable
+        @Readable(redactedValue = "0")
         public static final String DEVELOPMENT_SETTINGS_ENABLED = "development_settings_enabled";
 
         /**
