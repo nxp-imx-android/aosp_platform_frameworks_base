@@ -1163,36 +1163,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ACTIVITY_STARTER_DISPLAY_AWARE)
-    fun startActivity_displayAwareFlagDisabled_usesDefaultDisplay() {
-        val intent = Intent()
-        val parent = FrameLayout(context)
-        val view =
-            object : View(context), LaunchableView {
-                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
-            }
-        parent.addView(view)
-        val controller = ActivityTransitionAnimator.Controller.fromView(view)!!
-        `when`(keyguardStateController.isShowing).thenReturn(false)
-        `when`(keyguardStateController.isOccluded).thenReturn(false)
-
-        underTest.startActivity(
-            intent = intent,
-            dismissShade = false,
-            animationController = controller,
-            showOverLockscreenWhenLocked = true,
-            userHandle = UserHandle.CURRENT,
-        )
-
-        val windowControllerStore = kosmos.fakeStatusBarWindowControllerStore
-        assertThat(windowControllerStore.defaultDisplay.wrappedAnimationControllers).isNotEmpty()
-        assertThat(windowControllerStore.forDisplay(context.displayId).wrappedAnimationControllers)
-            .isEmpty()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ACTIVITY_STARTER_DISPLAY_AWARE)
-    fun startActivity_displayAwareFlagEnabled_usesCorrectDisplay() {
+    fun startActivity_usesCorrectDisplay() {
         val intent = Intent()
         val parent = FrameLayout(context)
         val view =

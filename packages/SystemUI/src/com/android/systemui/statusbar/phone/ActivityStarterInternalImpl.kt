@@ -151,11 +151,7 @@ constructor(
                     val baseController = controllerFactory.createController(forLaunch)
                     val rootView = baseController.transitionContainer.rootView
                     val statusBarWindowController =
-                        if (Flags.activityStarterDisplayAware()) {
-                            statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
-                        } else {
-                            statusBarWindowControllerStore.defaultDisplay
-                        }
+                        statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
                     val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller>? =
                         statusBarWindowController?.wrapAnimationControllerIfInStatusBar(
                             rootView,
@@ -754,11 +750,7 @@ constructor(
         }
         val rootView = animationController.transitionContainer.rootView
         val statusBarWindowController =
-            if (Flags.activityStarterDisplayAware()) {
-                statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
-            } else {
-                statusBarWindowControllerStore.defaultDisplay
-            }
+            statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
         val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller>? =
             statusBarWindowController?.wrapAnimationControllerIfInStatusBar(
                 rootView,
