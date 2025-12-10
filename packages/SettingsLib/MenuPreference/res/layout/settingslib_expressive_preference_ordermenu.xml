@@ -31,7 +31,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:paddingVertical="@dimen/settingslib_expressive_space_small1"
         android:minHeight="72dp"
         android:baselineAligned="false"
         android:orientation="horizontal"
