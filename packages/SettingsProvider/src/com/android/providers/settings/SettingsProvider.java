@@ -4319,7 +4319,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 232;
+            private static final int SETTINGS_VERSION = 233;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6083,56 +6083,76 @@ public class SettingsProvider extends ContentProvider {
 
                 if (currentVersion == 203) {
                     // Version 203: initialize entries migrated from wear settings provide.
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.HAS_PAY_TOKENS, false);
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.GMS_CHECKIN_TIMEOUT_MIN, 6);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.HAS_PAY_TOKENS, false);
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.GMS_CHECKIN_TIMEOUT_MIN, 6);
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.HOTWORD_DETECTION_ENABLED,
                             resources.getBoolean(R.bool.def_wearable_hotwordDetectionEnabled));
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.SMART_REPLIES_ENABLED, true);
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.SMART_REPLIES_ENABLED, true);
                     Setting locationMode = secureSettings.getSettingLocked(Secure.LOCATION_MODE);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.OBTAIN_PAIRED_DEVICE_LOCATION,
                             !locationMode.isNull()
                                     && !Integer.toString(Secure.LOCATION_MODE_OFF)
                                             .equals(locationMode.getValue()));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.PHONE_PLAY_STORE_AVAILABILITY,
                             Global.Wearable.PHONE_PLAY_STORE_AVAILABILITY_UNKNOWN);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.BUG_REPORT,
                             "user".equals(Build.TYPE) // is user build?
                                     ? Global.Wearable.BUG_REPORT_DISABLED
                                     : Global.Wearable.BUG_REPORT_ENABLED);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.SMART_ILLUMINATE_ENABLED,
                             resources.getBoolean(R.bool.def_wearable_smartIlluminateEnabled));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.CLOCKWORK_AUTO_TIME,
                             Global.Wearable.SYNC_TIME_FROM_PHONE);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.CLOCKWORK_AUTO_TIME_ZONE,
                             Global.Wearable.SYNC_TIME_ZONE_FROM_PHONE);
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.CLOCKWORK_24HR_TIME, false);
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.AUTO_WIFI, true);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.CLOCKWORK_24HR_TIME, false);
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.AUTO_WIFI, true);
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.WIFI_POWER_SAVE,
                             resources.getInteger(
                                     R.integer.def_wearable_offChargerWifiUsageLimitMinutes));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.ALT_BYPASS_WIFI_REQUIREMENT_TIME_MILLIS, 0L);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.SETUP_SKIPPED, Global.Wearable.SETUP_SKIPPED_UNKNOWN);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.LAST_CALL_FORWARD_ACTION,
                             Global.Wearable.CALL_FORWARD_NO_LAST_ACTION);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.MUTE_WHEN_OFF_BODY_ENABLED,
                             resources.getBoolean(R.bool.def_wearable_muteWhenOffBodyEnabled));
-                    initGlobalSettingsDefaultValLocked(Global.Wearable.WEAR_OS_VERSION_STRING, "");
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings, Global.Wearable.WEAR_OS_VERSION_STRING, "");
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.SIDE_BUTTON,
                             resources.getBoolean(R.bool.def_wearable_sideButtonPresent));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.ANDROID_WEAR_VERSION,
                             Long.parseLong(
                                     getContext()
@@ -6142,44 +6162,59 @@ public class SettingsProvider extends ContentProvider {
                     final int editionLocal = 2;
                     boolean isLe = packageManager.hasSystemFeature("cn.google");
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.SYSTEM_EDITION, isLe ? editionLocal : editionGlobal);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.SYSTEM_CAPABILITIES, getWearSystemCapabilities(isLe));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.WEAR_PLATFORM_MR_NUMBER,
                             SystemProperties.getInt("ro.cw_build.platform_mr", 0));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.MOBILE_SIGNAL_DETECTOR,
                             resources.getBoolean(R.bool.def_wearable_mobileSignalDetectorAllowed));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.AMBIENT_ENABLED,
                             resources.getBoolean(R.bool.def_wearable_ambientEnabled));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.AMBIENT_TILT_TO_WAKE,
                             resources.getBoolean(R.bool.def_wearable_tiltToWakeEnabled));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.AMBIENT_LOW_BIT_ENABLED_DEV, false);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.AMBIENT_TOUCH_TO_WAKE,
                             resources.getBoolean(R.bool.def_wearable_touchToWakeEnabled));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.AMBIENT_TILT_TO_BRIGHT,
                             resources.getBoolean(R.bool.def_wearable_tiltToBrightEnabled));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.DECOMPOSABLE_WATCHFACE, false);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.AMBIENT_FORCE_WHEN_DOCKED,
                             SystemProperties.getBoolean("ro.ambient.force_when_docked", false));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.AMBIENT_LOW_BIT_ENABLED,
                             SystemProperties.getBoolean("ro.ambient.low_bit_enabled", false));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.AMBIENT_PLUGGED_TIMEOUT_MIN,
                             SystemProperties.getInt("ro.ambient.plugged_timeout_min", -1));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.PAIRED_DEVICE_OS_TYPE,
                             Settings.Global.Wearable.PAIRED_DEVICE_OS_TYPE_UNKNOWN);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.USER_HFP_CLIENT_SETTING,
                             Settings.Global.Wearable.HFP_CLIENT_UNSET);
                     Setting disabledProfileSetting =
@@ -6190,6 +6225,7 @@ public class SettingsProvider extends ContentProvider {
                                     ? 0
                                     : Long.parseLong(disabledProfileSetting.getValue());
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.COMPANION_OS_VERSION,
                             Settings.Global.Wearable.COMPANION_OS_VERSION_UNDEFINED);
                     final boolean defaultBurnInProtectionEnabled =
@@ -6198,14 +6234,17 @@ public class SettingsProvider extends ContentProvider {
                     final boolean forceBurnInProtection =
                             SystemProperties.getBoolean("persist.debug.force_burn_in", false);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.BURN_IN_PROTECTION_ENABLED,
                             defaultBurnInProtectionEnabled || forceBurnInProtection);
 
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.CLOCKWORK_SYSUI_PACKAGE,
                             resources.getString(
                                     com.android.internal.R.string.config_wearSysUiPackage));
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.CLOCKWORK_SYSUI_MAIN_ACTIVITY,
                             resources.getString(
                                     com.android.internal.R.string.config_wearSysUiMainActivity));
@@ -6526,10 +6565,12 @@ public class SettingsProvider extends ContentProvider {
                     // Following init logic is rebased from wear OS branch.
                     // Initialize default value of tether configuration to unknown.
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Settings.Global.Wearable.TETHER_CONFIG_STATE,
                             Global.Wearable.TETHERED_CONFIG_UNKNOWN);
                     // Init paired device location setting from resources.
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.OBTAIN_PAIRED_DEVICE_LOCATION,
                             resources.getInteger(R.integer.def_paired_device_location_mode));
                     // Init media packages from resources.
@@ -6540,8 +6581,10 @@ public class SettingsProvider extends ContentProvider {
                             resources.getString(
                                     com.android.internal.R.string.config_wearMediaSessionsPackage);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.WEAR_MEDIA_CONTROLS_PACKAGE, mediaControlsPackage);
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.Wearable.WEAR_MEDIA_SESSIONS_PACKAGE, mediaSessionsPackage);
 
                     currentVersion = 218;
@@ -6603,6 +6646,7 @@ public class SettingsProvider extends ContentProvider {
                                         .getResources()
                                         .getBoolean(R.bool.def_enable_wifi_always_requested);
                         initGlobalSettingsDefaultValLocked(
+                                globalSettings,
                                 Settings.Global.WIFI_ALWAYS_REQUESTED,
                                 defEnableWifiAlwaysRequested);
                     }
@@ -6660,11 +6704,13 @@ public class SettingsProvider extends ContentProvider {
                 // Version 223: make charging constraint update criteria customizable.
                 if (currentVersion == 223) {
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.BATTERY_CHARGING_STATE_UPDATE_DELAY,
                             resources.getInteger(
                                     R.integer.def_battery_charging_state_update_delay_ms));
 
                     initGlobalSettingsDefaultValLocked(
+                            globalSettings,
                             Global.BATTERY_CHARGING_STATE_ENFORCE_LEVEL,
                             resources.getInteger(
                                     R.integer.def_battery_charging_state_enforce_level));
@@ -6878,6 +6924,18 @@ public class SettingsProvider extends ContentProvider {
                     currentVersion = 232;
                 }
 
+                // Version 232: Set the default value for Settings.Global.AIRPLANE_MODE_SYNC
+                if (currentVersion == 232) {
+                    if (com.android.server.connectivity.Flags.syncAirplaneModeWithWatches()) {
+                        initGlobalSettingsDefaultValLocked(
+                                globalSettings,
+                                Global.AIRPLANE_MODE_SYNC,
+                                resources.getBoolean(R.bool.def_airplane_mode_sync_enabled));
+                    }
+
+                    currentVersion = 233;
+                }
+
                 // vXXX: Add new settings above this point.
 
                 if (currentVersion != newVersion) {
@@ -6923,20 +6981,23 @@ public class SettingsProvider extends ContentProvider {
                 }
             }
 
-            private void initGlobalSettingsDefaultValLocked(String key, boolean val) {
-                initGlobalSettingsDefaultValLocked(key, val ? "1" : "0");
+            private void initGlobalSettingsDefaultValLocked(
+                    SettingsState globalSettings, String key, boolean val) {
+                initGlobalSettingsDefaultValLocked(globalSettings, key, val ? "1" : "0");
             }
 
-            private void initGlobalSettingsDefaultValLocked(String key, int val) {
-                initGlobalSettingsDefaultValLocked(key, String.valueOf(val));
+            private void initGlobalSettingsDefaultValLocked(
+                    SettingsState globalSettings, String key, int val) {
+                initGlobalSettingsDefaultValLocked(globalSettings, key, String.valueOf(val));
             }
 
-            private void initGlobalSettingsDefaultValLocked(String key, long val) {
-                initGlobalSettingsDefaultValLocked(key, String.valueOf(val));
+            private void initGlobalSettingsDefaultValLocked(
+                    SettingsState globalSettings, String key, long val) {
+                initGlobalSettingsDefaultValLocked(globalSettings, key, String.valueOf(val));
             }
 
-            private void initGlobalSettingsDefaultValLocked(String key, String val) {
-                final SettingsState globalSettings = getGlobalSettingsLocked();
+            private void initGlobalSettingsDefaultValLocked(
+                    SettingsState globalSettings, String key, String val) {
                 Setting currentSetting = globalSettings.getSettingLocked(key);
                 if (currentSetting.isNull()) {
                     globalSettings.insertSettingOverrideableByRestoreLocked(
