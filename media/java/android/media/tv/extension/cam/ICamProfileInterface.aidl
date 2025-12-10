@@ -18,6 +18,8 @@ package android.media.tv.extension.cam;
 
 import android.os.Bundle;
 
+import android.media.tv.extension.cam.ICamProfileListener;
+
 /**
  * @hide
  */
@@ -44,4 +46,16 @@ interface ICamProfileInterface {
      * @return true if CAM scanning is enabled, false otherwise.
      */
     boolean isCamScanEnabled();
+    /**
+     * Registers a listener to receive callbacks when CAM profile changes.
+     *
+     * @param listener The listener to register.
+     */
+    void addListener(in ICamProfileListener listener);
+    /**
+     * Unregisters a previously registered profile listener.
+     *
+     * @param listener The listener to unregister.
+     */
+    void removeListener(in ICamProfileListener listener);
 }
