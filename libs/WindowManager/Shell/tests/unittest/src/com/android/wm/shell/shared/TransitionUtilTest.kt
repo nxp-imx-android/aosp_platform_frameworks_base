@@ -28,7 +28,7 @@ import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.transition.TransitionInfoBuilder
+import com.android.testing.wm.util.TransitionInfoBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.runner.RunWith

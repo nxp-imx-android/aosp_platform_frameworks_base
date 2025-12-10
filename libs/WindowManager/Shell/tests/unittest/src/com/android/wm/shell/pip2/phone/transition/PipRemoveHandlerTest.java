@@ -49,12 +49,12 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
-import com.android.wm.shell.transition.TransitionInfoBuilder;
 
 import org.junit.Before;
 import org.junit.Test;

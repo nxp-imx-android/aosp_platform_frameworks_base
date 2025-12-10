@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.transition
+package com.android.testing.wm.util
 
 import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID

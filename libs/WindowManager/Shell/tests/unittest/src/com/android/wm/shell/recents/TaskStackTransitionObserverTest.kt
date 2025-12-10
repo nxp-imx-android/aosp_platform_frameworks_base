@@ -39,6 +39,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -47,7 +48,6 @@ import com.android.wm.shell.TestSyncExecutor
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.google.common.truth.Truth.assertThat

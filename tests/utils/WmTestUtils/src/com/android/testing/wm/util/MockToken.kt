@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell
+package com.android.testing.wm.util
 
 import android.os.IBinder
 import android.window.IWindowContainerToken

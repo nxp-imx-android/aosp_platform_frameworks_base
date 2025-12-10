@@ -23,11 +23,11 @@ import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.transition.FocusTransitionObserver
-import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.util.StubTransaction
 import java.util.Optional
 import org.junit.Before

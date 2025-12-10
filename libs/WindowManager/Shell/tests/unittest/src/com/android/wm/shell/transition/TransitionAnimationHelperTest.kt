@@ -23,6 +23,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import com.android.internal.R
 import com.android.internal.policy.TransitionAnimation
+import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import org.junit.Test

@@ -23,9 +23,9 @@ import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
 import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleRootTaskTest.Companion.prepareRootTaskForTest

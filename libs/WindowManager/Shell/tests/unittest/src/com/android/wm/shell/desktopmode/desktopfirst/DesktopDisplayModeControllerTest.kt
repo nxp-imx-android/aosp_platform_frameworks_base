@@ -41,8 +41,8 @@ import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change
 import androidx.test.filters.SmallTest
 import com.android.server.display.feature.flags.Flags as DisplayFlags
+import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase

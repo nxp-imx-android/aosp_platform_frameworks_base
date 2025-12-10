@@ -32,8 +32,10 @@ import android.window.ActivityTransitionInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.MockToken
+import com.android.testing.wm.util.TransitionInfoBuilder
+import com.android.testing.wm.util.TransitionInfoBuilder.Companion.DEFAULT_DISPLAY_ID
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
@@ -41,8 +43,6 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.android.wm.shell.taskview.TaskViewTransitions
-import com.android.wm.shell.transition.TransitionInfoBuilder
-import com.android.wm.shell.transition.TransitionInfoBuilder.Companion.DEFAULT_DISPLAY_ID
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import java.util.Optional
