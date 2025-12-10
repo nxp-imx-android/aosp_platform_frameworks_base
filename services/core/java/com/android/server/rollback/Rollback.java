@@ -706,7 +706,7 @@ class Rollback {
      */
     @WorkerThread
     boolean restoreUserDataForPackageIfInProgress(String packageName, int[] userIds, int appId,
-            String seInfo, AppDataRollbackHelper dataHelper) {
+            int pccId, String seInfo, AppDataRollbackHelper dataHelper) {
         assertInWorkerThread();
         if (!isRestoreUserDataInProgress()) {
             return false;
@@ -719,7 +719,7 @@ class Rollback {
                 boolean changedRollback = false;
                 for (int userId : userIds) {
                     changedRollback |= dataHelper.restoreAppData(
-                            info.getRollbackId(), pkgRollbackInfo, userId, appId, seInfo);
+                            info.getRollbackId(), pkgRollbackInfo, userId, appId, pccId, seInfo);
                 }
                 // We've updated metadata about this rollback, so save it to flash.
                 if (changedRollback) {
