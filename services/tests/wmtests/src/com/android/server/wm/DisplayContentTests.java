@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
@@ -95,6 +96,7 @@ import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
+import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -157,7 +159,9 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams.WindowType;
 import android.window.DisplayAreaInfo;
 import android.window.IDisplayAreaOrganizer;
+import android.window.ITaskFragmentOrganizer;
 import android.window.ScreenCaptureInternal;
+import android.window.TaskFragmentOrganizer;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -3133,6 +3137,58 @@ public class DisplayContentTests extends WindowTestsBase {
             assertEquals("Window is the focused one when the IME is not visible",
                     window, mDisplayContent.findFocusedWindow());
         }
+    }
+
+    @EnableFlags(FLAG_FIX_TF_ADJACENT_FOCUS)
+    @Test
+    public void testFindFocusedWindowWithAdjacentTaskFragment() {
+        final Task task = createTask(mDisplayContent);
+
+        final TaskFragmentOrganizer organizer = new TaskFragmentOrganizer(Runnable::run);
+        registerTaskFragmentOrganizer(
+                ITaskFragmentOrganizer.Stub.asInterface(organizer.getOrganizerToken().asBinder()));
+        final TaskFragment tf0 = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .createActivityCount(1)
+                .setOrganizer(organizer)
+                .setFragmentToken(new Binder())
+                .build();
+        final TaskFragment tf1 = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .createActivityCount(1)
+                .setOrganizer(organizer)
+                .setFragmentToken(new Binder())
+                .build();
+        tf0.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf0, tf1));
+        tf0.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        task.setBounds(0, 0, 1200, 1000);
+        tf0.setBounds(0, 0, 600, 1000);
+        tf1.setBounds(600, 0, 1200, 1000);
+
+        final ActivityRecord activity0 = tf0.getTopMostActivity();
+        final ActivityRecord activity1 = tf1.getTopMostActivity();
+        final WindowState win0 = newWindowBuilder("win0", TYPE_BASE_APPLICATION)
+                .setWindowToken(activity0)
+                .build();
+        final WindowState win1 = newWindowBuilder("win1", TYPE_BASE_APPLICATION)
+                .setWindowToken(activity1)
+                .build();
+        activity0.setVisibleRequested(true);
+        activity1.setVisibleRequested(true);
+        win0.setVisibleRequested(true);
+        win1.setVisibleRequested(true);
+
+        mDisplayContent.setFocusedApp(activity1);
+
+        // The window in the focused activity should be the focused window.
+        assertEquals(win1, mDisplayContent.findFocusedWindow());
+
+        win1.mAttrs.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+
+        // The window in the adjacent TaskFragment should be the focused window if the focused app
+        // doesn't have any focusable window.
+        assertEquals(win0, mDisplayContent.findFocusedWindow());
     }
 
     @Test

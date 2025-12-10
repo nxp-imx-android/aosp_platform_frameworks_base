@@ -1474,6 +1474,19 @@ final class ActivityRecord extends WindowToken {
         return parent != null ? parent.asTaskFragment() : null;
     }
 
+    /**
+     * @return whether the other activity is in an adjacent TaskFragment of this activity's
+     * TaskFragment.
+     */
+    boolean isInAdjacentTaskFragment(@Nullable ActivityRecord other) {
+        if (other == null) {
+            return false;
+        }
+        final TaskFragment tf = getTaskFragment();
+        final TaskFragment otherTf = other.getTaskFragment();
+        return tf != null && otherTf != null && tf.isAdjacentTo(otherTf);
+    }
+
     /** Whether we should prepare a transition for this {@link ActivityRecord} parent change. */
     private boolean shouldStartChangeTransition(
             @Nullable TaskFragment newParent, @Nullable TaskFragment oldParent) {
