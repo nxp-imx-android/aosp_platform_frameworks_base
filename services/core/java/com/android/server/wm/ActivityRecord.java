@@ -5993,13 +5993,23 @@ final class ActivityRecord extends WindowToken {
                                 && task.topRunningActivity(true /* focusableOnly */) == this) {
                             break;
                         }
-                        // Otherwise, starting to pause it since it is not visible.
-                        final TaskFragment taskFragment = getTaskFragment();
-                        if (taskFragment != null && taskFragment.startPausing(
-                                mTaskSupervisor.mUserLeaving, false /* uiSleeping */,
-                                null /* resuming */, "makeInvisible")) {
-                            break;
+
+                        // Checks if the activity can enter pip
+                        boolean inPip = false;
+                        final Transition finishingTransition =
+                                mTransitionController.mFinishingTransition;
+                        if (finishingTransition != null
+                                && finishingTransition.isInTransientHide(task)) {
+                            inPip = finishingTransition.checkEnterPipOnFinish(this);
                         }
+
+                        // If the activity is not entering pip and is still in RESUMED state,
+                        // starting to pause it since it is no longer visible.
+                        if (!inPip && mState == RESUMED) {
+                            getTaskFragment().startPausing(mTaskSupervisor.mUserLeaving,
+                                    false /* uiSleeping */, null /* resuming */, "makeInvisible");
+                        }
+                        break;
                     }
                     // fall through
                 case INITIALIZING:
