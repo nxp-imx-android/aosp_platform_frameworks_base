@@ -274,7 +274,11 @@ constructor(
                     // If we don't need to animate to Gone, the current scene is Shade or Quick
                     // Settings, and the back stack is not empty, replacing the Lockscreen scene at
                     // the bottom of the stack triggers device entry without dismissing the Shade.
-                    sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
+                    sceneBackInteractor
+                        .get()
+                        .replaceLockscreenSceneOnBackStack(
+                            reason = "unlocking while on shade or qs, and animation is not needed"
+                        )
                 } else {
                     val transitionKey =
                         if (willAnimateToGone) {
@@ -340,7 +344,11 @@ constructor(
                     if (toScene != Scenes.Lockscreen) {
                         // We should never be in a state where the current scene is the
                         // [Scenes.Lockscreen] and the lockscreen is also on the back stack.
-                        sceneBackInteractor.get().addLockscreenToBackStack()
+                        sceneBackInteractor
+                            .get()
+                            .addLockscreenToBackStack(
+                                reason = "lock requested when authentication is not required"
+                            )
                     }
                     sceneInteractor
                         .get()

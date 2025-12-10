@@ -20,12 +20,15 @@ import android.Manifest.permission.WRITE_DREAM_STATE
 import android.app.DreamManager
 import androidx.annotation.RequiresPermission
 import com.android.systemui.CoreStartable
+import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.keyguard.KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.DreamLog
+import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -35,7 +38,12 @@ import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -45,8 +53,10 @@ class DreamStartable
 constructor(
     @Application private val applicationScope: CoroutineScope,
     private val sceneInteractor: SceneInteractor,
+    private val sceneBackInteractor: SceneBackInteractor,
     private val dreamManager: DreamManager,
     private val keyguardInteractor: KeyguardInteractor,
+    private val authenticationInteractor: AuthenticationInteractor,
     @DreamLog private val logBuffer: LogBuffer,
 ) : CoreStartable {
 
@@ -57,6 +67,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             handleStopDreamWhenGoingToGone()
             handleDreamState()
+            handleShowLockscreenAfterDreamWhenUnsecured()
         }
     }
 
@@ -117,6 +128,44 @@ constructor(
                         logger.i("Stopping dream due to going from Dream to Gone")
                         dreamManager.stopDream()
                     }
+                }
+        }
+    }
+
+    /**
+     * Makes sure that when device has an unsecured authentication method, we go to the lockscreen
+     * when dream is awaken.
+     *
+     * When dream has started, we delay by [KEYGUARD_LOCK_AFTER_DELAY_DEFAULT], and then add the
+     * lockscreen to the bottom of the scene stack, if it is not already there. This makes sure when
+     * dream is woken up we go to the lockscreen instead of the home screen.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun handleShowLockscreenAfterDreamWhenUnsecured() {
+        applicationScope.launch {
+            authenticationInteractor.authenticationMethod
+                .flatMapLatest { authMethod ->
+                    if (authMethod.isSecure) {
+                        emptyFlow()
+                    } else {
+                        keyguardInteractor.isAbleToDream
+                    }
+                }
+                .distinctUntilChanged()
+                .flatMapLatest { isDreaming ->
+                    if (isDreaming) {
+                        flow {
+                            delay(KEYGUARD_LOCK_AFTER_DELAY_DEFAULT.toLong())
+                            emit(Unit)
+                        }
+                    } else {
+                        emptyFlow()
+                    }
+                }
+                .collect {
+                    sceneBackInteractor.addLockscreenToBackStack(
+                        reason = "keyguard lock timeout after dream started"
+                    )
                 }
         }
     }

@@ -158,7 +158,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
 
-            underTest.updateBackStack { stack ->
+            underTest.updateBackStack("test") { stack ->
                 // Reverse the stack, just to see if it can be done:
                 sceneStackOf(*stack.asIterable().reversed().toTypedArray())
             }
@@ -176,7 +176,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
 
-            underTest.replaceLockscreenSceneOnBackStack()
+            underTest.replaceLockscreenSceneOnBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
@@ -191,7 +191,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
 
-            underTest.replaceLockscreenSceneOnBackStack()
+            underTest.replaceLockscreenSceneOnBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
@@ -206,7 +206,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
 
-            underTest.replaceGoneSceneOnBackStack()
+            underTest.replaceGoneSceneOnBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
@@ -221,7 +221,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
 
-            underTest.replaceGoneSceneOnBackStack()
+            underTest.replaceGoneSceneOnBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
@@ -233,7 +233,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             enableSingleShade()
             assertThat(underTest.backStack.value.asIterable().toList()).isEmpty()
 
-            underTest.addLockscreenToBackStack()
+            underTest.addLockscreenToBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Lockscreen))
@@ -248,7 +248,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
 
-            underTest.addLockscreenToBackStack()
+            underTest.addLockscreenToBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
@@ -263,7 +263,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
 
-            underTest.addLockscreenToBackStack()
+            underTest.addLockscreenToBackStack("test")
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))

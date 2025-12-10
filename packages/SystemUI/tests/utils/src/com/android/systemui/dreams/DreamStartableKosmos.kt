@@ -17,19 +17,23 @@
 package com.android.systemui.dreams
 
 import android.service.dream.dreamManager
+import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 
 val Kosmos.dreamStartable by Fixture {
     DreamStartable(
         applicationScope = backgroundScope,
         sceneInteractor = sceneInteractor,
+        sceneBackInteractor = sceneBackInteractor,
         dreamManager = dreamManager,
         keyguardInteractor = keyguardInteractor,
+        authenticationInteractor = authenticationInteractor,
         logBuffer = logcatLogBuffer("DreamStartableTest"),
     )
 }
