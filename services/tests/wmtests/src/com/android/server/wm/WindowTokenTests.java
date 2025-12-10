@@ -47,15 +47,12 @@ import android.content.res.Configuration;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.window.WindowContext;
 
 import androidx.test.filters.SmallTest;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -365,7 +362,6 @@ public class WindowTokenTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void onDisplayChanged_differentDisplay_reparented() {
         final TestWindowToken token = createTestWindowToken(0, mDisplayContent);
         final DisplayContent dc = mock(DisplayContent.class);
@@ -377,7 +373,6 @@ public class WindowTokenTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void onDisplayChanged_samedisplay_notReparented() {
 
         final TestWindowToken token = createTestWindowToken(0, mDisplayContent);

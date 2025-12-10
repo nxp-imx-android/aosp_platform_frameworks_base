@@ -198,8 +198,6 @@ public enum DesktopExperienceFlags {
             true, Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
-    REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
-            Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
     REPOSITORY_BASED_PERSISTENCE(Flags::repositoryBasedPersistence, false,
             Flags.FLAG_REPOSITORY_BASED_PERSISTENCE),
     SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT(

@@ -1790,7 +1790,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void reparentWindowContextToDisplayArea_newDisplay_reparented() {
         final WindowToken windowToken = createTestClientWindowToken(TYPE_NOTIFICATION_SHADE,
                 mDisplayContent);
@@ -1807,22 +1806,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
-    public void reparentWindowContextToDisplayArea_newDisplayButFlagDisabled_notReparented() {
-        final WindowToken windowToken = createTestClientWindowToken(TYPE_NOTIFICATION_SHADE,
-                mDisplayContent);
-        final int newDisplayId = 1;
-        final DisplayContent dc = createNewDisplay();
-        setupReparentWindowContextToDisplayAreaTest(windowToken, dc, newDisplayId);
-
-        assertThat(mWm.reparentWindowContextToDisplayArea(mAppThread, windowToken.token,
-                newDisplayId)).isFalse();
-
-        assertThat(windowToken.getDisplayContent()).isEqualTo(mDisplayContent);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void reparentWindowContext_afterReparent_DCNeedsLayout() {
         final WindowToken windowToken = createTestClientWindowToken(TYPE_NOTIFICATION_SHADE,
                 mDisplayContent);
@@ -1837,7 +1820,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void reparentWindowContext_afterReparent_traversalScheduled() {
         final WindowToken windowToken = createTestClientWindowToken(TYPE_NOTIFICATION_SHADE,
                 mDisplayContent);
