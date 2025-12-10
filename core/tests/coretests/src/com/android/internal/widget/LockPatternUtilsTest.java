@@ -426,7 +426,6 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_once() throws Exception {
         configureTest(true, false, 2);
         Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
@@ -436,7 +435,6 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_multipleTimesHitCache() throws Exception {
         configureTest(true, false, 2);
         for (int i = 0; i < 5; i++) {
@@ -448,7 +446,6 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_newQueryAfterEndTime() throws Exception {
         configureTest(true, false, 2);
         for (int i = 0; i < 5; i++) {
@@ -467,7 +464,6 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testInvalidateLockoutEndTimeCache_causesNewQuery() throws Exception {
         configureTest(true, false, 2);
         for (int i = 0; i < 5; i++) {
