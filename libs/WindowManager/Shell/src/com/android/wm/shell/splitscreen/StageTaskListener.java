@@ -54,6 +54,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.SurfaceUtils;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.split.SplitDecorManager;
@@ -111,7 +112,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     private final SyncTransactionQueue mSyncQueue;
     private final IconProvider mIconProvider;
     private final Optional<WindowDecorViewModel> mWindowDecorViewModel;
-    private final Optional<BubbleController> mBubbleController;
+    private final Optional<BubbleHelper> mBubbleHelper;
 
     /** Whether or not the root task has been created. */
     boolean mHasRootTask = false;
@@ -138,7 +139,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         mSyncQueue = syncQueue;
         mIconProvider = iconProvider;
         mWindowDecorViewModel = windowDecorViewModel;
-        mBubbleController = bubbleController;
+        mBubbleHelper = bubbleController.map(BubbleController::getBubbleHelper);
         taskOrganizer.createRootTask(
                 new TaskOrganizer.CreateRootTaskRequest()
                         .setName(stageTypeToString(id).toLowerCase())
@@ -345,7 +346,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
             mChildrenTaskInfo.remove(taskId);
             mChildrenLeashes.remove(taskId);
             mChildrenToBeVanished.remove(taskId);
-            if (mBubbleController.map(c -> c.shouldBeAppBubble(taskInfo)).orElse(false)) {
+            if (mBubbleHelper.map(bubbleHelper -> bubbleHelper.isAppBubbleTask(taskInfo))
+                    .orElse(false)) {
                 mCallbacks.onChildTaskMovedToBubble(this, taskId);
             } else {
                 mCallbacks.onChildTaskStatusChanged(this, taskId, false /* present */,

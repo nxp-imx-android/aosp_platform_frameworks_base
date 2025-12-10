@@ -235,11 +235,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
         doReturn(new UserHandle(0)).when(bubble).getUser();
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
                 bubble, taskView, taskViewTaskController);
-        doReturn(true).when(mBubbleController).shouldBeAppBubble(taskInfo);
         doReturn(true).when(mBubbleHelper).isAppBubbleTask(taskInfo);
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             doReturn(mRootTaskBinder).when(mRootTaskToken).asBinder();
-            doReturn(mRootTaskToken).when(mBubbleController).getAppBubbleRootTaskToken();
+            doReturn(mRootTaskToken).when(mBubbleHelper).getAppBubbleRootTaskToken();
         }
         return taskInfo;
     }

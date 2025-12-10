@@ -39,11 +39,11 @@ import java.util.Optional
  * moved to fullscreen based on the task's windowing mode. This includes skipping split task
  * restarts, as they are handled by the split screen controller.
  *
- * @property bubbleController The [BubbleController] to manage bubble promotions and expansions.
+ * @property bubbleHelper The [BubbleHelper] to query bubble state.
  * @property bubbleData The [BubbleData] to access and update bubble information.
  */
 class BubbleTaskStackListener(
-    private val bubbleController: BubbleController,
+    private val bubbleHelper: BubbleHelper,
     private val bubbleData: BubbleData,
     private val splitScreenController: Lazy<Optional<SplitScreenController>>,
 ) : TaskStackListenerCallback {
@@ -84,8 +84,7 @@ class BubbleTaskStackListener(
      * the mixed transition will then expand the bubble.
      */
     private fun ActivityManager.RunningTaskInfo?.isAppBubbleMovingToFront(): Boolean {
-        return this?.activityType == ACTIVITY_TYPE_STANDARD &&
-            bubbleController.shouldBeAppBubble(this)
+        return this?.activityType == ACTIVITY_TYPE_STANDARD && bubbleHelper.isAppBubbleTask(this)
     }
 
     /** Selects and expands a bubble that is currently in the stack. */

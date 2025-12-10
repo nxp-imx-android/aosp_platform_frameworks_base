@@ -130,8 +130,14 @@ constructor(
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
-                if (bubble == null || bubble.isChat || bubbleController.shouldBeAppBubble(t)) {
-                    if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
+                if (
+                    bubble == null ||
+                        bubble.isChat ||
+                        bubbleController.bubbleHelper.isAppBubbleTask(t)
+                ) {
+                    if (
+                        task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)
+                    ) {
                         taskView.unregisterTask()
                     } else if (Flags.bugDontRemoveTaskBubble()) {
                         taskView.unregisterTask()

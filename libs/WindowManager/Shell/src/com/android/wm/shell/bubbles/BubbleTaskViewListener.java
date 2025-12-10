@@ -252,7 +252,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             final TaskViewTaskController tvc = mTaskView.getController();
             final ActivityManager.RunningTaskInfo taskInfo = tvc.getTaskInfo();
             if (taskInfo != null && taskInfo.isRunning
-                    && mExpandedViewManager.shouldBeAppBubble(taskInfo)) {
+                    && mExpandedViewManager.isAppBubbleTask(taskInfo)) {
                 final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
                         mTaskView.getCaptionInsetsOwner());
                 tvc.getTaskOrganizer().applyTransaction(wct);

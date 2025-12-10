@@ -580,7 +580,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 mBubbleTransitions.mTaskViewTransitions, mSplitScreenController));
 
         mTaskStackListener.addListener(
-                new BubbleTaskStackListener(this, mBubbleData, mSplitScreenController));
+                new BubbleTaskStackListener(mBubbleHelper, mBubbleData, mSplitScreenController));
 
         mDisplayController.addDisplayChangingController(
                 (displayId, fromRotation, toRotation, newDisplayAreaInfo, t) -> {
@@ -1496,10 +1496,10 @@ public class BubbleController implements ConfigurationChangeListener,
         return -1;
     }
 
-    /** @deprecated User {@link BubbleHelper#isAppBubbleTask} instead. */
-    @Deprecated
-    public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        return mBubbleHelper.isAppBubbleTask(taskInfo);
+    /** Gets the {@link BubbleHelper}. */
+    @NonNull
+    public BubbleHelper getBubbleHelper() {
+        return mBubbleHelper;
     }
 
     /** @return the bubble in the stack that matches the provided taskInfo. */
@@ -3043,19 +3043,6 @@ public class BubbleController implements ConfigurationChangeListener,
         return mLayerView;
     }
 
-    /** @deprecated User {@link BubbleHelper#getAppBubbleRootTaskToken} instead. */
-    @Deprecated
-    @Nullable
-    public WindowContainerToken getAppBubbleRootTaskToken() {
-        return mBubbleHelper.getAppBubbleRootTaskToken();
-    }
-
-    /** @deprecated User {@link BubbleHelper#isAppBubbleRootTask} instead. */
-    @Deprecated
-    public boolean isAppBubbleRootTask(int taskId) {
-        return mBubbleHelper.isAppBubbleRootTask(taskId);
-    }
-
     /**
      * Returns the id of the display to which the current Bubble view is attached if it is currently
      * showing, {@link INVALID_DISPLAY} otherwise.
@@ -3910,7 +3897,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 TaskViewTaskController taskView, boolean visible) {
             if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
                 return null;
-            } else if (!shouldBeAppBubble(taskView.getTaskInfo())) {
+            } else if (!mBubbleHelper.isAppBubbleTask(taskView.getTaskInfo())) {
                 return null;
             }
 
@@ -3936,7 +3923,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 // Hide the app bubble root task if the selected bubble is no longer an app bubble
                 final Bubble selectedBubble = mBubbleData.getBubbleInStackWithTaskId(
                         mBubbleData.getSelectedBubble().getTaskId());
-                if (selectedBubble == null || !shouldBeAppBubble(
+                if (selectedBubble == null || !mBubbleHelper.isAppBubbleTask(
                         selectedBubble.getTaskView().getTaskInfo())) {
                     hideRootTask = true;
                 }

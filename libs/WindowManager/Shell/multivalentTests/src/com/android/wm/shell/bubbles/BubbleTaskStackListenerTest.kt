@@ -67,15 +67,11 @@ class BubbleTaskStackListenerTest {
     private val mockTaskView =
         mock<TaskView> { on { controller } doReturn mockTaskViewTaskController }
     private val bubble = mock<Bubble> { on { taskView } doReturn mockTaskView }
-    private val bubbleController = mock<BubbleController>()
+    private val bubbleHelper = mock<BubbleHelper>()
     private val bubbleData = mock<BubbleData>()
     private val splitScreenController = mock<SplitScreenController>()
     private val bubbleTaskStackListener =
-        BubbleTaskStackListener(
-            bubbleController,
-            bubbleData,
-            { Optional.of(splitScreenController) },
-        )
+        BubbleTaskStackListener(bubbleHelper, bubbleData, { Optional.of(splitScreenController) })
     private val bubbleTaskId = 123
     private val bubbleTaskToken: WindowContainerToken = MockToken.token()
     private val task =
@@ -107,7 +103,7 @@ class BubbleTaskStackListenerTest {
     @Test
     fun onActivityRestartAttempt_inStackAppBubbleMovingToFront_doesNothing() {
         task.configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-        bubbleController.stub { on { shouldBeAppBubble(task) } doReturn true }
+        bubbleHelper.stub { on { isAppBubbleTask(task) } doReturn true }
         bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
         bubbleTaskStackListener.onActivityRestartAttempt(

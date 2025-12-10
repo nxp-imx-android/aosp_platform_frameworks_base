@@ -2271,10 +2271,10 @@ public abstract class WMShellModule {
             Transitions transitions,
             HomeIntentProvider homeIntentProvider,
             DesktopState desktopState,
-            Optional<BubbleController> bubbleController,
+            Optional<BubbleHelper> bubbleHelper,
             ShellInit shellInit) {
         return new ShellCrashHandler(shellTaskOrganizer, transitions, homeIntentProvider,
-                desktopState, bubbleController, shellInit);
+                desktopState, bubbleHelper, shellInit);
     }
 
     @WMSingleton

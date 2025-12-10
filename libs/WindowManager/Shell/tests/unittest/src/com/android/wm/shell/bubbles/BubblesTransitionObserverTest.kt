@@ -75,8 +75,10 @@ class BubblesTransitionObserverTest : ShellTestCase() {
         on { selectedBubble } doReturn bubble
         on { hasBubbles() } doReturn true
     }
+    private val bubbleHelper = mock<BubbleHelper>()
     private val bubbleController = mock<BubbleController> {
         on { isStackAnimating } doReturn false
+        on { bubbleHelper } doReturn bubbleHelper
     }
     private val taskViewTransitions = mock<TaskViewTransitions>()
     private val splitScreenController = mock<SplitScreenController> {
@@ -141,8 +143,8 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     @Test
     fun testOnTransitionReady_openTaskByBubble_doesNotCollapseStack() {
         val taskInfo = createTaskInfo(taskId = 2)
-        bubbleController.stub {
-            on { shouldBeAppBubble(taskInfo) } doReturn true // Launched by another bubble.
+        bubbleHelper.stub {
+            on { isAppBubbleTask(taskInfo) } doReturn true // Launched by another bubble.
         }
         val info = createTaskTransition(TRANSIT_OPEN, taskInfo)
 

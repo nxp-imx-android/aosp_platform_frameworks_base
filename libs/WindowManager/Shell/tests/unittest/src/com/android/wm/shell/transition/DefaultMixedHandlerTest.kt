@@ -209,6 +209,8 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn false }
+
         assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
             .isFalse()
     }
@@ -219,10 +221,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(runningTask) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(runningTask)
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
             .isTrue()
@@ -234,10 +233,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(runningTask) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(runningTask)
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
             .isTrue()
@@ -250,10 +246,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         val remoteTransition = mock<IRemoteTransition>()
         val request = createTransitionRequestInfo(runningTask, RemoteTransition(remoteTransition))
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(runningTask) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(runningTask)
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         mixedHandler.handleRequest(Binder(), request)
 
@@ -265,10 +258,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     fun test_startAnimation_NoBubbleEnterFromAppBubble() {
         val info = TransitionInfo(TRANSIT_OPEN, 0)
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(any()) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(any())
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
@@ -286,10 +276,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         val info = TransitionInfo(TRANSIT_OPEN, 0)
         info.addChange(change)
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(any()) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(any())
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
@@ -313,10 +300,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         info.addChange(openingChange)
         info.addChange(closingChange)
 
-        bubbleController.stub {
-            on { shouldBeAppBubble(any()) } doReturn true
-        }
-        doReturn(true).`when`(bubbleHelper).isAppBubbleTask(any())
+        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
         mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())

@@ -70,7 +70,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             BubbleTransitions bubbleTransitions, BubbleHelper bubbleHelper,
             PinnedLayerHandler pinnedLayerHandler) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler,
-                bubbleTransitions, pinnedLayerHandler);
+                bubbleTransitions, bubbleHelper, pinnedLayerHandler);
         mUnfoldHandler = unfoldHandler;
         mActivityEmbeddingController = activityEmbeddingController;
         mDesktopTasksController = desktopTasksController;

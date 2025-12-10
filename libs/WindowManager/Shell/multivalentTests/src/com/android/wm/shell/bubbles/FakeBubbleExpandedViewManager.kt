@@ -58,7 +58,7 @@ class FakeBubbleExpandedViewManager(var bubbleBar: Boolean = false, var expanded
         return null
     }
 
-    override fun shouldBeAppBubble(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+    override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
         return false
     }
 }
