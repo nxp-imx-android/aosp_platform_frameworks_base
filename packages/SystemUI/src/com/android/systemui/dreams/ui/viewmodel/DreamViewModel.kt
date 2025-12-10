@@ -72,7 +72,7 @@ constructor(
                 communalInteractor.isCommunalEnabled.value &&
                     !keyguardUpdateMonitor.isEncryptedOrLockdown(userTracker.userId)
             }
-        fromDreamingTransitionInteractor.startToLockscreenOrGlanceableHubTransition(
+        fromDreamingTransitionInteractor.startTransitionFromDream(
             showGlanceableHub && !glanceableHubAllowKeyguardWhenDreaming()
         )
     }
