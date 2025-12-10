@@ -691,13 +691,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_compat_mode"
-    namespace: "lse_desktop_experience"
-    description: "Enables display compat mode for connected displays."
-    bug: "408704764"
-}
-
-flag {
     name: "enable_display_disconnect_interaction"
     namespace: "lse_desktop_experience"
     description: "Enables new interaction that occurs when a display is disconnected."
