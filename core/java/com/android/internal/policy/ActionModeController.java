@@ -25,6 +25,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.IdRes;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Resources;
@@ -64,8 +65,11 @@ import com.android.internal.widget.floatingtoolbar.FloatingToolbar;
 public class ActionModeController {
     private static final String TAG = "ActionMode";
 
-    private final DecorView mDecorView;
+    private final ViewGroup mContainerView;
     private final Context mContext;
+
+    @IdRes
+    private final int mStubViewId;
 
     @Nullable
     private PhoneWindow mWindow;
@@ -88,10 +92,10 @@ public class ActionModeController {
 
     private Rect mTempRect;
 
-
-    public ActionModeController(DecorView decorView, Context context) {
-        mDecorView = decorView;
+    public ActionModeController(ViewGroup containerView, Context context, @IdRes int stubViewId) {
+        mContainerView = containerView;
         mContext = context;
+        mStubViewId = stubViewId;
     }
 
     public void setWindow(PhoneWindow window) {
@@ -121,17 +125,27 @@ public class ActionModeController {
         return mPrimaryActionMode != null;
     }
 
+    @Nullable
+    private Window.Callback getWindowCallback() {
+        if (mWindow == null || mWindow.isDestroyed()) {
+            return null;
+        }
+        return mWindow.getCallback();
+    }
+
     public ActionMode startActionMode(View originatingView, Callback callback, int type) {
         ActionMode.Callback2 wrappedCallback = new ActionModeCallback2Wrapper(callback);
         ActionMode mode = null;
-        if (mWindow != null && mWindow.getCallback() != null && !mWindow.isDestroyed()) {
+
+        final var windowCallback = getWindowCallback();
+        if (windowCallback != null) {
             try {
-                mode = mWindow.getCallback().onWindowStartingActionMode(wrappedCallback, type);
+                mode = windowCallback.onWindowStartingActionMode(wrappedCallback, type);
             } catch (AbstractMethodError ame) {
                 // Older apps might not implement the typed version of this method.
                 if (type == ActionMode.TYPE_PRIMARY) {
                     try {
-                        mode = mWindow.getCallback().onWindowStartingActionMode(wrappedCallback);
+                        mode = windowCallback.onWindowStartingActionMode(wrappedCallback);
                     } catch (AbstractMethodError ame2) {
                         // Older apps might not implement this callback method at all.
                     }
@@ -156,10 +170,9 @@ public class ActionModeController {
                 mode = null;
             }
         }
-        if (mode != null
-                && mWindow != null && !mWindow.isDestroyed() && mWindow.getCallback() != null) {
+        if (mode != null && windowCallback != null) {
             try {
-                mWindow.getCallback().onActionModeStarted(mode);
+                windowCallback.onActionModeStarted(mode);
             } catch (AbstractMethodError ame) {
                 // Older apps might not implement this callback method.
             }
@@ -250,7 +263,7 @@ public class ActionModeController {
         // app memory leaks because killMode() is called when the dismiss animation ends and from
         // cleanupPrimaryActionMode() invocation above.
         if (mPrimaryActionModeView == null || !mPrimaryActionModeView.isAttachedToWindow()) {
-            if (mWindow != null && mWindow.isFloating()) {
+            if ((mWindow != null && mWindow.isFloating()) || mStubViewId == View.NO_ID) {
                 // Use the action bar theme.
                 final TypedValue outValue = new TypedValue();
                 final Resources.Theme baseTheme = mContext.getTheme();
@@ -313,7 +326,7 @@ public class ActionModeController {
                     }
                 };
             } else {
-                ViewStub stub = mDecorView.findViewById(R.id.action_mode_bar_stub);
+                ViewStub stub = mContainerView.findViewById(mStubViewId);
                 if (stub != null) {
                     mPrimaryActionModeView = (ActionBarContextView) stub.inflate();
                     initializeActionModeViewInternalPadding();
@@ -349,7 +362,7 @@ public class ActionModeController {
         mPrimaryActionMode.invalidate();
         mPrimaryActionModeView.initForMode(mPrimaryActionMode);
         if (mPrimaryActionModePopup != null) {
-            mDecorView.post(mShowPrimaryActionModePopup);
+            mContainerView.post(mShowPrimaryActionModePopup);
         } else {
             if (shouldAnimatePrimaryActionModeView()) {
                 mFadeAnim = ObjectAnimator.ofFloat(mPrimaryActionModeView, View.ALPHA, 0f, 1f);
@@ -376,7 +389,7 @@ public class ActionModeController {
     }
 
     private boolean shouldAnimatePrimaryActionModeView() {
-        return mDecorView.isLaidOut();
+        return mContainerView.isLaidOut();
     }
 
     private ActionMode createFloatingActionMode(
@@ -385,7 +398,7 @@ public class ActionModeController {
             mFloatingActionMode.finish();
         }
         cleanupFloatingActionModeViews();
-        mFloatingToolbar = new FloatingToolbar(mWindow);
+        mFloatingToolbar = new FloatingToolbar(mContainerView);
         final FloatingActionMode mode =
                 new FloatingActionMode(mContext, callback, originatingView, mFloatingToolbar);
         mFloatingActionModeOriginatingView = originatingView;
@@ -443,7 +456,7 @@ public class ActionModeController {
 
     public void onDetachedFromWindow() {
         if (mPrimaryActionModePopup != null) {
-            mDecorView.removeCallbacks(mShowPrimaryActionModePopup);
+            mContainerView.removeCallbacks(mShowPrimaryActionModePopup);
             if (mPrimaryActionModePopup.isShowing()) {
                 mPrimaryActionModePopup.dismiss();
             }
@@ -470,7 +483,7 @@ public class ActionModeController {
         }
 
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            mDecorView.requestFitSystemWindows();
+            mContainerView.requestFitSystemWindows();
             return mWrapped.onPrepareActionMode(mode, menu);
         }
 
@@ -503,7 +516,7 @@ public class ActionModeController {
             }
             if (isPrimary) {
                 if (mPrimaryActionModePopup != null) {
-                    mDecorView.removeCallbacks(mShowPrimaryActionModePopup);
+                    mContainerView.removeCallbacks(mShowPrimaryActionModePopup);
                 }
                 if (mPrimaryActionModeView != null) {
                     endOnGoingFadeAnimation();
@@ -528,7 +541,7 @@ public class ActionModeController {
                                 }
                                 lastActionModeView.killMode();
                                 mFadeAnim = null;
-                                mDecorView.requestApplyInsets();
+                                mContainerView.requestApplyInsets();
                             }
                         }
 
@@ -548,14 +561,15 @@ public class ActionModeController {
                 cleanupFloatingActionModeViews();
                 mFloatingActionMode = null;
             }
-            if (mWindow != null && mWindow.getCallback() != null && !mWindow.isDestroyed()) {
+            final var windowCallback = getWindowCallback();
+            if (windowCallback != null) {
                 try {
-                    mWindow.getCallback().onActionModeFinished(mode);
+                    windowCallback.onActionModeFinished(mode);
                 } catch (AbstractMethodError ame) {
                     // Older apps might not implement this callback method.
                 }
             }
-            mDecorView.requestFitSystemWindows();
+            mContainerView.requestFitSystemWindows();
         }
 
         @Override

@@ -286,7 +286,8 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
     DecorView(Context context, int featureId, PhoneWindow window,
             WindowManager.LayoutParams params) {
         super(context);
-        mActionModeController = new ActionModeController(this, context);
+        mActionModeController = new ActionModeController(this, context, R.id.action_mode_bar_stub);
+
         mFeatureId = featureId;
         mShowInterpolator = AnimationUtils.loadInterpolator(context,
                 android.R.interpolator.linear_out_slow_in);
