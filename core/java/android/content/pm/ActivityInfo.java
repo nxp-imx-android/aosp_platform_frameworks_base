@@ -1757,6 +1757,17 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_ENABLE_VIRTUAL_GAMEPAD = 447093535L;
 
     /**
+     * This change id skips the activity recreation by default on config change of
+     * {@link #CONFIG_KEYBOARD}, {@link #CONFIG_KEYBOARD_HIDDEN}, {@link #CONFIG_NAVIGATION},
+     * {@link #CONFIG_TOUCHSCREEN} and {@link #CONFIG_COLOR_MODE}.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    public static final long SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE = 454795633L;
+
+    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */
