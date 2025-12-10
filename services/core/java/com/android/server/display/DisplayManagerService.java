@@ -965,10 +965,8 @@ public final class DisplayManagerService extends SystemService {
 
         mContext.registerReceiver(mIdleModeReceiver, filter);
 
-        if (mFlags.isResolutionBackupRestoreEnabled()) {
-            final IntentFilter restoreFilter = new IntentFilter(Intent.ACTION_SETTING_RESTORED);
-            mContext.registerReceiver(mResolutionRestoreReceiver, restoreFilter);
-        }
+        final IntentFilter restoreFilter = new IntentFilter(Intent.ACTION_SETTING_RESTORED);
+        mContext.registerReceiver(mResolutionRestoreReceiver, restoreFilter);
 
         mSmallAreaDetectionController = SmallAreaDetectionController.create(mContext);
 
@@ -3031,7 +3029,7 @@ public final class DisplayManagerService extends SystemService {
         // a new resolution for the default display (normally stored in PDS), we will also save it
         // to a setting that is backed up.
         // TODO(b/330943343) - Consider a full fidelity DisplayBackupHelper for this instead.
-        if (mFlags.isResolutionBackupRestoreEnabled() && displayId == Display.DEFAULT_DISPLAY) {
+        if (displayId == Display.DEFAULT_DISPLAY) {
             // Checks to see which of the two resolutions is selected
             // TODO(b/330906790) Uses the same logic as Settings, but should be made to support
             //     more than two resolutions using explicit mode enums long-term.

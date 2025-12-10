@@ -58,10 +58,6 @@ public class DisplayManagerFlags {
             com.android.graphics.surfaceflinger.flags.Flags::syncedResolutionSwitch
     );
 
-    private final FlagState mResolutionBackupRestore = new FlagState(
-            Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
-            Flags::resolutionBackupRestore);
-
     private final FlagState mFastHdrTransitions = new FlagState(
             Flags.FLAG_FAST_HDR_TRANSITIONS,
             Flags::fastHdrTransitions);
@@ -209,10 +205,6 @@ public class DisplayManagerFlags {
 
     public boolean isSyncedResolutionSwitchEnabled() {
         return mSyncedResolutionSwitch.isEnabled();
-    }
-
-    public boolean isResolutionBackupRestoreEnabled() {
-        return mResolutionBackupRestore.isEnabled();
     }
 
     public boolean isFastHdrTransitionsEnabled() {
@@ -393,7 +385,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
         pw.println(" " + mDozeBrightnessStrategy);
-        pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
