@@ -271,6 +271,7 @@ public class BiometricManager {
                 BIOMETRIC_CONVENIENCE,
                 DEVICE_CREDENTIAL,
                 IDENTITY_CHECK,
+                DEVICE_CREDENTIAL_AND_IDENTITY_CHECK,
         })
         @Retention(RetentionPolicy.SOURCE)
         @interface Types {}
@@ -367,6 +368,20 @@ public class BiometricManager {
          */
         @FlaggedApi(Flags.FLAG_IDENTITY_CHECK_API)
         int IDENTITY_CHECK = 1 << 16;
+
+        /**
+         * A bit field that requests both device credential and biometric authentication,
+         * specifically for Identity Check.
+         *
+         * This will require the user to always authenticate with device credential. If Identity
+         * Check is active, the user will be required to also authenticate with a class 3
+         * biometric. This bit should not be combined with any other authenticator.
+         *
+         * @see Authenticators#IDENTITY_CHECK
+         * @hide
+         */
+        @FlaggedApi(Flags.FLAG_DOUBLE_AUTH)
+        int DEVICE_CREDENTIAL_AND_IDENTITY_CHECK = 1 << 17;
     }
 
     /**

@@ -117,3 +117,10 @@ flag {
   description: "Feature flag for removing a framework-added fallback option"
   bug: "456265916"
 }
+
+flag {
+  name: "double_auth"
+  namespace: "biometrics_framework"
+  description: "Feature flag for adding double auth in biometric prompt for Identity Check"
+  bug: "442571994"
+}

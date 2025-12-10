@@ -181,7 +181,12 @@ public class UtilsTest {
         for (int i = 8; i < 32; i++) {
             int authenticators = 1 << i;
             promptInfo.setAuthenticators(authenticators);
-            assertFalse(Utils.isBiometricRequested(promptInfo));
+            if (Flags.doubleAuth()
+                    && authenticators == Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK) {
+                assertThat(Utils.isBiometricRequested(promptInfo)).isTrue();
+            } else {
+                assertFalse(Utils.isBiometricRequested(promptInfo));
+            }
         }
     }
 
@@ -222,11 +227,21 @@ public class UtilsTest {
         assertTrue(Utils.isValidAuthenticatorConfig(mContext,
                 Authenticators.IDENTITY_CHECK));
 
+        if (Flags.doubleAuth()) {
+            assertThat(Utils.isValidAuthenticatorConfig(mContext,
+                    Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK)).isTrue();
+        } else {
+            assertThat(Utils.isValidAuthenticatorConfig(mContext,
+                    Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK)).isFalse();
+        }
+
         // The rest of the bits are not allowed to integrate with the public APIs
         for (int i = 8; i < 32; i++) {
             final int authenticator = 1 << i;
             if (authenticator == Authenticators.DEVICE_CREDENTIAL
-                    || authenticator == Authenticators.IDENTITY_CHECK) {
+                    || authenticator == Authenticators.IDENTITY_CHECK
+                    || (Flags.doubleAuth()
+                    && authenticator == Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK)) {
                 continue;
             }
             assertFalse(Utils.isValidAuthenticatorConfig(mContext, 1 << i));
