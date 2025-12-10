@@ -684,6 +684,16 @@ flag {
 }
 
 flag {
+    name: "enable_display_disconnect_fullscreen"
+    namespace: "lse_desktop_experience"
+    description: "Enables shell-handled disconnect transition for fullscreen tasks"
+    bug: "434035592"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_disconnect_interaction"
     namespace: "lse_desktop_experience"
     description: "Enables new interaction that occurs when a display is disconnected."
