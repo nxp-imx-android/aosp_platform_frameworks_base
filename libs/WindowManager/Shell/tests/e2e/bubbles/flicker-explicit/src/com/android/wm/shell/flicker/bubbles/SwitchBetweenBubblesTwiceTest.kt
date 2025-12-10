@@ -116,23 +116,11 @@ class SwitchBetweenBubblesTwiceTest(navBar: NavBar) :
                 previousApp.toWindowName(),
             )
         } else {
-            if (Flags.fixBubblesImeFocusFlicker()) {
-                eventLogSubject.focusChanges(
-                    previousApp.toWindowName(),
-                    testApp.toWindowName(),
-                    previousApp.toWindowName(),
-                )
-            } else {
-                eventLogSubject.focusChanges(
-                    previousApp.toWindowName(),
-                    // Launcher may get focus when tapping on bubble icon.
-                    LAUNCHER.toWindowName(),
-                    testApp.toWindowName(),
-                    // Launcher may get focus when tapping on bubble icon.
-                    LAUNCHER.toWindowName(),
-                    previousApp.toWindowName(),
-                )
-            }
+            eventLogSubject.focusChanges(
+                previousApp.toWindowName(),
+                testApp.toWindowName(),
+                previousApp.toWindowName(),
+            )
         }
     }
 
