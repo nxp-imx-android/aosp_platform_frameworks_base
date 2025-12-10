@@ -499,11 +499,16 @@ public final class WindowManagerGlobal {
                 root.setView(view, wparams, panelParentView, userId);
                 mWindowViewsListenerGroup.accept(getWindowViews());
             } catch (RuntimeException e) {
-                Log.e(TAG, "Couldn't add view: " + view, e);
                 final int viewIndex = (index >= 0) ? index : (mViews.size() - 1);
                 // BadTokenException or InvalidDisplayException, clean up.
                 if (viewIndex >= 0) {
-                    removeViewLocked(viewIndex, true);
+                    try {
+                        removeViewLocked(viewIndex, true);
+                    } catch (Exception innerEx) {
+                        Log.e(TAG, "Failed to clean up view after addView failed: " + view
+                                + ". initial error: ", e);
+                        throw innerEx;
+                    }
                 }
                 throw e;
             }
