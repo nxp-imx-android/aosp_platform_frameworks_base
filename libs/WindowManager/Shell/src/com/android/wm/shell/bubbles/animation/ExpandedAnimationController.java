@@ -37,7 +37,6 @@ import com.android.wm.shell.bubbles.BadgedImageView;
 import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleStackView;
-import com.android.wm.shell.bubbles.animation.PhysicsAnimationLayout.PathCreator;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
@@ -297,7 +296,34 @@ public class ExpandedAnimationController
         // Animate each bubble individually, since each path will end in a different spot.
         animationsForChildrenFromIndex(0, mFadeBubblesDuringCollapse, (index, animation) -> {
             final View bubble = mLayout.getChildAt(index);
-            PathCreator pathCreator = buildPathCreator(bubble, index, expanding);
+
+            // Start a path at the bubble's current position.
+            final Path path = new Path();
+            path.moveTo(bubble.getTranslationX(), bubble.getTranslationY());
+
+            final PointF p = mPositioner.getExpandedBubbleXY(index, mBubbleStackView.getState());
+            if (expanding) {
+                // If we're expanding, first draw a line from the bubble's current position to where
+                // it'll end up
+                path.lineTo(bubble.getTranslationX(), p.y);
+                // Then, draw a line across the screen to the bubble's resting position.
+                path.lineTo(p.x, p.y);
+            } else {
+                final float stackedX = mCollapsePoint.x;
+
+                // If we're collapsing, draw a line from the bubble's current position to the side
+                // of the screen where the bubble will be stacked.
+                path.lineTo(stackedX, p.y);
+
+                // The overflow should animate to the collapse point, so 0 offset.
+                final boolean isOverflow = bubble instanceof BadgedImageView
+                        && BubbleOverflow.KEY.equals(((BadgedImageView) bubble).getKey());
+                final float offsetY = isOverflow
+                        ? 0
+                        : Math.min(index, NUM_VISIBLE_WHEN_RESTING - 1) * mStackOffsetPx;
+                // Then, draw a line down to the stack position.
+                path.lineTo(stackedX, mCollapsePoint.y + offsetY);
+            }
 
             // The lead bubble should be the bubble with the longest distance to travel when we're
             // expanding, and the bubble with the shortest distance to travel when we're collapsing.
@@ -333,7 +359,7 @@ public class ExpandedAnimationController
 
             animation
                     .followAnimatedTargetAlongPath(
-                            pathCreator,
+                            path,
                             EXPAND_COLLAPSE_TARGET_ANIM_DURATION /* targetAnimDuration */,
                             interpolator /* targetAnimInterpolator */,
                             isLeadBubble ? mLeadBubbleEndAction : null /* endAction */,
@@ -341,38 +367,6 @@ public class ExpandedAnimationController
                     .withStartDelay(startDelay)
                     .withStiffness(EXPAND_COLLAPSE_ANIM_STIFFNESS);
         }).startAll(after);
-    }
-
-    private PathCreator buildPathCreator(View bubble, int index, boolean expanding) {
-        final PointF p = mPositioner.getExpandedBubbleXY(index, mBubbleStackView.getState());
-        return (currentX, currentY) -> {
-            // Start a path at the bubble's current position.
-            final Path path = new Path();
-            path.moveTo(currentX, currentY);
-            if (expanding) {
-                // If we're expanding, first draw a line from the bubble's current position to where
-                // it'll end up
-                path.lineTo(currentX, p.y);
-                // Then, draw a line across the screen to the bubble's resting position.
-                path.lineTo(p.x, p.y);
-            } else {
-                final float stackedX = mCollapsePoint.x;
-
-                // If we're collapsing, draw a line from the bubble's current position to the side
-                // of the screen where the bubble will be stacked.
-                path.lineTo(stackedX, p.y);
-
-                // The overflow should animate to the collapse point, so 0 offset.
-                final boolean isOverflow = bubble instanceof BadgedImageView
-                        && BubbleOverflow.KEY.equals(((BadgedImageView) bubble).getKey());
-                final float offsetY = isOverflow
-                        ? 0
-                        : Math.min(index, NUM_VISIBLE_WHEN_RESTING - 1) * mStackOffsetPx;
-                // Then, draw a line down to the stack position.
-                path.lineTo(stackedX, mCollapsePoint.y + offsetY);
-            }
-            return path;
-        };
     }
 
     /** Notifies the controller that the dragged-out bubble was unstuck from the magnetic target. */
