@@ -914,7 +914,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX)
     public void updateRelayoutParams_header_lockedTask_captionInvisible() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);

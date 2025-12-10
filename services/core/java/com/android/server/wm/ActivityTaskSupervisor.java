@@ -903,8 +903,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                             && lockTaskController.getLockTaskModeState()
                     == LOCK_TASK_MODE_LOCKED)) {
 
-                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
-                        && task.mTransitionController.isShellTransitionsEnabled()) {
+                if (task.mTransitionController.isShellTransitionsEnabled()) {
                     final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
                             0 /* flags */,
                             task.mTransitionController, mWindowManager.mSyncEngine);

@@ -715,10 +715,7 @@ constructor(
         } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue && inFullImmersive) {
             showCaption = isStatusBarVisible && !isKeyguardVisibleAndOccluded
 
-            if (
-                DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue() &&
-                    !taskInfo.isFreeform
-            ) {
+            if (!taskInfo.isFreeform) {
                 showCaption = showCaption && !isTaskLocked
             }
         } else {
@@ -733,10 +730,7 @@ constructor(
             showCaption =
                 taskInfo.isFreeform || (isStatusBarVisible && !isKeyguardVisibleAndOccluded)
 
-            if (
-                DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue() &&
-                    !taskInfo.isFreeform
-            ) {
+            if (!taskInfo.isFreeform) {
                 showCaption = showCaption && !isTaskLocked
             }
         }

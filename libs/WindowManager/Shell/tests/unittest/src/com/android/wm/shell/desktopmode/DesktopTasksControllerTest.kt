@@ -7085,7 +7085,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX)
     fun handleRequest_lockTaskMode_freeformTask_movesTaskToFullscreen() {
         val freeformTask = setUpFreeformTask()
         val homeTask = setUpHomeTask()

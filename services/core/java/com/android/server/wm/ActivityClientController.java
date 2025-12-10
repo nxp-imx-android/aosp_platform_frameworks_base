@@ -1515,8 +1515,7 @@ class ActivityClientController extends IActivityClientController.Stub {
             final ActivityRecord r = ActivityRecord.forTokenLocked(token);
             if (r == null) return;
 
-            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
-                    && mService.getTransitionController().isShellTransitionsEnabled()) {
+            if (mService.getTransitionController().isShellTransitionsEnabled()) {
                 final Task task = r.getTask();
 
                 if (!mService.canEnterLockTaskMode(task) || !mService.isTopMostTask(task)) {

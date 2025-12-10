@@ -4140,11 +4140,7 @@ class DesktopTasksController(
         transition: IBinder,
     ): WindowContainerTransaction? {
         logV("handleLockTask taskId=%d", task.taskId)
-        if (
-            !DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue ||
-                !task.isFreeform
-        )
-            return null
+        if (!task.isFreeform) return null
 
         val wct = WindowContainerTransaction()
         val runOnTransitStart =

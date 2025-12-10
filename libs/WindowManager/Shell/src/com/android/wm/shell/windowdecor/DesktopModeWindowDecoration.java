@@ -1132,8 +1132,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             }
 
-            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
-                    && !taskInfo.isFreeform()) {
+            if (!taskInfo.isFreeform()) {
                 showCaption = showCaption && !isTaskLocked;
             }
         } else {
@@ -1148,8 +1147,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             showCaption = taskInfo.isFreeform()
                     || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
 
-            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
-                    && !taskInfo.isFreeform()) {
+            if (!taskInfo.isFreeform()) {
                 showCaption = showCaption && !isTaskLocked;
             }
         }
