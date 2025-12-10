@@ -4198,10 +4198,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
-    @Override
-    public boolean isAssistDataAllowed() {
+    boolean isAssistDataAllowed() {
         int userId;
-        boolean hasRestrictedWindow;
         synchronized (mGlobalLock) {
             final Task focusedRootTask = getTopDisplayFocusedRootTask();
             if (focusedRootTask == null || focusedRootTask.isActivityTypeAssistant()) {

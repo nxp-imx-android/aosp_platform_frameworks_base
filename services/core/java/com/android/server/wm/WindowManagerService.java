@@ -4674,20 +4674,6 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     /**
-     * Requests a screenshot to be taken for Assist purposes.
-     *
-     * This method initiates the process of capturing the current screen content and delivering it
-     * to the provided {@link IAssistDataReceiver}.
-     *
-     * @param receiver The {@link IAssistDataReceiver} that will receive the screenshot bitmap. Must
-     * not be null.
-     */
-    @Override
-    public void requestAssistScreenshot(final IAssistDataReceiver receiver) {
-        requestAssistScreenshotInternal(receiver, DEFAULT_DISPLAY);
-    }
-
-    /**
      * Generates and returns an up-to-date {@link Bitmap} for the specified taskId.
      *
      * @param taskId The task ID of the task for which a Bitmap is requested.
