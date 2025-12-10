@@ -1755,16 +1755,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_call_chip_use_is_hidden"
-    namespace: "systemui"
-    description: "Enables isHidden field for all call chips"
-    bug: "427747840"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_chip_to_hun_animation"
     namespace: "systemui"
     description: "Implement a bespoke tap-chip-to-show-HUN animation for SB notification chips"
