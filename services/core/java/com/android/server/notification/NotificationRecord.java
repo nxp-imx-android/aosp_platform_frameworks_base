@@ -869,8 +869,7 @@ public final class NotificationRecord {
                     signals.remove(KEY_UNCLASSIFY);
                 }
 
-                if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())
-                        && signals.containsKey(KEY_SUMMARIZATION)
+                if (signals.containsKey(KEY_SUMMARIZATION)
                         && !keysToSkip.contains(KEY_SUMMARIZATION)) {
                     CharSequence summary = signals.getCharSequence(KEY_SUMMARIZATION,
                             signals.getString(KEY_SUMMARIZATION));
@@ -1042,10 +1041,7 @@ public final class NotificationRecord {
     }
 
     public @Nullable String getSummarization() {
-        if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())) {
-            return mSummarization;
-        }
-        return null;
+        return mSummarization;
     }
 
     public boolean setIntercepted(boolean intercept) {

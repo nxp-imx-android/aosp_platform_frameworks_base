@@ -19,7 +19,6 @@ package android.app;
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
-import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.apiMetricStyle;
@@ -5150,7 +5149,6 @@ public class Notification implements Parcelable
          * other sources. The OS may choose to display this notification with different styling or
          * choose not to summarize this content if this is true.
          */
-        @FlaggedApi(Flags.FLAG_NM_SUMMARIZATION)
         @NonNull
         public Builder setHasSummarizedContent(boolean hasSummarizedContent) {
             mN.extras.putBoolean(EXTRA_CONTAINS_SUMMARIZATION, hasSummarizedContent);
@@ -5167,9 +5165,7 @@ public class Notification implements Parcelable
         @NonNull
         public Builder setSummarizedContent(@Nullable CharSequence summarizedContent) {
             mN.extras.putCharSequence(EXTRA_APP_SUMMARIZATION, summarizedContent);
-            if (Flags.nmSummarization()) {
-                setHasSummarizedContent(!TextUtils.isEmpty(summarizedContent));
-            }
+            setHasSummarizedContent(!TextUtils.isEmpty(summarizedContent));
             return this;
         }
 
@@ -9184,7 +9180,6 @@ public class Notification implements Parcelable
      * some surfaces and may add styling to indicate to the user that this was computationally
      * generated.
      */
-    @FlaggedApi(FLAG_NM_SUMMARIZATION)
     public boolean hasSummarizedContent() {
         return extras != null && extras.getBoolean(EXTRA_CONTAINS_SUMMARIZATION);
     }

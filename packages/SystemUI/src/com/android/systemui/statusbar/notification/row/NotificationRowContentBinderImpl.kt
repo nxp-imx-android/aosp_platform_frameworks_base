@@ -51,11 +51,9 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.CustomViewMemorySizeExceededException
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
-import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_CONTRACTED
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_EXPANDED
@@ -695,9 +693,7 @@ constructor(
 
             // process conversations and extract the messaging style
             val messagingStyle =
-                if (
-                    (NmSummarizationUiFlag.isEnabled && !NmSummarizationAllFlag.isEnabled) ||
-                        entry.ranking.isConversation
+                if (!NmSummarizationAllFlag.isEnabled || entry.ranking.isConversation
                 ) {
                     conversationProcessor.processNotification(entry, builder, logger)
                 } else null

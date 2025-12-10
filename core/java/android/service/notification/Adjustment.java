@@ -15,7 +15,6 @@
  */
 package android.service.notification;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -230,7 +229,6 @@ public final class Adjustment implements Parcelable {
      * a group summary, a summarization of the text of all of the notificatrions in the group.
      * Send this key with a null value to remove an existing summarization.
      */
-    @FlaggedApi(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public static final String KEY_SUMMARIZATION = "key_summarization";
 
     /**

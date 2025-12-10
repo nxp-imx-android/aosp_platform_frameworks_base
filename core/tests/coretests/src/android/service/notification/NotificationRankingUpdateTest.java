@@ -302,10 +302,7 @@ public class NotificationRankingUpdateTest {
      * index.
      */
     public static String getSummarization(int index) {
-        if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())) {
-            return "summary " + index;
-        }
-        return null;
+        return "summary " + index;
     }
 
     /**

@@ -2174,7 +2174,6 @@ public abstract class NotificationListenerService extends Service {
          * notification and related notifications (for example, if this is provided for a group
          * summary notification it may be summarizing all the child notifications).
          */
-        @FlaggedApi(android.app.Flags.FLAG_NM_SUMMARIZATION)
         public @Nullable String getSummarization() {
             return mSummarization;
         }

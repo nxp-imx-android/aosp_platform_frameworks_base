@@ -75,7 +75,7 @@ constructor(
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }
-        if (NmSummarizationUiFlag.isEnabled && !NmSummarizationAllFlag.isEnabled) {
+        if (!NmSummarizationAllFlag.isEnabled) {
             if (!TextUtils.isEmpty(entry.summarization)) {
                 val icon = context.getDrawable(R.drawable.ic_notification_summarization)?.mutate()
                 val imageSpan =

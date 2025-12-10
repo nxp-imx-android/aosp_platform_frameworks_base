@@ -17,8 +17,6 @@
 package com.android.server.notification;
 
 import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
-import static android.app.Flags.nmSummarization;
-import static android.app.Flags.nmSummarizationUi;
 import static android.app.Flags.notificationClassificationUi;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.app.NotificationChannel.PLACEHOLDER_CONVERSATION_ID;
@@ -2513,11 +2511,6 @@ public class PreferencesHelper implements RankingConfig {
                 final boolean fsiIsUserSet =
                         isFsiPermissionUserSet(r.pkg, r.uid, fsiState,
                                 currentPermissionFlags);
-
-                if (!(notificationClassificationUi() || nmSummarization() || nmSummarizationUi())
-                        && adjustmentDeniedPackages.keySet().size() > 0) {
-                    Slog.w(TAG, "Pkg adjustment types improperly allowed without flag set");
-                }
 
                 int[] deniedAdjustmentsForPackage =
                         getDeniedAdjustmentsForPackage(adjustmentDeniedPackages,
