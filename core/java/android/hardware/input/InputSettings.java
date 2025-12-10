@@ -22,7 +22,6 @@ import static com.android.hardware.input.Flags.mouseReverseVerticalScrolling;
 import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
 import static com.android.hardware.input.Flags.pointerAcceleration;
 import static com.android.hardware.input.Flags.touchpadDisable;
-import static com.android.hardware.input.Flags.touchpadSystemGestureDisable;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 
 import android.Manifest;
@@ -421,15 +420,6 @@ public class InputSettings {
     }
 
     /**
-     * Returns true if the feature flag for disabling system gestures on touchpads is enabled.
-     *
-     * @hide
-     */
-    public static boolean isTouchpadSystemGestureDisableFeatureFlagEnabled() {
-        return touchpadSystemGestureDisable();
-    }
-
-    /**
      * Returns true if the feature flag for disabling touchpads is enabled.
      *
      * @hide
@@ -606,9 +596,6 @@ public class InputSettings {
      * @hide
      */
     public static boolean useTouchpadSystemGestures(@NonNull Context context) {
-        if (!isTouchpadSystemGestureDisableFeatureFlagEnabled()) {
-            return true;
-        }
         return Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_SYSTEM_GESTURES, 1, UserHandle.USER_CURRENT) == 1;
     }
@@ -623,9 +610,6 @@ public class InputSettings {
      */
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setTouchpadSystemGesturesEnabled(@NonNull Context context, boolean enabled) {
-        if (!isTouchpadSystemGestureDisableFeatureFlagEnabled()) {
-            return;
-        }
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_SYSTEM_GESTURES, enabled ? 1 : 0, UserHandle.USER_CURRENT);
     }
