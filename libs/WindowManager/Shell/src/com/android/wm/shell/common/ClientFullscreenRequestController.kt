@@ -35,10 +35,14 @@ import android.os.IBinder
 import android.os.IRemoteCallback
 import android.os.RemoteException
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import androidx.annotation.OpenForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult.Approved.RestorableState
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.ExitResult
@@ -55,6 +59,8 @@ import com.android.wm.shell.transition.Transitions
 class ClientFullscreenRequestController(
     shellInit: ShellInit,
     private val transitions: Transitions,
+    private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val invalidationMonitorSupplier: (Int) -> ExitFullscreenInvalidationMonitor,
 ) : Transitions.TransitionHandler {
 
     private val handlers =
@@ -62,6 +68,18 @@ class ClientFullscreenRequestController(
     // TODO: b/296268915 - find a way to clean this up if the task is removed and will never get an
     //  exit request.
     private val taskToRestorableState = mutableMapOf<Int, RestorableState>()
+    private val taskToInvalidationMonitor = mutableMapOf<Int, ExitFullscreenInvalidationMonitor>()
+
+    constructor(
+        shellInit: ShellInit,
+        transitions: Transitions,
+        shellTaskOrganizer: ShellTaskOrganizer,
+    ) : this(
+        shellInit,
+        transitions,
+        shellTaskOrganizer,
+        { taskId -> ExitFullscreenInvalidationMonitor(taskId, transitions, shellTaskOrganizer) },
+    )
 
     init {
         shellInit.addInitCallback(this::onInit, this)
@@ -149,7 +167,9 @@ class ClientFullscreenRequestController(
                 saveRestorableState(task.taskId, result)
                 // Let this task request exit from now on.
                 result.wct.setFullscreenRequestAllowMode(task.token, REQUEST_ALLOW_MODE_EXIT)
-                // TODO: b/296268915 - monitor mode changes to invalidate the allowed exit.
+                // Also start monitoring mode changes that would invalidate the allowed exit.
+                taskToInvalidationMonitor[task.taskId] =
+                    invalidationMonitorSupplier(task.taskId).apply { start() }
             }
             is EnterResult.Failed -> {}
         }
@@ -161,6 +181,7 @@ class ClientFullscreenRequestController(
                 // Successfully exited fullscreen.
                 // Reset the allowed mode back to the default.
                 result.wct.setFullscreenRequestAllowMode(task.token, REQUEST_ALLOW_MODE_INHERIT)
+                taskToInvalidationMonitor[task.taskId]?.close("exit approved")
             }
             is ExitResult.Failed -> {}
         }
@@ -344,6 +365,80 @@ class ClientFullscreenRequestController(
                 return ExitResult.Failed(RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY, this)
             }
             return ExitResult.Failed(RESULT_FAILED_NOT_SUPPORTED, this)
+        }
+    }
+
+    /**
+     * Monitors events that would invalidate [taskId]'s ability to exit fullscreen mode through an
+     * API request, such as it changing windowing mode or closing.
+     */
+    @OpenForTesting
+    open class ExitFullscreenInvalidationMonitor(
+        private val taskId: Int,
+        private val transitions: Transitions,
+        private val shellTaskOrganizer: ShellTaskOrganizer,
+    ) : Transitions.TransitionObserver, ShellTaskOrganizer.TaskVanishedListener {
+
+        /** Starts monitoring. */
+        @OpenForTesting
+        open fun start() {
+            logV("Starting monitor for taskId=%d", taskId)
+            transitions.registerObserver(this)
+            shellTaskOrganizer.addTaskVanishedListener(this)
+        }
+
+        /** Stops monitoring. */
+        @OpenForTesting
+        open fun close(reason: String) {
+            logV("Closing monitor for taskId=%d, reason=%s", taskId, reason)
+            transitions.unregisterObserver(this)
+            shellTaskOrganizer.removeTaskVanishedListener(this)
+        }
+
+        override fun onTransitionReady(
+            transition: IBinder,
+            info: TransitionInfo,
+            startTransaction: SurfaceControl.Transaction,
+            finishTransaction: SurfaceControl.Transaction,
+        ) {
+            for (c in info.findTaskChanges(taskId)) {
+                if (c.mode == TRANSIT_CLOSE) {
+                    // Task closed, no longer need to monitor it.
+                    close("transit close")
+                    return
+                }
+                val taskInfo = c.taskInfo ?: continue
+                if (taskInfo.windowingMode != WINDOWING_MODE_FULLSCREEN) {
+                    // Task changed from fullscreen to another mode.
+                    invalidate(taskInfo.token, "mode change")
+                    close("mode change")
+                    return
+                }
+            }
+        }
+
+        override fun onTaskVanished(taskInfo: RunningTaskInfo?) {
+            if (taskInfo?.taskId == taskId) {
+                // Task closed, no longer need to monitor it.
+                close("task vanished")
+            }
+        }
+
+        private fun invalidate(taskToken: WindowContainerToken, reason: String) {
+            logV("Invalidating exit for taskId=%d reason=%s", taskId, reason)
+            val wct =
+                WindowContainerTransaction().apply {
+                    setFullscreenRequestAllowMode(taskToken, REQUEST_ALLOW_MODE_INHERIT)
+                }
+            shellTaskOrganizer.applyTransaction(wct)
+        }
+
+        private fun TransitionInfo.findTaskChanges(taskId: Int): List<TransitionInfo.Change> {
+            return changes.filter { it.taskInfo?.taskId == taskId }
+        }
+
+        private fun logV(msg: String, vararg arguments: Any?) {
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
         }
     }
 

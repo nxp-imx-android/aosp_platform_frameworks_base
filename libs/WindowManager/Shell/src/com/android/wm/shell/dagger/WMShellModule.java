@@ -2128,9 +2128,11 @@ public abstract class WMShellModule {
     @Provides
     static Optional<ClientFullscreenRequestController> provideClientFullscreenRequestController(
             ShellInit shellInit,
-            Transitions transitions) {
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer) {
         if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
-            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions,
+                    shellTaskOrganizer));
         }
         return Optional.empty();
     }

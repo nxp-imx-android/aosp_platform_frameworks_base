@@ -35,8 +35,10 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
+import com.android.wm.shell.common.ClientFullscreenRequestController.ExitFullscreenInvalidationMonitor
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.ExitResult
 import com.android.wm.shell.sysui.ShellInit
@@ -61,6 +63,12 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
 
     private val shellInit = mock<ShellInit>()
     private val transitions = mock<Transitions>()
+    private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val invalidationMonitorSupplier =
+        TestExitFullscreenInvalidationMonitorSupplier(
+            transitions = transitions,
+            shellTaskOrganizer = shellTaskOrganizer,
+        )
     private val remoteCallback = mock<IRemoteCallback>()
 
     private lateinit var controller: ClientFullscreenRequestController
@@ -69,7 +77,13 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Before
     fun setUp() {
         bundleCaptor = ArgumentCaptor.forClass(Bundle::class.java)
-        controller = ClientFullscreenRequestController(shellInit, transitions)
+        controller =
+            ClientFullscreenRequestController(
+                shellInit,
+                transitions,
+                shellTaskOrganizer,
+                invalidationMonitorSupplier,
+            )
     }
 
     @Test
@@ -305,6 +319,37 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
         )
     }
 
+    @Test
+    fun enterExitFullscreen_startsAndStopsInvalidationMonitor() {
+        val wct = WindowContainerTransaction()
+        val restorableState =
+            EnterResult.Approved.RestorableState.Desktop(
+                originalDeskId = 123,
+                bounds = Rect(200, 200, 800, 800),
+            )
+        val handler =
+            TestHandler(
+                enterResult = EnterResult.Approved(wct, mock(), restorableState),
+                exitResult = ExitResult.Approved(wct, mock()),
+            )
+        controller.addHandler(handler)
+
+        val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
+        val enterRequest = request(enterTask, FULLSCREEN_MODE_REQUEST_ENTER)
+        // Enter fullscreen.
+        controller.handleRequest(Binder(), enterRequest)
+        val monitor = invalidationMonitorSupplier.getMonitor(enterTask.taskId)
+        assertNotNull(monitor)
+        assertThat(monitor.started).isTrue()
+
+        val exitTask = enterTask.apply { setWindowingMode(WINDOWING_MODE_FULLSCREEN) }
+        val exitRequest = request(exitTask, FULLSCREEN_MODE_REQUEST_EXIT)
+        // Exit fullscreen.
+        controller.handleRequest(Binder(), exitRequest)
+        assertNotNull(monitor)
+        assertThat(monitor.stopped).isTrue()
+    }
+
     private fun createTask(windowingMode: Int): RunningTaskInfo {
         return TestRunningTaskInfoBuilder().setWindowingMode(windowingMode).build()
     }
@@ -398,6 +443,44 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
                     exitResult = ExitResult.Approved(wct, mock()),
                 )
             }
+        }
+    }
+
+    private class TestExitFullscreenInvalidationMonitorSupplier(
+        private val transitions: Transitions,
+        private val shellTaskOrganizer: ShellTaskOrganizer,
+    ) : (Int) -> TestExitFullscreenInvalidationMonitor {
+        private val taskToMonitorMap = mutableMapOf<Int, TestExitFullscreenInvalidationMonitor>()
+
+        override fun invoke(taskId: Int): TestExitFullscreenInvalidationMonitor {
+            return TestExitFullscreenInvalidationMonitor(taskId, transitions, shellTaskOrganizer)
+                .also { monitor -> taskToMonitorMap[taskId] = monitor }
+        }
+
+        fun getMonitor(taskId: Int) = taskToMonitorMap[taskId]
+    }
+
+    private class TestExitFullscreenInvalidationMonitor(
+        taskId: Int,
+        transitions: Transitions,
+        shellTaskOrganizer: ShellTaskOrganizer,
+    ) : ExitFullscreenInvalidationMonitor(taskId, transitions, shellTaskOrganizer) {
+        var started: Boolean = false
+            private set
+
+        var stopped: Boolean = false
+            private set
+
+        override fun start() {
+            super.start()
+            started = true
+            stopped = false
+        }
+
+        override fun close(reason: String) {
+            super.close(reason)
+            started = false
+            stopped = true
         }
     }
 }
