@@ -446,6 +446,14 @@
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y">Record entire screen</string>
     <!-- Content description for the settings button in the toolbar. [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_settings_button_a11y">Screen capture settings</string>
+    <!-- Content description for the share button in the post recording shelf. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_post_recording_shelf_share_button_a11y">Share screen recording </string>
+    <!-- Content description for the folder button in the post recording shelf. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y">Open screen recording in file manager</string>
+    <!-- Content description for the delete button in the post recording shelf. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y">Delete screen recording</string>
+    <!-- Content description for the thumbnail in the post recording shelf. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y">Open screen recording in video viewer</string>
 
     <!-- Screen capture setting to show clicks and keys when recording [CHAR LIMIT=35] -->
     <string name="screen_capture_show_clicks_and_keys">Show clicks and keys</string>

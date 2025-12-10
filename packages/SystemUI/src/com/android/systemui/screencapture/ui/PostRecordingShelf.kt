@@ -57,8 +57,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -150,21 +152,36 @@ constructor(
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screenshot_share,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_share_button_a11y
+                            )
+                        ),
                 )
                 .value
         val folderIcon =
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screen_capture_folder,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_folder_button_a11y
+                            )
+                        ),
                 )
                 .value
         val deleteIcon =
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screenshot_delete,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_delete_button_a11y
+                            )
+                        ),
                 )
                 .value
         val actionButtonItems =
@@ -291,7 +308,8 @@ constructor(
             if (preview != null) {
                 Image(
                     bitmap = preview,
-                    contentDescription = null,
+                    contentDescription =
+                        stringResource(R.string.screen_capture_post_recording_shelf_thumbnail_a11y),
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.Fit,
                 )
