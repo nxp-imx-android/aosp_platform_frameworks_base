@@ -681,13 +681,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_compat_mode"
-    namespace: "lse_desktop_experience"
-    description: "Enables display compat mode for connected displays."
-    bug: "408704764"
-}
-
-flag {
     name: "enable_display_disconnect_interaction"
     namespace: "lse_desktop_experience"
     description: "Enables new interaction that occurs when a display is disconnected."
@@ -1094,13 +1087,6 @@ flag {
 }
 
 flag {
-    name: "enable_restart_menu_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enable restart menu UI, which is shown when an app moves between displays."
-    bug: "397804287"
-}
-
-flag {
     name: "enable_restore_to_previous_size_from_desktop_immersive"
     namespace: "lse_desktop_experience"
     description: "Restores the window bounds to their previous size when exiting desktop immersive"
@@ -1137,13 +1123,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_size_compat_mode_improvements_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enable some improvements in size compat mode for connected displays."
-    bug: "399752440"
 }
 
 flag {
