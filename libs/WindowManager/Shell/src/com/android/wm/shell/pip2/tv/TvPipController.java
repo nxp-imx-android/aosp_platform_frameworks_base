@@ -103,6 +103,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
     private final TvPipBoundsController mTvPipBoundsController;
     private final PipTransitionState mPipTransitionState;
     private final PipAppOpsListener mAppOpsListener;
+    private final TvPipScheduler mTvPipScheduler;
     private final PipMediaController mPipMediaController;
     private final TvPipActionsProvider mTvPipActionsProvider;
     private final TvPipNotificationController mPipNotificationController;
@@ -136,6 +137,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
             TvPipBoundsController tvPipBoundsController,
             PipTransitionState pipTransitionState,
             PipAppOpsListener pipAppOpsListener,
+            TvPipScheduler tvPipScheduler,
             TvPipMenuController tvPipMenuController,
             PipMediaController pipMediaController,
             TvPipNotificationController pipNotificationController,
@@ -160,6 +162,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
                 tvPipBoundsController,
                 pipTransitionState,
                 pipAppOpsListener,
+                tvPipScheduler,
                 tvPipMenuController,
                 pipMediaController,
                 pipNotificationController,
@@ -181,6 +184,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
             TvPipBoundsController tvPipBoundsController,
             PipTransitionState pipTransitionState,
             PipAppOpsListener pipAppOpsListener,
+            TvPipScheduler tvPipScheduler,
             TvPipMenuController tvPipMenuController,
             PipMediaController pipMediaController,
             TvPipNotificationController pipNotificationController,
@@ -223,6 +227,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
         mActionBroadcastReceiver = new ActionBroadcastReceiver();
 
         mAppOpsListener = pipAppOpsListener;
+        mTvPipScheduler = tvPipScheduler;
         mPipParamsChangedForwarder = pipParamsChangedForwarder;
         mTaskStackListener = taskStackListener;
         mWmShellWrapper = wmShellWrapper;
@@ -413,7 +418,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
             // Do not schedule a move animation while we're still transitioning into/out of PiP
             return;
         }
-        // TODO(b/463390460): Make call to TvPipScheduler to resize PiP.
+        mTvPipScheduler.scheduleAnimateResizePip(targetBounds, animationDuration);
         mTvPipMenuController.onPipTransitionToTargetBoundsStarted(targetBounds);
     }
 

@@ -44,6 +44,7 @@ public class PipResizeAnimator extends PipAnimator {
     private SurfaceControl.Transaction mStartTx;
     @Nullable
     private SurfaceControl.Transaction mFinishTx;
+    private SyncMenuListener mSyncMenuListener;
     private RectEvaluator mRectEvaluator;
 
     // Bounds relative to which scaling/cropping must be done.
@@ -101,6 +102,11 @@ public class PipResizeAnimator extends PipAnimator {
                     final float degrees = (1.0f - fraction) * mDelta;
                     setBoundsAndRotation(tx, mLeash, mBaseBounds, mAnimatedRect, degrees,
                             mSurfaceTransactionHelper);
+                    // Update TV menu positioning as well.
+                    if (mSyncMenuListener != null) {
+                        mSyncMenuListener.onSync(tx, mAnimatedRect);
+                    }
+
                     tx.apply();
                 }
             };
@@ -137,6 +143,22 @@ public class PipResizeAnimator extends PipAnimator {
         addUpdateListener(mAnimatorUpdateListener);
         setEvaluator(mRectEvaluator);
         setDuration(duration);
+    }
+
+    /**
+     * An interface to allow for TV PiP menu to be moved on every animation frame.
+     */
+    public interface SyncMenuListener {
+        /**
+         * Called on every animation frame.
+         * @param tx The transaction for the current frame.
+         * @param animatedRect The animated bounds for the current frame.
+         */
+        void onSync(SurfaceControl.Transaction tx, Rect animatedRect);
+    }
+
+    public void setSyncMenuListener(SyncMenuListener listener) {
+        mSyncMenuListener = listener;
     }
 
     /**
