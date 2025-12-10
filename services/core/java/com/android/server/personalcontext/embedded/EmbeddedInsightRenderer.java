@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext.embedded;
 
+import android.content.Context;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
@@ -30,6 +31,7 @@ import com.android.server.personalcontext.component.Renderer;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /** @hide */
@@ -37,34 +39,66 @@ public class EmbeddedInsightRenderer implements Renderer {
     private static final String TAG = "EmbeddedInsightRenderer";
 
     private final UUID mComponentId = UUID.randomUUID();
-    private final ClientRegistry mClientRegistry = new ClientRegistry();
+    private final ClientRegistry mClientRegistry;
+    private final VisualizerRegistry mVisualizerRegistry;
+    private final Executor mExecutor;
 
-    public EmbeddedInsightRenderer() {
+
+    public EmbeddedInsightRenderer(
+            Context context,
+            Executor executor) {
+        this(new ClientRegistry(), new VisualizerRegistry(context, executor), executor);
+    }
+
+    /** Construct an {@link EmbeddedInsightRenderer} for test purposes. */
+    @VisibleForTesting
+    EmbeddedInsightRenderer(
+            ClientRegistry clientRegistry,
+            VisualizerRegistry visualizerRegistry,
+            Executor executor) {
+        mClientRegistry = clientRegistry;
+        mVisualizerRegistry = visualizerRegistry;
+        mExecutor = executor;
+    }
+
+    /**
+     * The embedded insight renderer has been registered with the ACE framework. Perform any
+     * necessary initialization.
+     * TODO(b/463464084): Introduce a lifecycle manager to be notified of lifecycle events instead.
+     */
+    public void onRegistered() {
+        // The visualizer registry already pushes this work to the executor's thread.
+        mVisualizerRegistry.startRegisteringVisualizers();
     }
 
     /**
      * Register an insight surface client and return the {@link RenderToken} associated with that
-     * client.
+     * client via the onRegistered callback.
      */
-    public RenderToken registerInsightSurfaceClient(InsightSurfaceClientInfo clientInfo) {
-        logDebug("registering insight surface client, id=" + clientInfo.getId());
+    public void registerInsightSurfaceClient(
+            InsightSurfaceClientInfo clientInfo,
+            Consumer<RenderToken> onRegistered) {
+        mExecutor.execute(() -> {
+            logDebug("registering insight surface client, id=" + clientInfo.getId());
 
-        final RenderToken clientRenderToken = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(mComponentId)
-                .build();
-        mClientRegistry.addClient(clientInfo, clientRenderToken);
+            final RenderToken clientRenderToken = new RenderToken.RenderTokenBuilder()
+                    .setRendererComponentId(mComponentId)
+                    .build();
 
-        // Link the client to death so we can unregister it if it dies.
-        try {
-            clientInfo.getCallback().asBinder().linkToDeath(() -> {
-                logDebug("client has died: " + clientInfo.getId());
-                unregisterInsightSurfaceClient(clientInfo.getId());
-            }, 0);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+            mClientRegistry.addClient(clientInfo, clientRenderToken);
 
-        return clientRenderToken;
+            // Link the client to death so we can unregister it if it dies.
+            try {
+                clientInfo.getCallback().asBinder().linkToDeath(() -> {
+                    logDebug("client has died: " + clientInfo.getId());
+                    unregisterInsightSurfaceClient(clientInfo.getId());
+                }, 0);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+
+            onRegistered.accept(clientRenderToken);
+        });
     }
 
     /** Return the renderer's registered clients. */
@@ -75,13 +109,17 @@ public class EmbeddedInsightRenderer implements Renderer {
 
     /** Unregister the insight surface client with the given id. */
     public void unregisterInsightSurfaceClient(UUID id) {
-        logDebug("unregistering insight surface client, id=" + id);
-        mClientRegistry.removeClient(id);
-    }
+        mExecutor.execute(() -> {
+            logDebug("unregistering insight surface client, id=" + id);
+            final InsightSurfaceClientInfo clientInfo = mClientRegistry.removeClient(id);
+            if (clientInfo == null) {
+                Slog.w(TAG, "client not found for id=" + id);
+                return;
+            }
 
-    /** Perform the given action on all clients. */
-    public void performActionOnClients(Consumer<InsightSurfaceClientInfo> action) {
-        mClientRegistry.getClients().forEach(action);
+            mVisualizerRegistry.performActionOnVisualizers(
+                    visualizer -> visualizer.onClientDisconnected(clientInfo));
+        });
     }
 
     /** Gets the {@link RenderToken} for the given {@link InsightSurfaceClientInfo}. */
@@ -98,10 +136,24 @@ public class EmbeddedInsightRenderer implements Renderer {
 
     @Override
     public void render(@NonNull ContextInsight insight) {
-        final InsightSurfaceClientInfo client = clientFromInsight(insight);
-        if (client == null) {
-            logDebug("no client found for insight [" + insight + "]");
-        }
+        mExecutor.execute(() -> {
+            if (mClientRegistry.isEmpty()) {
+                logDebug("NO embedded surface clients!");
+                return;
+            }
+
+            if (mVisualizerRegistry.isEmpty()) {
+                logDebug("NO visualizers!");
+                return;
+            }
+
+            final InsightSurfaceClientInfo client = clientFromInsight(insight);
+            if (client == null) {
+                logDebug("no client found for insight [" + insight + "]");
+            }
+
+            mVisualizerRegistry.createVisualizationForClient(List.of(insight), client);
+        });
     }
 
     @Override

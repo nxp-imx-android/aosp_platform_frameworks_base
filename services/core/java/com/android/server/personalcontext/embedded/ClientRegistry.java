@@ -51,12 +51,10 @@ class ClientRegistry {
      * @param renderToken the {@link RenderToken} token for the client
      */
     public void addClient(InsightSurfaceClientInfo clientInfo, RenderToken renderToken) {
-        synchronized (mClients) {
-            final UUID clientId = clientInfo.getId();
-            mClients.put(clientId, clientInfo);
-            mRenderTokensByClientId.put(clientId, renderToken);
-            mClientIdsByRenderToken.put(renderToken, clientId);
-        }
+        final UUID clientId = clientInfo.getId();
+        mClients.put(clientId, clientInfo);
+        mRenderTokensByClientId.put(clientId, renderToken);
+        mClientIdsByRenderToken.put(renderToken, clientId);
     }
 
     /**
@@ -66,14 +64,12 @@ class ClientRegistry {
      * @return the client that was removed, or {@code null} if the client was not found
      */
     public InsightSurfaceClientInfo removeClient(UUID clientId) {
-        synchronized (mClients) {
-            final InsightSurfaceClientInfo clientInfo = mClients.remove(clientId);
-            final RenderToken renderToken = mRenderTokensByClientId.remove(clientId);
-            if (renderToken != null) {
-                mClientIdsByRenderToken.remove(renderToken);
-            }
-            return clientInfo;
+        final InsightSurfaceClientInfo clientInfo = mClients.remove(clientId);
+        final RenderToken renderToken = mRenderTokensByClientId.remove(clientId);
+        if (renderToken != null) {
+            mClientIdsByRenderToken.remove(renderToken);
         }
+        return clientInfo;
     }
 
     /**
@@ -84,10 +80,8 @@ class ClientRegistry {
      *         the render token was not found
      */
     public InsightSurfaceClientInfo getClientForRenderToken(RenderToken renderToken) {
-        synchronized (mClients) {
-            final UUID clientId = mClientIdsByRenderToken.get(renderToken);
-            return mClients.get(clientId);
-        }
+        final UUID clientId = mClientIdsByRenderToken.get(renderToken);
+        return mClients.get(clientId);
     }
 
     /**
