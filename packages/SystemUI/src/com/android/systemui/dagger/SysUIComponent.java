@@ -38,7 +38,7 @@ import com.android.systemui.wallpapers.dagger.WallpaperModule;
 import com.android.wm.shell.appzoomout.AppZoomOut;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.bubbles.Bubbles;
-import com.android.wm.shell.desktopmode.DesktopMode;
+import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelper;
 import com.android.wm.shell.keyguard.KeyguardTransitions;
 import com.android.wm.shell.onehanded.OneHanded;

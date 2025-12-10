@@ -19,7 +19,7 @@ package com.android.systemui.desktop
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.wm.shell.desktopmode.DesktopMode
+import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Test
