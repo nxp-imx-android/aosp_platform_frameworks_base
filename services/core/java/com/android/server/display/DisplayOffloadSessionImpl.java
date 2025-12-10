@@ -24,6 +24,9 @@ import android.os.Trace;
 import android.util.Slog;
 import android.view.Display;
 
+import android.util.Log;
+
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.display.utils.DebugUtils;
 
 /**
@@ -145,6 +148,7 @@ public class DisplayOffloadSessionImpl implements DisplayManagerInternal.Display
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_POWER);
+            FrameworkStatsLog.write(FrameworkStatsLog.DISPLAY_SWITCH_TO_AP_ISSUED);
         }
     }
 
