@@ -38,6 +38,7 @@ import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 
+import com.android.compatibility.common.util.PollingCheck;
 import com.android.cts.input.BlockingQueueEventVerifier;
 import com.android.cts.input.MotionEventBuilder;
 import com.android.cts.input.PointerBuilder;
@@ -138,6 +139,10 @@ public class BatchedInputEventReceiverTest {
             Thread.currentThread().interrupt();
             throw new AssertionError("CountDownLatch await was interrupted", e);
         }
+    }
+
+    private void sendInputEventUntilSuccess(int seq, InputEvent event) {
+        PollingCheck.waitFor(() -> mSender.sendInputEvent(seq, event));
     }
 
     @Before
@@ -257,12 +262,12 @@ public class BatchedInputEventReceiverTest {
         mSenderThread.getThreadHandler().post(
                 () -> {
                     for (int i = 1; i <= moveMessages; i++) {
-                        mSender.sendInputEvent(seq + i,
+                        sendInputEventUntilSuccess(seq + i,
                                 getTestMouseMotionEvent(MotionEvent.ACTION_MOVE,
                                         eventTime + i * 10L));
                         finishableSeqs.add(seq + i);
                     }
-                    mSender.sendInputEvent(
+                    sendInputEventUntilSuccess(
                             seq + moveMessages + 1,
                             getTestMouseMotionEvent(MotionEvent.ACTION_CANCEL,
                                     eventTime + moveMessages * 10 + 10L)
