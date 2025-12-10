@@ -4044,13 +4044,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         args.putLong(Intent.EXTRA_TIME, eventTime);
         args.putInt(AssistUtils.INVOCATION_TYPE_KEY, invocationType);
-        if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
-            if (invocationType == AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS) {
-                args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID,
-                        displayId >= 0 ? displayId : DEFAULT_DISPLAY);
-            } else {
-                args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, mTopFocusedDisplayId);
-            }
+        if (invocationType == AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS) {
+            args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID,
+                    displayId >= 0 ? displayId : DEFAULT_DISPLAY);
+        } else {
+            args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, mTopFocusedDisplayId);
         }
 
         SearchManager searchManager = mContext.getSystemService(SearchManager.class);

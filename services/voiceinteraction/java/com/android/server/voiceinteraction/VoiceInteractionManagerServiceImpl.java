@@ -380,17 +380,8 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             }
         }
 
-        List<ActivityAssistInfo> allVisibleActivities;
-        if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
-            allVisibleActivities =
-                    LocalServices.getService(ActivityTaskManagerInternal.class)
-                            .getTopVisibleActivities(displayId);
-        } else {
-            allVisibleActivities =
-                    LocalServices.getService(ActivityTaskManagerInternal.class)
-                            .getTopVisibleActivities();
-        }
-
+        List<ActivityAssistInfo> allVisibleActivities = LocalServices.getService(
+                ActivityTaskManagerInternal.class).getTopVisibleActivities(displayId);
         List<ActivityAssistInfo> visibleActivities = null;
         if (activityToken != null) {
             visibleActivities = new ArrayList();

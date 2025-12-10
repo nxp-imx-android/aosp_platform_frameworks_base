@@ -272,19 +272,9 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
         }
 
         // Ensure that the current activity supports assist data
-        boolean isAssistDataAllowed = false;
-        if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
-            isAssistDataAllowed = LocalServices.getService(
-                    ActivityTaskManagerInternal.class).isAssistDataForActivitiesAllowed(
-                    activityTokens);
-        } else {
-            try {
-                isAssistDataAllowed = mActivityTaskManager.isAssistDataAllowed();
-            } catch (RemoteException e) {
-                // Should never happen
-            }
-        }
-
+        final boolean isAssistDataAllowed = LocalServices.getService(
+                ActivityTaskManagerInternal.class).isAssistDataForActivitiesAllowed(
+                activityTokens);
         allowFetchData &= isAssistDataAllowed;
         allowFetchScreenshot &= fetchData && isAssistDataAllowed
                 && (mRequestScreenshotAppOps != OP_NONE);
@@ -357,16 +347,8 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
                     && allowFetchScreenshot) {
                 MetricsLogger.count(mContext, "assist_with_screen", 1);
                 mPendingScreenshotCount++;
-                if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
-                    LocalServices.getService(WindowManagerInternal.class).requestAssistScreenshot(
-                            this, activityTokens.get(0));
-                } else {
-                    try {
-                        mWindowManager.requestAssistScreenshot(this);
-                    } catch (RemoteException e) {
-                        // Can't happen
-                    }
-                }
+                LocalServices.getService(WindowManagerInternal.class).requestAssistScreenshot(this,
+                        activityTokens.get(0));
             } else {
                 if (mCallbacks.canHandleReceivedAssistDataLocked()) {
                     dispatchAssistScreenshotReceived(null);
