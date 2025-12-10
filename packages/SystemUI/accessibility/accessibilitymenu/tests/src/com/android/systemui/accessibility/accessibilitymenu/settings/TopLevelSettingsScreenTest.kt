@@ -21,6 +21,7 @@ import android.content.Intent
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.preference.PreferenceFragmentCompat
+import com.android.settingslib.datastore.SharedPreferencesStorage
 import com.android.settingslib.metadata.FixedArrayMap
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.preference.CatalystScreenTestCase
@@ -43,6 +44,12 @@ class TopLevelSettingsScreenTest : CatalystScreenTestCase() {
     @Before
     fun setUp() {
         // Setup preference screen registry for test
+        val storage =
+            SharedPreferencesStorage.getDefault(
+                context = appContext,
+                name = "a11y_menu_settings_backup",
+            )
+        PreferenceScreenRegistry.setKeyValueStoreProvider { context, preference -> storage }
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TopLevelSettingsScreen.KEY) { TopLevelSettingsScreen() } }
     }

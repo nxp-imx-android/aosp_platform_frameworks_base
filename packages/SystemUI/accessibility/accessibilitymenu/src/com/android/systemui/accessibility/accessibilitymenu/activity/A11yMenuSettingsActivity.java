@@ -32,6 +32,7 @@ import androidx.preference.PreferenceManager;
 
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
 import com.android.settingslib.preference.PreferenceFragment;
+import com.android.systemui.accessibility.accessibilitymenu.Flags;
 import com.android.systemui.accessibility.accessibilitymenu.R;
 import com.android.systemui.accessibility.accessibilitymenu.settings.TopLevelSettingsScreen;
 
@@ -59,7 +60,9 @@ public class A11yMenuSettingsActivity extends CollapsingToolbarBaseActivity {
         public void onCreatePreferences(
                 @Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             super.onCreatePreferences(savedInstanceState, rootKey);
-            initializeHelpAndFeedbackPreference();
+            if (!Flags.catalystA11yMenu()) {
+                initializeHelpAndFeedbackPreference();
+            }
         }
 
         @Override

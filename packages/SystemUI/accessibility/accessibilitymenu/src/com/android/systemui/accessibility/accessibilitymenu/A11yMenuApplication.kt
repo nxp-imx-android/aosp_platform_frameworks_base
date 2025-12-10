@@ -17,6 +17,7 @@
 package com.android.systemui.accessibility.accessibilitymenu
 
 import android.app.Application
+import com.android.settingslib.datastore.SharedPreferencesStorage
 import com.android.settingslib.metadata.FixedArrayMap
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.systemui.accessibility.accessibilitymenu.settings.TopLevelSettingsScreen
@@ -28,6 +29,12 @@ class A11yMenuApplication : Application() {
         super.onCreate()
 
         if (Flags.catalystA11yMenu()) {
+            val storage =
+                SharedPreferencesStorage.getDefault(
+                    context = this,
+                    name = "a11y_menu_settings_backup",
+                )
+            PreferenceScreenRegistry.setKeyValueStoreProvider { context, preference -> storage }
             PreferenceScreenRegistry.preferenceScreenMetadataFactories =
                 FixedArrayMap(1) { it.put(TopLevelSettingsScreen.KEY) { TopLevelSettingsScreen() } }
         }

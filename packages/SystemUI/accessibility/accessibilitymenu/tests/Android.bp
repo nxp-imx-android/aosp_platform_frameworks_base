@@ -36,6 +36,8 @@ android_test {
         "compatibility-device-util-axt",
         "platform-test-annotations",
         "SettingsLibPreference-testutils",
+        "testables", // For TestableContext
+        "mockito-kotlin-nodeps",
         "truth",
         "uiautomator-helpers",
     ],
@@ -43,7 +45,6 @@ android_test {
         "src/**/*.java",
         "src/**/*.kt",
     ],
-    kotlincflags: ["-Xjvm-default=all"],
 
     platform_apis: true,
     test_suites: ["device-tests"],

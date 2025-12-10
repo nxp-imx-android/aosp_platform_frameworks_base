@@ -47,10 +47,6 @@ class TopLevelSettingsScreen : PreferenceScreenCreator {
         return Flags.catalystA11yMenu()
     }
 
-    override fun hasCompleteHierarchy(): Boolean {
-        return false
-    }
-
     override fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
         return Intent(context, A11yMenuSettingsActivity::class.java).apply {
             action = Intent.ACTION_MAIN
@@ -60,7 +56,11 @@ class TopLevelSettingsScreen : PreferenceScreenCreator {
     override fun getPreferenceHierarchy(
         context: Context,
         coroutineScope: CoroutineScope,
-    ): PreferenceHierarchy = preferenceHierarchy(context) {}
+    ): PreferenceHierarchy =
+        preferenceHierarchy(context) {
+            +LargeButtonPreference()
+            +HelpPreference()
+        }
 
     companion object {
         const val KEY = "top_level_settings_screen"

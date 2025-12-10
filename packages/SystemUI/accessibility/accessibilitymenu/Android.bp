@@ -49,7 +49,6 @@ android_library {
         optimize: true,
         shrink: true,
         shrink_resources: true,
-        optimized_shrink_resources: true,
         proguard_compatibility: false,
     },
 }
@@ -67,7 +66,6 @@ android_app {
         optimize: true,
         shrink: true,
         shrink_resources: true,
-        optimized_shrink_resources: true,
         proguard_compatibility: false,
     },
 
