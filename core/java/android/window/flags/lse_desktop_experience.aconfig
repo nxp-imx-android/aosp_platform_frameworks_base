@@ -549,13 +549,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_app_to_web"
-    namespace: "lse_desktop_experience"
-    description: "Whether to enable the app-to-web feature and show the open in browser button in the header menu"
-    bug: "349695493"
-}
-
-flag {
     name: "enable_desktop_windowing_app_to_web_education"
     namespace: "lse_desktop_experience"
     description: "Enables desktop windowing app-to-web education"
