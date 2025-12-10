@@ -183,7 +183,6 @@ android_app {
         "android.media.tv.flags-aconfig",
         "android.security.flags-aconfig",
         "android.view.contentprotection.flags-aconfig",
-        "android.view.inputmethod.flags-aconfig",
         "android.widget.flags-aconfig",
         "device_policy_aconfig_flags",
         "devicelock-aconfig-flags",
