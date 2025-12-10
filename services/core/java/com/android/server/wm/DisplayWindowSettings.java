@@ -43,6 +43,7 @@ import android.window.DesktopExperienceFlags;
 
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DisplayContent.ForceScalingMode;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.Objects;
@@ -156,7 +157,8 @@ class DisplayWindowSettings {
         }
         // No record is present so use default windowing mode policy.
         final boolean forceFreeForm = mService.mAtmService.mSupportsFreeformWindowManagement
-                && (mService.mIsPc || dc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
+                && ((mService.mIsPc && !Flags.disableDisplayForceFreeformOnPc())
+                || dc.isPublicSecondaryDisplayWithDesktopModeForceEnabled());
         if (forceFreeForm) {
             return WindowConfiguration.WINDOWING_MODE_FREEFORM;
         }
