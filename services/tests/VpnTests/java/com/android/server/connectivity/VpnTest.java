@@ -43,7 +43,6 @@ import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_UDP;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV4;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV6;
-import static android.net.platform.flags.Flags.FLAG_COLLECT_VPN_METRICS;
 import static android.net.platform.flags.Flags.FLAG_REENABLE_INNER_IPV6_ON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
 import static android.telephony.CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL;
@@ -229,7 +228,6 @@ import java.util.regex.Pattern;
  */
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-@EnableFlags(FLAG_COLLECT_VPN_METRICS)
 public class VpnTest extends VpnTestBase {
     private static final String TAG = "VpnTest";
 
