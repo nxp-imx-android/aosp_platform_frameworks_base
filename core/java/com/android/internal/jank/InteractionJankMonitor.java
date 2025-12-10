@@ -51,11 +51,9 @@ import android.view.View;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.FrameTracker.ChoreographerWrapper;
-import com.android.internal.jank.FrameTracker.FrameMetricsWrapper;
 import com.android.internal.jank.FrameTracker.FrameTrackerListener;
 import com.android.internal.jank.FrameTracker.Reasons;
 import com.android.internal.jank.FrameTracker.SurfaceControlWrapper;
-import com.android.internal.jank.FrameTracker.ThreadedRendererWrapper;
 import com.android.internal.jank.FrameTracker.ViewRootWrapper;
 import com.android.internal.util.PerfettoTrigger;
 
@@ -256,8 +254,6 @@ public class InteractionJankMonitor {
     public FrameTracker createFrameTracker(Configuration config) {
         final View view = config.mView;
 
-        final ThreadedRendererWrapper threadedRenderer =
-                view == null ? null : new ThreadedRendererWrapper(view.getThreadedRenderer());
         final ViewRootWrapper viewRoot =
                 view == null ? null : new ViewRootWrapper(view.getViewRootImpl());
         final SurfaceControlWrapper surfaceControl = new SurfaceControlWrapper();
@@ -276,10 +272,8 @@ public class InteractionJankMonitor {
                 mWorker.post(() -> PerfettoTrigger.trigger(config.getPerfettoTrigger()));
             }
         };
-        final FrameMetricsWrapper frameMetrics = new FrameMetricsWrapper();
 
-        return new FrameTracker(config, threadedRenderer, viewRoot,
-                surfaceControl, choreographer, frameMetrics,
+        return new FrameTracker(config, viewRoot, surfaceControl, choreographer,
                 new FrameTracker.StatsLogWrapper(mDisplayResolutionTracker),
                 mTraceThresholdMissedFrames, mTraceThresholdFrameTimeMillis,
                 eventsListener);
