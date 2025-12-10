@@ -3078,8 +3078,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // The system doesn't have a verifier specified.
             return false;
         }
-        // TODO(b/460818215): Remove this once adb check is handled by the verifier module.
-        if (isAdbInstall()) {
+        if (!Flags.verificationServiceAdb() && isAdbInstall()) {
             // adb installs are exempted from verification unless explicitly requested
             if (!params.forceVerification) {
                 synchronized (mMetrics) {
