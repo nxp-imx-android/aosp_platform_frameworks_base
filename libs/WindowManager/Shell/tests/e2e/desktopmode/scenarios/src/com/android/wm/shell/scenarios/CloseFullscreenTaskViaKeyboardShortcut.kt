@@ -19,10 +19,6 @@ package com.android.wm.shell.scenarios
 import android.app.ActivityOptions
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.NavBar
-import android.tools.PlatformConsts.DEFAULT_DISPLAY
-import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -30,12 +26,7 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.Utils
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
-import org.junit.Assume
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 /** Base scenario test for closing a fullscreen task via the keyboard shortcut. */
@@ -44,22 +35,10 @@ import org.junit.Test
     Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT,
     Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
 )
-abstract class CloseFullscreenTaskViaKeyboardShortcut {
+abstract class CloseFullscreenTaskViaKeyboardShortcut : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
-
-    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-
-    @Before
-    fun setup() {
-        Assume.assumeTrue(
-            DesktopState.fromContext(getInstrumentation().context)
-                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
-        )
-    }
 
     @Test
     open fun closeTaskViaKeyboardShortcut() {
