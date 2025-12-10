@@ -950,7 +950,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                             ? mBackNavigationInfo.getFocusedTaskId()
                             : INVALID_TASK_ID);
         }
-        final boolean hasRequestAnimation = mThresholdCrossed;
+        final boolean hasRequestAnimation = mThresholdCrossed || mOnBackStartDispatched;
         // Reset gesture states.
         mThresholdCrossed = false;
         mPointersPilfered = false;
