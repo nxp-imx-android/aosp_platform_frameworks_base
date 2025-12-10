@@ -8471,8 +8471,8 @@ package android.app.admin {
     method public void clearUserRestriction(@Nullable android.content.ComponentName, String);
     method public android.content.Intent createAdminSupportIntent(@NonNull String);
     method @Nullable public android.os.UserHandle createAndManageUser(@NonNull android.content.ComponentName, @NonNull String, @NonNull android.content.ComponentName, @Nullable android.os.PersistableBundle, int);
-    method public void enableSystemApp(@NonNull android.content.ComponentName, String);
-    method public int enableSystemApp(@NonNull android.content.ComponentName, android.content.Intent);
+    method @FlaggedApi("android.app.admin.flags.enable_nullable_admin_component") public void enableSystemApp(@Nullable android.content.ComponentName, String);
+    method @FlaggedApi("android.app.admin.flags.enable_nullable_admin_component") public int enableSystemApp(@Nullable android.content.ComponentName, android.content.Intent);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_CERTIFICATES, conditional=true) public android.security.AttestedKeyPair generateKeyPair(@Nullable android.content.ComponentName, @NonNull String, @NonNull android.security.keystore.KeyGenParameterSpec, int);
     method @Nullable public String[] getAccountTypesWithManagementDisabled();
     method @Nullable public java.util.List<android.content.ComponentName> getActiveAdmins();
@@ -8708,7 +8708,7 @@ package android.app.admin {
     method @Deprecated public void setPasswordMinimumUpperCase(@NonNull android.content.ComponentName, int);
     method @Deprecated public void setPasswordQuality(@NonNull android.content.ComponentName, int);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_RUNTIME_PERMISSIONS, conditional=true) public boolean setPermissionGrantState(@Nullable android.content.ComponentName, @NonNull String, @NonNull String, int);
-    method public void setPermissionPolicy(@NonNull android.content.ComponentName, int);
+    method @FlaggedApi("android.app.admin.flags.enable_nullable_admin_component") public void setPermissionPolicy(@Nullable android.content.ComponentName, int);
     method public boolean setPermittedAccessibilityServices(@NonNull android.content.ComponentName, java.util.List<java.lang.String>);
     method public boolean setPermittedCrossProfileNotificationListeners(@NonNull android.content.ComponentName, @Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS, conditional=true) public boolean setPermittedInputMethods(@Nullable android.content.ComponentName, java.util.List<java.lang.String>);
