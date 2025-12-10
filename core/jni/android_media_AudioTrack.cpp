@@ -1306,7 +1306,7 @@ static int android_media_AudioTrack_setPresentation(
         return (jint)AUDIO_JAVA_ERROR;
     }
 
-    return (jint)lpTrack->selectPresentation((int)presentationId, (int)programId);
+    return nativeToJavaStatus(lpTrack->selectPresentation((int)presentationId, (int)programId));
 }
 
 // ----------------------------------------------------------------------------
