@@ -1367,6 +1367,16 @@ flag {
 }
 
 flag {
+    name: "qr_code_scanner_intent_action"
+    namespace: "systemui"
+    description: "Adds an intent action to the intent used to launch the QR code scanner from the quick settings tile."
+    bug: "461701811"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_delete_uninstalled_tile_service"
     namespace: "systemui"
     description: "When a TileService package is uninstalled, remove the tile completely and all associated data."
