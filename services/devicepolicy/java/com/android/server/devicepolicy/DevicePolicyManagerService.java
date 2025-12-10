@@ -23166,13 +23166,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
             provisionMultiUserManagedUserInternal(
                     /* profileAdmin= */ admin,
-                    /* userId= */ userId,
-                    /* adminExtras= */ provisioningParams.getAdminExtras());
+                    /* userId= */ userId);
         });
     }
 
     private void provisionMultiUserManagedUserInternal(@NonNull ComponentName profileAdmin,
-            @UserIdInt int userId, @NonNull PersistableBundle adminExtras) {
+            @UserIdInt int userId) {
         if (VERBOSE_LOG) {
             Slogf.v(LOG_TAG, "provisionMultiUserManagedUserInternal(): profileAdmin=" + profileAdmin
                     + ", userId=" + userId);
@@ -23181,14 +23180,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         // Set admin.
         setActiveAdmin(profileAdmin, /* refreshing= */ true, userId, null);
         setProfileOwner(profileAdmin, userId);
-
-        synchronized (getLockObject()) {
-            DevicePolicyData policyData = getUserData(userId);
-            policyData.mInitBundle = adminExtras;
-            policyData.mAdminBroadcastPending = true;
-            policyData.mNewUserDisclaimer = DevicePolicyData.NEW_USER_DISCLAIMER_NEEDED;
-            saveSettingsLocked(userId);
-        }
     }
 
     /**
