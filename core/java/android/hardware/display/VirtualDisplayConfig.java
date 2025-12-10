@@ -162,7 +162,6 @@ public final class VirtualDisplayConfig implements Parcelable {
      * @see Builder#setDisplayCutout
      * @hide
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_DISPLAY_INSETS)
     @SystemApi
     @Nullable
     public DisplayCutout getDisplayCutout() {
@@ -618,7 +617,6 @@ public final class VirtualDisplayConfig implements Parcelable {
          *
          * @hide
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_DISPLAY_INSETS)
         @SystemApi
         @NonNull
         public Builder setDisplayCutout(@Nullable DisplayCutout displayCutout) {

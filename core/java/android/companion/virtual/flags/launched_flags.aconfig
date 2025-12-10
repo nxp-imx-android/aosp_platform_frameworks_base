@@ -4,3 +4,11 @@
 
 package: "android.companion.virtualdevice.flags"
 container: "system"
+
+flag {
+    namespace: "virtual_devices"
+    name: "virtual_display_insets"
+    description: "APIs for specifying virtual display insets (via cutout)"
+    bug: "350007135"
+    is_exported: true
+}
