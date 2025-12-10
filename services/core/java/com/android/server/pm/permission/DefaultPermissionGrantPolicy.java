@@ -761,6 +761,12 @@ final class DefaultPermissionGrantPolicy {
                         Intent.CATEGORY_APP_CONTACTS, userId),
                 userId, CONTACTS_PERMISSIONS, PHONE_PERMISSIONS);
 
+        // Contacts picker
+        if (android.content.flags.Flags.enableSystemContactsPicker()) {
+            grantSystemFixedPermissionsToSystemPackage(pm,
+                    "com.android.contactspicker", userId, CONTACTS_PERMISSIONS);
+        }
+
         // Contacts provider sync adapters
         if (contactsSyncAdapterPackages != null) {
             grantPermissionToEachSystemPackage(pm,
