@@ -71,8 +71,12 @@ class BubbleTaskStackListener(
 
     override fun onTaskMovedToFront(task: ActivityManager.RunningTaskInfo) {
         val taskId = task.taskId
-        BubbleLog.d("BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d", taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
+            BubbleLog.d(
+                "BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d bubble=%s",
+                taskId,
+                bubble.key,
+            )
             if (task.isBubbleToFullscreen()) moveExistingBubbleToFullscreen(bubble, task)
         }
     }
