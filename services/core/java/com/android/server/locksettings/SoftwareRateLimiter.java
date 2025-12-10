@@ -77,9 +77,26 @@ class SoftwareRateLimiter {
      * guesses are forgotten.
      *
      * <p>5 minutes provides a reasonable balance between user convenience and minimizing the small
-     * security risk of wrong guesses being kept around in system_server memory. (Wrong guesses can
-     * be somewhat sensitive information, since they may be similar to the correct LSKF or they may
-     * be the correct LSKF for another device or user.)
+     * security risk of wrong guesses being kept around in system_server memory. This value was
+     * chosen carefully, and it should not be increased.
+     *
+     * <p>Specifically, this timeout mitigates attacks where:
+     *
+     * <ol>
+     *   <li>A user mis-enters their LSKF but doesn't follow through with a successful unlock.
+     *   <li>An attacker subsequently compromises the device enough to read system_server memory.
+     *   <li>The attacker finds the wrong guess cache in memory but can't find any other copies of
+     *       the LSKF (i.e. it was zeroized in all other cases -- not necessarily true currently).
+     *   <li>The attacker guesses the correct LSKF using the wrong LSKF as a hint. Alternatively, if
+     *       the user had mistakenly entered the correct LSKF for a different device, the attacker
+     *       would then be able to unlock that other device.
+     * </ol>
+     *
+     * <p>The timeout greatly limits the applicability of this attack. It requires the device to be
+     * compromised very soon after the wrong LSKF is entered.
+     *
+     * <p>Note that if the device is already compromised when the LSKF is entered, the attacker can
+     * simply compromise the LSKF directly. The wrong guess cache is irrelevant in that case.
      */
     @VisibleForTesting static final Duration SAVED_WRONG_GUESS_TIMEOUT = Duration.ofMinutes(5);
 
