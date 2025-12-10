@@ -531,6 +531,9 @@ public class LocaleStore {
 
     private static boolean isShallIgnore(
             Set<String> ignorables, LocaleInfo li, boolean translatedOnly) {
+        if (li == null) {
+            return true;
+        }
         if (ignorables.stream().anyMatch(tag ->
                 Locale.forLanguageTag(tag).stripExtensions()
                         .equals(li.getLocale().stripExtensions()))) {
