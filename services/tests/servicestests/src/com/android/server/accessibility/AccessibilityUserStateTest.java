@@ -454,6 +454,25 @@ public class AccessibilityUserStateTest {
         assertFalse(isShortcutTargetPermitted);
     }
 
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void isShortcutTargetPermittedLocked_nullDpm_returnsFalse() {
+        // Setup: Add an installed service to the user state.
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
+        // Setup: DevicePolicyManager is not available.
+        when(mMockContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(null);
+
+        // Action: Check if the service is permitted as a shortcut target.
+        boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
+                COMPONENT_NAME.flattenToString(), USER_ID);
+
+        // Assertion: Should be false, as a null DPM is treated as an empty permitted list.
+        assertFalse(isShortcutTargetPermitted);
+    }
+
 
     @Test
     public void isShortcutTargetInstalledLocked_invalidTarget_returnFalse() {
