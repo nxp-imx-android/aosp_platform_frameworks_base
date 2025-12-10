@@ -53,6 +53,7 @@ import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
@@ -266,7 +267,8 @@ private fun QuickSettingsChip(
             }
 
         ShadeHighlightChip(
-            modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
+            modifier =
+                modifier.height(DesktopStatusBar.Dimensions.ChipHeight).sysuiResTag("statusIcons"),
             onClick = { viewModel.onQuickSettingsChipClicked() },
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
