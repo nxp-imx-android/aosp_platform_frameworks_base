@@ -24,7 +24,6 @@ import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import com.android.systemui.settings.DisplayTracker
-import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 
 /**
  * A class to detect a generic "swipe up" gesture. To be notified when the swipe up gesture is
@@ -35,15 +34,7 @@ abstract class SwipeUpGestureHandler(
     displayTracker: DisplayTracker,
     private val logger: SwipeUpGestureLogger,
     private val loggerTag: String,
-) :
-    GenericGestureDetector(
-        SwipeUpGestureHandler::class.simpleName!!,
-        if (PerDisplayOngoingCallStatusBarVisibility.isEnabled) {
-            context.displayId
-        } else {
-            displayTracker.defaultDisplayId
-        },
-    ) {
+) : GenericGestureDetector(SwipeUpGestureHandler::class.simpleName!!, context.displayId) {
 
     private var startY: Float = 0f
     private var startTime: Long = 0L

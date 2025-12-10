@@ -28,7 +28,6 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
-import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import javax.inject.Inject
@@ -67,10 +66,6 @@ constructor(
     @OngoingCallLog private val logBuffer: LogBuffer,
     @Main private val mainCoroutineContext: CoroutineContext,
 ) : SystemUIDisplaySubcomponent.LifecycleListener {
-
-    init {
-        PerDisplayOngoingCallStatusBarVisibility.expectInNewMode()
-    }
 
     private val logger = Logger(logBuffer, TAG)
 

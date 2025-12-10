@@ -20,16 +20,13 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
-import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinderImpl
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl.HomeStatusBarViewModelFactoryImpl
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
-import dagger.Provides
-import dagger.multibindings.ElementsIntoSet
+import dagger.multibindings.IntoSet
 
 @Module(subcomponents = [HomeStatusBarComponent::class])
 interface PerDisplayStatusBarReferenceModule {
@@ -50,18 +47,10 @@ interface PerDisplayStatusBarReferenceModule {
     @DisplayAware
     fun homeStatusBarViewBinder(impl: HomeStatusBarViewBinderImpl): HomeStatusBarViewBinder
 
-    companion object {
-        @Provides
-        @ElementsIntoSet
-        @DisplayAware
-        fun ongoingCallStatusBarInteractorAsLifecycleListener(
-            interactorLazy: Lazy<OngoingCallStatusBarInteractor>
-        ): Set<SystemUIDisplaySubcomponent.LifecycleListener> {
-            return if (PerDisplayOngoingCallStatusBarVisibility.isEnabled) {
-                setOf(interactorLazy.get())
-            } else {
-                emptySet()
-            }
-        }
-    }
+    @Binds
+    @IntoSet
+    @DisplayAware
+    fun ongoingCallStatusBarInteractorAsLifecycleListener(
+        interactor: OngoingCallStatusBarInteractor
+    ): SystemUIDisplaySubcomponent.LifecycleListener
 }

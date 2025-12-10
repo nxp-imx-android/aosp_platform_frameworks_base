@@ -1299,16 +1299,6 @@ flag {
 }
 
 flag {
-   name: "per_display_ongoing_call_status_bar_visibility"
-   namespace: "systemui"
-   description: "Adds per display implementation for the logic of whether the status bar should be visible for ongoing calls."
-   bug: "433704306"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "permission_helper_inline_ui_rich_ongoing"
   namespace: "systemui"
   description: "[RONs] Guards inline permission helper for demoting RONs [Inline version]"
