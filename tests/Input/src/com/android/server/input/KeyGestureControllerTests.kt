@@ -17,6 +17,7 @@
 package com.android.server.input
 
 import android.Manifest
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.PermissionChecker
 import android.content.pm.PackageManager
@@ -109,6 +110,7 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     com.android.hardware.input.Flags.FLAG_KEYBOARD_BACKLIGHT_SHORTCUTS,
     com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
+    com.android.hardware.input.Flags.FLAG_ENABLE_NOTE_TAKING_KEYBOARD_SHORTCUT,
 )
 class KeyGestureControllerTests {
 
@@ -183,6 +185,7 @@ class KeyGestureControllerTests {
     @Mock private lateinit var screenshotHelper: ScreenshotHelper
     @Mock private lateinit var windowManagerInternal: WindowManagerInternal
     @Mock private lateinit var userManager: UserManager
+    @Mock private lateinit var roleManager: RoleManager
 
     private var currentPid = 0
     private lateinit var testableResources: TestableResources
@@ -222,6 +225,8 @@ class KeyGestureControllerTests {
         Mockito.`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK))
             .thenReturn(true)
         testableContext.setMockPackageManager(packageManager)
+        Mockito.`when`(roleManager.isRoleAvailable(RoleManager.ROLE_NOTES)).thenReturn(true)
+        testableContext.addMockSystemService(RoleManager::class.java, roleManager)
         testableResources.addOverride(
             R.integer.config_searchKeyBehavior,
             SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY,

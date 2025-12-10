@@ -23,6 +23,7 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_PROCESS_END;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_RESTRICTION_CHANGE;
 import static android.app.ActivityThread.PROC_START_SEQ_IDENT;
 import static android.app.ApplicationExitInfo.subreasonToString;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.Flags.appCompatOption16kb;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AUTO;
 import static android.net.NetworkPolicyManager.isProcStateAllowedWhileIdleOrPowerSaveMode;
@@ -175,6 +176,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;
@@ -2292,7 +2294,7 @@ public final class ProcessList extends ProcessListInternal
     }
 
     private Map<String, Pair<String, Long>> getPackageAppDataInfoMap(PackageManagerInternal pmInt,
-            String[] packages, int uid) {
+            String[] packages, int uid, boolean areAllowlistedPackages) {
         Map<String, Pair<String, Long>> result = new ArrayMap<>(packages.length);
         int userId = UserHandle.getUserId(uid);
         for (String packageName : packages) {
@@ -2310,9 +2312,13 @@ public final class ProcessList extends ProcessListInternal
 
             final long finalInode;
             final String finalPackageName;
-            if (Process.isPrivateComputeCoreUid(uid)) {
-                // Currently, we do not anticipate PCC apps needing to start before device unlock so
-                // it's safe to pass 0 as the inode value.
+            // Currently, we do not anticipate PCC apps needing to start before device unlock so
+            // it's safe to pass 0 as the inode value.
+            // Also, the allowlisted apps themselves don't have PCC components so we should not add
+            // the PCC suffix to them.
+            if (enablePccFrameworkSupport()
+                    && Process.isPrivateComputeCoreUid(uid)
+                    && !areAllowlistedPackages) {
                 finalInode = 0L;
                 finalPackageName = packageName + Environment.PCC_DATA_DIRECTORY_SUFFIX;
             } else {
@@ -2359,7 +2365,8 @@ public final class ProcessList extends ProcessListInternal
             boolean bindMountAppStorageDirs = false;
             boolean bindMountAppsData = mAppDataIsolationEnabled
                     && (UserHandle.isApp(app.uid) || UserHandle.isIsolated(app.uid)
-                        || app.isSdkSandbox || Process.isPrivateComputeCoreUid(uid))
+                        || app.isSdkSandbox
+                        || (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)))
                     && mPlatformCompat.isChangeEnabled(APP_DATA_DIRECTORY_ISOLATION, app.info);
 
             // Get all packages belongs to the same shared uid. sharedPackages is empty array
@@ -2380,7 +2387,8 @@ public final class ProcessList extends ProcessListInternal
 
             final boolean hasAppStorage = hasAppStorage(pmInt, app.info.packageName);
 
-            pkgDataInfoMap = getPackageAppDataInfoMap(pmInt, targetPackagesList, uid);
+            pkgDataInfoMap = getPackageAppDataInfoMap(
+                    pmInt, targetPackagesList, uid, /* areAllowlistedPackages= */ false);
             if (pkgDataInfoMap == null) {
                 // TODO(b/152760674): Handle inode == 0 case properly, now we just give it a
                 // tmp free pass.
@@ -2394,8 +2402,11 @@ public final class ProcessList extends ProcessListInternal
                 allowlistedApps.remove(pkg);
             }
 
-            allowlistedAppDataInfoMap = getPackageAppDataInfoMap(pmInt,
-                    allowlistedApps.toArray(new String[0]), uid);
+            allowlistedAppDataInfoMap = getPackageAppDataInfoMap(
+                    pmInt,
+                    allowlistedApps.toArray(new String[0]),
+                    uid,
+                    /* areAllowlistedPackages= */ true);
             if (allowlistedAppDataInfoMap == null) {
                 // TODO(b/152760674): Handle inode == 0 case properly, now we just give it a
                 // tmp free pass.

@@ -62,7 +62,6 @@ import org.junit.runners.MethodSorters
  */
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
     com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
 )
 @RequiresDevice

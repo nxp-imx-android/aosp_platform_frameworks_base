@@ -152,6 +152,7 @@ package android {
     field public static final String CONTROL_OEM_PAID_NETWORK_PREFERENCE = "android.permission.CONTROL_OEM_PAID_NETWORK_PREFERENCE";
     field public static final String CONTROL_VPN = "android.permission.CONTROL_VPN";
     field @FlaggedApi("android.app.admin.flags.split_create_managed_profile_enabled") public static final String COPY_ACCOUNTS = "android.permission.COPY_ACCOUNTS";
+    field @FlaggedApi("android.net.platform.flags.make_app_specific_network_permission_api") public static final String CREATE_APP_SPECIFIC_NETWORK = "android.permission.CREATE_APP_SPECIFIC_NETWORK";
     field public static final String CREATE_USERS = "android.permission.CREATE_USERS";
     field public static final String CREATE_VIRTUAL_DEVICE = "android.permission.CREATE_VIRTUAL_DEVICE";
     field public static final String CRYPT_KEEPER = "android.permission.CRYPT_KEEPER";
@@ -3148,7 +3149,7 @@ package android.app.supervision {
   }
 
   @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder extends android.app.supervision.Policy.Builder<android.app.supervision.PackageUsagePolicy,android.app.supervision.PackageUsagePolicy.Builder> {
-    ctor public PackageUsagePolicy.Builder();
+    ctor public PackageUsagePolicy.Builder(@NonNull String, int);
     ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);
@@ -5714,12 +5715,89 @@ package android.hardware.camera2.params {
 
 package android.hardware.contexthub {
 
+  @FlaggedApi("android.chre.flags.fmcq_api") public interface DataFlowCallback {
+    method public void onDataFlowSinkEvent(@NonNull android.hardware.contexthub.DataFlowSink, int, @Nullable android.hardware.contexthub.DataFlowCallback.SinkEventData);
+    method public void onDataFlowSourceEvent(@NonNull android.hardware.contexthub.DataFlowSource, int, @Nullable android.hardware.contexthub.DataFlowCallback.SourceEventData);
+    method public void onReceivedDataFlowSink(@NonNull android.hardware.contexthub.DataFlowSink, @NonNull android.hardware.contexthub.HubEndpointInfo, @Nullable android.hardware.contexthub.HubEndpointSession, @Nullable android.hardware.contexthub.HubMessage);
+    field public static final int SINK_EVENT_READABLE = 0; // 0x0
+    field public static final int SINK_EVENT_STOPPED = 1; // 0x1
+    field public static final int SOURCE_EVENT_SINK_GONE = 1; // 0x1
+    field public static final int SOURCE_EVENT_WRITABLE = 0; // 0x0
+  }
+
+  public static class DataFlowCallback.SinkEventData {
+    ctor public DataFlowCallback.SinkEventData();
+  }
+
+  public static class DataFlowCallback.SourceEventData {
+    ctor public DataFlowCallback.SourceEventData(@NonNull android.hardware.contexthub.HubEndpointInfo);
+    method @Nullable public android.hardware.contexthub.HubEndpointInfo getSink();
+  }
+
+  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowData {
+    ctor public DataFlowData(@NonNull java.nio.ByteBuffer, @NonNull android.hardware.contexthub.DataFlowDataConfig);
+    ctor public DataFlowData(@NonNull @Size(min=1) java.util.List<java.nio.ByteBuffer>, @NonNull android.hardware.contexthub.DataFlowDataConfig);
+    method @NonNull public java.util.List<java.nio.ByteBuffer> getBuffers();
+  }
+
+  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowDataConfig {
+    method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createFixedSize(@IntRange(from=1, to=java.lang.Short.MAX_VALUE) int, @IntRange(from=1, to=java.lang.Short.MAX_VALUE) int);
+    method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createVariableSize();
+    method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createVariableSizeAligned(@IntRange(from=1, to=java.lang.Short.MAX_VALUE) int);
+    method public int getElementAlignment();
+    method public int getElementSize();
+    method public int getFormat();
+    field public static final int FORMAT_FIXED_SIZE = 0; // 0x0
+    field public static final int FORMAT_VARIABLE_SIZE = 1; // 0x1
+    field public static final int FORMAT_VARIABLE_SIZE_ALIGNED = 2; // 0x2
+  }
+
+  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowNewDataAlertPolicy {
+    method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createHighWatermarkPolicy(@IntRange(from=1) int);
+    method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createNeverNotifyPolicy();
+    method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createOpportunisticPolicy(@IntRange(from=1) int);
+    method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createPeriodicPolicy(@NonNull java.time.Duration);
+    method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createStreamingPolicy();
+    field public static final int POLICY_TYPE_HIGH_WATERMARK = 2; // 0x2
+    field public static final int POLICY_TYPE_NEVER = 0; // 0x0
+    field public static final int POLICY_TYPE_OPPORTUNISTIC = 1; // 0x1
+    field public static final int POLICY_TYPE_PERIODIC = 3; // 0x3
+    field public static final int POLICY_TYPE_STREAMING = 4; // 0x4
+  }
+
+  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowSink implements java.lang.AutoCloseable {
+    method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowData awaitData(@Size(min=1) int, @Nullable java.time.Duration) throws java.util.concurrent.TimeoutException;
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void awaitDataAsync(@Size(min=1) int, @Nullable android.os.CancellationSignal, @Nullable java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.hardware.contexthub.DataFlowData,java.lang.Throwable>);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void close();
+    method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowDataConfig getDataFlowConfig();
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean isEmpty();
+    method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowData requestData(@Size(min=1) int, boolean);
+    method @IntRange(from=0) @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int size();
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean sourceCanOverwriteReadPosition();
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void syncToSource(@IntRange(from=0) int);
+  }
+
+  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowSource implements java.lang.AutoCloseable {
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void close();
+    method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public java.util.List<android.hardware.contexthub.HubEndpointInfo> getCurrentSinks();
+    method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowDataConfig getDataFlowConfig();
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean isFull();
+    method @IntRange(from=0) @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int push(@NonNull android.hardware.contexthub.DataFlowData, boolean);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void pushAsync(@NonNull android.hardware.contexthub.DataFlowData, @Nullable android.os.CancellationSignal, @Nullable java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Throwable>);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void pushBlocking(@NonNull android.hardware.contexthub.DataFlowData, @Nullable java.time.Duration) throws java.util.concurrent.TimeoutException;
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void shareDataFlow(@NonNull android.hardware.contexthub.HubEndpointInfo, @NonNull android.hardware.contexthub.DataFlowNewDataAlertPolicy, boolean);
+    method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.location.ContextHubTransaction<java.lang.Void> shareDataFlowOverSession(@NonNull android.hardware.contexthub.HubEndpointInfo, @NonNull android.hardware.contexthub.DataFlowNewDataAlertPolicy, boolean, @NonNull android.hardware.contexthub.HubEndpointSession, @NonNull android.hardware.contexthub.HubMessage);
+    method @IntRange(from=0) @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int size();
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void updateSinkPolicy(@NonNull android.hardware.contexthub.HubEndpointInfo, @NonNull android.hardware.contexthub.DataFlowNewDataAlertPolicy, boolean);
+  }
+
   @FlaggedApi("android.chre.flags.offload_api") public class HubDiscoveryInfo {
     method @NonNull public android.hardware.contexthub.HubEndpointInfo getHubEndpointInfo();
     method @Nullable public android.hardware.contexthub.HubServiceInfo getHubServiceInfo();
   }
 
   @FlaggedApi("android.chre.flags.offload_api") public class HubEndpoint {
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowSource createDataFlowSource(@NonNull @Size(min=1) java.util.Set<java.lang.Long>, @NonNull android.hardware.contexthub.DataFlowDataConfig, @IntRange(from=1) int, @IntRange(from=1) int);
     method @Nullable public android.hardware.contexthub.HubEndpointLifecycleCallback getLifecycleCallback();
     method @Nullable public android.hardware.contexthub.HubEndpointMessageCallback getMessageCallback();
     method @NonNull public java.util.Collection<android.hardware.contexthub.HubServiceInfo> getServiceInfoCollection();
@@ -7006,6 +7084,7 @@ package android.hardware.location {
   }
 
   @FlaggedApi("android.chre.flags.get_hubs_api") public final class HubInfo implements android.os.Parcelable {
+    method public boolean areDataFlowsSupported();
     method public int describeContents();
     method @Nullable public android.hardware.location.ContextHubInfo getContextHubInfo();
     method public long getId();
@@ -7799,18 +7878,18 @@ package android.hardware.usb {
 
   @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public final class PowerProfileInfo implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingProfiles();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getMatchingMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
+    method @NonNull public java.util.List<android.hardware.usb.PowerProfileInfo> getMatchingPartnerProfiles();
     method @CheckResult public int getMaxCurrentMa();
     method @CheckResult public int getMaxPowerMw();
     method @CheckResult public int getMaxVoltageMv();
     method @CheckResult public int getMinCurrentMa();
     method @CheckResult public int getMinVoltageMv();
     method @Nullable public String getName();
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxPowerMw(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMaxVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinCurrentMa(@NonNull android.hardware.usb.PowerProfileInfo);
-    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @CheckResult public int getPowerProfileMatchMinVoltageMv(@NonNull android.hardware.usb.PowerProfileInfo);
     method @CheckResult public int getPowerProfileType();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.PowerProfileInfo> CREATOR;

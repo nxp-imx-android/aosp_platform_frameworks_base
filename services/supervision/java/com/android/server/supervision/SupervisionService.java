@@ -191,7 +191,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
     }
 
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
     private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
         AppBindingService abs = mInjector.getAppBindingService();
         return abs != null
@@ -828,7 +828,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void executeOnSupervisionEnabled(Runnable runnable) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             Binder.withCleanCallingIdentity(runnable::run);
         } else {
             executeOnServiceThread(runnable);
@@ -836,12 +836,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @NonNull
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
     private List<ISupervisionListener> getSupervisionAppServiceListeners(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
-        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallback()) {
+        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallbacks()) {
             return listeners;
         }
 
@@ -872,7 +872,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void dispatchSupervisionEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        if (Flags.enableAppServiceConnectionCallback()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             dispatchSupervisionAppServiceEvent(userId, action);
         }
         // Add SupervisionAppServices listeners before the platform listeners.
@@ -1131,10 +1131,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
         UserHandle userHandle = Binder.getCallingUserHandle();
         int callingUid = Binder.getCallingUid();
 
-        List<String> roleHolders =
-                new ArrayList<String>(
-                        mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, userHandle));
-        roleHolders.addAll(mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, userHandle));
+        List<String> roleHolders = new ArrayList<String>();
+        synchronized (getLockObject()) {
+            roleHolders.addAll(
+                    getUserDataLocked(UserHandle.getUserId(callingUid)).supervisionRoleHolders);
+        }
 
         String[] packages = mInjector.getPackageManager().getPackagesForUid(callingUid);
         if (packages != null) {
@@ -1157,7 +1158,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     private List<String> updateSupervisionRoleHolders(@UserIdInt int userId) {
         List<String> newRoleHolders =
-                mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId));
+                new ArrayList<String>(
+                        mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId)));
+        newRoleHolders.addAll(
+                mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
 
         synchronized (getLockObject()) {
             SupervisionUserData data = getUserDataLocked(userId);
@@ -1503,7 +1507,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         @Override
         public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
-            if (ROLE_SUPERVISION.equals(roleName)) {
+            if (ROLE_SUPERVISION.equals(roleName) || ROLE_SYSTEM_SUPERVISION.equals(roleName)) {
                 executeOnServiceThread(
                         () -> {
                             maybeApplyUserRestrictionsFor(user);

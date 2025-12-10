@@ -119,8 +119,8 @@ class TransitionAnimatorTest(
             kosmos.fakeExecutor,
             ActivityTransitionAnimator.TIMINGS,
             ActivityTransitionAnimator.INTERPOLATORS,
-            ActivityTransitionAnimator.SPRING_TIMINGS,
-            ActivityTransitionAnimator.SPRING_INTERPOLATORS,
+            TransitionAnimator.SPRING_TIMINGS,
+            TransitionAnimator.SPRING_INTERPOLATORS,
         )
 
     @get:Rule(order = 1) val activityRule = ActivityScenarioRule(EmptyTestActivity::class.java)

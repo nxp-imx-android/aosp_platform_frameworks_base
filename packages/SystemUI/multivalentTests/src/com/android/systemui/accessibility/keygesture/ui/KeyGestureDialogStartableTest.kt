@@ -440,7 +440,7 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
     private fun Kosmos.getEnabledTargetNames(): Set<String> =
         accessibilityShortcutsRepository
             .getAllAccessibilityTargetsInfo(UserShortcutType.KEY_GESTURE)
-            .filter { it.isToggleOn }
+            .filter { it.isStateOn }
             .map { it.targetName }
             .toSet()
 

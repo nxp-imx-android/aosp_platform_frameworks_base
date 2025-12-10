@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.ArraySet;
 import android.util.TypedValue;
+import android.window.WindowContainerTransaction;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -87,6 +88,22 @@ public class AppCompatEmbeddingRuleController {
                         && parentMetrics.getBounds().width() >= minSizePx)
                 .setDefaultSplitAttributes(defaultAttributes)
                 .build();
+    }
+
+    /**
+     * Updates the placeholder container upon creation.
+     *
+     * For gamepad overrides, this pins the placeholder container to ensure isolated navigation and
+     * always-on-top behavior.
+     */
+    public static void updatePlaceholderContainer(
+            @NonNull SplitPresenter presenter,
+            @NonNull TaskFragmentContainer container,
+            @NonNull WindowContainerTransaction wct) {
+        if (CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD)) {
+            // Ensure isolated navigation and always-on-top behavior of the gamepad placeholder.
+            presenter.setTaskFragmentPinned(wct, container, true /* pinned */);
+        }
     }
 
     private static int defaultMinSize(Context context) {

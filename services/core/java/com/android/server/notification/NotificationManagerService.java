@@ -12503,7 +12503,9 @@ public class NotificationManagerService extends SystemService {
         if (uid == Process.ROOT_UID && ROOT_PKG.equals(pkg)) {
             return;
         }
-        if (!UserHandle.isSameApp(uid, mPackageManagerInternal.getPackageUid(pkg, 0L, userId))) {
+        // malicious sdks could make use of sdksandbox uid to cause DoS b/396667508
+        if (Process.isSdkSandboxUid(uid)
+                || !mPackageManagerInternal.isSameApp(pkg, 0L, uid, userId)) {
             throw new SecurityException("Package " + pkg + " is not owned by uid " + uid);
         }
     }

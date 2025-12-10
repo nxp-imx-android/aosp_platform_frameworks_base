@@ -140,16 +140,6 @@ oneway interface ITaskStackListener {
     void onTaskProfileLocked(in ActivityManager.RunningTaskInfo taskInfo, int userId);
 
     /**
-     * Called when a task snapshot got updated.
-     */
-    void onTaskSnapshotChanged(int taskId, in TaskSnapshot snapshot);
-
-    /**
-     * Called when a task snapshot become invalidated.
-     */
-    void onTaskSnapshotInvalidated(int taskId);
-
-    /**
      * Reports that an Activity received a back key press when there were no additional activities
      * on the back stack.
      *

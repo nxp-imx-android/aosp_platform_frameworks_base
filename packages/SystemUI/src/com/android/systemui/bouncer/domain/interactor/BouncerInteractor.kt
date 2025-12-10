@@ -23,11 +23,11 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
-import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Password
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Sim
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.bouncer.data.repository.BouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.bouncer.shared.model.BouncerInputSide

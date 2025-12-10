@@ -326,6 +326,7 @@ class BubbleStackViewTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
     fun setExpandedTrue_thenDataCollapsed_whenImeHides_doesNotExpand() {
         val bubble = createAndInflateBubble()
 
@@ -1238,7 +1239,6 @@ class BubbleStackViewTest {
         assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
     @Test
     fun removeJumpcutSwitchClosingBubble() {
         val closingBubble = createAndInflateBubble()
@@ -1340,7 +1340,6 @@ class BubbleStackViewTest {
         assertThat(sessionInstanceIds).hasSize(1)
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
     @Test
     fun updateBubbleOrder_expanded_removedBubbleNotInStack_isNotReAdded() {
         // 1. Setup: expanded stack with two bubbles.
@@ -1383,7 +1382,6 @@ class BubbleStackViewTest {
         assertThat(bubbleStackView.getBubbleIndex(bubble2)).isEqualTo(-1)
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
     @Test
     fun updateBubbleOrder_collapsed_listModifiedDuringAnimation() {
         // 1. Setup: Add two bubbles to the collapsed stack.

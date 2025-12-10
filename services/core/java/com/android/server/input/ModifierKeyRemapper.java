@@ -71,7 +71,8 @@ final class ModifierKeyRemapper {
         }
     }
 
-    private void setKeyRemapping(Map<Integer, Integer> keyRemapping) {
+    private void applyKeyRemapping() {
+        Map<Integer, Integer> keyRemapping = getKeyRemapping();
         int index = 0;
         int[] fromKeycodesArr = new int[keyRemapping.size()];
         int[] toKeycodesArr = new int[keyRemapping.size()];
@@ -94,8 +95,8 @@ final class ModifierKeyRemapper {
             } finally {
                 mDataStore.saveIfNeeded();
             }
-            setKeyRemapping(mDataStore.getKeyRemapping());
         }
+        applyKeyRemapping();
     }
 
     private void clearAllRemappingsInternal() {
@@ -108,12 +109,12 @@ final class ModifierKeyRemapper {
             } finally {
                 mDataStore.saveIfNeeded();
             }
-            setKeyRemapping(mDataStore.getKeyRemapping());
         }
+        applyKeyRemapping();
     }
 
     public void updateExistingKeyMapping() {
-        setKeyRemapping(getKeyRemapping());
+        applyKeyRemapping();
     }
 
     private boolean handleMessage(Message msg) {

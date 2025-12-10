@@ -57,6 +57,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -318,7 +319,36 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     }
 
     @Test
-    fun onDeviceLocked_expanded_imeVisible_shouldHideImeBeforeCollapsing() {
+    @EnableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
+    fun onDeviceLocked_expanded_imeVisible_shouldCollapseImmediately() {
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+
+        // expand and show the IME. then lock the device
+        val imeVisibleInsetsState = createFakeInsetsState(imeVisible = true)
+        getInstrumentation().runOnMainSync {
+            bubbleController.expandStackAndSelectBubble(bubble)
+            assertThat(bubbleData.isExpanded).isTrue()
+            imeListener.insetsChanged(imeVisibleInsetsState)
+            assertThat(bubblePositioner.isImeVisible).isTrue()
+            bubbleController.onStatusBarStateChanged(/* isShade= */ false)
+        }
+
+        assertThat(bubbleData.isExpanded).isFalse()
+        // collapsing while the device is locked goes through display ime controller
+        verify(displayImeController).hideImeForBubblesWhenLocked(anyInt())
+    }
+
+    @Test
+    @DisableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
+    fun onDeviceLocked_expanded_imeVisible_withImeHiddenRunnable_shouldHideImeBeforeCollapsing() {
         val bubble = createBubble("key")
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
@@ -353,7 +383,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     }
 
     @Test
-    fun onDeviceLocked_whileHidingImeDuringCollapse() {
+    @DisableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
+    fun onDeviceLocked_whileHidingImeDuringCollapse_withImeHiddenRunnable() {
         val bubble = createBubble("key")
         val expandListener = FakeBubbleExpandListener()
         bubbleController.setExpandListener(expandListener)

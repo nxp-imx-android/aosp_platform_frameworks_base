@@ -64,6 +64,8 @@ import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
+import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_INTERPOLATORS
+import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_TIMINGS
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
@@ -158,19 +160,6 @@ constructor(
             )
 
         /**
-         * The timings when animating a View into an app using a spring animator. These timings
-         * represent fractions of the progress between the spring's initial value and its final
-         * value.
-         */
-        val SPRING_TIMINGS =
-            TransitionAnimator.SpringTimings(
-                contentBeforeFadeOutDelay = 0f,
-                contentBeforeFadeOutDuration = 0.8f,
-                contentAfterFadeInDelay = 0.85f,
-                contentAfterFadeInDuration = 0.135f,
-            )
-
-        /**
          * The timings when animating a Dialog into an app. We need to wait at least 200ms before
          * showing the app (which is under the dialog window) so that the dialog window dim is fully
          * faded out, to avoid flicker.
@@ -185,13 +174,6 @@ constructor(
                 positionXInterpolator = Interpolators.EMPHASIZED_COMPLEMENT,
                 contentBeforeFadeOutInterpolator = Interpolators.LINEAR_OUT_SLOW_IN,
                 contentAfterFadeInInterpolator = PathInterpolator(0f, 0f, 0.6f, 1f),
-            )
-
-        /** The interpolators when animating a View into an app using a spring animator. */
-        val SPRING_INTERPOLATORS =
-            INTERPOLATORS.copy(
-                contentBeforeFadeOutInterpolator = Interpolators.DECELERATE_1_5,
-                contentAfterFadeInInterpolator = Interpolators.SLOW_OUT_LINEAR_IN,
             )
 
         // TODO(b/288507023): Remove this flag.

@@ -18,10 +18,7 @@ package com.android.systemui.statusbar.phone;
 
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.view.MotionEvent;
 import android.view.RemoteAnimationAdapter;
 import android.view.View;
@@ -152,28 +149,6 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner, CoreStartable
         }
         options.setSplashScreenStyle(SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR);
         return options;
-    }
-
-    /**
-     * @return a PackageManager for userId or if userId is < 0 (USER_ALL etc) then
-     * return PackageManager for mContext
-     */
-    static PackageManager getPackageManagerForUser(Context context, int userId) {
-        Context contextForUser = context;
-        // UserHandle defines special userId as negative values, e.g. USER_ALL
-        if (userId >= 0) {
-            try {
-                // Create a context for the correct user so if a package isn't installed
-                // for user 0 we can still load information about the package.
-                contextForUser =
-                        context.createPackageContextAsUser(context.getPackageName(),
-                                Context.CONTEXT_RESTRICTED,
-                                new UserHandle(userId));
-            } catch (PackageManager.NameNotFoundException e) {
-                // Shouldn't fail to find the package name for system ui.
-            }
-        }
-        return contextForUser.getPackageManager();
     }
 
     /** Default impl for CoreStartable. */

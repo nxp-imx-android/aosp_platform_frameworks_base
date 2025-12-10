@@ -1563,7 +1563,7 @@ public final class SystemServiceRegistry {
                     });
         }
 
-        if (android.companion.Flags.enableUniversalClipboard()) {
+        if (android.companion.Flags.universalClipboard()) {
             registerService(Context.UNIVERSAL_CLIPBOARD_SERVICE, UniversalClipboardManager.class,
                     new CachedServiceFetcher<UniversalClipboardManager>() {
                         @Override
@@ -2096,7 +2096,7 @@ public final class SystemServiceRegistry {
                 TelecomDependencies.registerServiceWrapper();
             }
 
-            if (com.android.webapp.flags.Flags.enableWebAppService()) {
+            if (com.android.webapp.flags.Flags.enableWebAppServiceV2()) {
                 WebAppFrameworkInitializer.registerServiceWrappers();
             }
 

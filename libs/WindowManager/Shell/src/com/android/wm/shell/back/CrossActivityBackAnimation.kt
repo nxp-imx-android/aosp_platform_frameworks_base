@@ -46,6 +46,7 @@ import android.window.BackNavigationInfo
 import android.window.BackProgressAnimator
 import android.window.DesktopExperienceFlags
 import android.window.IOnBackInvokedCallback
+import com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii
 import com.android.internal.dynamicanimation.animation.FloatValueHolder
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
@@ -83,7 +84,7 @@ abstract class CrossActivityBackAnimation(
     private val cropRect = Rect()
     private val tempRectF = RectF()
 
-    private var cornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context)
+    protected var cornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context)
     private var statusbarHeight = SystemBarUtils.getStatusBarHeight(context)
 
     private val backAnimationRunner =
@@ -212,14 +213,21 @@ abstract class CrossActivityBackAnimation(
             } else {
                 null
             }
+        val cornerRadii =
+            if (fixCrossActivityBackAnimationInBubbles() && setClientDrawnCornerRadii()) {
+                getTaskAlignedCornerRadii()
+            } else {
+                floatArrayOf(cornerRadius, cornerRadius, cornerRadius, cornerRadius)
+            }
         background.ensureBackground(
             closingTarget!!.windowConfiguration.bounds,
             getBackgroundColor(),
             transaction,
             statusbarHeight,
             backgroundCrop,
-            cornerRadius,
+            cornerRadii,
             closingTarget!!.taskInfo.getDisplayId(),
+            if (fixCrossActivityBackAnimationInBubbles()) enteringTarget!!.leash else null,
         )
         ensureScrimLayer()
         if (isLetterboxed && enteringHasSameLetterbox) {
@@ -255,7 +263,14 @@ abstract class CrossActivityBackAnimation(
             enteringTransformation,
         )
         applyTransaction()
-        background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
+        if (fixCrossActivityBackAnimationInBubbles()) {
+            if (closingTarget!!.screenSpaceBounds.top <= statusbarHeight / 2) {
+                background.customizeStatusBarAppearance(
+                    (currentClosingRect.top + closingTarget!!.screenSpaceBounds.top).toInt())
+            }
+        } else {
+            background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
+        }
         velocityTracker.addPosition(backEvent.frameTimeMillis, progress)
     }
 
@@ -434,8 +449,37 @@ abstract class CrossActivityBackAnimation(
             .setColor(scrimLayer, colorComponents)
             .setAlpha(scrimLayer!!, maxScrimAlpha)
             .setCrop(scrimLayer!!, scrimCrop)
+            .setTaskAlignedCornerRadius(scrimLayer!!)
             .setRelativeLayer(scrimLayer!!, closingTarget!!.leash, -1)
             .show(scrimLayer)
+    }
+
+    /**
+     * @return A [FloatArray] containing the radii in the order: Top-Left, Top-Right, Bottom-Right,
+     * Bottom-Left.
+     */
+    private fun getTaskAlignedCornerRadii(): FloatArray {
+        val taskBounds = closingTarget!!.taskInfo.configuration.windowConfiguration.bounds
+        val activityBounds = closingTarget!!.localBounds
+        // Only round corners that align with the task bounds.
+        // If the activity is embedded or letterboxed, the inner corners should not be rounded.
+        val touchesTop = activityBounds.top <= taskBounds.top
+        val touchesRight = activityBounds.right >= taskBounds.right
+        val touchesBottom = activityBounds.bottom >= taskBounds.bottom
+        val touchesLeft = activityBounds.left <= taskBounds.left
+        val topLeft = if (touchesLeft && touchesTop) cornerRadius else 0f
+        val topRight = if (touchesTop && touchesRight) cornerRadius else 0f
+        val bottomRight = if (touchesRight && touchesBottom) cornerRadius else 0f
+        val bottomLeft = if (touchesBottom && touchesLeft) cornerRadius else 0f
+        return floatArrayOf(topLeft, topRight, bottomRight, bottomLeft)
+    }
+
+    private fun SurfaceControl.Transaction.setTaskAlignedCornerRadius(sc: SurfaceControl) = apply {
+        if (!fixCrossActivityBackAnimationInBubbles() || !setClientDrawnCornerRadii()) {
+            return this
+        }
+        val radii = getTaskAlignedCornerRadii()
+        setCornerRadius(sc, radii[0], radii[1], radii[3], radii[2])
     }
 
     private fun removeScrimLayer() {
@@ -529,8 +573,14 @@ abstract class CrossActivityBackAnimation(
     override fun prepareNextAnimation(
         animationInfo: BackNavigationInfo.CustomAnimationInfo?,
         letterboxColor: Int,
+        cornerRadius: Float,
     ): Boolean {
         this.letterboxColor = letterboxColor
+        this.cornerRadius = if (fixCrossActivityBackAnimationInBubbles() && cornerRadius >= 0) {
+            cornerRadius
+        } else {
+            ScreenDecorationsUtils.getWindowCornerRadius(context)
+        }
         return false
     }
 
@@ -592,7 +642,9 @@ abstract class CrossActivityBackAnimation(
 
     companion object {
         /** Max scale of the closing window. */
-        internal const val MAX_SCALE = 0.9f
+        internal const val MAX_SCALE = 0.85f
+        /** Initial scale of the entering window. */
+        internal const val INITIAL_ENTERING_SCALE = 0.95f
         private const val MAX_SCRIM_ALPHA_DARK = 0.8f
         private const val MAX_SCRIM_ALPHA_LIGHT = 0.2f
         private const val SPRING_SCALE = 100f

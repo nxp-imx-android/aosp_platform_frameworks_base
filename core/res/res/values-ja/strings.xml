@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ローカル ネットワーク デバイスへのアクセスをアプリに許可します"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ループバック インターフェースを使用する"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ループバック インターフェースを介して他のアプリとやり取りすることをこのアプリに許可します"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"ループバック インターフェースを常に使用する"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"ループバック権限なしでループバック インターフェースを介して他のアプリとやり取りすることをこのアプリに許可します"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"付近のデバイス間の相対位置の特定"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"付近のデバイス間の相対位置の特定をアプリに許可します"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"優先される NFC お支払いサービスの情報"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"スマートフォンをもっと下げてください"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"スマートフォンを左に動かしてください"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"スマートフォンを右に動かしてください"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"もっとまっすぐデバイスに顔を向けてください。"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"顔を確認できません。目の高さに合わせてください"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"あまり動かさないでください。安定させてください。"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"顔を登録し直してください。"</string>
@@ -1454,6 +1453,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"タップして設定"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"タイムゾーンを変更しました"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g>（<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>）に変更しました"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"時計の変更"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"時計が <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>進みました。現在の時間帯は<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>（<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>）です。"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"時計が <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>戻りました。現在の時間帯は<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>（<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>）です。"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"時刻設定"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"日付設定"</string>
     <string name="date_time_set" msgid="4603445265164486816">"設定"</string>

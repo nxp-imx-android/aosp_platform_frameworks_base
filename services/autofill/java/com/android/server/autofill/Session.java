@@ -981,7 +981,8 @@ final class Session
                     structure.dump(/* showSensitive= */ true);
                 }
 
-                structure.sanitizeForParceling(true);
+                // TODO(b/456535350): implement noise-injection.
+                structure.sanitizeForParceling(true, null);
 
                 if (mContexts == null) {
                     mContexts = new ArrayList<>(1);
@@ -4803,8 +4804,8 @@ final class Session
                 }
             }
 
-            // Sanitize structure before it's sent to service.
-            context.getStructure().sanitizeForParceling(false);
+            // No sanitization on save flow, hence no AutofillNoiseInjector instance needed, either.
+            context.getStructure().sanitizeForParceling(false, null);
 
             if (sVerbose) {
                 Slog.v(

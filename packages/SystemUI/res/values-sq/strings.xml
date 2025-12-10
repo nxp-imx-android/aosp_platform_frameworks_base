@@ -91,8 +91,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Pamja e ekranit nuk mund të ruhet"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Nxjerrja e pamjeve të ekranit nuk lejohet nga aplikacioni ose organizata jote."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Shkrepja e pamjeve të ekranit është bllokuar nga administratori i teknologjisë së informacionit"</string>
-    <!-- no translation found for screenshot_copy_description (2857172429942249976) -->
-    <skip />
+    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopjo pamjen e ekranit te kujtesa e fragmenteve"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Modifiko"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Butoni \"Modifiko pamjen e ekranit\""</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Ndaj"</string>
@@ -837,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Trokit për ta vendosur në dridhje."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Trokit për ta çaktivizuar."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Kontrolli i zhurmës"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Anulimi i zhurmës së mikrofonit"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Audioja hapësinore"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Joaktive"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"E fiksuar"</string>
@@ -930,31 +928,23 @@
     <string name="inline_done_button" msgid="6043094985588909584">"U krye"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Zbato"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Çaktivizo"</string>
-    <!-- no translation found for bridged_device_type_phone (7971199513068521770) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tablet (7403330807933649592) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_laptop (8027976360936787349) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_watch (2634106046119813073) -->
-    <skip />
-    <!-- no translation found for bridged_device_type_tv (5471822369478942796) -->
-    <skip />
-    <!-- no translation found for inline_bridged_open_associated_device_settings (6885442224230065508) -->
-    <skip />
+    <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefoni"</string>
+    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tableti"</string>
+    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptopi"</string>
+    <string name="bridged_device_type_watch" msgid="2634106046119813073">"ora"</string>
+    <string name="bridged_device_type_tv" msgid="5471822369478942796">"televizori"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Hap cilësimet: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Në heshtje"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"E parazgjedhur"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatike"</string>
-    <!-- no translation found for notification_bridged_title (4213554380230273828) -->
-    <skip />
+    <string name="notification_bridged_title" msgid="4213554380230273828">"Ky njoftim është nga <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Asnjë tingull ose dridhje"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Nuk ka tinguj apo dridhje, por shfaqet përsëri në seksionin e bisedave"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Mund të bjerë zilja ose të dridhet në bazë të cilësimeve të pajisjes"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Mund të bjerë zilja ose të dridhet në bazë të cilësimeve të pajisjes. Bisedat nga flluska e <xliff:g id="APP_NAME">%1$s</xliff:g> si parazgjedhje."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Kërkoji sistemit të përcaktojë nëse ky njoftim duhet të lëshojë tingull apo dridhje"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;Statusi:&lt;/b&gt; Promovuar si parazgjedhje"</string>
-    <!-- no translation found for notification_channel_summary_bridged (6837698421232117637) -->
-    <skip />
+    <string name="notification_channel_summary_bridged" msgid="6837698421232117637">"Përparësia dhe cilësimet e njoftimeve të sinkronizuara mund të rregullohen në: <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Statusi:&lt;/b&gt; Ulur në nivel si në heshtje"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Statusi:&lt;/b&gt; Renditur më lart"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Statusi:&lt;/b&gt; Renditur më poshtë"</string>
@@ -1185,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Të aktivizohet shkurtorja e tastierës për \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Mos e aktivizo"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktivizo shkurtoren"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Shkurtorja e tastierës <xliff:g id="ID_1">%1$s</xliff:g> u aktivizua"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_4">^4</xliff:g>, një veçori qasshmërie. Kjo të lejon që të zmadhosh me shpejtësi në ekran për ta bërë përmbajtjen më të madhe. Pasi të aktivizohet zmadhimi, shtyp "<annotation id="action_key_icon">"ikonën"</annotation>" e <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> dhe \"+\" ose \"-\" për të rregulluar zmadhimin."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Çaktivizo shkurtoren"</string>
@@ -1198,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Mund të monitorojë ndërveprimet me një aplikacion ose një sensor hardueri dhe të ndërveprojë me aplikacionet në emrin tënd."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> aktivizon <xliff:g id="ID_4">^4</xliff:g>, një veçori qasshmërie. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Qasshmëria"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"U krye"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Po fiket…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Shiko hapat për kujdesin"</string>
@@ -1595,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Shkyçe për të personalizuar ekranin e kyçjes"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi nuk ofrohet"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Vendndodhja aktive"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera u bllokua"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera dhe mikrofoni u bllokuan"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofoni u bllokua"</string>

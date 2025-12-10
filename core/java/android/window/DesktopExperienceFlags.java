@@ -175,6 +175,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS),
     ENABLE_INTERACTIVE_PICTURE_IN_PICTURE(Flags::enableInteractivePictureInPicture, false,
             Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE),
+    ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API(Flags::enableIsTaskMoveAllowedOnDisplayApi, false,
+            Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, true,
             Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS),
     ENABLE_MIRROR_DISPLAY_NO_ACTIVITY(Flags::enableMirrorDisplayNoActivity, true,

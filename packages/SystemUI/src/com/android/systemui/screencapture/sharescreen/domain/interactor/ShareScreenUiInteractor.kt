@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.sharescreen.domain.interactor
 
+import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.media.projection.IMediaProjection
 import android.media.projection.ReviewGrantedConsentResult
@@ -104,20 +105,32 @@ constructor(
                 task.baseIntent,
                 hostUserHandle,
                 options.toBundle(),
-            ) {
-                try {
-                    // Configure the projection to capture a specific task using the same
-                    // cookie.
-                    projection.setLaunchCookie(launchCookie)
-                    projection.taskId = taskId
-                    MediaProjectionServiceHelper.setReviewedConsentIfNeeded(
-                        ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
-                        reviewGrantedConsentRequired,
-                        projection,
+            ) { waitResult ->
+                if (
+                    waitResult.result == ActivityManager.START_SUCCESS ||
+                        waitResult.result == ActivityManager.START_TASK_TO_FRONT
+                ) {
+                    try {
+                        // Configure the projection to capture a specific task using the same
+                        // cookie.
+                        projection.setLaunchCookie(launchCookie)
+                        projection.taskId = taskId
+                        MediaProjectionServiceHelper.setReviewedConsentIfNeeded(
+                            ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
+                            reviewGrantedConsentRequired,
+                            projection,
+                        )
+                        _sharingState.value = SharingState.Approved(projection)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error granting projection permission for task", e)
+                        _sharingState.value = SharingState.Denied
+                    }
+                } else {
+                    Log.w(
+                        TAG,
+                        "Failed to launch activity for task: taskId=$taskId, result=" +
+                            "${waitResult.result}",
                     )
-                    _sharingState.value = SharingState.Approved(projection)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error granting projection permission for task", e)
                     _sharingState.value = SharingState.Denied
                 }
             }

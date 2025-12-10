@@ -1177,6 +1177,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> のキーボード ショートカットを ON にしますか？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ON にしない"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ショートカットを ON にする"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>のキーボード ショートカットを ON にしました"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> は、<xliff:g id="ID_4">^4</xliff:g>のユーザー補助機能を使用するためのキーボード ショートカットです。画面をすばやくズームインして、コンテンツを拡大できます。拡大機能が ON になったら、<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_6">^2</xliff:g> と「+」または「-」を押して、ズームを調整できます。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ショートカットを OFF にする"</string>
@@ -1190,7 +1192,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"アプリやハードウェア センサーの操作を記録したり、自動的にアプリを操作したりできます。"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> を押すと、ユーザー補助機能の<xliff:g id="ID_4">^4</xliff:g>が有効になります。これを使用すると、デバイスをハンズフリーで操作できます。"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ユーザー補助"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"完了"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ロック画面"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"シャットダウン中…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"取り扱いに関する手順をご覧ください"</string>
@@ -1587,6 +1588,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"ロック画面をカスタマイズするにはロックを解除してください"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi は利用できません"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"位置情報がアクティブです"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"カメラ: 有効"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"マイク: 有効"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"カメラはブロックされています"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"カメラとマイクはブロックされています"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"マイクはブロックされています"</string>

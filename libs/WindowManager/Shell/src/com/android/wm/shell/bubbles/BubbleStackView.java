@@ -1424,6 +1424,14 @@ public class BubbleStackView extends FrameLayout
     @Override
     public void animateExpand(@Nullable BubbleViewProvider previousBubble,
             @Nullable Runnable animFinish) {
+        if (mIsExpanded && !mIsExpansionAnimating) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateExpand -- already expanded");
+            mAfterTransitionRunnable = null;
+            if (animFinish != null) {
+                animFinish.run();
+            }
+            return;
+        }
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateExpand -- caching runnable");
         mAfterTransitionRunnable = animFinish;
     }
@@ -2331,9 +2339,7 @@ public class BubbleStackView extends FrameLayout
         // In case like jumpcut switching, we may remove the icon view from stack before removing
         // the bubble, so checking if the removing bubble is the last bubble in stack.
         final int indexInStack = getBubbleIndex(bubble);
-        final boolean isLastBubble = getBubbleCount() == 1
-                && (!com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
-                || indexInStack >= 0);
+        final boolean isLastBubble = getBubbleCount() == 1 && indexInStack >= 0;
         if (isLastBubble && isExpanded()) {
             mRemovingLastBubbleWhileExpanded = true;
             // We're expanded while the last bubble is being removed. Let the scrim animate away
@@ -2481,29 +2487,19 @@ public class BubbleStackView extends FrameLayout
      * any animation is ended.
      */
     private void updateBubbleOrderInternal(List<Bubble> bubbles, boolean updatePointerPosition) {
-        final Runnable reorder;
-        if (com.android.window.flags.Flags.fixBubbleTrampolineAnimation()) {
-            // This is an event of reorder, so only update Bubbles that are still attached to the
-            // stack.
-            // For case like jumpcut Bubble switching, we may have removed the Bubble icon, and the
-            // reorder should not add it back.
-            reorder = () -> {
-                int reorderIndex = 0;
-                for (int i = 0; i < bubbles.size(); i++) {
-                    Bubble bubble = bubbles.get(i);
-                    if (getBubbleIndex(bubble) >= 0) {
-                        mBubbleContainer.reorderView(bubble.getIconView(), reorderIndex);
-                        reorderIndex++;
-                    }
+        // This is an event of reorder, so only update Bubbles that are still attached to the
+        // stack.
+        // For case like jumpcut Bubble switching, we may have removed the Bubble icon, and the
+        // reorder should not add it back.
+        final Runnable reorder = () -> {
+            int reorderIndex = 0;
+            for (int i = 0; i < bubbles.size(); i++) {
+                Bubble bubble = bubbles.get(i);
+                if (getBubbleIndex(bubble) >= 0) {
+                    mBubbleContainer.reorderView(bubble.getIconView(), reorderIndex);
+                    reorderIndex++;
                 }
-            };
-        } else {
-            reorder = () -> {
-                for (int i = 0; i < bubbles.size(); i++) {
-                    Bubble bubble = bubbles.get(i);
-                    mBubbleContainer.reorderView(bubble.getIconView(), i);
-                }
-            };
+            }
         };
         if (mIsExpanded || isExpansionAnimating()) {
             reorder.run();
@@ -2511,9 +2507,7 @@ public class BubbleStackView extends FrameLayout
             updateBubbleShadows(true /* isExpanded */);
         } else {
             final List<View> bubbleViews = bubbles.stream()
-                    .filter(b ->
-                            !com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
-                                    || getBubbleIndex(b) >= 0)
+                    .filter(b -> getBubbleIndex(b) >= 0)
                     .map(Bubble::getIconView)
                     .collect(Collectors.toList());
             mStackAnimationController.animateReorder(bubbleViews, reorder);

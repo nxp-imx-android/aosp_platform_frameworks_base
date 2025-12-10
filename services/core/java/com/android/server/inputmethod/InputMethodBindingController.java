@@ -759,16 +759,22 @@ final class InputMethodBindingController {
             Slog.v(TAG, "Removing window token: " + mCurToken + " on display: "
                     + mCurDisplayId);
         }
-        mWindowManagerInternal.removeWindowToken(mCurToken, true /* removeWindows */,
-                false /* animateExit */, mCurDisplayId);
-        // ImeWindowToken#removeImmediately will call setImeWindowToken if it was the current one.
 
-        mCurImeIntent = null;
-        mCurImeId = null;
-        mCurToken = null;
-        mCurDisplayId = INVALID_DISPLAY;
+        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "InputMethodBindingController.unbindIme");
+        try {
+            mWindowManagerInternal.removeWindowToken(mCurToken, true /* removeWindows */,
+                    false /* animateExit */, mCurDisplayId);
+            // ImeWindowToken#removeImmediately will call setImeWindowToken if it's the current one.
 
-        clearIme();
+            mCurImeIntent = null;
+            mCurImeId = null;
+            mCurToken = null;
+            mCurDisplayId = INVALID_DISPLAY;
+
+            clearIme();
+        } finally {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+        }
     }
 
     /**
@@ -812,41 +818,46 @@ final class InputMethodBindingController {
                     + mSelectedImeId);
         }
 
-        mCurImeIntent = createIntent(selectedImi.getComponent());
-        if (!bindMainConnection()) {
-            Slog.w(TAG, "Binding IME failed for: " + mCurImeIntent);
-            mCurImeIntent = null;
-            return InputBindResult.IME_NOT_CONNECTED;
-        }
+        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "InputMethodBindingController.bindIme");
+        try {
+            mCurImeIntent = createIntent(selectedImi.getComponent());
+            if (!bindMainConnection()) {
+                Slog.w(TAG, "Binding IME failed for: " + mCurImeIntent);
+                mCurImeIntent = null;
+                return InputBindResult.IME_NOT_CONNECTED;
+            }
 
-        if (!mHasBackgroundConnection && Flags.warmWorkProfileIme()) {
-            // Always bind the background connection together with the main connection.
-            // TODO(b/456469810): combine the three bindings into one.
-            mHasBackgroundConnection = bindConnection(mBackgroundConnection,
-                    mImeBackgroundBindFlags);
-        }
+            if (!mHasBackgroundConnection && Flags.warmWorkProfileIme()) {
+                // Always bind the background connection together with the main connection.
+                // TODO(b/456469810): combine the three bindings into one.
+                mHasBackgroundConnection = bindConnection(mBackgroundConnection,
+                        mImeBackgroundBindFlags);
+            }
 
-        mLastBindTime = SystemClock.uptimeMillis();
+            mLastBindTime = SystemClock.uptimeMillis();
 
-        // Selected state becomes current (bound or in process of binding).
-        mCurImeId = selectedImi.getId();
-        mCurToken = new Binder();
-        mCurDisplayId = mSelectedDisplayId;
-        if (DEBUG) {
-            Slog.v(TAG, "Adding window token: " + mCurToken + " on display: " + mCurDisplayId);
+            // Selected state becomes current (bound or in process of binding).
+            mCurImeId = selectedImi.getId();
+            mCurToken = new Binder();
+            mCurDisplayId = mSelectedDisplayId;
+            if (DEBUG) {
+                Slog.v(TAG, "Adding window token: " + mCurToken + " on display: " + mCurDisplayId);
+            }
+            if (Flags.warmWorkProfileIme()) {
+                mWindowManagerInternal.addImeWindowToken(mCurToken, mCurDisplayId, mUserId,
+                        null /* options */);
+                mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
+            } else {
+                mWindowManagerInternal.addWindowToken(mCurToken,
+                        WindowManager.LayoutParams.TYPE_INPUT_METHOD, mCurDisplayId,
+                        null /* options */);
+            }
+            return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
+                    null /* method */, null /* accessibilitySessions */, null /* channel */,
+                    mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
+        } finally {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
-        if (Flags.warmWorkProfileIme()) {
-            mWindowManagerInternal.addImeWindowToken(mCurToken, mCurDisplayId, mUserId,
-                    null /* options */);
-            mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
-        } else {
-            mWindowManagerInternal.addWindowToken(mCurToken,
-                    WindowManager.LayoutParams.TYPE_INPUT_METHOD, mCurDisplayId,
-                    null /* options */);
-        }
-        return new InputBindResult(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING,
-                null /* method */, null /* accessibilitySessions */, null /* channel */,
-                mCurImeId, mCurSeq, false /* isInputMethodSuppressingSpellChecker */);
     }
 
     /**
@@ -1032,10 +1043,15 @@ final class InputMethodBindingController {
             return;
         }
 
-        mWindowManagerInternal.setImeWindowToken(null /* token */, mCurDisplayId);
+        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "InputMethodBindingController.setInactive");
+        try {
+            mWindowManagerInternal.setImeWindowToken(null /* token */, mCurDisplayId);
 
-        mService.onImeDisconnected(mUserId);
-        mAutofillController.invalidateAutofillSession();
+            mService.onImeDisconnected(mUserId);
+            mAutofillController.invalidateAutofillSession();
+        } finally {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+        }
     }
 
     /**
@@ -1056,15 +1072,21 @@ final class InputMethodBindingController {
             // IME is not bound.
             return;
         }
-        if (!mHasMainConnection) {
-            // IME is bound while inactive, re-bind the main connection.
-            bindMainConnection();
+
+        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "InputMethodBindingController.setActive");
+        try {
+            if (!mHasMainConnection) {
+                // IME is bound while inactive, re-bind the main connection.
+                bindMainConnection();
+            }
+
+            mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
+
+            mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
+            mAutofillController.performOnCreateInlineSuggestionsRequest();
+        } finally {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
-
-        mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
-
-        mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
-        mAutofillController.performOnCreateInlineSuggestionsRequest();
     }
 
     /**

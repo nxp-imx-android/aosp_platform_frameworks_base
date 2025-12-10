@@ -16,7 +16,6 @@
 
 package com.android.server;
 
-import static android.app.Flags.enableCurrentModeTypeBinderCache;
 import static android.app.Flags.enableNightModeBinderCache;
 import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.app.UiModeManager.ContrastUtils.CONTRAST_DEFAULT_VALUE;
@@ -232,9 +231,7 @@ final class UiModeManagerService extends SystemService {
         public void set(int mode) {
             if (mCurrentModeTypeValue != mode) {
                 mCurrentModeTypeValue = mode;
-                if (enableCurrentModeTypeBinderCache()) {
-                    UiModeManager.invalidateCurrentModeTypeCache();
-                }
+                UiModeManager.invalidateCurrentModeTypeCache();
             }
         }
     };
@@ -2790,10 +2787,8 @@ final class UiModeManagerService extends SystemService {
                     Slog.d(TAG, "Setting UI mode override on display " + displayId + ": " + uiMode);
                     mDisplayUiModeOverrides.put(displayId, uiMode);
                 }
-                if (enableCurrentModeTypeBinderCache()) {
-                    UiModeManager.invalidateCurrentModeTypeCache();
-                    UiModeManager.invalidateNightModeCache();
-                }
+                UiModeManager.invalidateCurrentModeTypeCache();
+                UiModeManager.invalidateNightModeCache();
             }
             mWindowManager.onDisplayUiModeChanged(displayId);
         }

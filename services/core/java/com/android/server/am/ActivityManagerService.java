@@ -496,6 +496,7 @@ import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterDebugLogger;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
@@ -3266,10 +3267,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             // checks and restrictions
             return;
         }
+
         final int userId = UserHandle.getUserId(callingUid);
-        final int packageUid = getPackageManagerInternal().getPackageUid(packageName,
-                /*flags=*/ 0, userId);
-        if (packageUid != callingUid) {
+        final PackageManagerInternal pmi = getPackageManagerInternal();
+        boolean isSameApp = enablePccFrameworkSupport()
+                ? pmi.isSameApp(packageName, /*flags*/ 0, callingUid, userId)
+                : pmi.getPackageUid(packageName, /*flags*/ 0, userId) == callingUid;
+        if (!isSameApp) {
             final SecurityException e =
                     new SecurityException(packageName + " does not belong to uid " + callingUid);
             if (throwException) {

@@ -2678,7 +2678,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (android.companion.Flags.enableUniversalClipboard()) {
+            if (android.companion.Flags.universalClipboard()) {
                 t.traceBegin("StartUniversalClipboardService");
                 mSystemServiceManager.startService(UniversalClipboardService.class);
                 t.traceEnd();

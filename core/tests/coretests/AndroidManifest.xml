@@ -1796,6 +1796,9 @@
         <activity android:name="com.android.internal.app.AppLockActivityTest$TestAppLockActivity"
                   android:exported="false" />
 
+        <activity android:name="com.android.internal.app.LockedAppActivity"
+                  android:exported="false" />
+
         <!-- Used by WallpaperInstanceTest -->
         <service
             android:name="stub.StubWallpaperService"

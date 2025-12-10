@@ -501,6 +501,23 @@ final class PersistentDataStore {
         }
     }
 
+    /**
+     * Removes all persistent data associated with a specific deleted user id.
+     * This should be called when a device user is removed from the system.
+     * @param userId The id number of the user to remove.
+     */
+    public void removeUserData(int userId) {
+        loadIfNeeded();
+        mGlobalBrightnessConfigurations.removeUser(userId);
+
+        // Remove from each DisplayState's per-user brightness and configurations
+        for (DisplayState state : mDisplayStates.values()) {
+            state.removeUser(userId);
+        }
+
+        setDirty();
+    }
+
     private void setDirty() {
         mDirty = true;
     }
@@ -794,6 +811,11 @@ final class PersistentDataStore {
             return true;
         }
 
+        private void removeUser(int userId) {
+            mPerUserBrightness.remove(userId);
+            mDisplayBrightnessConfigurations.removeUser(userId);
+        }
+
         public void loadFromXml(TypedXmlPullParser parser)
                 throws IOException, XmlPullParserException {
             final int outerDepth = parser.getDepth();
@@ -992,6 +1014,12 @@ final class PersistentDataStore {
 
         public BrightnessConfiguration getBrightnessConfiguration(int userSerial) {
             return mConfigurations.get(userSerial);
+        }
+
+        private void removeUser(int userId) {
+            mConfigurations.remove(userId);
+            mTimeStamps.delete(userId);
+            mPackageNames.remove(userId);
         }
 
         public void loadFromXml(TypedXmlPullParser parser)

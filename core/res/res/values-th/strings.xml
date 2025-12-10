@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"อนุญาตให้แอปเข้าถึงอุปกรณ์ในเครือข่ายในพื้นที่"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ใช้อินเทอร์เฟซ Loopbackd"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"อนุญาตให้แอปโต้ตอบกับแอปอื่นๆ ผ่านอินเทอร์เฟซ Loopback"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"บังคับใช้อินเทอร์เฟซ Loopback"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"อนุญาตให้แอปโต้ตอบกับแอปอื่นๆ ผ่านอินเทอร์เฟซ Loopback โดยไม่ต้องให้แอปอื่นๆ มีสิทธิ์ Loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ระบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"อนุญาตให้แอประบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ข้อมูลบริการชำระเงิน NFC ที่ต้องการ"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ถือโทรศัพท์ให้ต่ำลง"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"เลื่อนโทรศัพท์ไปทางซ้าย"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"เลื่อนโทรศัพท์ไปทางขวา"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"โปรดมองตรงมาที่อุปกรณ์"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ไม่เห็นใบหน้า ถือโทรศัพท์ไว้ที่ระดับสายตา"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"มีการเคลื่อนไหวมากเกินไป ถือโทรศัพท์นิ่งๆ"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"โปรดลงทะเบียนใบหน้าอีกครั้ง"</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"แตะเพื่อตั้งค่า"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"เขตเวลามีการเปลี่ยนแปลง"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"ตอนนี้คุณอยู่ในเขตเวลา <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"ตั้งเวลา"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"ตั้งวันที่"</string>
     <string name="date_time_set" msgid="4603445265164486816">"ตั้งค่า"</string>

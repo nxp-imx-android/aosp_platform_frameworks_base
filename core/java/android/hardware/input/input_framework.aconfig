@@ -265,3 +265,10 @@ flag {
     bug: "331164772"
 }
 
+flag {
+    name: "enable_note_taking_keyboard_shortcut"
+    namespace: "note"
+    description: "Enables the keyboard shorcut for accessing the note-taking app"
+    bug: "443222861"
+}
+

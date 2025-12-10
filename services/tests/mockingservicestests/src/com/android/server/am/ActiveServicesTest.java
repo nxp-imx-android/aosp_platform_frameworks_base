@@ -44,18 +44,19 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
+import android.os.Process;
+import android.os.SystemClock;
 import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 import android.service.voice.HotwordDetectionService;
 import android.service.voice.VisualQueryDetectionService;
 import android.service.wearable.WearableSensingService;
-import android.os.Process;
-import android.os.SystemClock;
 import android.util.ArraySet;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.ActivityTaskManagerService;
 

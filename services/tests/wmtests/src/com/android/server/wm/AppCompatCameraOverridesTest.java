@@ -414,6 +414,21 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT)
+    public void testShouldApplyCameraCompatLandscapeTreatment_forceEnabled_returnsTrue() {
+        runTestScenario((robot) -> {
+            // Run-time config is enabled.
+            robot.conf().forceEnableCameraCompatSimReqOrientation(true);
+            // Build-time configs are disabled.
+            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(false);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.activity().createActivityWithComponentInNewTask();
+
+            robot.checkShouldApplyLandscapeTreatmentForCameraCompat(true);
+        });
+    }
+
+    @Test
     @EnableCompatChanges({OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA,
             OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA})
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)

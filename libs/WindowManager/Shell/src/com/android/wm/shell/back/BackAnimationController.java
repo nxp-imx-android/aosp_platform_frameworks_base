@@ -83,6 +83,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.LatencyTracker;
 import com.android.internal.view.AppearanceRegion;
 import com.android.wm.shell.R;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -95,8 +96,10 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -110,7 +113,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
      * Max duration to wait for an animation to finish before triggering the real back.
      */
     private static final long MAX_ANIMATION_DURATION = 2000;
-    private NonGestureStartHandler mLatestOnNonGestureStarted;
+    private final ArrayDeque<NonGestureStartHandler> mNonGestureHandlers = new ArrayDeque<>();
     private long mMaxAnimationDuration = MAX_ANIMATION_DURATION;
     // Note: Must keep a reference when register to ValueAnimator.
     private final ValueAnimator.DurationScaleChangeListener mAnimationScaleChangeListener;
@@ -182,6 +185,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     @VisibleForTesting
     RemoteAnimationTarget[] mApps;
 
+    private final Optional<BubbleController> mOptionalBubbles;
+
     @VisibleForTesting
     final RemoteCallback mNavigationObserver = new RemoteCallback(
             new RemoteCallback.OnResultListener() {
@@ -242,7 +247,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler,
+            Optional<BubbleController> optionalBubbles) {
         this(
                 shellInit,
                 shellController,
@@ -253,7 +259,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 shellBackAnimationRegistry,
                 shellCommandHandler,
                 transitions,
-                handler);
+                handler,
+                optionalBubbles);
     }
 
     @VisibleForTesting
@@ -267,7 +274,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @NonNull @ShellMainThread Handler handler) {
+            @NonNull @ShellMainThread Handler handler,
+            Optional<BubbleController> optionalBubbles) {
         mShellController = shellController;
         mShellExecutor = shellExecutor;
         mActivityTaskManager = activityTaskManager;
@@ -290,6 +298,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         updateTouchableArea();
         mAnimationScaleChangeListener = scale -> mShellExecutor.execute(
                 this::updateAnimationScale);
+        mOptionalBubbles = optionalBubbles;
     }
 
     private void onInit() {
@@ -563,9 +572,13 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                         // To prevent the upcoming transition from being blocked on the Shell's main
                         // thread, post the onGestureStart event to the next run cycle after
                         // transition is idle.
-                        mLatestOnNonGestureStarted = new NonGestureStartHandler();
-                        mShellExecutor.executeDelayed(() -> mTransitions.runOnIdle(
-                                mLatestOnNonGestureStarted), 0);
+                        mNonGestureHandlers.add(new NonGestureStartHandler());
+                        mShellExecutor.executeDelayed(() -> {
+                            final NonGestureStartHandler next = mNonGestureHandlers.poll();
+                            if (next != null) {
+                                mTransitions.runOnIdle(next);
+                            }
+                        }, 0);
                     }
                 } else {
                     mShouldStartOnNextMoveEvent = true;
@@ -581,8 +594,9 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             }
             onMove(swipeEdge);
         } else if (keyAction == MotionEvent.ACTION_UP || keyAction == MotionEvent.ACTION_CANCEL) {
-            if (mLatestOnNonGestureStarted != null) {
-                mLatestOnNonGestureStarted.mLatestKeyAction = keyAction;
+            if (!mNonGestureHandlers.isEmpty()) {
+                final NonGestureStartHandler last = mNonGestureHandlers.getLast();
+                last.mLatestKeyAction = keyAction;
                 return;
             }
             handleFinishKeyAction(keyAction);
@@ -604,9 +618,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         @Override
         public void run() {
-            if (mLatestOnNonGestureStarted == this) {
-                mLatestOnNonGestureStarted = null;
-            }
             mPointersPilfered = true;
             onGestureStarted(0, 0, EDGE_NONE);
             onThresholdCrossed();
@@ -881,8 +892,9 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
      * Sets to true when the back gesture has passed the triggering threshold, false otherwise.
      */
     public void setTriggerBack(boolean triggerBack) {
-        if (mLatestOnNonGestureStarted != null) {
-            mLatestOnNonGestureStarted.setTriggerBack(triggerBack);
+        if (!mNonGestureHandlers.isEmpty()) {
+            final NonGestureStartHandler last = mNonGestureHandlers.getLast();
+            last.setTriggerBack(triggerBack);
             return;
         }
         if (mActiveCallback != null) {
@@ -1172,8 +1184,19 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             return;
         }
 
-        final BackAnimationRunner runner =
-                mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo);
+        final BackAnimationRunner runner;
+        final int taskId = mBackNavigationInfo.getFocusedTaskId();
+        final int type = mBackNavigationInfo.getType();
+        float cornerRadius = -1f;
+
+        if (mOptionalBubbles.isPresent() && type == BackNavigationInfo.TYPE_CROSS_ACTIVITY
+                && mOptionalBubbles.get().hasStableBubbleForTask(taskId)) {
+            // Use a custom corner radius when we're inside a Bubble.
+            cornerRadius = mOptionalBubbles.get().getBubbleCornerRadius(taskId);
+        }
+
+        runner = mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo,
+                cornerRadius);
         if (runner == null) {
             if (mBackAnimationFinishedCallback != null) {
                 try {

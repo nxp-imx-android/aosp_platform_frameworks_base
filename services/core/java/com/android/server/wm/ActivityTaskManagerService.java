@@ -302,8 +302,8 @@ import com.android.server.am.AssistDataRequester;
 import com.android.server.am.BaseErrorDialog;
 import com.android.server.am.PendingIntentController;
 import com.android.server.am.PendingIntentRecord;
-import com.android.server.am.ProcessStateController;
 import com.android.server.am.UserState;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.firewall.IntentFirewall;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -7245,7 +7245,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mWindowManager.mSnapshotController.mTaskSnapshotController.prepareShutdown();
             synchronized (mGlobalLock) {
                 updateEventDispatchingLocked(booted);
-                notifyTaskPersisterLocked(null, true);
                 return mTaskSupervisor.shutdownLocked(timeout);
             }
         }

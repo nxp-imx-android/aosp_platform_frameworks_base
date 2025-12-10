@@ -370,8 +370,8 @@ class SnapshotController {
         mSnapshotManagerService.notifySnapshotChanged(taskId, snapshot);
     }
 
-    void notifySnapshotInvalidate(int taskId) {
-        mSnapshotManagerService.notifySnapshotInvalidate(taskId);
+    void notifySnapshotReleased(int taskId) {
+        mSnapshotManagerService.notifySnapshotReleased(taskId);
     }
 
     class SnapshotManagerService extends ITaskSnapshotManager.Stub {
@@ -486,9 +486,9 @@ class SnapshotController {
             });
         }
 
-        void notifySnapshotInvalidate(int taskId) {
+        void notifySnapshotReleased(int taskId) {
             mService.mH.post(() -> forAllRemoteListeners(l ->
-                    l.onTaskSnapshotInvalidated(taskId)));
+                    l.onTaskSnapshotReleased(taskId)));
         }
 
         /**

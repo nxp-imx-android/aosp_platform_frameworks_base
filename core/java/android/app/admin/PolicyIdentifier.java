@@ -143,13 +143,12 @@ public final class PolicyIdentifier<T> {
                             requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
                             allowedDpcTypes =
                                     @AllowedDpcTypes(
-                                            defaultDeviceOwner = ALLOWED,
-                                            financedDeviceOwner = DISALLOWED,
-                                            profileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                                            unaffiliatedFullUserProfileOwner = ALLOWED,
                                             profileOwnerOnUser0 = ALLOWED,
-                                            profileOwner = ALLOWED,
-                                            profileOwnerOnUser = ALLOWED,
-                                            affiliatedProfileOwnerOnUser = ALLOWED)),
+                                            affiliatedFullUserProfileOwner = ALLOWED)),
             intDef = ScreenCaptureValue.class,
             defaultValue = SCREEN_CAPTURE_ALLOWED)
     public static final PolicyIdentifier<Integer> SCREEN_CAPTURE =

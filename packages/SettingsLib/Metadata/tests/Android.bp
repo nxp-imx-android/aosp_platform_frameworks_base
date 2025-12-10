@@ -30,6 +30,7 @@ android_robolectric_test {
         "kotlin-test",
         "testng", // TODO: remove once JUnit on Android provides assertThrows
     ],
+    java_resource_dirs: ["res"],
     associates: ["SettingsLibMetadata"],
     coverage_libs: ["SettingsLibMetadata"],
     instrumentation_for: "SettingsLibMetadataShell",

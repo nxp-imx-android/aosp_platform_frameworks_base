@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.preconditions
+package com.android.systemui.accessibility.floatingmenu
 
-/** All preconditions are met and get can be called. */
-object Allowed: ApiFirstPreconditions
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+
+val Kosmos.menuAnimationController by Fixture {
+    MenuAnimationController(menuView, menuViewAppearance)
+}

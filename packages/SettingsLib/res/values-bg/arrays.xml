@@ -41,7 +41,7 @@
     <item msgid="3028983857109369308">"Удостоверява се с/ъс <xliff:g id="NETWORK_NAME">%1$s</xliff:g>..."</item>
     <item msgid="4287401332778341890">"IP адресът от <xliff:g id="NETWORK_NAME">%1$s</xliff:g> се получава..."</item>
     <item msgid="1043944043827424501">"Установена е връзка с(ъс) <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</item>
-    <item msgid="7445993821842009653">"Прекъсната"</item>
+    <item msgid="7445993821842009653">"Спряна"</item>
     <item msgid="1175040558087735707">"Изключва се от <xliff:g id="NETWORK_NAME">%1$s</xliff:g>..."</item>
     <item msgid="699832486578171722">"Изкл."</item>
     <item msgid="522383512264986901">"Неуспешно"</item>
@@ -95,15 +95,6 @@
     <item msgid="1164651830068248391">"map12"</item>
     <item msgid="7073042887003102964">"map13"</item>
     <item msgid="8147982633566548515">"map14"</item>
-  </string-array>
-  <string-array name="bluetooth_a2dp_codec_titles">
-    <item msgid="2494959071796102843">"Използване на сист. избор (стандартно)"</item>
-    <item msgid="4055460186095649420">"SBC"</item>
-    <item msgid="720249083677397051">"Разширено аудиокодиране (AAC)"</item>
-    <item msgid="1049450003868150455">"Аудио: <xliff:g id="APTX">aptX™</xliff:g> от <xliff:g id="QUALCOMM">Qualcomm®</xliff:g>"</item>
-    <item msgid="2908219194098827570">"Аудио: <xliff:g id="APTX_HD">aptX™ HD</xliff:g> от <xliff:g id="QUALCOMM">Qualcomm®</xliff:g>"</item>
-    <item msgid="3825367753087348007">"LDAC"</item>
-    <item msgid="8637806944387141612">"Opus"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_summaries">
     <item msgid="8868109554557331312">"Използване на сист. избор (стандартно)"</item>

@@ -18,8 +18,6 @@ package com.android.server.am.psc;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
 
-import com.android.server.am.ProcessStateController;
-
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;

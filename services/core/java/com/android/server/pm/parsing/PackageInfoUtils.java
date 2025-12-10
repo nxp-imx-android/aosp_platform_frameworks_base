@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.pm.ActivityInfo;
+import android.content.pm.AllowComponentAccessPolicyInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.Attribution;
 import android.content.pm.ComponentInfo;
@@ -41,6 +42,8 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
+import android.content.pm.SignedPackage;
+import android.content.pm.SignedPackageParcel;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
 import android.content.pm.UsesPermissionPurposeInfo;
@@ -61,6 +64,7 @@ import com.android.internal.pm.parsing.pkg.AndroidPackageLegacyUtils;
 import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.internal.pm.pkg.component.ComponentParseUtils;
 import com.android.internal.pm.pkg.component.ParsedActivity;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
 import com.android.internal.pm.pkg.component.ParsedAttribution;
 import com.android.internal.pm.pkg.component.ParsedComponent;
 import com.android.internal.pm.pkg.component.ParsedInstrumentation;
@@ -1252,6 +1256,33 @@ public class PackageInfoUtils {
             return Environment.getDataUserCePackageDirectory(ps.getVolumeUuid(), userId,
                     ps.getPackageName());
         }
+    }
+
+    /**
+     * Converts a {@link ParsedAllowComponentAccessPolicy} into a shared
+     * {@link AllowComponentAccessPolicyInfo} object. The shared object is an immutable,
+     * optimized representation of the policy that is suitable for use by the system server.
+     *
+     * @param parsedPolicy The parsed policy object from the manifest.
+     * @return The shared, immutable policy object, or null if the parsed policy is null.
+     * @hide
+     */
+    @Nullable
+    public static AllowComponentAccessPolicyInfo generateAllowComponentAccessPolicyInfo(
+            @Nullable ParsedAllowComponentAccessPolicy parsedPolicy) {
+        if (parsedPolicy == null) {
+            return null;
+        }
+
+        final List<SignedPackage> allowlistedSignedPackages = new ArrayList<>(
+                parsedPolicy.getParsedAllowlistedSignedPackages().size());
+        for (SignedPackageParcel packageParcel :
+                parsedPolicy.getParsedAllowlistedSignedPackages()) {
+            allowlistedSignedPackages.add(new SignedPackage(packageParcel));
+        }
+
+        return new AllowComponentAccessPolicyInfo(allowlistedSignedPackages);
+
     }
 
     /**

@@ -32,6 +32,7 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
+import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -156,6 +157,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final UserHandle mOwnerUser;
     private final String mOwnerPackageName;
+    private final Context mOwnerContext;
 
     private final Consumer<ComputerControlSessionImpl> mOnClosedListener;
     private final VirtualDevice mVirtualDevice;
@@ -246,6 +248,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Nullable
     private Surface mClientSurface;
 
+    // Whether this is a session only intended for testing ComputerControl functionality.
+    private final boolean mIsTestSession;
+
     ComputerControlSessionImpl(Context context,
             ComputerControlAllowlistController allowlistController, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -276,9 +281,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mPreviewIntent = params.getPreviewIntent();
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
-        final Context ownerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
+        mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
         mOwnerPackageName = attributionSource.getPackageName();
-        mOwnerPackageManager = ownerContext.getPackageManager();
+        mOwnerPackageManager = mOwnerContext.getPackageManager();
+
+        mIsTestSession = mAllowlistController.isTestAgent(attributionSource.getUid(),
+                mOwnerPackageName, mOwnerPackageManager);
 
         mOnClosedListener = onClosedListener;
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -383,7 +391,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw e.rethrowFromSystemServer();
         }
 
-        mAppOpsManager = ownerContext.getSystemService(AppOpsManager.class);
+        mAppOpsManager = mOwnerContext.getSystemService(AppOpsManager.class);
         mAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL, mOwnerPackageName,
                 this);
     }
@@ -439,6 +447,18 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
+    PackageManager getPackageManager() {
+        return mOwnerPackageManager;
+    }
+
+    KeyguardManager getKeyguardManager() {
+        return mOwnerContext.getSystemService(KeyguardManager.class);
+    }
+
+    boolean isTestSession() {
+        return mIsTestSession;
+    }
+
     @Override
     public void initialize(IComputerControlLifecycleCallback callback, Surface clientSurface) {
         if (mClientSurface != null) {
@@ -458,8 +478,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalArgumentException(
                     "Could not find launcher activity for " + packageName + "/" + className);
         }
-        if (!mAllowlistController.isPackageAutomatable(
-                packageName, mOwnerPackageName, mOwnerPackageManager)) {
+        if (!mAllowlistController.isPackageAutomatable(packageName, this)) {
             throw new IllegalArgumentException(
                     "Trying to launch " + packageName + " which is not allowlisted");
         }

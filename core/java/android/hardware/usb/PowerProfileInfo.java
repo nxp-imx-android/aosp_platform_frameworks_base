@@ -274,7 +274,7 @@ public final class PowerProfileInfo implements Parcelable {
      * Get the name of the Power Profile type. The naming convention is non-standardized and is
      * defined by the device manufacturer.
      *
-     * @return a {@link #String} when mPowerProfileType is equal to
+     * @return a {@link #String} when {@link getPowerProfileType()} is equal to
      * {@link #POWER_PROFILE_TYPE_VENDOR}, {@code null} otherwise.
      */
     @Nullable
@@ -293,16 +293,18 @@ public final class PowerProfileInfo implements Parcelable {
     }
 
     /**
-     * Returns the power profile's matching power profiles. A local port sink/source
-     * PowerProfileInfo will return a list of partner port source/sink PowerProfileInfo objects,
-     * while a partner port source/sink PowerProfile will return a list of matching local port
-     * sink/source PowerProfileInfo objects.
+     * Returns this power profile's matching power profiles belonging to the port partner
+     * of the port this power profile belongs to.
+     * <p>
+     * A local port sink/source PowerProfileInfo will return a list of remote port source/sink
+     * PowerProfileInfo objects, while a remote port source/sink PowerProfile will return a
+     * list of matching local port sink/source PowerProfileInfo objects.
      *
      * @return a list of PowerProfileInfo objects. The list will be empty if this PowerProfileInfo
      * object does not have any valid matches.
      */
     @NonNull
-    public List<PowerProfileInfo> getMatchingProfiles() {
+    public List<PowerProfileInfo> getMatchingPartnerProfiles() {
         return Collections.unmodifiableList(mMatchingProfiles);
     }
 
@@ -432,7 +434,7 @@ public final class PowerProfileInfo implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     @CheckResult
-    public int getPowerProfileMatchMinVoltageMv(@NonNull PowerProfileInfo profile) {
+    public int getMatchingMinVoltageMv(@NonNull PowerProfileInfo profile) {
         PowerProfileMatchInfo profileMatchInfo = getPowerProfileMatchInfo(profile);
 
         if (profile.getPowerProfileType() == POWER_PROFILE_TYPE_NONE ||
@@ -476,7 +478,7 @@ public final class PowerProfileInfo implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     @CheckResult
-    public int getPowerProfileMatchMaxVoltageMv(@NonNull PowerProfileInfo profile) {
+    public int getMatchingMaxVoltageMv(@NonNull PowerProfileInfo profile) {
         PowerProfileMatchInfo profileMatchInfo = getPowerProfileMatchInfo(profile);
 
         if (profile.getPowerProfileType() == POWER_PROFILE_TYPE_NONE ||
@@ -511,7 +513,7 @@ public final class PowerProfileInfo implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     @CheckResult
-    public int getPowerProfileMatchMinCurrentMa(@NonNull PowerProfileInfo profile) {
+    public int getMatchingMinCurrentMa(@NonNull PowerProfileInfo profile) {
         PowerProfileMatchInfo profileMatchInfo = getPowerProfileMatchInfo(profile);
 
         if (profile.getPowerProfileType() == POWER_PROFILE_TYPE_NONE ||
@@ -555,7 +557,7 @@ public final class PowerProfileInfo implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     @CheckResult
-    public int getPowerProfileMatchMaxCurrentMa(@NonNull PowerProfileInfo profile) {
+    public int getMatchingMaxCurrentMa(@NonNull PowerProfileInfo profile) {
         PowerProfileMatchInfo profileMatchInfo = getPowerProfileMatchInfo(profile);
 
         if (profile.getPowerProfileType() == POWER_PROFILE_TYPE_NONE ||
@@ -592,7 +594,7 @@ public final class PowerProfileInfo implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     @CheckResult
-    public int getPowerProfileMatchMaxPowerMw(@NonNull PowerProfileInfo profile) {
+    public int getMatchingMaxPowerMw(@NonNull PowerProfileInfo profile) {
         PowerProfileMatchInfo profileMatchInfo = getPowerProfileMatchInfo(profile);
 
         if (profile.getPowerProfileType() == POWER_PROFILE_TYPE_NONE ||

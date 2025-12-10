@@ -448,10 +448,8 @@ public class SupervisionSettings {
             case Policy.PACKAGE_POLICY_IDENTIFIER -> {
                 String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
                 int type = parser.getAttributeInt(null, KEY_PACKAGE_TYPE);
-                return new PackageUsagePolicy.Builder()
+                return new PackageUsagePolicy.Builder(packageName, type)
                         .setVersion(version)
-                        .setPackageName(packageName)
-                        .setType(type)
                         .build();
             }
             default -> {

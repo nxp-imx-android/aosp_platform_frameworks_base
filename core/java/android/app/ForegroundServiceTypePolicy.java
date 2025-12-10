@@ -1340,10 +1340,6 @@ public abstract class ForegroundServiceTypePolicy {
         @PackageManager.PermissionResult
         public int checkPermission(@NonNull Context context, int callerUid, int callerPid,
                 @NonNull String packageName, boolean allowWhileInUse) {
-            if (!android.app.Flags.systemDialerPhoneCallFgsGrant()) {
-                return PERMISSION_DENIED;
-            }
-
             final RoleManager roleManager = context.getSystemService(RoleManager.class);
             if (!roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
                 // If the Dialer role does not exist on the device, then there will not be a system

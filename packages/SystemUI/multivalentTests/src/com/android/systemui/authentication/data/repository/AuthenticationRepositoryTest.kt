@@ -28,6 +28,7 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIO
 import com.android.keyguard.KeyguardSecurityModel
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.EnableSceneContainer

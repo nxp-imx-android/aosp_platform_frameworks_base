@@ -33,6 +33,7 @@ import android.util.SparseIntArray;
 
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.internal.pm.pkg.component.ParsedActivity;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
 import com.android.internal.pm.pkg.component.ParsedApexSystemService;
 import com.android.internal.pm.pkg.component.ParsedAttribution;
 import com.android.internal.pm.pkg.component.ParsedInstrumentation;
@@ -431,6 +432,17 @@ public interface ParsingPackage {
      * @see android.R.styleable#AndroidManifestPrivateCompute
      */
     ParsingPackage setHasPccComponents(boolean hasPccComponents);
+
+    /**
+     * Sets the policy that declares which other components this package is allowed
+     * to associate with.
+     *
+     * @param policy The complete, parsed policy object from the manifest.
+     * @return The ParsingPackage instance for chaining.
+     * @see R.styleable#AndroidManifestAllowComponentAccess
+     */
+    ParsingPackage setParsedAllowComponentAccessPolicy(ParsedAllowComponentAccessPolicy policy);
+
 
     @CallSuper
     ParsedPackage hideAsParsed();

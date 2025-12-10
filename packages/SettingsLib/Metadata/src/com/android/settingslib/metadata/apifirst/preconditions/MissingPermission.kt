@@ -17,4 +17,4 @@
 package com.android.settingslib.metadata.apifirst.preconditions
 
 /** The getter is unavailable due to some missing permissions. */
-class MissingPermission(permissions: List<String>, reason: String) : ApiFirstPreconditions
+class MissingPermission(permissions: List<String>, override val reason: Int) : Disallowed

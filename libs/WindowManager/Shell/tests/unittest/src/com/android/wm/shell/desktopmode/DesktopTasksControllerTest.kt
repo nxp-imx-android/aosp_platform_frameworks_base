@@ -2026,6 +2026,119 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addMoveToDeskTaskChanges_rememberedBoundsIsFloating_applyCascading() {
+        setUpLandscapeDisplay()
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        val rememberedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        setUpFreeformTask(bounds = rememberedBounds)
+
+        val task = setUpFullscreenTask().apply { baseActivity = ComponentName(packageName, "") }
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
+
+        val finalBounds = findBoundsChange(wct, task)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.BottomRight)
+        assertThat(finalBounds!!.width()).isEqualTo(rememberedBounds.width())
+        assertThat(finalBounds!!.height()).isEqualTo(rememberedBounds.height())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addMoveToDeskTaskChanges_rememberedBoundsIsMaximized_doNotApplyCascading() {
+        setUpLandscapeDisplay()
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.0f, 0.0f, 1.0f, 1.0f)
+        val rememberedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        setUpFreeformTask(bounds = rememberedBounds)
+
+        val task = setUpFullscreenTask().apply { baseActivity = ComponentName(packageName, "") }
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
+
+        val finalBounds = findBoundsChange(wct, task)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.Maximized)
+        assertThat(finalBounds!!).isEqualTo(rememberedBounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addMoveToDeskTaskChanges_rememberedBoundsIsRightSnapped_doNotApplyCascading() {
+        setUpLandscapeDisplay()
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.5f, 0.0f, 1.0f, 1.0f)
+        val rememberedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        setUpFreeformTask(bounds = rememberedBounds)
+
+        val task = setUpFullscreenTask().apply { baseActivity = ComponentName(packageName, "") }
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
+
+        val finalBounds = findBoundsChange(wct, task)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.RightSnapped)
+        assertThat(finalBounds!!).isEqualTo(rememberedBounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addMoveToDeskTaskChanges_rememberedBoundsIsLeftSnapped_doNotApplyCascading() {
+        setUpLandscapeDisplay()
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.0f, 0.0f, 0.5f, 1.0f)
+        val rememberedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        setUpFreeformTask(bounds = rememberedBounds)
+
+        val task = setUpFullscreenTask().apply { baseActivity = ComponentName(packageName, "") }
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
+
+        val finalBounds = findBoundsChange(wct, task)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.LeftSnapped)
+        assertThat(finalBounds!!).isEqualTo(rememberedBounds)
+    }
+
+    @Test
     fun addMoveToDeskTaskChanges_excludeCaptionFromAppBounds_nonResizableLandscape() {
         setUpLandscapeDisplay()
         val task =

@@ -623,11 +623,15 @@ public class BubbleTransitionsTest extends ShellTestCase {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> bt.startAnimation(bt.mTransition, info, startT, finishT, wct -> {}));
 
+        verify(startT).setAlpha(taskLeash, 0f);
+        verify(startT).apply();
+
         verify(transaction).reparent(taskViewSurface, bubblesWindowSurface);
         verify(transaction).reparent(taskLeash, taskViewSurface);
         verify(transaction).setPosition(taskLeash, 0, 0);
         verify(transaction).setCornerRadius(taskLeash, 6f);
         verify(transaction).setWindowCrop(taskLeash, 50, 100);
+        verify(transaction).setAlpha(taskLeash, 1f);
         verify(transaction).apply();
         verify(finishT).reparent(taskLeash, taskViewSurface);
         verify(finishT).setPosition(taskLeash, 0, 0);

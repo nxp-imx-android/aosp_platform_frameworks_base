@@ -830,7 +830,12 @@ public class BubbleController implements ConfigurationChangeListener,
             if (mBubbleData.isExpanded()) {
                 // If the IME is visible, hide it first and then collapse.
                 if (mBubblePositioner.isImeVisible()) {
-                    hideCurrentInputMethod(this::collapseStack);
+                    if (Flags.fixBubbleSwipeUpGesture()) {
+                        hideCurrentInputMethod(/* onImeHidden= */ null);
+                        collapseStack();
+                    } else {
+                        hideCurrentInputMethod(this::collapseStack);
+                    }
                 } else {
                     collapseStack();
                 }
@@ -1477,6 +1482,18 @@ public class BubbleController implements ConfigurationChangeListener,
     public boolean hasStableBubbleForTask(int taskId) {
         final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
         return bubble != null && bubble.getCurrentTransition() == null;
+    }
+
+    /**
+     * Returns the current corner radius of a bubbled task, or -1 if the task is not bubbled
+     * or the view is not inflated.
+     */
+    public float getBubbleCornerRadius(int taskId) {
+        final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
+        if (bubble != null) {
+            return mBubblePositioner.getCornerRadius();
+        }
+        return -1;
     }
 
     /** @deprecated User {@link BubbleHelper#isAppBubbleTask} instead. */
@@ -2507,7 +2524,8 @@ public class BubbleController implements ConfigurationChangeListener,
             @NonNull TransitionInfo.Change change,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
-        if (!mBubbleTransitions.mTaskViewTransitions.isTaskViewTask(taskInfo)) {
+        if (!mBubbleTransitions.mTaskViewTransitions.isTaskViewTask(taskInfo)
+                && !mBubbleHelper.isAppBubbleRootTask(taskInfo)) {
             // if this task isn't managed by bubble transitions just bail.
             return false;
         }

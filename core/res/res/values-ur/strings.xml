@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ایپ کو مقامی نیٹ ورک آلات تک رسائی کی اجازت دیتا ہے"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"لوپ بیک انٹرفیس استعمال کریں"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"اس سے ایپ کو لوپ بیک انٹرفیس پر دیگر ایپس کے ساتھ تعامل کرنے کی اجازت ملتی ہے"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"لوپ بیک انٹرفیس کا لازمی استعمال"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"اس سے ایپ کو لوپ بیک انٹرفیس پر دیگر ایپس کے ساتھ تعامل کرنے کی اجازت ملتی ہے، جس کے لیے دیگر ایپ کو لوپ بیک کی اجازتیں رکھنے کی ضرورت نہیں ہوتی ہے"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"قریبی آلات کے مابین متعلقہ پوزیشن کا تعین کریں"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ایپ کو قریبی آلات کے مابین متعلقہ پوزیشن کا تعین کرنے کی اجازت دیں"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏ترجیح شدہ NFC ادائیگی کی سروس کی معلومات"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"فون تھوڑا نیچے کریں"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"فون کو اپنی بائیں جانب لے جائیں"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"فون کو اپنی دائیں جانب لے جائیں"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"براہ کرم اپنے آلہ کی طرف چہرے کو سیدھا رکھیں۔"</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"آپ کا چہرہ دکھائی نہیں دے رہا۔ اپنے فون کو آنکھ کی سطح پر پکڑیں۔"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"کافی حرکت ہو رہی ہے۔ فون کو مضبوطی سے پکڑیں۔"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"براہ کرم اپنے چہرے کو دوبارہ مندرج کریں۔"</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"اسے سیٹ اپ کرنے کیلئے تھپتھپائیں"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"آپ کا ٹائم زون تبدیل ہو گیا"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"آپ اب <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) میں ہیں"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"وقت سیٹ کریں"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"تاریخ سیٹ کریں"</string>
     <string name="date_time_set" msgid="4603445265164486816">"سیٹ کریں"</string>

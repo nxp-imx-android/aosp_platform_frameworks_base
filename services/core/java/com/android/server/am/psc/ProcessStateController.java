@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.am;
+package com.android.server.am.psc;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
@@ -42,20 +42,7 @@ import android.util.SparseBooleanArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
-import com.android.server.am.psc.ActiveUidsInternal;
-import com.android.server.am.psc.AsyncBatchSession;
-import com.android.server.am.psc.BoundServiceSession;
-import com.android.server.am.psc.ConnectionRecordInternal;
-import com.android.server.am.psc.ContentProviderConnectionInternal;
-import com.android.server.am.psc.ContentProviderRecordInternal;
-import com.android.server.am.psc.OomAdjuster;
-import com.android.server.am.psc.OomAdjusterImpl;
-import com.android.server.am.psc.ProcessListInternal;
-import com.android.server.am.psc.ProcessProviderRecordInternal;
-import com.android.server.am.psc.ProcessRecordInternal;
-import com.android.server.am.psc.ProcessServiceRecordInternal;
-import com.android.server.am.psc.ServiceRecordInternal;
-import com.android.server.am.psc.SyncBatchSession;
+import com.android.server.am.Flags;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
 
@@ -331,6 +318,9 @@ public class ProcessStateController {
         runPendingUpdateImpl(oomAdjReason);
     }
 
+    /**
+     * Runs an update on all processes that have been enqueued for an update.
+     */
     @GuardedBy("mLock")
     public void runPendingUpdateImpl(@OomAdjReason int oomAdjReason) {
         commitStagedEvents();
@@ -643,8 +633,12 @@ public class ProcessStateController {
         proc.setHasActiveInstrumentation(value);
     }
 
+    /**
+     * Forces the process state of a given process up to a specified state if it's currently in a
+     * less important state.
+     */
     @GuardedBy("mLock")
-    void forceProcessStateUpTo(@NonNull ProcessRecordInternal proc, int newState) {
+    public void forceProcessStateUpTo(@NonNull ProcessRecordInternal proc, int newState) {
         final int prevProcState = proc.getReportedProcState();
         if (prevProcState > newState) {
             synchronized (mProcLock) {
@@ -704,8 +698,6 @@ public class ProcessStateController {
 
     /**
      * Note whether a process is running a remote animation.
-     *
-     * @return true if the state changed, otherwise returns false.
      */
     @GuardedBy("mLock")
     public void setRunningRemoteAnimation(@NonNull ProcessRecordInternal proc,

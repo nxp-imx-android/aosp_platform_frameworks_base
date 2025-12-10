@@ -22,8 +22,26 @@ import android.os.Bundle;
  * @hide
  */
 interface ICamProfileInterface {
-    // Get CAM service update information for special slot.
+    /**
+     * Gets CAM service update information for a specific slot.
+     *
+     * @param slotNumber The ID of the slot to query.
+     * @return A Bundle containing the CAM service update information, bundle keys as defined
+     *         in @CamConstants.CamServiceUpdateInfoBundleKey and each key's corresponding values
+     *         should also follow @CamConstants.CamOpProfileType/CamOpServiceUpdateMode/
+     *         CamOpDeliverySystemHint/CamOpRefreshRequestFlag.
+     */
     Bundle getCamServiceUpdateInfo(int slotNumber);
-    // Request CAM TIS resend cam info update broadcast message when APK boot up.
+    /**
+     * Requests the CAM TV Input Service to resend the CAM info update broadcast message.
+     * This is typically used when an application boots up to ensure it has the latest profile
+     * information if a profile update occurred during boot.
+     */
     void requestResendProfileInfoBroadcastACON();
+    /**
+     * Checks if CAM scanning is enabled for the current profile based on its settings.
+     *
+     * @return true if CAM scanning is enabled, false otherwise.
+     */
+    boolean isCamScanEnabled();
 }

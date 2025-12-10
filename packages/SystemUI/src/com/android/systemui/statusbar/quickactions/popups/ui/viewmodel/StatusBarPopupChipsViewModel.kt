@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.statusbar.quickactions.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.AssistantIconViewModel
@@ -31,6 +32,7 @@ import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorViewModel
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 class StatusBarPopupChipsViewModel
 @AssistedInject
 constructor(
+    @Assisted private val displayId: Int,
     mediaControlChipFactory: MediaControlChipViewModel.Factory,
     avControlsChipFactory: AvControlsChipViewModel.Factory,
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
@@ -56,7 +59,7 @@ constructor(
     private val avControlsChip by lazy { avControlsChipFactory.create() }
     private val shareScreenPrivacyIndicator by lazy { shareScreenPrivacyIndicatorFactory.create() }
     private val assistantIcon by lazy { assistantIconFactory.create() }
-    private val imeIndicatorChip by lazy { imeIndicatorChipFactory.create() }
+    private val imeIndicatorChip by lazy { imeIndicatorChipFactory.create(displayId) }
 
     /** The ID of the current chip that is currently active, or `null` if no chip is active. */
     private var currentActiveQuickActionId by mutableStateOf<QuickActionChipId?>(null)
@@ -134,6 +137,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): StatusBarPopupChipsViewModel
+        fun create(@DisplayId displayId: Int): StatusBarPopupChipsViewModel
     }
 }

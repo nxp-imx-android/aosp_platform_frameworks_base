@@ -31,6 +31,7 @@ android_test {
         "androidx.test.core",
         "androidx.test.ext.junit",
         "androidx.test.runner",
+        "compatibility-device-util-axt",
         "frameworks-base-testutils",
         "mockito-kotlin-nodeps",
         "mockito-target-minus-junit4",

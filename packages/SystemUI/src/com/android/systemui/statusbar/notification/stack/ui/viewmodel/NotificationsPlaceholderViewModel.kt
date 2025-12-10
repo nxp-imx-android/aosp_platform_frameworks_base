@@ -132,14 +132,6 @@ constructor(
             source = shadeModeInteractor.shadeMode.map { getNotificationsShadeContentKey(it) },
         )
 
-    /** The content key to use for the quick settings shade. */
-    val quickSettingsShadeContentKey: ContentKey by
-        hydrator.hydratedStateOf(
-            traceName = "quickSettingsShadeContentKey",
-            initialValue = getQuickSettingsShadeContentKey(shadeModeInteractor.shadeMode.value),
-            source = shadeModeInteractor.shadeMode.map { getQuickSettingsShadeContentKey(it) },
-        )
-
     /** @see NotificationStackAppearanceInteractor.notificationStackHorizontalAlignment */
     val horizontalAlignment: Alignment.Horizontal by
         hydrator.hydratedStateOf(
@@ -257,14 +249,6 @@ constructor(
 
     private fun getNotificationsShadeContentKey(shadeMode: ShadeMode): ContentKey {
         return if (shadeMode is ShadeMode.Dual) Overlays.NotificationsShade else Scenes.Shade
-    }
-
-    private fun getQuickSettingsShadeContentKey(shadeMode: ShadeMode): ContentKey {
-        return when (shadeMode) {
-            is ShadeMode.Single -> Scenes.QuickSettings
-            is ShadeMode.Split -> Scenes.Shade
-            is ShadeMode.Dual -> Overlays.QuickSettingsShade
-        }
     }
 
     @AssistedFactory

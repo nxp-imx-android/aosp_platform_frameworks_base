@@ -257,10 +257,11 @@ public class BubbleTransitions {
     }
 
     /**
-     * Initiates axed bubble-to-bubble launch/existing bubble convert for the given transition.
+     * Expands and selects the given task in a bubble when there is already a running transition
+     * for it.
      */
-    public void startBubbleToBubbleLaunchOrExistingBubbleConvert(@NonNull IBinder transition,
-            @NonNull ActivityManager.RunningTaskInfo launchingTask,
+    public void startExpandAndSelectBubbleForExistingTransition(
+            @NonNull IBinder transition, @NonNull ActivityManager.RunningTaskInfo launchingTask,
             @NonNull Consumer<TransitionHandler> onInflatedCallback) {
         final TransitionHandler handler =
                 mBubbleController.expandStackAndSelectBubbleForExistingTransition(
@@ -641,6 +642,9 @@ public class BubbleTransitions {
         @Override
         public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
                 @NonNull SurfaceControl.Transaction finishTransaction) {
+            BubbleLog.d(
+                    "LaunchNewTaskBubbleForExistingTransition.onTransitionConsumed() aborted=%b",
+                    aborted);
             if (!aborted) return;
             cleanup();
         }
@@ -2189,12 +2193,10 @@ public class BubbleTransitions {
             }
             BubbleLog.d("FloatingToBarConversion.startAnimation()");
 
-            // startTransaction must be applied by the handler.
-            startTransaction.apply();
-
             final TaskViewTaskController taskViewTaskController =
                     mBubble.getTaskView().getController();
             if (taskViewTaskController == null) {
+                startTransaction.apply();
                 cleanup();
                 finishCallback.onTransitionFinished(null);
                 return true;
@@ -2202,6 +2204,7 @@ public class BubbleTransitions {
 
             TransitionInfo.Change change = findTransitionChange(info);
             if (change == null) {
+                startTransaction.apply();
                 Slog.w(TAG, "Expected a TaskView transition to front but didn't find "
                         + "one, cleaning up the task view");
                 taskViewTaskController.setTaskNotFound();
@@ -2211,6 +2214,8 @@ public class BubbleTransitions {
             }
 
             mTaskLeash = change.getLeash();
+            startTransaction.setAlpha(mTaskLeash, 0);
+            startTransaction.apply();
             mFinishTransaction = finishTransaction;
             updateBubbleTask();
             cleanup();
@@ -2309,6 +2314,7 @@ public class BubbleTransitions {
             startT.setCornerRadius(mTaskLeash,
                     mBubble.getBubbleBarExpandedView().getRestingCornerRadius());
             startT.setWindowCrop(mTaskLeash, mBounds.width(), mBounds.height());
+            startT.setAlpha(mTaskLeash, 1);
             startT.apply();
             mFinishTransaction.reparent(mTaskLeash, taskViewSurface);
             mFinishTransaction.setPosition(mTaskLeash, 0, 0);

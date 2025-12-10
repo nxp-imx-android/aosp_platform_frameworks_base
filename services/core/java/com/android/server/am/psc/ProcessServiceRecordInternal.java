@@ -132,14 +132,14 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Resets service-related flags when the application record is being cleaned up. */
-    public void onCleanupApplicationRecord() {
+    void onCleanupApplicationRecord() {
         setTreatLikeActivity(false);
         setHasAboveClient(false);
         setHasClientActivities(false);
     }
 
     /** Recalculates and updates the {@link #mHasAboveClient} flag. */
-    public void updateHasAboveClient() {
+    void updateHasAboveClient() {
         setHasAboveClient(false);
         for (int i = numberOfConnections() - 1; i >= 0; i--) {
             final ConnectionRecordInternal cr = getConnectionInternalAt(i);
@@ -318,17 +318,17 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Adds the specified service to the set of running services for this process. */
-    public boolean addRunningService(ServiceRecordInternal service) {
+    boolean addRunningService(ServiceRecordInternal service) {
         return mServices.add(service);
     }
 
     /** Removes the specified service from the set of running services for this process. */
-    public boolean removeRunningService(ServiceRecordInternal service) {
+    boolean removeRunningService(ServiceRecordInternal service) {
         return mServices.remove(service);
     }
 
     /** Stops all services running in this process. */
-    public void stopAllServices() {
+    void stopAllServices() {
         mServices.clear();
         updateHasTopStartedAlmostPerceptibleServices();
     }
@@ -354,12 +354,12 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Removes a service from the set of services that are currently executing code. */
-    public void stopExecutingService(ServiceRecordInternal service) {
+    void stopExecutingService(ServiceRecordInternal service) {
         mExecutingServices.remove(service);
     }
 
     /** Clears the set of all executing services. */
-    public void stopAllExecutingServices() {
+    void stopAllExecutingServices() {
         mExecutingServices.clear();
     }
 
@@ -377,7 +377,7 @@ public class ProcessServiceRecordInternal {
      * Adds an outgoing connection from this process to a service.
      * This also handles the special logic for connections to services running in an SDK sandbox.
      */
-    public void addConnection(ConnectionRecordInternal connection) {
+    void addConnection(ConnectionRecordInternal connection) {
         mConnections.add(connection);
         addSdkSandboxConnectionIfNecessary(connection);
     }
@@ -386,7 +386,7 @@ public class ProcessServiceRecordInternal {
      * Removes an outgoing connection from this process.
      * This also handles the necessary cleanup for connections to services in an SDK sandbox.
      */
-    public void removeConnection(ConnectionRecordInternal connection) {
+    void removeConnection(ConnectionRecordInternal connection) {
         mConnections.remove(connection);
         removeSdkSandboxConnectionIfNecessary(connection);
     }
@@ -446,7 +446,7 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Removes all tracked connection records to services running in SDK sandboxes. */
-    public void removeAllSdkSandboxConnections() {
+    void removeAllSdkSandboxConnections() {
         if (mSdkSandboxConnections != null) {
             mSdkSandboxConnections.clear();
         }

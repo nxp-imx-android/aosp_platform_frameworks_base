@@ -486,8 +486,8 @@ class PolicyMetadataCodeGeneratorTest {
                         PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
                     )
                     .addAllAllowedDpcTypes(listOf(
-                        PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER,
-                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER
+                        PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                     ))
             )
             .build()
@@ -507,8 +507,8 @@ class PolicyMetadataCodeGeneratorTest {
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(
-                        1, // DEFAULT_DEVICE_OWNER
-                        5  // PROFILE_OWNER
+                        1, // DEVICE_OWNER
+                        5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                     ),
                     /* allowedValues= */ Set.of()
                 ));
@@ -529,13 +529,13 @@ class PolicyMetadataCodeGeneratorTest {
                         PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
                     )
                     .addAllAllowedDpcTypes(listOf(
-                        PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER,
                         PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER,
-                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+                        PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
                         PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0,
-                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER,
-                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER,
-                        PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER,
+                        PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE,
+                        PolicyMetadata.DpcType.DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER,
                     ))
             )
             .build()
@@ -555,13 +555,13 @@ class PolicyMetadataCodeGeneratorTest {
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(
-                        1, // DEFAULT_DEVICE_OWNER
+                        1, // DEVICE_OWNER
                         2, // FINANCED_DEVICE_OWNER
-                        3, // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                        3, // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
                         4, // PROFILE_OWNER_ON_USER0
-                        5, // PROFILE_OWNER
-                        6, // PROFILE_OWNER_ON_USER
-                        7  // AFFILIATED_PROFILE_OWNER_ON_USER
+                        5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+                        6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
+                        7  // AFFILIATED_FULL_USER_PROFILE_OWNER
                     ),
                     /* allowedValues= */ Set.of()
                 ));

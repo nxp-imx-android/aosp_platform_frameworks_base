@@ -91,7 +91,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                1  // DEFAULT_DEVICE_OWNER
+                1  // DEVICE_OWNER
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -115,7 +115,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                3  // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                3  // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -139,7 +139,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                5  // PROFILE_OWNER
+                5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -151,7 +151,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                6  // PROFILE_OWNER_ON_USER
+                6  // UNAFFILIATED_FULL_USER_PROFILE_OWNER
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -163,7 +163,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                7  // AFFILIATED_PROFILE_OWNER_ON_USER
+                7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -175,10 +175,10 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                1, // DEFAULT_DEVICE_OWNER
-                3, // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-                5, // PROFILE_OWNER
-                7  // AFFILIATED_PROFILE_OWNER_ON_USER
+                1, // DEVICE_OWNER
+                3, // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+                7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             )
         ));
         policies.add(new StringPolicyMetadata(

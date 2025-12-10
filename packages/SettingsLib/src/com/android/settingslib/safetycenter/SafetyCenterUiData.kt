@@ -17,7 +17,9 @@
 package com.android.settingslib.safetycenter
 
 import android.app.PendingIntent
+import android.os.UserHandle
 import android.safetycenter.SafetyCenterEntry
+import android.safetycenter.SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED
 import android.safetycenter.SafetyCenterIssue
 import android.safetycenter.SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK
 import android.safetycenter.SafetyCenterStaticEntry
@@ -161,11 +163,18 @@ data class SafetyCenterUiData(
  *
  * @property title The title of the entry.
  * @property summary The summary text of the entry.
- * @property pendingIntent The PendingIntent to fire when the entry is clicked.
+ * @property severityLevel The severity level of the entry, based on
+ *   [SafetyCenterEntry.EntrySeverityLevel].
+ * @property safetySourceId The ID of the safety source that provided the entry.
+ * @property user The Android [UserHandle] the entry belongs to.
+ * @property pendingIntent The [PendingIntent] to fire when the entry is clicked.
  */
 data class SafetyCenterUiEntry(
     val title: CharSequence,
     val summary: CharSequence?,
+    val severityLevel: Int,
+    val safetySourceId: String?,
+    val user: UserHandle?,
     val pendingIntent: PendingIntent?,
 ) {
     companion object {
@@ -174,6 +183,9 @@ data class SafetyCenterUiEntry(
             return SafetyCenterUiEntry(
                 title = entry.title,
                 summary = entry.summary,
+                severityLevel = entry.severityLevel,
+                safetySourceId = entry.safetySourceId,
+                user = entry.user,
                 pendingIntent = entry.pendingIntent,
             )
         }
@@ -183,6 +195,10 @@ data class SafetyCenterUiEntry(
             return SafetyCenterUiEntry(
                 title = entry.title,
                 summary = entry.summary,
+                // Set the severity level to UNSPECIFIED for static entries
+                severityLevel = ENTRY_SEVERITY_LEVEL_UNSPECIFIED,
+                safetySourceId = entry.safetySourceId,
+                user = entry.user,
                 pendingIntent = entry.pendingIntent,
             )
         }

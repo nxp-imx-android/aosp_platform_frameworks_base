@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Atinge pentru a seta pe vibrații."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Atinge pentru a dezactiva sunetul."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Controlul zgomotului"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Anulare zgomot microfon"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Audio spațial"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Dezactivat"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fix"</string>
@@ -1176,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activezi comanda rapidă de la tastatură <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nu activa"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activează comanda rapidă"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Comanda rapidă de la tastatură <xliff:g id="ID_1">%1$s</xliff:g> este activată"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_4">^4</xliff:g>, o funcție de accesibilitate. Astfel, poți să mărești rapid imaginea de pe ecran pentru a mări conținutul. După ce ai activat mărirea, apasă pe <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> și pe + sau – pentru a ajusta zoomul."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Dezactivează comanda rapidă"</string>
@@ -1189,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Poate să urmărească interacțiunile tale cu o aplicație sau cu un senzor hardware și să interacționeze cu aplicații în numele tău."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Dacă apeși pe <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, se activează <xliff:g id="ID_4">^4</xliff:g>, o funcție de accesibilitate. Astfel, poți controla dispozitivul hands-free."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilitate"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Gata"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecran de blocare"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Se închide…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Vezi pașii pentru îngrijire"</string>
@@ -1586,6 +1586,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Deblochează pentru a personaliza ecranul de blocare"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Conexiune Wi-Fi indisponibilă"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Locație activă"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Camera foto a fost blocată"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Camera foto și microfonul sunt blocate"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Microfonul a fost blocat"</string>

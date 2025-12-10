@@ -1175,6 +1175,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ఆన్ చేయవద్దు"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"షార్ట్‌కట్‌ను ఆన్ చేయండి"</string>
+    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్ ఆన్ అయింది"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> అనేది <xliff:g id="ID_4">^4</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్, ఇది ఒక యాక్సెసిబిలిటీ ఫీచర్. కంటెంట్‌ను మరింత పెద్దగా డిస్‌ప్లే చేయడానికి, స్క్రీన్‌ను క్విక్‌గా జూమ్ - ఇన్ చేసే వీలును ఇది మీకు కల్పిస్తుంది. మ్యాగ్నిఫికేషన్ ఆన్ అయిన తర్వాత, జూమ్‌ను అడ్జస్ట్ చేయడానికి, <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> కీలను నొక్కి, \"+\" లేదా \"-\" నొక్కండి."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"షార్ట్‌కట్‌ను ఆఫ్ చేయండి"</string>
@@ -1188,7 +1190,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ఇది యాప్ లేదా హార్డ్‌వేర్ సెన్సార్‌తో మీ ఇంటరాక్షన్‌లను ట్రాక్ చేయగలదు, మీ తరపున యాప్‌లతో ఇంటరాక్ట్ అవ్వగలదు."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>‌ను నొక్కితే, యాక్సెసిబిలిటీ ఫీచర్ అయిన <xliff:g id="ID_4">^4</xliff:g> ఆన్ అవుతుంది. మీ డివైజ్‌ను హ్యాండ్స్-ఫ్రీగా కంట్రోల్ చేసే వీలును ఇది మీకు కల్పిస్తుంది."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"యాక్సెసిబిలిటీ"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"పూర్తయింది"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"తీసుకోవాల్సిన జాగ్రత్తలు ఏమిటో చూడండి"</string>
@@ -1585,6 +1586,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"లాక్ స్క్రీన్‌ను అనుకూలంగా మార్చుకోవడానికి అన్‌లాక్ చేయండి"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi అందుబాటులో లేదు"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"లొకేషన్ యాక్టివ్‌గా ఉంది"</string>
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"కెమెరా యాక్టివ్‌గా ఉంది"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"మైక్రోఫోన్ యాక్టివ్‌గా ఉంది"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"కెమెరా బ్లాక్ చేయబడింది"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"కెమెరా, మైక్రోఫోన్ బ్లాక్ చేయబడ్డాయి"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"మైక్రోఫోన్ బ్లాక్ చేయబడింది"</string>

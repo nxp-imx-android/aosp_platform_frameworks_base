@@ -836,8 +836,7 @@
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. Tocca per attivare la vibrazione."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. Tocca per disattivare l\'audio."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"Controllo del rumore"</string>
-    <!-- no translation found for volume_panel_mic_noise_cancellation_title (2324838199042895036) -->
-    <skip />
+    <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"Cancellazione rumore microfono"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Audio spaziale"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Off"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Fisso"</string>
@@ -1176,6 +1175,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Attivare la scorciatoia da tastiera per <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Non attivare"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Attiva la scorciatoia"</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> è la scorciatoia da tastiera per utilizzare l\'inversione dei colori. L\'inversione dei colori rende scure le schermate chiare e chiare le schermate scure."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Scorciatoia da tastiera <xliff:g id="ID_1">%1$s</xliff:g> attivata"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> è la scorciatoia da tastiera per utilizzare <xliff:g id="ID_4">^4</xliff:g>, una funzione di accessibilità. In questo modo, puoi aumentare rapidamente lo zoom sullo schermo per ingrandire i contenuti. Quando l\'ingrandimento è attivo, premi <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> e \"+\" o \"-\" per regolare lo zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Disattiva scorciatoia"</string>
@@ -1189,7 +1189,6 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Può tenere traccia delle tue interazioni con un\'app o un sensore hardware e interagire con app per tuo conto."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Se premi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> viene attivata <xliff:g id="ID_4">^4</xliff:g>, una funzionalità di accessibilità. In questo modo puoi controllare il tuo dispositivo con i comandi vocali."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilità"</string>
-    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Fine"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Schermata di blocco"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arresto in corso…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Leggi le misure da adottare"</string>
@@ -1586,6 +1585,10 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Sblocca per personalizzare la schermata di blocco"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi non disponibile"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Posizione attiva"</string>
+    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
+    <skip />
+    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
+    <skip />
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Videocamera bloccata"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Videocamera e microfono bloccati"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Microfono bloccato"</string>

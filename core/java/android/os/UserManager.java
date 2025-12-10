@@ -1393,7 +1393,7 @@ public class UserManager {
      * @see DevicePolicyManager#clearUserRestriction(ComponentName, String)
      */
     @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
-    public static final String DISALLOW_HANDOFF = "no_handoff";
+    public static final String DISALLOW_TASK_CONTINUITY_HANDOFF = "no_task_continuity_handoff";
 
     /**
      * Specifies that windows besides app windows should not be
@@ -2175,7 +2175,7 @@ public class UserManager {
             DISALLOW_FACTORY_RESET,
             DISALLOW_FUN,
             DISALLOW_GRANT_ADMIN,
-            DISALLOW_HANDOFF,
+            DISALLOW_TASK_CONTINUITY_HANDOFF,
             DISALLOW_INSTALL_APPS,
             DISALLOW_INSTALL_UNKNOWN_SOURCES,
             DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,

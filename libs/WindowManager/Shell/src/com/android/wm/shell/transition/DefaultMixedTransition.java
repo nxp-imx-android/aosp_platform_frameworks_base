@@ -597,8 +597,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         final TransitionInfo.Change closingBubble = bubbleHelper.getClosingBubbleTask(info);
         if (closingBubble != null) {
-            if (com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
-                    && closingBubble.getMode() == TRANSIT_CLOSE
+            if (closingBubble.getMode() == TRANSIT_CLOSE
                     && enterBubbleTask.getMode() == TRANSIT_OPEN) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition"
                         + " for opening bubble from another closing bubbled task");
@@ -612,7 +611,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition"
                         + " for switching the expanded bubble");
                 // TODO(b/407669465): Handle bubble switching
-                bubbleTransitions.startBubbleToBubbleLaunchOrExistingBubbleConvert(
+                bubbleTransitions.startExpandAndSelectBubbleForExistingTransition(
                         transition, enterBubbleTask.getTaskInfo(), onInflatedCallback);
                 return true;
             }
@@ -621,7 +620,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         // Fallback, this can be (Case 3/6) when the closing Bubble comes in later.
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering bubble from another bubbled task or for an existing bubble");
-        bubbleTransitions.startBubbleToBubbleLaunchOrExistingBubbleConvert(
+        bubbleTransitions.startExpandAndSelectBubbleForExistingTransition(
                 transition, enterBubbleTask.getTaskInfo(), onInflatedCallback);
 
         return true;

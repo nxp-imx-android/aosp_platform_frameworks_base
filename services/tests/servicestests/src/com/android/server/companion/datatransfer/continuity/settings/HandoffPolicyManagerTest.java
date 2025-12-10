@@ -65,10 +65,12 @@ public class HandoffPolicyManagerTest {
 
     @Test
     public void isHandoffAllowedForUser_callsUserManagerInternal() {
-        when(mMockUserManagerInternal.getUserRestriction(USER_ID, UserManager.DISALLOW_HANDOFF))
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
                 .thenReturn(false);
         assertThat(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).isTrue();
-        verify(mMockUserManagerInternal).getUserRestriction(USER_ID, UserManager.DISALLOW_HANDOFF);
+        verify(mMockUserManagerInternal)
+                .getUserRestriction(USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF);
     }
 
     @Test
@@ -76,9 +78,9 @@ public class HandoffPolicyManagerTest {
         FakeHandoffPolicyListener listener = new FakeHandoffPolicyListener();
         mHandoffPolicyManager.addListener(listener);
         Bundle prevRestrictions = new Bundle();
-        prevRestrictions.putBoolean(UserManager.DISALLOW_HANDOFF, true);
+        prevRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, true);
         Bundle newRestrictions = new Bundle();
-        newRestrictions.putBoolean(UserManager.DISALLOW_HANDOFF, false);
+        newRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
         mHandoffPolicyManager.onUserRestrictionsChanged(USER_ID, newRestrictions, prevRestrictions);
         assertThat(listener.mCallCount).isEqualTo(1);
         assertThat(listener.mUserId).isEqualTo(USER_ID);
@@ -89,9 +91,9 @@ public class HandoffPolicyManagerTest {
         FakeHandoffPolicyListener listener = new FakeHandoffPolicyListener();
         mHandoffPolicyManager.addListener(listener);
         Bundle prevRestrictions = new Bundle();
-        prevRestrictions.putBoolean(UserManager.DISALLOW_HANDOFF, true);
+        prevRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, true);
         Bundle newRestrictions = new Bundle();
-        newRestrictions.putBoolean(UserManager.DISALLOW_HANDOFF, true);
+        newRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, true);
         mHandoffPolicyManager.onUserRestrictionsChanged(USER_ID, newRestrictions, prevRestrictions);
         assertThat(listener.mCallCount).isEqualTo(0);
     }

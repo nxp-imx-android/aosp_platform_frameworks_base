@@ -645,10 +645,8 @@
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Tətbiqə yerli şəbəkə cihazlarına daxil olmaq icazəsi verir"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"geri qayıtma interfeysindən istifadə etmək"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Geri qayıtma interfeysi vasitəsilə tətbiqin digər tətbiqlərlə interaksiya yaratmasına icazə verir"</string>
-    <!-- no translation found for permlab_force_use_loopback_interface (1319727311706416481) -->
-    <skip />
-    <!-- no translation found for permdesc_force_use_loopback_interface (5829032514048681980) -->
-    <skip />
+    <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"geri qayıtma interfeysindən istifadə etməyə məcbur edin"</string>
+    <string name="permdesc_force_use_loopback_interface" msgid="5829032514048681980">"Digər tətbiqdən geri qayıtma icazələrinə malik olmasını tələb etmədən tətbiqin geri qayıtma interfeysi vasitəsilə digər tətbiqlərlə interaksiya yaratmasına icazə verir"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"yaxınlıqdakı cihazlar arasında nisbi mövqeyin təyini"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Tətbiqin yaxınlıqdakı cihazlar arasında nisbi mövqeyi təyin etməsinə icazə verin"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Tərcih edilən NFC ödəniş xidməti məlumatı"</string>
@@ -774,7 +772,8 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Telefonu aşağı tutun"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Telefonu sola tutun"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Telefonu sağa tutun"</string>
-    <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Birbaşa cihaza baxın."</string>
+    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
+    <skip />
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Üzünüz görünmür. Telefonunuzu göz səviyyəsində saxlayın."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Cihaz stabil deyil. Telefonu tərpətməyin."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Üzünüzü yenidən qeydiyyatdan keçirin."</string>
@@ -1454,6 +1453,12 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Quraşdırmaq üçün tıklayın"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Saat qurşağınız dəyişildi"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Hazırda saat qurşağınız: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
+    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
+    <skip />
+    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
+    <skip />
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Vaxt ayarlayın"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Tarixi quraşdır"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Ayarlayın"</string>

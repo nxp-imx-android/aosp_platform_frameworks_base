@@ -20,6 +20,8 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.user.data.repository.UserRepository
 import java.io.File
@@ -37,7 +39,6 @@ constructor(
     private val secureSettingsRepository: SecureSettingsRepository,
     userRepository: UserRepository,
 ) {
-
     /** [Flow] that observes the custom save location URI string for the current user */
     @OptIn(ExperimentalCoroutinesApi::class)
     val customSaveLocationUriString: Flow<String> =
@@ -93,10 +94,67 @@ constructor(
         secureSettingsRepository.setBoolean(CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME, isActive)
     }
 
+    /** Gets user's previously selected capture type. Returns screenshot type by default. */
+    suspend fun getSelectedCaptureType(): ScreenCaptureType {
+        val typeString = secureSettingsRepository.getString(SELECTED_SCREEN_CAPTURE_TYPE_NAME)
+        return when (typeString) {
+            TYPE_SCREENSHOT -> ScreenCaptureType.SCREENSHOT
+            TYPE_RECORDING -> ScreenCaptureType.RECORDING
+            else -> ScreenCaptureType.SCREENSHOT
+        }
+    }
+
+    /** Gets user's previously selected capture region. Returns fullscreen region by default. */
+    suspend fun getSelectedCaptureRegion(): ScreenCaptureRegion {
+        val regionString = secureSettingsRepository.getString(SELECTED_SCREEN_CAPTURE_REGION_NAME)
+        return when (regionString) {
+            REGION_FULLSCREEN -> ScreenCaptureRegion.FULLSCREEN
+            REGION_PARTIAL -> ScreenCaptureRegion.PARTIAL
+            REGION_APP_WINDOW -> ScreenCaptureRegion.APP_WINDOW
+            else -> ScreenCaptureRegion.FULLSCREEN
+        }
+    }
+
+    /**
+     * Updates the user's selected capture type.
+     *
+     * @param type Currently selected capture type.
+     */
+    suspend fun updateSelectedCaptureTypeString(type: ScreenCaptureType) {
+        val typeString =
+            when (type) {
+                ScreenCaptureType.SCREENSHOT -> TYPE_SCREENSHOT
+                ScreenCaptureType.RECORDING -> TYPE_RECORDING
+            }
+        secureSettingsRepository.setString(SELECTED_SCREEN_CAPTURE_TYPE_NAME, typeString)
+    }
+
+    /**
+     * Updates the user's selected capture region.
+     *
+     * @param region Currently selected capture region.
+     */
+    suspend fun updateSelectedCaptureRegionString(region: ScreenCaptureRegion) {
+        val regionString =
+            when (region) {
+                ScreenCaptureRegion.FULLSCREEN -> REGION_FULLSCREEN
+                ScreenCaptureRegion.PARTIAL -> REGION_PARTIAL
+                ScreenCaptureRegion.APP_WINDOW -> REGION_APP_WINDOW
+            }
+        secureSettingsRepository.setString(SELECTED_SCREEN_CAPTURE_REGION_NAME, regionString)
+    }
+
     companion object {
         private const val CUSTOM_SAVE_LOCATION_URI_KEY_NAME = "custom_save_location_uri"
         private const val CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME = "custom_save_location_is_active"
         private val DEFAULT_SCREENSHOTS_FOLDER =
             Environment.DIRECTORY_PICTURES + File.separator + Environment.DIRECTORY_SCREENSHOTS
+        private const val SELECTED_SCREEN_CAPTURE_TYPE_NAME = "selected_screen_capture_type"
+        private const val SELECTED_SCREEN_CAPTURE_REGION_NAME = "selected_screen_capture_region"
+        private const val TYPE_SCREENSHOT = "screenshot"
+        private const val TYPE_RECORDING = "recording"
+        private const val REGION_FULLSCREEN = "fullscreen"
+        private const val REGION_PARTIAL = "partial"
+        private const val REGION_APP_WINDOW = "app_window"
     }
 }

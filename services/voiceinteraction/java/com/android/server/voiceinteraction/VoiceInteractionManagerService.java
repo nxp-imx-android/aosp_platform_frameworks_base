@@ -79,6 +79,7 @@ import android.os.RemoteCallback;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
+import android.os.ServiceManager;
 import android.os.SharedMemory;
 import android.os.ShellCallback;
 import android.os.SystemClock;
@@ -112,6 +113,7 @@ import com.android.internal.app.IVoiceInteractionSessionListener;
 import com.android.internal.app.IVoiceInteractionSessionShowCallback;
 import com.android.internal.app.IVoiceInteractionSoundTriggerSession;
 import com.android.internal.app.IVoiceInteractor;
+import com.android.internal.compat.IPlatformCompat;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
@@ -121,7 +123,6 @@ import com.android.server.SoundTriggerInternal;
 import com.android.server.SystemServerInitThreadPool;
 import com.android.server.SystemService;
 import com.android.server.UiThread;
-import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.permission.LegacyPermissionManagerInternal;
 import com.android.server.policy.AppOpsPolicy;
@@ -189,7 +190,7 @@ public class VoiceInteractionManagerService extends SystemService {
 
     final Context mContext;
     final ContentResolver mResolver;
-    final PlatformCompat mPlatformCompat;
+    final IPlatformCompat mPlatformCompat;
     // Can be overridden for testing purposes
     private IEnrolledModelDb mDbHelper;
     private final IEnrolledModelDb mRealDbHelper;
@@ -211,9 +212,11 @@ public class VoiceInteractionManagerService extends SystemService {
         super(context);
         mContext = context;
         mResolver = context.getContentResolver();
-        mPlatformCompat = new PlatformCompat(context);
-        mUserManagerInternal = Objects.requireNonNull(
-                LocalServices.getService(UserManagerInternal.class));
+        mPlatformCompat =
+                IPlatformCompat.Stub.asInterface(
+                        ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
+        mUserManagerInternal =
+                Objects.requireNonNull(LocalServices.getService(UserManagerInternal.class));
         mDbHelper = mRealDbHelper = new DatabaseHelper(context);
         mServiceStub = new VoiceInteractionManagerServiceStub();
         mAmInternal = Objects.requireNonNull(
@@ -1139,8 +1142,16 @@ public class VoiceInteractionManagerService extends SystemService {
 
             int modifiedFlags = requestedFlags;
 
-            if (mPlatformCompat.isChangeEnabled(
-                    ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo())) {
+            boolean shouldRestrictAssistStructure = false;
+            try {
+                shouldRestrictAssistStructure =
+                        mPlatformCompat.isChangeEnabled(
+                                ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo());
+            } catch (RemoteException e) {
+                Slog.w(TAG, "RemoteException while calling isChangeEnabled", e);
+            }
+
+            if (shouldRestrictAssistStructure) {
 
                 if (!mImpl.mInfo.getUsesAssistData()) {
                     modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_ASSIST;
@@ -2261,9 +2272,14 @@ public class VoiceInteractionManagerService extends SystemService {
             // Resource attributes are only respected beyond the CINNAMON_BUN sdk. If the current
             // VIS service declares a target sdk >= CINNAMON_BUN then use the manifest attributes
             // (or the defaults if they weren't declared).
-            final boolean changeEnabled =
-                    mPlatformCompat.isChangeEnabled(
-                            ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo());
+            boolean changeEnabled = false;
+            try {
+                changeEnabled =
+                        mPlatformCompat.isChangeEnabled(
+                                ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo());
+            } catch (RemoteException e) {
+                Slog.w(TAG, "RemoteException while calling isChangeEnabled", e);
+            }
             if (Flags.enableAssistResourceAttributes() && changeEnabled) {
                 if (mImpl.mInfo.getUsesAssistData()) {
                     sessionFlags |= VoiceInteractionSession.SHOW_WITH_ASSIST;

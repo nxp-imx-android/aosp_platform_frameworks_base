@@ -502,6 +502,11 @@ public class AppOpsManager {
     };
 
     /** @hide */
+    public static boolean isModeValid(int mode) {
+        return mode >= 0 && mode < MODE_NAMES.length;
+    }
+
+    /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = { "UID_STATE_" }, value = {
             UID_STATE_PERSISTENT,
@@ -3894,6 +3899,17 @@ public class AppOpsManager {
      */
     public static boolean opIsUidAppOpPermission(int op) {
         return op != OP_NONE && ArrayUtils.contains(APP_OP_PERMISSION_UID_OPS, op);
+    }
+
+    /**
+     * Retrieve the desired PCC mode for the app op
+     *
+     * @return The PCC mode
+     *
+     * @hide
+     */
+    public static int opToPccMode(int op) {
+        return sAppOpInfos[op].pccMode;
     }
 
     /**

@@ -1253,11 +1253,7 @@ class SupervisionServiceTest {
 
     private fun setAndVerifyPackageBlockedPolicy(packageUsageType: Int): PackageUsagePolicy {
         val policy =
-            PackageUsagePolicy.Builder()
-                .setVersion(0)
-                .setPackageName(PACKAGE_NAME)
-                .setType(packageUsageType)
-                .build()
+            PackageUsagePolicy.Builder(PACKAGE_NAME, packageUsageType).build()
 
         service.setPolicy(USER_ID, policy)
         injector.awaitServiceThreadIdle()

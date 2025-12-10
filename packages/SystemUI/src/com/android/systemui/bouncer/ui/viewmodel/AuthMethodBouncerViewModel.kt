@@ -18,8 +18,8 @@ package com.android.systemui.bouncer.ui.viewmodel
 
 import android.annotation.StringRes
 import androidx.compose.ui.input.key.KeyEventType
-import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.lifecycle.HydratedActivatable

@@ -871,6 +871,13 @@ flag {
 }
 
 flag {
+    name: "enable_is_task_move_allowed_on_display_api"
+    namespace: "lse_desktop_experience"
+    description: "Enables the API to allow browsers to learn task-move-allowed states of displays."
+    bug: "400407139"
+}
+
+flag {
     name: "enable_key_gesture_handler_for_sysui"
     namespace: "lse_desktop_experience"
     description: "Enables the key gesture handler for listening to SysUi interested key events."

@@ -6015,7 +6015,6 @@ public class WindowManagerService extends IWindowManager.Stub
         if (mAppLockController != null) {
             mAppLockController.systemReady();
         }
-        mAppCompatConfiguration.onSystemReady();
     }
 
 
@@ -9180,7 +9179,7 @@ public class WindowManagerService extends IWindowManager.Stub
                                 mTaskSnapshotController.removeAndDeleteSnapshot(
                                         task.mTaskId, task.mUserId);
                                 // Refresh TaskThumbnailCache
-                                task.onSnapshotInvalidated();
+                                task.onSnapshotReleased();
                             }
                         }, /* traverseTopToBottom= */ true);
                     }

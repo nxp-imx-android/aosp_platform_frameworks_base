@@ -49,7 +49,8 @@ public class HandoffPolicyManager implements UserRestrictionsListener {
     }
 
     public boolean isHandoffAllowedForUser(int userId) {
-        return !mUserManagerInternal.getUserRestriction(userId, UserManager.DISALLOW_HANDOFF);
+        return !mUserManagerInternal.getUserRestriction(
+                userId, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF);
     }
 
     public void addListener(@NonNull Listener listener) {
@@ -68,8 +69,10 @@ public class HandoffPolicyManager implements UserRestrictionsListener {
     public void onUserRestrictionsChanged(
             int userId, Bundle newRestrictions, Bundle prevRestrictions) {
 
-        boolean wasRestricted = prevRestrictions.getBoolean(UserManager.DISALLOW_HANDOFF, false);
-        boolean isRestricted = newRestrictions.getBoolean(UserManager.DISALLOW_HANDOFF, false);
+        boolean wasRestricted =
+                prevRestrictions.getBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
+        boolean isRestricted =
+                newRestrictions.getBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
 
         if (wasRestricted != isRestricted) {
             for (Listener listener : mListeners) {

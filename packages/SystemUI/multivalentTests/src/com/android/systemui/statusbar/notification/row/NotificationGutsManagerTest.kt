@@ -148,7 +148,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Mock private lateinit var accessibilityManager: AccessibilityManager
     @Mock private lateinit var highPriorityProvider: HighPriorityProvider
     @Mock private lateinit var iNotificationManager: INotificationManager
-    @Mock private lateinit var barService: IStatusBarService
+    @Mock private lateinit var statusBarService: IStatusBarService
     @Mock private lateinit var launcherApps: LauncherApps
     @Mock private lateinit var shortcutManager: ShortcutManager
     @Mock private lateinit var channelEditorDialogController: ChannelEditorDialogController
@@ -191,7 +191,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         windowRootViewVisibilityInteractor =
             WindowRootViewVisibilityInteractor(
                 testScope.backgroundScope,
-                WindowRootViewVisibilityRepository(barService, executor),
+                WindowRootViewVisibilityRepository(statusBarService, executor),
                 FakeKeyguardRepository(),
                 headsUpManager,
                 create().powerInteractor,
@@ -225,7 +225,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 windowRootViewVisibilityInteractor,
                 notificationLockscreenUserManager,
                 statusBarStateController,
-                barService,
                 deviceProvisionedController,
                 metricsLogger,
                 headsUpManager,

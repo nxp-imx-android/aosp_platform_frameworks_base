@@ -96,15 +96,6 @@
     <item msgid="7073042887003102964">"map13"</item>
     <item msgid="8147982633566548515">"map14"</item>
   </string-array>
-  <string-array name="bluetooth_a2dp_codec_titles">
-    <item msgid="2494959071796102843">"Usar seleção do sistema (predefinido)"</item>
-    <item msgid="4055460186095649420">"SBC"</item>
-    <item msgid="720249083677397051">"AAC"</item>
-    <item msgid="1049450003868150455">"Áudio <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g>"</item>
-    <item msgid="2908219194098827570">"Áudio <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g>"</item>
-    <item msgid="3825367753087348007">"LDAC"</item>
-    <item msgid="8637806944387141612">"Opus"</item>
-  </string-array>
   <string-array name="bluetooth_a2dp_codec_summaries">
     <item msgid="8868109554557331312">"Usar seleção do sistema (predefinido)"</item>
     <item msgid="9024885861221697796">"SBC"</item>

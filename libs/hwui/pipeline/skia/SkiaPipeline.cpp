@@ -168,7 +168,7 @@ bool SkiaPipeline::setupMultiFrameCapture() {
         SkSerialProcs procs;
         procs.fImageProc = SkSharingSerialContext::serializeImage;
         procs.fImageCtx = mSerialContext.get();
-        procs.fTypefaceProc = [](SkTypeface* tf, void* ctx){
+        procs.fTypefaceProc = [](SkTypeface* tf, void* ctx) -> SkSerialReturnType {
             return tf->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
         };
         // SkDocuments don't take owership of the streams they write.
@@ -316,10 +316,10 @@ void SkiaPipeline::endCapture(SkSurface* surface) {
             } else {
                 // single frame skp to file
                 SkSerialProcs procs;
-                procs.fTypefaceProc = [](SkTypeface* tf, void* ctx){
+                procs.fTypefaceProc = [](SkTypeface* tf, void* ctx) -> SkSerialReturnType {
                     return tf->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
                 };
-                procs.fImageProc = [](SkImage* img, void* ctx) -> sk_sp<SkData> {
+                procs.fImageProc = [](SkImage* img, void* ctx) -> SkSerialReturnType {
                     GrDirectContext* dCtx = static_cast<GrDirectContext*>(ctx);
                     return SkPngEncoder::Encode(dCtx,
                                                 img,

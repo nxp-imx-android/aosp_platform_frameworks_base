@@ -598,6 +598,22 @@ public class PersistentDataStoreTest {
         assertEquals(-1, mDataStore.getBrightnessNitsForDefaultDisplay(), 0);
     }
 
+    @Test
+    public void testUserRemoval() {
+        final float[] lux = { 0f, 10f };
+        final float[] nits = {1f, 100f };
+        int userSerial = 0;
+        final BrightnessConfiguration config = new BrightnessConfiguration.Builder(lux, nits)
+                .setDescription("description")
+                .build();
+        mDataStore.loadIfNeeded();
+        mDataStore.setBrightnessConfigurationForUser(config, userSerial, "packagename");
+        assertNotNull(mDataStore.getBrightnessConfiguration(userSerial));
+
+        mDataStore.removeUserData(userSerial);
+        assertNull(mDataStore.getBrightnessConfiguration(userSerial));
+    }
+
     public class TestInjector extends PersistentDataStore.Injector {
         private InputStream mReadStream;
         private OutputStream mWriteStream;

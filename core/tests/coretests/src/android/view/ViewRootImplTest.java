@@ -2252,20 +2252,20 @@ public class ViewRootImplTest {
     }
 
     /**
-     * Tests that the checkThreadCompat method posts to the correct thread when the {@link
+     * Tests that the checkThreadCompat method proceeds on the wrong thread when the {@link
      * ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId is disabled.
      */
     @Test
     @DisableCompatChanges(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)
     public void
-            checkThreadCompat_whenCalledFromWrongThread_andChangeIsDisabled_postsToCorrectThread()
+            checkThreadCompat_whenCalledFromWrongThread_andChangeIsDisabled_doesNotThrow()
                     throws Exception {
         checkThreadCompat(false);
     }
 
     /**
      * Tests that the checkThreadCompat method throws an exception when the
-     * {@link ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId is disabled.
+     * {@link ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId is enabled.
      */
     @Test
     @EnableCompatChanges(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)
@@ -2283,18 +2283,14 @@ public class ViewRootImplTest {
         });
         ViewRootImpl viewRootImpl = viewRootRef.get();
 
-        assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(1.0f);
-
-        final WindowManager.LayoutParams newAttributes = new WindowManager.LayoutParams();
-        newAttributes.copyFrom(viewRootImpl.mWindowAttributes);
-        newAttributes.alpha = 0.5f;
-
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> thrown = new AtomicReference<>();
 
         new Thread(() -> {
             try {
-                viewRootImpl.setLayoutParams(newAttributes, false);
+                // setActivityConfigCallback calls checkThreadCompat but does not call checkThread,
+                // so it allows us to test the checkThreadCompat behavior in isolation.
+                viewRootImpl.setActivityConfigCallback(null);
             } catch (Throwable e) {
                 thrown.set(e);
             } finally {
@@ -2307,12 +2303,8 @@ public class ViewRootImplTest {
         if (expectException) {
             assertThat(thrown.get())
                     .isInstanceOf(ViewRootImpl.CalledFromWrongThreadException.class);
-            assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(1.0f);
         } else {
             assertThat(thrown.get()).isNull();
-            // Wait for the handler to process the message.
-            sInstrumentation.waitForIdleSync();
-            assertThat(viewRootImpl.mWindowAttributes.alpha).isEqualTo(0.5f);
         }
     }
 }

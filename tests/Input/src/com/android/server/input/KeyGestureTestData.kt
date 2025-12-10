@@ -763,6 +763,18 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
+                "META + CTRL + N -> Launch note-taking app",
+                intArrayOf(
+                    KeyEvent.KEYCODE_META_LEFT,
+                    KeyEvent.KEYCODE_CTRL_LEFT,
+                    KeyEvent.KEYCODE_N,
+                ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES,
+                intArrayOf(KeyEvent.KEYCODE_N),
+                KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
                 "SYSRQ -> Take Screenshot",
                 intArrayOf(KeyEvent.KEYCODE_SYSRQ),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,

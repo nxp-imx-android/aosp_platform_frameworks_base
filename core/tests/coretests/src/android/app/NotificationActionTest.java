@@ -84,6 +84,19 @@ public class NotificationActionTest {
     }
 
     @Test
+    public void makeExpandedContentView_limitsActionsToThree() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .addAction(new Action.Builder(mIcon, "Action 1", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 2", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 3", mPendingIntent).build())
+                .addAction(new Action.Builder(mIcon, "Action 4", mPendingIntent).build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        assertThat(actionsLayout.getChildCount()).isEqualTo(3);
+    }
+
+    @Test
     public void makeExpandedContentView_actionsHaveIndexTag() {
         Notification.Builder n = new Notification.Builder(mContext, "channel")
                 .addAction(new Action.Builder(mIcon, "Action 1", mPendingIntent).build())
@@ -193,6 +206,29 @@ public class NotificationActionTest {
                 .isEqualTo("Action 1");
         assertThat(((Button) actionsLayout.getChildAt(1)).getText().toString())
                 .isEqualTo("Action 3");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_noncontextualActionsSkipped_noMoreAreAllowed() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setFlag(Notification.FLAG_PROMOTED_ONGOING, true)
+                // Skipped for null title
+                .addAction(new Action.Builder(mIcon, null, mPendingIntent).build())
+                // Skipped for RemoteInput in promoted-ongoing
+                .addAction(new Action.Builder(mIcon, "Remote", mPendingIntent)
+                        .addRemoteInput(new RemoteInput.Builder("x").build()).build())
+                // Valid and fits
+                .addAction(new Action.Builder(mIcon, "Valid 1", mPendingIntent).build())
+                // Valid and would fit, but won't be used
+                .addAction(new Action.Builder(mIcon, "Valid 2", mPendingIntent).build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        assertThat(actionsLayout.getChildCount()).isEqualTo(1);
+
+        assertThat(((Button) actionsLayout.getChildAt(0)).getText().toString())
+                .isEqualTo("Valid 1");
     }
 
     @Test

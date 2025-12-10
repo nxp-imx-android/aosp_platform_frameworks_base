@@ -130,7 +130,9 @@ constructor(
                                         shortcutType,
                                         it.targetName,
                                     )
-                                    viewModel.dismissDialog()
+                                    if (!it.isToggleable) {
+                                        viewModel.dismissDialog()
+                                    }
                                 },
                             )
                         }
@@ -148,6 +150,9 @@ constructor(
                                         shortcutType,
                                         it.targetName,
                                     )
+                                    if (!it.isToggleable) {
+                                        viewModel.dismissDialog()
+                                    }
                                 },
                                 targets = allTargets,
                             )

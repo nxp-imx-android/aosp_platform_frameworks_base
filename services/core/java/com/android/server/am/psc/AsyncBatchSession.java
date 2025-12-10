@@ -18,8 +18,6 @@ package com.android.server.am.psc;
 import android.os.Handler;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
-import com.android.server.am.ProcessStateController;
-
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 

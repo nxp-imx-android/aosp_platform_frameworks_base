@@ -94,12 +94,12 @@ public class UiServiceTestCase {
                             return Build.VERSION_CODES.CUR_DEVELOPMENT;
                     }
                 });
-        when(mPmi.getPackageUid(eq(PKG_N_MR1), anyLong(), eq(mUserId))).thenReturn(UID_N_MR1);
-        when(mPmi.getPackageUid(eq(PKG_O), anyLong(), eq(mUserId))).thenReturn(UID_O);
-        when(mPmi.getPackageUid(eq(PKG_P), anyLong(), eq(mUserId))).thenReturn(UID_P);
-        when(mPmi.getPackageUid(eq(PKG_R), anyLong(), eq(mUserId))).thenReturn(UID_R);
-        when(mPmi.getPackageUid(eq(mContext.getPackageName()), anyLong(), eq(mUserId)))
-                .thenReturn(mUid);
+        when(mPmi.isSameApp(eq(PKG_N_MR1), anyLong(), eq(UID_N_MR1), eq(mUserId))).thenReturn(true);
+        when(mPmi.isSameApp(eq(PKG_O), anyLong(), eq(UID_O), eq(mUserId))).thenReturn(true);
+        when(mPmi.isSameApp(eq(PKG_P), anyLong(), eq(UID_P), eq(mUserId))).thenReturn(true);
+        when(mPmi.isSameApp(eq(PKG_R), anyLong(), eq(UID_R), eq(mUserId))).thenReturn(true);
+        when(mPmi.isSameApp(eq(mContext.getPackageName()), anyLong(), eq(mUid), eq(mUserId)))
+                .thenReturn(true);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUmi);
         LocalServices.removeServiceForTest(UriGrantsManagerInternal.class);

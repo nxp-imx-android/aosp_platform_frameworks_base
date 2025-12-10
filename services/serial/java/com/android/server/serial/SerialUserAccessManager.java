@@ -143,11 +143,20 @@ class SerialUserAccessManager implements SerialUserAccessManagerInterface {
         updatePortAccess(portName, uid, token, /* granted */ false);
     }
 
+    /**
+     * Updates the access to a serial port for a specific UID.
+     * <p>
+     * If token == null, the access lasts until the device is disconnected,
+     * otherwise the access is used only once, for the caller with the given token.
+     *
+     * @param portName The name of the serial port.
+     * @param uid The user ID to revoke access from.
+     * @param token An optional token associated with the revocation.
+     */
     private void updatePortAccess(
             String portName, int uid, @Nullable IBinder token, boolean granted) {
-        Slog.d(TAG, "updatePortAccess: portName=" + portName + ", granted=" + granted);
+        Slog.d(TAG, "updatePortAccess(" + portName + ", " + uid + ", " + granted + ")");
         synchronized (mLock) {
-            AccessToPortRequest pendingRequest = findAndRemovePendingRequest(portName, uid, token);
             SparseBooleanArray uidToGranted = mPortAccessMap.get(portName);
             if (uidToGranted == null) {
                 uidToGranted = new SparseBooleanArray();
@@ -155,6 +164,7 @@ class SerialUserAccessManager implements SerialUserAccessManagerInterface {
             }
             uidToGranted.put(uid, granted);
 
+            AccessToPortRequest pendingRequest = findAndRemovePendingRequest(portName, uid, token);
             if (pendingRequest != null) {
                 pendingRequest.notifyRequestResult(granted);
             }

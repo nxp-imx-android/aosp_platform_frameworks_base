@@ -67,9 +67,8 @@ class AppCompatResizeOverrides {
         mAllowForceResizeOverrideOptProp = optPropBuilder.create(
                 PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES);
         mAllowRestrictedResizability = AppCompatUtils.asLazy(() -> {
-            if (com.android.window.flags.Flags.disableOptOutUniversalResizableByDefault()
-                    && mActivityRecord.info.applicationInfo.isChangeEnabled(
-                            DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
+            if (mActivityRecord.info.applicationInfo.isChangeEnabled(
+                    DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
                 return false;
             }
             // Application level.
@@ -92,9 +91,8 @@ class AppCompatResizeOverrides {
 
     static boolean allowRestrictedResizability(@NonNull PackageManager pm,
             @NonNull ApplicationInfo appInfo, boolean hasCheckedDisableOptOut) {
-        if (com.android.window.flags.Flags.disableOptOutUniversalResizableByDefault()
-                && !hasCheckedDisableOptOut && appInfo.isChangeEnabled(
-                        DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
+        if (!hasCheckedDisableOptOut && appInfo.isChangeEnabled(
+                DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
             return false;
         }
         try {

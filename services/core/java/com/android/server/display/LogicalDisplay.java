@@ -1128,6 +1128,8 @@ final class LogicalDisplay {
         }
 
         // The display doesn't allow dynamic content mode switch can always host tasks.
+        // TODO(b/466914512): Remove this once we have a better way to make sure activities can
+        // always be launched on the overlay displays used in WM CTS tests.
         if ((mPrimaryDisplayDevice.getDisplayDeviceInfoLocked().flags
                 & FLAG_ALLOWS_CONTENT_MODE_SWITCH) == 0) {
             return true;

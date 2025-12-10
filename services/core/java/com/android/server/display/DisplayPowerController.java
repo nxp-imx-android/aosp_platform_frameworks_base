@@ -1659,6 +1659,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mTempBrightnessEvent.setDisplayStateReason(displayState.reason());
         mTempBrightnessEvent.setDisplayPolicy(mPowerRequest.policy);
         mTempBrightnessEvent.setReason(mBrightnessReason);
+        mTempBrightnessEvent.setBrightnessMin(clampedState.getMinBrightness());
+        mTempBrightnessEvent.setBrightnessMax(clampedMax);
         mTempBrightnessEvent.setHbmMax(hbmMax);
         mTempBrightnessEvent.setHbmMode(mBrightnessRangeController.getHighBrightnessMode());
         mTempBrightnessEvent.setFlags(mTempBrightnessEvent.getFlags()

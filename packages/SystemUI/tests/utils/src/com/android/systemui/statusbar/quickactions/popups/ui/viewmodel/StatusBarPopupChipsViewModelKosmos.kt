@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
+import android.view.Display
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.assistantIconViewModelFactory
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.avControlsChipViewModelFactory
@@ -26,6 +27,7 @@ import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.shar
 private val Kosmos.statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel by
     Kosmos.Fixture {
         StatusBarPopupChipsViewModel(
+            displayId = Display.DEFAULT_DISPLAY,
             mediaControlChipFactory = mediaControlChipViewModelFactory,
             avControlsChipFactory = avControlsChipViewModelFactory,
             shareScreenPrivacyIndicatorFactory = shareScreenPrivacyIndicatorViewModelFactory,
@@ -37,6 +39,7 @@ private val Kosmos.statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel by
 val Kosmos.statusBarPopupChipsViewModelFactory by
     Kosmos.Fixture {
         object : StatusBarPopupChipsViewModel.Factory {
-            override fun create(): StatusBarPopupChipsViewModel = statusBarPopupChipsViewModel
+            override fun create(displayId: Int): StatusBarPopupChipsViewModel =
+                statusBarPopupChipsViewModel
         }
     }

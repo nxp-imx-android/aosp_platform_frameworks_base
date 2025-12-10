@@ -522,7 +522,7 @@ public:
         return sk_ref_sp(img);
     }
 
-    static sk_sp<SkData> collectNonTextureImagesProc(SkImage* img, void* ctx) {
+    static SkSerialReturnType collectNonTextureImagesProc(SkImage* img, void* ctx) {
         PictureCaptureState* context = reinterpret_cast<PictureCaptureState*>(ctx);
         const uint32_t originalId = img->uniqueID();
         auto it = context->mActiveMap.find(originalId);
@@ -537,7 +537,7 @@ public:
         return SkData::MakeEmpty();
     }
 
-    static sk_sp<SkData> serializeImage(SkImage* img, void* ctx) {
+    static SkSerialReturnType serializeImage(SkImage* img, void* ctx) {
         PictureWrapper* context = reinterpret_cast<PictureWrapper*>(ctx);
         const uint32_t id = img->uniqueID();
         auto iter = context->mTextureMap.find(id);
@@ -560,7 +560,7 @@ public:
         SkSerialProcs procs;
         procs.fImageProc = serializeImage;
         procs.fImageCtx = const_cast<PictureWrapper*>(this);
-        procs.fTypefaceProc = [](SkTypeface* tf, void* ctx) {
+        procs.fTypefaceProc = [](SkTypeface* tf, void* ctx) -> SkSerialReturnType {
             return tf->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
         };
         mPicture->serialize(stream, &procs);

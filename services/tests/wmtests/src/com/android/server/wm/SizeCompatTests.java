@@ -5527,7 +5527,6 @@ public class SizeCompatTests extends WindowTestsBase {
     @Test
     @EnableCompatChanges({ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT,
             AppCompatResizeOverrides.DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT})
-    @EnableFlags(Flags.FLAG_DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)
     public void testDisableOptOutUniversalResizeableByDefault() {
         makeDisplayLargeScreen(mDisplayContent);
         declareOptOutUniversalResizeable();

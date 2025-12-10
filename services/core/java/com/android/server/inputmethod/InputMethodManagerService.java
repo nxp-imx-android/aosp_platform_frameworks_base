@@ -64,14 +64,12 @@ import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
+
 import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal;
-import android.app.compat.CompatChanges;
-import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledSince;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentProvider;
@@ -271,13 +269,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private static final String TAG_TRY_SUPPRESSING_IME_SWITCHER = "TrySuppressingImeSwitcher";
     private static final String HANDLER_THREAD_NAME = "android.imms";
     private static final String PACKAGE_MONITOR_THREAD_NAME = "android.imms2";
-
-    // TODO(b/419394842) - Remove and use defined build version code when available.
-    private static final int BUILD_VERSION_CODE_C = android.os.Build.VERSION_CODES.BAKLAVA + 1;
-
-    @ChangeId
-    @EnabledSince(targetSdkVersion = BUILD_VERSION_CODE_C)
-    static final long INPUT_METHOD_LIST_API_PERMISSION_ENABLED = 417788162L;
 
     /**
      * When set, {@link #startInputUncheckedLocked} will return
@@ -1212,7 +1203,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return true;
             }
             // Pending user switch for a different user, cancel it.
-            ProtoLog.i(IMMS_WITH_LOGCAT, "Removing scheduled user switch to userId=%d", newUserId);
+            ProtoLog.i(IMMS_WITH_LOGCAT, "Removing scheduled user switch to userId=%d",
+                    mUserSwitchHandlerTask.mNewUserId);
             mIoHandler.removeCallbacks(mUserSwitchHandlerTask);
             mUserSwitchHandlerTask = null;
         }
@@ -1577,16 +1569,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodInfoSafeList getInputMethodList(@UserIdInt int userId,
             @DirectBootAwareness int directBootAwareness) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve input method list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -1607,15 +1591,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodInfoSafeList getEnabledInputMethodList(@UserIdInt int userId) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve enabled input method list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -1706,16 +1682,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @NonNull
     @Override
-    @PermissionManuallyEnforced
     public InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
             boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId) {
-        if (Flags.guardInputMethodListApis()
-                && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.QUERY_INPUT_METHOD,
-                    "Permission to retrieve enabled input method subtype list denied");
-        }
-
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -3760,16 +3728,20 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     }
 
                     if (!mConcurrentMultiUserModeEnabled) {
+                        // The target user is that of the pending user switch if there is any,
+                        // otherwise it is the current user
+                        final int targetUserId = mUserSwitchHandlerTask != null
+                                ? mUserSwitchHandlerTask.mNewUserId : mCurrentImeUserId;
                         // Allow this user (potentially requiring a switch) if:
-                        //  * it is the current user OR
-                        //  * there is a pending user switch for it OR
-                        //  * it is a profile of the current user
-                        final boolean isAllowed = userId == mCurrentImeUserId
-                                || (mUserSwitchHandlerTask != null
-                                    && userId == mUserSwitchHandlerTask.mNewUserId)
-                                || ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId);
+                        //  * it is the target user OR
+                        //  * it is a profile of the target user.
+                        // If there is a pending user switch to a different full user, and this user
+                        // is a profile of the current full user, then deny it.
+                        final boolean isAllowed = userId == targetUserId
+                                || ArrayUtils.contains(getProfileIds(targetUserId), userId);
                         if (!isAllowed) {
-                            Slog.w(TAG, "A background user is requesting window. Hiding IME.");
+                            Slog.w(TAG, "A background user " + userId + " is requesting window."
+                                    + " Hiding IME.");
                             Slog.w(TAG, "If you need to impersonate a foreground user/profile from"
                                     + " a background user, use EditorInfo.targetInputMethodUser"
                                     + " with INTERACT_ACROSS_USERS_FULL permission.");
@@ -4928,7 +4900,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void setEnabledSessionLocked(SessionState session, @NonNull UserData userData) {
+    private void setEnabledSessionLocked(SessionState session, @NonNull UserData userData) {
         if (userData.mEnabledSession != session) {
             if (userData.mEnabledSession != null && userData.mEnabledSession.mSession != null) {
                 ProtoLog.v(IMMS_DEBUG, "Disabling: " + userData.mEnabledSession);
@@ -4945,39 +4917,49 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void setEnabledSessionForAccessibilityLocked(
+    private void setEnabledSessionForAccessibilityLocked(
             @NonNull SparseArray<AccessibilitySessionState> accessibilitySessions,
             @NonNull UserData userData) {
-        // mEnabledAccessibilitySessions could the same object as accessibilitySessions.
-        SparseArray<IAccessibilityInputMethodSession> disabledSessions = new SparseArray<>();
-        for (int i = 0; i < userData.mEnabledAccessibilitySessions.size(); i++) {
-            if (!accessibilitySessions.contains(userData.mEnabledAccessibilitySessions.keyAt(i))) {
-                AccessibilitySessionState sessionState =
-                        userData.mEnabledAccessibilitySessions.valueAt(i);
-                if (sessionState != null) {
-                    disabledSessions.append(userData.mEnabledAccessibilitySessions.keyAt(i),
-                            sessionState.mSession);
-                }
-            }
+        if (accessibilitySessions.contentEquals(userData.mEnabledAccessibilitySessions)) {
+            return;
         }
-        if (disabledSessions.size() > 0) {
-            AccessibilityManagerInternal.get().setImeSessionEnabled(disabledSessions,
-                    false);
-        }
-        SparseArray<IAccessibilityInputMethodSession> enabledSessions = new SparseArray<>();
+
+        setEnabledSessionForAccessibilityInternalLocked(
+                /* sessionsToUpdate= */ userData.mEnabledAccessibilitySessions,
+                /* sessionsExcluded= */ accessibilitySessions,
+                /* enabled= */ false);
+        setEnabledSessionForAccessibilityInternalLocked(
+                /* sessionsToUpdate= */ accessibilitySessions,
+                /* sessionsExcluded= */ userData.mEnabledAccessibilitySessions,
+                /* enabled= */ true);
+
+        userData.mEnabledAccessibilitySessions.clear();
         for (int i = 0; i < accessibilitySessions.size(); i++) {
-            if (!userData.mEnabledAccessibilitySessions.contains(accessibilitySessions.keyAt(i))) {
-                AccessibilitySessionState sessionState = accessibilitySessions.valueAt(i);
-                if (sessionState != null) {
-                    enabledSessions.append(accessibilitySessions.keyAt(i), sessionState.mSession);
-                }
+            userData.mEnabledAccessibilitySessions.put(
+                    accessibilitySessions.keyAt(i), accessibilitySessions.valueAt(i));
+        }
+    }
+
+    @GuardedBy("ImfLock.class")
+    private void setEnabledSessionForAccessibilityInternalLocked(
+            @NonNull SparseArray<AccessibilitySessionState> sessionsToUpdate,
+            @NonNull SparseArray<AccessibilitySessionState> sessionsExcluded,
+            boolean enabled) {
+        final int size = sessionsToUpdate.size();
+        final var sessionsToNotify = new SparseArray<IAccessibilityInputMethodSession>(size);
+        for (int i = 0; i < size; i++) {
+            final AccessibilitySessionState sessionState = sessionsToUpdate.valueAt(i);
+            if (sessionState == null) {
+                continue;
+            }
+            final int a11yServiceId = sessionsToUpdate.keyAt(i);
+            if (sessionsExcluded.get(a11yServiceId) != sessionState) {
+                sessionsToNotify.append(a11yServiceId, sessionState.mSession);
             }
         }
-        if (enabledSessions.size() > 0) {
-            AccessibilityManagerInternal.get().setImeSessionEnabled(enabledSessions,
-                    true);
+        if (sessionsToNotify.size() > 0) {
+            AccessibilityManagerInternal.get().setImeSessionEnabled(sessionsToNotify, enabled);
         }
-        userData.mEnabledAccessibilitySessions = accessibilitySessions;
     }
 
     @GuardedBy("ImfLock.class")
@@ -6271,6 +6253,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             p.println("    mVisibilityStateComputer:");
             userData.mVisibilityStateComputer.dump(pw, "      ");
             p.println("    mInFullscreenMode=" + userData.mInFullscreenMode);
+            p.println("    mEnabledA11ySessions=" + userData.mEnabledAccessibilitySessions);
 
             final var settings = InputMethodSettingsRepository.get(userData.mUserId);
             final List<InputMethodInfo> methodList = settings.getMethodList();
