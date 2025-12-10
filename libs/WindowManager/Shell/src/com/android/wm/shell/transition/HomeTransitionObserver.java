@@ -61,7 +61,7 @@ public class HomeTransitionObserver implements TransitionObserver,
     private IBinder mPendingStartDragTransition;
 
     private int mListenerUserId = USER_NULL; // UserId associated with the registered listener.
-    private final Map<Integer, Boolean> mIsHomeVisibleForUser = new HashMap<>();
+    private final Map<Integer, UpdateParameters> mHomeUpdateForUser = new HashMap<>();
 
     public HomeTransitionObserver(@NonNull Context context,
             @NonNull ShellExecutor mainExecutor,
@@ -90,10 +90,10 @@ public class HomeTransitionObserver implements TransitionObserver,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
-        Boolean homeVisibilityUpdate = updateHomeVisibilityForUser(info);
+        UpdateParameters homeStateUpdate = updateHomeVisibilityForUser(info);
 
         if (info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
-                && homeVisibilityUpdate != null) {
+                && homeStateUpdate != null) {
             // Do not apply at the start of desktop drag as that updates launcher UI visibility.
             // Store the value and apply with a next transition or when cancelling the
             // desktop-drag transition.
@@ -103,16 +103,16 @@ public class HomeTransitionObserver implements TransitionObserver,
 
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
                 && info.getType() == TRANSIT_CONVERT_TO_BUBBLE
-                && homeVisibilityUpdate == null
+                && homeStateUpdate == null
                 && mPendingStartDragTransition != null) {
             // We are converting to bubble and we did not get a change to home visibility in this
             // transition. Apply the value from start of drag.
-            homeVisibilityUpdate = mIsHomeVisibleForUser.get(mListenerUserId);
+            homeStateUpdate = mHomeUpdateForUser.get(mListenerUserId);
         }
 
-        if (homeVisibilityUpdate != null) {
+        if (homeStateUpdate != null) {
             mPendingStartDragTransition = null;
-            notifyHomeVisibilityChanged(homeVisibilityUpdate);
+            notifyHomeVisibilityChanged(homeStateUpdate.mIsVisible);
         }
     }
 
@@ -123,18 +123,18 @@ public class HomeTransitionObserver implements TransitionObserver,
     /**
      * Determines if a given transition represents a change in home visibility for the current user.
      * <p>
-     * Only returns the visibility for the current user if it is in the transition.
+     * Only returns the new state for the current user if it is in the transition.
      * <p>
      * If a change is a visibility change for any user, it is cached in
-     * {@link #mIsHomeVisibleForUser} for pending transitions or when registering a listener.
+     * {@link #mHomeUpdateForUser} for pending transitions or when registering a listener.
      *
      * @param info The information about the transition.
-     * @return Considering the current user, {@code true} if its home activity is becoming visible,
-     *         {@code false} if invisible, or {@code null} if this change does not involve its home
-     *         visibility.
+     * @return Considering the current user, an {@link UpdateParameters} object whose visibility is
+     *         {@code true} if its home activity is becoming visible and {@code false} if invisible.
+     *         If this change does not involve the home visibility, the method returns null.
      */
-    private Boolean updateHomeVisibilityForUser(TransitionInfo info) {
-        Boolean homeVisibilityUpdate = null;
+    private UpdateParameters updateHomeVisibilityForUser(TransitionInfo info) {
+        UpdateParameters homeStateUpdate = null;
         for (TransitionInfo.Change change : info.getChanges()) {
             final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
             if (taskInfo == null
@@ -143,15 +143,16 @@ public class HomeTransitionObserver implements TransitionObserver,
                     || !taskInfo.isRunning) {
                 continue;
             }
-            Boolean update = getHomeVisibilityUpdateForChange(info, change, taskInfo);
-            if (update != null) {
-                mIsHomeVisibleForUser.put(taskInfo.userId, update);
+            Boolean visibilityUpdate = getHomeVisibilityUpdateForChange(info, change, taskInfo);
+            if (visibilityUpdate != null) {
+                UpdateParameters update = new UpdateParameters(visibilityUpdate);
+                mHomeUpdateForUser.put(taskInfo.userId, update);
                 if (taskInfo.userId == mListenerUserId) {
-                    homeVisibilityUpdate = update;
+                    homeStateUpdate = update;
                 }
             }
         }
-        return homeVisibilityUpdate;
+        return homeStateUpdate;
     }
 
     /**
@@ -196,9 +197,9 @@ public class HomeTransitionObserver implements TransitionObserver,
         }
         mPendingStartDragTransition = null;
 
-        Boolean pendingVisibility = mIsHomeVisibleForUser.get(mListenerUserId);
-        if (pendingVisibility != null) {
-            notifyHomeVisibilityChanged(pendingVisibility);
+        UpdateParameters pendingState = mHomeUpdateForUser.get(mListenerUserId);
+        if (pendingState != null) {
+            notifyHomeVisibilityChanged(pendingState.mIsVisible);
         }
     }
 
@@ -217,9 +218,9 @@ public class HomeTransitionObserver implements TransitionObserver,
         if (listener != null) {
             mListenerUserId = userId;
             mListener.register(listener);
-            Boolean isVisible = mIsHomeVisibleForUser.get(userId);
-            if (isVisible != null) {
-                notifyHomeVisibilityChanged(isVisible);
+            UpdateParameters update = mHomeUpdateForUser.get(userId);
+            if (update != null) {
+                notifyHomeVisibilityChanged(update.mIsVisible);
             }
         } else {
             mListener.unregister();
@@ -255,6 +256,15 @@ public class HomeTransitionObserver implements TransitionObserver,
         if (mListener != null) {
             // Unregister the listener to ensure any registered binder death recipients are unlinked
             mListener.unregister();
+        }
+    }
+
+    /** Container class for Launcher visibility changes. */
+    private static class UpdateParameters {
+        boolean mIsVisible;
+
+        UpdateParameters(boolean isVisible) {
+            mIsVisible = isVisible;
         }
     }
 }
