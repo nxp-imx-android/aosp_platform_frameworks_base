@@ -281,22 +281,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_DESK_LEAF_TASKS_IF_RELAUNCHED)
-    fun testCreateDeskRoot_reparentLeafTaskIfRelaunchSet() = runTest {
-        val desk = createDeskSuspending()
-
-        verify(mockShellTaskOrganizer)
-            .applyTransaction(
-                argThat { wct ->
-                    wct.hierarchyOps.any { hop ->
-                        hop.container == desk.deskRoot.token.asBinder() &&
-                            hop.isReparentLeafTaskIfRelaunch
-                    }
-                }
-            )
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_BACK_NAVIGATION_DESKTOP_APP_NO_MINIMIZE)
     fun testCreateDeskRoot_interceptsBack() = runTest {
         val desk = createDeskSuspending()
@@ -557,6 +541,23 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_REPARENT_DESK_LEAF_TASKS_IF_RELAUNCHED)
+    fun testActivateDesk__reparentLeafTaskIfRelaunchUnset() = runTest {
+        val desk = createDeskSuspending()
+
+        val wct = WindowContainerTransaction()
+        organizer.activateDesk(wct, desk.deskRoot.deskId, skipReorder = true)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.container == desk.deskRoot.token.asBinder() &&
+                        !hop.isReparentLeafTaskIfRelaunch
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
     fun testMoveTaskToDesk_runningTask() = runTest {
         val desk = createDeskSuspending()
 
@@ -726,6 +727,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         val deskId = organizer.getDeskIdFromTaskInfo(taskInDesk)
 
         assertThat(deskId).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REPARENT_DESK_LEAF_TASKS_IF_RELAUNCHED)
+    fun deactivateDesk_reparentLeafTaskIfRelaunchSet() = runTest {
+        val wct = WindowContainerTransaction()
+        val desk = createDeskSuspending()
+        organizer.activateDesk(wct, desk.deskRoot.deskId)
+
+        organizer.deactivateDesk(wct, desk.deskRoot.deskId)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.container == desk.deskRoot.token.asBinder() &&
+                        hop.isReparentLeafTaskIfRelaunch
+                }
+            )
+            .isTrue()
     }
 
     @Test

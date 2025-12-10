@@ -173,16 +173,13 @@ class RootTaskDesksOrganizer(
                     ),
                 this,
             )
-        token?.let {
-            val wct = WindowContainerTransaction()
-            if (Flags.reparentDeskLeafTasksIfRelaunched()) {
-                wct.setReparentLeafTaskIfRelaunch(token, /* reparentLeafTaskIfRelaunch */ true)
-            }
-            if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
-                wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
-            }
-            if (!wct.isEmpty) {
-                shellTaskOrganizer.applyTransaction(wct)
+        if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
+            token?.let {
+                shellTaskOrganizer.applyTransaction(
+                    WindowContainerTransaction().apply {
+                        setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
+                    }
+                )
             }
         }
     }
@@ -242,6 +239,9 @@ class RootTaskDesksOrganizer(
         if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
         updateLaunchRoot(wct, deskId, enabled = true)
         updateTaskMoveAllowed(wct, deskId, allowed = true)
+        if (Flags.reparentDeskLeafTasksIfRelaunched()) {
+            wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ false)
+        }
     }
 
     override fun deactivateDesk(
@@ -268,6 +268,9 @@ class RootTaskDesksOrganizer(
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
         updateTaskMoveAllowed(wct, deskId, allowed = false)
+        if (Flags.reparentDeskLeafTasksIfRelaunched()) {
+            wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ true)
+        }
     }
 
     override fun addLaunchDeskToActivityOptions(activityOptions: ActivityOptions, deskId: Int) {
