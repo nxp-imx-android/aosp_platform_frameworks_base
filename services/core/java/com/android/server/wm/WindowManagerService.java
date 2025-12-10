@@ -119,7 +119,6 @@ import static android.window.WindowProviderService.isWindowProviderService;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_LOCK;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
@@ -173,7 +172,6 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityThread;
-import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.IActivityManager;
 import android.app.IApplicationThread;
@@ -404,7 +402,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -615,8 +612,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
     final IActivityManager mActivityManager;
     final ActivityManagerInternal mAmInternal;
-    @Nullable
-    final AppLockInternal mAppLockInternal;
     final UserManagerInternal mUmInternal;
 
     final PermissionManager mPermissionManager;
@@ -1253,66 +1248,6 @@ public class WindowManagerService extends IWindowManager.Stub
     @Nullable
     final AppLockController mAppLockController;
 
-    /**
-     * Tracks packages that are currently in a locked state from App Lock.
-     *
-     * <p>The outer {@link SparseArray} is keyed by userId, and the inner {@link ArraySet} contains
-     * the package names of the locked packages for that user. This information is queried by
-     * {@link #isPackageLockedByAppLock(String, int)}.
-     *
-     * <p>This is initialized in {@link #systemReady()} and subsequently updated by
-     * {@link #mAppLockLockedPackageStateListener}.
-     */
-    @GuardedBy("mGlobalLock")
-    private final SparseArray<ArraySet<String>> mAppLockLockedPackages = new SparseArray<>();
-
-    final AppLockOverlayController mAppLockOverlayController;
-
-    // TODO(b/463115071): Move mAppLockLockedPackageStateListener to a separate class.
-    /**
-     * Listener for changes in the App Lock locked state of packages from {@link AppLockInternal}.
-     * This is used to keep {@link #mAppLockLockedPackages} in sync.
-     */
-    private final AppLockInternal.PackageLockedStateListener mAppLockLockedPackageStateListener =
-            new AppLockInternal.PackageLockedStateListener() {
-
-                @Override
-                public void onPackageLockedStateChanged(@NonNull String packageName, int userId,
-                        boolean locked) {
-                    Objects.requireNonNull(packageName);
-
-                    synchronized (mGlobalLock) {
-                        ProtoLog.d(WM_DEBUG_APP_LOCK, "onPackageLockedByAppLockStateChanged: %s,"
-                                + " userId=%d, locked=%b", packageName, userId, locked);
-
-                        ArraySet<String> lockedPackages = mAppLockLockedPackages.get(userId);
-                        if (locked) {
-                            if (lockedPackages == null) {
-                                lockedPackages = new ArraySet<>();
-                                mAppLockLockedPackages.put(userId, lockedPackages);
-                            }
-                            lockedPackages.add(packageName);
-
-                            mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(
-                                    packageName, userId);
-                        } else {
-                            if (lockedPackages == null) {
-                                // The package is not locked, so there is nothing to do.
-                                return;
-                            }
-                            lockedPackages.remove(packageName);
-                            if (lockedPackages.isEmpty()) {
-                                mAppLockLockedPackages.remove(userId);
-                            }
-
-                            // When a package is unlocked, there is no need to explicitly remove any
-                            // overlays. The LockedAppActivity is responsible for finishing itself
-                            // when it detects that the package is no longer locked.
-                        }
-                    }
-                }
-            };
-
     private final ScreenRecordingCallbackController mScreenRecordingCallbackController;
 
     private volatile boolean mDisableSecureWindows = false;
@@ -1476,16 +1411,9 @@ public class WindowManagerService extends IWindowManager.Stub
         mRotationWatcherController = new RotationWatcherController(this);
         mDisplayNotificationController = new DisplayWindowListenerController(this);
         mTaskSystemBarsListenerController = new TaskSystemBarsListenerController();
-        mAppLockOverlayController = new AppLockOverlayController(this);
 
         mActivityManager = ActivityManager.getService();
         mAmInternal = LocalServices.getService(ActivityManagerInternal.class);
-        mAppLockInternal =
-                (android.security.Flags.appLockApis() && android.security.Flags.appLockCore())
-                        ? LocalServices.getService(AppLockInternal.class) : null;
-        if (mAppLockInternal != null) {
-            mAppLockInternal.registerPackageLockedStateListener(mAppLockLockedPackageStateListener);
-        }
         mUmInternal = LocalServices.getService(UserManagerInternal.class);
         mPermissionManager = context.getSystemService(PermissionManager.class);
         mAppOps = context.getSystemService(AppOpsManager.class);
@@ -3461,23 +3389,23 @@ public class WindowManagerService extends IWindowManager.Stub
     /**
      * Returns {@code true} if the given package is currently in a locked state by App Lock.
      *
+     * <p>A package is considered locked if App Lock is enabled for it and the conditions for being
+     * unlocked are not met. After a successful user authentication, an unlocked state is granted
+     * while the application is in the foreground, or within a short grace period after the app is
+     * no longer in the foreground.
+     *
      * <p>This method checks the internal state of packages that are locked by App Lock, which is
-     * stored in {@link #mAppLockLockedPackages}. This state is maintained by listening to changes
-     * from {@link AppLockInternal} via {@link #mAppLockLockedPackageStateListener}.
+     * stored in {@link AppLockController}.
      *
      * @param packageName the package name to check for the App Lock locked state
-     * @param userId the user for whom to check the locked state
+     * @param userId      the user for whom to check the locked state
      * @return {@code true} if the package is locked for the given user
      */
-    public boolean isPackageLockedByAppLock(@NonNull String packageName, int userId) {
+    @GuardedBy("mGlobalLock")
+    boolean isPackageLockedByAppLockLocked(@NonNull String packageName, int userId) {
         Objects.requireNonNull(packageName);
-
-        synchronized (mGlobalLock) {
-            if (!mAppLockLockedPackages.contains(userId)) {
-                return false;
-            }
-            return mAppLockLockedPackages.get(userId).contains(packageName);
-        }
+        return mAppLockController != null && mAppLockController.isPackageLockedByAppLockLocked(
+                packageName, userId);
     }
 
     /** Returns {@code true} if this binder is a registered window token. */
@@ -6098,23 +6026,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
         if (mAppLockController != null) {
             mAppLockController.systemReady();
-        }
-        if (mAppLockInternal != null) {
-            synchronized (mGlobalLock) {
-                // This method, i.e. systemReady(),  is called after
-                // SystemService.PHASE_SYSTEM_SERVICES_READY, ensuring that it's safe to call
-                // AppLockInternal#getAppLockEnabledPackages().
-                final SparseArray<Set<String>> appLockEnabledPackages =
-                        mAppLockInternal.getAppLockEnabledPackages();
-                mAppLockLockedPackages.clear();
-                for (int i = 0; i < appLockEnabledPackages.size(); i++) {
-                    final int userId = appLockEnabledPackages.keyAt(i);
-                    final Set<String> packages = appLockEnabledPackages.valueAt(i);
-                    if (packages != null) {
-                        mAppLockLockedPackages.put(userId, new ArraySet<>(packages));
-                    }
-                }
-            }
         }
     }
 

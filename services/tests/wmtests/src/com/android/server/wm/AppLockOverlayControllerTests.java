@@ -61,7 +61,7 @@ import org.mockito.ArgumentCaptor;
  * Build/Install/Run:
  * atest WmTests:AppLockOverlayControllerTests
  */
-@EnableFlags(Flags.FLAG_APP_LOCK_CORE)
+@EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
 @MediumTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
@@ -71,7 +71,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
 
     @Before
     public void setUp() throws Exception {
-        mAppLockOverlayController = mWm.mAppLockOverlayController;
+        mAppLockOverlayController = mWm.mAppLockController.mAppLockOverlayController;
         spyOn(mAppLockOverlayController);
         spyOn(mRootWindowContainer);
     }
@@ -314,9 +314,9 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         final ActivityRecord topLockedActivity1 = new ActivityBuilder(mAtm)
                 .setComponent(TEST_COMPONENT_1).setTask(task).build();
 
-        doReturn(true).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
-        doReturn(true).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1);
-        doReturn(false).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_3, TEST_USER_ID_1);
+        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_1, TEST_USER_ID_1);
+        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_2, TEST_USER_ID_1);
+        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_3, TEST_USER_ID_1);
         doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(any());
         clearInvocations(mAppLockOverlayController);
 
@@ -713,7 +713,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         if (!isVisible) {
             task.setVisibleRequested(false);
         }
-        doReturn(true).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
+        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_1, TEST_USER_ID_1);
         clearInvocations(mAppLockOverlayController);
         return task;
     }
@@ -736,8 +736,8 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
                 .setTask(task)
                 .build();
 
-        doReturn(false).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1);
-        doReturn(true).when(mWm).isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
+        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_2, TEST_USER_ID_1);
+        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_1, TEST_USER_ID_1);
 
         if (!isVisible) {
             task.setVisibleRequested(false);

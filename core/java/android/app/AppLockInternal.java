@@ -34,6 +34,7 @@ public interface AppLockInternal {
      * reliable after {@link com.android.server.SystemService#PHASE_SYSTEM_SERVICES_READY}, as the
      * initial list of App Lock enabled packages is populated during that phase.
      */
+    @NonNull
     SparseArray<Set<String>> getAppLockEnabledPackages();
 
     /**
