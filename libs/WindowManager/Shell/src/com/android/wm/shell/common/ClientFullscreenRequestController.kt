@@ -57,9 +57,8 @@ class ClientFullscreenRequestController(
     private val transitions: Transitions,
 ) : Transitions.TransitionHandler {
 
-    private val handlers = mutableListOf<FullscreenRequestHandler>(
-        FallbackFullscreenRequestHandler()
-    )
+    private val handlers =
+        mutableListOf<FullscreenRequestHandler>(FallbackFullscreenRequestHandler())
     // TODO: b/296268915 - find a way to clean this up if the task is removed and will never get an
     //  exit request.
     private val taskToRestorableState = mutableMapOf<Int, RestorableState>()
@@ -80,7 +79,7 @@ class ClientFullscreenRequestController(
 
     override fun handleRequest(
         transition: IBinder,
-        request: TransitionRequestInfo
+        request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
         val fullscreenRequestChange = request.fullscreenRequestChange ?: return null
         val task = request.triggerTask ?: return null
@@ -93,7 +92,7 @@ class ClientFullscreenRequestController(
         transition: IBinder,
         task: RunningTaskInfo,
         @Activity.FullscreenModeRequest mode: Int,
-        callback: IRemoteCallback?
+        callback: IRemoteCallback?,
     ): WindowContainerTransaction? {
         logV(
             "handle mode=%s task=%d hasCallback=%b transition=%s",
@@ -127,7 +126,7 @@ class ClientFullscreenRequestController(
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction,
-        finishCallback: Transitions.TransitionFinishCallback
+        finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
         return false
     }
@@ -135,9 +134,7 @@ class ClientFullscreenRequestController(
     private fun reportResult(callback: IRemoteCallback?, result: FullscreenRequestHandler.Result) {
         logV("reportResult code=%s callback=%s", requestResultToString(result.resultCode), callback)
         if (callback == null) return
-        val bundle = Bundle().apply {
-            putInt(REMOTE_CALLBACK_RESULT_KEY, result.resultCode)
-        }
+        val bundle = Bundle().apply { putInt(REMOTE_CALLBACK_RESULT_KEY, result.resultCode) }
         try {
             callback.sendResult(bundle)
         } catch (e: RemoteException) {
@@ -186,9 +183,7 @@ class ClientFullscreenRequestController(
         ProtoLog.w(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
     }
 
-    /**
-     * A handler capable of handling fullscreen requests.
-     */
+    /** A handler capable of handling fullscreen requests. */
     interface FullscreenRequestHandler {
         /** The name of this handler for debugging. */
         val name: String
@@ -197,22 +192,23 @@ class ClientFullscreenRequestController(
          * Called when a fullscreen entry is being requested for [task].
          *
          * @return an [EnterResult] if the handler chooses to handle this request either by
-         * approving or rejecting it which means other handlers will not get a chance to handle it,
-         * or null to not indicate it won't be handled and should be passed on to the next handler.
+         *   approving or rejecting it which means other handlers will not get a chance to handle
+         *   it, or null to not indicate it won't be handled and should be passed on to the next
+         *   handler.
          */
         fun handleEnterFullscreen(transition: IBinder, task: RunningTaskInfo): EnterResult?
 
         /**
          * Called when a fullscreen exit is being requested for [task].
          *
-         * @return an [ExitResult] if the handler chooses to handle this request either by
-         * approving or rejecting it which means other handlers will not get a chance to handle it,
-         * or null to not indicate it won't be handled and should be passed on to the next handler.
+         * @return an [ExitResult] if the handler chooses to handle this request either by approving
+         *   or rejecting it which means other handlers will not get a chance to handle it, or null
+         *   to not indicate it won't be handled and should be passed on to the next handler.
          */
         fun handleExitFullscreen(
             transition: IBinder,
             task: RunningTaskInfo,
-            restorableState: RestorableState?
+            restorableState: RestorableState?,
         ): ExitResult?
 
         /** The result of a fullscreen request. */
@@ -230,7 +226,8 @@ class ClientFullscreenRequestController(
         /** The result of a fullscreen entry request. */
         sealed class EnterResult : Result {
             @ConsistentCopyVisibility
-            data class Approved private constructor(
+            data class Approved
+            private constructor(
                 @RequestResult override val resultCode: Int,
                 override val handler: FullscreenRequestHandler,
                 override val wct: WindowContainerTransaction,
@@ -245,17 +242,15 @@ class ClientFullscreenRequestController(
 
                 override fun toString(): String {
                     return "Approved(" +
-                            "resultCode=${requestResultToString(resultCode)}, " +
-                            "handler=${handler.name}, " +
-                            "restorableState=$restorableState" +
-                            ")"
+                        "resultCode=${requestResultToString(resultCode)}, " +
+                        "handler=${handler.name}, " +
+                        "restorableState=$restorableState" +
+                        ")"
                 }
 
                 sealed class RestorableState {
-                    data class Desktop(
-                        val originalDeskId: Int,
-                        val bounds: Rect,
-                    ) : RestorableState()
+                    data class Desktop(val originalDeskId: Int, val bounds: Rect) :
+                        RestorableState()
                     // TODO: b/296268915 - add pip and split states.
                 }
             }
@@ -272,9 +267,9 @@ class ClientFullscreenRequestController(
 
                 override fun toString(): String {
                     return "Failed(" +
-                            "resultCode=${requestResultToString(resultCode)}, " +
-                            "handler=${handler.name}" +
-                            ")"
+                        "resultCode=${requestResultToString(resultCode)}, " +
+                        "handler=${handler.name}" +
+                        ")"
                 }
             }
         }
@@ -282,7 +277,8 @@ class ClientFullscreenRequestController(
         /** The result of a fullscreen exit request. */
         sealed class ExitResult : Result {
             @ConsistentCopyVisibility
-            data class Approved private constructor(
+            data class Approved
+            private constructor(
                 @RequestResult override val resultCode: Int,
                 override val handler: FullscreenRequestHandler,
                 override val wct: WindowContainerTransaction,
@@ -295,9 +291,9 @@ class ClientFullscreenRequestController(
 
                 override fun toString(): String {
                     return "Approved(" +
-                            "resultCode=${requestResultToString(resultCode)}, " +
-                            "handler=${handler.name}" +
-                            ")"
+                        "resultCode=${requestResultToString(resultCode)}, " +
+                        "handler=${handler.name}" +
+                        ")"
                 }
             }
 
@@ -313,9 +309,9 @@ class ClientFullscreenRequestController(
 
                 override fun toString(): String {
                     return "Failed(" +
-                            "resultCode=${requestResultToString(resultCode)}, " +
-                            "handler=${handler.name}" +
-                            ")"
+                        "resultCode=${requestResultToString(resultCode)}, " +
+                        "handler=${handler.name}" +
+                        ")"
                 }
             }
         }
@@ -331,7 +327,7 @@ class ClientFullscreenRequestController(
 
         override fun handleEnterFullscreen(
             transition: IBinder,
-            task: RunningTaskInfo
+            task: RunningTaskInfo,
         ): EnterResult {
             if (task.windowingMode == WINDOWING_MODE_FULLSCREEN) {
                 return EnterResult.Failed(RESULT_FAILED_ALREADY_FULLY_EXPANDED, this)
@@ -342,7 +338,7 @@ class ClientFullscreenRequestController(
         override fun handleExitFullscreen(
             transition: IBinder,
             task: RunningTaskInfo,
-            restorableState: RestorableState?
+            restorableState: RestorableState?,
         ): ExitResult {
             if (task.windowingMode != WINDOWING_MODE_FULLSCREEN) {
                 return ExitResult.Failed(RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY, this)

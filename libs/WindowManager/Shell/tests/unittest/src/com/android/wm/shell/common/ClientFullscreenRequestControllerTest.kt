@@ -170,14 +170,16 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun exitFullscreen_afterApprovedEnter_providesRestorableState() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(
-            originalDeskId = 123,
-            bounds = Rect(200, 200, 800, 800)
-        )
-        val handler = TestHandler(
-            enterResult = EnterResult.Approved(wct, mock(), restorableState),
-            exitResult = ExitResult.Approved(wct, mock())
-        )
+        val restorableState =
+            EnterResult.Approved.RestorableState.Desktop(
+                originalDeskId = 123,
+                bounds = Rect(200, 200, 800, 800),
+            )
+        val handler =
+            TestHandler(
+                enterResult = EnterResult.Approved(wct, mock(), restorableState),
+                exitResult = ExitResult.Approved(wct, mock()),
+            )
         controller.addHandler(handler)
 
         val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
@@ -197,14 +199,16 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun exitFullscreen_stateIsClearedAfterUse() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(
-            originalDeskId = 123,
-            bounds = Rect(200, 200, 800, 800)
-        )
-        val handler = TestHandler(
-            enterResult = EnterResult.Approved(wct, mock(), restorableState),
-            exitResult = ExitResult.Approved(wct, mock())
-        )
+        val restorableState =
+            EnterResult.Approved.RestorableState.Desktop(
+                originalDeskId = 123,
+                bounds = Rect(200, 200, 800, 800),
+            )
+        val handler =
+            TestHandler(
+                enterResult = EnterResult.Approved(wct, mock(), restorableState),
+                exitResult = ExitResult.Approved(wct, mock()),
+            )
         controller.addHandler(handler)
 
         val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
@@ -225,13 +229,15 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
 
     @Test
     fun enterFullscreen_notApproved_stateIsNotSaved() {
-        val handler = TestHandler(
-            enterResult = EnterResult.Failed(
-                FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED,
-                mock()
-            ),
-            exitResult = ExitResult.Approved(WindowContainerTransaction(), mock())
-        )
+        val handler =
+            TestHandler(
+                enterResult =
+                    EnterResult.Failed(
+                        FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED,
+                        mock(),
+                    ),
+                exitResult = ExitResult.Approved(WindowContainerTransaction(), mock()),
+            )
         controller.addHandler(handler)
         val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
         val exitTask = createTask(WINDOWING_MODE_FULLSCREEN)
@@ -249,13 +255,12 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun enterFullscreen_approved_setsTaskAllowedToExit() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(
-            originalDeskId = 123,
-            bounds = Rect(200, 200, 800, 800)
-        )
-        val handler = TestHandler(
-            enterResult = EnterResult.Approved(wct, mock(), restorableState),
-        )
+        val restorableState =
+            EnterResult.Approved.RestorableState.Desktop(
+                originalDeskId = 123,
+                bounds = Rect(200, 200, 800, 800),
+            )
+        val handler = TestHandler(enterResult = EnterResult.Approved(wct, mock(), restorableState))
         controller.addHandler(handler)
         val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
         val enterRequest = request(enterTask, FULLSCREEN_MODE_REQUEST_ENTER)
@@ -272,14 +277,16 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     @Test
     fun exitFullscreen_afterApprovedEnter_setsTaskInheritsAllowMode() {
         val wct = WindowContainerTransaction()
-        val restorableState = EnterResult.Approved.RestorableState.Desktop(
-            originalDeskId = 123,
-            bounds = Rect(200, 200, 800, 800)
-        )
-        val handler = TestHandler(
-            enterResult = EnterResult.Approved(wct, mock(), restorableState),
-            exitResult = ExitResult.Approved(wct, mock())
-        )
+        val restorableState =
+            EnterResult.Approved.RestorableState.Desktop(
+                originalDeskId = 123,
+                bounds = Rect(200, 200, 800, 800),
+            )
+        val handler =
+            TestHandler(
+                enterResult = EnterResult.Approved(wct, mock(), restorableState),
+                exitResult = ExitResult.Approved(wct, mock()),
+            )
         controller.addHandler(handler)
 
         val enterTask = createTask(WINDOWING_MODE_MULTI_WINDOW)
@@ -299,9 +306,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     }
 
     private fun createTask(windowingMode: Int): RunningTaskInfo {
-        return TestRunningTaskInfoBuilder()
-            .setWindowingMode(windowingMode)
-            .build()
+        return TestRunningTaskInfoBuilder().setWindowingMode(windowingMode).build()
     }
 
     private fun RunningTaskInfo.setWindowingMode(windowingMode: Int) {
@@ -311,7 +316,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
     private fun request(
         task: RunningTaskInfo,
         @Activity.FullscreenModeRequest mode: Int,
-        callback: IRemoteCallback? = null
+        callback: IRemoteCallback? = null,
     ): TransitionRequestInfo {
         val fullscreenRequest = FullscreenRequestChange(mode, callback)
         return TransitionRequestInfo(
@@ -340,12 +345,15 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
         container: WindowContainerToken,
         @FullscreenRequestHandler.RequestAllowMode mode: Int,
     ) {
-        assertThat(changes.any { change ->
-            change.key == container.asBinder() &&
-                    (change.value.changeMask and
-                            Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE != 0) &&
-                    change.value.fullscreenRequestAllowMode == mode
-        }).isTrue()
+        assertThat(
+                changes.any { change ->
+                    change.key == container.asBinder() &&
+                        (change.value.changeMask and Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE !=
+                            0) &&
+                        change.value.fullscreenRequestAllowMode == mode
+                }
+            )
+            .isTrue()
     }
 
     /** A test handler that can be configured to accept or reject future requests. */
@@ -361,7 +369,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
 
         override fun handleEnterFullscreen(
             transition: IBinder,
-            task: RunningTaskInfo
+            task: RunningTaskInfo,
         ): EnterResult? {
             isEnterCalled = true
             return enterResult
@@ -370,7 +378,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
         override fun handleExitFullscreen(
             transition: IBinder,
             task: RunningTaskInfo,
-            restorableState: EnterResult.Approved.RestorableState?
+            restorableState: EnterResult.Approved.RestorableState?,
         ): ExitResult? {
             isExitCalled = true
             receivedRestorableState = restorableState
@@ -379,10 +387,7 @@ class ClientFullscreenRequestControllerTest : ShellTestCase() {
 
         companion object {
             /** A [TestHandler] that rejects all requests. */
-            fun neverAccepts() = TestHandler(
-                enterResult = null,
-                exitResult = null,
-            )
+            fun neverAccepts() = TestHandler(enterResult = null, exitResult = null)
 
             /** A [TestHandler] that accepts all requests. */
             fun acceptsRequest(): TestHandler {
