@@ -33,6 +33,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.clipboardoverlay.ClipboardListener.EXTRA_SUPPRESS_OVERLAY
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.utils.UserScopedService
 import com.google.common.truth.Truth.assertThat
@@ -129,6 +130,8 @@ class ActionExecutorTest : SysuiTestCase() {
         verify(clipboardManager).setPrimaryClip(clipDataArg.capture())
         verify(viewProxy).requestDismissal(null)
         assertThat(clipDataArg.firstValue.getItemAt(0).uri).isEqualTo(uri)
+        assertThat(clipDataArg.firstValue.description.extras?.getBoolean(EXTRA_SUPPRESS_OVERLAY))
+            .isTrue()
     }
 
     private fun createActionExecutor(): ActionExecutor {
