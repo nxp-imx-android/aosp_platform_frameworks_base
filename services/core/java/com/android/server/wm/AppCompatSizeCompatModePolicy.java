@@ -23,7 +23,6 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
-import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 import static com.android.server.wm.AppCompatUtils.isDesktopFirst;
@@ -384,14 +383,12 @@ class AppCompatSizeCompatModePolicy {
         // relatively fixed.
         overrideConfig.colorMode = fullConfig.colorMode;
         overrideConfig.densityDpi = fullConfig.densityDpi;
-        if (ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            overrideConfig.touchscreen = fullConfig.touchscreen;
-            overrideConfig.navigation = fullConfig.navigation;
-            overrideConfig.keyboard = fullConfig.keyboard;
-            overrideConfig.keyboardHidden = fullConfig.keyboardHidden;
-            overrideConfig.hardKeyboardHidden = fullConfig.hardKeyboardHidden;
-            overrideConfig.navigationHidden = fullConfig.navigationHidden;
-        }
+        overrideConfig.touchscreen = fullConfig.touchscreen;
+        overrideConfig.navigation = fullConfig.navigation;
+        overrideConfig.keyboard = fullConfig.keyboard;
+        overrideConfig.keyboardHidden = fullConfig.keyboardHidden;
+        overrideConfig.hardKeyboardHidden = fullConfig.hardKeyboardHidden;
+        overrideConfig.navigationHidden = fullConfig.navigationHidden;
         // The smallest screen width is the short side of screen bounds. Because the bounds
         // and density won't be changed, smallestScreenWidthDp is also fixed.
         overrideConfig.smallestScreenWidthDp = fullConfig.smallestScreenWidthDp;
