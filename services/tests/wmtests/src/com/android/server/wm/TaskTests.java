@@ -287,6 +287,42 @@ public class TaskTests extends WindowTestsBase {
         assertThat(mAtm.getRecentTasks().getRawTasks()).containsExactly(originalTask);
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    public void testNotifyExitPipMode_onConfigurationChanged_flagEnabled() {
+        // Create a task and move it to pinned mode.
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.setState(RESUMED, "test");
+        mAtm.mRootWindowContainer.moveActivityToPinnedRootTaskForTest(activity, "test");
+        final Task pinnedTask = activity.getTask();
+        spyOn(mRootWindowContainer);
+
+        // Exit pinned mode by setting windowing mode to fullscreen.
+        pinnedTask.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+        // Verify that the exit pip mode is notified. This is called from onConfigurationChanged
+        // when the flag is enabled.
+        verify(mRootWindowContainer).notifyActivityPipModeChanged(eq(pinnedTask), eq(null));
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    public void testNotifyExitPipMode_setWindowingMode_flagDisabled() {
+        // Create a task and move it to pinned mode.
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.setState(RESUMED, "test");
+        mAtm.mRootWindowContainer.moveActivityToPinnedRootTaskForTest(activity, "test");
+        final Task pinnedTask = activity.getTask();
+        spyOn(mRootWindowContainer);
+
+        // Exit pinned mode by setting windowing mode to fullscreen.
+        pinnedTask.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+        // Verify that the exit pip mode is notified. This is called from setWindowingModeInner
+        // when the flag is disabled.
+        verify(mRootWindowContainer).notifyActivityPipModeChanged(eq(pinnedTask), eq(null));
+    }
+
     @Test
     public void testReparent_BetweenDisplays() {
         // Create first task on primary display.
