@@ -27,3 +27,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "return_credential_not_enrolled"
+  namespace: "biometrics_framework"
+  description: "This bugfix flag is to prioritize credential not enrolled error"
+  bug: "466940874"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
