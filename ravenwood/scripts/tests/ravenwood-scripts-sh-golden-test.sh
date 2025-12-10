@@ -128,6 +128,8 @@ run_all_commands() {
 
     RAVENWOOD_LOG_OUT=- run_test "No live logcat" run-ravenwood-tests-wrapper -T
 
+    run_test "Wait for debugger" run-ravenwood-tests-wrapper -w
+
     echo "== All commands finished =="
 }
 

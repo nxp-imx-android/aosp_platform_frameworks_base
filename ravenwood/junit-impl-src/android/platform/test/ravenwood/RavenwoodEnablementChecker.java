@@ -42,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -212,8 +213,12 @@ public abstract class RavenwoodEnablementChecker {
      */
     @VisibleForTesting
     public static void setDefaultInstance() {
-        sInstance = new RavenwoodEnablementCheckerImpl(getDefaultRunMode(), getPolicyFiles(),
-                RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_FORCE_FILTER_REGEX", null));
+        sInstance = new RavenwoodEnablementCheckerImpl(
+                getDefaultRunMode(),
+                getPolicyFiles(),
+                RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_FILTER_REGEX", null),
+                RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_SKIP_LARGE_TESTS")
+        );
     }
 
     /**
@@ -224,11 +229,21 @@ public abstract class RavenwoodEnablementChecker {
             @NonNull RunMode runMode,
             @Nullable String policyText,
             @Nullable String overridingPattern
-            )  {
+    ) {
+        overrideInstance(runMode, policyText, overridingPattern, false);
+    }
+
+    @VisibleForTesting
+    public static void overrideInstance(
+            @NonNull RunMode runMode,
+            @Nullable String policyText,
+            @Nullable String overridingPattern,
+            boolean ignoreLargeTests
+    )  {
         try {
             var parser = new EnablementTextPolicyParser();
             if (policyText != null && !policyText.isEmpty()) {
-                parser.parse("[in-memory]", policyText);
+                parser.parse("[in-memory]", policyText, ignoreLargeTests);
             }
             sInstance = new RavenwoodEnablementCheckerImpl(
                     runMode, parser.getResult(), overridingPattern);
@@ -292,8 +307,11 @@ public abstract class RavenwoodEnablementChecker {
         RavenwoodEnablementCheckerImpl(
                 @NonNull RunMode runMode,
                 @NonNull String[] policyFiles,
-                @Nullable String overridingPattern) {
-            this(runMode, EnablementTextPolicyParser.parsePolicyFiles(policyFiles),
+                @Nullable String overridingPattern,
+                boolean ignoreLargeTests
+        ) {
+            this(runMode,
+                    EnablementTextPolicyParser.parsePolicyFiles(policyFiles, ignoreLargeTests),
                     overridingPattern);
         }
 
@@ -304,19 +322,33 @@ public abstract class RavenwoodEnablementChecker {
             this.mRunMode = runMode;
             var chain = new PolicyCheckerChain();
 
-            if (overridingPattern == null || overridingPattern.isEmpty()) {
-                // Annotations always win.
+            var forceOverride = overridingPattern != null && overridingPattern.startsWith("!");
+            if (forceOverride) {
+                // If the override pattern starts with a "!", we ignore the enablement file and
+                // just run what's specified.
+                chain.add(new RegexRunFilter(
+                        Pattern.compile(overridingPattern.substring(1), Pattern.CASE_INSENSITIVE),
+                        RunPolicy.Enabled,
+                        RunPolicy.NeverRun
+                ));
+            } else {
+                // If a pattern is set, but it doesn't start with an "!", then we use it
+                // to further filter the default enablement logic.
+                if (overridingPattern != null && !overridingPattern.isEmpty()) {
+                    chain.add(new RegexRunFilter(
+                            Pattern.compile(overridingPattern, Pattern.CASE_INSENSITIVE),
+                            // If the pattern matches, fall back to the usual filtering.
+                            RunPolicy.Unspecified,
+                            // If the pattern doesn't match, don't run it.
+                            RunPolicy.NeverRun
+                    ));
+                }
+
+                // Annotations always win over the text policy file.
                 chain.add(new AnnotationPolicyChecker());
 
                 // Text policy changes the default behavior.
                 chain.add(subChecker);
-            } else {
-                // Use a regex-based filter, and only run the exact matching tests.
-                chain.add(new RegexRunFilter(
-                        Pattern.compile(overridingPattern, Pattern.CASE_INSENSITIVE),
-                        RunPolicy.Enabled,
-                        RunPolicy.NeverRun
-                ));
             }
 
             mChecker = chain;
@@ -339,10 +371,13 @@ public abstract class RavenwoodEnablementChecker {
     }
 
     @VisibleForTesting
-    public static PolicyChecker getTextPolicyCheckerForTest(String filename, String text)
-            throws Exception {
+    public static PolicyChecker getTextPolicyCheckerForTest(
+            String filename,
+            String text,
+            boolean ignoreLargeTests
+    ) throws Exception {
         var parser = new EnablementTextPolicyParser();
-        parser.parse(filename, text);
+        parser.parse(filename, text, ignoreLargeTests);
         return parser.getResult();
     }
 }
@@ -575,11 +610,13 @@ class EnablementTextPolicyParser {
     /**
      * Parse given files.
      */
-    public static PatternBasedChecker parsePolicyFiles(@NonNull String[] files) {
+    public static PatternBasedChecker parsePolicyFiles(@NonNull String[] files,
+            boolean ignoreLargeTests
+    ) {
         var parser = new EnablementTextPolicyParser();
         for (String file : files) {
             try {
-                parser.parse(file, Files.readString(Path.of(file)));
+                parser.parse(file, Files.readString(Path.of(file)), ignoreLargeTests);
             } catch (IOException e) {
                 throw new ParseException("Unabled to read enablement policy", file, e);
             }
@@ -630,7 +667,7 @@ class EnablementTextPolicyParser {
     /**
      * Parse a whole policy file content.
      */
-    void parse(String filename, String text) throws IOException {
+    void parse(String filename, String text, boolean ignoreLargeTests) throws IOException {
         // The first line should be the module name.
         var rd = new BufferedReader(new StringReader(text));
 
@@ -643,12 +680,11 @@ class EnablementTextPolicyParser {
         int n = 0; // line number
         while ((line = rd.readLine()) != null) {
             n++;
+
+            // First, parse the line
             var cols = split(line);
             if (cols.length == 0) {
                 continue;
-            }
-            if (cols.length > 2) {
-                throw new ParseException("Too many fields", filename, n);
             }
 
             var classMethod = cols[0].split("#");
@@ -660,9 +696,25 @@ class EnablementTextPolicyParser {
                     throw new ParseException(e.getMessage(), filename, n);
                 }
             }
+
             var className = classMethod[0];
             var isMethod = classMethod.length > 1;
 
+            // Remaining columns are options.
+            var isLarge = false;
+            for (int i = 2; i < cols.length; i++) {
+                var v = cols[i];
+                if (":large".equals(v.toLowerCase(Locale.ROOT))) {
+                    isLarge = true;
+                    continue;
+                }
+                throw new ParseException("Unknown option \"" + v + "\"", filename, n);
+            }
+            if (isLarge && ignoreLargeTests) {
+                policy = RunPolicy.NeverRun;
+            }
+
+            // Set the policy in mResult.
             if (!isMethod) {
                 // It's a package / class policy.
                 var pattern = parseClassNameWildcard(className);
