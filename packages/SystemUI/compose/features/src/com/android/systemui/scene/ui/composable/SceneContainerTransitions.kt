@@ -211,6 +211,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             }
             from(
                 Scenes.QuickSettings,
+                to = Scenes.Lockscreen,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed { lockscreenToQuickSettingsSceneTransition() }
+            }
+            from(
+                Scenes.QuickSettings,
                 to = Scenes.Shade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
