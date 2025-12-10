@@ -18,6 +18,7 @@ package android.app;
 import static org.junit.Assert.fail;
 
 import android.annotation.NonNull;
+import android.app.ActivityThread.AppBindData;
 import android.content.ContentProvider;
 import android.content.Context;
 import android.content.IContentProvider;
@@ -175,6 +176,10 @@ public final class RavenwoodAppDriver {
 
         mActivityThread.mInitialApplication = application;
         mTargetContext = appContext;
+
+        var data = new AppBindData();
+        data.appInfo = application.getApplicationInfo();
+        mActivityThread.mBoundApplication = data;
 
         mInstrumentation.onCreate(Bundle.EMPTY);
         mInstrumentation.callApplicationOnCreate(application);

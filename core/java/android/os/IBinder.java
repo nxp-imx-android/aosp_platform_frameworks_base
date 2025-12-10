@@ -92,7 +92,7 @@ import java.util.concurrent.Executor;
  *
  * @see Binder
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public interface IBinder {
     /**
      * The first transaction code available for user commands.
