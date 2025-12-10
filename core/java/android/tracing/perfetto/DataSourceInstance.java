@@ -84,4 +84,11 @@ public abstract class DataSourceInstance implements AutoCloseable {
     public final int getInstanceIndex() {
         return mInstanceIndex;
     }
+
+    /**
+     * Returns the {@link DataSource} this instance is associated with.
+     */
+    public final DataSource getDataSource() {
+        return mDataSource;
+    }
 }
