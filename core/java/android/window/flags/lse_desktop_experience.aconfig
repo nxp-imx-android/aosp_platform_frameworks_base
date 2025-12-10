@@ -79,6 +79,16 @@ flag {
 }
 
 flag {
+    name: "disable_display_force_freeform_on_pc"
+    namespace: "lse_desktop_experience"
+    description: "Prevents a display from being forced to freeform solely due to it being on PC."
+    bug: "467351253"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
