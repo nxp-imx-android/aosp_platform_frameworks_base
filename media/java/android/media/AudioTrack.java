@@ -1395,8 +1395,9 @@ public class AudioTrack extends PlayerBase
         * of the audio data used for the {@link AudioTrack} is different from
         * the original codec.
         *
-        * The values for codec media types should be provided using corresponding constants
-        * from the {@link MediaFormat} class.
+        * The values for codec media types should be provided using corresponding constants from the
+        * {@link MediaFormat} class. For example, {@link MediaFormat#MIMETYPE_AUDIO_EAC3_JOC} may be
+        * used for audio content originating from Dolby Atmos media.
         *
         * @param codecMediaType a non-null string indicating codec type using media string
         * @return the same Builder instance
