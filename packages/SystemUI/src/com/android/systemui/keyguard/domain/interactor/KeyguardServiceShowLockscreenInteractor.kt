@@ -55,7 +55,7 @@ constructor(
     private val repository: KeyguardServiceShowLockscreenRepository,
     private val userTracker: UserTracker,
     private val wmLockscreenVisibilityInteractor: Lazy<WindowManagerLockscreenVisibilityInteractor>,
-    private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
+    private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
 ) : CoreStartable {
 
     override fun start() {
@@ -115,7 +115,7 @@ constructor(
 
                 // If the keyguard is disabled or suppressed, we'll never actually show the
                 // lockscreen. Notify the callback so we don't crash.
-                if (!keyguardEnabledInteractor.isKeyguardEnabledAndNotSuppressed()) {
+                if (!keyguardEnabledInteractor.get().isKeyguardEnabledAndNotSuppressed()) {
                     Log.d(TAG, "Keyguard is disabled or suppressed, notifying callbacks now.")
                     notifyShowLockscreenCallbacks()
                 }

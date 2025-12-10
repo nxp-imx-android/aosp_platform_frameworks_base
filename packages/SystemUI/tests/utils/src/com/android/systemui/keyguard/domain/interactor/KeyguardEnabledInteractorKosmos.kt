@@ -17,6 +17,8 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import com.android.internal.widget.lockPatternUtils
+import com.android.systemui.authentication.domain.interactor.authenticationInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.kosmos.Kosmos
@@ -35,5 +37,8 @@ val Kosmos.keyguardEnabledInteractor by
             lockPatternUtils,
             { keyguardDismissTransitionInteractor },
             internalTransitionInteractor = internalKeyguardTransitionInteractor,
+            deviceEntryInteractor = deviceEntryInteractor,
+            authenticationInteractor = authenticationInteractor,
+            keyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor,
         )
     }
