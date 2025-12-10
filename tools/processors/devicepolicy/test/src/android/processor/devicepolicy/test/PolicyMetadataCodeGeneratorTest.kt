@@ -358,8 +358,11 @@ class PolicyMetadataCodeGeneratorTest {
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
                 TypeSpecificPolicyMetadata.newBuilder()
-                    .setListOfStringMetadata(
-                        TypeSpecificPolicyMetadata.ListOfStringPolicyMetadata.newBuilder()
+                    .setListMetadata(
+                        TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
+                            .setStringMetadata(
+                                TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+                            )
                     )
             )
 
@@ -405,6 +408,148 @@ class PolicyMetadataCodeGeneratorTest {
                         /* requiredCrossUserPermission= */ null,
                         /* allowedDpcTypes= */ Set.of(),
                         /* emptyStringAllowed= */ false
+                    ),
+                    /* emptyListAllowed= */ false
+                ));
+                """,
+                )
+            )
+    }
+
+    private fun listOfIntegerTestPolicy(
+        name: String,
+        emptyListAllowed: Boolean,
+    ): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setIdentifier(simpleNameToFieldName(name))
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setListMetadata(
+                        TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
+                            .setIntegerMetadata(
+                                TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+                            )
+                            .setEmptyListAllowed(emptyListAllowed)
+                    )
+            )
+
+    @Test
+    fun test_listOfIntegerPolicy_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    listOfIntegerTestPolicy(
+                            "test.package.PolicyContainer.MY_TEST_INTEGER_LIST_POLICY",
+                            emptyListAllowed = true,
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    includes =
+                        """
+                import android.app.admin.PolicyIdentifier;
+                import java.lang.Integer;
+                import java.util.ArrayList;
+                import java.util.List;
+                import java.util.Set;
+                """,
+                    staticImports =
+                        listOf("test.package.PolicyContainer.MY_TEST_INTEGER_LIST_POLICY"),
+                    code =
+                        """
+                policies.add(new ListPolicyMetadata<Integer>(
+                    /* id= */ MY_TEST_INTEGER_LIST_POLICY,
+                    /* elementMetadata= */ new IntegerPolicyMetadata(
+                        /* id= */ new PolicyIdentifier<Integer>(MY_TEST_INTEGER_LIST_POLICY.getId() + "#elements"),
+                        /* allowedScopes= */ Set.of(
+                            2
+                        ),
+                        /* affectedResource= */ 1,
+                        /* requiredPermission= */ null,
+                        /* requiredCrossUserPermission= */ null,
+                        /* allowedDpcTypes= */ Set.of()
+                    ),
+                    /* emptyListAllowed= */ true
+                ));
+                """,
+                )
+            )
+    }
+
+    private fun listOfEnumTestPolicy(name: String, enumValues: Set<Int>): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setIdentifier(simpleNameToFieldName(name))
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setListMetadata(
+                        TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
+                            .setEnumMetadata(
+                                TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                                    .addAllValues(
+                                        enumValues.map {
+                                            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
+                                                .newBuilder()
+                                                .setIntValue(it)
+                                                .build()
+                                        }
+                                    )
+                            )
+                    )
+            )
+
+    @Test
+    fun test_listOfEnumPolicy_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    listOfEnumTestPolicy(
+                            "test.package.PolicyContainer.MY_TEST_ENUM_LIST_POLICY",
+                            enumValues = setOf(1, 9, 17),
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    includes =
+                        """
+                import android.app.admin.PolicyIdentifier;
+                import java.lang.Integer;
+                import java.util.ArrayList;
+                import java.util.List;
+                import java.util.Set;
+                """,
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_ENUM_LIST_POLICY"),
+                    code =
+                        """
+                policies.add(new ListPolicyMetadata<Integer>(
+                    /* id= */ MY_TEST_ENUM_LIST_POLICY,
+                    /* elementMetadata= */ new EnumPolicyMetadata(
+                        /* id= */ new PolicyIdentifier<Integer>(MY_TEST_ENUM_LIST_POLICY.getId() + "#elements"),
+                        /* allowedScopes= */ Set.of(
+                            2
+                        ),
+                        /* affectedResource= */ 1,
+                        /* requiredPermission= */ null,
+                        /* requiredCrossUserPermission= */ null,
+                        /* allowedDpcTypes= */ Set.of(),
+                        /* allowedValues= */ Set.of(
+                          1,
+                          9,
+                          17
+                        )
                     ),
                     /* emptyListAllowed= */ false
                 ));
