@@ -286,12 +286,9 @@ public final class VerifyCredentialResponse implements Parcelable {
      * will be allowed.
      */
     public boolean hasTimeout() {
-        if (android.security.Flags.softwareRatelimiter()) {
-            // Check mTimeout directly. It can be nonzero for either RESPONSE_RETRY or
-            // RESPONSE_CRED_INCORRECT.
-            return !mTimeout.isZero();
-        }
-        return mResponseCode == RESPONSE_RETRY;
+        // Check mTimeout directly. It can be nonzero for either RESPONSE_RETRY or
+        // RESPONSE_CRED_INCORRECT.
+        return !mTimeout.isZero();
     }
 
     /**
