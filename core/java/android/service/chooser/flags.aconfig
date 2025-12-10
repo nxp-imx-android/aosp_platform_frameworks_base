@@ -70,3 +70,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "tap_to_share"
+  is_exported: true
+  namespace: "intentresolver"
+  description: "Enables Tap to Share feature."
+  bug: "461778971"
+}

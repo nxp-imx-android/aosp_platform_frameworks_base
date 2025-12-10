@@ -1098,6 +1098,9 @@
     <!-- Permission required for CTS test - CtsSerialTest -->
     <uses-permission android:name="android.permission.MANAGE_SERIAL_PORTS" />
 
+    <!-- Permission required for CTS test - CtsSharesheetTapToShareServiceTest -->
+    <uses-permission android:name="android.permission.BIND_TO_TAP_TO_SHARE_SERVICE" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

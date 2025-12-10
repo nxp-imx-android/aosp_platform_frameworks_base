@@ -105,6 +105,7 @@ package android {
     field public static final String BIND_TELEPHONY_NETWORK_SERVICE = "android.permission.BIND_TELEPHONY_NETWORK_SERVICE";
     field public static final String BIND_TEXTCLASSIFIER_SERVICE = "android.permission.BIND_TEXTCLASSIFIER_SERVICE";
     field public static final String BIND_TIME_ZONE_PROVIDER_SERVICE = "android.permission.BIND_TIME_ZONE_PROVIDER_SERVICE";
+    field @FlaggedApi("android.service.chooser.tap_to_share") public static final String BIND_TO_TAP_TO_SHARE_SERVICE = "android.permission.BIND_TO_TAP_TO_SHARE_SERVICE";
     field public static final String BIND_TRACE_REPORT_SERVICE = "android.permission.BIND_TRACE_REPORT_SERVICE";
     field public static final String BIND_TRANSLATION_SERVICE = "android.permission.BIND_TRANSLATION_SERVICE";
     field public static final String BIND_TRUST_AGENT = "android.permission.BIND_TRUST_AGENT";
@@ -14010,6 +14011,19 @@ package android.service.carrier {
     method public default void onSendMmsComplete(int, @Nullable byte[]);
     method public default void onSendMultipartSmsComplete(int, @Nullable int[]);
     method public default void onSendSmsComplete(int, int);
+  }
+
+}
+
+package android.service.chooser {
+
+  @FlaggedApi("android.service.chooser.tap_to_share") public abstract class TapToShareService extends android.app.Service {
+    ctor public TapToShareService();
+    method public final void doTapToShare();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onSessionEnd();
+    method public abstract void onSessionStart();
+    method public final boolean onUnbind(@Nullable android.content.Intent);
   }
 
 }
