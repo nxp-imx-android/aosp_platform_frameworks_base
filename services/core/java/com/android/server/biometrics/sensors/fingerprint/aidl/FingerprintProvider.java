@@ -343,11 +343,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
         for (int i = 0; i < mFingerprintSensors.size(); i++) {
             final int sensorId = mFingerprintSensors.keyAt(i);
-            if (Flags.internalCleanupForAllProfiles()) {
-                processFingerprintForProfiles(sensorId);
-            } else {
-                scheduleLoadAuthenticatorIds(sensorId);
-            }
+            processFingerprintForProfiles(sensorId);
             scheduleInternalCleanup(sensorId, ActivityManager.getCurrentUser(),
                     null /* callback */);
         }

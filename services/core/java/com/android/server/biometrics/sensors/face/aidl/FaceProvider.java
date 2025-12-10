@@ -344,11 +344,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
 
         for (int i = 0; i < mFaceSensors.size(); i++) {
             final int sensorId = mFaceSensors.keyAt(i);
-            if (Flags.internalCleanupForAllProfiles()) {
-                processFaceForProfiles(sensorId);
-            } else {
-                scheduleLoadAuthenticatorIds(sensorId);
-            }
+            processFaceForProfiles(sensorId);
             scheduleInternalCleanup(sensorId, ActivityManager.getCurrentUser(),
                     null /* callback */);
         }
