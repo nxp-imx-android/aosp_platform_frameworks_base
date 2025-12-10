@@ -27,7 +27,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.window.flags.Flags.FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
-import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,7 +84,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         mDisplayContent.wakeIfNeeded();
     }
 
-    @EnableFlags({FLAG_ENABLE_DISPLAY_COMPAT_MODE, FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS})
+    @EnableFlags(FLAG_ENABLE_DISPLAY_COMPAT_MODE)
     @Test
     public void testDisplayCompatMode_gameDoesNotRestartWithDisplayMove() {
         runTestScenario((robot) -> {
@@ -122,7 +121,6 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testSizeCompatMode_sizeCompatModeAppHasRestartMenuWithDisplayMove() {
         runTestScenario((robot) -> {

@@ -142,7 +142,6 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
-import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
@@ -8895,9 +8894,7 @@ final class ActivityRecord extends WindowToken {
         // be enabled. App switching may be allowed only for specific cases while/after Recents is
         // shown. As when a process is restarted, the user should be interacting with the app, so
         // it's safe to do this. See b/421048151 for more detail.
-        if (ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            mAtmService.resumeAppSwitches();
-        }
+        mAtmService.resumeAppSwitches();
         return false;
     }
 
