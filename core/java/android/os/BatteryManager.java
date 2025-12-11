@@ -19,6 +19,7 @@ package android.os;
 import static android.os.Flags.FLAG_STATE_OF_HEALTH_PUBLIC;
 import static android.os.Flags.FLAG_BATTERY_PART_STATUS_API;
 import static android.os.Flags.FLAG_BATTERY_CHARGING_INFO_API;
+import static android.os.Flags.FLAG_BATTERY_MANUFACTURER_DIAGNOSTICS_API;
 
 import android.Manifest.permission;
 import android.annotation.FlaggedApi;
@@ -541,6 +542,61 @@ public class BatteryManager {
     @SystemApi
     @FlaggedApi(FLAG_BATTERY_PART_STATUS_API)
     public static final int BATTERY_PROPERTY_PART_STATUS = 12;
+
+    /**
+     * Battery part manufacturer name, as a string.
+     *
+     * <p class="note">
+     * The sender must hold the {@link android.Manifest.permission#BATTERY_STATS} permission.
+     *
+     * @hide
+     */
+    @RequiresPermission(permission.BATTERY_STATS)
+    @SystemApi
+    @FlaggedApi(FLAG_BATTERY_MANUFACTURER_DIAGNOSTICS_API)
+    public static final int BATTERY_PROPERTY_MANUFACTURER = 13;
+
+    /**
+     * Battery part model name, assigned by its manufacturer, as a string.
+     *
+     * <p class="note">
+     * The sender must hold the {@link android.Manifest.permission#BATTERY_STATS} permission.
+     *
+     * @hide
+     */
+    @RequiresPermission(permission.BATTERY_STATS)
+    @SystemApi
+    @FlaggedApi(FLAG_BATTERY_MANUFACTURER_DIAGNOSTICS_API)
+    public static final int BATTERY_PROPERTY_MODEL_NAME = 14;
+
+    /**
+     * The minimum expected value for the battery's design voltage, as a long integer in
+     * micro-Volts.
+     *
+     * This is usually the same as the battery's actual design voltage, but may be different if the
+     * actual design voltage is not known. This represents a nominal battery voltage that has no
+     * particular relationship to absolute thresholds: the battery voltage may safely fall below or
+     * rise above this voltage with no particular battery behavior guaranteed to occur.
+     *
+     * Users should take care not to confuse this value with an absolute minimum allowed battery
+     * voltage, despite its name. 'Minimum' here allows for uncertainty in what the battery's design
+     * parameters are, allowing a system to report its design voltage when only a range of nominal
+     * values are known. A related 'maximum design voltage' property would provide the upper bound
+     * to this property's lower bound, and they would be equal if a precise design voltage were
+     * known.
+     *
+     * This value should be treated as advisory only, reflecting design goals of the battery
+     * subsystem without making any statements about the absolute limits or its guarantees.
+     *
+     * <p class="note>
+     * The sender must hold the {@link android.Manifest.permission#BATTERY_STATS} permission.
+     *
+     * @hide
+     */
+    @RequiresPermission(permission.BATTERY_STATS)
+    @SystemApi
+    @FlaggedApi(FLAG_BATTERY_MANUFACTURER_DIAGNOSTICS_API)
+    public static final int BATTERY_PROPERTY_VOLTAGE_MIN_DESIGN = 15;
 
     private final Context mContext;
     private final IBatteryStats mBatteryStats;
