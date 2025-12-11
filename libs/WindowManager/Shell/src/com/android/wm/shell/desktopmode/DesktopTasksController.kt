@@ -133,7 +133,6 @@ import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
-import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
@@ -144,7 +143,6 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListe
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
-import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
@@ -166,13 +164,11 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_ST
 import com.android.wm.shell.shared.R as SharedR
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.TransitionUtil
-import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
-import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopTaskToFrontReason
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED
@@ -273,7 +269,6 @@ class DesktopTasksController(
     private val desktopState: ShellDesktopState,
     private val desktopConfig: DesktopConfig,
     private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
-    private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
     private val taskSnapshotManager: TaskSnapshotManager,
     private val transactionPool: TransactionPool,
     private val pipTransitionState: Optional<PipTransitionState>,
@@ -286,7 +281,6 @@ class DesktopTasksController(
     DragAndDropController.DragAndDropListener,
     UserChangeListener {
 
-    private val desktopMode: DesktopModeImpl
     private var visualIndicator: DesktopModeVisualIndicator? = null
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
         DesktopModeShellCommandHandler(
@@ -382,7 +376,6 @@ class DesktopTasksController(
         DeskDeactivationFromOverviewScheduler(shellController, this)
 
     init {
-        desktopMode = DesktopModeImpl()
         if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback({ onInit() }, this)
         }
@@ -6183,11 +6176,6 @@ class DesktopTasksController(
     private fun createExternalInterface(): ExternalInterfaceBinder =
         IDesktopModeImpl(shellController, transitionStateHolder, this)
 
-    /** Get connection interface between sysui and shell */
-    fun asDesktopMode(): DesktopMode {
-        return desktopMode
-    }
-
     /**
      * Perform checks required on drag move. Create/release fullscreen indicator as needed.
      * Different sources for x and y coordinates are used due to different needs for each: We want
@@ -6839,106 +6827,13 @@ class DesktopTasksController(
         }
     }
 
-    /** The interface for calls from outside the shell, within the host process. */
-    @ExternalThread
-    private inner class DesktopModeImpl : DesktopMode {
-        override fun addVisibleTasksListener(
-            listener: VisibleTasksListener,
-            callbackExecutor: Executor,
-        ) {
-            mainExecutor.execute {
-                this@DesktopTasksController.addVisibleTasksListener(listener, callbackExecutor)
-            }
-        }
-
-        override fun addDeskChangeListener(
-            listener: DeskChangeListener,
-            callbackExecutor: Executor,
-        ) {
-            mainExecutor.execute {
-                this@DesktopTasksController.addDeskChangeListener(listener, callbackExecutor)
-            }
-        }
-
-        override fun addDesktopGestureExclusionRegionListener(
-            listener: Consumer<Region>,
-            callbackExecutor: Executor,
-        ) {
-            mainExecutor.execute {
-                this@DesktopTasksController.setTaskRegionListener(listener, callbackExecutor)
-            }
-        }
-
-        override fun moveFocusedTaskToDesktop(
-            displayId: Int,
-            transitionSource: DesktopModeTransitionSource,
-        ) {
-            logV("moveFocusedTaskToDesktop")
-            mainExecutor.execute {
-                this@DesktopTasksController.moveFocusedTaskToDesktop(
-                    displayId = displayId,
-                    transitionSource = transitionSource,
-                )
-            }
-        }
-
-        override fun moveFocusedTaskToFullscreen(
-            displayId: Int,
-            transitionSource: DesktopModeTransitionSource,
-        ) {
-            logV("moveFocusedTaskToFullscreen")
-            mainExecutor.execute {
-                this@DesktopTasksController.enterFullscreen(
-                    displayId = displayId,
-                    transitionSource = transitionSource,
-                )
-            }
-        }
-
-        override fun toggleFocusedTaskFullscreenState(
-            displayId: Int,
-            transitionSource: DesktopModeTransitionSource,
-        ) {
-            logV("toggleFocusedTaskFullscreenState")
-            mainExecutor.execute {
-                this@DesktopTasksController.toggleFocusedTaskFullscreenState(
-                    displayId = displayId,
-                    transitionSource = transitionSource,
-                )
-            }
-        }
-
-        override fun registerDesktopFirstListener(listener: DesktopFirstListener) {
-            logV("registerDesktopFirstListener")
-            if (desktopFirstListenerManager.isEmpty) {
-                throw UnsupportedOperationException(
-                    "DesktopFirstListenerManager is not available on this device"
-                )
-            }
-            mainExecutor.execute { desktopFirstListenerManager.get().registerListener(listener) }
-        }
-
-        override fun unregisterDesktopFirstListener(listener: DesktopFirstListener) {
-            logV("unregisterDesktopFirstListener")
-            if (desktopFirstListenerManager.isEmpty) {
-                throw UnsupportedOperationException(
-                    "DesktopFirstListenerManager is not available on this device"
-                )
-            }
-            mainExecutor.execute { desktopFirstListenerManager.get().unregisterListener(listener) }
-        }
-
-        override fun isDisplayInDesktopMode(displayId: Int) =
-            with(this@DesktopTasksController) {
-                desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
-                    // TODO: b/440645027 - Simplify this call.
-                    userRepositories.current
-                        .getDeskDisplayStateForRemote()
-                        .filter { it.displayId == displayId }
-                        .filterNot { it.activeDeskId == INVALID_DISPLAY }
-                        .isNotEmpty()
-            }
-    }
+    /** Returns whether the given display is in Desktop Mode. */
+    fun isDisplayInDesktopMode(displayId: Int): Boolean =
+        desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
+            // TODO: b/440645027 - Simplify this call.
+            userRepositories.current
+                .getDeskDisplayStateForRemote()
+                .any { it.displayId == displayId && it.activeDeskId != INVALID_DISPLAY }
 
     private fun updateTaskBarAndWallpaperDimIfNeeded(
         displayId: Int,

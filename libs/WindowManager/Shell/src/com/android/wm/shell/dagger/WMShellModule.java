@@ -152,6 +152,8 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
+import com.android.wm.shell.desktopmode.api.DesktopMode;
+import com.android.wm.shell.desktopmode.api.impl.DesktopModeImpl;
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
@@ -990,6 +992,19 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     @DynamicOverride
+    static DesktopMode provideDesktopMode(
+            Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        return new DesktopModeImpl(
+                desktopTasksController,
+                desktopFirstListenerManager,
+                mainExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    @DynamicOverride
     static DesktopTasksController provideDesktopTasksController(
             Context context,
             ShellInit shellInit,
@@ -1042,7 +1057,6 @@ public abstract class WMShellModule {
             ShellDesktopState shellDesktopState,
             DesktopConfig desktopConfig,
             VisualIndicatorUpdateScheduler visualIndicatorUpdateScheduler,
-            Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
             TaskSnapshotManager taskSnapshotManager,
             TransactionPool transactionPool,
             PipTransitionState pipTransitionState,
@@ -1098,7 +1112,6 @@ public abstract class WMShellModule {
                 shellDesktopState,
                 desktopConfig,
                 visualIndicatorUpdateScheduler,
-                desktopFirstListenerManager,
                 taskSnapshotManager,
                 transactionPool,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
