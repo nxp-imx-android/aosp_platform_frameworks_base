@@ -3014,9 +3014,10 @@ public class BubbleStackView extends FrameLayout
                 mPositioner.showBubblesVertically() ? bubbleXY.y : bubbleXY.x);
         mExpandedViewContainer.setTranslationX(0f);
         mExpandedViewContainer.setTranslationY(translationY);
-        mExpandedViewContainer.setAlpha(1f);
+
 
         if (!animate) {
+            mExpandedViewContainer.setAlpha(1f);
             BubbleExpandedView expandedView = getExpandedView();
             if (expandedView == null) {
                 return;
@@ -3076,8 +3077,10 @@ public class BubbleStackView extends FrameLayout
 
         BubbleExpandedView expandedView = getExpandedView();
         if (expandedView != null) {
+            expandedView.setSurfaceZOrderedOnTop(true);
             expandedView.setContentAlpha(0f);
             expandedView.setBackgroundAlpha(0f);
+            mExpandedViewContainer.setAlpha(1f);
 
             BubbleLog.d("BubbleStackView.expand() setAnimating true for bubble=%s",
                     expandedView.getBubbleKey());
