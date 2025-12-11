@@ -58,6 +58,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
+import android.service.autofill.Dataset;
 import android.service.autofill.FillEventHistory;
 import android.service.autofill.Flags;
 import android.service.autofill.UserData;
@@ -2264,6 +2265,20 @@ public final class AutofillManagerService
         @Override
         public void getNoiseInjectionMasterSeed(IResultReceiver result) {
             send(result, mNoiseInjectionMasterSeed);
+        }
+
+        @Override
+        public void notifySystemInlineSuggestions(
+                int sessionId, List<Dataset> inlineSuggestionsData, int userId) {
+            synchronized (mLock) {
+                final AutofillManagerServiceImpl service =
+                        peekServiceForUserWithLocalBinderIdentityLocked(userId);
+                if (service != null) {
+                    service.notifySystemInlineSuggestions(sessionId, inlineSuggestionsData);
+                } else if (sVerbose) {
+                    Slog.v(TAG, "notifySystemInlineSuggestions(): no service for " + userId);
+                }
+            }
         }
 
         @Override

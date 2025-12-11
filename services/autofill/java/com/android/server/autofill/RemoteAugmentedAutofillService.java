@@ -85,6 +85,7 @@ final class RemoteAugmentedAutofillService
     private final AutofillUriGrantsManager mUriGrantsManager;
     private final PersonalContextManagerInternal mPersonalContextManagerInternal;
     private CompletableFuture<InlineSuggestionsResponseData> mPersonalContextResultFuture;
+    private AutofillInlineRequestHint mAutofillHint;
 
     RemoteAugmentedAutofillService(Context context, int serviceUid, ComponentName serviceName,
             int userId, RemoteAugmentedAutofillServiceCallbacks callbacks,
@@ -184,6 +185,7 @@ final class RemoteAugmentedAutofillService
                         .exceptionally(
                                 err -> {
                                     mPersonalContextResultFuture = null;
+                                    mAutofillHint = null;
                                     if (err instanceof TimeoutException) {
                                         Slog.w(
                                                 TAG,
@@ -396,6 +398,7 @@ final class RemoteAugmentedAutofillService
                         .setAutofillValue(focusedValue)
                         .setInlineSuggestionsRequest(inlineSuggestionsRequest)
                         .build();
+        mAutofillHint = hint;
         mPersonalContextManagerInternal.publishTriggeringHint(
                 Set.of(hint), new HashSet<>(), mContext.getUserId());
         mPersonalContextResultFuture = future;
@@ -536,6 +539,20 @@ final class RemoteAugmentedAutofillService
      */
     public void onDestroyAutofillWindowsRequest() {
         run((s) -> s.onDestroyAllFillWindowsRequest());
+    }
+
+    public void notifySystemInlineSuggestions(int sessionId, List<Dataset> inlineSuggestionsData) {
+        if (mPersonalContextResultFuture != null
+                && mAutofillHint != null
+                && mAutofillHint.getSessionId() == sessionId) {
+            if (sDebug) {
+                Slog.d(TAG, "notifySystemInlineSuggestions() called on sessionId: "
+                        + sessionId);
+            }
+            mPersonalContextResultFuture.complete(
+                    new InlineSuggestionsResponseData(inlineSuggestionsData, null, false));
+            mPersonalContextResultFuture = null;
+        }
     }
 
     /** Data class holding the response data for an {@link InlineSuggestionsRequest}. */
