@@ -2725,7 +2725,7 @@ public class SubscriptionManager {
     @Deprecated
     @Nullable
     public int[] getSubscriptionIds(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return null;
         }
         return new int[]{getSubscriptionId(slotIndex)};
@@ -2747,7 +2747,7 @@ public class SubscriptionManager {
      */
     @Deprecated
     public static int[] getSubId(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return null;
         }
         return new int[]{getSubscriptionId(slotIndex)};
@@ -2762,7 +2762,7 @@ public class SubscriptionManager {
      * inserted remote SIM subscription id will be returned.
      */
     public static int getSubscriptionId(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return SubscriptionManager.INVALID_SUBSCRIPTION_ID;
         }
 
@@ -3014,6 +3014,10 @@ public class SubscriptionManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static boolean isValidSlotIndex(int slotIndex) {
         return slotIndex >= 0 && slotIndex < TelephonyManager.getDefault().getActiveModemCount();
+    }
+
+    private static boolean isValidOrRemoteSlotIndex(int slotIndex) {
+        return slotIndex == SLOT_INDEX_FOR_REMOTE_SIM_SUB || isValidSlotIndex(slotIndex);
     }
 
     /** @hide */
