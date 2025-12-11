@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.offset
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
-import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
@@ -82,14 +81,11 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     shadeSession: SaveableSession,
     viewModel: NotificationsPlaceholderViewModel,
     scrollState: ScrollState,
+    scrimOverScrollEffect: OffsetOverscrollEffect,
     jankMonitor: InteractionJankMonitor,
     statusBarHeader: @Composable () -> Unit,
     mediaAndQqsHeader: @Composable () -> Unit,
-    scrollableScrim:
-        @Composable
-        (
-            onContentHeightChanged: (Int) -> Unit, scrimOverScrollEffect: OffsetOverscrollEffect,
-        ) -> Unit,
+    scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
     cutoutInsetsProvider: () -> WindowInsets?,
 ) {
     val coroutineScope = shadeSession.sessionCoroutineScope(key = "SingleShadeNestedScrollLayout")
@@ -111,19 +107,6 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     val contentHeight =
         shadeSession.rememberSession(key = "ScrimContentHeight") { mutableIntStateOf(0) }
 
-    /** Is the content taller than the scrim at rest (when QQS, Media can be fully visible). */
-    val isContentTallerThanScrimAtRest by
-        remember(minScrimHeight, contentHeight) {
-            derivedStateOf { minScrimHeight.intValue < contentHeight.intValue }
-        }
-
-    val scrimOverscrollEffect =
-        rememberOffsetOverscrollEffect(
-            maxDistance =
-                if (isContentTallerThanScrimAtRest) OffsetOverscrollEffect.DefaultMaxDistance
-                else OffsetOverscrollEffect.ShortMaxDistance
-        )
-
     // Some scenes or overlays that use this Composable may be using alwaysCompose=true which will
     // cause them to compose everything but not be visible. Because these side effects push UI state
     // upstream to observers which are shared between callers of this composable, invisible
@@ -132,9 +115,10 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     if (isAlwaysComposedContentVisible()) {
         // whether the stack is moving due to a swipe or fling
         val isScrollInProgress =
-            scrollState.isScrollInProgress ||
-                scrimOverscrollEffect.isInProgress ||
+                scrollState.isScrollInProgress ||
+                scrimOverScrollEffect.isInProgress ||
                 scrimOffset.isRunning
+
         LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
                 jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
@@ -167,6 +151,10 @@ fun ContentScope.SingleShadeNestedScrollLayout(
             }
         }
 
+    /** Is the content taller than the scrim at rest (when QQS, Media can be fully visible). */
+    fun isContentTallerThanScrimAtRest(): Boolean {
+        return minScrimHeight.intValue < contentHeight.intValue
+    }
     // If contentHeight drops below minimum visible scrim height while scrim is
     // expanded and IME is not showing, reset scrim offset.
     LaunchedEffectWithLifecycle(contentHeight, minScrimHeight, scrimOffset) {
@@ -218,13 +206,13 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                                         collapsibleHeaderHeight = {
                                             overlappableHeaderHeight.intValue.toFloat()
                                         },
-                                        canOverscrollContent = { isContentTallerThanScrimAtRest },
+                                        canOverscrollContent = { isContentTallerThanScrimAtRest() },
                                         flingBehavior = flingBehavior,
                                     )
                                 }
                             )
                     ) {
-                        scrollableScrim({ contentHeight.intValue = it }, scrimOverscrollEffect)
+                        scrollableScrim { contentHeight.intValue = it }
                     }
                 },
             ),
