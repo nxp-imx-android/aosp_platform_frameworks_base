@@ -46,10 +46,8 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.jank.FrameTracker.ChoreographerWrapper;
-import com.android.internal.jank.FrameTracker.FrameMetricsWrapper;
 import com.android.internal.jank.FrameTracker.StatsLogWrapper;
 import com.android.internal.jank.FrameTracker.SurfaceControlWrapper;
-import com.android.internal.jank.FrameTracker.ThreadedRendererWrapper;
 import com.android.internal.jank.FrameTracker.ViewRootWrapper;
 import com.android.internal.jank.InteractionJankMonitor.Configuration;
 
@@ -211,10 +209,6 @@ public class InteractionJankMonitorTest {
     }
 
     private FrameTracker createMockedFrameTracker() {
-        ThreadedRendererWrapper threadedRenderer = mock(ThreadedRendererWrapper.class);
-        doNothing().when(threadedRenderer).addObserver(any());
-        doNothing().when(threadedRenderer).removeObserver(any());
-
         ViewRootWrapper viewRoot = spy(new ViewRootWrapper(mView.getViewRootImpl()));
         doNothing().when(viewRoot).addSurfaceChangedCallback(any());
         doNothing().when(viewRoot).removeSurfaceChangedCallback(any());
@@ -232,10 +226,8 @@ public class InteractionJankMonitorTest {
         when(configuration.getHandler()).thenReturn(mHandler);
 
         FrameTracker tracker = spy(new FrameTracker(configuration,
-                threadedRenderer, viewRoot, surfaceControl, choreographer,
-                new FrameMetricsWrapper(), new StatsLogWrapper(null),
-                /* traceThresholdMissedFrames= */ 1,
-                /* traceThresholdFrameTimeMillis= */ -1,
+                viewRoot, surfaceControl, choreographer, new StatsLogWrapper(null),
+                /* traceThresholdMissedFrames= */ 1, /* traceThresholdFrameTimeMillis= */ -1,
                 /* listener */ null));
 
         doNothing().when(tracker).postTraceStartMarker(any());
