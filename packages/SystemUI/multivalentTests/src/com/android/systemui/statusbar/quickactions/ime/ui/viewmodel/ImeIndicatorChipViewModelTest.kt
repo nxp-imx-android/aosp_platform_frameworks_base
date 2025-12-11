@@ -70,17 +70,25 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_subtypeSelected_showsSubtypeId() =
+    fun chip_selectedSubtypeWithIcon_showsIcon() =
         kosmos.runTest {
-            val subtype = InputMethodModel.Subtype(subtypeId = 123, isAuxiliary = false)
+            val subtypeIcon =
+                InputMethodModel.SubtypeIcon(
+                    resId = R.drawable.ic_android,
+                    packageName = context.packageName,
+                )
+            val subtype =
+                InputMethodModel.Subtype(subtypeId = 123, isAuxiliary = false, icon = subtypeIcon)
             fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
 
-            // TODO(b/458557858): This should use the IME icon or subtype short label instead if
-            // those are available.
-            assertThat(chip.chipText).isEqualTo(subtype.subtypeId.toString())
+            assertThat(chip.icons).hasSize(1)
+            assertThat(chip.icons[0].icon).isInstanceOf(Icon.Loaded::class.java)
+            val loadedIcon = chip.icons[0].icon as Icon.Loaded
+            assertThat(loadedIcon.resId).isEqualTo(subtypeIcon.resId)
+            assertThat(loadedIcon.packageName).isEqualTo(subtypeIcon.packageName)
         }
 
     @Test

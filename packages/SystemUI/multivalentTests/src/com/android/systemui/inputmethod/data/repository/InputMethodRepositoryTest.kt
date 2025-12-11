@@ -28,6 +28,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -140,6 +141,45 @@ class InputMethodRepositoryTest : SysuiTestCase() {
             val result by collectLastValue(underTest.selectedInputMethodSubtype(USER_HANDLE))
             val expectedSubtype = InputMethodModel.Subtype(subtypeId = 456, isAuxiliary = false)
             assertThat(result).isEqualTo(expectedSubtype)
+        }
+
+    @Test
+    fun selectedInputMethodSubtype_returnsSubtypeWithIcon() =
+        testScope.runTest {
+            val iconResId = R.drawable.ic_android
+            val subtype =
+                InputMethodSubtype.InputMethodSubtypeBuilder()
+                    .setSubtypeId(123)
+                    .setIsAuxiliary(false)
+                    .setSubtypeIconResId(iconResId)
+                    .build()
+            val selectedImiId = "imiId"
+            val selectedImi =
+                mock<InputMethodInfo> {
+                    on { id } doReturn selectedImiId
+                    on { packageName } doReturn context.packageName
+                }
+            inputMethodManager.stub {
+                on { getCurrentInputMethodInfoAsUser(eq(USER_HANDLE)) }.thenReturn(selectedImi)
+                on {
+                        getEnabledInputMethodSubtypeListAsUser(
+                            eq(selectedImiId),
+                            any(),
+                            eq(USER_HANDLE),
+                        )
+                    }
+                    .thenReturn(listOf(subtype))
+            }
+            settings.putIntForUser(
+                Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
+                subtype.subtypeId,
+                USER_HANDLE.identifier,
+            )
+
+            val result by collectLastValue(underTest.selectedInputMethodSubtype(USER_HANDLE))
+            assertThat(result!!.icon).isNotNull()
+            assertThat(result!!.icon!!.resId).isEqualTo(iconResId)
+            assertThat(result!!.icon!!.packageName).isEqualTo(context.packageName)
         }
 
     @Test
