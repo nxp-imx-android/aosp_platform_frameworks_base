@@ -26,12 +26,12 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowManager
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -217,9 +217,7 @@ class PooledWindowDecorViewHostSupplierTest : ShellTestCase() {
 
                 verify(mockDisplayController)
                     .addDisplayWindowListener(onDisplaysChangedListenerCaptor.capture())
-                onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(
-                    context.display.displayId
-                )
+                onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(context.display.displayId)
                 if (hasSecondaryDisplay) {
                     prepareSecondaryDisplay()
                 }

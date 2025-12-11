@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.testutils;
+package com.android.testing.wm.util;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -23,6 +23,8 @@ import android.graphics.GraphicBuffer;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.gui.BorderSettings;
+import android.gui.BoxShadowSettings;
 import android.hardware.HardwareBuffer;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -339,6 +341,18 @@ public class StubTransaction extends SurfaceControl.Transaction {
 
     @Override
     public SurfaceControl.Transaction setDropInputMode(SurfaceControl sc, int mode) {
+        return this;
+    }
+
+    @Override
+    public SurfaceControl.Transaction setBorderSettings(SurfaceControl sc,
+            @NonNull BorderSettings settings) {
+        return this;
+    }
+
+    @Override
+    public SurfaceControl.Transaction setBoxShadowSettings(SurfaceControl sc,
+            @NonNull BoxShadowSettings settings) {
         return this;
     }
 }

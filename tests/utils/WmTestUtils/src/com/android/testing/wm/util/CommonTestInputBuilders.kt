@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.util
+package com.android.testing.wm.util
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo

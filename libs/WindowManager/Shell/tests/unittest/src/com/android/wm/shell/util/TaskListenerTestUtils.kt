@@ -18,6 +18,8 @@ package com.android.wm.shell.util
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.view.SurfaceControl
+import com.android.testing.wm.util.RunningTaskInfoTestInputBuilder
+import com.android.testing.wm.util.SurfaceControlTestInputBuilder
 import com.android.wm.shell.ShellTaskOrganizer.TaskAppearedListener
 import com.android.wm.shell.ShellTaskOrganizer.TaskInfoChangedListener
 import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener

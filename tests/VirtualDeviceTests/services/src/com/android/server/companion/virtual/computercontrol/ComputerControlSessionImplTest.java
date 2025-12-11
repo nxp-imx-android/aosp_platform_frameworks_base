@@ -119,9 +119,9 @@ import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
+import com.android.testing.wm.util.StubTransaction;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;

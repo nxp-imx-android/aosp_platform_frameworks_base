@@ -60,6 +60,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.testing.wm.util.StubTransaction;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -69,7 +70,6 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
-import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -83,6 +83,7 @@ import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * Verifies the behavior of {@link TaskViewTransitions#startAnimation}.
