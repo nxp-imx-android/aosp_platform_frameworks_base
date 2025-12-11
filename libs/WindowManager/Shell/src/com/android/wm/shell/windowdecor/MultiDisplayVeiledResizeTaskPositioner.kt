@@ -278,7 +278,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                         shouldRestoreBoundsOnMove
                 ) {
                     val prevBounds =
-                        desktopRepository.removeBoundsBeforeSnapOrMaximize(
+                        desktopRepository.getBoundsBeforeSnapOrMaximize(
                             windowDecoration.taskInfo.taskId
                         )
 
