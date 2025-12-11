@@ -63,6 +63,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.controls.util.mediaFlags
+import com.android.systemui.media.controls.util.mediaUiEventLogger
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.res.R
@@ -207,6 +208,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 mediaDataFilter = mediaDataFilter,
                 mediaPipelineRepository = mediaPipelineRepository,
                 mediaRepository = mediaRepository,
+                mediaUiEventLogger = kosmos.mediaUiEventLogger,
                 keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
             )
