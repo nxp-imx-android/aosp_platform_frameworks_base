@@ -29,6 +29,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
@@ -53,7 +54,9 @@ import com.android.systemui.scene.ui.composable.GoneScene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.composable.ShadeHeaderMotionTestKeys
 import com.android.systemui.shade.ui.composable.ShadeScene
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
@@ -65,11 +68,13 @@ import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeFeatureCaptures.height
+import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeFeatureCaptures.size
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
@@ -77,7 +82,6 @@ import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.compose.values.MotionTestValueKey
-import platform.test.motion.golden.DataPoint
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeriesCaptureScope
 import platform.test.motion.golden.asDataPoint
@@ -136,7 +140,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
         motionTestRule.runTest(60.seconds) {
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
-
+            kosmos.enableSingleShade()
             val motion =
                 recordMotion(
                     content = { GoneToShadeSceneContainer() },
@@ -144,23 +148,70 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                         ComposeRecordingSpec(
                             MotionControl(
                                 delayRecording = {
-                                    awaitCondition { kosmos.transitionState.value.isIdle() }
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
                                 }
                             ) {
                                 performTouchInputAsync(onRoot()) {
                                     swipe(
-                                        start = Offset(x = centerX / 2, y = 0f),
+                                        start = Offset(x = centerX / 2, y = top),
                                         end = Offset(x = centerX / 2, y = bottom),
-                                        durationMillis = 500,
+                                        durationMillis = 300,
                                     )
                                 }
-                                awaitCondition { kosmos.transitionState.value.isIdle() }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                }
                             }
                         ) {
                             feature(
                                 hasTestTag(resIdToTestTag("quick_qs_panel")),
                                 size,
                                 "quick_qs_panel_size",
+                                useUnmergedTree = true,
+                            )
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromGoneSceneToQQS_recordingDayDatePosition() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
+            kosmos.enableSingleShade()
+            val motion =
+                recordMotion(
+                    content = { GoneToShadeSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX / 2, y = top),
+                                        end = Offset(x = centerX / 2, y = bottom),
+                                        durationMillis = 300,
+                                    )
+                                }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                }
+                            }
+                        ) {
+                            feature(
+                                hasTestTag(ShadeHeader.Elements.CollapsedContentStart.testTag),
+                                positionInRoot,
+                                "collapsed_shade_header_day_date",
                                 useUnmergedTree = true,
                             )
                         },
@@ -285,11 +336,16 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
 
     @Composable
     private fun GoneToShadeSceneContainer() {
+        val transitionState =
+            MutableStateFlow<ObservableTransitionState>(ObservableTransitionState.Idle(Scenes.Gone))
+
         PlatformTheme {
             WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                 val vm =
                     rememberViewModel("HomeScreenShadeTest") {
-                        kosmos.sceneContainerViewModelFactory.create() {}
+                        kosmos.sceneContainerViewModelFactory
+                            .create() {}
+                            .apply { setTransitionState(transitionState = transitionState) }
                     }
 
                 ObserveReadsRoot {
