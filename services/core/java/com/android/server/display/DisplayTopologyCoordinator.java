@@ -30,6 +30,7 @@ import android.view.DisplayInfo;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -304,10 +305,11 @@ class DisplayTopologyCoordinator {
             return false;
         }
         if (info.type != Display.TYPE_INTERNAL && info.type != Display.TYPE_EXTERNAL
-                && info.type != Display.TYPE_OVERLAY) {
+                && info.type != Display.TYPE_OVERLAY && !(Flags.virtualSecondaryDisplays()
+                && info.type == Display.TYPE_VIRTUAL)) {
             if (shouldLog) {
                 Slog.d(TAG, "Display " + info.displayId + " not allowed in topology because "
-                        + "type is not INTERNAL, EXTERNAL or OVERLAY");
+                        + "type is " + Display.typeToString(info.type));
             }
             return false;
         }
@@ -318,11 +320,13 @@ class DisplayTopologyCoordinator {
             }
             return false;
         }
-        if ((info.type == Display.TYPE_EXTERNAL || info.type == Display.TYPE_OVERLAY)
+        if ((info.type == Display.TYPE_EXTERNAL || info.type == Display.TYPE_OVERLAY || (
+                Flags.virtualSecondaryDisplays() && info.type == Display.TYPE_VIRTUAL))
                 && !mIsExtendedDisplayAllowed.getAsBoolean()) {
             if (shouldLog) {
                 Slog.d(TAG, "Display " + info.displayId + " not allowed in topology because "
-                        + "type is EXTERNAL or OVERLAY and !mIsExtendedDisplayAllowed");
+                        + "type is " + Display.typeToString(info.type)
+                        + " and !mIsExtendedDisplayAllowed");
             }
             return false;
         }
