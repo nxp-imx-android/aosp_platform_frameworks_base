@@ -54,6 +54,12 @@ interface ConnectedDisplayInteractor {
      */
     val connectedDisplayAddition: Flow<Unit>
 
+    /**
+     * Indicates that a previously connected display (either an external display or a virtual device
+     * owned mirror display) has been removed.
+     */
+    val connectedDisplayRemoval: Flow<Int>
+
     /** Pending display that can be enabled to be used by the system. */
     val pendingDisplay: Flow<PendingDisplay?>
 
@@ -138,6 +144,8 @@ constructor(
             }
             .flowOn(backgroundCoroutineDispatcher)
             .map {} // map to Unit
+
+    override val connectedDisplayRemoval: Flow<Int> = displayRepository.displayRemovalEvent
 
     // Provides the pending display only if the lockscreen is unlocked
     override val pendingDisplay: Flow<PendingDisplay?> =

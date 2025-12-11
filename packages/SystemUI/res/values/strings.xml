@@ -4200,8 +4200,10 @@
     <string name="start_mirroring">Mirror</string>
     <!--- Content description of the connected display status bar icon that appears every time a display is connected [CHAR LIMIT=NONE]-->
     <string name="connected_display_icon_desc">Display connected</string>
-    <!--- Text for toast that appears every time an extended display is connected (skipping connection dialog) [CHAR LIMIT=NONE]-->
-    <string name="connected_display_extended_mode_text">Connected to external display</string>
+    <!--- Text for every time a display is connected [CHAR LIMIT=NONE]-->
+    <string name="connected_display_connection_text">Connected to external display</string>
+    <!--- Text for every time a display is disconnected [CHAR LIMIT=NONE]-->
+    <string name="connected_display_removal_text">External display disconnected</string>
 
 
     <!-- Title of the privacy dialog, shown for active / recent app usage of some phone sensors [CHAR LIMIT=30] -->

@@ -148,7 +148,7 @@ class ConnectedDisplayInteractorTest : SysuiTestCase() {
             fakeDisplayRepository.emit(
                 setOf(
                     display(type = TYPE_EXTERNAL, flags = Display.FLAG_SECURE),
-                    display(type = TYPE_EXTERNAL, flags = 0)
+                    display(type = TYPE_EXTERNAL, flags = 0),
                 )
             )
 
@@ -240,6 +240,43 @@ class ConnectedDisplayInteractorTest : SysuiTestCase() {
 
             runCurrent()
             assertThat(count).isEqualTo(0)
+            job.cancel()
+        }
+
+    @Test
+    fun virtualDeviceOwnedMirrorVirtualDisplay_emitsConnectedDisplayRemoval() =
+        testScope.runTest {
+            whenever(virtualDeviceManager.isVirtualDeviceOwnedMirrorDisplay(anyInt()))
+                .thenReturn(true)
+            var count = 0
+            val job =
+                connectedDisplayStateProvider.connectedDisplayRemoval
+                    .onEach { count++ }
+                    .launchIn(this)
+
+            fakeDisplayRepository.emit(display(id = 0, type = TYPE_INTERNAL))
+            fakeDisplayRepository.emit(display(id = 2, type = TYPE_VIRTUAL))
+            fakeDisplayRepository.emitDisplayRemoveEvent(2)
+
+            runCurrent()
+            assertThat(count).isEqualTo(1)
+            job.cancel()
+        }
+
+    @Test
+    fun externalDisplay_emitsConnectedDisplayRemoval() =
+        testScope.runTest {
+            var count = 0
+            val job =
+                connectedDisplayStateProvider.connectedDisplayRemoval
+                    .onEach { count++ }
+                    .launchIn(this)
+
+            fakeDisplayRepository.emit(display(id = 2, type = TYPE_EXTERNAL))
+            fakeDisplayRepository.emitDisplayRemoveEvent(2)
+
+            runCurrent()
+            assertThat(count).isEqualTo(1)
             job.cancel()
         }
 
