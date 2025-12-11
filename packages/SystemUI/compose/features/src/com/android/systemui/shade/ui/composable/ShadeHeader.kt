@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
@@ -85,6 +86,7 @@ import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags.groupedPrivacyChip
+import com.android.systemui.common.ui.compose.byLayoutId
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -128,6 +130,11 @@ object ShadeHeader {
         val PrivacyChip = ElementKey("PrivacyChip", contentPicker = LowestZIndexContentPicker)
         val Clock = ElementKey("ShadeHeaderClock", contentPicker = LowestZIndexContentPicker)
         val ShadeCarrierGroup = ElementKey("ShadeCarrierGroup")
+    }
+
+    enum class LayoutId {
+        StartContent,
+        EndContent,
     }
 
     object Values {
@@ -191,7 +198,9 @@ fun ContentScope.CollapsedShadeHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.padding(horizontal = horizontalPadding),
+                modifier =
+                    Modifier.padding(horizontal = horizontalPadding)
+                        .layoutId(ShadeHeader.LayoutId.StartContent),
             ) {
                 Clock(onClick = viewModel::onClockClicked, textColor = textColor)
                 VariableDayDate(
@@ -204,7 +213,12 @@ fun ContentScope.CollapsedShadeHeader(
         },
         endContent = {
             if (viewModel.isPrivacyChipVisible) {
-                Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
+                Box(
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .padding(horizontal = horizontalPadding)
+                            .layoutId(ShadeHeader.LayoutId.EndContent)
+                ) {
                     PrivacyChip(
                         privacyList = viewModel.privacyItems,
                         onClick = viewModel::onPrivacyChipClicked,
@@ -217,7 +231,8 @@ fun ContentScope.CollapsedShadeHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
                         Modifier.element(ShadeHeader.Elements.CollapsedContentEnd)
-                            .padding(horizontal = horizontalPadding),
+                            .padding(horizontal = horizontalPadding)
+                            .layoutId(ShadeHeader.LayoutId.EndContent),
                 ) {
                     if (isSplitShade) {
                         ShadeCarrierGroup(viewModel = viewModel)
@@ -347,7 +362,11 @@ fun ContentScope.OverlayShadeHeader(
         statusBarHeightPx = viewModel.statusBarHeightPx,
         modifier = modifier,
         startContent = {
-            Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
+            Box(
+                modifier =
+                    Modifier.padding(horizontal = horizontalPadding)
+                        .layoutId(ShadeHeader.LayoutId.StartContent)
+            ) {
                 ShadeHighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
                     hoverBackgroundColor = notificationsHighlight.hoverBackgroundColor,
@@ -380,7 +399,9 @@ fun ContentScope.OverlayShadeHeader(
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = horizontalPadding),
+                modifier =
+                    Modifier.padding(horizontal = horizontalPadding)
+                        .layoutId(ShadeHeader.LayoutId.EndContent),
             ) {
                 ShadeHighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
@@ -472,6 +493,8 @@ private fun CutoutAwareShadeHeader(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
         contents = listOf(startContent, endContent),
     ) { measurables, constraints ->
+        val measurableStartContent = measurables[0].byLayoutId<ShadeHeader.LayoutId>()
+        val measurableEndContent = measurables[1].byLayoutId<ShadeHeader.LayoutId>()
         val cutout = cutoutProvider()
 
         val cutoutWidth = cutout.width
@@ -480,20 +503,16 @@ private fun CutoutAwareShadeHeader(
         val cutoutLocation = cutout.location
 
         check(constraints.hasBoundedWidth)
-        check(measurables.size == 2)
-        check(measurables[0].size == 1)
-        check(measurables[1].size == 1)
 
         val screenWidth = constraints.maxWidth
         val width = max((screenWidth - cutoutWidth) / 2, 0)
         val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeightPx)
         val childConstraints = Constraints.fixed(width, height)
 
-        val startMeasurable = measurables[0][0]
-        val endMeasurable = measurables[1][0]
-
-        val startPlaceable = startMeasurable.measure(childConstraints)
-        val endPlaceable = endMeasurable.measure(childConstraints)
+        val startPlaceable =
+            measurableStartContent[ShadeHeader.LayoutId.StartContent]!!.measure(childConstraints)
+        val endPlaceable =
+            measurableEndContent[ShadeHeader.LayoutId.EndContent]!!.measure(childConstraints)
 
         layout(screenWidth, height) {
             when (cutoutLocation) {
