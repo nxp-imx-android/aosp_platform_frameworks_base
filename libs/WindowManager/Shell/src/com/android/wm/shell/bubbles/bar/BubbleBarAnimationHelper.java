@@ -56,6 +56,7 @@ import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject.MagneticTarget;
 
 /**
@@ -486,6 +487,7 @@ public class BubbleBarAnimationHelper {
 
         int[] location = bbev.getLocationOnScreen();
         int diffFromBottom = mPositioner.getScreenRect().bottom - location[1];
+        final String key = mExpandedBubble != null ? mExpandedBubble.getKey() : "null";
 
         ObjectAnimator animator = ObjectAnimator.ofFloat(
                 bbev, TRANSLATION_Y, bbev.getTranslationY() + (diffFromBottom * 2));
@@ -493,10 +495,17 @@ public class BubbleBarAnimationHelper {
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateDismiss(): finished");
+                BubbleLog.d("BubbleBarAnimationHelper#animateDismiss(): onAnimationEnd key=%s",
+                        key);
                 if (endRunnable != null) {
                     endRunnable.run();
                 }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                BubbleLog.d("BubbleBarAnimationHelper#animateDismiss(): onAnimationCancel key=%s",
+                        key);
             }
         });
         startNewAnimator(animator);
