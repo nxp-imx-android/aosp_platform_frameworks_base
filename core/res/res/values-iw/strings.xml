@@ -773,8 +773,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"צריך להזיז את הטלפון כלפי מטה"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"צריך להזיז את הטלפון שמאלה"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"צריך להזיז את הטלפון ימינה"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"צריך להביט ישירות במצלמה"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"לא רואים את הפנים שלך. יש להחזיק את הטלפון בגובה העיניים."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"יותר מדי תנועה. יש להחזיק את הטלפון בצורה יציבה."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"יש לסרוק שוב את הפנים."</string>
@@ -1454,7 +1453,7 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"יש ללחוץ כדי להגדיר"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"אזור הזמן שלך השתנה"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"שינוי השעון"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"שינוי השעה בשעון"</string>
     <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"השעונים הוזזו קדימה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"השעונים הוזזו אחורה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"הגדרת שעה"</string>
@@ -2108,6 +2107,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"האפליקציה <xliff:g id="APP_NAME_0">%1$s</xliff:g> לא זמינה כרגע. אפשר לנהל זאת באפליקציה <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"מידע נוסף"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ביטול ההשהיה של האפליקציה"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"להפעיל את האפליקציות לעבודה?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ביטול ההשהיה"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"שיחת חירום"</string>
@@ -2547,6 +2548,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"שכפול"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"שיתופי"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"המרחב הפרטי"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"יש תוכן רגיש בהתראה שהוסתר"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"תוכן האפליקציה מוסתר משיתוף המסך מטעמי אבטחה"</string>

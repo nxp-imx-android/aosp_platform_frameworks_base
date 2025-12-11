@@ -696,10 +696,10 @@
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"捕获按键"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"允许应用在系统处理系统快捷键和操作之前捕获按键。"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"使用生物识别"</string>
-    <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"使用生物识别或屏幕锁定凭据"</string>
+    <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"使用生物识别或屏幕锁定凭证"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"验证是您本人在操作"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"使用生物识别验证身份才能继续"</string>
-    <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"使用生物识别或屏幕锁定凭据验证身份，才能继续操作"</string>
+    <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"使用生物识别或屏幕锁定凭证验证身份，才能继续操作"</string>
     <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"您需要在手机上验证您的身份才能继续"</string>
     <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"您需要在平板电脑上验证您的身份才能继续"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"生物识别硬件无法使用"</string>
@@ -709,8 +709,8 @@
     <string name="biometric_error_canceled" msgid="8266582404844179778">"身份验证已取消"</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"未设置任何 PIN 码、图案和密码"</string>
     <string name="biometric_error_generic" msgid="6784371929985434439">"进行身份验证时出错"</string>
-    <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"使用屏幕锁定凭据"</string>
-    <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"输入您的屏幕锁定凭据才能继续"</string>
+    <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"使用屏幕锁定凭证"</string>
+    <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"输入您的屏幕锁定凭证才能继续"</string>
     <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"请用力按住传感器"</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"无法识别指纹，请重试。"</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"请清洁指纹传感器，然后重试"</string>
@@ -745,9 +745,9 @@
     <string name="fingerprint_error_power_pressed" msgid="5479524500542129414">"已按下电源按钮"</string>
     <string name="fingerprint_name_template" msgid="8941662088160289778">"手指 <xliff:g id="FINGERID">%d</xliff:g>"</string>
     <string name="fingerprint_app_setting_name" msgid="4253767877095495844">"使用指纹"</string>
-    <string name="fingerprint_or_screen_lock_app_setting_name" msgid="3501743523487644907">"使用指纹或屏幕锁定凭据"</string>
+    <string name="fingerprint_or_screen_lock_app_setting_name" msgid="3501743523487644907">"使用指纹或屏幕锁定凭证"</string>
     <string name="fingerprint_dialog_default_subtitle" msgid="3879832845486835905">"使用指纹完成验证才能继续"</string>
-    <string name="fingerprint_or_screen_lock_dialog_default_subtitle" msgid="5195808203117992200">"使用指纹解锁或屏幕锁定凭据验证身份，才能继续操作"</string>
+    <string name="fingerprint_or_screen_lock_dialog_default_subtitle" msgid="5195808203117992200">"使用指纹解锁或屏幕锁定凭证验证身份，才能继续操作"</string>
   <string-array name="fingerprint_error_vendor">
   </string-array>
     <string name="fingerprint_error_vendor_unknown" msgid="4170002184907291065">"出了点问题。请重试。"</string>
@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"请将手机拿低一点"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"请将手机向左移动"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"请将手机向右移动"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"请尽量直视摄像头"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"看不到您的脸，请将手机举到与眼睛齐平的位置。"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"摄像头过于晃动。请将手机拿稳。"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"请重新注册您的面孔。"</string>
@@ -807,9 +806,9 @@
     <string name="face_error_security_update_required" msgid="5076017208528750161">"传感器已暂时停用。"</string>
     <string name="face_name_template" msgid="3877037340223318119">"面孔 <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" msgid="5854024256907828015">"使用人脸解锁"</string>
-    <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"使用人脸解锁或屏幕锁定凭据"</string>
+    <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"使用人脸解锁或屏幕锁定凭证"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"使用您的面孔验证身份才能继续"</string>
-    <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"使用人脸解锁或屏幕锁定凭据验证身份，才能继续操作"</string>
+    <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"使用人脸解锁或屏幕锁定凭证验证身份，才能继续操作"</string>
   <string-array name="face_error_vendor">
   </string-array>
     <string name="face_error_vendor_unknown" msgid="7387005932083302070">"出了点问题，请重试。"</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"点按即可进行设置"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"您的时区已更改"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"您当前所处的时区是<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"时钟更改"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"时钟已向前调 <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>。您当前所处的时区是<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)。"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"时钟已向后调 <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>。您当前所处的时区是<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)。"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"设置时间"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"设置日期"</string>
     <string name="date_time_set" msgid="4603445265164486816">"设置"</string>
@@ -2110,6 +2106,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>目前无法使用。该应用是由<xliff:g id="APP_NAME_1">%2$s</xliff:g>所管理。"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"了解详情"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"取消暂停应用"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"是否为工作应用解除暂停状态？"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"解除暂停"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"紧急呼叫"</string>
@@ -2549,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"克隆"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"共用"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"私密空间"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"已隐藏敏感通知内容"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"为安全起见，屏幕共享画面已隐藏此应用的内容"</string>

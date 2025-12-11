@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ჩაწიეთ ტელეფონი ქვემოთ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"გაწიეთ ტელეფონი თქვენგან მარცხნივ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"გაწიეთ ტელეფონი თქვენგან მარჯვნივ"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"პირდაპირ უყურეთ კამერას"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"სახე არ ჩანს. დაიჭირეთ ტელ. თვალის დონეზე."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"მეტისმეტად მოძრაობთ. მყარად დაიჭირეთ ტელეფონი."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"გთხოვთ, ხელახლა დაარეგისტრიროთ თქვენი სახე."</string>
@@ -2107,6 +2106,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ამჟამად მიუწვდომელია. ის იმართება <xliff:g id="APP_NAME_1">%2$s</xliff:g>-ის მიერ."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"შეიტყვეთ მეტი"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"აპის დაპაუზების გაუქმება"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"კვლავ გააქტიურდეს სამსახურის აპები?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"გააქტიურება"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"საგანგებო სიტუაცია"</string>
@@ -2546,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"კლონის შექმნა"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"საერთო"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"კერძო სივრცე"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"სენსიტიური შეტყობინების კონტენტი დამალულია"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ეკრანის გაზიარებისას აპის კონტენტი დამალულია უსაფრთხოების მიზნით"</string>

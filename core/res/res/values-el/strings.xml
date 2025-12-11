@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Μετακινήστε πιο χαμηλά το τηλέφωνο"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Μετακινήστε το τηλέφωνο προς τα αριστερά"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Μετακινήστε το τηλέφωνο προς τα δεξιά"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Κοιτάξτε απευθείας την κάμερα"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Κρατήστε το τηλέφωνο στο ύψος των ματιών σας."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Πάρα πολλή κίνηση. Κρατήστε σταθερό το τηλέφωνο."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Καταχωρίστε ξανά το πρόσωπό σας."</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Πατήστε για ρύθμιση"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Η ζώνη ώρας άλλαξε"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Βρίσκεστε πλέον στη ζώνη ώρας <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Αλλαγή ώρας"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Τα ρολόγια προχώρησαν μπροστά <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Είστε πλέον στη ζώνη ώρας <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Τα ρολόγια γύρισαν πίσω <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Είστε πλέον στη ζώνη ώρας <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Ρύθμιση ώρας"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Ορισμός ημερομηνίας"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Ορισμός"</string>
@@ -2110,6 +2106,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Η εφαρμογή <xliff:g id="APP_NAME_0">%1$s</xliff:g> δεν είναι διαθέσιμη αυτήν τη στιγμή. Η διαχείριση πραγματοποιείται από την εφαρμογή <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Μάθετε περισσότερα"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Κατάργηση παύσης εφαρμογής"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Αναίρ. παύσης εφαρμ. εργασιών;"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Αναίρεση παύσης"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Έκτακτη ανάγκη"</string>
@@ -2549,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Κλώνος"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Κοινόχρηστο"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Ιδιωτικός χώρος"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"Έγινε απόκρυψη της ειδοποίησης ευαίσθητου περιεχομένου"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Για λόγους ασφάλειας, έγινε απόκρυψη του περιεχομένου της εφαρμογής από την κοινή χρήση οθόνης"</string>
