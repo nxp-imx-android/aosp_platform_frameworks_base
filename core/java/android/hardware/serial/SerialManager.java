@@ -95,7 +95,7 @@ public final class SerialManager {
      * Enumerates serial ports.
      */
     @NonNull
-    public List<SerialPort> getSerialPorts() {
+    public List<SerialPort> getPorts() {
         try {
             List<SerialPortInfo> infos = mService.getSerialPorts();
             List<SerialPort> ports = new ArrayList<>(infos.size());
