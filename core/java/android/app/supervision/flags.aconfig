@@ -64,12 +64,21 @@ flag {
   description: "Flag that enables the web content filters screen with Supervision settings entry point"
   bug: "395134536"
 }
+
 flag {
   name: "enable_supervision_settings_ui_updates"
   is_exported: true
   namespace: "supervision"
   description: "Flag that enables supervision settings UI updates to support a unified experience for supervision apps"
   bug: "444303437"
+}
+
+flag {
+  name: "enable_supervision_auth_controller_updates"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables supervision auth controller updates to support two pane settings"
+  bug: "459821424"
 }
 
 flag {
