@@ -740,7 +740,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     private void stopExpandingNotification() {
         when(mNotificationStackScrollLayout.getExpandHelper()).thenReturn(mExpandHelper);
         when(mNotificationStackScrollLayout.getIsExpanded()).thenReturn(true);
-        when(mNotificationStackScrollLayout.getExpandedNotificationInThisMotion()).thenReturn(true);
+        when(mNotificationStackScrollLayout.getExpandedInThisMotion()).thenReturn(true);
         when(mNotificationStackScrollLayout.isExpandingNotification()).thenReturn(true);
 
         when(mExpandHelper.onTouchEvent(any())).thenAnswer(i -> {

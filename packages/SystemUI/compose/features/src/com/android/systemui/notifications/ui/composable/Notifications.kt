@@ -22,9 +22,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -430,7 +428,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
             )
         }
 
-    val scrimOverscrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
+    val overScrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
 
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -441,7 +439,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
             modifier
                 .element(Notifications.Elements.NotificationScrim)
                 .overscroll(verticalOverscrollEffect)
-                .overscroll(scrimOverscrollEffect.withoutEventHandling())
+                .overscroll(overscrollEffect.withoutEventHandling())
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
@@ -534,14 +532,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         connection = object : NestedScrollConnection {},
                                         dispatcher = nestedScrollDispatcher,
                                     )
-                                    // Adding these 3 modifiers is needed to enable overscroll
-                                    // when the list fits within its bounds: b/295810376
-                                    .overscroll(overscrollEffect)
-                                    .verticalScroll(scrollState)
-                                    .scrollable(
-                                        rememberScrollableState { 0f },
-                                        Orientation.Vertical,
-                                        overscrollEffect = overscrollEffect,
+                                    .verticalScroll(
+                                        scrollState,
+                                        overscrollEffect = overScrollEffect,
                                     )
                                     .fillMaxWidth()
                                     // Added extra bottom padding for keeping footerView inside
