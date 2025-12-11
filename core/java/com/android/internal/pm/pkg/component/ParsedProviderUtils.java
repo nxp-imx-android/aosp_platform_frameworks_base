@@ -132,7 +132,7 @@ public class ParsedProviderUtils {
 
             if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
                 provider.setFlags(provider.getFlags() | flag(ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX,
-                        R.styleable.AndroidManifestProvider_isPrivateComputeCoreProcess, sa));
+                        R.styleable.AndroidManifestProvider_privateComputeCore, sa));
             }
 
             if (Flags.enableSystemUserOnlyForServicesAndProviders()) {

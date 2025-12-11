@@ -151,7 +151,7 @@ public class ParsedActivityUtils {
                                         R.styleable.AndroidManifestActivity_systemUserOnly, sa)));
             if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
                 activity.setFlags(activity.getFlags() | flag(ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX,
-                        R.styleable.AndroidManifestActivity_isPrivateComputeCoreProcess, sa));
+                        R.styleable.AndroidManifestActivity_privateComputeCore, sa));
             }
 
             if (!receiver) {
@@ -309,11 +309,11 @@ public class ParsedActivityUtils {
             ParsedActivityImpl activity = ParsedActivityImpl.makeAlias(targetActivity, target);
 
             if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
-                // unset FLAG_RUN_IN_PCC_SANDBOX and set based on isPrivateComputeCoreProcess
+                // unset FLAG_RUN_IN_PCC_SANDBOX and set based on privateComputeCore
                 // value for alias
                 activity.setFlags(activity.getFlags() & ~ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);
                 boolean aliasMarkedPcc = sa.getBoolean(
-                        R.styleable.AndroidManifestActivityAlias_isPrivateComputeCoreProcess,
+                        R.styleable.AndroidManifestActivityAlias_privateComputeCore,
                         false);
                 if (aliasMarkedPcc) {
                     activity.setFlags(activity.getFlags() | ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX);

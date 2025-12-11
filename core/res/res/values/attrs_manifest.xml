@@ -812,6 +812,9 @@
          single integer, with higher numbers considered to be better. -->
     <attr name="priority" format="integer" />
 
+    <!-- If set to true, this component is run in a Private Compute Core Process. -->
+    <attr name="privateComputeCore" format="boolean" />
+
     <!-- Indicate if this component is aware of direct boot lifecycle, and can be
          safely run before the user has entered their credentials (such as a lock
          pattern or PIN). -->
@@ -3283,8 +3286,7 @@
         <attr name="attributionTags" />
         <attr name="systemUserOnly" format="boolean" />
         <attr name="intentMatchingFlags"/>
-        <!-- If set to true, this component is run in a Private Compute Core Process. -->
-        <attr name="isPrivateComputeCoreProcess" format="boolean" />
+        <attr name="privateComputeCore" />
     </declare-styleable>
 
     <!-- Attributes that can be supplied in an AndroidManifest.xml
@@ -3392,8 +3394,7 @@
              that is isolated from the rest of the system.  The only communication
              with it is through the Service API (binding and starting). -->
         <attr name="isolatedProcess" format="boolean" />
-        <!-- If set to true, this component is run in a Private Compute Core Process. -->
-        <attr name="isPrivateComputeCoreProcess" format="boolean" />
+        <attr name="privateComputeCore" />
         <attr name="singleUser" />
         <attr name="directBootAware" />
         <!-- If the service is an {@link android.R.attr#isolatedProcess} service, this permits a
@@ -3532,8 +3533,7 @@
              contained here. -->
         <attr name="attributionTags" />
         <attr name="intentMatchingFlags"/>
-         <!-- If set to true, this component is run in a Private Compute Core Process. -->
-        <attr name="isPrivateComputeCoreProcess" format="boolean" />
+        <attr name="privateComputeCore" />
     </declare-styleable>
 
     <!-- The <code>activity</code> tag declares an
@@ -3590,8 +3590,7 @@
              any value in the theme. -->
         <attr name="windowSoftInputMode" />
         <attr name="immersive" />
-        <!-- If set to true, this component is run in a Private Compute Core Process. -->
-        <attr name="isPrivateComputeCoreProcess" format="boolean" />
+        <attr name="privateComputeCore" />
         <attr name="hardwareAccelerated" />
         <attr name="uiOptions" />
         <attr name="parentActivityName" />
@@ -3774,8 +3773,7 @@
         <attr name="allowUntrustedActivityEmbedding" />
         <attr name="knownActivityEmbeddingCerts" />
         <attr name="intentMatchingFlags"/>
-        <!-- If set to true, this component is run in a Private Compute Core Process. -->
-        <attr name="isPrivateComputeCoreProcess" format="boolean" />
+        <attr name="privateComputeCore" />
     </declare-styleable>
 
     <!-- The <code>meta-data</code> tag is used to attach additional

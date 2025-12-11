@@ -1065,7 +1065,6 @@ package android {
     field public static final int isIndicator = 16843079; // 0x1010147
     field public static final int isLightTheme = 16844176; // 0x1010590
     field @Deprecated public static final int isModifier = 16843334; // 0x1010246
-    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int isPrivateComputeCoreProcess;
     field @Deprecated public static final int isRepeatable = 16843336; // 0x1010248
     field public static final int isScrollContainer = 16843342; // 0x101024e
     field @Deprecated public static final int isSplitRequired = 16844177; // 0x1010591
@@ -1373,6 +1372,7 @@ package android {
     field public static final int previewLayout = 16844327; // 0x1010627
     field public static final int primaryContentAlpha = 16844114; // 0x1010552
     field public static final int priority = 16842780; // 0x101001c
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int privateComputeCore;
     field public static final int privateImeOptions = 16843299; // 0x1010223
     field public static final int process = 16842769; // 0x1010011
     field public static final int progress = 16843063; // 0x1010137
