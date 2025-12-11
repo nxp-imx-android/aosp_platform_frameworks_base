@@ -17,6 +17,7 @@
 package com.android.extensions.computercontrol;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.DurationMillisLong;
 import android.annotation.IntRange;
 import android.app.Activity;
 import android.app.Notification;
@@ -195,6 +196,22 @@ public final class ComputerControlSession implements AutoCloseable {
     public void setStabilityListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull StabilityListener listener) {
         setStabilityListener(Duration.ofMillis(DEFAULT_STABILITY_TIMEOUT_MS), executor, listener);
+    }
+
+    /**
+     * Sets a {@link StabilityListener} to be notified when the computer control session is
+     * potentially stable.
+     *
+     * @param timeoutMillis timeout (in millis) after which the session would be considered stable,
+     *                      upon any action or any framework event
+     * @param executor {@link Executor} on which this listener would be invoked
+     * @param listener {@link StabilityListener} which would be invoked
+     *
+     * @throws IllegalStateException if a listener was previously set.
+     */
+    public void setStabilityListener(@DurationMillisLong long timeoutMillis,
+            @NonNull @CallbackExecutor Executor executor, @NonNull StabilityListener listener) {
+        setStabilityListener(Duration.ofMillis(timeoutMillis), executor, listener);
     }
 
     /**
