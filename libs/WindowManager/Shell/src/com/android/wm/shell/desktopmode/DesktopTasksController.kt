@@ -1211,7 +1211,7 @@ class DesktopTasksController(
         val boundsByTaskId = repository.getPreservedTaskBounds(preservedDisplay)
         val activeDeskId = preservedDisplay.activeDeskId
         val wct = WindowContainerTransaction()
-        var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
+        val runOnTransitStartList = mutableListOf<RunOnTransitStart>()
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
         // Exclude tasks from restore on projected devices.

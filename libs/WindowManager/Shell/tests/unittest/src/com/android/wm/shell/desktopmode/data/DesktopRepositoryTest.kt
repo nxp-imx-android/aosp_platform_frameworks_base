@@ -2749,7 +2749,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             taskBounds = TEST_TASK_BOUNDS,
         )
 
-        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID)
+        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID, preserveAsActive = true)
 
         val allDesks = repo.getAllDesks()
         // We only have the default desk left.
@@ -2760,6 +2760,56 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
         verify(persistentRepository, never())
             .addOrUpdateRepository(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun preserveDesk_activeDesk_deskPreservedAsActive() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+
+        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID, preserveAsActive = true)
+
+        assertThat(repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)?.activeDeskId).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun preserveDesk_inactiveDesk_preservedActiveDeskIsNull() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+
+        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID, preserveAsActive = false)
+
+        assertThat(repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)?.activeDeskId).isNull()
     }
 
     @Test

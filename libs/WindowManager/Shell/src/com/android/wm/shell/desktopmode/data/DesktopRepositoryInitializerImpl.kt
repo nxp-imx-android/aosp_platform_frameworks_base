@@ -68,9 +68,7 @@ class DesktopRepositoryInitializerImpl(
     override fun initialize(userRepositories: DesktopUserRepositories) {
         val desktopSupportedOnDefaultDisplay =
             desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
-        if (
-            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue
-        ) {
+        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
             _isInitialized.value = true
             return
         }
@@ -276,14 +274,26 @@ class DesktopRepositoryInitializerImpl(
             }
         val activeDeskId =
             desktopRepositoryState
-                .getActiveDeskByUniqueDisplayId()[persistentDesktop.uniqueDisplayId]
-        if (newDisplayId != DEFAULT_DISPLAY && activeDeskId == deskId) {
+                .getActiveDeskByUniqueDisplayIdMap()[persistentDesktop.uniqueDisplayId]
+        // If desk was active on reboot or prior to disconnect, activate it.
+        val isActiveDesk = activeDeskId == deskId
+        val wasActiveDesk =
+            wasPreservedDisplay &&
+                desktopRepositoryState.preservedDisplayByUniqueIdMap[
+                        persistentDesktop.uniqueDisplayId]
+                    ?.activeDeskId == deskId
+        val shouldActivate = isActiveDesk || wasActiveDesk
+        if (newDisplayId != DEFAULT_DISPLAY && shouldActivate) {
             // TODO: b/443876652 - Investigate solution for devices that don't
             //  disable external display on boot.
             repository.setActiveDesk(newDisplayId, newDeskId)
         }
         if (preserveDesk) {
-            repository.preserveDesk(newDeskId, persistentDesktop.uniqueDisplayId)
+            repository.preserveDesk(
+                deskId = newDeskId,
+                uniqueDisplayId = persistentDesktop.uniqueDisplayId,
+                preserveAsActive = shouldActivate,
+            )
         }
     }
 
