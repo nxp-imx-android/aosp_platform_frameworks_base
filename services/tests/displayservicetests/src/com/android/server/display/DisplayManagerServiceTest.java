@@ -2360,6 +2360,228 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch() throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
+
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertNotEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch_ignoredWhenUntrusted()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        // Missing VIRTUAL_DISPLAY_FLAG_TRUSTED
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
+
+        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch_ignoredWhenPrivate()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        // Missing VIRTUAL_DISPLAY_FLAG_PUBLIC
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
+
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch_ignoredWhenAutoMirror()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
+
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch_ignoredWhenOwnContentOnly()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY;
+
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    public void testCreateVirtualDisplay_allowsContentModeSwitch_ignoredWhenShouldShowSystemDecors()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        registerDefaultDisplays(mDisplayManager);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        String uniqueId = "uniqueId --- Content Mode Switch Test";
+        int width = 600;
+        int height = 800;
+        int dpi = 320;
+        int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, width, height, dpi);
+        builder.setFlags(flags);
+        builder.setUniqueId(uniqueId);
+        int displayId = bs.createVirtualDisplay(builder.build(), /* callback= */ mMockAppToken,
+                /* projection= */ null, PACKAGE_NAME);
+
+        performTraversalInternal(mDisplayManager);
+
+        flushHandlers();
+
+        DisplayDeviceInfo ddi = mDisplayManager.getDisplayDeviceInfoInternal(displayId);
+        assertNotNull(ddi);
+        assertEquals(0, ddi.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+    }
+
+    @Test
     public void test_displayChangedNotified_displayInfoFramerateOverridden() {
         when(mMockFlags.isFramerateOverrideTriggersRrCallbacksEnabled()).thenReturn(false);
 

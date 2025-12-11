@@ -32,6 +32,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
 import static android.hardware.display.DisplayManager.DEFAULT_HDR_PREFERENCE;
+import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD;
@@ -2005,8 +2006,50 @@ public final class DisplayManagerService extends SystemService {
             throw new IllegalArgumentException("Surface can't be single-buffered");
         }
 
+        if (!Flags.virtualSecondaryDisplays()) {
+            // Support for virtual display content mode switch is not enabled
+            flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+        }
+
+        if ((flags & VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0) {
+            // TODO(b/474207070): Support VDM displays
+            if (virtualDevice != null) {
+                Slog.d(TAG, "Virtual displays associated with virtual device currently don't "
+                        + "support content mode switch, hence ignoring "
+                        + "VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
+                flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
+
+            // Following flag checks should be in sync with DisplayContent.allowContentModeSwitch.
+            // We duplicate the checks here in order to fall back to default content modes on
+            // incompatible flag combinations.
+            if ((flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) == 0) {
+                Slog.d(TAG, "Untrusted displays are not allowed to enter projected/extended mode, "
+                        + "hence ignoring flag VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH.");
+                flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
+            if ((flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+                Slog.d(TAG, "Private virtual displays are not allowed to perform projection, hence "
+                        + "ignoring VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
+                flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
+            if ((flags & (VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR | VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY))
+                    != 0) {
+                Slog.d(TAG, "Either VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR or "
+                        + "VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY already set, hence ignoring "
+                        + "VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
+                flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
+            if ((flags & VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0) {
+                Slog.d(TAG, "The display should unconditionally show system decorations, hence "
+                        + "ignoring VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
+                flags &= ~VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
+        }
+
         if ((flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) != 0) {
-            if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY) == 0) {
+            if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY) == 0
+                    && (flags & VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH) == 0) {
                 Slog.d(TAG, "Public virtual displays are auto mirror by default, hence adding "
                         + "VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR.");
                 flags |= VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
