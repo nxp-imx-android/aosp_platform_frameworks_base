@@ -32,6 +32,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
@@ -39,6 +41,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.colorextraction.ColorExtractor.OnColorsChangedListener
 import com.android.keyguard.KeyguardUpdateMonitor
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.colorextraction.SysuiColorExtractor
 import com.android.systemui.dump.DumpManager
@@ -317,6 +320,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     fun testDisconnect_emitsEmptyListAndRemovesNotifier() {
         // GIVEN a registered listener on an active session
         connectSession()
@@ -332,6 +336,27 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(plugin).onTargetsAvailable(emptyList())
         verify(plugin).setEventDispatcher(null)
         verify(weatherPlugin).onTargetsAvailable(emptyList())
+        verify(weatherPlugin).setEventDispatcher(null)
+        verify(datePlugin).setEventDispatcher(null)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER)
+    fun testDisconnect_doesNotEmitEmptyListAndRemovesNotifier() {
+        // GIVEN a registered listener on an active session
+        connectSession()
+        clearInvocations(plugin)
+
+        // WHEN the session is closed
+        controller.stateChangeListener.onViewDetachedFromWindow(dateSmartspaceView as View)
+        controller.stateChangeListener.onViewDetachedFromWindow(weatherSmartspaceView as View)
+        controller.stateChangeListener.onViewDetachedFromWindow(smartspaceView as View)
+        controller.disconnect()
+
+        // THEN the listener receives an empty list of targets and unregisters the notifier
+        verify(plugin, never()).onTargetsAvailable(emptyList())
+        verify(plugin).setEventDispatcher(null)
+        verify(weatherPlugin, never()).onTargetsAvailable(emptyList())
         verify(weatherPlugin).setEventDispatcher(null)
         verify(datePlugin).setEventDispatcher(null)
     }
