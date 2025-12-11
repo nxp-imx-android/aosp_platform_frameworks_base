@@ -90,10 +90,11 @@ object KeyguardSmartspaceViewBinder {
                     combine(
                             clockViewModel.isLargeClockVisible,
                             clockViewModel.shouldDateWeatherBeBelowLargeClock,
-                            ::Pair,
+                            clockViewModel.hasCustomWeatherDataDisplay,
+                            ::Triple,
                         )
-                        .collect { (isLargeClock, belowLargeclock) ->
-                            if (isLargeClock && belowLargeclock) {
+                        .collect { (isLargeClock, belowLargeClock, hasCustomWeather) ->
+                            if (isLargeClock && (belowLargeClock || hasCustomWeather)) {
                                 // hide small clock date/weather
                                 keyguardRootView.findViewById<View>(smallViewId)?.let {
                                     it.visibility = View.GONE
