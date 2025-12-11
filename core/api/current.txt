@@ -13073,7 +13073,7 @@ package android.content.pm {
   }
 
   public static final class ActivityInfo.WindowLayout {
-    ctor public ActivityInfo.WindowLayout(int, float, int, float, int, int, int);
+    ctor @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public ActivityInfo.WindowLayout(int, float, int, float, int, int, int);
     field public final int gravity;
     field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int height;
     field public final float heightFraction;

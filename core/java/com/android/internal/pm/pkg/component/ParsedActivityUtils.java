@@ -602,36 +602,60 @@ public class ParsedActivityUtils {
             AttributeSet attrs, ParseInput input) {
         TypedArray sw = res.obtainAttributes(attrs, R.styleable.AndroidManifestLayout);
         try {
-            int width = -1;
+            int complexWidth = -1;
             float widthFraction = -1f;
-            int height = -1;
-            float heightFraction = -1f;
             final int widthType = sw.getType(R.styleable.AndroidManifestLayout_defaultWidth);
             if (widthType == TypedValue.TYPE_FRACTION) {
                 widthFraction = sw.getFraction(R.styleable.AndroidManifestLayout_defaultWidth, 1, 1,
                         -1);
             } else if (widthType == TypedValue.TYPE_DIMENSION) {
-                width = sw.getDimensionPixelSize(R.styleable.AndroidManifestLayout_defaultWidth,
-                        -1);
+                final TypedValue vOut = new TypedValue();
+                if (sw.getValue(R.styleable.AndroidManifestLayout_defaultWidth, vOut)) {
+                    complexWidth = vOut.data;
+                }
             }
+
+            int complexHeight = -1;
+            float heightFraction = -1f;
             final int heightType = sw.getType(R.styleable.AndroidManifestLayout_defaultHeight);
             if (heightType == TypedValue.TYPE_FRACTION) {
                 heightFraction = sw.getFraction(R.styleable.AndroidManifestLayout_defaultHeight, 1,
                         1, -1);
             } else if (heightType == TypedValue.TYPE_DIMENSION) {
-                height = sw.getDimensionPixelSize(R.styleable.AndroidManifestLayout_defaultHeight,
-                        -1);
+                final TypedValue vOut = new TypedValue();
+                if (sw.getValue(R.styleable.AndroidManifestLayout_defaultHeight, vOut)) {
+                    complexHeight = vOut.data;
+                }
             }
+
             int gravity = sw.getInt(R.styleable.AndroidManifestLayout_gravity, Gravity.CENTER);
-            int minWidth = sw.getDimensionPixelSize(R.styleable.AndroidManifestLayout_minWidth, -1);
-            int minHeight = sw.getDimensionPixelSize(R.styleable.AndroidManifestLayout_minHeight,
-                    -1);
+
+            int complexMinWidth = -1;
+            final int minWidthType = sw.getType(R.styleable.AndroidManifestLayout_minWidth);
+            if (minWidthType == TypedValue.TYPE_DIMENSION) {
+                final TypedValue vOut = new TypedValue();
+                if (sw.getValue(R.styleable.AndroidManifestLayout_minWidth, vOut)) {
+                    complexMinWidth = vOut.data;
+                }
+            }
+
+            int complexMinHeight = -1;
+            final int minHeightType = sw.getType(R.styleable.AndroidManifestLayout_minHeight);
+            if (minHeightType == TypedValue.TYPE_DIMENSION) {
+                final TypedValue vOut = new TypedValue();
+                if (sw.getValue(R.styleable.AndroidManifestLayout_minHeight, vOut)) {
+                    complexMinHeight = vOut.data;
+                }
+            }
+
             String windowLayoutAffinity =
                     sw.getNonConfigurationString(
                             R.styleable.AndroidManifestLayout_windowLayoutAffinity, 0);
-            final ActivityInfo.WindowLayout windowLayout = new ActivityInfo.WindowLayout(width,
-                    widthFraction, height, heightFraction, gravity, minWidth, minHeight,
-                    windowLayoutAffinity);
+
+            final ActivityInfo.WindowLayout windowLayout = new ActivityInfo.WindowLayout(
+                    complexWidth, widthFraction, complexHeight, heightFraction, gravity,
+                    complexMinWidth, complexMinHeight, windowLayoutAffinity,
+                    res.getDisplayMetrics());
             return input.success(windowLayout);
         } finally {
             sw.recycle();
@@ -661,9 +685,10 @@ public class ParsedActivityUtils {
                 ParsingPackageUtils.METADATA_ACTIVITY_WINDOW_LAYOUT_AFFINITY);
         ActivityInfo.WindowLayout layout = activity.getWindowLayout();
         if (layout == null) {
-            layout = new ActivityInfo.WindowLayout(-1 /* width */, -1 /* widthFraction */,
-                    -1 /* height */, -1 /* heightFraction */, Gravity.NO_GRAVITY,
-                    -1 /* minWidth */, -1 /* minHeight */, windowLayoutAffinity);
+            layout = new ActivityInfo.WindowLayout(-1 /* complexWidth */, -1 /* widthFraction */,
+                    -1 /* complexHeight */, -1 /* heightFraction */, Gravity.NO_GRAVITY,
+                    -1 /* complexMinWidth */, -1 /* complexMinHeight */, windowLayoutAffinity,
+                    null);
         } else {
             layout.windowLayoutAffinity = windowLayoutAffinity;
         }
