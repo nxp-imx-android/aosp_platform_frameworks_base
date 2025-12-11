@@ -27,10 +27,11 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * A service module such as MediaSessionService, VOIP, Camera, Microphone, Location can ask
  * ActivityManagerService to start a foreground service delegate on behalf of the actual app,
- * by which the client app's process state can be promoted to FOREGROUND_SERVICE process state which
- * is higher than the app's actual process state if the app is in the background. This can help to
- * keep the app in the memory and extra run-time.
- * The app does not need to define an actual service component nor add it into manifest file.
+ * by which the client app's process state can be promoted to a higher process state, equivalent to
+ * that of a foreground service, which may be higher than the app's actual process state if the app
+ * is in the background. This can help keep the app in memory and potentially give it extra
+ * run-time. The app does not need to define an actual service component nor add it to their
+ * manifest file.
  *
  * @hide
  */
@@ -47,11 +48,11 @@ public class ForegroundServiceDelegationOptions {
     public static final int DELEGATION_SERVICE_SPECIAL_USE = 1;
 
     /**
-     * Used to identify delegation service related to a phone call. Use a more specific
-     * type instead.
+     * Used to identify delegation service related to a phone call.
      * @see #DELEGATION_SERVICE_VOIP
-     * @deprecated
+     * @deprecated Use a more specific type instead.
      */
+    @Deprecated
     public static final int DELEGATION_SERVICE_PHONE_CALL = 2;
 
     /**
