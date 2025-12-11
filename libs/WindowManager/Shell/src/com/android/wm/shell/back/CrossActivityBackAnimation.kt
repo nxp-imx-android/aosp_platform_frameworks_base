@@ -81,6 +81,7 @@ abstract class CrossActivityBackAnimation(
     protected val currentEnteringRect = RectF()
 
     protected val backAnimRect = Rect()
+    private val screenSpaceBounds = Rect()
     private val cropRect = Rect()
     private val tempRectF = RectF()
 
@@ -200,6 +201,7 @@ abstract class CrossActivityBackAnimation(
         }
         // Offset start rectangle to align task bounds.
         backAnimRect.offsetTo(0, 0)
+        screenSpaceBounds.set(closingTarget!!.screenSpaceBounds)
 
         preparePreCommitClosingRectMovement(backMotionEvent.swipeEdge)
         preparePreCommitEnteringRectMovement()
@@ -264,9 +266,9 @@ abstract class CrossActivityBackAnimation(
         )
         applyTransaction()
         if (fixCrossActivityBackAnimationInBubbles()) {
-            if (closingTarget!!.screenSpaceBounds.top <= statusbarHeight / 2) {
+            if (screenSpaceBounds.top <= statusbarHeight / 2) {
                 background.customizeStatusBarAppearance(
-                    (currentClosingRect.top + closingTarget!!.screenSpaceBounds.top).toInt())
+                    (currentClosingRect.top + screenSpaceBounds.top).toInt())
             }
         } else {
             background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
