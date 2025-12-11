@@ -16,8 +16,14 @@
 
 package com.android.internal.app;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -37,6 +43,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.hardware.biometrics.BiometricManager;
@@ -46,6 +53,7 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.Flags;
+import android.view.Display;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -219,6 +227,36 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
+    public void launchActivity_inInterceptMode_setsCorrectThemeAndIsTranslucent() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            assertThat(mTestInjector.getThemeResId()).isEqualTo(
+                    android.R.style.Theme_DeviceDefault_Panel);
+            assertThat(mTestInjector.isTranslucent()).isTrue();
+            assertThat(mTestInjector.getContentViewId()).isEqualTo(0);
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onConfigurationChanged_inInterceptMode_retainsThemeAndTranslucency() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            scenario.onActivity(activity -> {
+                activity.onConfigurationChanged(new Configuration());
+
+                assertThat(mTestInjector.getThemeResId()).isEqualTo(
+                        android.R.style.Theme_DeviceDefault_Panel);
+                assertThat(mTestInjector.isTranslucent()).isTrue();
+                assertThat(mTestInjector.getContentViewId()).isEqualTo(0);
+            });
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
     public void launchActivity_inLockedTaskMode_setsCorrectThemeAndContentView() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
 
@@ -233,14 +271,65 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void launchActivity_inInterceptMode_setsCorrectThemeAndIsTranslucent() {
-        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+    public void onConfigurationChanged_inLockedTaskMode_retainsThemeAndContentView() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
-            assertThat(mTestInjector.getThemeResId()).isEqualTo(
-                    android.R.style.Theme_DeviceDefault_Panel);
-            assertThat(mTestInjector.isTranslucent()).isTrue();
-            assertThat(mTestInjector.getContentViewId()).isEqualTo(0);
+            scenario.onActivity(activity -> {
+                mTestInjector.resetSetContentViewCount();
+
+                activity.onConfigurationChanged(new Configuration());
+
+                assertThat(mTestInjector.getThemeResId()).isEqualTo(
+                        android.R.style.Theme_DeviceDefault_NoActionBar);
+                assertThat(mTestInjector.getContentViewId()).isEqualTo(
+                        R.layout.locked_app_activity_layout);
+                assertThat(mTestInjector.isTranslucent()).isFalse();
+                assertThat(mTestInjector.getSetContentViewCount()).isEqualTo(1);
+            });
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void launchActivity_inLockedTaskMode_onExternalDisplay_showsExternalDisplayMessage() {
+        mTestInjector.setDisplayId(Display.DEFAULT_DISPLAY + 1);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            onView(withId(R.id.locked_app_activity_external_display_message_id))
+                    .check(matches(isDisplayed()));
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void launchActivity_inLockedTaskMode_onDefaultDisplay_hidesExternalDisplayMessage() {
+        mTestInjector.setDisplayId(Display.DEFAULT_DISPLAY);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            onView(withId(R.id.locked_app_activity_external_display_message_id))
+                    .check(matches(not(isDisplayed())));
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onConfigurationChanged_inLockedTaskMode_updatesExternalDisplayMessageVisibility() {
+        mTestInjector.setDisplayId(Display.DEFAULT_DISPLAY);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            onView(withId(R.id.locked_app_activity_external_display_message_id))
+                    .check(matches(not(isDisplayed())));
+
+            mTestInjector.setDisplayId(Display.DEFAULT_DISPLAY + 1);
+
+            scenario.onActivity(activity -> activity.onConfigurationChanged(new Configuration()));
+
+            onView(withId(R.id.locked_app_activity_external_display_message_id))
+                    .check(matches(isDisplayed()));
         }
     }
 
@@ -630,7 +719,9 @@ public class LockedAppActivityTest {
         private boolean mTargetIntentSent = false;
         private int mThemeResId = 0;
         private boolean mIsTranslucent = false;
+        private int mSetContentViewCount = 0;
         private int mContentViewId = 0;
+        private int mDisplayId = Display.INVALID_DISPLAY;
         private IntentSender mOriginalIntentSender;
 
         @Override
@@ -646,6 +737,13 @@ public class LockedAppActivityTest {
         @Override
         public void setContentView(Activity activity, int layoutResID) {
             mContentViewId = layoutResID;
+            mSetContentViewCount++;
+            activity.setContentView(layoutResID);
+        }
+
+        @Override
+        public int getDisplayId(Activity activity) {
+            return mDisplayId;
         }
 
         @Override
@@ -694,6 +792,18 @@ public class LockedAppActivityTest {
 
         int getContentViewId() {
             return mContentViewId;
+        }
+
+        int getSetContentViewCount() {
+            return mSetContentViewCount;
+        }
+
+        void resetSetContentViewCount() {
+            mSetContentViewCount = 0;
+        }
+
+        void setDisplayId(int displayId) {
+            mDisplayId = displayId;
         }
     }
 }
