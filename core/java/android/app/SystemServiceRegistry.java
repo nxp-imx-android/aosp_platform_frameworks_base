@@ -883,6 +883,10 @@ public final class SystemServiceRegistry {
                                     android.hardware.serial.ISerialManager.Stub.asInterface(b));
                         }
                     });
+            // The serial service moved to a new package. If someone asks for the old
+            // interface by class then we want to redirect over to the new interface instead
+            // (which extends it).
+            SYSTEM_SERVICE_NAMES.put(android.hardware.SerialManager.class, Context.SERIAL_SERVICE);
         } else {
             registerService(Context.SERIAL_SERVICE, android.hardware.SerialManager.class,
                     new CachedServiceFetcher<android.hardware.SerialManager>() {

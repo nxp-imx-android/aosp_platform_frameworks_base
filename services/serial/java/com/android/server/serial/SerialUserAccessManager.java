@@ -22,7 +22,6 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.serial.SerialManager;
 import android.os.Binder;
 import android.os.Bundle;
@@ -119,8 +118,7 @@ class SerialUserAccessManager implements SerialUserAccessManagerInterface {
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private boolean canGrantPortAccessAutomatically(String requestedPortName, int pid, int uid) {
-        if (mContext.checkPermission(Manifest.permission.SERIAL_PORT, pid, uid)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (!SerialManagerService.hasSerialPortPermission(mContext, pid, uid)) {
             return false;
         }
 
