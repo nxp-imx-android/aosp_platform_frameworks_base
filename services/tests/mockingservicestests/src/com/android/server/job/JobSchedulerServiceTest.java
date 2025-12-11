@@ -29,7 +29,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
-import static com.android.server.job.Flags.FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION;
 import static com.android.server.job.Flags.FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS;
 import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
@@ -2786,7 +2785,6 @@ public class JobSchedulerServiceTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION)
     public void testSchedule_jobCountLimit_systemUid_enhancedException() throws Exception {
         // Schedule up to and including the max number of jobs.
         for (int i = 0; i <= TEST_MAX_JOBS_PER_APP; i++) {
@@ -2811,29 +2809,7 @@ public class JobSchedulerServiceTest {
         }
     }
 
-    @Test
-    @DisableFlags(FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION)
-    public void testSchedule_jobCountLimit_systemUid_regularException() throws Exception {
-        // Schedule up to and including the max number of jobs.
-        for (int i = 0; i <= TEST_MAX_JOBS_PER_APP; i++) {
-            JobInfo job = createJobInfo(i).setMinimumLatency(3600_000).build();
-            assertEquals(JobScheduler.RESULT_SUCCESS, mService.scheduleAsPackage(
-                    job, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, ""));
-        }
 
-        JobInfo extraJob = createJobInfo(TEST_MAX_JOBS_PER_APP + 1).setMinimumLatency(
-                3600_000).build();
-        try {
-            mService.scheduleAsPackage(
-                    extraJob, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, "");
-            fail("Scheduling extra job should have thrown an exception");
-        } catch (IllegalStateException e) {
-            // Success
-            final String expected = "Apps may not schedule more than "
-                    + TEST_MAX_JOBS_PER_APP + " distinct jobs";
-            assertEquals(expected, e.getMessage());
-        }
-    }
 
     @Test
     public void testSchedule_jobCountLimit_regularUid() throws Exception {
