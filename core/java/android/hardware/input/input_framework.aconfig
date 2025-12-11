@@ -165,13 +165,6 @@ flag {
 }
 
 flag {
-    name: "mouse_to_touch_per_app_compat"
-    namespace: "lse_desktop_experience"
-    description: "Enables per-app overrides compatibility for mouse to touch"
-    bug: "413207127"
-}
-
-flag {
     name: "enable_quick_settings_panel_shortcut"
     namespace: "input"
     description: "Enables shortcut for quick settings panel"
