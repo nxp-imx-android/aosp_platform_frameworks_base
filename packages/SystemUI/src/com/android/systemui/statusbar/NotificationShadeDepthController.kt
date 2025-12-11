@@ -314,6 +314,11 @@ constructor(
             blur = 0
         }
 
+        if (zoomOut.isNaN()) {
+            Log.i(TAG, "Invalid zoomOut (NaN). blurRadius: $blur")
+            return Pair(blur, 0f)
+        }
+
         return Pair(blur, zoomOut)
     }
 
