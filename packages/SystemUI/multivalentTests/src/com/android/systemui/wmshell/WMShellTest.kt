@@ -57,7 +57,7 @@ import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.kotlin.javaAdapter
-import com.android.wm.shell.desktopmode.DesktopMode
+import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.onehanded.OneHanded

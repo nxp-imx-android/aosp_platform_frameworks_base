@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode;
+package com.android.wm.shell.desktopmode.api;
 
 import android.annotation.NonNull;
 import android.graphics.Region;
