@@ -154,7 +154,6 @@ import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
 import com.android.wm.shell.desktopmode.data.persistence.Desktop
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
-import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
@@ -324,7 +323,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
     @Mock private lateinit var mockAppOpsManager: AppOpsManager
     @Mock private lateinit var visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler
-    @Mock private lateinit var desktopFirstListenerManager: DesktopFirstListenerManager
     @Mock private lateinit var taskSnapshotManager: TaskSnapshotManager
     @Mock private lateinit var transactionPool: TransactionPool
     @Mock private lateinit var pipTransitionState: PipTransitionState
@@ -575,7 +573,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             shellDesktopState,
             desktopConfig,
             visualIndicatorUpdateScheduler,
-            Optional.of(desktopFirstListenerManager),
             taskSnapshotManager,
             transactionPool,
             Optional.of(pipTransitionState),
@@ -11610,19 +11607,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         clearInvocations(shellInit)
         controller = createController()
 
-        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(SECONDARY_DISPLAY_ID))
-            .isFalse()
+        assertThat(controller.isDisplayInDesktopMode(SECONDARY_DISPLAY_ID)).isFalse()
     }
 
     @Test
     fun isDesktopModeEnabledOnDisplay_displayNotDesktop_isFalse() {
-        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(SECONDARY_DISPLAY_ID))
-            .isFalse()
+        assertThat(controller.isDisplayInDesktopMode(SECONDARY_DISPLAY_ID)).isFalse()
     }
 
     @Test
     fun isDesktopModeEnabledOnDisplay_displayIsDesktop_isTrue() {
-        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(DEFAULT_DISPLAY)).isTrue()
+        assertThat(controller.isDisplayInDesktopMode(DEFAULT_DISPLAY)).isTrue()
     }
 
     @Test
