@@ -124,7 +124,7 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
         mShellTaskOrganizer = shellTaskOrganizer;
         mStartingSurfaceDrawer = new StartingSurfaceDrawer(context, splashScreenExecutor,
                 iconProvider, pool, startingWindowTypeAlgorithm.getMinimumIconShowDuration(),
-                bgExecutor);
+                bgExecutor, shellController);
         mStartingWindowTypeAlgorithm = startingWindowTypeAlgorithm;
         mSplashScreenExecutor = splashScreenExecutor;
         mShellMainExecutor = mainExecutor;
