@@ -181,7 +181,7 @@ public final class MediaProjectionManagerService extends SystemService
 
     private void maybeStopMediaProjection(int reason) {
         synchronized (mLock) {
-            if (Flags.stopOnDisplayRemoval() && reason == STOP_REASON_DISPLAY_REMOVED) {
+            if (reason == STOP_REASON_DISPLAY_REMOVED) {
                 mProjectionGrant.stop(StopReason.STOP_TARGET_REMOVED);
                 return;
             }
@@ -343,9 +343,7 @@ public final class MediaProjectionManagerService extends SystemService
         }
         mProjectionToken = projection.asBinder();
         mProjectionGrant = projection;
-        if (Flags.stopOnDisplayRemoval()) {
-            mMediaProjectionStopController.setRecordedDisplay(projection.mDisplayId);
-        }
+        mMediaProjectionStopController.setRecordedDisplay(projection.mDisplayId);
         dispatchStart(projection);
     }
 
@@ -361,9 +359,7 @@ public final class MediaProjectionManagerService extends SystemService
                         ? session.getTargetUid()
                         : ContentRecordingSession.TARGET_UID_UNKNOWN;
         mMediaProjectionMetricsLogger.logStopped(projection.uid, targetUid, stopReason);
-        if (Flags.stopOnDisplayRemoval()) {
-            mMediaProjectionStopController.clearRecordedDisplay();
-        }
+        mMediaProjectionStopController.clearRecordedDisplay();
         mProjectionToken = null;
         mProjectionGrant = null;
         dispatchStop(projection);
