@@ -28,6 +28,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.app.Service;
+import android.app.appfunctions.flags.Flags;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.SigningInfo;
@@ -36,6 +37,8 @@ import android.os.CancellationSignal;
 import android.os.IBinder;
 import android.os.OutcomeReceiver;
 import android.util.Log;
+
+import java.util.Objects;
 
 /**
  * Abstract base class to provide app functions to the system.
@@ -88,10 +91,39 @@ public abstract class AppFunctionService extends Service {
                         OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback);
     }
 
+    /**
+     * Functional interface to represent the execution logic of an app function.
+     *
+     * <p>Replacement callback for {@link OnExecuteFunction} that does not provide calling identity.
+     *
+     * @hide
+     */
+    @FunctionalInterface
+    public interface OnExecuteFunction2 {
+        /**
+         * Performs the semantic of executing the function specified by the provided request and
+         * return the response through the provided callback.
+         */
+        void perform(
+                @NonNull ExecuteAppFunctionRequest request,
+                @NonNull CancellationSignal cancellationSignal,
+                @NonNull
+                        OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback);
+    }
+
     /** @hide */
     @NonNull
     public static Binder createBinder(
             @NonNull Context context, @NonNull OnExecuteFunction onExecuteFunction) {
+        return createBinder(context, onExecuteFunction, /* onExecuteFunction2= */ null);
+    }
+
+    /** @hide */
+    @NonNull
+    public static Binder createBinder(
+            @NonNull Context context,
+            @NonNull OnExecuteFunction onExecuteFunction,
+            @Nullable OnExecuteFunction2 onExecuteFunction2) {
         return new IAppFunctionService.Stub() {
             @Override
             public void executeAppFunction(
@@ -109,27 +141,41 @@ public abstract class AppFunctionService extends Service {
                 context.getMainExecutor()
                         .execute(
                                 () -> {
-                                    try {
-                                        onExecuteFunction.perform(
-                                                request,
-                                                callingPackage,
-                                                callingPackageSigningInfo,
-                                                buildCancellationSignal(cancellationCallback),
-                                                new OutcomeReceiver<
-                                                        ExecuteAppFunctionResponse,
-                                                        AppFunctionException>() {
-                                                    @Override
-                                                    public void onResult(
-                                                            ExecuteAppFunctionResponse result) {
-                                                        safeCallback.onResult(result);
-                                                    }
+                                    OutcomeReceiver<
+                                                    ExecuteAppFunctionResponse,
+                                                    AppFunctionException>
+                                            outcomeReceiver =
+                                                    new OutcomeReceiver<
+                                                            ExecuteAppFunctionResponse,
+                                                            AppFunctionException>() {
+                                                        @Override
+                                                        public void onResult(
+                                                                ExecuteAppFunctionResponse result) {
+                                                            safeCallback.onResult(result);
+                                                        }
 
-                                                    @Override
-                                                    public void onError(
-                                                            AppFunctionException exception) {
-                                                        safeCallback.onError(exception);
-                                                    }
-                                                });
+                                                        @Override
+                                                        public void onError(
+                                                                AppFunctionException exception) {
+                                                            safeCallback.onError(exception);
+                                                        }
+                                                    };
+                                    try {
+                                        if (Flags.enableAppFunctionPermissionV2()) {
+                                            Objects.requireNonNull(onExecuteFunction2)
+                                                    .perform(
+                                                            request,
+                                                            buildCancellationSignal(
+                                                                    cancellationCallback),
+                                                            outcomeReceiver);
+                                        } else {
+                                            onExecuteFunction.perform(
+                                                    request,
+                                                    callingPackage,
+                                                    callingPackageSigningInfo,
+                                                    buildCancellationSignal(cancellationCallback),
+                                                    outcomeReceiver);
+                                        }
                                     } catch (Exception ex) {
                                         // Apps should handle exceptions. But if they don't, report
                                         // the
@@ -146,7 +192,12 @@ public abstract class AppFunctionService extends Service {
     }
 
     private final Binder mBinder =
-            createBinder(AppFunctionService.this, AppFunctionService.this::onExecuteFunction);
+            createBinder(
+                    AppFunctionService.this,
+                    AppFunctionService.this::onExecuteFunction,
+                    /* onExecuteAppFunction2 */ (Flags.enableAppFunctionPermissionV2())
+                            ? AppFunctionService.this::onExecuteFunction
+                            : null);
 
     @NonNull
     @Override
@@ -187,12 +238,60 @@ public abstract class AppFunctionService extends Service {
      *     predictable experience.
      * @param cancellationSignal A signal to cancel the execution.
      * @param callback A callback to report back the result or error.
+     * @deprecated Use {@link AppFunctionService#onExecuteFunction(ExecuteAppFunctionRequest,
+     *     CancellationSignal, OutcomeReceiver)} instead. Starting in {@link
+     *     android.os.Build.VERSION_CODES#CINNAMON_BUN}, this method supplies an empty {@code
+     *     callingPackage} and unknown {@code callingPackageSigningInfo}.
      */
+    @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+    @Deprecated
     @MainThread
-    public abstract void onExecuteFunction(
+    public void onExecuteFunction(
             @NonNull ExecuteAppFunctionRequest request,
             @NonNull String callingPackage,
             @NonNull SigningInfo callingPackageSigningInfo,
             @NonNull CancellationSignal cancellationSignal,
-            @NonNull OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback);
+            @NonNull OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback) {
+        throw new UnsupportedOperationException("Must implement onExecuteAppFunction");
+    }
+
+    /**
+     * Called by the system to execute a specific app function.
+     *
+     * <p>This method is the entry point for handling all app function requests in an app. When the
+     * system needs your AppFunctionService to perform a function, it will invoke this method.
+     *
+     * <p>Each function you've registered is identified by a unique identifier. This identifier
+     * doesn't need to be globally unique, but it must be unique within your app. For example, a
+     * function to order food could be identified as "orderFood". In most cases, this identifier is
+     * automatically generated by the AppFunctions SDK.
+     *
+     * <p>You can determine which function to execute by calling {@link
+     * ExecuteAppFunctionRequest#getFunctionIdentifier()}. This allows your service to route the
+     * incoming request to the appropriate logic for handling the specific function.
+     *
+     * <p>This method is always triggered in the main thread. You should run heavy tasks on a worker
+     * thread and dispatch the result with the given callback. You should always report back the
+     * result using the callback, no matter if the execution was successful or not.
+     *
+     * <p>This method also accepts a {@link CancellationSignal} that the app should listen to cancel
+     * the execution of function if requested by the system.
+     *
+     * @param request The function execution request.
+     * @param cancellationSignal A signal to cancel the execution.
+     * @param callback A callback to report back the result or error.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+    @MainThread
+    public void onExecuteFunction(
+            @NonNull ExecuteAppFunctionRequest request,
+            @NonNull CancellationSignal cancellationSignal,
+            @NonNull OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback) {
+        onExecuteFunction(
+                request,
+                /* callingPackage= */ "",
+                /* callingPackageSigningInfo= */ new SigningInfo(),
+                cancellationSignal,
+                callback);
+    }
 }
