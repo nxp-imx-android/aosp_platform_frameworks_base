@@ -16,6 +16,7 @@
 
 package com.android.server.telecom;
 
+import android.app.AppOpsManager;
 import android.app.role.RoleManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -23,7 +24,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManagerInternal;
+import android.os.Binder;
 import android.os.IBinder;
+import android.os.PackageTagsList;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.telecom.PhoneAccountHandle;
@@ -88,6 +91,7 @@ public class TelecomLoaderService extends SystemService {
                         }
                     }
                 }
+                restrictPhoneCallOps();
             }
         }
 
@@ -113,10 +117,31 @@ public class TelecomLoaderService extends SystemService {
     @GuardedBy("mLock")
     private LoaderServiceConnection mServiceConnection;
 
+    @GuardedBy("mLock")
+    private final AppOpsManager mAppOpsManager;
+
+    @GuardedBy("mLock")
+    private final IBinder mToken;
+
+    @GuardedBy("mLock")
+    private final BroadcastReceiver mUserAddedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_USER_ADDED.equals(intent.getAction())) {
+                restrictPhoneCallOps();
+            }
+        }
+    };
+
     public TelecomLoaderService(Context context) {
         super(context);
         mContext = context;
         registerDefaultAppProviders();
+        mAppOpsManager = mContext.getSystemService(AppOpsManager.class);
+        mToken = new Binder();
+        IntentFilter userAddedFilter = new IntentFilter(Intent.ACTION_USER_ADDED);
+        userAddedFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
+        mContext.registerReceiver(mUserAddedReceiver, userAddedFilter);
     }
 
     @Override
@@ -256,6 +281,18 @@ public class TelecomLoaderService extends SystemService {
             String packageName = phoneAccount.getComponentName().getPackageName();
             permissionManager.grantDefaultPermissionsToDefaultSimCallManager(packageName,
                     userId);
+        }
+    }
+
+    private void restrictPhoneCallOps() {
+        PackageTagsList packageRestriction = new PackageTagsList.Builder()
+                .add(SERVICE_COMPONENT.getPackageName())
+                .build();
+        if (mAppOpsManager != null) {
+            mAppOpsManager.setUserRestrictionForUser(AppOpsManager.OP_PHONE_CALL_MICROPHONE, true,
+                    mToken, packageRestriction, UserHandle.USER_ALL);
+            mAppOpsManager.setUserRestrictionForUser(AppOpsManager.OP_PHONE_CALL_CAMERA, true,
+                    mToken, packageRestriction, UserHandle.USER_ALL);
         }
     }
 }
