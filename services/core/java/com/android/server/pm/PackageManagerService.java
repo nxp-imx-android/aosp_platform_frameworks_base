@@ -603,6 +603,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final int mPriorSdkVersion;
     // If mIsUpgrade == true, contains the prior full SDK version, else -1.
     private final int mPriorSdkVersionFull;
+    /**
+     * Mock upgrade flag, read from persist.pm.mock-upgrade system property.
+     */
+    private final boolean mIsMockUpgrade;
 
     // Used for privilege escalation. MUST NOT BE CALLED WITH mPackages
     // LOCK HELD.  Can be called with mInstallLock held.
@@ -1154,37 +1158,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      */
     @Nullable
     private final SnapshotStatistics mSnapshotStatistics;
-
-    /**
-     * Mock upgrade flag, read from settings.
-     */
-    private boolean mIsMockUpgrade;
-
-    /**
-     * Runnable to be called on system properties change.
-     */
-    private final Runnable mMockUpgradeCallback = new Runnable() {
-        @Override
-        public void run() {
-            // The system property allows testing ota flow when upgraded to the same image.
-            boolean isMockUpgrade = SystemProperties.getBoolean("persist.pm.mock-upgrade",
-                    false /* default */);
-            // mIsUpgrade is final, but isMockUpgrade can change, update the member and ASM
-            if (mIsMockUpgrade != isMockUpgrade) {
-                mIsMockUpgrade = isMockUpgrade;
-                updateAsmIsDeviceUpgrading();
-            }
-        }
-    };
-
-    /**
-     * Updates the Application Shared Memory isDeviceUpgrading flag accordingly.
-     */
-    private void updateAsmIsDeviceUpgrading() {
-        if (isDeviceUpgradingUsesSharedMemory()) {
-            ApplicationSharedMemory.getInstance().setIsDeviceUpgrading(isDeviceUpgrading());
-        }
-    }
 
     /**
      * Return the cached computer.  The method will rebuild the cached computer if necessary.
@@ -2006,6 +1979,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         registerObservers(false);
         invalidatePackageInfoCache(
                 PackageMetrics.INVALIDATION_REASON_PACKAGE_MANAGER_SERVICE_INIT);
+        mIsMockUpgrade = false;
     }
 
     public PackageManagerService(PackageManagerServiceInjector injector, boolean factoryTest,
@@ -4387,11 +4361,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         mSystemReady = true;
 
-        // Initialize Application Shared Memory isDeviceUpgrading flag, after mSystemReady is true.
-        updateAsmIsDeviceUpgrading();
-
-        // Register SystemProperties callback to update the ApplicationSharedMemory on change.
-        SystemProperties.addChangeCallback(mMockUpgradeCallback);
+        // Initialize Application Shared Memory isDeviceUpgrading flag.
+        if (isDeviceUpgradingUsesSharedMemory()) {
+            ApplicationSharedMemory.getInstance().setIsDeviceUpgrading(isDeviceUpgrading());
+        }
 
         ContentObserver co = new ContentObserver(mHandler) {
             @Override
