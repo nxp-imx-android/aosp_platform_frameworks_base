@@ -288,13 +288,14 @@ constructor(
 
             override val playPauseAction: MediaActionModel
                 get() =
-                    dataModel.playbackStateActions?.playOrPause?.getMediaActionModel()
-                        ?: MediaActionModel.None
+                    dataModel.playbackStateActions
+                        ?.playOrPause
+                        ?.getMediaActionModel(R.id.actionPlayPause) ?: MediaActionModel.None
 
             override val leftAction: MediaActionModel
                 get() =
                     dataModel.playbackStateActions?.let {
-                        it.prevOrCustom?.getMediaActionModel()
+                        it.prevOrCustom?.getMediaActionModel(R.id.actionPrev)
                             ?: if (it.reservePrev) {
                                 MediaActionModel.ReserveSpace
                             } else {
@@ -305,7 +306,7 @@ constructor(
             override val rightAction: MediaActionModel
                 get() =
                     dataModel.playbackStateActions?.let {
-                        it.nextOrCustom?.getMediaActionModel()
+                        it.nextOrCustom?.getMediaActionModel(R.id.actionNext)
                             ?: if (it.reserveNext) {
                                 MediaActionModel.ReserveSpace
                             } else {
@@ -317,9 +318,9 @@ constructor(
                 get() =
                     dataModel.playbackStateActions?.let { playbackActions ->
                         listOfNotNull(
-                            playbackActions.custom0?.getMediaActionModel()
+                            playbackActions.custom0?.getMediaActionModel(R.id.action0)
                                 as? MediaActionModel.Action,
-                            playbackActions.custom1?.getMediaActionModel()
+                            playbackActions.custom1?.getMediaActionModel(R.id.action1)
                                 as? MediaActionModel.Action,
                         )
                     }
@@ -328,9 +329,10 @@ constructor(
         }
     }
 
-    private fun MediaAction.getMediaActionModel(): MediaActionModel {
+    private fun MediaAction.getMediaActionModel(id: Int? = null): MediaActionModel {
         return icon?.let { drawable ->
             MediaActionModel.Action(
+                id = id ?: -1,
                 icon =
                     Icon.Loaded(
                         drawable = drawable,
