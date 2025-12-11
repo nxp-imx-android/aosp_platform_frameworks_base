@@ -5659,7 +5659,8 @@ public abstract class PackageManager {
             | FLAG_PERMISSION_GRANTED_BY_ROLE
             | FLAG_PERMISSION_REVOKED_COMPAT
             | FLAG_PERMISSION_ONE_TIME
-            | FLAG_PERMISSION_AUTO_REVOKED;
+            | FLAG_PERMISSION_AUTO_REVOKED
+            | FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY;
 
     /**
      * Injected activity in app that forwards user to setting activity of that app.
@@ -7004,7 +7005,8 @@ public abstract class PackageManager {
             FLAG_PERMISSION_GRANTED_BY_ROLE,
             FLAG_PERMISSION_REVOKED_COMPAT,
             FLAG_PERMISSION_ONE_TIME,
-            FLAG_PERMISSION_AUTO_REVOKED
+            FLAG_PERMISSION_AUTO_REVOKED,
+            FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PermissionFlags {}
@@ -11090,6 +11092,7 @@ public abstract class PackageManager {
             case FLAG_PERMISSION_REVOKED_COMPAT: return "REVOKED_COMPAT";
             case FLAG_PERMISSION_ONE_TIME: return "ONE_TIME";
             case FLAG_PERMISSION_AUTO_REVOKED: return "AUTO_REVOKED";
+            case FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY: return "SELECTED_LOCATION_ACCURACY";
             default: return Integer.toString(flag);
         }
     }
