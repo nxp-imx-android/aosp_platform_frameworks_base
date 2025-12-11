@@ -314,9 +314,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
         mOverscrollEdgeSlop = context.getResources().getDimensionPixelSize(
                 R.dimen.accessibility_fullscreen_magnification_gesture_edge_slop);
         mIsWatch = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
-        mMouseEventHandler =
-                Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()
-                        ? null : new MouseEventHandler(mFullScreenMagnificationController);
+        mMouseEventHandler = null;
 
         if (mDetectShortcutTrigger) {
             mScreenStateReceiver = new ScreenStateReceiver(context, this);

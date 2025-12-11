@@ -1507,7 +1507,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testMouseMoveEventsDoNotMoveMagnifierViewport() {
         runMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_MOUSE);
     }
@@ -1561,7 +1560,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testMouseHoverMoveEventsDoNotMoveMagnifierViewport() {
         // Note that this means mouse hover shouldn't be handled here.
         // FullScreenMagnificationPointerMotionEventFilter handles mouse input events.
@@ -1569,22 +1567,9 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testStylusHoverMoveEventsDoNotMoveMagnifierViewport() {
         // TODO(b/398984690): We will revisit the behavior.
         runHoverMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_STYLUS);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
-    public void testMouseHoverMoveEventsMoveMagnifierViewport() {
-        runHoverMovesViewportTest(InputDevice.SOURCE_MOUSE);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
-    public void testStylusHoverMoveEventsMoveMagnifierViewport() {
-        runHoverMovesViewportTest(InputDevice.SOURCE_STYLUS);
     }
 
     @Test
@@ -1605,49 +1590,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     @Test
     public void testStylusUpEventsDoNotMoveMagnifierViewport() {
         runUpDoesNotMoveViewportTest(InputDevice.SOURCE_STYLUS);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
-    public void testMouseMoveEventsMoveMagnifierViewport() {
-        final EventCaptor eventCaptor = new EventCaptor();
-        mMgh.setNext(eventCaptor);
-
-        float centerX =
-                (INITIAL_MAGNIFICATION_BOUNDS.left + INITIAL_MAGNIFICATION_BOUNDS.width()) / 2.0f;
-        float centerY =
-                (INITIAL_MAGNIFICATION_BOUNDS.top + INITIAL_MAGNIFICATION_BOUNDS.height()) / 2.0f;
-        float scale = 6.2f; // value is unimportant but unique among tests to increase coverage.
-        mFullScreenMagnificationController.setScaleAndCenter(
-                DISPLAY_0, scale, centerX, centerY, true, /* animate= */ false, 1);
-        MotionEvent event = mouseEvent(centerX, centerY, ACTION_HOVER_MOVE);
-        send(event, InputDevice.SOURCE_MOUSE);
-        fastForward(20);
-        event = mouseEvent(centerX, centerY, ACTION_DOWN);
-        send(event, InputDevice.SOURCE_MOUSE);
-        fastForward(20);
-
-        // Mouse drag event does impact magnifier viewport.
-        event = mouseEvent(centerX + 30, centerY + 60, ACTION_MOVE);
-        send(event, InputDevice.SOURCE_MOUSE);
-        fastForward(20);
-
-        assertThat(mFullScreenMagnificationController.getCenterX(DISPLAY_0))
-                .isEqualTo(centerX + 30);
-        assertThat(mFullScreenMagnificationController.getCenterY(DISPLAY_0))
-                .isEqualTo(centerY + 60);
-
-        // The mouse events were not consumed by magnifier.
-        assertThat(eventCaptor.mEvents.size()).isEqualTo(3);
-        assertThat(eventCaptor.mEvents.get(0).getSource()).isEqualTo(InputDevice.SOURCE_MOUSE);
-        assertThat(eventCaptor.mEvents.get(1).getSource()).isEqualTo(InputDevice.SOURCE_MOUSE);
-        assertThat(eventCaptor.mEvents.get(2).getSource()).isEqualTo(InputDevice.SOURCE_MOUSE);
-
-        final List<Integer> expectedActions = new ArrayList();
-        expectedActions.add(Integer.valueOf(ACTION_HOVER_MOVE));
-        expectedActions.add(Integer.valueOf(ACTION_DOWN));
-        expectedActions.add(Integer.valueOf(ACTION_MOVE));
-        assertActionsInOrder(eventCaptor.mEvents, expectedActions);
     }
 
     private void runHoverMovesViewportTest(int source) {
