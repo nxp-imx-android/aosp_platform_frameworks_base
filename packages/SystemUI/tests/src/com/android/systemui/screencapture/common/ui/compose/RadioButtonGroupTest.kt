@@ -20,6 +20,7 @@ import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -69,6 +70,6 @@ class RadioButtonGroupTest : SysuiTestCase() {
 
         composeTestRule.setContent { RadioButtonGroup(items = testItems) }
 
-        composeTestRule.onNodeWithContentDescription(testLabel).assertIsDisplayed()
+        composeTestRule.onNodeWithText(testLabel).assertIsDisplayed()
     }
 }

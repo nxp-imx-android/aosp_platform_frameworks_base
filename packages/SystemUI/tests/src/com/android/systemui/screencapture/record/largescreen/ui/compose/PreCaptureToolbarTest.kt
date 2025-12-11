@@ -21,8 +21,10 @@ import android.platform.test.annotations.EnableFlags
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -125,12 +127,12 @@ class PreCaptureToolbarTest : SysuiTestCase() {
                 )
             }
 
-            val buttonDescription = context.getString(R.string.screen_capture_toolbar_record_button)
+            val buttonText = context.getString(R.string.screen_capture_toolbar_record_button)
             composeTestRule
-                .onNodeWithContentDescription(buttonDescription)
+                .onNodeWithText(buttonText)
                 .assertExists()
                 .assertIsDisplayed()
-                .assertContentDescriptionEquals(buttonDescription)
+                .assertTextEquals(buttonText)
         }
 
     @Test
@@ -271,9 +273,8 @@ class PreCaptureToolbarTest : SysuiTestCase() {
                 )
             }
 
-            val buttonDescription =
-                context.getString(R.string.screen_capture_toolbar_screenshot_button)
-            composeTestRule.onNodeWithContentDescription(buttonDescription).performClick()
+            val buttonText = context.getString(R.string.screen_capture_toolbar_screenshot_button)
+            composeTestRule.onNodeWithText(buttonText).performClick()
 
             verify(mockOnCaptureTypeSelectedCallback).invoke(ScreenCaptureType.SCREENSHOT)
         }
@@ -293,8 +294,8 @@ class PreCaptureToolbarTest : SysuiTestCase() {
                 )
             }
 
-            val buttonDescription = context.getString(R.string.screen_capture_toolbar_record_button)
-            composeTestRule.onNodeWithContentDescription(buttonDescription).performClick()
+            val buttonText = context.getString(R.string.screen_capture_toolbar_record_button)
+            composeTestRule.onNodeWithText(buttonText).performClick()
 
             verify(mockOnCaptureTypeSelectedCallback).invoke(ScreenCaptureType.RECORDING)
         }
