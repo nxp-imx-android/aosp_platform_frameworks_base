@@ -1585,6 +1585,7 @@ public final class StrictMode {
      *
      * @hide
      */
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static void initThreadDefaults(ApplicationInfo ai) {
         final ThreadPolicy.Builder builder = new ThreadPolicy.Builder();
         final int targetSdkVersion =

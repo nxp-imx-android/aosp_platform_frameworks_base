@@ -328,6 +328,8 @@ android.os.RemoteException
 android.os.ResultReceiver
 android.os.ServiceManager
 android.os.ServiceSpecificException
+android.os.ShellCallback
+android.os.ShellCommand
 android.os.StrictMode
 android.os.SystemClock
 android.os.SystemProperties
@@ -602,6 +604,7 @@ android.util.SparseLongArray
 android.util.SparseSetArray
 android.util.StateSet
 android.util.StringBuilderPrinter
+android.util.SystemConfigFileCommitEventLogger
 android.util.TeeWriter
 android.util.TimeUtils
 android.util.TimingsTraceLog

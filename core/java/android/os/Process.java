@@ -29,6 +29,7 @@ import android.annotation.TestApi;
 import android.annotation.UptimeMillisLong;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build.VERSION_CODES;
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
@@ -1205,6 +1206,7 @@ public class Process {
      * Does not set cpuset for some historical reason, just calls
      * libcutils::set_sched_policy().
      */
+    @RavenwoodIgnore
     public static final native void setThreadGroup(int tid, int group)
             throws IllegalArgumentException, SecurityException;
 
