@@ -570,4 +570,8 @@
          Refer {@see CarrierConfigManager#SATELLITE_DATA_SUPPORT_MODE} to see the possible values -->
     <integer name="max_allowed_data_mode">1</integer>
     <java-symbol type="integer" name="max_allowed_data_mode" />
+
+     <!-- Whether to wait for carrier config loaded before using operator name to publish from modem. -->
+    <bool name="config_update_operator_name_after_carrier_config_loaded">false</bool>
+    <java-symbol type="bool" name="config_update_operator_name_after_carrier_config_loaded" />
 </resources>
