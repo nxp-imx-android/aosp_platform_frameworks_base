@@ -22,10 +22,6 @@ import java.util.List;
 
 /** The database for pending and existing talismans. */
 abstract class TalismanDatabase {
-    static class TalismanExhaustedException extends Exception {
-        TalismanExhaustedException() {}
-    }
-
     /**
      * Gets a new {@link TalismanSet} of the specified type from the database.
      *
@@ -37,20 +33,12 @@ abstract class TalismanDatabase {
             throws TalismanExhaustedException;
 
     /**
-     * Adds a batch of {@link TalismanKey} that are pending Talisman generation to the database.
-     *
-     * @throws IllegalArgumentException if the keys already exist.
-     */
-    abstract void addPendingTalismans(@NonNull List<TalismanKey> keys);
-
-    /**
      * Adds a batch of {@link TalismanSet} to the database. The keys associated with the talismans
-     * must have been added to the database before, and must have not been associated with any
-     * talismans.
+     * must be unique in the database.
      *
-     * @throws IllegalArgumentException if the keys associated with the talismans do not exist in
-     *     the database, or have already been associated with talismans.
+     * @throws IllegalArgumentException if the keys associated with the talismans do already exist
+     *     in the database.
      */
-    abstract void addTalismans(@NonNull List<TalismanSet> talismans)
+    abstract void addTalismanSets(@NonNull List<TalismanSetWithKey> talismans)
             throws IllegalArgumentException;
 }
