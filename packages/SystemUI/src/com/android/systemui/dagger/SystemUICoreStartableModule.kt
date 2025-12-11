@@ -51,6 +51,7 @@ import com.android.systemui.media.taptotransfer.sender.MediaTttSenderCoordinator
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherCoreStartable
 import com.android.systemui.shortcut.ShortcutKeyDispatcher
 import com.android.systemui.statusbar.ImmersiveModeConfirmation
+import com.android.systemui.statusbar.gesture.GesturePointerEventListener
 import com.android.systemui.statusbar.notification.InstantAppNotifier
 import com.android.systemui.statusbar.notification.headsup.StatusBarHeadsUpChangeListener
 import com.android.systemui.stylus.StylusUsiPowerStartable
@@ -152,6 +153,12 @@ abstract class SystemUICoreStartableModule {
     @IntoMap
     @ClassKey(RingtonePlayer::class)
     abstract fun bind(sysui: RingtonePlayer): CoreStartable
+
+    /** Inject into GesturePointerEventHandler. */
+    @Binds
+    @IntoMap
+    @ClassKey(GesturePointerEventListener::class)
+    abstract fun bindGesturePointerEventListener(sysui: GesturePointerEventListener): CoreStartable
 
     /** Inject into SessionTracker. */
     @Binds

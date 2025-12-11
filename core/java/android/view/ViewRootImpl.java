@@ -386,13 +386,6 @@ public final class ViewRootImpl implements ViewParent,
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
 
-    /**
-     * Whether the client (system UI) is handling the transient gesture and the corresponding
-     * animation.
-     * @hide
-     */
-    public static final boolean CLIENT_TRANSIENT =
-            SystemProperties.getBoolean("persist.wm.debug.client_transient", false);
 
     /**
      * Allow enabling IPC rendering on a per-package basis for debugging.
