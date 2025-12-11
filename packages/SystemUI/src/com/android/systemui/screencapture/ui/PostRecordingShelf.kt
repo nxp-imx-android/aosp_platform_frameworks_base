@@ -221,10 +221,7 @@ constructor(
             }
 
         Box(
-            modifier =
-                Modifier.fillMaxSize()
-                    .clickable(onClick = { hide() }, indication = null, interactionSource = null)
-                    .safeDrawingPadding(),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
             contentAlignment = Alignment.BottomStart,
         ) {
             AnimatedVisibility(
