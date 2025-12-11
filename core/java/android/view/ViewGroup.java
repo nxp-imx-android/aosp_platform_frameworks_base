@@ -20,6 +20,7 @@ import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
 import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
 import static android.view.accessibility.Flags.restrictViewgroupAccessibilityEventPopulation;
+import static android.view.flags.Flags.FLAG_SCROLL_TO_TOP;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
@@ -84,6 +85,7 @@ import com.android.internal.R;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -2008,6 +2010,107 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             return mFocused.dispatchKeyShortcutEvent(event);
         }
         return false;
+    }
+
+    @Override
+    @FlaggedApi(FLAG_SCROLL_TO_TOP)
+    public boolean dispatchScrollToTop(int x) {
+        final int count = mChildrenCount;
+        if (count == 0) {
+            return false;
+        }
+
+        // 1. Establish baseline order: Z-order (low to high)
+        ArrayList<View> list = buildTouchDispatchChildList();
+
+        if (list == null) {
+            // Fallback: Use standard drawing order if Z-ordering isn't active
+            if (mPreSortedChildren == null) {
+                mPreSortedChildren = new ArrayList<>(count);
+            } else {
+                mPreSortedChildren.clear();
+                mPreSortedChildren.ensureCapacity(count);
+            }
+
+            final View[] children = mChildren;
+            final boolean customOrder = isChildrenDrawingOrderEnabled();
+            for (int i = 0; i < count; i++) {
+                final int childIndex = getAndVerifyPreorderedIndex(count, i, customOrder);
+                final View child = getAndVerifyPreorderedView(null, children, childIndex);
+                mPreSortedChildren.add(child);
+            }
+            list = mPreSortedChildren;
+        }
+
+        try {
+            // 2. Sort by "Scroll to Top" heuristics
+            list.sort(getScrollToTopComparator(x));
+
+            // 3. Dispatch backwards: Best candidates (Intersecting, Top Y, High Z) are at the end
+            for (int i = list.size() - 1; i >= 0; i--) {
+                final View child = list.get(i);
+
+                if (!child.canReceivePointerEvents()) {
+                    continue;
+                }
+
+                final float[] point = getTempLocationF();
+                point[0] = x;
+                point[1] = mScrollY;
+                transformPointToViewLocal(point, child);
+
+                if (child.dispatchScrollToTop((int) point[0])) {
+                    return true;
+                }
+            }
+        } finally {
+            list.clear();
+        }
+
+        return false;
+    }
+
+    @NonNull
+    private Comparator<View> getScrollToTopComparator(int x) {
+        final RectF tempRect = new RectF();
+        final float scrolledX = x + mScrollX;
+
+        // Comparator sorts in descending order, i.e. last list entry will receive scroll-to-top
+        // event first.
+        return (v1, v2) -> {
+            // Calculate properties for View 1
+            projectToParentSpace(v1, tempRect);
+            final float v1Top = tempRect.top;
+            final boolean v1Intersects = scrolledX >= tempRect.left && scrolledX < tempRect.right;
+
+            // Calculate properties for View 2
+            projectToParentSpace(v2, tempRect);
+            final float v2Top = tempRect.top;
+            final boolean v2Intersects = scrolledX >= tempRect.left && scrolledX < tempRect.right;
+
+            // Sorting priority 1: Horizontal Intersection
+            // We want intersecting views to handle events before non-intersecting
+            if (v1Intersects != v2Intersects) {
+                return v1Intersects ? 1 : -1;
+            }
+
+            // Sorting priority 2: Visual Y-Coordinate
+            // We want the smallest Y to win over larger y coordinates
+            return Float.compare(v2Top, v1Top);
+
+            // Sorting priority 3: Z-Order
+            // Handled implicitly by stable sort preserving the baseline Z-order
+        };
+    }
+
+    private static void projectToParentSpace(View v, RectF outRect) {
+        outRect.set(0, 0, v.getWidth(), v.getHeight());
+
+        if (!v.getMatrix().isIdentity()) {
+            v.getMatrix().mapRect(outRect);
+        }
+
+        outRect.offset(v.getLeft(), v.getTop());
     }
 
     @Override
